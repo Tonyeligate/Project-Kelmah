@@ -1,0 +1,21 @@
+{
+  "documentation": 4,
+  "features": {
+    "auth": {
+      "implemented": true,
+      "status": "In Progress"
+    },
+    "messaging": {
+      "implemented": true,
+      "status": "In Progress"
+    },
+    "payment": {
+      "implemented": true,
+      "status": "In Progress"
+    },
+    "notification": {
+      "implemented": true,
+      "status": "In Progress"
+    }
+  }
+}

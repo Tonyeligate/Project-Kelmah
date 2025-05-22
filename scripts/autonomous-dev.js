@@ -44,12 +44,66 @@ function isProtectedFile(filePath) {
 // Main workflow functions
 function analyzeProgress() {
   console.log('Analyzing project progress...');
-  // Implementation will be added based on project needs
+  const docs = readDocumentation();
+  const progress = {
+    documentation: Object.keys(docs).length,
+    features: {
+      auth: {
+        implemented: fs.existsSync(path.join(__dirname, '../kelmah-backend/services/auth-service')),
+        status: 'In Progress'
+      },
+      messaging: {
+        implemented: fs.existsSync(path.join(__dirname, '../kelmah-backend/services/messaging-service')),
+        status: 'In Progress'
+      },
+      payment: {
+        implemented: fs.existsSync(path.join(__dirname, '../kelmah-backend/services/payment-service')),
+        status: 'In Progress'
+      },
+      notification: {
+        implemented: fs.existsSync(path.join(__dirname, '../kelmah-backend/services/notification-service')),
+        status: 'In Progress'
+      }
+    }
+  };
+  
+  // Write progress to a file
+  const progressPath = path.join(AI_PROPOSALS_DIR, 'progress.json');
+  fs.writeFileSync(progressPath, JSON.stringify(progress, null, 2));
+  
+  return progress;
 }
 
-function generateNextTask() {
+async function generateNextTask() {
   console.log('Generating next development task...');
-  // Implementation will be added based on project needs
+  const progress = analyzeProgress();
+  
+  // Read the "To add.txt" file for task requirements
+  const toAddPath = path.join(DOCS_DIR, 'To add.txt');
+  let requirements = [];
+  if (fs.existsSync(toAddPath)) {
+    requirements = fs.readFileSync(toAddPath, 'utf8').split('\n')
+      .filter(line => line.trim() && !line.startsWith('//'));
+  }
+  
+  // Find the next incomplete feature
+  const nextFeature = Object.entries(progress.features)
+    .find(([key, value]) => !value.implemented);
+  
+  if (nextFeature) {
+    const [feature, status] = nextFeature;
+    const task = {
+      type: 'feature',
+      name: `Implement ${feature} service`,
+      description: `Complete the implementation of the ${feature} service according to requirements`,
+      priority: 'high',
+      requirements: requirements.filter(req => req.toLowerCase().includes(feature))
+    };
+    
+    return task;
+  }
+  
+  return null;
 }
 
 function implementFeatureProposal() {
