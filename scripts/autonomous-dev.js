@@ -100,6 +100,35 @@ async function generateNextTask() {
       requirements: requirements.filter(req => req.toLowerCase().includes(feature))
     };
     
+    // Generate a proposal file
+    const proposalContent = `# ${task.name}
+
+## Description
+${task.description}
+
+## Priority
+${task.priority}
+
+## Requirements
+${task.requirements.map(req => `- ${req}`).join('\n')}
+
+## Implementation Plan
+1. Review existing code and documentation
+2. Set up service structure
+3. Implement core functionality
+4. Add tests
+5. Update documentation
+
+## Notes
+- Follow existing code style and patterns
+- Ensure proper error handling
+- Add logging for debugging
+- Update progress tracking
+`;
+    
+    const proposalPath = generateProposal('feature', proposalContent);
+    console.log(`Generated proposal at: ${proposalPath}`);
+    
     return task;
   }
   
