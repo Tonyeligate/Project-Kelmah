@@ -1,0 +1,690 @@
+{
+  "info": {
+    "name": "Kelmah Worker APIs",
+    "description": "Collection for testing Kelmah worker-specific APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Worker Jobs",
+      "item": [
+        {
+          "name": "Get Active Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/active",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "active"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/job-1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "job-1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Completed Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/completed?startDate=2025-01-01&endDate=2025-03-01",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "completed"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-03-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Job Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/job-1/progress",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "job-1",
+                "progress"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hoursLogged\": 4,\n  \"milestoneId\": \"ms-3\",\n  \"notes\": \"Completed countertop installation\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark Job as Completed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/job-1/complete",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "job-1",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"finalNotes\": \"All work completed successfully\",\n  \"additionalHours\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Available Jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/available?skills=plumbing&location=Boston&radius=25",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "skills",
+                  "value": "plumbing"
+                },
+                {
+                  "key": "location",
+                  "value": "Boston"
+                },
+                {
+                  "key": "radius",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Earnings Information",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/earnings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "earnings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Earnings for Period",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/earnings/period?startDate=2025-01-01&endDate=2025-03-01",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "earnings",
+                "period"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-03-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Job Proposal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/jobs/proposals",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "jobs",
+                "proposals"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"job-5\",\n  \"amount\": 700,\n  \"duration\": \"4 days\",\n  \"coverLetter\": \"I have over 10 years of experience in drywall repair...\",\n  \"attachments\": [\n    {\n      \"name\": \"Previous_Work.jpg\",\n      \"url\": \"https://example.com/attachments/previous_work.jpg\"\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Worker Schedule",
+      "item": [
+        {
+          "name": "Get Availability",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/availability",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "availability"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update General Availability",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/availability/general",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "availability",
+                "general"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availabilityData\": [\n    { \"dayOfWeek\": 1, \"startTime\": \"08:00\", \"endTime\": \"17:00\", \"isAvailable\": true },\n    { \"dayOfWeek\": 2, \"startTime\": \"08:00\", \"endTime\": \"17:00\", \"isAvailable\": true },\n    { \"dayOfWeek\": 3, \"startTime\": \"08:00\", \"endTime\": \"17:00\", \"isAvailable\": true },\n    { \"dayOfWeek\": 4, \"startTime\": \"08:00\", \"endTime\": \"17:00\", \"isAvailable\": true },\n    { \"dayOfWeek\": 5, \"startTime\": \"08:00\", \"endTime\": \"17:00\", \"isAvailable\": true },\n    { \"dayOfWeek\": 6, \"startTime\": \"09:00\", \"endTime\": \"14:00\", \"isAvailable\": true },\n    { \"dayOfWeek\": 7, \"startTime\": \"00:00\", \"endTime\": \"00:00\", \"isAvailable\": false }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Add Special Day",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/availability/special-days",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "availability",
+                "special-days"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-04-15\",\n  \"startTime\": \"12:00\",\n  \"endTime\": \"17:00\",\n  \"isAvailable\": true,\n  \"note\": \"Only available afternoon\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Appointments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/appointments?startDate=2025-03-01&endDate=2025-03-31&status=confirmed",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "appointments"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-03-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-03-31"
+                },
+                {
+                  "key": "status",
+                  "value": "confirmed"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/appointments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "appointments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Initial Consultation - Deck Project\",\n  \"clientName\": \"Thomas Brown\",\n  \"clientId\": \"client-105\",\n  \"location\": {\n    \"address\": \"789 Pine St, Medford, MA\",\n    \"latitude\": 42.4184,\n    \"longitude\": -71.1061\n  },\n  \"date\": \"2025-03-25\",\n  \"startTime\": \"14:00\",\n  \"endTime\": \"15:00\",\n  \"description\": \"Discuss potential deck construction project\",\n  \"notes\": \"Bring portfolio and material samples\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Appointment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/appointments/appt-1/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "appointments",
+                "appt-1",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Check Availability",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/schedule/check-availability?startDate=2025-03-25&endDate=2025-03-25&startTime=13:00&endTime=15:00",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "schedule",
+                "check-availability"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-03-25"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-03-25"
+                },
+                {
+                  "key": "startTime",
+                  "value": "13:00"
+                },
+                {
+                  "key": "endTime",
+                  "value": "15:00"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Worker Verification",
+      "item": [
+        {
+          "name": "Get Verification Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Documents",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/documents",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "documents"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/documents",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "documents"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"identity\",\n  \"documentType\": \"driver_license\",\n  \"documentNumber\": \"DL1234567\",\n  \"issueDate\": \"2022-05-10\",\n  \"expiryDate\": \"2027-05-10\",\n  \"issuingAuthority\": \"MA DMV\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Assessments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/assessments?status=completed",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "assessments"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "completed"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start Assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/assessments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "assessments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skillId\": \"skill-4\",\n  \"skillName\": \"TypeScript\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Complete Assessment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/assessments/assess-3/complete",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "assessments",
+                "assess-3",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 85,\n  \"level\": \"advanced\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Certifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/certifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "certifications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Certification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/certifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "certifications"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AWS Certified Solutions Architect\",\n  \"issuer\": \"Amazon Web Services\",\n  \"credentialId\": \"AWS-123456\",\n  \"issueDate\": \"2024-01-15T00:00:00Z\",\n  \"expiryDate\": \"2027-01-15T00:00:00Z\",\n  \"verificationUrl\": \"https://aws.amazon.com/verification\",\n  \"skills\": [\"AWS\", \"Cloud Architecture\", \"Infrastructure\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Badges",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/worker/verification/badges",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5002",
+              "path": [
+                "worker",
+                "verification",
+                "badges"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+} 

@@ -1,0 +1,29 @@
+.fc {
+    height: 100%;
+    background: var(--background-paper);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.2rem;
+}
+
+.fc .fc-button {
+    background: var(--primary-main);
+    border: none;
+}
+
+.fc .fc-button:hover {
+    background: var(--primary-dark);
+}
+
+.fc .fc-event {
+    cursor: pointer;
+    border: none;
+    padding: 2px 4px;
+}
+
+.fc .fc-event:hover {
+    filter: brightness(0.9);
+} 

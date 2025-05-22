@@ -1,0 +1,7 @@
+Kelmah: {{ title }}
+
+{{ message }}
+
+{{#if actionText}}{{ actionText }}: {{ actionUrl }}{{/if}}
+
+Reply STOP to unsubscribe. 

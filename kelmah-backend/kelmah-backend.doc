@@ -1,0 +1,319 @@
+# Kelmah Backend Documentation
+
+## Architecture Overview
+
+The Kelmah backend is built using a microservices architecture to ensure scalability, maintainability, and separation of concerns. The system consists of multiple independent services, each responsible for a specific domain of functionality, communicating through well-defined APIs.
+
+### Key Components
+
+1. **API Gateway**: Acts as the single entry point for all client requests, routing them to appropriate microservices
+2. **Authentication Service**: Handles user registration, authentication, and authorization
+3. **User Service**: Manages user profiles and user-related operations
+4. **Job Service**: Handles job listings, applications, and job-related operations
+5. **Messaging Service**: Manages real-time communication between users
+6. **Review Service**: Handles ratings and reviews for workers
+7. **Notification Service**: Manages system notifications and alerts
+8. **Shared Modules**: Common utilities and middleware shared across services
+
+### Technology Stack
+
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB
+- **Caching**: Redis
+- **Authentication**: JWT (JSON Web Tokens)
+- **Real-time Communication**: Socket.IO
+- **Message Queue**: Agenda.js
+- **File Storage**: AWS S3
+- **Logging**: Winston
+
+## Directory Structure
+
+```
+kelmah-backend/
+├── api-gateway/              # API Gateway service
+│   ├── routes/               # Routing configurations
+│   ├── middleware/           # Gateway-specific middleware
+│   ├── config/               # Gateway configurations
+│   ├── server.js             # Gateway entry point
+│   └── package.json          # Gateway dependencies
+│
+├── services/                 # Microservices
+│   ├── auth-service/         # Authentication service
+│   │   ├── controllers/      # Request handlers
+│   │   ├── middleware/       # Service-specific middleware
+│   │   ├── models/           # Data models
+│   │   ├── routes/           # API routes
+│   │   ├── utils/            # Utility functions
+│   │   ├── server.js         # Service entry point
+│   │   └── package.json      # Service dependencies
+│   │
+│   ├── user-service/         # User management service
+│   │   └── ...
+│   │
+│   ├── job-service/          # Job management service
+│   │   └── ...
+│   │
+│   ├── messaging-service/    # Messaging service
+│   │   └── ...
+│   │
+│   ├── review-service/       # Review system service
+│   │   └── ...
+│   │
+│   └── notification-service/ # Notification service
+│       └── ...
+│
+├── shared/                   # Shared modules and utilities
+│   ├── config/               # Shared configurations
+│   │   └── database.js       # Database connection
+│   │
+│   ├── middleware/           # Shared middleware
+│   │   └── auth.js           # Authentication middleware
+│   │
+│   ├── utils/                # Shared utilities
+│   │   └── response.js       # Response standardization
+│   │
+│   ├── index.js              # Shared module exports
+│   └── package.json          # Shared module dependencies
+│
+├── index.js                  # Main orchestration script
+├── package.json              # Root package dependencies
+└── .env.example              # Environment variables template
+```
+
+## Service Details
+
+### API Gateway
+
+The API Gateway is the entry point for all client requests, responsible for:
+- Routing requests to appropriate microservices
+- Request validation
+- Rate limiting
+- CORS handling
+- Response compression
+- Load balancing
+
+Endpoints:
+- `/api/auth/*` → Auth Service
+- `/api/users/*` → User Service
+- `/api/jobs/*` → Job Service
+- `/api/messages/*` → Messaging Service
+- `/api/reviews/*` → Review Service
+- `/api/notifications/*` → Notification Service
+
+### Authentication Service
+
+Handles user authentication, authorization, and related operations:
+- User registration
+- Login/logout
+- Email verification
+- Password reset
+- Token refresh
+- Session management
+
+Key endpoints:
+- `POST /register` - Register a new user
+- `POST /login` - Authenticate a user
+- `GET /verify/:token` - Verify email address
+- `POST /forgot-password` - Request password reset
+- `POST /reset-password/:token` - Reset password
+- `POST /refresh-token` - Refresh access token
+- `POST /logout` - Log out a user
+
+### User Service
+
+Manages user profiles and user-related operations:
+- Profile management
+- User search
+- Worker availability
+- Profile verification
+- Skill management
+- Portfolio management
+
+### Job Service
+
+Handles job listings and applications:
+- Job creation and management
+- Job search and filtering
+- Job applications
+- Job completion tracking
+- Job analytics
+
+### Messaging Service
+
+Manages real-time communication between users:
+- Conversation management
+- Message sending and receiving
+- Attachment handling
+- Read receipts
+- Typing indicators
+- Message search
+
+### Review Service
+
+Manages the review and rating system:
+- Rating submissions
+- Review moderation
+- Rating statistics
+- Strength categorization
+- Review filtering and sorting
+
+### Notification Service
+
+Handles system notifications:
+- In-app notifications
+- Email notifications
+- Push notifications
+- Notification preferences
+- Notification templates
+
+## Shared Modules
+
+### Database Module
+
+Provides standardized database connection and utilities:
+- Database connection with retry mechanism
+- Connection status monitoring
+- Error handling and logging
+- Connection pooling
+
+### Authentication Middleware
+
+Shared authentication utilities:
+- JWT verification
+- Role-based authorization
+- Service-to-service authentication
+- Token validation
+
+### Response Utilities
+
+Standardizes API responses across services:
+- Success response formatting
+- Error response formatting
+- Paginated response formatting
+- Validation error formatting
+
+## Environment Variables
+
+The system uses environment variables for configuration. Key variables include:
+
+```
+# General settings
+NODE_ENV=development
+DEBUG=true
+
+# API Gateway
+API_GATEWAY_PORT=5000
+FRONTEND_URL=http://localhost:3000
+
+# Microservice URLs
+AUTH_SERVICE_URL=http://localhost:5001
+USER_SERVICE_URL=http://localhost:5002
+JOB_SERVICE_URL=http://localhost:5003
+MESSAGING_SERVICE_URL=http://localhost:5004
+REVIEW_SERVICE_URL=http://localhost:5005
+NOTIFICATION_SERVICE_URL=http://localhost:5006
+
+# MongoDB connection
+MONGODB_URI=mongodb://localhost:27017/kelmah
+MONGODB_AUTH_DB=kelmah-auth
+MONGODB_USER_DB=kelmah-user
+MONGODB_JOB_DB=kelmah-job
+MONGODB_MESSAGING_DB=kelmah-messaging
+MONGODB_REVIEW_DB=kelmah-review
+MONGODB_NOTIFICATION_DB=kelmah-notification
+
+# Redis configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# JWT settings
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+JWT_REFRESH_EXPIRES_IN=30d
+
+# Internal service authentication
+INTERNAL_API_KEY=your-internal-api-key-for-service-to-service-communication
+
+# AWS S3 settings for file storage
+AWS_BUCKET_NAME=kelmah-files
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+
+# Email service settings
+EMAIL_SERVICE=smtp
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@example.com
+EMAIL_PASSWORD=your-email-password
+EMAIL_FROM=no-reply@kelmah.com
+```
+
+## Deployment
+
+The system is designed to be deployed in various ways:
+
+1. **Monolithic Deployment**: All services running on a single server
+2. **Docker Containers**: Each service in a separate container
+3. **Kubernetes**: For advanced scaling and orchestration
+4. **Serverless**: Components can be adapted for serverless architecture
+
+## Service Communication
+
+Services communicate with each other through:
+
+1. **HTTP/REST**: Primary method for synchronous requests
+2. **Service-to-Service Authentication**: Using internal API keys
+3. **Event-Driven**: For asynchronous operations (using message queues)
+
+## Scaling Considerations
+
+The microservices architecture allows for independent scaling of services:
+
+- Horizontal scaling of high-demand services
+- Load balancing across service instances
+- Database sharding for data-intensive services
+- Caching strategies for frequently accessed data
+
+## Security Measures
+
+1. **Authentication**: JWT-based authentication
+2. **Authorization**: Role-based access control
+3. **API Security**: Rate limiting, CORS, Helmet
+4. **Data Security**: Password hashing, encryption
+5. **Service Security**: Service-to-service authentication
+6. **Input Validation**: Request validation using express-validator
+
+## System Requirements
+
+- Node.js v14+
+- MongoDB v4.4+
+- Redis v6+
+- 2GB RAM minimum (4GB+ recommended)
+- 10GB disk space minimum
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Configure environment variables: Copy `.env.example` to `.env` and customize
+4. Start the services: `npm run dev`
+
+## Monitoring and Logging
+
+- Winston for logging
+- Health check endpoints for each service
+- Error tracking and reporting
+- Performance monitoring
+
+## Roadmap
+
+1. Complete implementation of all microservices
+2. Enhance testing coverage
+3. Implement advanced caching strategies
+4. Add analytics and reporting
+5. Enhance security features
+6. Optimize for performance and scalability 

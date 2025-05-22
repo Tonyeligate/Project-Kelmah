@@ -1,0 +1,104 @@
+/**
+ * Notification service constants
+ */
+
+/**
+ * Notification types
+ */
+exports.NOTIFICATION_TYPES = {
+  // Authentication notifications
+  LOGIN_ALERT: 'LOGIN_ALERT',
+  PASSWORD_RESET: 'PASSWORD_RESET',
+  PASSWORD_CHANGED: 'PASSWORD_CHANGED',
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  ACCOUNT_UNLOCKED: 'ACCOUNT_UNLOCKED',
+  EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
+  TWO_FACTOR_SETUP: 'TWO_FACTOR_SETUP',
+  
+  // User account notifications
+  ACCOUNT_UPDATE: 'ACCOUNT_UPDATE',
+  PROFILE_COMPLETE: 'PROFILE_COMPLETE',
+  ACCOUNT_DEACTIVATION: 'ACCOUNT_DEACTIVATION',
+  ACCOUNT_REACTIVATION: 'ACCOUNT_REACTIVATION',
+  
+  // Messaging notifications
+  NEW_MESSAGE: 'NEW_MESSAGE',
+  MESSAGE_READ: 'MESSAGE_READ',
+  CONVERSATION_INVITE: 'CONVERSATION_INVITE',
+  
+  // Job and contract notifications
+  JOB_POSTED: 'JOB_POSTED',
+  JOB_APPLICATION: 'JOB_APPLICATION',
+  APPLICATION_STATUS: 'APPLICATION_STATUS',
+  JOB_MATCH: 'JOB_MATCH',
+  CONTRACT_CREATED: 'CONTRACT_CREATED',
+  CONTRACT_UPDATE: 'CONTRACT_UPDATE',
+  CONTRACT_ENDED: 'CONTRACT_ENDED',
+  MILESTONE_CREATED: 'MILESTONE_CREATED',
+  MILESTONE_COMPLETED: 'MILESTONE_COMPLETED',
+  
+  // Payment notifications
+  PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
+  PAYMENT_SENT: 'PAYMENT_SENT',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  PAYMENT_REFUND: 'PAYMENT_REFUND',
+  PAYOUT_INITIATED: 'PAYOUT_INITIATED',
+  PAYOUT_COMPLETED: 'PAYOUT_COMPLETED',
+  INVOICE_CREATED: 'INVOICE_CREATED',
+  
+  // Review notifications
+  NEW_REVIEW: 'NEW_REVIEW',
+  REVIEW_RESPONSE: 'REVIEW_RESPONSE',
+  
+  // System notifications
+  SYSTEM_ANNOUNCEMENT: 'SYSTEM_ANNOUNCEMENT',
+  MAINTENANCE_ALERT: 'MAINTENANCE_ALERT',
+  FEATURE_UPDATE: 'FEATURE_UPDATE',
+  SECURITY_ALERT: 'SECURITY_ALERT'
+};
+
+/**
+ * Notification channels
+ */
+exports.NOTIFICATION_CHANNELS = {
+  IN_APP: 'IN_APP',
+  EMAIL: 'EMAIL',
+  SMS: 'SMS',
+  PUSH: 'PUSH'
+};
+
+/**
+ * Notification priority levels
+ */
+exports.PRIORITY_LEVELS = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  URGENT: 'urgent'
+};
+
+/**
+ * Default notification expiration times (in days)
+ */
+exports.DEFAULT_EXPIRATION = {
+  LOW: 7, // 7 days
+  MEDIUM: 14, // 14 days
+  HIGH: 30, // 30 days
+  SYSTEM: 90 // 90 days
+};
+
+/**
+ * Default notification preferences
+ */
+exports.DEFAULT_PREFERENCES = {
+  channels: {
+    [exports.NOTIFICATION_CHANNELS.IN_APP]: true,
+    [exports.NOTIFICATION_CHANNELS.EMAIL]: true,
+    [exports.NOTIFICATION_CHANNELS.SMS]: true,
+    [exports.NOTIFICATION_CHANNELS.PUSH]: true,
+  },
+  types: Object.values(exports.NOTIFICATION_TYPES).reduce((acc, type) => {
+    acc[type] = true;
+    return acc;
+  }, {})
+}; 

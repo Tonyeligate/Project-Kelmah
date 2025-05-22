@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="600" height="400" rx="20" fill="#1A1A1A" />
+  
+  <!-- Decorative circle -->
+  <circle cx="300" cy="200" r="150" fill="#232323" />
+  <circle cx="300" cy="200" r="100" fill="#2A2A2A" />
+  
+  <!-- Payment concept -->
+  <!-- Money transfer diagram -->
+  <rect x="150" y="150" width="100" height="100" rx="10" fill="#333333" />
+  <rect x="350" y="150" width="100" height="100" rx="10" fill="#333333" />
+  
+  <!-- Dollar signs -->
+  <text x="200" y="210" font-family="Arial" font-size="40" font-weight="bold" fill="url(#goldGradient)">$</text>
+  <text x="400" y="210" font-family="Arial" font-size="40" font-weight="bold" fill="url(#goldGradient)">$</text>
+  
+  <!-- Arrow between accounts -->
+  <path d="M260 200 L340 200" stroke="url(#goldGradient)" stroke-width="4" />
+  <path d="M330 190 L340 200 L330 210" stroke="url(#goldGradient)" stroke-width="4" fill="none" />
+  
+  <!-- Shield to represent security -->
+  <path d="M300 100 L350 120 L350 170 C350 220 300 250 300 250 C300 250 250 220 250 170 L250 120 Z" fill="#333333" />
+  <path d="M300 115 L340 130 L340 170 C340 210 300 235 300 235 C300 235 260 210 260 170 L260 130 Z" fill="url(#goldGradient)" opacity="0.3" />
+  
+  <!-- Check mark -->
+  <path d="M285 170 L295 180 L315 150" stroke="#FFF" stroke-width="5" fill="none" />
+  
+  <!-- Dots representing movement/transactions -->
+  <circle cx="200" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="225" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="250" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="275" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="300" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="325" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="350" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="375" cy="290" r="8" fill="url(#goldGradient)" />
+  <circle cx="400" cy="290" r="8" fill="url(#goldGradient)" />
+  
+  <!-- Glow effects -->
+  <circle cx="200" cy="200" r="40" fill="url(#goldGradient)" opacity="0.1" />
+  <circle cx="400" cy="200" r="40" fill="url(#goldGradient)" opacity="0.1" />
+  
+  <!-- Coins -->
+  <circle cx="150" cy="270" r="15" fill="url(#goldGradient)" />
+  <circle cx="450" cy="270" r="15" fill="url(#goldGradient)" />
+  <circle cx="150" cy="270" r="10" fill="#333333" />
+  <circle cx="450" cy="270" r="10" fill="#333333" />
+  
+  <!-- Definitions -->
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#FFA500" />
+    </linearGradient>
+  </defs>
+</svg> 

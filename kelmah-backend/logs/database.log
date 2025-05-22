@@ -1,0 +1,87 @@
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-03-23T15:47:53.575Z"}
+{"level":"info","message":"Retrying MongoDB connection in 5000ms...","timestamp":"2025-03-23T15:47:53.580Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:47:58.585Z"}
+{"level":"info","message":"Retrying MongoDB connection in 7500ms...","timestamp":"2025-03-23T15:47:58.586Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:48:06.101Z"}
+{"level":"info","message":"Retrying MongoDB connection in 11250ms...","timestamp":"2025-03-23T15:48:06.102Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:48:17.354Z"}
+{"level":"info","message":"Retrying MongoDB connection in 16875ms...","timestamp":"2025-03-23T15:48:17.355Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:48:34.244Z"}
+{"level":"info","message":"Retrying MongoDB connection in 25312.5ms...","timestamp":"2025-03-23T15:48:34.261Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:48:59.588Z"}
+{"level":"info","message":"Retrying MongoDB connection in 37968.75ms...","timestamp":"2025-03-23T15:48:59.589Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:49:37.572Z"}
+{"level":"info","message":"Retrying MongoDB connection in 56953.125ms...","timestamp":"2025-03-23T15:49:37.573Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:50:34.539Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:50:34.540Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:51:34.555Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:51:34.556Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:52:34.573Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:52:34.574Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:53:34.589Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:53:34.590Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:54:34.606Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:54:34.607Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:55:34.623Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:55:34.624Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:56:34.635Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:56:34.636Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:57:34.641Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:57:34.641Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:58:34.656Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:58:34.657Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T15:59:34.673Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T15:59:34.674Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:00:34.687Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:00:34.687Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:01:34.705Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:01:34.705Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:02:34.720Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:02:34.720Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:03:34.736Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:03:34.737Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:04:34.755Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:04:34.755Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:05:34.774Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:05:34.775Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:06:34.792Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:06:34.792Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:07:34.799Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:07:34.800Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:08:34.806Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:08:34.807Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:09:34.823Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:09:34.824Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:10:34.829Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:10:34.830Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:11:34.840Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:11:34.841Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:12:34.850Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:12:34.851Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:13:34.857Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:13:34.858Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:14:34.863Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:14:34.864Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:15:34.878Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:15:34.879Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:16:34.892Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:16:34.893Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:17:34.906Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:17:34.906Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:18:34.913Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:18:34.914Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:19:34.922Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:19:34.922Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:20:34.925Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:20:34.925Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:21:34.932Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:21:34.938Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:22:34.954Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:22:34.960Z"}
+{"level":"error","message":"MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","timestamp":"2025-03-23T16:23:10.384Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:23:34.971Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:23:34.975Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:24:34.995Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:24:35.000Z"}
+{"level":"error","message":"MongoDB connection error: option retrydelay is not supported","timestamp":"2025-03-23T16:25:35.010Z"}
+{"level":"info","message":"Retrying MongoDB connection in 60000ms...","timestamp":"2025-03-23T16:25:35.018Z"}
