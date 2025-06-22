@@ -309,7 +309,7 @@ const PaymentMethodsPage = () => {
           <CircularProgress />
         </Box>
       ) : paymentMethods.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center', border: '2px solid', borderColor: 'secondary.main', borderRadius: 2, background: 'linear-gradient(to right, #28313b, #485461, #ffd700)', color: 'white' }}>
+        <Paper sx={theme => ({ p: 4, textAlign: 'center', border: '2px solid', borderColor: 'secondary.main', borderRadius: 2, background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`, color: 'white' })}>
           <CreditCardIcon sx={{ fontSize: 60, color: 'secondary.main', mb: 2 }} />
           <Typography variant="h6" color="secondary.main" gutterBottom>
             No Payment Methods Added
@@ -330,7 +330,7 @@ const PaymentMethodsPage = () => {
       ) : (
         <Grid container spacing={3}>
           {paymentMethods.map((method) => (
-            <Grid item xs={12} md={6} key={method.id}>
+            <Grid item xs={12} sm={6} md={4} key={method.id}>
               <Paper 
                 elevation={1} 
                 sx={{ 
