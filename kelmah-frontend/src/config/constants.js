@@ -1,168 +1,61 @@
-// API Configuration
-export const API_BASE_URL = 'http://localhost:8080/api';
+// Environment-based configuration
+const ENV = process.env.NODE_ENV || 'development';
+const isDevelopment = ENV === 'development';
 
-// Storage Keys
-export const STORAGE_KEYS = {
-  TOKEN: 'kelmah_token',
-  USER: 'kelmah_user',
-  THEME: 'kelmah_theme',
+// API URLs for different environments
+const API_URLS = {
+  development: 'http://localhost:5000',
+  test: 'http://localhost:5000',
+  production: process.env.VITE_API_URL || 'https://api.kelmah.com'
 };
 
-// Routes
-export const ROUTES = {
-  HOME: '/',
-  LOGIN: '/login',
-  REGISTER: '/register',
-  DASHBOARD: '/dashboard',
-  PROFILE: '/profile',
-  FIND_TALENTS: '/find-talents',
-  WORKER_PROFILE: '/worker-profile/:id',
-  REVIEWS: '/reviews/:id',
-  MESSAGES: '/messages',
-  POST_JOB: '/post-job',
-  JOBS: '/jobs',
-  JOB_DETAILS: '/jobs/:id',
-};
+// Core constants
+export const API_URL = API_URLS[ENV];
+export const API_BASE_URL = API_URL;
+export const SOCKET_URL = API_URL;
+export const APP_NAME = 'Kelmah';
 
-// Form validation
-export const VALIDATION = {
-  PASSWORD_MIN_LENGTH: 8,
-  NAME_MIN_LENGTH: 2,
-  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
-  ALLOWED_FILE_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'],
-  MAX_ATTACHMENT_COUNT: 5,
-};
-
-// User roles
-export const USER_ROLES = {
-  HIRER: 'hirer',
+// Authentication related
+export const TOKEN_KEY = 'kelmah_auth_token';
+export const REFRESH_TOKEN_KEY = 'kelmah_refresh_token';
+export const USER_KEY = 'kelmah_user';
+export const TOKEN_EXPIRY_KEY = 'kelmah_token_expiry';
+export const AUTH_ROLES = {
   WORKER: 'worker',
-  ADMIN: 'admin',
+  HIRER: 'hirer',
+  ADMIN: 'admin'
 };
 
-// Job types
-export const JOB_TYPES = [
-  'Plumbing',
-  'Electrical',
-  'Carpentry',
-  'Painting',
-  'Landscaping',
-  'Cleaning',
-  'Moving',
-  'Repairs',
-  'Roofing',
-  'HVAC',
-  'Tiling',
-  'Flooring',
-  'Other',
-];
+// Local storage keys
+export const THEME_KEY = 'kelmah_theme';
+export const LANGUAGE_KEY = 'kelmah_language';
+export const LAST_ROUTE_KEY = 'kelmah_last_route';
 
-// Worker strengths
-export const WORKER_STRENGTHS = [
-  'Reliable',
-  'Punctual',
-  'Quality Work',
-  'Fair Pricing',
-  'Good Communication',
-  'Fast Service',
-  'Clean Work Area',
-  'Problem Solver',
-  'Knowledgeable',
-  'Attention to Detail',
-];
-
-// Message types
-export const MESSAGE_TYPES = {
-  TEXT: 'text',
-  IMAGE: 'image',
-  ATTACHMENT: 'attachment',
-  SYSTEM: 'system',
-};
-
-// Pagination
-export const PAGINATION = {
-  DEFAULT_PAGE_SIZE: 10,
-  MAX_PAGE_SIZE: 50,
-};
-
-// Timeouts
-export const TIMEOUTS = {
-  API_REQUEST: 30000, // 30 seconds
-  DEBOUNCE: 300, // 300ms
-  TOAST: 5000, // 5 seconds
-};
-
-// Theme colors
-export const COLORS = {
-  PRIMARY: '#000000',
-  SECONDARY: '#FFD700',
-  ACCENT: '#FFDB58',
-  BACKGROUND: '#FFFFFF',
-  ERROR: '#FF5252',
-  WARNING: '#FFC107',
-  SUCCESS: '#4CAF50',
-  TEXT_PRIMARY: '#000000',
-  TEXT_SECONDARY: '#757575',
-  TEXT_DISABLED: '#9E9E9E',
-};
-
-// Pagination
-export const ITEMS_PER_PAGE = 10;
-
-// File upload limits
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-export const ALLOWED_FILE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-];
-
-// Message attachment limits
-export const MAX_ATTACHMENTS = 5;
-
-// Worker categories
-export const WORKER_CATEGORIES = [
-  'Plumbing',
-  'Electrical',
-  'Carpentry',
-  'Painting',
-  'Landscaping',
-  'Cleaning',
-  'Moving',
-  'HVAC',
-  'Roofing',
-  'Flooring',
-  'General Contracting',
-  'Masonry',
-  'Welding',
-  'Automotive',
-  'Computer Repair',
-  'Appliance Repair',
-  'Handyman',
-];
-
-// Job statuses
+// Job related constants
 export const JOB_STATUS = {
-  OPEN: 'open',
-  IN_PROGRESS: 'in_progress',
+  DRAFT: 'draft',
+  ACTIVE: 'active',
+  ASSIGNED: 'assigned',
+  IN_PROGRESS: 'in-progress',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
-  DISPUTED: 'disputed',
+  EXPIRED: 'expired'
 };
 
-// Review strengths
-export const REVIEW_STRENGTHS = [
-  'Quality Work',
-  'Timeliness',
-  'Communication',
-  'Value',
-  'Professionalism',
-  'Expertise',
-  'Reliability',
-  'Cleanliness',
-  'Attention to Detail',
-  'Problem Solving',
-]; 
+// Payment related constants
+export const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  REFUNDED: 'refunded'
+};
+
+// Application related
+export const APPLICATION_STATUS = {
+  PENDING: 'pending',
+  UNDER_REVIEW: 'under-review',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'withdrawn'
+};

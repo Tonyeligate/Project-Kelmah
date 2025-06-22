@@ -1,96 +1,72 @@
-/**
- * Payment Service for Kelmah Platform
- * Handles wallet operations, payment processing, and integrations with payment providers
- */
-
+require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
-const db = require('./config/database');
-
-// Load environment variables
-dotenv.config();
 
 // Import routes
-const routes = require('./routes');
+const transactionRoutes = require('./routes/transaction.routes');
+const walletRoutes = require('./routes/wallet.routes');
+const paymentMethodRoutes = require('./routes/paymentMethod.routes');
+const billRoutes = require('./routes/bill.routes');
+const paymentsRoutes = require('./routes/payments.routes');
 
-// Initialize express app
+// Create Express app
 const app = express();
-const PORT = process.env.PAYMENT_SERVICE_PORT || 5003;
-
-// Set up logging
-const logDir = path.join(__dirname, 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-
-// Import logger
-const { logger } = require('./utils/logger');
 
 // Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
 app.use(helmet());
+app.use(cors());
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
-
-// Database connection
-db.sequelize
-  .authenticate()
-  .then(() => {
-    logger.info('Database connection established successfully.');
-    return db.sequelize.sync({ force: false, alter: process.env.DB_SYNC_ALTER === 'true' });
-  })
-  .then(() => {
-    logger.info('Database synchronized successfully.');
-  })
-  .catch((err) => {
-    logger.error('Error connecting to database:', err);
-  });
 
 // Routes
-app.use('/payment', routes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/wallets', walletRoutes);
+app.use('/api/payment-methods', paymentMethodRoutes);
+app.use('/api/bills', billRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    service: 'Payment Service',
-    status: 'OK',
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: 'ok' });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'API endpoint not found',
-    path: req.originalUrl
-  });
-});
-
-// Error handler
+// Error handling middleware
 app.use((err, req, res, next) => {
-  logger.error('Payment service error:', err);
+  console.error(err.stack);
   res.status(500).json({
-    success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'production' ? null : err.message
+    message: 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  logger.info(`Payment service running on port ${PORT}`);
-});
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false
+})
+  .then(() => {
+    console.log('Connected to MongoDB');
+    
+    // Start server
+    const PORT = process.env.PORT || 3004;
+    app.listen(PORT, () => {
+      console.log(`Payment service is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  });
 
-module.exports = app; // For testing 
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Promise Rejection:', err);
+  // Close server & exit process
+  process.exit(1);
+});

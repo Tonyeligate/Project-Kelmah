@@ -8,6 +8,7 @@
 // Import required modules
 import env, { API_BASE_URL as envApiBaseUrl, WS_URL as envWsUrl, USE_MOCK_DATA as envUseMockData } from './env';
 import * as constants from './constants';
+import { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY } from './config';
 
 // Export renamed imports to avoid conflicts
 export const API_BASE_URL = envApiBaseUrl;
@@ -47,8 +48,14 @@ export const {
   MAX_ATTACHMENTS,
   WORKER_CATEGORIES,
   JOB_STATUS,       
-  REVIEW_STRENGTHS
+  REVIEW_STRENGTHS,
+  TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  USER_KEY
 } = constants;
+
+// Re-export authentication constants with consistent naming
+export { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY };
 
 // Export everything as a default export that combines all values
 const config = {
@@ -56,7 +63,10 @@ const config = {
   ...constants,
   API_BASE_URL,
   WS_URL,
-  USE_MOCK_DATA
+  USE_MOCK_DATA,
+  JWT_LOCAL_STORAGE_KEY,
+  AUTH_USER_KEY,
+  REFRESH_TOKEN_KEY
 };
 
 export default config;

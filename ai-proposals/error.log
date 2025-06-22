@@ -1,0 +1,39 @@
+[2025-05-22T04:18:15.293Z] analyzeProgress
+TypeError: Cannot read properties of undefined (reading 'toLowerCase')
+    at C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:270:61
+    at Array.forEach (<anonymous>)
+    at searchForFeature (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:268:25)
+    at analyzeFeature (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:283:3)
+    at Object.analyzeProgress (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:219:13)
+    at runNightlyWorkflow (C:\Users\aship\Desktop\Project-Kelmah\scripts\nightly-workflow.js:124:19)
+    at Object.<anonymous> (C:\Users\aship\Desktop\Project-Kelmah\scripts\nightly-workflow.js:158:3)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+
+[2025-05-22T04:23:52.994Z] analyzeProgress
+TypeError: Cannot read properties of undefined (reading 'length')
+    at C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:683:18
+    at Array.map (<anonymous>)
+    at generateProgressReport (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:677:37)
+    at Object.analyzeProgress (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:252:27)
+    at runNightlyWorkflow (C:\Users\aship\Desktop\Project-Kelmah\scripts\nightly-workflow.js:124:19)
+    at Object.<anonymous> (C:\Users\aship\Desktop\Project-Kelmah\scripts\nightly-workflow.js:158:3)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+
+[2025-05-22T04:25:11.647Z] analyzeProgress
+TypeError: Cannot read properties of undefined (reading 'length')
+    at C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:683:18
+    at Array.map (<anonymous>)
+    at generateProgressReport (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:677:37)
+    at Object.analyzeProgress (C:\Users\aship\Desktop\Project-Kelmah\scripts\autonomous-dev.js:252:27)
+    at runNightlyWorkflow (C:\Users\aship\Desktop\Project-Kelmah\scripts\nightly-workflow.js:124:19)
+    at Object.<anonymous> (C:\Users\aship\Desktop\Project-Kelmah\scripts\nightly-workflow.js:158:3)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+

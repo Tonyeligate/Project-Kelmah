@@ -31,106 +31,6 @@ Given this context, let's move forward with the project. To begin, we should:
 
 5. Set up the development environment.
 
-Which of these aspects would you like to tackle first? Or if you have a specific direction in mind based on our previous discussion, please let me know, and we can start working on that immediately.
-
-Yes, I remember all of this. Let's quickly recap the key points we've covered so far for the "kelma" project:
-
-C:\Users\aship\Desktop\Project
-└── kelma_project
-    ├── database
-    │   └── kelma.db
-    ├── node_modules
-    ├── scripts
-    │   ├── init_db.js
-    │   ├── init-db.js
-    │   └── schema.sql
-    ├── src
-    │   ├── __test__
-    │   │   ├── auth.test.js
-    │   │   └── users.test.js
-    │   ├── config
-    │   │   ├── cloudinary.js
-    │   │   ├── database.js
-    │   │   ├── i18n.js
-    │   │   ├── passport.js
-    │   │   ├── redis.js
-    │   │   └── swagger.js
-    │   ├── graphql
-    │   │   └── schema.js
-    │   ├── jobs
-    │   │   └── emailQueue.js
-    │   ├── middleware
-    │   │   ├── activityLogger.js
-    │   │   ├── adminAuth.js
-    │   │   ├── adminMiddleware.js
-    │   │   ├── auth.js
-    │   │   ├── authMiddleware.js
-    │   │   ├── errorHandler.js
-    │   │   ├── loginLimiter.js
-    │   │   ├── rateLimiter.js
-    │   │   ├── requestLogger.js
-    │   │   ├── roleCheck.js
-    │   │   ├── roleMiddleware.js
-    │   │   ├── validate.js
-    │   │   └── validatePassword.js
-    │   ├── models
-    │   │   ├── analytics.js
-    │   │   ├── application.js
-    │   │   ├── chatMessage.js
-    │   │   ├── job.js
-    │   │   ├── message.js
-    │   │   ├── notification.js
-    │   │   ├── rating.js
-    │   │   ├── review.js
-    │   │   ├── skill.js
-    │   │   ├── transaction.js
-    │   │   └── user.js
-    │   ├── queues
-    │   │   └── emailQueue
-    │   ├── routes
-    │   │   ├── admin.js
-    │   │   ├── analytics.js
-    │   │   ├── applications.js
-    │   │   ├── auth.js
-    │   │   ├── chat.js
-    │   │   ├── dashboard.js
-    │   │   ├── files.js
-    │   │   ├── jobs.js
-    │   │   ├── logger.js
-    │   │   ├── matching.js
-    │   │   ├── messages.js
-    │   │   ├── notifications.js
-    │   │   ├── payments.js
-    │   │   ├── ratings.js
-    │   │   ├── reviews.js
-    │   │   ├── support.js
-    │   │   ├── tokenRefresh.js
-    │   │   └── user.js
-    │   ├── services
-    │   │   ├── emailService.js
-    │   │   ├── notificationService.js
-    │   │   └── pushService.js
-    │   ├── utils
-    │   │   ├── analytics.js
-    │   │   ├── analyticsUpdater.js
-    │   │   ├── cache.js
-    │   │   ├── emailService.js
-    │   │   ├── logger.js
-    │   │   ├── notificationHandler.js
-    │   │   ├── passwordStrength.js
-    │   │   ├── passwordValidator.js
-    │   │   └── tokenBlacklist.js
-    │   ├── server.js
-    │   └── socket.js
-    ├── tests[jobApplication.test.js, jobRoutes.test.js, jobSearch.test.js, messaging.test.js, testSetup.js, testUtils.js, user.test.js, userProfile.test.js] 
-    ├── .env
-    ├── check_db_structure.js
-    ├── check_db.js
-    ├── database.sqlite
-    ├── jest.config
-    ├── package-lock.json
-    ├── package.json
-    └── test-email.js
 
 We were about to move on to creating the database schema, designing the UI/UX, choosing the technology stack, and setting up the development environment.
 
@@ -163,27 +63,6 @@ Is there any specific aspect of this plan you'd like to focus on next, or shall 
 
 
 
-C:\Users\aship\Desktop\Project
-│
-├─src
-│   ├── components
-│   ├── pages
-│   ├── App.js
-│   └── index.js
-│
-├── public
-│   ├── index.html
-│   └── favicon.ico
-│
-├── package.json
-└── README.md
-
-
-
-
-Before we continue I would you to know the problem I am facing.
-Uncaught SyntaxError: The requested module '/src/app.js' does not provide an export named 'default' (at main.jsx:6:8)
-
 But 
 Note  that : Ask for the for the current file to know it content before make a fix, changes, updates or delete. Let me know if you need something that can help you understand and solve this problem.
 You should also know that I am not good with coding so pls be specific.
@@ -205,7 +84,6 @@ Let me know if you need something that can help you understand and solve this pr
 
 
 
-Header is showing profile menu on the Home page. Note that should on show on User pages such as Hirer dashborard page, worker dashboard page, Welcome dashboard page, Profile settings page etc based on the user type.
 
 
 Note  that, always Ask for the for the current file to know it content before make a fix, changes, updates or delete. Let me know if you need something that can help you understand and solve this problem.

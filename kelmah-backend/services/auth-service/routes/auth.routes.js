@@ -1,18 +1,23 @@
+/**
+ * Authentication Routes
+ */
+
 const express = require('express');
 const { body } = require('express-validator');
-const authController = require('../controllers/auth.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+const authController = require('../controllers/auth');
+const { authenticate } = require('../middlewares/auth');
+const { createLimiter } = require('../middlewares/rateLimiter');
+const { validate } = require('../utils/validation');
 const passport = require('../config/passport');
 const { logger } = require('../utils/logger');
 const validationMiddleware = require('../middleware/validation.middleware');
-const rateLimiter = require('../utils/rate-limiter');
 
 const router = express.Router();
 
 // Registration route with validation
 router.post(
   '/register',
-  rateLimiter.middleware('register'),
+  createLimiter('register'),
   [
     body('email').isEmail().withMessage('Please enter a valid email address'),
     body('password')
@@ -29,19 +34,19 @@ router.post(
       .isIn(['worker', 'hirer'])
       .withMessage('Role must be either worker or hirer'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.register
 );
 
 // Login route with validation
 router.post(
   '/login',
-  rateLimiter.middleware('login'),
+  createLimiter('login'),
   [
     body('email').isEmail().withMessage('Please enter a valid email address'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.login
 );
 
@@ -51,22 +56,22 @@ router.get('/verify/:token', authController.verifyEmail);
 // Resend verification email
 router.post(
   '/resend-verification',
-  rateLimiter.middleware('emailVerification'),
+  createLimiter('emailVerification'),
   [
     body('email').isEmail().withMessage('Please enter a valid email address'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.resendVerificationEmail
 );
 
 // Forgot password
 router.post(
   '/forgot-password',
-  rateLimiter.middleware('passwordReset'),
+  createLimiter('forgotPassword'),
   [
     body('email').isEmail().withMessage('Please enter a valid email address'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.forgotPassword
 );
 
@@ -82,7 +87,7 @@ router.post(
       .matches(/[A-Z]/)
       .withMessage('Password must contain at least one uppercase letter'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.resetPassword
 );
 
@@ -95,7 +100,7 @@ router.post(
   [
     body('refreshToken').notEmpty().withMessage('Refresh token is required'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.refreshToken
 );
 
@@ -113,7 +118,7 @@ router.post(
       .matches(/[A-Z]/)
       .withMessage('Password must contain at least one uppercase letter'),
   ],
-  validationMiddleware.validate,
+  validate,
   authController.changePassword
 );
 

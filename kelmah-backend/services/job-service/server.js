@@ -1,132 +1,90 @@
 /**
  * Job Service
- * Manages job postings, applications, contracts, and reviews
+ * Handles job postings, applications, and job-related operations
  */
 
-require('dotenv').config();
 const express = require('express');
-const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
-const compression = require('compression');
-const { db } = require('./models/index');
-const logger = require('./utils/logger');
-const routes = require('./routes');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const config = require('../../src/config');
+const { notFound } = require('../../src/utils/errorTypes');
 
-// Initialize Express app
+// Import routes
+const jobRoutes = require('./routes/job.routes');
+
+// Initialize express app
 const app = express();
-const server = http.createServer(app);
 
-// Set port
-const PORT = process.env.JOB_SERVICE_PORT || 5003;
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// Middlewares
+// Security middleware
 app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
+}
 
 // API routes
-app.use('/api/jobs', routes.jobRoutes);
-app.use('/api/applications', routes.applicationRoutes);
-app.use('/api/contracts', routes.contractRoutes);
-app.use('/api/reviews', routes.reviewRoutes);
-app.use('/api/contract-templates', routes.contractTemplateRoutes);
-app.use('/api/contract-analytics', routes.contractAnalyticsRoutes);
-app.use('/api/locations', routes.locationRoutes);
-app.use('/api/milestones', routes.milestoneRoutes);
-app.use('/api/locations', routes.locationSearchRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // Health check endpoint
-app.get('/health', async (req, res) => {
-  try {
-    const dbStatus = await db.healthCheck();
-    
-    res.status(200).json({
-      status: 'success',
-      message: 'Job service is healthy',
-      database: dbStatus,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Health check failed',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    service: 'Job Service',
+    status: 'OK',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Global error handler
+// Root endpoint with API information
+app.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'Job Service API',
+    version: '1.0.0',
+    description: 'Job management service for the Kelmah platform',
+    health: '/health'
+  });
+});
+
+// 404 handler
+app.use(notFound);
+
+// Error handler
 app.use((err, req, res, next) => {
-  logger.error(`Error: ${err.message}`, { error: err });
+  const statusCode = err.statusCode || 500;
+  const status = err.status || 'error';
   
-  res.status(err.status || 500).json({
+  res.status(statusCode).json({
     success: false,
-    error: err.name || 'Internal Server Error',
-    message: err.message || 'Something went wrong'
+    status,
+    message: err.message,
+    errors: err.errors || null,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
 // Start server
-async function startServer() {
-  try {
-    // Connect to database
-    await db.connect();
-    logger.info('Database connection established successfully');
-    
-    // Initialize TimescaleDB hypertables
-    await db.initializeHypertables();
-    
-    // Start HTTP server
-    server.listen(PORT, () => {
-      logger.info(`Job service running on port ${PORT}`);
-    });
-    
-  } catch (error) {
-    logger.error(`Failed to start server: ${error.message}`);
-    process.exit(1);
-  }
+const PORT = process.env.JOB_SERVICE_PORT || 5003;
+
+// Only start the server if this file is run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Job Service running on port ${PORT}`);
+  });
 }
 
-// Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  
-  server.close(() => {
-    logger.info('HTTP server closed');
-    
-    db.disconnect().then(() => {
-      logger.info('Database connection closed');
-      process.exit(0);
-    }).catch(err => {
-      logger.error(`Error closing database connection: ${err.message}`);
-      process.exit(1);
-    });
-  });
-  
-  // Force close server after 10s
-  setTimeout(() => {
-    logger.error('Forced shutdown after timeout');
-    process.exit(1);
-  }, 10000);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
-  process.exit(1);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// Start the server
-startServer(); 
+module.exports = app;

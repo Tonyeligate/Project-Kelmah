@@ -1,477 +1,274 @@
 /**
  * Job Controller
- * Handles API requests for job resources
  */
 
-const { getModels } = require('../models');
-const logger = require('../utils/logger');
-const { Op } = require('sequelize');
+const Job = require('../models/Job');
+const User = require('../models/User');
+const { AppError } = require('../middlewares/error');
+const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 
 /**
- * Get all jobs with pagination and filtering
+ * Create a new job
+ * @route POST /api/jobs
+ * @access Private (Hirer only)
  */
-exports.getJobs = async (req, res) => {
+const createJob = async (req, res, next) => {
   try {
-    const { Job } = await getModels();
+    // Add hirer ID to job data
+    req.body.hirer = req.user.id;
     
-    // Parse pagination parameters
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
-    const offset = (page - 1) * limit;
+    // Create job
+    const job = await Job.create(req.body);
     
-    // Build filter object
-    const filter = {
-      status: req.query.status || 'open',
-      visibility: 'public',
-      deletedAt: null
-    };
-    
-    // Add category filter if provided
-    if (req.query.category) {
-      filter.category = req.query.category;
-    }
-    
-    // Add skill filter if provided
-    if (req.query.skills) {
-      const skills = Array.isArray(req.query.skills) 
-        ? req.query.skills 
-        : req.query.skills.split(',');
-      
-      filter.skills = {
-        [Op.overlap]: skills
-      };
-    }
-    
-    // Add budget range filter if provided
-    if (req.query.minBudget || req.query.maxBudget) {
-      filter.budget = {};
-      
-      if (req.query.minBudget) {
-        filter.budget[Op.gte] = parseFloat(req.query.minBudget);
-      }
-      
-      if (req.query.maxBudget) {
-        filter.budget[Op.lte] = parseFloat(req.query.maxBudget);
-      }
-    }
-    
-    // Add job type filter if provided
-    if (req.query.jobType) {
-      filter.jobType = req.query.jobType;
-    }
-    
-    // Add experience level filter if provided
-    if (req.query.experience) {
-      filter.experience = req.query.experience;
-    }
-    
-    // Get jobs with pagination
-    const { count, rows } = await Job.findAndCountAll({
-      where: filter,
-      limit,
-      offset,
-      order: [
-        ['createdAt', 'DESC']
-      ]
-    });
-    
-    // Prepare pagination metadata
-    const totalPages = Math.ceil(count / limit);
-    const hasMore = page < totalPages;
-    
-    return res.status(200).json({
-      success: true,
-      count,
-      pages: totalPages,
-      currentPage: page,
-      hasMore,
-      data: rows
-    });
+    return successResponse(res, 201, 'Job created successfully', job);
   } catch (error) {
-    logger.error(`Error in getJobs: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve jobs',
-      error: error.message
-    });
+    next(error);
+  }
+};
+
+/**
+ * Get all jobs with filtering, sorting and pagination
+ * @route GET /api/jobs
+ * @access Public
+ */
+const getJobs = async (req, res, next) => {
+  try {
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    
+    // Build query
+    let query = { status: 'open', visibility: 'public' };
+    
+    // Filtering
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+    
+    if (req.query.skills) {
+      query.skills = { $in: req.query.skills.split(',') };
+    }
+    
+    if (req.query.budget) {
+      const [min, max] = req.query.budget.split('-');
+      query.budget = {};
+      if (min) query.budget.$gte = parseInt(min);
+      if (max) query.budget.$lte = parseInt(max);
+    }
+    
+    if (req.query.location) {
+      query['location.country'] = req.query.location;
+    }
+    
+    // Search
+    if (req.query.search) {
+      query.$text = { $search: req.query.search };
+    }
+    
+    // Execute query with pagination
+    const jobs = await Job.find(query)
+      .populate('hirer', 'firstName lastName profileImage')
+      .skip(startIndex)
+      .limit(limit)
+      .sort(req.query.sort || '-createdAt');
+    
+    // Get total count
+    const total = await Job.countDocuments(query);
+    
+    return paginatedResponse(res, 200, 'Jobs retrieved successfully', jobs, page, limit, total);
+  } catch (error) {
+    next(error);
   }
 };
 
 /**
  * Get job by ID
+ * @route GET /api/jobs/:id
+ * @access Public
  */
-exports.getJobById = async (req, res) => {
+const getJobById = async (req, res, next) => {
   try {
-    const { Job } = await getModels();
-    const { id } = req.params;
+    const job = await Job.findById(req.params.id)
+      .populate('hirer', 'firstName lastName profileImage email')
+      .populate('worker', 'firstName lastName profileImage');
     
-    // Find job by ID
-    const job = await Job.findOne({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
-    
-    // Check if job exists
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+      return errorResponse(res, 404, 'Job not found');
     }
     
-    // Check if job is private and user is not the hirer
-    if (job.visibility === 'private' && job.hirerUserId !== req.user?.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to view this job'
-      });
-    }
+    // Increment view count
+    job.viewCount += 1;
+    await job.save();
     
-    return res.status(200).json({
-      success: true,
-      data: job
-    });
+    return successResponse(res, 200, 'Job retrieved successfully', job);
   } catch (error) {
-    logger.error(`Error in getJobById: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve job',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
- * Create a new job
+ * Update job
+ * @route PUT /api/jobs/:id
+ * @access Private (Job owner only)
  */
-exports.createJob = async (req, res) => {
+const updateJob = async (req, res, next) => {
   try {
-    const { Job } = await getModels();
+    let job = await Job.findById(req.params.id);
     
-    // Extract user ID from request
-    const hirerUserId = req.user.id;
-    
-    // Validate required fields
-    const requiredFields = [
-      'title', 'description', 'category', 'budget', 
-      'paymentType', 'jobType', 'experience'
-    ];
-    
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({
-          success: false,
-          message: `${field} is required`
-        });
-      }
-    }
-    
-    // Create new job
-    const job = await Job.create({
-      ...req.body,
-      hirerUserId,
-      status: req.body.status || 'draft'
-    });
-    
-    // Log job creation
-    logger.info(`Job created: ${job.id} by user ${hirerUserId}`);
-    
-    return res.status(201).json({
-      success: true,
-      message: 'Job created successfully',
-      data: job
-    });
-  } catch (error) {
-    logger.error(`Error in createJob: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to create job',
-      error: error.message
-    });
-  }
-};
-
-/**
- * Update job by ID
- */
-exports.updateJob = async (req, res) => {
-  try {
-    const { Job } = await getModels();
-    const { id } = req.params;
-    
-    // Find job by ID
-    const job = await Job.findOne({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
-    
-    // Check if job exists
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+      return errorResponse(res, 404, 'Job not found');
     }
     
-    // Check if user has permission to update this job
-    if (job.hirerUserId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to update this job'
-      });
+    // Check if user is job owner
+    if (job.hirer.toString() !== req.user.id) {
+      return errorResponse(res, 403, 'Not authorized to update this job');
     }
     
-    // Check if job is in a status that can be updated
-    const updatableStatuses = ['draft', 'open'];
-    if (!updatableStatuses.includes(job.status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot update job in ${job.status} status`
-      });
+    // Check if job can be updated
+    if (job.status !== 'draft' && job.status !== 'open') {
+      return errorResponse(res, 400, 'Cannot update job that is already in progress or completed');
     }
-    
-    // Fields that cannot be updated directly
-    const restrictedFields = [
-      'hirerUserId', 'applicationCount', 'hiredCount',
-      'createdAt', 'updatedAt', 'deletedAt'
-    ];
-    
-    // Filter out restricted fields from request body
-    const updates = Object.keys(req.body)
-      .filter(key => !restrictedFields.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = req.body[key];
-        return obj;
-      }, {});
     
     // Update job
-    await job.update(updates);
-    
-    // Log job update
-    logger.info(`Job updated: ${job.id} by user ${req.user.id}`);
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Job updated successfully',
-      data: job
+    job = await Job.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
     });
+    
+    return successResponse(res, 200, 'Job updated successfully', job);
   } catch (error) {
-    logger.error(`Error in updateJob: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to update job',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
- * Delete job by ID (soft delete)
+ * Delete job
+ * @route DELETE /api/jobs/:id
+ * @access Private (Job owner only)
  */
-exports.deleteJob = async (req, res) => {
+const deleteJob = async (req, res, next) => {
   try {
-    const { Job } = await getModels();
-    const { id } = req.params;
+    const job = await Job.findById(req.params.id);
     
-    // Find job by ID
-    const job = await Job.findOne({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
-    
-    // Check if job exists
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+      return errorResponse(res, 404, 'Job not found');
     }
     
-    // Check if user has permission to delete this job
-    if (job.hirerUserId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to delete this job'
-      });
+    // Check if user is job owner
+    if (job.hirer.toString() !== req.user.id) {
+      return errorResponse(res, 403, 'Not authorized to delete this job');
     }
     
     // Check if job can be deleted
-    const deletableStatuses = ['draft', 'open', 'cancelled', 'expired'];
-    if (!deletableStatuses.includes(job.status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete job in ${job.status} status`
-      });
+    if (job.status !== 'draft' && job.status !== 'open') {
+      return errorResponse(res, 400, 'Cannot delete job that is already in progress or completed');
     }
     
-    // Soft delete the job
-    await job.update({
-      deletedAt: new Date(),
-      status: 'cancelled'
-    });
+    await job.remove();
     
-    // Log job deletion
-    logger.info(`Job deleted: ${job.id} by user ${req.user.id}`);
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Job deleted successfully'
-    });
+    return successResponse(res, 200, 'Job deleted successfully');
   } catch (error) {
-    logger.error(`Error in deleteJob: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to delete job',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
- * Get job metrics
+ * Get jobs posted by current user
+ * @route GET /api/jobs/my-jobs
+ * @access Private (Hirer only)
  */
-exports.getJobMetrics = async (req, res) => {
+const getMyJobs = async (req, res, next) => {
   try {
-    const { Job, db } = await getModels();
-    const { id } = req.params;
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
     
-    // Find job by ID
-    const job = await Job.findOne({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
+    // Build query
+    let query = { hirer: req.user.id };
     
-    // Check if job exists
-    if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+    // Filter by status
+    if (req.query.status) {
+      query.status = req.query.status;
     }
     
-    // Check if user has permission to view job metrics
-    if (job.hirerUserId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to view metrics for this job'
-      });
-    }
+    // Execute query with pagination
+    const jobs = await Job.find(query)
+      .populate('worker', 'firstName lastName profileImage')
+      .skip(startIndex)
+      .limit(limit)
+      .sort(req.query.sort || '-createdAt');
     
-    // Get metrics from TimescaleDB
-    const sequelize = db.getSequelize();
+    // Get total count
+    const total = await Job.countDocuments(query);
     
-    const metrics = await sequelize.query(`
-      SELECT 
-        time_bucket('1 day', timestamp) AS day,
-        metric_type,
-        SUM(value) AS total
-      FROM job_metrics
-      WHERE job_id = :jobId
-      GROUP BY day, metric_type
-      ORDER BY day DESC
-    `, {
-      replacements: { jobId: id },
-      type: sequelize.QueryTypes.SELECT
-    });
-    
-    return res.status(200).json({
-      success: true,
-      data: metrics
-    });
+    return paginatedResponse(res, 200, 'My jobs retrieved successfully', jobs, page, limit, total);
   } catch (error) {
-    logger.error(`Error in getJobMetrics: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve job metrics',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Change job status
+ * @route PATCH /api/jobs/:id/status
+ * @access Private (Job owner only)
  */
-exports.changeJobStatus = async (req, res) => {
+const changeJobStatus = async (req, res, next) => {
   try {
-    const { Job } = await getModels();
-    const { id } = req.params;
     const { status } = req.body;
     
-    // Validate status
-    const validStatuses = ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid status'
-      });
+    if (!status) {
+      return errorResponse(res, 400, 'Status is required');
     }
     
-    // Find job by ID
-    const job = await Job.findOne({
-      where: {
-        id,
-        deletedAt: null
-      }
-    });
+    let job = await Job.findById(req.params.id);
     
-    // Check if job exists
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+      return errorResponse(res, 404, 'Job not found');
     }
     
-    // Check if user has permission to change job status
-    if (job.hirerUserId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to change status for this job'
-      });
+    // Check if user is job owner
+    if (job.hirer.toString() !== req.user.id) {
+      return errorResponse(res, 403, 'Not authorized to update this job');
     }
     
-    // Validate state transitions
+    // Validate status transition
     const validTransitions = {
-      draft: ['open', 'cancelled'],
-      open: ['in_progress', 'cancelled', 'expired'],
-      in_progress: ['completed', 'cancelled'],
-      completed: [],
-      cancelled: [],
-      expired: []
+      'draft': ['open', 'cancelled'],
+      'open': ['in-progress', 'cancelled'],
+      'in-progress': ['completed', 'cancelled'],
+      'completed': [],
+      'cancelled': []
     };
     
     if (!validTransitions[job.status].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot change job from ${job.status} to ${status}`
-      });
+      return errorResponse(res, 400, `Cannot change status from ${job.status} to ${status}`);
     }
     
-    // Update job status
-    await job.update({ status });
+    // Update status and relevant dates
+    job.status = status;
     
-    // Log job status change
-    logger.info(`Job status changed: ${job.id} from ${job.status} to ${status} by user ${req.user.id}`);
+    if (status === 'in-progress') {
+      job.startDate = Date.now();
+    } else if (status === 'completed') {
+      job.completedDate = Date.now();
+    }
     
-    return res.status(200).json({
-      success: true,
-      message: 'Job status updated successfully',
-      data: job
-    });
+    await job.save();
+    
+    return successResponse(res, 200, 'Job status updated successfully', job);
   } catch (error) {
-    logger.error(`Error in changeJobStatus: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to update job status',
-      error: error.message
-    });
+    next(error);
   }
-}; 
+};
+
+module.exports = {
+  createJob,
+  getJobs,
+  getJobById,
+  updateJob,
+  deleteJob,
+  getMyJobs,
+  changeJobStatus
+};

@@ -39,6 +39,7 @@ const theme = createTheme({
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: {
         xs: '2.5rem',
         sm: '3rem',
@@ -48,6 +49,7 @@ const theme = createTheme({
       color: '#ffd700',
     },
     h2: {
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: {
         xs: '2rem',
         sm: '2.5rem',
@@ -57,21 +59,25 @@ const theme = createTheme({
       color: '#ffd700',
     },
     h3: {
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '1.75rem',
       fontWeight: 500,
       color: '#ffd700',
     },
     h4: {
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '1.5rem',
       fontWeight: 500,
       color: '#ffd700',
     },
     h5: {
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '1.25rem',
       fontWeight: 500,
       color: '#ffd700',
     },
     h6: {
+      fontFamily: '"Montserrat", sans-serif',
       fontSize: '1.1rem',
       fontWeight: 600,
       color: '#ffd700',
@@ -102,6 +108,23 @@ const theme = createTheme({
             boxShadow: '0 2px 8px rgba(255, 215, 0, 0.2)',
           },
         },
+        containedSecondary: {
+          backgroundColor: '#ffd700',
+          color: '#000000',
+          boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)',
+          '&:hover': {
+            backgroundColor: '#ffeb52',
+          },
+        },
+        outlinedSecondary: {
+          borderColor: '#ffd700',
+          borderWidth: '2px',
+          color: '#ffd700',
+          '&:hover': {
+            borderColor: '#ffeb52',
+            backgroundColor: 'rgba(255, 235, 82, 0.1)',
+          },
+        },
       },
     },
     MuiTextField: {
@@ -126,6 +149,7 @@ const theme = createTheme({
         root: {
           backgroundColor: '#2c2c2c',
           backgroundImage: 'none',
+          border: '1px solid #ffd700',
         },
       },
     },
@@ -161,6 +185,71 @@ const theme = createTheme({
           borderRight: '1px solid rgba(255, 215, 0, 0.1)',
         },
       },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 16,
+          padding: '24px',
+          backgroundColor: '#2c2c2c',
+          border: '2px solid #ffd700',
+          boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)',
+        },
+      },
+    },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          padding: '16px 24px',
+          borderBottom: '1px solid rgba(255, 215, 0, 0.1)',
+          color: '#ffd700',
+        },
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          padding: '20px 24px',
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          padding: '16px 24px',
+        },
+      },
+    },
+    MuiBackdrop: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: '#333',
+          color: '#fff',
+          fontSize: '0.875rem',
+        },
+        arrow: {
+          color: '#333',
+        },
+      },
+    },
+  },
+  transitions: {
+    duration: {
+      shortest: 200,
+      shorter: 250,
+      short: 300,
+      standard: 500,
+      complex: 700,
+    },
+    easing: {
+      easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
     },
   },
 });

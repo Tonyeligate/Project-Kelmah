@@ -1,7 +1,7 @@
 # Kelmah Project Documentation
 
 ## Project Overview
-Kelmah is a comprehensive platform designed to connect vocational job seekers with potential hirers. The platform facilitates efficient job matching, worker discovery, and seamless communication between parties. Built with a modern tech stack and a responsive design, Kelmah aims to revolutionize how vocational job hiring works.
+Kelmah is a comprehensive platform designed to connect vocational job seekers(like carpenters, mason, plumbers, electritians etc.) with potential hirers. The platform facilitates efficient job matching, worker discovery, and seamless communication between parties. Built with a modern tech stack and a responsive design, Kelmah aims to revolutionize how vocational job hiring works.
 
 ## Architecture
 
@@ -17,35 +17,6 @@ Kelmah is a comprehensive platform designed to connect vocational job seekers wi
 - **Prostgrel**: Stores user profiles, job listings, reviews, and messages
 - **JWT**: Handles user authentication
 - **Socket.io**: Enables real-time messaging and notifications
-
-### Project Structure
-```
-kelmah/
-├── kelmah-frontend/       # Frontend React application
-│   ├── public/            # Static files
-│   │   ├── api/           # API service modules
-│   │   ├── assets/        # Images, fonts, etc.
-│   │   ├── components/    # Reusable UI components
-│   │   ├── contexts/      # React context providers
-│   │   ├── pages/         # Page components
-│   │   ├── store/         # Redux store configuration
-│   │   ├── theme/         # MUI theme customization
-│   │   ├── utils/         # Utility functions
-│   │   ├── App.jsx        # Main application component
-│   │   └── index.js       # Application entry point
-│   └── package.json       # Frontend dependencies
-│
-└── kelmah-backend/        # Backend Express application
-    ├── config/            # Configuration files
-    ├── controllers/       # Request handlers
-    ├── middleware/        # Express middleware
-    ├── models/            # MongoDB schemas
-    ├── routes/            # API routes
-    ├── utils/             # Utility functions
-    ├── app.js             # Express application setup
-    ├── server.js          # Server entry point
-    └── package.json       # Backend dependencies
-```
 
 ## Features
 
@@ -522,3 +493,48 @@ This project is licensed under the [License Type] - see the LICENSE file for det
 
 ## Contact
 For more information, contact the project team at team@kelmah.com. 
+
+
+Key Features and Workflows
+Payment Processing
+Multiple Payment Methods:
+Credit/debit cards
+Mobile Money (MTN, Vodafone, AirtelTigo)
+Bank transfers
+Wallet balance
+Escrow System:
+Creation of escrow for jobs/contracts
+Funding escrow by hirer
+Milestone tracking
+Release funds to worker
+Partial releases
+Auto-release on due dates
+Wallet Management:
+Balance viewing
+Deposit funds
+Withdraw funds
+Transfer between users
+Transaction history
+Dispute Resolution:
+Raising disputes
+Admin review
+Multiple resolution options (release, refund, split)
+Detailed dispute tracking
+Payment Security:
+Secure gateway integrations
+Transaction verification
+Webhook processing
+Receipt generation
+Admin Features:
+Payment verification
+Transaction management
+Payment analytics
+Report generation
+Manual intervention capabilities
+Worker-Hirer Payment Flow:
+Job payment setup
+Contract milestone payments
+Recurring payments
+Payment status tracking
+Notifications for payment events
+The payment system uses multiple payment gateways to process payments, with a focus on local Ghanaian payment methods like Mobile Money. The escrow system provides security for both workers and hirers, ensuring funds are only released when work is completed satisfactorily. The wallet system enables users to manage their funds within the platform for smoother transactions.

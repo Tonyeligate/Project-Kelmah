@@ -1,28 +1,46 @@
 /**
  * Job Routes
- * API routes for job-related operations
  */
 
 const express = require('express');
-const router = express.Router();
+const { validate } = require('../middlewares/validator');
+const { authenticateUser, authorizeRoles } = require('../middlewares/auth');
 const jobController = require('../controllers/job.controller');
-const { auth } = require('../../../middleware/auth');
-const { roleCheck } = require('../../../middleware/roleCheck');
+const jobValidation = require('../validations/job.validation');
+
+const router = express.Router();
 
 // Public routes
 router.get('/', jobController.getJobs);
 router.get('/:id', jobController.getJobById);
 
-// Protected routes for authenticated users
-router.use(auth());
+// Protected routes
+router.use(authenticateUser);
 
-// Job creation and management - requires 'hirer' role
-router.post('/', roleCheck(['hirer', 'admin']), jobController.createJob);
-router.put('/:id', roleCheck(['hirer', 'admin']), jobController.updateJob);
-router.delete('/:id', roleCheck(['hirer', 'admin']), jobController.deleteJob);
-router.patch('/:id/status', roleCheck(['hirer', 'admin']), jobController.changeJobStatus);
+// Hirer only routes
+router.post(
+  '/',
+  authorizeRoles('hirer'),
+  validate(jobValidation.createJob),
+  jobController.createJob
+);
 
-// Job metrics for data visualization
-router.get('/:id/metrics', roleCheck(['hirer', 'admin']), jobController.getJobMetrics);
+router.get('/my-jobs', authorizeRoles('hirer'), jobController.getMyJobs);
+
+router.put(
+  '/:id',
+  authorizeRoles('hirer'),
+  validate(jobValidation.updateJob),
+  jobController.updateJob
+);
+
+router.delete('/:id', authorizeRoles('hirer'), jobController.deleteJob);
+
+router.patch(
+  '/:id/status',
+  authorizeRoles('hirer'),
+  validate(jobValidation.changeJobStatus),
+  jobController.changeJobStatus
+);
 
 module.exports = router; 

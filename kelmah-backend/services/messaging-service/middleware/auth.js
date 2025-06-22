@@ -1,69 +1,39 @@
-/**
- * Authentication Middleware
- */
-
 const jwt = require('jsonwebtoken');
-const config = require('../config');
-const logger = require('../utils/logger');
+const { MessagingServiceError } = require('../utils/errorHandler');
 
-module.exports = async (req, res, next) => {
+exports.authenticate = async (req, res, next) => {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required. No valid token provided.'
-      });
+      throw new MessagingServiceError('No token provided', 401);
     }
-    
+
     const token = authHeader.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required. No valid token provided.'
-      });
-    }
-    
-    // Verify the token
+
     try {
-      const decoded = jwt.verify(token, config.jwt.secret);
-      
-      // Attach user data to request object
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
-      
-      // Continue to next middleware/route handler
-      return next();
+      next();
     } catch (error) {
-      // Log error details
-      logger.error(`Token verification failed: ${error.message}`, { error });
-      
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Token expired. Please login again.'
-        });
-      }
-      
-      if (error.name === 'JsonWebTokenError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid token. Please login again.'
-        });
-      }
-      
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication failed. Please login again.'
-      });
+      throw new MessagingServiceError('Invalid token', 401);
     }
   } catch (error) {
-    logger.error(`Authentication middleware error: ${error.message}`, { error });
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error during authentication'
-    });
+    if (error instanceof MessagingServiceError) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Internal Server Error' });
   }
+};
+
+// Optional: Role-based authorization middleware
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: 'Not authorized to perform this action'
+      });
+    }
+    next();
+  };
 }; 

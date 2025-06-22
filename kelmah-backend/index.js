@@ -90,26 +90,26 @@ function startService(service) {
   }
   
   // Spawn the process
-  const process = spawn('node', [service.script], {
+  const proc = spawn('node', [service.script], {
     cwd: service.path,
     stdio: 'pipe',
     env: { ...process.env, SERVICE_NAME: service.name }
   });
   
   // Add to running processes
-  runningProcesses.set(service.name, process);
+  runningProcesses.set(service.name, proc);
   
   // Handle process output
-  process.stdout.on('data', (data) => {
+  proc.stdout.on('data', (data) => {
     console.log(`${service.color}[${service.name}] ${data.toString().trim()}${colors.reset}`);
   });
   
-  process.stderr.on('data', (data) => {
+  proc.stderr.on('data', (data) => {
     console.error(`${colors.red}[${service.name}] ${data.toString().trim()}${colors.reset}`);
   });
   
   // Handle process exit
-  process.on('exit', (code) => {
+  proc.on('exit', (code) => {
     console.log(`${service.color}[${service.name}] Process exited with code ${code}${colors.reset}`);
     runningProcesses.delete(service.name);
     

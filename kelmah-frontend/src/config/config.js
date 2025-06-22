@@ -1,18 +1,47 @@
 /**
- * Configuration values for the application
+ * Configuration Constants
+ * 
+ * Core application configuration constants that are not sensitive to environment changes.
+ * These values provide default fallbacks for important configuration settings.
  */
 
-// API configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-export const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8080';
-
-// Authentication configuration
+// Authentication keys for local storage - used across the application 
 export const JWT_LOCAL_STORAGE_KEY = 'kelmah_auth_token';
-export const JWT_REFRESH_KEY = 'kelmah_refresh_token';
+export const REFRESH_TOKEN_KEY = 'kelmah_refresh_token';
 export const AUTH_USER_KEY = 'kelmah_user';
 
-// File upload configuration
+// API configuration
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export const API_BASE_URL = `${baseUrl}/api`;
+export const WS_URL = baseUrl;
+
+// Application-level constants
+export const APP_NAME = 'Kelmah';
+export const APP_VERSION = '1.0.0';
+
+// System-wide constants
+export const TOKEN_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
+export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+export const ALLOWED_FILE_FORMATS = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'];
+export const MAX_DESCRIPTION_LENGTH = 1000;
+
+// Default timeout values
+export const REQUEST_TIMEOUT = 30000; // 30 seconds
+export const SOCKET_TIMEOUT = 60000; // 60 seconds
+
+// UI constants
+export const ANIMATION_DURATION = 300; // ms
+export const TOAST_DURATION = 5000; // 5 seconds
+export const DEFAULT_THEME = 'light';
+
+// Navigation constants
+export const HOME_ROUTE = '/';
+export const DASHBOARD_ROUTE = '/dashboard';
+export const LOGIN_ROUTE = '/login';
+export const REGISTER_ROUTE = '/register';
+
+// File upload configuration
 export const ALLOWED_FILE_TYPES = [
   'image/jpeg',
   'image/png',
@@ -34,7 +63,6 @@ export const FEATURES = {
 };
 
 // Default pagination
-export const DEFAULT_PAGE_SIZE = 10;
 export const DEFAULT_PAGE = 1;
 
 // Date format options

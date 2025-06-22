@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # Frontend Web Application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kelmah-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost/api
+      - VITE_WS_URL=ws://localhost/ws
+    networks:
+      - kelmah-network
+
+# Network configuration - should match the backend network
+networks:
+  kelmah-network:
+    external: true 

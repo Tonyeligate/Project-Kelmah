@@ -1,64 +1,28 @@
 /**
- * Models Index
- * Initializes and exports all database models
+ * Auth Service Models Index
+ * Exports all models and defines associations
  */
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const UserModel = require('./user.model')(sequelize);
+const sequelize = require('../../../src/config/db').sequelize;
 
-// Create a RefreshToken model
-const RefreshToken = sequelize.define('RefreshToken', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
-  },
-  userId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'Users',
-      key: 'id'
-    }
-  },
-  token: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
-  },
-  expiresAt: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
-  isRevoked: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
-  },
-  createdByIp: {
-    type: DataTypes.STRING
-  }
-}, {
-  indexes: [
-    {
-      name: 'refresh_token_user_idx',
-      fields: ['userId']
-    },
-    {
-      name: 'refresh_token_token_idx',
-      fields: ['token']
-    }
-  ]
-});
+// Import models
+const RefreshToken = require('./RefreshToken')(sequelize);
 
-// Set up associations
-UserModel.hasMany(RefreshToken, { foreignKey: 'userId' });
-RefreshToken.belongsTo(UserModel, { foreignKey: 'userId' });
+// Import User model from user-service
+// In a real microservice architecture, this would be handled differently
+// For now, we're sharing models between services for simplicity
+const User = require('../../../services/user-service/models/User')(sequelize);
 
-// Define the models object to export
-const models = {
-  User: UserModel,
-  RefreshToken
+// Define associations
+User.hasMany(RefreshToken, { foreignKey: 'userId' });
+RefreshToken.belongsTo(User, { foreignKey: 'userId' });
+
+// Define model associate methods
+if (RefreshToken.associate) RefreshToken.associate();
+
+module.exports = {
+  RefreshToken,
+  // Export User for convenience in auth service
+  User
 };
-
-module.exports = models; 

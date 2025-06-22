@@ -6,14 +6,14 @@
  */
 
 // Environment variables
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174/api';
-const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:5174';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:5000';
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
 
 const env = {
   // API configuration
-  API_URL: import.meta.env.VITE_API_URL || 'http://localhost:5174',
-  SOCKET_URL: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5174',
+  API_URL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  SOCKET_URL: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000',
   
   // Feature flags
   ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',

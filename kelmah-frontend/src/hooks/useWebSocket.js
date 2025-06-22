@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAuthToken } from '../services/authService';
+import { $1 } from '../services/authService';
 
 export const useWebSocket = (url = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:3000') => {
     const [socket, setSocket] = useState(null);
@@ -70,3 +70,4 @@ export const useWebSocket = (url = process.env.REACT_APP_WEBSOCKET_URL || 'ws://
 
 // Add default export to fix import issue in useAuditNotifications.js
 export default useWebSocket;
+

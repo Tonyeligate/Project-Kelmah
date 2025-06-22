@@ -1,31 +1,16 @@
-/**
- * Conversation routes
- */
-
 const express = require('express');
 const router = express.Router();
 const conversationController = require('../controllers/conversation.controller');
-const authenticate = require('../middleware/authenticate');
+const { authenticate } = require('../middleware/auth');
 
-// All routes require authentication
+// Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Get all conversations for the current user
-router.get('/', conversationController.getConversations);
-
-// Get a specific conversation by ID
-router.get('/:conversationId', conversationController.getConversationById);
-
-// Create a new conversation
+// Conversation routes
+router.get('/', conversationController.getUserConversations);
 router.post('/', conversationController.createConversation);
-
-// Archive a conversation
-router.put('/:conversationId/archive', conversationController.archiveConversation);
-
-// Unarchive a conversation
-router.put('/:conversationId/unarchive', conversationController.unarchiveConversation);
-
-// Leave a conversation
-router.delete('/:conversationId/leave', conversationController.leaveConversation);
+router.get('/:conversationId', conversationController.getConversationDetails);
+router.patch('/:conversationId/archive', conversationController.archiveConversation);
+router.patch('/:conversationId/metadata', conversationController.updateConversationMetadata);
 
 module.exports = router; 

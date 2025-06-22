@@ -1,28 +1,15 @@
-/**
- * Message routes
- */
-
 const express = require('express');
 const router = express.Router();
 const messageController = require('../controllers/message.controller');
-const authenticate = require('../middleware/authenticate');
+const { authenticate } = require('../middleware/auth');
 
-// All routes require authentication
+// Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Get messages for a conversation
-router.get('/conversation/:conversationId', messageController.getMessages);
-
-// Send a message to a conversation
-router.post('/conversation/:conversationId', messageController.sendMessage);
-
-// Edit a message
-router.put('/:id', messageController.editMessage);
-
-// Delete a message
-router.delete('/:id', messageController.deleteMessage);
-
-// Search messages across conversations or in a specific conversation
-router.get('/search', messageController.searchMessages);
+// Message routes
+router.post('/', messageController.createMessage);
+router.get('/conversation/:conversationId', messageController.getConversationMessages);
+router.delete('/:messageId', messageController.deleteMessage);
+router.get('/unread/count', messageController.getUnreadCount);
 
 module.exports = router; 
