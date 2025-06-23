@@ -19,4 +19,11 @@ router.put(
   settingsController.updateSettings
 );
 
+// Update privacy settings
+router.put(
+  '/privacy',
+  validate(settingsValidation.updatePrivacy),
+  settingsController.updatePrivacy
+);
+
 module.exports = router; 

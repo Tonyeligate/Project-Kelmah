@@ -30,6 +30,21 @@ const SettingSchema = new Schema(
     locale: {
       type: String,
       default: 'en'
+    },
+    privacy: {
+      profileVisibility: {
+        type: String,
+        enum: ['public', 'private', 'connections'],
+        default: 'public'
+      },
+      searchVisibility: {
+        type: Boolean,
+        default: true
+      },
+      dataSharing: {
+        type: Boolean,
+        default: false
+      }
     }
   },
   {

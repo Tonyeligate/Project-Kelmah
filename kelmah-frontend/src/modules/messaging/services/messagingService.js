@@ -384,7 +384,7 @@ class MessagingService {
     async getUnreadCount() {
         try {
             const response = await axios.get(
-                `${API_BASE_URL}/api/messages/unread-count`,
+                `${API_BASE_URL}/api/messages/unread`,
                 {
                     headers: { Authorization: `Bearer ${this.token}` }
                 }

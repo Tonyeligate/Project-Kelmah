@@ -16,6 +16,7 @@ import ReviewCard from '../components/common/ReviewCard';
 import Skeleton from '@mui/material/Skeleton';
 import useAuth from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
+import Pagination from '@mui/material/Pagination';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
   <Box>
@@ -39,15 +40,26 @@ const WorkerReviewsPage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const [pagination, setPagination] = useState({ page: 1, limit, total: 0, pageCount: 1 });
+
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
-    reviewService.getUserReviews(user.id)
-      .then(({ reviews }) => setReviews(reviews))
+    reviewService.getUserReviews(user.id, page, limit)
+      .then(({ reviews, pagination }) => {
+        setReviews(reviews);
+        setPagination(pagination);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user]);
-  
+  }, [user, page]);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -121,6 +133,14 @@ const WorkerReviewsPage = () => {
           </Grid>
         </Grid>
       </Grid>
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination
+          count={pagination.pageCount}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
     </Container>
   );
 };

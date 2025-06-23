@@ -107,15 +107,15 @@ const PaymentsPage = () => {
             <Grid container spacing={3}>
                 {/* Wallet Balance */}
                 <Grid item xs={12}>
-                    <Paper sx={{
+                    <Paper sx={theme => ({
                         p: 3,
                         textAlign: 'center',
                         borderRadius: 2,
-                        background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
+                        background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
                         color: 'white',
                         border: '2px solid',
                         borderColor: 'secondary.main'
-                    }}>
+                    })}>
                         <Typography variant="h5" gutterBottom sx={{ color: 'secondary.main' }}>
                             Wallet Balance
                         </Typography>

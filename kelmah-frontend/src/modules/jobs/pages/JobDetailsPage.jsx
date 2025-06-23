@@ -223,13 +223,13 @@ const JobDetailsPage = () => {
                   <Typography 
                     variant="h3" 
                     component="h1" 
-                    sx={{ 
+                    sx={theme => ({ 
                       mb: 2,
-                      background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+                      background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       fontWeight: 'bold'
-                    }}
+                    })}
                   >
                     {job.title}
                   </Typography>

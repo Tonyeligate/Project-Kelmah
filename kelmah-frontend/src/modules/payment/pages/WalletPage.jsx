@@ -24,6 +24,14 @@ const WalletPage = () => {
     fetchTransactions(params);
     setPage(1);
   };
+  // New: clear filters
+  const clearFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setFilterType('all');
+    fetchTransactions({});
+    setPage(1);
+  };
 
   if (loading) return <Container sx={{ py: 4 }}><Skeleton variant="rectangular" height={300} /></Container>;
   if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
@@ -31,15 +39,15 @@ const WalletPage = () => {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Wallet Summary */}
-      <Paper elevation={4} sx={{
+      <Paper elevation={4} sx={theme => ({
         p: 3,
         mb: 4,
         borderRadius: 2,
-        background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
+        background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
         color: 'white',
         border: '2px solid',
         borderColor: 'secondary.main'
-      }}>
+      })}>
         <Typography variant="h6" sx={{ opacity: 0.8, color: 'secondary.main' }}>Wallet Balance</Typography>
         <Typography variant="h3" fontWeight="bold" sx={{ my: 1, color: 'secondary.main' }}>{currencyFormatter.format(walletBalance)}</Typography>
       </Paper>
@@ -61,8 +69,15 @@ const WalletPage = () => {
             <MenuItem value="withdrawal">Withdrawal</MenuItem>
           </Select>
         </FormControl>
-        <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={applyFilters}>Apply Filters</Button>
+        <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={applyFilters}>Filter</Button>
+        <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={clearFilters}>Clear</Button>
       </Box>
+      {/* Summary above transactions list */}
+      {transactions.length > 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Showing {(page - 1) * perPage + 1} - {Math.min(transactions.length, page * perPage)} of {transactions.length} transactions
+        </Typography>
+      )}
       {/* Transactions List */}
       <TransactionsList transactions={pagedTransactions} loading={loading} />
       {/* Pagination */}

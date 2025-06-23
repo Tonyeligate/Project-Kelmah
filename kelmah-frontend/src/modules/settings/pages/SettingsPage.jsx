@@ -14,10 +14,12 @@ import {
   AccountCircle as AccountCircleIcon,
   Security as SecurityIcon,
   Settings as SettingsIcon,
+  Shield as ShieldIcon,
 } from '@mui/icons-material';
 import NotificationSettings from '../components/common/NotificationSettings';
 import AccountSettings from '../components/common/AccountSettings';
 import SecuritySettings from '../components/common/SecuritySettings';
+import PrivacySettings from '../components/common/PrivacySettings';
 import { useSettings } from '../hooks/useSettings';
 
 const SettingsPage = () => {
@@ -32,6 +34,7 @@ const SettingsPage = () => {
     { component: <NotificationSettings settings={settings} loading={loading} error={error} updateNotificationPreferences={updateNotificationPreferences} />, label: 'Notifications', icon: <NotificationsIcon /> },
     { component: <AccountSettings />, label: 'Account', icon: <AccountCircleIcon /> },
     { component: <SecuritySettings />, label: 'Security & Password', icon: <SecurityIcon /> },
+    { component: <PrivacySettings />, label: 'Privacy', icon: <ShieldIcon /> },
   ];
 
   return (

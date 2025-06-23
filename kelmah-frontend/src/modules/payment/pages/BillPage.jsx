@@ -29,6 +29,16 @@ const BillPage = () => {
     setAppliedStatus(statusFilter);
     setPage(1);
   };
+  // New: clear filters
+  const clearFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setStatusFilter('all');
+    setAppliedStartDate('');
+    setAppliedEndDate('');
+    setAppliedStatus('all');
+    setPage(1);
+  };
   // Filter bills
   const filteredBills = bills.filter(b => {
     let ok = true;
@@ -120,12 +130,29 @@ const BillPage = () => {
               </Select>
             </FormControl>
           </Tooltip>
-          <Tooltip title="Apply selected filters">
+          <Tooltip title="Apply filters">
             <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={applyFilters}>Filter</Button>
+          </Tooltip>
+          <Tooltip title="Clear filters">
+            <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={clearFilters}>Clear</Button>
           </Tooltip>
         </Box>
         {/* Show error if fetch failed */}
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {loading ? (
+          <Typography>Loading bills...</Typography>
+        ) : filteredBills.length === 0 ? (
+          <Typography color="text.secondary">No bills match your filter criteria.</Typography>
+        ) : (
+          // Summary above list
+          filteredBills.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Showing {(page - 1) * perPage + 1} - {Math.min(filteredBills.length, page * perPage)} of {filteredBills.length} bills
+              </Typography>
+            </Box>
+          )
+        )}
         {loading ? (
           <Typography>Loading bills...</Typography>
         ) : filteredBills.length === 0 ? (

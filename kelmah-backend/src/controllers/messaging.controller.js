@@ -80,7 +80,12 @@ exports.sendMessage = async (req, res, next) => {
     conversation.unreadCount += 1;
     await conversation.save();
     const populated = await message.populate('sender', 'firstName lastName');
-    // Emit dashboard update for new message to conversation participants
+    // Emit new message to real-time message sockets
+    const io = req.app.get('io');
+    if (io) {
+      io.to(convoId.toString()).emit('message', populated);
+    }
+    // Emit dashboard update for new message to dashboard sockets
     const dashboardSocket = req.app.get('dashboardSocket');
     if (dashboardSocket) {
       conversation.participants.forEach(participantId => {
@@ -111,6 +116,11 @@ exports.markRead = async (req, res, next) => {
     await Message.updateMany({ conversation: convoId, sender: { $ne: userId } }, { isRead: true });
     conversation.unreadCount = 0;
     await conversation.save();
+    // Emit read receipt to real-time message sockets
+    const io = req.app.get('io');
+    if (io) {
+      io.to(convoId.toString()).emit('read', { conversationId: convoId, userId });
+    }
     return successResponse(res, 200, 'Conversation marked as read');
   } catch (error) {
     return next(error);

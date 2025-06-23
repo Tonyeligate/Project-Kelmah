@@ -60,14 +60,14 @@ const PaymentSettingsPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{
+      <Paper elevation={3} sx={theme => ({
         p: 4,
         borderRadius: 2,
-        background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
+        background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
         color: 'white',
         border: '2px solid',
         borderColor: 'secondary.main'
-      }}>
+      })}>
         <Typography variant="h4" fontWeight="bold" sx={{ mb: 3, color: 'secondary.main' }}>
           Payment Settings
         </Typography>

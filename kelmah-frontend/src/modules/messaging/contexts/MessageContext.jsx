@@ -14,6 +14,10 @@ export const useMessages = () => {
 
 export const MessageProvider = ({ children }) => {
     const { user } = useAuth();
+    // Real-time event state
+    const [typingStatus, setTypingStatus] = useState({}); // { conversationId: boolean }
+    const [readReceipts, setReadReceipts] = useState({}); // { conversationId: [userIds] }
+    const [userStatuses, setUserStatuses] = useState({}); // { userId: 'online' | 'offline' }
     const [conversations, setConversations] = useState([]);
     const [messages, setMessages] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
@@ -27,14 +31,39 @@ export const MessageProvider = ({ children }) => {
             messagingService.connect();
             loadConversations();
 
+            // Subscribe to socket events
             messagingService.onNewMessage(handleNewMessage);
+            messagingService.on('typing', handleTypingEvent);
+            messagingService.on('read', handleReadEvent);
+            messagingService.on('user_status', handleUserStatusEvent);
         }
 
         return () => {
             messagingService.disconnect();
             messagingService.offNewMessage(handleNewMessage);
+            messagingService.off('typing', handleTypingEvent);
+            messagingService.off('read', handleReadEvent);
+            messagingService.off('user_status', handleUserStatusEvent);
         };
     }, [user]);
+
+    // Handle typing indicator events
+    const handleTypingEvent = ({ conversationId, isTyping }) => {
+        setTypingStatus(prev => ({ ...prev, [conversationId]: isTyping }));
+    };
+
+    // Handle read receipt events
+    const handleReadEvent = ({ conversationId, userId: readerId }) => {
+        setReadReceipts(prev => {
+            const existing = prev[conversationId] || [];
+            return { ...prev, [conversationId]: Array.from(new Set([...existing, readerId])) };
+        });
+    };
+
+    // Handle user online/offline status
+    const handleUserStatusEvent = ({ userId: uid, status }) => {
+        setUserStatuses(prev => ({ ...prev, [uid]: status }));
+    };
 
     const handleNewMessage = (newMessage) => {
         if (selectedConversation && newMessage.conversationId === selectedConversation.id) {
@@ -126,6 +155,9 @@ export const MessageProvider = ({ children }) => {
         loadingMessages,
         sendingMessage,
         unreadCount,
+        typingStatus,
+        readReceipts,
+        userStatuses,
         selectConversation,
         sendMessage,
         createConversation,

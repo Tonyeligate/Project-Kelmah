@@ -9,6 +9,7 @@ export default defineConfig({
     include: [
       '@emotion/react',
       '@emotion/styled',
+      '@mui/styled-engine',
       '@mui/icons-material',
       '@mui/x-date-pickers',
       '@mui/material',
@@ -41,7 +42,7 @@ export default defineConfig({
     alias: {
       'react-is': path.resolve(__dirname, 'node_modules/react-is')
     },
-    dedupe: ['react', 'react-dom', 'react-is'],
+    dedupe: ['react', 'react-dom', 'react-is', '@emotion/react', '@emotion/styled', '@mui/styled-engine'],
     extensions: ['.js', '.jsx', '.json']
   }
 })

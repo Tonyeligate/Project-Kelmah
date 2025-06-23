@@ -17,6 +17,12 @@ const router = express.Router();
 router.get('/', jobController.getJobs);
 router.get('/featured', jobController.getFeaturedJobs);
 router.get('/categories', jobController.getJobCategories);
+
+// Add static saved jobs routes before the param route so '/saved' matches correctly
+router.get('/saved', authenticateUser, authorizeRoles('worker'), savedJobsController.getSavedJobs);
+router.post('/:id/save', authenticateUser, authorizeRoles('worker'), savedJobsController.saveJob);
+router.delete('/:id/save', authenticateUser, authorizeRoles('worker'), savedJobsController.unsaveJob);
+
 router.get('/:id', jobController.getJobById);
 
 // Protected routes
@@ -72,21 +78,22 @@ router.put(
   applicationController.updateApplicationStatus
 );
 
-// Saved jobs routes for workers
-router.post(
-  '/:id/save',
-  authorizeRoles('worker'),
-  savedJobsController.saveJob
-);
-router.delete(
-  '/:id/save',
-  authorizeRoles('worker'),
-  savedJobsController.unsaveJob
-);
-router.get(
-  '/saved',
-  authorizeRoles('worker'),
-  savedJobsController.getSavedJobs
-);
+// Comment out old saved jobs routes to prevent matching issues
+// // Saved jobs routes for workers
+// router.post(
+//   '/:id/save',
+//   authorizeRoles('worker'),
+//   savedJobsController.saveJob
+// );
+// router.delete(
+//   '/:id/save',
+//   authorizeRoles('worker'),
+//   savedJobsController.unsaveJob
+// );
+// router.get(
+//   '/saved',
+//   authorizeRoles('worker'),
+//   savedJobsController.getSavedJobs
+// );
 
 module.exports = router; 

@@ -278,7 +278,7 @@ const AppointmentForm = ({
         <Grid item xs={12}>
           <Divider sx={{ my: 2 }} />
           <Typography variant="h6" sx={{ mb: 2 }}>Appointment Preview</Typography>
-          <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1, bgcolor: 'background.paper' }}>
+          <Box sx={(theme) => ({ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 1, bgcolor: 'background.paper' })}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Typography variant="body2" color="text.secondary">Job:</Typography>

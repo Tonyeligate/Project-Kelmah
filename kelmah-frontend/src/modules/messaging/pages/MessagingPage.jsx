@@ -86,7 +86,7 @@ const MessagingPage = () => {
     );
 
     return (
-        <Box sx={{ height: 'calc(100vh - 64px)', p: { xs: 1, sm: 2, md: 3 }, background: '#111' }}>
+        <Box sx={{ height: 'calc(100vh - 64px)', p: { xs: 1, sm: 2, md: 3 }, bgcolor: 'primary.main' }}>
             <Grid container spacing={2} sx={{ height: '100%' }}>
                 {isMobile ? (
                     selectedConversation ? (

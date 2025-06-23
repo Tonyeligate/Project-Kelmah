@@ -25,16 +25,19 @@ const WorkerDashboardPage = () => {
   
   return (
     <>
-      <Box sx={{ mb: 4, borderBottom: '1px solid rgba(255, 215, 0, 0.1)', pb: 2 }}>
-        <Typography variant="h3" fontWeight={800} color={theme.palette.secondary.main} sx={{ mb: 1, letterSpacing: 0.5 }}>
-          Welcome back, {displayUser?.firstName || displayUser?.name || 'Demo'}!
-        </Typography>
-        <Typography variant="subtitle1" color={theme.palette.secondary.main} fontWeight={500} sx={{ mb: 2, opacity: 0.8 }}>
-          {getProfessionalTitle()}
-        </Typography>
-        <Typography variant="h6" color={theme.palette.primary.contrastText} sx={{ opacity: 0.9 }}>
-          Ready to find your next job? Let's get to work.
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, borderBottom: '1px solid rgba(255, 215, 0, 0.1)', pb: 2 }}>
+        <Box component="img" src={workerImage} alt="Worker Avatar" sx={{ width: 80, height: 80, borderRadius: '50%', mr: 2 }} />
+        <Box>
+          <Typography variant="h3" fontWeight={800} color={theme.palette.secondary.main} sx={{ mb: 1, letterSpacing: 0.5 }}>
+            Welcome back, {displayUser?.firstName || displayUser?.name || 'Demo'}!
+          </Typography>
+          <Typography variant="subtitle1" color={theme.palette.secondary.main} fontWeight={500} sx={{ mb: 2, opacity: 0.8 }}>
+            {getProfessionalTitle()}
+          </Typography>
+          <Typography variant="h6" color={theme.palette.primary.contrastText} sx={{ opacity: 0.9 }}>
+            Ready to find your next job? Let's get to work.
+          </Typography>
+        </Box>
       </Box>
       <WorkerDashboard user={displayUser} />
     </>

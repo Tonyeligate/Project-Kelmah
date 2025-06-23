@@ -4,7 +4,7 @@ module.exports = {
     {
       displayName: 'frontend',
       testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/frontend/**/*.test.{js,jsx,ts,tsx}'],
+      testMatch: ['<rootDir>/kelmah-frontend/src/**/*.test.{js,jsx,ts,tsx}'],
       moduleNameMapper: {
         // Handle module aliases and CSS/asset imports
         '^@/(.*)$': '<rootDir>/frontend/src/$1',
@@ -31,7 +31,7 @@ module.exports = {
     {
       displayName: 'backend',
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/backend/**/*.test.{js,ts}'],
+      testMatch: ['<rootDir>/kelmah-backend/tests/**/*.test.{js,ts}'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/backend/src/$1'
       },

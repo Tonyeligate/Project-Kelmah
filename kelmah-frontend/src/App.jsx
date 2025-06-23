@@ -48,6 +48,7 @@ import WorkerSearchPage from './modules/hirer/pages/WorkerSearchPage';
 import JobsPage from './modules/jobs/pages/JobsPage';
 import WorkerProfile from './modules/worker/components/WorkerProfile';
 import publicRoutes from './routes/publicRoutes';
+import { ContractProvider } from './modules/contracts/contexts/ContractContext';
 
 // Simple wrapper component to fix the missing TempSchedulingPage reference
 const TempSchedulingPage = () => <SchedulingPage />;
@@ -194,7 +195,8 @@ function App() {
     return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-          <Layout>
+      <ContractProvider>
+        <Layout>
                 <Routes>
               {/* Public routes */}
               {publicRoutes}
@@ -338,7 +340,7 @@ function App() {
                   >
                     <WorkerProfile />
                   </ProtectedRoute>
-                }
+                } 
               />
               
               <Route 
@@ -513,7 +515,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              
+                    
               {/* Worker payment routes */}
               <Route 
                 path="/worker/payment" 
@@ -584,7 +586,8 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
           </Layout>
-                                </ThemeProvider>
+        </ContractProvider>
+      </ThemeProvider>
     );
 }
 

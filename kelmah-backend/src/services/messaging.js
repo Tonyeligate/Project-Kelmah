@@ -8,13 +8,22 @@ const Conversation = require('../models/Conversation');
 function setupSocket(io) {
   io.on('connection', (socket) => {
     console.log('Client connected to messaging socket:', socket.id);
+    // Broadcast user online status
+    const userId = socket.handshake.query.userId || (socket.handshake.auth && socket.handshake.auth.userId);
+    if (userId) {
+      socket.broadcast.emit('user_status', { userId, status: 'online' });
+    }
 
-    // Join a conversation room
-    socket.on('joinConversation', (conversationId) => {
+    // Join a conversation room (underscore naming to match frontend)
+    socket.on('join_conversation', ({ conversationId }) => {
       socket.join(conversationId.toString());
     });
+    // Leave a conversation room
+    socket.on('leave_conversation', ({ conversationId }) => {
+      socket.leave(conversationId.toString());
+    });
 
-    // Handle incoming messages
+    // Handle incoming messages (if using socket emit) - optional push; typically HTTP endpoint also sends
     socket.on('message', async ({ conversationId, content, attachments, senderId }) => {
       try {
         // Save message
@@ -42,9 +51,19 @@ function setupSocket(io) {
       socket.to(conversationId.toString()).emit('typing', { conversationId, isTyping });
     });
 
+    // Handle read receipts sent via socket (optional if not using HTTP)
+    socket.on('read', ({ conversationId, userId: readerId }) => {
+      // Broadcast read event to others
+      socket.to(conversationId.toString()).emit('read', { conversationId, userId: readerId });
+    });
+
     // Handle disconnect
     socket.on('disconnect', (reason) => {
       console.log('Client disconnected from messaging socket:', socket.id, reason);
+      // Broadcast user offline status
+      if (userId) {
+        socket.broadcast.emit('user_status', { userId, status: 'offline' });
+      }
     });
   });
 }

@@ -43,7 +43,7 @@ import {
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 
-const JobSearchPage = () => {
+const JobApplicationPage = () => {
   const theme = useTheme();
   const [jobs, setJobs] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -387,4 +387,4 @@ const JobSearchPage = () => {
   );
 };
 
-export default JobSearchPage;
+export default JobApplicationPage;
