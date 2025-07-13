@@ -8,7 +8,7 @@ const authController = require("../controllers/auth.controller");
 const { authenticate } = require("../middlewares/auth");
 const { createLimiter } = require("../middlewares/rateLimiter");
 const { validate } = require("../utils/validation");
-const passport = require("../../../src/config/passport");
+const passport = require("../config/passport");
 const { logger } = require("../utils/logger");
 
 const router = express.Router();
