@@ -8,7 +8,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-const config = require("../../src/config");
+const config = require("./config");
 const { notFound } = require("../../src/utils/errorTypes");
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
