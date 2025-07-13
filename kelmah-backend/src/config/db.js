@@ -16,6 +16,14 @@ const options = {
 
 // Get connection string from environment variables
 const getConnectionString = () => {
+  // Use single connection URL if provided
+  if (process.env.AUTH_MONGO_URI) {
+    return process.env.AUTH_MONGO_URI;
+  }
+  if (process.env.MONGO_URI) {
+    return process.env.MONGO_URI;
+  }
+  // Fallback to legacy individual credentials
   const dbHost = process.env.DB_HOST || 'localhost';
   const dbPort = process.env.DB_PORT || '27017';
   const dbName = process.env.DB_NAME || 'kelmah';
@@ -37,6 +45,18 @@ const sqlDbName = process.env.SQL_DB_NAME || 'kelmah';
 const sqlUser = process.env.SQL_DB_USER || '';
 const sqlPassword = process.env.SQL_DB_PASSWORD || '';
 const getSQLConnectionString = () => {
+  // Use single connection URL if provided
+  if (process.env.SQL_URL) {
+    return process.env.SQL_URL;
+  }
+  // Service-specific URLs
+  if (process.env.AUTH_SQL_URL) {
+    return process.env.AUTH_SQL_URL;
+  }
+  if (process.env.JOB_SQL_URL) {
+    return process.env.JOB_SQL_URL;
+  }
+  // Fallback to legacy individual credentials
   if (sqlUser && sqlPassword) {
     return `${sqlDialect}://${sqlUser}:${sqlPassword}@${sqlHost}:${sqlPort}/${sqlDbName}`;
   }
