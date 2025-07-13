@@ -56,6 +56,9 @@ const getSQLConnectionString = () => {
   if (process.env.JOB_SQL_URL) {
     return process.env.JOB_SQL_URL;
   }
+  if (process.env.USER_SQL_URL) {
+    return process.env.USER_SQL_URL;
+  }
   // Fallback to legacy individual credentials
   if (sqlUser && sqlPassword) {
     return `${sqlDialect}://${sqlUser}:${sqlPassword}@${sqlHost}:${sqlPort}/${sqlDbName}`;

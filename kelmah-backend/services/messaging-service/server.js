@@ -1,14 +1,15 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
 
 // Import routes
-const messageRoutes = require('./routes/message.routes');
-const conversationRoutes = require('./routes/conversation.routes');
-const notificationRoutes = require('./routes/notification.routes');
+const messageRoutes = require("./routes/message.routes");
+const conversationRoutes = require("./routes/conversation.routes");
+const notificationRoutes = require("./routes/notification.routes");
 
 // Create Express app
 const app = express();
@@ -16,39 +17,40 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/messages', messageRoutes);
-app.use('/api/conversations', conversationRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/conversations", conversationRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
-    message: 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: "Internal Server Error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false
-})
+const mongoUri = process.env.MESSAGING_MONGO_URI || process.env.MONGODB_URI;
+mongoose
+  .connect(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+  })
   .then(() => {
-    console.log('Connected to MongoDB');
-    
+    console.log("Connected to MongoDB");
+
     // Start server
     const PORT = process.env.PORT || 3003;
     app.listen(PORT, () => {
@@ -56,13 +58,13 @@ mongoose.connect(process.env.MONGODB_URI, {
     });
   })
   .catch((error) => {
-    console.error('MongoDB connection error:', error);
+    console.error("MongoDB connection error:", error);
     process.exit(1);
   });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Promise Rejection:', err);
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err);
   // Close server & exit process
   process.exit(1);
 });

@@ -3,18 +3,30 @@
  * Handles user profile management, settings, and user-related operations
  */
 
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
-const config = require('../../src/config');
-const { notFound } = require('../../src/utils/errorTypes');
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const config = require("../../src/config");
+const { notFound } = require("../../src/utils/errorTypes");
+
+// Database connection and model initialization
+const { sequelize } = require("../../src/config/db");
+const initUserModel = require("./models/User");
+const initSettingModel = require("./models/Setting");
+const initNotificationModel = require("./models/Notification");
+
+const User = initUserModel(sequelize);
+const Setting = initSettingModel(sequelize);
+const Notification = initNotificationModel(sequelize);
 
 // Import routes
-const userRoutes = require('./routes/user.routes');
-const profileRoutes = require('./routes/profile.routes');
-const settingsRoutes = require('./routes/settings.routes');
+const userRoutes = require("./routes/user.routes");
+const profileRoutes = require("./routes/profile.routes");
+const settingsRoutes = require("./routes/settings.routes");
 
 // Initialize express app
 const app = express();
@@ -26,41 +38,43 @@ app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 // Logging middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
 } else {
-  app.use(morgan('combined'));
+  app.use(morgan("combined"));
 }
 
 // API routes
-app.use('/api/users', userRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/settings', settingsRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.status(200).json({
-    service: 'User Service',
-    status: 'OK',
-    timestamp: new Date().toISOString()
+    service: "User Service",
+    status: "OK",
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Root endpoint with API information
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.status(200).json({
-    name: 'User Service API',
-    version: '1.0.0',
-    description: 'User management service for the Kelmah platform',
-    health: '/health'
+    name: "User Service API",
+    version: "1.0.0",
+    description: "User management service for the Kelmah platform",
+    health: "/health",
   });
 });
 
@@ -70,14 +84,14 @@ app.use(notFound);
 // Error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const status = err.status || 'error';
-  
+  const status = err.status || "error";
+
   res.status(statusCode).json({
     success: false,
     status,
     message: err.message,
     errors: err.errors || null,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });
 });
 
@@ -86,9 +100,21 @@ const PORT = process.env.USER_SERVICE_PORT || 5002;
 
 // Only start the server if this file is run directly
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`User Service running on port ${PORT}`);
-  });
+  sequelize.authenticate()
+    .then(() => {
+      console.log("User Service SQL connection established");
+      return sequelize.sync();
+    })
+    .then(() => {
+      console.log("User Service models synced");
+      app.listen(PORT, () => {
+        console.log(`User Service running on port ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error("User Service database error:", err);
+      process.exit(1);
+    });
 }
 
-module.exports = app; 
+module.exports = app;
