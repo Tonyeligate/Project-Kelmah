@@ -8,9 +8,6 @@ COPY package*.json ./
 
 RUN npm ci --only=production
 
-# Copy shared config from root into /src/config
-COPY ../../src/config /src/config
-
 COPY . .
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
