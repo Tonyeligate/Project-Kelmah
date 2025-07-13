@@ -13,7 +13,10 @@
     "helmet": "^4.6.0",
     "morgan": "^1.10.0",
     "dotenv": "^10.0.0",
-    "cookie-parser": "^1.4.5"
+    "cookie-parser": "^1.4.5",
+    "sequelize": "^6.37.0",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.0"
