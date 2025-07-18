@@ -28,9 +28,20 @@ app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
+// CORS middleware: allow dev origins freely, lock down in production
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (process.env.NODE_ENV === 'development' || !origin) {
+        // allow requests from dev server or tools like curl/postman
+        return callback(null, true);
+      }
+      const allowed = process.env.FRONTEND_URL;
+      if (origin === allowed) {
+        return callback(null, true);
+      }
+      callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
