@@ -11,20 +11,26 @@
  * @param {*} data - Response data
  * @param {Object} meta - Additional metadata (pagination, etc.)
  */
-const successResponse = (res, statusCode = 200, message = 'Success', data = null, meta = null) => {
+const successResponse = (
+  res,
+  statusCode = 200,
+  message = "Success",
+  data = null,
+  meta = null,
+) => {
   const response = {
     success: true,
-    message
+    message,
   };
-  
+
   if (data !== null) {
     response.data = data;
   }
-  
+
   if (meta !== null) {
     response.meta = meta;
   }
-  
+
   return res.status(statusCode).json(response);
 };
 
@@ -35,16 +41,21 @@ const successResponse = (res, statusCode = 200, message = 'Success', data = null
  * @param {String} message - Error message
  * @param {Array} errors - Detailed error information
  */
-const errorResponse = (res, statusCode = 500, message = 'Server Error', errors = null) => {
+const errorResponse = (
+  res,
+  statusCode = 500,
+  message = "Server Error",
+  errors = null,
+) => {
   const response = {
     success: false,
-    message
+    message,
   };
-  
+
   if (errors !== null) {
     response.errors = errors;
   }
-  
+
   return res.status(statusCode).json(response);
 };
 
@@ -58,11 +69,19 @@ const errorResponse = (res, statusCode = 500, message = 'Server Error', errors =
  * @param {Number} limit - Items per page
  * @param {Number} total - Total number of items
  */
-const paginatedResponse = (res, statusCode = 200, message = 'Success', data, page, limit, total) => {
+const paginatedResponse = (
+  res,
+  statusCode = 200,
+  message = "Success",
+  data,
+  page,
+  limit,
+  total,
+) => {
   const totalPages = Math.ceil(total / limit);
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
-  
+
   return successResponse(res, statusCode, message, data, {
     pagination: {
       page,
@@ -70,13 +89,13 @@ const paginatedResponse = (res, statusCode = 200, message = 'Success', data, pag
       total,
       totalPages,
       hasNextPage,
-      hasPrevPage
-    }
+      hasPrevPage,
+    },
   });
 };
 
 module.exports = {
   successResponse,
   errorResponse,
-  paginatedResponse
+  paginatedResponse,
 };
