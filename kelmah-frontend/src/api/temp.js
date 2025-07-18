@@ -27,11 +27,11 @@ const USE_MOCK_MODE = true; // Set to true to use mock APIs
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api',  // Hardcoded to ensure correct port
+  baseURL: API_BASE_URL, // Use configured API_BASE_URL
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
 });
 
 // Request interceptor for adding auth token
@@ -43,7 +43,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor for error handling
@@ -51,11 +51,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Handle token expiration (401 errors)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         // Implement refresh token logic here if needed
         // const refreshToken = localStorage.getItem(JWT_REFRESH_KEY);
@@ -69,9 +69,9 @@ axiosInstance.interceptors.response.use(
         window.location.href = '/login';
       }
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 
 // Export configured axios instance
@@ -82,7 +82,7 @@ export { default as authApi } from './services/authApi';
 export { default as jobsApi } from './services/jobsApi';
 
 // Use mockWorkersApi if in mock mode, otherwise use the real API
-export const workersApi = USE_MOCK_MODE 
+export const workersApi = USE_MOCK_MODE
   ? mockWorkersApiDefault
   : workersApiDefault;
 
@@ -94,4 +94,4 @@ export { notificationsApi };
 export { reviewsApi };
 export { contractsApi };
 export { searchApi };
-export { settingsApi }; 
+export { settingsApi };
