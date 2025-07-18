@@ -1,0 +1,11 @@
+services:
+  - name: auth-service
+    type: web_service
+    env: docker
+    rootDirectory: kelmah-backend/services/auth-service
+    dockerfilePath: Dockerfile
+    buildCommand: npm ci --only=production
+    startCommand: node server.js
+    plan: free
+    autoDeploy: true
+    version: 1 
