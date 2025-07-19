@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 
 // https://vitejs.dev/config/
@@ -20,7 +21,8 @@ export default defineConfig({
   define: {
     'process.env': {
       NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-      VITE_API_URL: JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8080')
+      VITE_API_URL: JSON.stringify(process.env.VITE_API_URL || 'http://localhost:5000'),
+      VITE_MESSAGING_URL: JSON.stringify(process.env.VITE_MESSAGING_URL || 'http://localhost:3003')
     }
   },
   build: {
@@ -36,6 +38,17 @@ export default defineConfig({
         path.resolve(__dirname),
         path.resolve(__dirname, '..')
       ]
+    },
+    proxy: {
+      '/api': {
+        target: 'https://kelmah-auth-service.onrender.com',
+        changeOrigin: true
+      },
+      '/ws': {
+        target: process.env.VITE_MESSAGING_URL || 'http://localhost:3003',
+        ws: true,
+        changeOrigin: true
+      }
     }
   },
   resolve: {

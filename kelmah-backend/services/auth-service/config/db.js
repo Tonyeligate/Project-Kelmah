@@ -30,11 +30,16 @@ const getConnectionString = () => {
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
   
-  if (dbUser && dbPassword) {
-    return `mongodb://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+  let scheme = 'mongodb://';
+  if (dbHost.includes('mongodb.net') || dbHost.includes('cloud.mongodb.com')) {
+    scheme = 'mongodb+srv://';
   }
   
-  return `mongodb://${dbHost}:${dbPort}/${dbName}`;
+  if (dbUser && dbPassword) {
+    return `${scheme}${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+  }
+  
+  return `${scheme}${dbHost}:${dbPort}/${dbName}`;
 };
 
 // Sequelize (SQL) database setup
