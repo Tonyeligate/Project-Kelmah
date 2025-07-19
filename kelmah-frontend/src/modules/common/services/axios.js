@@ -1,9 +1,13 @@
 import axios from 'axios';
 import { API_BASE_URL, TOKEN_KEY } from '../../../config';
 
+// In development, use Vite's proxy to avoid CORS; in production, hit the real API_BASE_URL
+const isDevelopment = import.meta.env.MODE === 'development';
+const baseURL = isDevelopment ? '/api' : API_BASE_URL;
+
 // Create an axios instance with default config
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL,
   timeout: 30000, // 30 seconds
   headers: {
     'Content-Type': 'application/json',
