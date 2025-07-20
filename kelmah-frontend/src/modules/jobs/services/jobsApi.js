@@ -48,7 +48,7 @@ const jobsApi = {
    */
   createJob: async (jobData) => {
     try {
-      const response = await axiosInstance.post('/api/jobs', jobData);
+      const response = await axiosInstance.post('/jobs', jobData);
       return response.data;
     } catch (error) {
       console.error('Error creating job:', error);
@@ -94,7 +94,10 @@ const jobsApi = {
    */
   applyForJob: async (jobId, applicationData) => {
     try {
-      const response = await axiosInstance.post(`/api/jobs/${jobId}/apply`, applicationData);
+      const response = await axiosInstance.post(
+        `/api/jobs/${jobId}/apply`,
+        applicationData,
+      );
       return response.data;
     } catch (error) {
       console.error(`Error applying for job ${jobId}:`, error);
@@ -109,7 +112,7 @@ const jobsApi = {
    */
   saveJob: async (jobId) => {
     try {
-      const response = await axiosInstance.post(`/api/jobs/${jobId}/save`);
+      const response = await axiosInstance.post(`/jobs/${jobId}/save`);
       return response.data;
     } catch (error) {
       console.error(`Error saving job ${jobId}:`, error);
@@ -148,7 +151,7 @@ const jobsApi = {
       console.error('Error fetching saved jobs:', error);
       throw error;
     }
-  }
+  },
 };
 
 // Helper to transform raw job data for list view
@@ -160,15 +163,17 @@ const transformJobListItem = (rawJob) => {
     category: rawJob.category,
     skills: rawJob.skills || [],
     budget: rawJob.budget,
-    location: rawJob.location && rawJob.location.city
-      ? `${rawJob.location.city}, ${rawJob.location.country}`
-      : rawJob.location?.type || '',
+    location:
+      rawJob.location && rawJob.location.city
+        ? `${rawJob.location.city}, ${rawJob.location.country}`
+        : rawJob.location?.type || '',
     postedDate: rawJob.createdAt || rawJob.postedDate,
     // Provide hirer info if available
     hirer: rawJob.hirer || {},
-    hirerName: rawJob.hirer?.firstName && rawJob.hirer?.lastName
-      ? `${rawJob.hirer.firstName} ${rawJob.hirer.lastName}`
-      : rawJob.hirer?.name || '',
+    hirerName:
+      rawJob.hirer?.firstName && rawJob.hirer?.lastName
+        ? `${rawJob.hirer.firstName} ${rawJob.hirer.lastName}`
+        : rawJob.hirer?.name || '',
     hirerRating: rawJob.hirer?.rating || rawJob.hirerRating || 0,
   };
 };
@@ -181,14 +186,19 @@ const transformJobDetail = (rawJob) => {
     description: rawJob.description,
     category: rawJob.category,
     skills: rawJob.skills || [],
-    location: rawJob.location && rawJob.location.city
-      ? `${rawJob.location.city}, ${rawJob.location.country}`
-      : rawJob.location?.type || '',
+    location:
+      rawJob.location && rawJob.location.city
+        ? `${rawJob.location.city}, ${rawJob.location.country}`
+        : rawJob.location?.type || '',
     minRate: rawJob.budget,
     maxRate: rawJob.budget,
     rateType: rawJob.paymentType || rawJob.rateType || 'fixed',
     postedDate: rawJob.createdAt || rawJob.postedDate,
-    applicants: rawJob.proposalCount || rawJob.proposals?.length || rawJob.applicants || 0,
+    applicants:
+      rawJob.proposalCount ||
+      rawJob.proposals?.length ||
+      rawJob.applicants ||
+      0,
     status: rawJob.status,
     images: rawJob.attachments?.map((att) => att.url) || rawJob.images || [],
     deadline: rawJob.endDate
@@ -198,14 +208,15 @@ const transformJobDetail = (rawJob) => {
     hirer: {
       id: rawJob.hirer?.id || rawJob.hirer?._id,
       avatar: rawJob.hirer?.profileImage || rawJob.hirer?.avatar || '',
-      name: rawJob.hirer?.firstName && rawJob.hirer?.lastName
-        ? `${rawJob.hirer.firstName} ${rawJob.hirer.lastName}`
-        : rawJob.hirer?.name || '',
+      name:
+        rawJob.hirer?.firstName && rawJob.hirer?.lastName
+          ? `${rawJob.hirer.firstName} ${rawJob.hirer.lastName}`
+          : rawJob.hirer?.name || '',
       rating: rawJob.hirer?.rating || rawJob.hirerRating || 0,
       reviews: rawJob.hirer?.reviews || 0,
       jobsPosted: rawJob.hirer?.jobCount || rawJob.hirer?.jobsPosted || 0,
-    }
+    },
   };
 };
 
-export default jobsApi; 
+export default jobsApi;

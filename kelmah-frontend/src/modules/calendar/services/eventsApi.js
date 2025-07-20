@@ -25,7 +25,7 @@ const eventsApi = {
    */
   createEvent: async (eventData) => {
     try {
-      const response = await axiosInstance.post('/api/events', eventData);
+      const response = await axiosInstance.post('/events', eventData);
       return response.data;
     } catch (error) {
       console.error('Error creating event:', error);
@@ -41,7 +41,10 @@ const eventsApi = {
    */
   updateEvent: async (eventId, eventData) => {
     try {
-      const response = await axiosInstance.put(`/api/events/${eventId}`, eventData);
+      const response = await axiosInstance.put(
+        `/api/events/${eventId}`,
+        eventData,
+      );
       return response.data;
     } catch (error) {
       console.error('Error updating event:', error);
@@ -61,7 +64,7 @@ const eventsApi = {
       console.error('Error deleting event:', error);
       throw error;
     }
-  }
+  },
 };
 
-export default eventsApi; 
+export default eventsApi;

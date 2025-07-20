@@ -5,9 +5,12 @@ class ReviewService {
   async getUserReviews(userId, page = 1, limit = 10) {
     try {
       // Call backend for reviews of a worker
-      const response = await axiosInstance.get(`/api/reviews/worker/${userId}`, {
-        params: { page, limit }
-      });
+      const response = await axiosInstance.get(
+        `/api/reviews/worker/${userId}`,
+        {
+          params: { page, limit },
+        },
+      );
       const raw = response.data;
       const reviews = raw.data || [];
       const pagination = raw.meta?.pagination || {};
@@ -22,7 +25,7 @@ class ReviewService {
   async getJobReviews(jobId, page = 1, limit = 10) {
     try {
       const response = await axiosInstance.get(`/api/reviews/job/${jobId}`, {
-        params: { page, limit }
+        params: { page, limit },
       });
       const raw = response.data;
       const reviews = raw.data || [];
@@ -40,7 +43,7 @@ class ReviewService {
   // Create a new review
   async createReview(reviewData) {
     try {
-      const response = await axiosInstance.post('/api/reviews', reviewData);
+      const response = await axiosInstance.post('/reviews', reviewData);
       return response.data.data;
     } catch (error) {
       console.error('Error creating review:', error);
@@ -51,7 +54,10 @@ class ReviewService {
   // Update a review
   async updateReview(reviewId, reviewData) {
     try {
-      const response = await axiosInstance.put(`/api/reviews/${reviewId}`, reviewData);
+      const response = await axiosInstance.put(
+        `/api/reviews/${reviewId}`,
+        reviewData,
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating review:', error);
