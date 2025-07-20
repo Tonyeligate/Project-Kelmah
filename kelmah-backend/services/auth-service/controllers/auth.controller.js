@@ -20,6 +20,8 @@ const logger = require("../utils/logger");
  * Register a new user
  */
 exports.register = async (req, res, next) => {
+  // DEBUG: log payload for troubleshooting
+  console.log('Register payload:', req.body);
   try {
     const { firstName, lastName, email, phone, password, role } = req.body;
     const missing = [];
