@@ -42,6 +42,10 @@ const getConnectionString = () => {
   return `${scheme}${dbHost}:${dbPort}/${dbName}`;
 };
 
+// DEBUG: Log MongoDB connection string
+const mongoConnString = getConnectionString();
+console.log('DEBUG: MongoDB will connect with:', mongoConnString);
+
 // Sequelize (SQL) database setup
 const sqlDialect = process.env.SQL_DIALECT || 'postgres';
 const sqlHost = process.env.SQL_DB_HOST || 'localhost';
@@ -70,6 +74,9 @@ const getSQLConnectionString = () => {
   }
   return `${sqlDialect}://${sqlHost}:${sqlPort}/${sqlDbName}`;
 };
+// DEBUG: Log SQL connection string
+const sqlConnString = getSQLConnectionString();
+console.log('DEBUG: SQL will connect with:', sqlConnString);
 const sequelize = new Sequelize(getSQLConnectionString(), {
   dialect: sqlDialect,
   logging: false,
