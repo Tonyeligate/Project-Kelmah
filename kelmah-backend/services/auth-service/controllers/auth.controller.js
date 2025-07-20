@@ -22,8 +22,13 @@ const logger = require("../utils/logger");
 exports.register = async (req, res, next) => {
   try {
     const { firstName, lastName, email, phone, password, role } = req.body;
-    if (!firstName || !lastName || !email || !password) {
-      return next(new AppError("Missing required fields", 400));
+    const missing = [];
+    if (!firstName) missing.push('firstName');
+    if (!lastName) missing.push('lastName');
+    if (!email) missing.push('email');
+    if (!password) missing.push('password');
+    if (missing.length > 0) {
+      return next(new AppError(`Missing required fields: ${missing.join(', ')}`, 400));
     }
     const userRole = ["worker", "hirer"].includes(role) ? role : "worker";
     const existingUser = await User.findByEmail(email);
