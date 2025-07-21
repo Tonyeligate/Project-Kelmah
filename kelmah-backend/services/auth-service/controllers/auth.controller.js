@@ -48,17 +48,27 @@ exports.register = async (req, res, next) => {
     newUser.generateVerificationToken();
     await newUser.save();
     const verificationUrl = `${config.frontendUrl}/verify-email?token=${newUser.emailVerificationToken}`;
-    await emailService.sendVerificationEmail({
-      name: `${newUser.firstName} ${newUser.lastName}`,
-      email: newUser.email,
-      verificationUrl,
-    });
+    try {
+      await emailService.sendVerificationEmail({
+        name: `${newUser.firstName} ${newUser.lastName}`,
+        email: newUser.email,
+        verificationUrl,
+      });
+    } catch (mailErr) {
+      // Log but don't fail the registration if email can't be sent
+      console.error('Verification email failed:', mailErr.message);
+    }
     return res.status(201).json({
       success: true,
       message:
         "Registration successful, please check your email to verify your account.",
     });
   } catch (error) {
+    // Handle unique constraint (email, phone duplicates) gracefully
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return next(new AppError(error.errors[0].message || 'Duplicate value', 400));
+    }
+    console.error('Registration failed:', error);
     return next(new AppError(`Registration failed: ${error.message}`, 500));
   }
 };
