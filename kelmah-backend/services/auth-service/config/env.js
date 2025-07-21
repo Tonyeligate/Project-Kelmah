@@ -38,8 +38,12 @@ const config = {
   JWT_EXPIRES: process.env.JWT_EXPIRES || '1h',
   JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES || '7d',
   
-  // Email
+  // Email / SMTP
   EMAIL_FROM: process.env.EMAIL_FROM || 'no-reply@kelmah.com',
+  SMTP_HOST: process.env.SMTP_HOST || 'localhost',
+  SMTP_PORT: process.env.SMTP_PORT || '587',
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
   
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
