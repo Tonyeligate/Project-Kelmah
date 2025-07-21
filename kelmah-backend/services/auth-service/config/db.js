@@ -80,6 +80,12 @@ console.log('DEBUG: SQL will connect with:', sqlConnString);
 const sequelize = new Sequelize(getSQLConnectionString(), {
   dialect: sqlDialect,
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false  // For self-signed certs on Render
+    }
+  }
 });
 
 /**
