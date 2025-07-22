@@ -18,7 +18,9 @@ const {
   VITE_DEBUG_MODE,
 } = import.meta.env;
 // Construct API and WebSocket URLs and flags (no `/api` suffix, service methods include it)
-const API_BASE_URL = VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = VITE_API_URL
+  ? `${VITE_API_URL}/api`
+  : 'http://localhost:5000/api';
 const WS_URL = VITE_WS_URL || 'http://localhost:5000';
 const USE_MOCK_DATA = VITE_USE_MOCK_DATA !== 'false';
 
