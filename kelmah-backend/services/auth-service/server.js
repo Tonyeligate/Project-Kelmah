@@ -8,12 +8,49 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment variables from multiple locations
+console.log('Loading environment variables...');
+// Try auth-service/.env first (most specific)
+const authServiceEnvPath = path.resolve(__dirname, '.env');
+console.log(`Checking for .env at: ${authServiceEnvPath}`);
+const authServiceEnvResult = dotenv.config({ path: authServiceEnvPath });
+if (authServiceEnvResult.error) {
+  console.log(`No .env found at ${authServiceEnvPath}`);
+} else {
+  console.log(`Loaded .env from ${authServiceEnvPath}`);
+}
+
+// Try parent directories as fallback
+const parentEnvPath = path.resolve(__dirname, '../../.env');
+console.log(`Checking for .env at: ${parentEnvPath}`);
+const parentEnvResult = dotenv.config({ path: parentEnvPath });
+if (parentEnvResult.error) {
+  console.log(`No .env found at ${parentEnvPath}`);
+} else {
+  console.log(`Loaded .env from ${parentEnvPath}`);
+}
+
+// Log all important environment variables
+console.log('Environment Variables:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- PORT:', process.env.PORT);
+console.log('- FRONTEND_URL:', process.env.FRONTEND_URL);
+console.log('- JWT_SECRET:', process.env.JWT_SECRET ? '[SET]' : '[NOT SET]');
+console.log('- JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET ? '[SET]' : '[NOT SET]');
+console.log('- SMTP_HOST:', process.env.SMTP_HOST);
+console.log('- SMTP_PORT:', process.env.SMTP_PORT);
+console.log('- SMTP_USER:', process.env.SMTP_USER);
+console.log('- SMTP_PASS:', process.env.SMTP_PASS ? '[SET]' : '[NOT SET]');
+console.log('- EMAIL_FROM:', process.env.EMAIL_FROM);
+
+// Import config and other modules after environment variables are loaded
 const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
 const mongoose = require("mongoose");
 const { connectDB, sequelize } = require("./config/db");
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // Import routes
 const authRoutes = require("./routes/auth.routes");
