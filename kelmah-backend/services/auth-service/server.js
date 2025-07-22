@@ -28,9 +28,10 @@ app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
+// CORS middleware: reflect request origin to allow dynamic front-end domains
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL || "http://localhost:3000", "https://kelmah-frontend-chmscf2ak-kelmahs-projects.vercel.app"],
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
