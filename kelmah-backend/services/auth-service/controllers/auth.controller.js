@@ -47,13 +47,13 @@ exports.register = async (req, res, next) => {
     });
     newUser.generateVerificationToken();
     await newUser.save();
-    const verificationUrl = `${config.frontendUrl}/verify-email?token=${newUser.emailVerificationToken}`;
+    const verificationUrl = `${config.frontendUrl}/verify-email/${newUser.emailVerificationToken}`;
     try {
-      await emailService.sendVerificationEmail({
-        name: `${newUser.firstName} ${newUser.lastName}`,
-        email: newUser.email,
-        verificationUrl,
-      });
+    await emailService.sendVerificationEmail({
+      name: `${newUser.firstName} ${newUser.lastName}`,
+      email: newUser.email,
+      verificationUrl,
+    });
     } catch (mailErr) {
       // Log but don't fail the registration if email can't be sent
       console.error('Verification email failed:', mailErr.message);
@@ -203,7 +203,7 @@ exports.resendVerificationEmail = async (req, res, next) => {
     await user.save();
 
     // Send verification email
-    const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${config.frontendUrl}/verify-email/${verificationToken}`;
 
     await emailService.sendVerificationEmail({
       name: user.fullName,
