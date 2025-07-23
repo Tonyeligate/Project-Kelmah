@@ -9,7 +9,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const config = require("./config");
-const { notFound } = require("../../src/utils/errorTypes");
+const { notFound } = require('./utils/errorTypes');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -96,14 +96,14 @@ if (require.main === module) {
     })
     .then(() => {
       console.log('Job Service models synced');
-      app.listen(PORT, () => {
-        console.log(`Job Service running on port ${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`Job Service running on port ${PORT}`);
       });
     })
     .catch((err) => {
       console.error('Job Service database connection error:', err);
       process.exit(1);
-    });
+  });
 }
 
 module.exports = app;
