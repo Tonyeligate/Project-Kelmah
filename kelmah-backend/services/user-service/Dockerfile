@@ -25,4 +25,4 @@ ENV NODE_ENV=production
 EXPOSE 3002
 
 # Command to run the application
-CMD ["node", "services/user-service/server.js"] 
+CMD ["node", "server.js"] 
