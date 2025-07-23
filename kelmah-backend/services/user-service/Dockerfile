@@ -5,15 +5,11 @@ FROM node:16-alpine
 WORKDIR /app
 
 # Copy only this service's package files and install deps
-COPY services/user-service/package*.json ./
+COPY package*.json ./
 RUN npm install --only=production
 
-# Copy service source code
-COPY services/user-service ./
-
-# Copy shared configuration and utility modules
-COPY src/config ./src/config
-COPY src/utils  ./src/utils
+# Copy this service’s code
+COPY . .
 
 # Create a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup

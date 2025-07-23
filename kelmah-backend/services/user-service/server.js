@@ -10,11 +10,11 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-const config = require("../../src/config");
+const config = require("./config");
 const { notFound } = require("../../src/utils/errorTypes");
 
 // Database connection and model initialization
-const { sequelize } = require("../../src/config/db");
+const { sequelize } = require("./config/db");
 const initUserModel = require("./models/User");
 const initSettingModel = require("./models/Setting");
 const initNotificationModel = require("./models/Notification");
