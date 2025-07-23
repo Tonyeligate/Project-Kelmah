@@ -18,4 +18,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3004
 
-CMD ["node", "services/job-service/server.js"] 
+CMD ["npm", "start"] 
