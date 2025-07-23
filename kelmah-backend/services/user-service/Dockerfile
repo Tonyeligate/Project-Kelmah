@@ -5,7 +5,7 @@ FROM node:16-alpine
 WORKDIR /app
 
 # Copy only this service's package files and install deps
-COPY services/user-service/package*.json ./
+COPY package*.json ./
 RUN npm install --only=production
 
 # Copy service source
