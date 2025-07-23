@@ -48,6 +48,9 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/auth", authRoutes);
 
+// Backward compatibility: also mount auth routes at `/auth`
+app.use("/auth", authRoutes);
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
