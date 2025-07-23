@@ -6,7 +6,7 @@
 const { DataTypes, Op } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const config = require("../../../src/config");
+const config = require("../config");
 
 module.exports = (sequelize) => {
   const User = sequelize.define(
@@ -234,7 +234,7 @@ module.exports = (sequelize) => {
           if (user.password) {
             user.password = await bcrypt.hash(
               user.password,
-              config.bcrypt.saltRounds,
+              config.PASSWORD_HASH_ROUNDS,
             );
           }
         },
@@ -242,7 +242,7 @@ module.exports = (sequelize) => {
           if (user.changed("password")) {
             user.password = await bcrypt.hash(
               user.password,
-              config.bcrypt.saltRounds,
+              config.PASSWORD_HASH_ROUNDS,
             );
           }
         },
