@@ -4,13 +4,11 @@ FROM node:16-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy only this service's package files and install deps
 COPY package*.json ./
+RUN npm install --only=production
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy the rest of the code
+# Copy service source
 COPY . .
 
 # Create a non-root user for security
@@ -27,4 +25,4 @@ ENV NODE_ENV=production
 EXPOSE 3002
 
 # Command to run the application
-CMD ["node", "server.js"] 
+CMD ["node", "services/user-service/server.js"] 
