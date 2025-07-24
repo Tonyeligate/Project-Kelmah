@@ -11,6 +11,9 @@ RUN npm install --only=production
 # Copy this service’s code
 COPY . .
 
+# DEBUG: list current directory to verify routes are present
+RUN echo "DEBUG: Contents of /app:" && ls -R /app
+
 # Create a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 RUN chown -R appuser:appgroup /app
