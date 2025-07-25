@@ -1,22 +1,22 @@
 import React from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardActionArea, 
-  Typography, 
-  Box, 
-  Chip, 
-  Divider, 
-  Stack, 
-  Grid, 
-  Avatar, 
-  Rating
+import {
+  Card,
+  CardContent,
+  CardActionArea,
+  Typography,
+  Box,
+  Chip,
+  Divider,
+  Stack,
+  Grid,
+  Avatar,
+  Rating,
 } from '@mui/material';
-import { 
+import {
   LocationOn as LocationIcon,
   WorkOutline as WorkIcon,
   AttachMoney as AttachMoneyIcon,
-  Star as StarIcon
+  Star as StarIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
@@ -30,25 +30,25 @@ const WorkerCard = ({ worker }) => {
   };
 
   return (
-    <Card 
-      elevation={2} 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
+    <Card
+      elevation={2}
+      sx={{
+        height: '100%',
+        display: 'flex',
         flexDirection: 'column',
         transition: 'transform 0.2s, box-shadow 0.2s',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: 6
-        }
+          boxShadow: 6,
+        },
       }}
     >
       <CardActionArea onClick={handleClick} sx={{ flexGrow: 1 }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Avatar 
-              src={worker.profileImage} 
-              alt={worker.name} 
+            <Avatar
+              src={worker.profileImage}
+              alt={worker.name}
               sx={{ width: 56, height: 56, mr: 2 }}
             />
             <Box>
@@ -59,40 +59,49 @@ const WorkerCard = ({ worker }) => {
                 {worker.title || 'Freelancer'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                <Rating 
-                  value={worker.rating || 0} 
-                  precision={0.5} 
-                  size="small" 
-                  readOnly 
-                  emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
+                <Rating
+                  value={worker.rating || 0}
+                  precision={0.5}
+                  size="small"
+                  readOnly
+                  emptyIcon={
+                    <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                  }
                 />
-                <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ ml: 0.5 }}
+                >
                   ({worker.reviewCount || 0})
                 </Typography>
               </Box>
             </Box>
           </Box>
 
-          <Typography variant="body2" color="text.secondary" sx={{ 
-            minHeight: '3em',
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            mb: 2
-          }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              minHeight: '3em',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              mb: 2,
+            }}
+          >
             {worker.bio || 'No bio provided'}
           </Typography>
 
-          <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
+          >
             {worker.skills?.slice(0, 3).map((skill) => (
-              <Chip
-                key={skill}
-                label={skill}
-                size="small"
-                variant="outlined"
-              />
+              <Chip key={skill} label={skill} size="small" variant="outlined" />
             ))}
             {worker.skills?.length > 3 && (
               <Chip
@@ -108,7 +117,10 @@ const WorkerCard = ({ worker }) => {
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AttachMoneyIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
+                <AttachMoneyIcon
+                  fontSize="small"
+                  sx={{ mr: 0.5, color: 'text.secondary' }}
+                />
                 <Typography variant="body2" color="text.primary">
                   ${worker.hourlyRate || '--'}/hr
                 </Typography>
@@ -116,16 +128,24 @@ const WorkerCard = ({ worker }) => {
             </Grid>
             <Grid item xs={6}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <WorkIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
+                <WorkIcon
+                  fontSize="small"
+                  sx={{ mr: 0.5, color: 'text.secondary' }}
+                />
                 <Typography variant="body2" color="text.secondary">
-                  {worker.jobSuccess ? `${worker.jobSuccess}% Success` : 'New Worker'}
+                  {worker.jobSuccess
+                    ? `${worker.jobSuccess}% Success`
+                    : 'New Worker'}
                 </Typography>
               </Box>
             </Grid>
             {worker.location && (
               <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LocationIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
+                  <LocationIcon
+                    fontSize="small"
+                    sx={{ mr: 0.5, color: 'text.secondary' }}
+                  />
                   <Typography variant="body2" color="text.secondary" noWrap>
                     {worker.location}
                   </Typography>
@@ -151,8 +171,8 @@ WorkerCard.propTypes = {
     hourlyRate: PropTypes.number,
     jobSuccess: PropTypes.number,
     location: PropTypes.string,
-    skills: PropTypes.arrayOf(PropTypes.string)
-  }).isRequired
+    skills: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
 };
 
-export default WorkerCard; 
+export default WorkerCard;

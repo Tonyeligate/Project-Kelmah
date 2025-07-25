@@ -1,17 +1,19 @@
 /**
  * Configuration Constants
- * 
+ *
  * Core application configuration constants that are not sensitive to environment changes.
  * These values provide default fallbacks for important configuration settings.
  */
 
-// Authentication keys for local storage - used across the application 
+// Authentication keys for local storage - used across the application
 export const JWT_LOCAL_STORAGE_KEY = 'kelmah_auth_token';
 export const REFRESH_TOKEN_KEY = 'kelmah_refresh_token';
 export const AUTH_USER_KEY = 'kelmah_user';
 
+// Use Node.js environment variables for tests
+const metaEnv = process.env;
 // API configuration
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const baseUrl = metaEnv.VITE_API_URL || 'http://localhost:8080';
 export const API_BASE_URL = `${baseUrl}/api`;
 export const WS_URL = baseUrl;
 
@@ -23,7 +25,14 @@ export const APP_VERSION = '1.0.0';
 export const TOKEN_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-export const ALLOWED_FILE_FORMATS = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'];
+export const ALLOWED_FILE_FORMATS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'pdf',
+  'doc',
+  'docx',
+];
 export const MAX_DESCRIPTION_LENGTH = 1000;
 
 // Default timeout values
@@ -49,7 +58,7 @@ export const ALLOWED_FILE_TYPES = [
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain'
+  'text/plain',
 ];
 
 // Feature flags
@@ -59,7 +68,7 @@ export const FEATURES = {
   CONTRACTS: true,
   PAYMENTS: true,
   REVIEWS: true,
-  VIDEO_CALLS: false
+  VIDEO_CALLS: false,
 };
 
 // Default pagination
@@ -78,7 +87,7 @@ export const WEBSOCKET_MAX_RECONNECT_ATTEMPTS = 5;
 // Contract service configuration
 export const CONTRACT_API_URL = `${API_BASE_URL}/contracts`;
 
-// Notification service configuration 
+// Notification service configuration
 export const NOTIFICATION_API_URL = `${API_BASE_URL}/notifications`;
 
 // Messaging service configuration
@@ -92,4 +101,4 @@ export const USER_API_URL = `${API_BASE_URL}/users`;
 export const JOB_API_URL = `${API_BASE_URL}/jobs`;
 
 // Payment service configuration
-export const PAYMENT_API_URL = `${API_BASE_URL}/payments`; 
+export const PAYMENT_API_URL = `${API_BASE_URL}/payments`;

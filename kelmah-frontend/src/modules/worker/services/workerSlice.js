@@ -9,9 +9,11 @@ export const fetchWorkerProfile = createAsyncThunk(
       const response = await api.get('/api/worker/profile');
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch worker profile');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch worker profile',
+      );
     }
-  }
+  },
 );
 
 export const updateWorkerProfile = createAsyncThunk(
@@ -21,9 +23,11 @@ export const updateWorkerProfile = createAsyncThunk(
       const response = await api.put('/api/worker/profile', profileData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update worker profile');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to update worker profile',
+      );
     }
-  }
+  },
 );
 
 export const fetchWorkerSkills = createAsyncThunk(
@@ -33,9 +37,11 @@ export const fetchWorkerSkills = createAsyncThunk(
       const response = await api.get('/api/worker/skills');
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch worker skills');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch worker skills',
+      );
     }
-  }
+  },
 );
 
 export const updateWorkerSkills = createAsyncThunk(
@@ -45,9 +51,11 @@ export const updateWorkerSkills = createAsyncThunk(
       const response = await api.put('/api/worker/skills', { skills });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update worker skills');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to update worker skills',
+      );
     }
-  }
+  },
 );
 
 export const fetchWorkerJobs = createAsyncThunk(
@@ -57,33 +65,44 @@ export const fetchWorkerJobs = createAsyncThunk(
       const response = await api.get(`/api/worker/jobs?status=${status}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch worker jobs');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch worker jobs',
+      );
     }
-  }
+  },
 );
 
 export const fetchWorkerApplications = createAsyncThunk(
   'worker/fetchApplications',
   async (status = 'pending', { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/worker/applications?status=${status}`);
+      const response = await api.get(
+        `/api/worker/applications?status=${status}`,
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch worker applications');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch worker applications',
+      );
     }
-  }
+  },
 );
 
 export const submitWorkerApplication = createAsyncThunk(
   'worker/submitApplication',
   async ({ jobId, applicationData }, { rejectWithValue }) => {
     try {
-      const response = await api.post(`/api/jobs/${jobId}/apply`, applicationData);
+      const response = await api.post(
+        `/api/jobs/${jobId}/apply`,
+        applicationData,
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to submit application');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to submit application',
+      );
     }
-  }
+  },
 );
 
 export const fetchWorkerEarnings = createAsyncThunk(
@@ -93,21 +112,28 @@ export const fetchWorkerEarnings = createAsyncThunk(
       const response = await api.get(`/api/worker/earnings?period=${period}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch worker earnings');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch worker earnings',
+      );
     }
-  }
+  },
 );
 
 export const updateWorkerAvailability = createAsyncThunk(
   'worker/updateAvailability',
   async (availabilityData, { rejectWithValue }) => {
     try {
-      const response = await api.put('/api/worker/availability', availabilityData);
+      const response = await api.put(
+        '/api/worker/availability',
+        availabilityData,
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update availability');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to update availability',
+      );
     }
-  }
+  },
 );
 
 // Worker slice definition
@@ -119,23 +145,23 @@ const workerSlice = createSlice({
     jobs: {
       active: [],
       completed: [],
-      available: []
+      available: [],
     },
     applications: {
       pending: [],
       accepted: [],
-      rejected: []
+      rejected: [],
     },
     portfolio: [],
     earnings: {
       totalEarned: 0,
       pendingPayments: 0,
       recentTransactions: [],
-      monthlyData: []
+      monthlyData: [],
     },
     availability: {
       schedule: {},
-      preferences: {}
+      preferences: {},
     },
     loading: {
       profile: false,
@@ -143,7 +169,7 @@ const workerSlice = createSlice({
       jobs: false,
       applications: false,
       earnings: false,
-      availability: false
+      availability: false,
     },
     error: {
       profile: null,
@@ -151,8 +177,8 @@ const workerSlice = createSlice({
       jobs: null,
       applications: null,
       earnings: null,
-      availability: null
-    }
+      availability: null,
+    },
   },
   reducers: {
     clearWorkerErrors: (state) => {
@@ -162,21 +188,25 @@ const workerSlice = createSlice({
         jobs: null,
         applications: null,
         earnings: null,
-        availability: null
+        availability: null,
       };
     },
     addPortfolioItem: (state, action) => {
       state.portfolio.push(action.payload);
     },
     removePortfolioItem: (state, action) => {
-      state.portfolio = state.portfolio.filter(item => item.id !== action.payload);
+      state.portfolio = state.portfolio.filter(
+        (item) => item.id !== action.payload,
+      );
     },
     updatePortfolioItem: (state, action) => {
-      const index = state.portfolio.findIndex(item => item.id === action.payload.id);
+      const index = state.portfolio.findIndex(
+        (item) => item.id === action.payload.id,
+      );
       if (index !== -1) {
         state.portfolio[index] = action.payload;
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -205,7 +235,7 @@ const workerSlice = createSlice({
         state.loading.profile = false;
         state.error.profile = action.payload;
       })
-      
+
       // Skills
       .addCase(fetchWorkerSkills.pending, (state) => {
         state.loading.skills = true;
@@ -222,7 +252,7 @@ const workerSlice = createSlice({
       .addCase(updateWorkerSkills.fulfilled, (state, action) => {
         state.skills = action.payload;
       })
-      
+
       // Jobs
       .addCase(fetchWorkerJobs.pending, (state) => {
         state.loading.jobs = true;
@@ -237,7 +267,7 @@ const workerSlice = createSlice({
         state.loading.jobs = false;
         state.error.jobs = action.payload;
       })
-      
+
       // Applications
       .addCase(fetchWorkerApplications.pending, (state) => {
         state.loading.applications = true;
@@ -255,7 +285,7 @@ const workerSlice = createSlice({
       .addCase(submitWorkerApplication.fulfilled, (state, action) => {
         state.applications.pending.push(action.payload);
       })
-      
+
       // Earnings
       .addCase(fetchWorkerEarnings.pending, (state) => {
         state.loading.earnings = true;
@@ -269,7 +299,7 @@ const workerSlice = createSlice({
         state.loading.earnings = false;
         state.error.earnings = action.payload;
       })
-      
+
       // Availability
       .addCase(updateWorkerAvailability.pending, (state) => {
         state.loading.availability = true;
@@ -283,25 +313,28 @@ const workerSlice = createSlice({
         state.loading.availability = false;
         state.error.availability = action.payload;
       });
-  }
+  },
 });
 
 // Selectors
 export const selectWorkerProfile = (state) => state.worker.profile;
 export const selectWorkerSkills = (state) => state.worker.skills;
-export const selectWorkerJobs = (status) => (state) => state.worker.jobs[status];
-export const selectWorkerApplications = (status) => (state) => state.worker.applications[status];
+export const selectWorkerJobs = (status) => (state) =>
+  state.worker.jobs[status];
+export const selectWorkerApplications = (status) => (state) =>
+  state.worker.applications[status];
 export const selectWorkerEarnings = (state) => state.worker.earnings;
 export const selectWorkerAvailability = (state) => state.worker.availability;
 export const selectWorkerPortfolio = (state) => state.worker.portfolio;
-export const selectWorkerLoading = (key) => (state) => state.worker.loading[key];
+export const selectWorkerLoading = (key) => (state) =>
+  state.worker.loading[key];
 export const selectWorkerError = (key) => (state) => state.worker.error[key];
 
-export const { 
-  clearWorkerErrors, 
-  addPortfolioItem, 
-  removePortfolioItem, 
-  updatePortfolioItem 
+export const {
+  clearWorkerErrors,
+  addPortfolioItem,
+  removePortfolioItem,
+  updatePortfolioItem,
 } = workerSlice.actions;
 
-export default workerSlice.reducer; 
+export default workerSlice.reducer;

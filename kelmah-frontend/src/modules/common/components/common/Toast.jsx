@@ -1,11 +1,11 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
-import { 
-  Snackbar, 
-  Alert as MuiAlert, 
-  Button, 
-  Typography, 
-  Box 
+import {
+  Snackbar,
+  Alert as MuiAlert,
+  Button,
+  Typography,
+  Box,
 } from '@mui/material';
 
 // Custom Alert component with forward ref for Snackbar
@@ -54,38 +54,36 @@ const Toast = ({
         }}
       >
         {title && (
-          <Typography 
-            variant="subtitle1" 
-            component="div" 
-            sx={{ 
-              fontWeight: 'bold', 
-              mb: 0.5 
+          <Typography
+            variant="subtitle1"
+            component="div"
+            sx={{
+              fontWeight: 'bold',
+              mb: 0.5,
             }}
           >
             {title}
           </Typography>
         )}
-        
+
         <Typography variant="body2">{message}</Typography>
-        
+
         {action && (
-          <Box 
-            sx={{ 
-              mt: 1, 
-              display: 'flex', 
+          <Box
+            sx={{
+              mt: 1,
+              display: 'flex',
               justifyContent: 'flex-end',
-              width: '100%'
+              width: '100%',
             }}
           >
             {typeof action === 'function' ? (
-              <Button 
-                color="inherit" 
-                size="small" 
-                onClick={action}
-              >
+              <Button color="inherit" size="small" onClick={action}>
                 DISMISS
               </Button>
-            ) : action}
+            ) : (
+              action
+            )}
           </Box>
         )}
       </Alert>
@@ -106,4 +104,4 @@ Toast.propTypes = {
   fullWidth: PropTypes.bool,
 };
 
-export default Toast; 
+export default Toast;

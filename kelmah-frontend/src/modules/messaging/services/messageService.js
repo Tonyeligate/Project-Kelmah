@@ -23,7 +23,9 @@ const messageService = {
   // Create a new conversation with a user
   createConversation: async (userId) => {
     try {
-      return await apiService.post('/messages/conversations', { recipientId: userId });
+      return await apiService.post('/messages/conversations', {
+        recipientId: userId,
+      });
     } catch (error) {
       console.error('Error creating conversation:', error);
       throw error;
@@ -33,11 +35,17 @@ const messageService = {
   // Get messages for a specific conversation with pagination
   getMessages: async (conversationId, page = 1, limit = 20) => {
     try {
-      return await apiService.get(`/messages/conversations/${conversationId}/messages`, {
-        params: { page, limit }
-      });
+      return await apiService.get(
+        `/messages/conversations/${conversationId}/messages`,
+        {
+          params: { page, limit },
+        },
+      );
     } catch (error) {
-      console.error(`Error fetching messages for conversation ${conversationId}:`, error);
+      console.error(
+        `Error fetching messages for conversation ${conversationId}:`,
+        error,
+      );
       throw error;
     }
   },
@@ -47,9 +55,9 @@ const messageService = {
     try {
       const formData = new FormData();
       formData.append('content', content);
-      
+
       // Add attachments to form data
-      attachments.forEach(file => {
+      attachments.forEach((file) => {
         formData.append('files', file);
       });
 
@@ -58,9 +66,9 @@ const messageService = {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
+            'Content-Type': 'multipart/form-data',
+          },
+        },
       );
     } catch (error) {
       console.error('Error sending message:', error);
@@ -81,7 +89,9 @@ const messageService = {
   // Edit a message
   editMessage: async (messageId, content) => {
     try {
-      return await apiService.put(`/messages/messages/${messageId}`, { content });
+      return await apiService.put(`/messages/messages/${messageId}`, {
+        content,
+      });
     } catch (error) {
       console.error('Error editing message:', error);
       throw error;
@@ -91,7 +101,9 @@ const messageService = {
   // Mark all messages in a conversation as read
   markAsRead: async (conversationId) => {
     try {
-      return await apiService.put(`/messages/conversations/${conversationId}/read`);
+      return await apiService.put(
+        `/messages/conversations/${conversationId}/read`,
+      );
     } catch (error) {
       console.error('Error marking messages as read:', error);
       throw error;
@@ -101,9 +113,12 @@ const messageService = {
   // Search messages in a conversation
   searchMessages: async (conversationId, query) => {
     try {
-      return await apiService.get(`/messages/conversations/${conversationId}/search`, {
-        params: { query }
-      });
+      return await apiService.get(
+        `/messages/conversations/${conversationId}/search`,
+        {
+          params: { query },
+        },
+      );
     } catch (error) {
       console.error('Error searching messages:', error);
       throw error;
@@ -118,7 +133,7 @@ const messageService = {
       console.error('Error fetching message stats:', error);
       throw error;
     }
-  }
+  },
 };
 
-export default messageService; 
+export default messageService;

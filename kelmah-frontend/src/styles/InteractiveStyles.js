@@ -41,7 +41,8 @@ export const InteractiveCard = styled(Card)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at center, rgba(255,215,0,0.1) 0%, transparent 70%)',
+    background:
+      'radial-gradient(circle at center, rgba(255,215,0,0.1) 0%, transparent 70%)',
     opacity: 0,
     transition: 'all 0.5s ease-out',
     transform: 'scale(0.5)',
@@ -68,11 +69,12 @@ export const GlowingContainer = styled(Container)(({ theme }) => ({
     width: '100%',
     height: '100%',
     transform: 'translate(-50%, -50%)',
-    background: 'radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%)',
+    background:
+      'radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%)',
     opacity: 0,
     transition: 'opacity 0.3s ease-in-out',
   },
   '&:hover::after': {
     opacity: 1,
   },
-})); 
+}));

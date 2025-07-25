@@ -19,8 +19,8 @@ const settingsSlice = createSlice({
     setSettings(state, action) {
       state.settings = action.payload;
       state.error = null;
-    }
-  }
+    },
+  },
 });
 
 export const { setLoading, setError, setSettings } = settingsSlice.actions;

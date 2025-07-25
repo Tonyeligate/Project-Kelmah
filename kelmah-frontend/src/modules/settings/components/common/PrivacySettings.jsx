@@ -7,24 +7,24 @@ import {
   Button,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
 } from '@mui/material';
 import { useSettings } from '../../hooks/useSettings';
 
 const PrivacySettings = () => {
-  const {
-    settings,
-    loading,
-    updatePrivacySettings
-  } = useSettings();
+  const { settings, loading, updatePrivacySettings } = useSettings();
 
   const [localPrivacy, setLocalPrivacy] = useState({
     profileVisibility: 'public',
     searchVisibility: true,
-    dataSharing: false
+    dataSharing: false,
   });
   const [saving, setSaving] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     if (settings?.privacy) {
@@ -40,7 +40,11 @@ const PrivacySettings = () => {
     setSaving(true);
     try {
       await updatePrivacySettings(localPrivacy);
-      setSnackbar({ open: true, message: 'Privacy settings updated', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Privacy settings updated',
+        severity: 'success',
+      });
     } catch (error) {
       const msg = error.response?.data?.message || error.message;
       setSnackbar({ open: true, message: msg, severity: 'error' });
@@ -84,7 +88,8 @@ const PrivacySettings = () => {
             onChange={() =>
               setLocalPrivacy((prev) => ({
                 ...prev,
-                profileVisibility: prev.profileVisibility === 'public' ? 'private' : 'public'
+                profileVisibility:
+                  prev.profileVisibility === 'public' ? 'private' : 'public',
               }))
             }
             color="primary"
@@ -93,12 +98,24 @@ const PrivacySettings = () => {
         label={`Profile visibility: ${localPrivacy.profileVisibility === 'public' ? 'Public' : 'Private'}`}
       />
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" onClick={handleSave} disabled={saving || loading}>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={saving || loading}
+        >
           {saving ? <CircularProgress size={24} /> : 'Save Changes'}
         </Button>
       </Box>
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert
+          onClose={handleClose}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
@@ -106,4 +123,4 @@ const PrivacySettings = () => {
   );
 };
 
-export default PrivacySettings; 
+export default PrivacySettings;

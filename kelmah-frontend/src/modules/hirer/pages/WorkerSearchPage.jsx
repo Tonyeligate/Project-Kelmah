@@ -27,7 +27,7 @@ import {
   Autocomplete,
   Skeleton,
   CardActions,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import { Search, Star } from '@mui/icons-material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
@@ -60,20 +60,44 @@ const WorkerCard = ({ worker, isSaved, onToggleSave }) => {
         sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
         color={isSaved ? 'primary' : 'default'}
       >
-        {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}   
+        {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
       </IconButton>
       <CardContent sx={{ flexGrow: 1, pt: 4 }}>
-        <Avatar src={worker.avatar} sx={{ width: 80, height: 80, mb: 2, mx: 'auto' }} />
-        <Typography variant="h6" align="center">{worker.name}</Typography>
-        <Typography variant="body2" color="text.secondary" align="center" gutterBottom>{worker.title}</Typography>
+        <Avatar
+          src={worker.avatar}
+          sx={{ width: 80, height: 80, mb: 2, mx: 'auto' }}
+        />
+        <Typography variant="h6" align="center">
+          {worker.name}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          gutterBottom
+        >
+          {worker.title}
+        </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
           <Rating value={worker.rating} precision={0.5} readOnly />
         </Box>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 0.5, mt: 2 }}>
-          {(worker.skills || []).slice(0, 3).map(skill => <Chip key={skill} label={skill} size="small" />)}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: 0.5,
+            mt: 2,
+          }}
+        >
+          {(worker.skills || []).slice(0, 3).map((skill) => (
+            <Chip key={skill} label={skill} size="small" />
+          ))}
         </Box>
       </CardContent>
-      <CardActions sx={{ p: 2, pt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <CardActions
+        sx={{ p: 2, pt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}
+      >
         <Button
           fullWidth
           variant="contained"
@@ -85,7 +109,9 @@ const WorkerCard = ({ worker, isSaved, onToggleSave }) => {
           fullWidth
           variant="outlined"
           startIcon={<MessageIcon />}
-          onClick={() => navigate('/messages?participantId=' + (worker.id || worker._id))}
+          onClick={() =>
+            navigate('/messages?participantId=' + (worker.id || worker._id))
+          }
         >
           Message
         </Button>
@@ -97,16 +123,30 @@ const WorkerCard = ({ worker, isSaved, onToggleSave }) => {
 const WorkerSearchPage = () => {
   // Available skill options (mock)
   const skillOptions = [
-    'Pipe Repair','Water Heater Installation','Drainage Systems',
-    'Wiring','Circuit Breakers','Lighting','Home Automation','Audio Systems',
-    'Cabinetry','Furniture Making','Framing','Interior Painting','Exterior Painting','Wallpaper','AC Installation','Heating Systems','Ventilation'
+    'Pipe Repair',
+    'Water Heater Installation',
+    'Drainage Systems',
+    'Wiring',
+    'Circuit Breakers',
+    'Lighting',
+    'Home Automation',
+    'Audio Systems',
+    'Cabinetry',
+    'Furniture Making',
+    'Framing',
+    'Interior Painting',
+    'Exterior Painting',
+    'Wallpaper',
+    'AC Installation',
+    'Heating Systems',
+    'Ventilation',
   ];
   const [searchParams, setSearchParams] = useState({
     searchTerm: '',
     skills: [],
     minRating: 0,
     location: '',
-    workMode: '' // 'remote', 'onsite', 'hybrid'
+    workMode: '', // 'remote', 'onsite', 'hybrid'
   });
   const [savedWorkers, setSavedWorkers] = useState([]);
   const [results, setResults] = useState({ workers: [], pagination: {} });
@@ -117,14 +157,14 @@ const WorkerSearchPage = () => {
     if (savedWorkers.includes(workerId)) {
       try {
         await hirerService.unsaveWorker(workerId);
-        setSavedWorkers(prev => prev.filter(id => id !== workerId));
+        setSavedWorkers((prev) => prev.filter((id) => id !== workerId));
       } catch (error) {
         console.error('Error unsaving worker:', error);
       }
     } else {
       try {
         await hirerService.saveWorker(workerId);
-        setSavedWorkers(prev => [...prev, workerId]);
+        setSavedWorkers((prev) => [...prev, workerId]);
       } catch (error) {
         console.error('Error saving worker:', error);
       }
@@ -137,7 +177,10 @@ const WorkerSearchPage = () => {
       const params = { page, ...searchParams };
       const response = await searchService.searchWorkers(params);
       const workers = response.results || response.workers || response;
-      const pagination = (response.meta && response.meta.pagination) || response.pagination || {};
+      const pagination =
+        (response.meta && response.meta.pagination) ||
+        response.pagination ||
+        {};
       setResults({ workers, pagination });
     } catch (error) {
       console.error('Error searching workers:', error);
@@ -149,20 +192,29 @@ const WorkerSearchPage = () => {
 
   // Reset all filters to defaults and reload worker list
   const handleClearFilters = async () => {
-    const defaultParams = { searchTerm: '', skills: [], minRating: 0, location: '', workMode: '' };
+    const defaultParams = {
+      searchTerm: '',
+      skills: [],
+      minRating: 0,
+      location: '',
+      workMode: '',
+    };
     setSearchParams(defaultParams);
     setLoading(true);
     try {
       const params = { page: 1, ...defaultParams };
       const response = await searchService.searchWorkers(params);
       const workers = response.results || response.workers || response;
-      const pagination = (response.meta && response.meta.pagination) || response.pagination || {};
+      const pagination =
+        (response.meta && response.meta.pagination) ||
+        response.pagination ||
+        {};
       setResults({ workers, pagination });
     } catch (error) {
       console.error('Error clearing filters:', error);
       setResults({ workers: [], pagination: {} });
     } finally {
-    setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -171,7 +223,7 @@ const WorkerSearchPage = () => {
     (async () => {
       try {
         const favs = await hirerService.getSavedWorkers();
-        setSavedWorkers(favs.map(w => w.id || w._id));
+        setSavedWorkers(favs.map((w) => w.id || w._id));
       } catch {}
     })();
     handleSearch();
@@ -181,20 +233,41 @@ const WorkerSearchPage = () => {
     <Grow in timeout={500}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-          <Link component={RouterLink} to="/hirer/dashboard" underline="hover" color="inherit">
+          <Link
+            component={RouterLink}
+            to="/hirer/dashboard"
+            underline="hover"
+            color="inherit"
+          >
             Dashboard
           </Link>
           <Typography color="text.primary">Find Talent</Typography>
         </Breadcrumbs>
-        <Paper sx={{ p: 3, mb: 4, position: 'sticky', top: theme => theme.spacing(10), zIndex: 2, borderRadius: 2 }}>
-          <Typography variant="h4" gutterBottom>Find a Worker</Typography>
+        <Paper
+          sx={{
+            p: 3,
+            mb: 4,
+            position: 'sticky',
+            top: (theme) => theme.spacing(10),
+            zIndex: 2,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h4" gutterBottom>
+            Find a Worker
+          </Typography>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 label="Search by name or keyword"
                 value={searchParams.searchTerm}
-                onChange={e => setSearchParams(prev => ({ ...prev, searchTerm: e.target.value }))}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    searchTerm: e.target.value,
+                  }))
+                }
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -202,14 +275,21 @@ const WorkerSearchPage = () => {
                 fullWidth
                 label="Location"
                 value={searchParams.location}
-                onChange={e => setSearchParams(prev => ({ ...prev, location: e.target.value }))}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Typography gutterBottom>Minimum Rating</Typography>
               <Slider
                 value={searchParams.minRating}
-                onChange={(e, newValue) => setSearchParams(prev => ({ ...prev, minRating: newValue }))}
+                onChange={(e, newValue) =>
+                  setSearchParams((prev) => ({ ...prev, minRating: newValue }))
+                }
                 step={0.5}
                 marks
                 min={0}
@@ -222,9 +302,16 @@ const WorkerSearchPage = () => {
                 multiple
                 options={skillOptions}
                 value={searchParams.skills}
-                onChange={(event, newSkills) => setSearchParams(prev => ({ ...prev, skills: newSkills }))}
+                onChange={(event, newSkills) =>
+                  setSearchParams((prev) => ({ ...prev, skills: newSkills }))
+                }
                 renderInput={(params) => (
-                  <TextField {...params} label="Skills" placeholder="Select skills" fullWidth />
+                  <TextField
+                    {...params}
+                    label="Skills"
+                    placeholder="Select skills"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -234,7 +321,12 @@ const WorkerSearchPage = () => {
                 <Select
                   value={searchParams.workMode}
                   label="Work Mode"
-                  onChange={e => setSearchParams(prev => ({ ...prev, workMode: e.target.value }))}
+                  onChange={(e) =>
+                    setSearchParams((prev) => ({
+                      ...prev,
+                      workMode: e.target.value,
+                    }))
+                  }
                 >
                   <MenuItem value="">All</MenuItem>
                   <MenuItem value="remote">Remote</MenuItem>
@@ -244,12 +336,23 @@ const WorkerSearchPage = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
-              <Button fullWidth variant="contained" color="secondary" startIcon={<Search />} onClick={() => handleSearch()}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
+                startIcon={<Search />}
+                onClick={() => handleSearch()}
+              >
                 Search
               </Button>
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
-              <Button fullWidth variant="outlined" color="secondary" onClick={() => handleClearFilters()}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="secondary"
+                onClick={() => handleClearFilters()}
+              >
                 Clear Filters
               </Button>
             </Grid>
@@ -262,13 +365,31 @@ const WorkerSearchPage = () => {
               <Grid item xs={12} sm={6} md={4} lg={3} key={idx}>
                 <Card>
                   <CardContent>
-                    <Skeleton variant="circular" width={60} height={60} sx={{ mx: 'auto', mb: 1 }} />
-                    <Skeleton width="60%" height={24} sx={{ mx: 'auto', mb: 1 }} />
-                    <Skeleton width="40%" height={20} sx={{ mx: 'auto', mb: 2 }} />
+                    <Skeleton
+                      variant="circular"
+                      width={60}
+                      height={60}
+                      sx={{ mx: 'auto', mb: 1 }}
+                    />
+                    <Skeleton
+                      width="60%"
+                      height={24}
+                      sx={{ mx: 'auto', mb: 1 }}
+                    />
+                    <Skeleton
+                      width="40%"
+                      height={20}
+                      sx={{ mx: 'auto', mb: 2 }}
+                    />
                     <Skeleton variant="rectangular" height={118} />
                   </CardContent>
                   <CardActions>
-                    <Skeleton variant="rectangular" width="80%" height={36} sx={{ mx: 'auto', mb:1 }} />
+                    <Skeleton
+                      variant="rectangular"
+                      width="80%"
+                      height={36}
+                      sx={{ mx: 'auto', mb: 1 }}
+                    />
                   </CardActions>
                 </Card>
               </Grid>
@@ -276,7 +397,9 @@ const WorkerSearchPage = () => {
           </Grid>
         ) : results.workers.length === 0 ? (
           <Paper sx={{ p: 6, textAlign: 'center' }}>
-            <SearchOffIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+            <SearchOffIcon
+              sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }}
+            />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No workers found matching your criteria
             </Typography>
@@ -310,4 +433,4 @@ const WorkerSearchPage = () => {
   );
 };
 
-export default WorkerSearchPage; 
+export default WorkerSearchPage;

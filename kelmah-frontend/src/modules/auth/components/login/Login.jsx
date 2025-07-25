@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -13,18 +13,25 @@ import {
   InputAdornment,
   IconButton,
   Alert,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
-import { 
-  Visibility, 
-  VisibilityOff, 
-  LockOutlined, 
+import {
+  Visibility,
+  VisibilityOff,
+  LockOutlined,
   EmailOutlined,
   Google as GoogleIcon,
-  LinkedIn as LinkedInIcon
+  LinkedIn as LinkedInIcon,
 } from '@mui/icons-material';
+import { API_BASE_URL } from '../../../../config/constants';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  login as loginThunk,
+  selectAuthLoading,
+  selectAuthError,
+} from '../../services/authSlice';
+import { checkApiHealth } from '../../../common/utils/apiUtils';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -34,88 +41,126 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
-  
-  const { login } = useAuth();
+  const [apiError, setApiError] = useState('');
+
+  useEffect(() => {
+    checkApiHealth().catch(() => {
+      setApiError('Cannot connect to the server');
+    });
+  }, []);
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+  const reduxLoading = useSelector(selectAuthLoading);
+  const reduxError = useSelector(selectAuthError);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Reset errors
     setErrors({});
     setLoginError('');
-    
+
     // Validate form
     let valid = true;
     const newErrors = {};
-    
+
     if (!email.trim()) {
       newErrors.email = 'Email is required';
       valid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Please enter a valid email address';
       valid = false;
     }
-    
+
     if (!password) {
       newErrors.password = 'Password is required';
       valid = false;
     }
-    
+
     if (!valid) {
       setErrors(newErrors);
       return;
     }
-    
+
     // Submit form
     setSubmitting(true);
-    
+
     try {
-      await login({ email, password });
-      navigate('/dashboard');
+      const resultAction = await dispatch(loginThunk({ email, password }));
+      if (loginThunk.fulfilled.match(resultAction)) {
+        // Centralized redirect will pick correct role-based dashboard
+        navigate('/dashboard');
+      } else {
+        setLoginError(
+          resultAction.payload || resultAction.error.message || 'Login failed',
+        );
+      }
     } catch (err) {
-      console.error('Login error:', err);
-      setLoginError(
-        err.response?.data?.message || 
-        'Login failed. Please check your credentials and try again.'
-      );
+      console.error('Login thunk error:', err);
+      setLoginError('Login failed. Please check your credentials.');
     } finally {
       setSubmitting(false);
     }
   };
-  
+
   return (
-    <Paper elevation={6} sx={{
-      p: { xs: 2, sm: 4 },
-      maxWidth: 480,
-      mx: 'auto',
-      borderRadius: 4,
-      background: 'rgba(38, 38, 38, 0.98)',
-      boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)',
-      border: '2px solid #FFD700',
-      backdropFilter: 'blur(10px)',
-    }}>
+    <Paper
+      elevation={6}
+      sx={{
+        p: { xs: 2, sm: 4 },
+        maxWidth: 480,
+        mx: 'auto',
+        borderRadius: 4,
+        background: 'rgba(38, 38, 38, 0.98)',
+        boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)',
+        border: '2px solid #FFD700',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ color: '#FFD700', fontWeight: 800, fontSize: { xs: '2rem', sm: '2.2rem' }, letterSpacing: 1, textShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>
+        <Typography
+          variant="h3"
+          component="h1"
+          gutterBottom
+          sx={{
+            color: '#FFD700',
+            fontWeight: 800,
+            fontSize: { xs: '2rem', sm: '2.2rem' },
+            letterSpacing: 1,
+            textShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          }}
+        >
           Welcome Back
         </Typography>
-        <Typography variant="h6" color="#fff" sx={{ fontWeight: 500, fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+        <Typography
+          variant="h6"
+          color="#fff"
+          sx={{ fontWeight: 500, fontSize: { xs: '1rem', sm: '1.1rem' } }}
+        >
           Sign in to continue to Kelmah
         </Typography>
       </Box>
-      
+
+      {apiError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {apiError}
+        </Alert>
+      )}
       {loginError && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {loginError}
         </Alert>
       )}
-      
+
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
         <TextField
           label="Email Address"
           variant="outlined"
           fullWidth
           required
+          error={Boolean(errors.email)}
+          helperText={errors.email}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           InputProps={{
@@ -139,13 +184,18 @@ const Login = () => {
           variant="outlined"
           fullWidth
           required
+          error={Boolean(errors.password)}
+          helperText={errors.password}
           type={showPassword ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
@@ -165,20 +215,31 @@ const Login = () => {
           }}
           sx={{ mb: 2 }}
         />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            my: 2,
+          }}
+        >
           <FormControlLabel
             control={
-              <Checkbox 
+              <Checkbox
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 color="primary"
                 sx={{ color: '#FFD700', '&.Mui-checked': { color: '#FFD700' } }}
               />
             }
-            label={<span style={{ color: '#FFD700', fontWeight: 600 }}>Remember me</span>}
+            label={
+              <span style={{ color: '#FFD700', fontWeight: 600 }}>
+                Remember me
+              </span>
+            }
           />
-          <Link 
-            component={RouterLink} 
+          <Link
+            component={RouterLink}
             to="/forgot-password"
             variant="body2"
             sx={{
@@ -219,7 +280,10 @@ const Login = () => {
         >
           {submitting ? <CircularProgress size={24} /> : 'Sign In'}
         </Button>
-        <Typography variant="body1" sx={{ mt: 3, color: '#fff', textAlign: 'center', fontSize: '1.1rem' }}>
+        <Typography
+          variant="body1"
+          sx={{ mt: 3, color: '#fff', textAlign: 'center', fontSize: '1.1rem' }}
+        >
           Don't have an account?{' '}
           <Link
             component={RouterLink}
@@ -250,6 +314,9 @@ const Login = () => {
               fullWidth
               variant="outlined"
               startIcon={<GoogleIcon />}
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/api/auth/google`;
+              }}
               sx={{
                 py: 1.5,
                 fontWeight: 700,
@@ -273,6 +340,9 @@ const Login = () => {
               fullWidth
               variant="outlined"
               startIcon={<LinkedInIcon />}
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
+              }}
               sx={{
                 py: 1.5,
                 fontWeight: 700,
@@ -297,4 +367,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

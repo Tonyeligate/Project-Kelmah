@@ -11,11 +11,11 @@ export const formatApiError = (error) => {
   if (error.response?.data?.message) {
     return error.response.data.message;
   }
-  
+
   if (error.message) {
     return error.message;
   }
-  
+
   return 'An unknown error occurred. Please try again.';
 };
 
@@ -27,4 +27,4 @@ export const formatApiError = (error) => {
 export const logError = (error, context = 'general') => {
   console.error(`[${context}]`, error);
   // In production, would send to error monitoring service
-}; 
+};

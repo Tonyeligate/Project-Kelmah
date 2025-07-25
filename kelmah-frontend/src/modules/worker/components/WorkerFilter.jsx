@@ -16,7 +16,7 @@ import {
   InputLabel,
   IconButton,
   Collapse,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
@@ -44,13 +44,13 @@ const categories = [
   'HVAC',
   'Roofing',
   'Welding',
-  'Automotive'
+  'Automotive',
 ];
 
 const WorkerFilter = ({ onFilterChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -59,7 +59,7 @@ const WorkerFilter = ({ onFilterChange }) => {
     hourlyRateRange: [10, 100],
     minRating: 0,
     verifiedOnly: false,
-    sortBy: 'rating'
+    sortBy: 'rating',
   });
 
   const handleFilterChange = (field, value) => {
@@ -80,7 +80,7 @@ const WorkerFilter = ({ onFilterChange }) => {
       hourlyRateRange: [10, 100],
       minRating: 0,
       verifiedOnly: false,
-      sortBy: 'rating'
+      sortBy: 'rating',
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);
@@ -92,19 +92,21 @@ const WorkerFilter = ({ onFilterChange }) => {
 
   return (
     <FilterPaper elevation={2}>
-      <Box 
-        sx={{ 
-          display: 'flex', 
+      <Box
+        sx={{
+          display: 'flex',
           flexDirection: 'column',
-          gap: 2 
+          gap: 2,
         }}
       >
         {/* Basic Search Fields */}
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: 2 
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 2,
+          }}
+        >
           <TextField
             fullWidth
             placeholder="Search worker name, skill, or title"
@@ -119,7 +121,7 @@ const WorkerFilter = ({ onFilterChange }) => {
             }}
             size="small"
           />
-          
+
           <TextField
             fullWidth
             placeholder="Location"
@@ -134,7 +136,7 @@ const WorkerFilter = ({ onFilterChange }) => {
             }}
             size="small"
           />
-          
+
           <FormControl fullWidth size="small">
             <InputLabel id="category-select-label">Category</InputLabel>
             <Select
@@ -157,9 +159,15 @@ const WorkerFilter = ({ onFilterChange }) => {
             </Select>
           </FormControl>
         </Box>
-        
+
         {/* Advanced Filter Toggle */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Button
             onClick={toggleAdvanced}
             startIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -167,7 +175,7 @@ const WorkerFilter = ({ onFilterChange }) => {
           >
             {showAdvanced ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
           </Button>
-          
+
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel id="sort-select-label">Sort By</InputLabel>
             <Select
@@ -186,14 +194,15 @@ const WorkerFilter = ({ onFilterChange }) => {
             </Select>
           </FormControl>
         </Box>
-        
+
         {/* Advanced Filters */}
         <Collapse in={showAdvanced}>
           <Box sx={{ mt: 2 }}>
             <Divider sx={{ mb: 2 }} />
-            
+
             <Typography gutterBottom variant="subtitle2">
-              Hourly Rate Range (${filters.hourlyRateRange[0]} - ${filters.hourlyRateRange[1]})
+              Hourly Rate Range (${filters.hourlyRateRange[0]} - $
+              {filters.hourlyRateRange[1]})
             </Typography>
             <Slider
               value={filters.hourlyRateRange}
@@ -201,42 +210,48 @@ const WorkerFilter = ({ onFilterChange }) => {
               valueLabelDisplay="auto"
               min={10}
               max={200}
-              sx={{ 
+              sx={{
                 color: theme.palette.secondary.main,
                 '& .MuiSlider-valueLabel': {
                   backgroundColor: theme.palette.primary.main,
-                }
+                },
               }}
             />
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}
+            >
               <Box>
                 <Typography gutterBottom variant="subtitle2">
                   Minimum Rating
                 </Typography>
                 <Slider
                   value={filters.minRating}
-                  onChange={(e, newValue) => handleFilterChange('minRating', newValue)}
+                  onChange={(e, newValue) =>
+                    handleFilterChange('minRating', newValue)
+                  }
                   valueLabelDisplay="auto"
                   step={0.5}
                   marks
                   min={0}
                   max={5}
-                  sx={{ 
+                  sx={{
                     width: 200,
                     color: theme.palette.secondary.main,
                     '& .MuiSlider-valueLabel': {
                       backgroundColor: theme.palette.primary.main,
-                    }
+                    },
                   }}
                 />
               </Box>
-              
+
               <FormControlLabel
                 control={
-                  <Checkbox 
+                  <Checkbox
                     checked={filters.verifiedOnly}
-                    onChange={(e) => handleFilterChange('verifiedOnly', e.target.checked)}
+                    onChange={(e) =>
+                      handleFilterChange('verifiedOnly', e.target.checked)
+                    }
                     sx={{
                       color: theme.palette.secondary.main,
                       '&.Mui-checked': {
@@ -248,18 +263,18 @@ const WorkerFilter = ({ onFilterChange }) => {
                 label="Verified Only"
               />
             </Box>
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button 
+              <Button
                 onClick={handleResetFilters}
                 variant="outlined"
-                sx={{ 
-                  borderColor: theme.palette.secondary.main, 
+                sx={{
+                  borderColor: theme.palette.secondary.main,
                   color: theme.palette.secondary.main,
                   '&:hover': {
                     borderColor: theme.palette.secondary.dark,
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                  }
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  },
                 }}
               >
                 Reset Filters
@@ -272,4 +287,4 @@ const WorkerFilter = ({ onFilterChange }) => {
   );
 };
 
-export default WorkerFilter; 
+export default WorkerFilter;

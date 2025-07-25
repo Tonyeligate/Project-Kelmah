@@ -1,25 +1,25 @@
 import React from 'react';
-import { 
-  Paper, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText, 
-  ClickAwayListener, 
+import {
+  Paper,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ClickAwayListener,
   Typography,
-  Box
+  Box,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
   Work as WorkIcon,
-  School as SkillIcon
+  School as SkillIcon,
 } from '@mui/icons-material';
 
-const SearchSuggestions = ({ 
+const SearchSuggestions = ({
   suggestions = [],
   onSuggestionSelected,
-  onClose 
+  onClose,
 }) => {
   // Get appropriate icon based on suggestion type
   const getIcon = (type) => {
@@ -37,15 +37,15 @@ const SearchSuggestions = ({
 
   return (
     <ClickAwayListener onClickAway={onClose}>
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          position: 'absolute', 
-          width: '100%', 
+      <Paper
+        elevation={3}
+        sx={{
+          position: 'absolute',
+          width: '100%',
           zIndex: 10,
           mt: 1,
           maxHeight: 400,
-          overflow: 'auto'
+          overflow: 'auto',
         }}
       >
         {suggestions.length === 0 ? (
@@ -57,8 +57,8 @@ const SearchSuggestions = ({
         ) : (
           <List sx={{ py: 0 }}>
             {suggestions.map((suggestion, index) => (
-              <ListItem 
-                key={`${suggestion.type}-${index}`} 
+              <ListItem
+                key={`${suggestion.type}-${index}`}
                 button
                 onClick={() => onSuggestionSelected(suggestion)}
                 divider={index < suggestions.length - 1}
@@ -66,7 +66,7 @@ const SearchSuggestions = ({
                 <ListItemIcon sx={{ minWidth: 40 }}>
                   {getIcon(suggestion.type)}
                 </ListItemIcon>
-                <ListItemText 
+                <ListItemText
                   primary={suggestion.text}
                   secondary={suggestion.subText}
                 />
@@ -79,4 +79,4 @@ const SearchSuggestions = ({
   );
 };
 
-export default SearchSuggestions; 
+export default SearchSuggestions;

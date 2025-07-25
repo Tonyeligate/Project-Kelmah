@@ -16,8 +16,15 @@ import { useSettings } from '../../hooks/useSettings';
 
 const NotificationSettings = () => {
   const { settings, loading, updateNotificationPreferences } = useSettings();
-  const [localSettings, setLocalSettings] = useState({ email: false, realtime: false });
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [localSettings, setLocalSettings] = useState({
+    email: false,
+    realtime: false,
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     if (settings?.notifications) {
@@ -33,9 +40,17 @@ const NotificationSettings = () => {
   const handleSave = async () => {
     try {
       await updateNotificationPreferences(localSettings);
-      setSnackbar({ open: true, message: 'Settings saved successfully!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Settings saved successfully!',
+        severity: 'success',
+      });
     } catch (error) {
-      setSnackbar({ open: true, message: 'Error saving settings', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: 'Error saving settings',
+        severity: 'error',
+      });
     }
   };
 
@@ -75,11 +90,7 @@ const NotificationSettings = () => {
         />
       </FormGroup>
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          disabled={loading}
-        >
+        <Button variant="contained" onClick={handleSave} disabled={loading}>
           {loading ? <CircularProgress size={24} /> : 'Save Changes'}
         </Button>
       </Box>

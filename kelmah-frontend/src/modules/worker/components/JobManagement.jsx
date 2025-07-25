@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -31,7 +31,7 @@ import {
   MoreVert as MoreVertIcon,
   Message as MessageIcon,
   Receipt as ReceiptIcon,
-  Assessment as AssessmentIcon
+  Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -48,7 +48,7 @@ const JobManagement = () => {
   const [dialogType, setDialogType] = useState(null);
   const [formData, setFormData] = useState({
     message: '',
-    milestone: ''
+    milestone: '',
   });
 
   useEffect(() => {
@@ -58,7 +58,9 @@ const JobManagement = () => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/workers/${user.id}/jobs?status=${getStatusForTab(activeTab)}`);
+      const response = await fetch(
+        `/api/workers/${user.id}/jobs?status=${getStatusForTab(activeTab)}`,
+      );
       const data = await response.json();
       setJobs(data);
       setError(null);
@@ -163,7 +165,14 @@ const JobManagement = () => {
   const renderJobCard = (job) => (
     <Card key={job.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6">{job.title}</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -182,9 +191,7 @@ const JobManagement = () => {
             <Typography variant="body2" color="text.secondary">
               Budget
             </Typography>
-            <Typography variant="body1">
-              ${job.budget}
-            </Typography>
+            <Typography variant="body1">${job.budget}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
@@ -198,9 +205,7 @@ const JobManagement = () => {
             <Typography variant="body2" color="text.secondary">
               Description
             </Typography>
-            <Typography variant="body1">
-              {job.description}
-            </Typography>
+            <Typography variant="body1">{job.description}</Typography>
           </Grid>
         </Grid>
       </CardContent>
@@ -222,10 +227,7 @@ const JobManagement = () => {
             Submit Milestone
           </Button>
         )}
-        <IconButton
-          size="small"
-          onClick={(e) => handleMenuOpen(e, job)}
-        >
+        <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -246,21 +248,13 @@ const JobManagement = () => {
           scrollButtons="auto"
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
-          <Tab
-            icon={<WorkIcon />}
-            label="Active Jobs"
-            iconPosition="start"
-          />
+          <Tab icon={<WorkIcon />} label="Active Jobs" iconPosition="start" />
           <Tab
             icon={<CheckCircleIcon />}
             label="Completed"
             iconPosition="start"
           />
-          <Tab
-            icon={<PendingIcon />}
-            label="Available"
-            iconPosition="start"
-          />
+          <Tab icon={<PendingIcon />} label="Available" iconPosition="start" />
         </Tabs>
       </Paper>
 
@@ -276,14 +270,10 @@ const JobManagement = () => {
         </Box>
       ) : jobs.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">
-            No jobs found
-          </Typography>
+          <Typography color="text.secondary">No jobs found</Typography>
         </Paper>
       ) : (
-        <Box>
-          {jobs.map(renderJobCard)}
-        </Box>
+        <Box>{jobs.map(renderJobCard)}</Box>
       )}
 
       <Menu
@@ -326,7 +316,9 @@ const JobManagement = () => {
                 multiline
                 rows={4}
                 value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, message: e.target.value })
+                }
                 margin="normal"
               />
             )}
@@ -337,7 +329,9 @@ const JobManagement = () => {
                 multiline
                 rows={4}
                 value={formData.milestone}
-                onChange={(e) => setFormData({ ...formData, milestone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, milestone: e.target.value })
+                }
                 margin="normal"
               />
             )}
@@ -348,7 +342,9 @@ const JobManagement = () => {
                 multiline
                 rows={4}
                 value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, message: e.target.value })
+                }
                 margin="normal"
               />
             )}
@@ -369,6 +365,4 @@ const JobManagement = () => {
   );
 };
 
-export default JobManagement; 
-
-
+export default JobManagement;

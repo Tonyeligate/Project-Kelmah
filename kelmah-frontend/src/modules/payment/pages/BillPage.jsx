@@ -1,12 +1,39 @@
 import React, { useState } from 'react';
-import { Container, Typography, Paper, List, ListItem, ListItemText, Button, Chip, Box, Divider, CircularProgress, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  Chip,
+  Box,
+  Divider,
+  CircularProgress,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Pagination,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+} from '@mui/material';
 import { usePayments } from '../contexts/PaymentContext';
 import PaymentIcon from '@mui/icons-material/Payment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 // Currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' });
+const currencyFormatter = new Intl.NumberFormat('en-GH', {
+  style: 'currency',
+  currency: 'GHS',
+});
 
 const BillPage = () => {
   const { bills, loading, payBill, actionLoading, error } = usePayments();
@@ -40,10 +67,12 @@ const BillPage = () => {
     setPage(1);
   };
   // Filter bills
-  const filteredBills = bills.filter(b => {
+  const filteredBills = bills.filter((b) => {
     let ok = true;
-    if (appliedStartDate) ok = ok && new Date(b.dueDate) >= new Date(appliedStartDate);
-    if (appliedEndDate) ok = ok && new Date(b.dueDate) <= new Date(appliedEndDate);
+    if (appliedStartDate)
+      ok = ok && new Date(b.dueDate) >= new Date(appliedStartDate);
+    if (appliedEndDate)
+      ok = ok && new Date(b.dueDate) <= new Date(appliedEndDate);
     if (appliedStatus !== 'all') ok = ok && b.status === appliedStatus;
     return ok;
   });
@@ -72,11 +101,32 @@ const BillPage = () => {
   const getStatusChip = (status) => {
     switch (status) {
       case 'paid':
-        return <Chip icon={<CheckCircleIcon />} label="Paid" color="success" size="small" />;
+        return (
+          <Chip
+            icon={<CheckCircleIcon />}
+            label="Paid"
+            color="success"
+            size="small"
+          />
+        );
       case 'unpaid':
-        return <Chip icon={<HourglassEmptyIcon />} label="Unpaid" color="warning" size="small" />;
+        return (
+          <Chip
+            icon={<HourglassEmptyIcon />}
+            label="Unpaid"
+            color="warning"
+            size="small"
+          />
+        );
       case 'overdue':
-        return <Chip icon={<ErrorOutlineIcon />} label="Overdue" color="error" size="small" />;
+        return (
+          <Chip
+            icon={<ErrorOutlineIcon />}
+            label="Overdue"
+            color="error"
+            size="small"
+          />
+        );
       default:
         return <Chip label={status} size="small" />;
     }
@@ -84,15 +134,21 @@ const BillPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper sx={{
-        p: 4,
-        borderRadius: 2,
-        background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
-        color: 'white',
-        border: '2px solid',
-        borderColor: 'secondary.main'
-      }}>
-        <Typography variant="h4" fontWeight="bold" sx={{ mb: 3, color: 'secondary.main' }}>
+      <Paper
+        sx={{
+          p: 4,
+          borderRadius: 2,
+          background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
+          color: 'white',
+          border: '2px solid',
+          borderColor: 'secondary.main',
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          sx={{ mb: 3, color: 'secondary.main' }}
+        >
           Your Bills
         </Typography>
         {/* Filters */}
@@ -131,24 +187,46 @@ const BillPage = () => {
             </FormControl>
           </Tooltip>
           <Tooltip title="Apply filters">
-            <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={applyFilters}>Filter</Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ borderWidth: 2 }}
+              onClick={applyFilters}
+            >
+              Filter
+            </Button>
           </Tooltip>
           <Tooltip title="Clear filters">
-            <Button variant="outlined" color="secondary" sx={{ borderWidth: 2 }} onClick={clearFilters}>Clear</Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ borderWidth: 2 }}
+              onClick={clearFilters}
+            >
+              Clear
+            </Button>
           </Tooltip>
         </Box>
         {/* Show error if fetch failed */}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         {loading ? (
           <Typography>Loading bills...</Typography>
         ) : filteredBills.length === 0 ? (
-          <Typography color="text.secondary">No bills match your filter criteria.</Typography>
+          <Typography color="text.secondary">
+            No bills match your filter criteria.
+          </Typography>
         ) : (
           // Summary above list
           filteredBills.length > 0 && (
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Showing {(page - 1) * perPage + 1} - {Math.min(filteredBills.length, page * perPage)} of {filteredBills.length} bills
+                Showing {(page - 1) * perPage + 1} -{' '}
+                {Math.min(filteredBills.length, page * perPage)} of{' '}
+                {filteredBills.length} bills
               </Typography>
             </Box>
           )
@@ -156,14 +234,20 @@ const BillPage = () => {
         {loading ? (
           <Typography>Loading bills...</Typography>
         ) : filteredBills.length === 0 ? (
-          <Typography color="text.secondary">No bills match your filter criteria.</Typography>
+          <Typography color="text.secondary">
+            No bills match your filter criteria.
+          </Typography>
         ) : (
           <List>
             {pagedBills.map((bill, index) => (
               <React.Fragment key={bill.id}>
                 <ListItem>
-                  <ListItemText 
-                    primary={<Typography variant="subtitle1" fontWeight="medium">{bill.title}</Typography>}
+                  <ListItemText
+                    primary={
+                      <Typography variant="subtitle1" fontWeight="medium">
+                        {bill.title}
+                      </Typography>
+                    }
                     secondary={`Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}`}
                   />
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -171,7 +255,8 @@ const BillPage = () => {
                     <Typography variant="h6" fontWeight="medium">
                       {currencyFormatter.format(bill.amount)}
                     </Typography>
-                    {(bill.status === 'unpaid' || bill.status === 'overdue') && (
+                    {(bill.status === 'unpaid' ||
+                      bill.status === 'overdue') && (
                       <Box>
                         <Tooltip title="Pay this bill">
                           <Button
@@ -179,11 +264,17 @@ const BillPage = () => {
                             color="secondary"
                             size="small"
                             sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
-                            startIcon={<PaymentIcon sx={{ color: 'common.white' }} />}
+                            startIcon={
+                              <PaymentIcon sx={{ color: 'common.white' }} />
+                            }
                             disabled={actionLoading === bill.id}
                             onClick={() => handleOpenConfirm(bill)}
                           >
-                            {actionLoading === bill.id ? <CircularProgress size={16} color="inherit" /> : 'Pay'}
+                            {actionLoading === bill.id ? (
+                              <CircularProgress size={16} color="inherit" />
+                            ) : (
+                              'Pay'
+                            )}
                           </Button>
                         </Tooltip>
                       </Box>
@@ -198,32 +289,78 @@ const BillPage = () => {
         {/* Pagination */}
         {pageCount > 1 && (
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <Pagination count={pageCount} page={page} onChange={(e, val) => setPage(val)} color="secondary" />
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={(e, val) => setPage(val)}
+              color="secondary"
+            />
           </Box>
         )}
         <Dialog
           open={confirmDialogOpen}
           onClose={handleCloseConfirm}
-          BackdropProps={{ sx: { backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' } }}
-          PaperProps={{ sx: { bgcolor: 'grey.900', color: 'text.primary', borderRadius: 2, border: '2px solid', borderColor: 'secondary.main', boxShadow: '0 0 16px rgba(255,215,0,0.5)' } }}
+          maxWidth="xs"
+          fullWidth
+          BackdropProps={{
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(4px)',
+            },
+          }}
+          PaperProps={{
+            sx: {
+              bgcolor: 'grey.900',
+              color: 'text.primary',
+              borderRadius: 2,
+              border: '2px solid',
+              borderColor: 'secondary.main',
+              boxShadow: '0 0 16px rgba(255,215,0,0.5)',
+            },
+          }}
         >
-          <DialogTitle>Confirm Payment</DialogTitle>
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PaymentIcon sx={{ color: 'secondary.main', fontSize: 28 }} />{' '}
+            Confirm Payment
+          </DialogTitle>
           <DialogContent dividers>
             {selectedBill && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography>You're about to pay <strong>{currencyFormatter.format(selectedBill.amount)}</strong> for:</Typography>
-                <Typography variant="subtitle1" fontWeight="medium">“{selectedBill.title}”</Typography>
+                <Typography>
+                  You're about to pay{' '}
+                  <strong>
+                    {currencyFormatter.format(selectedBill.amount)}
+                  </strong>{' '}
+                  for:
+                </Typography>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  “{selectedBill.title}”
+                </Typography>
               </Box>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseConfirm} variant="outlined" color="secondary" sx={{ borderWidth: 2 }} disabled={dialogStep === 1}>Cancel</Button>
+            <Button
+              onClick={handleCloseConfirm}
+              variant="outlined"
+              color="secondary"
+              sx={{ borderWidth: 2 }}
+              disabled={dialogStep === 1}
+            >
+              Cancel
+            </Button>
             <Button
               variant="contained"
               color="secondary"
               onClick={handleConfirmPayment}
               disabled={dialogStep === 1}
-              startIcon={dialogStep === 1 ? <CircularProgress size={16} color="inherit" /> : <PaymentIcon sx={{ color: 'common.white' }} />}
+              startIcon={
+                dialogStep === 1 ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <PaymentIcon sx={{ color: 'common.white' }} />
+                )
+              }
               sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
             >
               {dialogStep === 1 ? 'Processing...' : 'Confirm'}

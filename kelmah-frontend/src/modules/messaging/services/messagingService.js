@@ -1,461 +1,177 @@
-import io from 'socket.io-client';
+// Real-time socket support removed; using REST API only
 import { format } from 'date-fns';
 import axios from '../../common/services/axios';
-import { API_BASE_URL } from '../../../config/constants';
 
 class MessagingService {
-    constructor() {
-        this.socket = null;
-        this.userId = null;
-        this.token = null;
-        this.connected = false;
-        this.eventHandlers = {
-            connect: [],
-            disconnect: [],
-            error: [],
-            message: [],
-            typing: [],
-            read: [],
-            user_status: []
-        };
-        this.listeners = new Map();
+  constructor() {
+    // REST API only
+  }
+
+  // Get all conversations for the current user
+  async getConversations() {
+    const response = await axios.get('/api/conversations');
+    return response.data.conversations;
+  }
+
+  // Get messages in a conversation
+  async getMessages(conversationId, page = 1, limit = 50) {
+    const response = await axios.get(`/api/messages/conversation/${conversationId}`, {
+      params: { page, limit },
+    });
+    return response.data.messages;
+  }
+
+  // Send a message
+  async sendMessage(senderId, recipientId, content) {
+    const response = await axios.post('/api/messages', {
+      sender: senderId,
+      recipient: recipientId,
+      content,
+    });
+    return response.data.data;
+  }
+
+  // Create a direct conversation
+  async createDirectConversation(recipientId) {
+    const response = await axios.post('/api/conversations', {
+      participants: [recipientId],
+    });
+    return response.data.data;
+  }
+
+  // Create a group conversation
+  async createGroupConversation(participantIds, metadata = {}) {
+    const response = await axios.post('/api/conversations', {
+      participants: participantIds,
+      metadata,
+    });
+    return response.data.data;
+  }
+
+  // Get conversation metadata
+  async getConversation(conversationId) {
+    const response = await axios.get(`/api/conversations/${conversationId}`);
+    return response.data;
+  }
+
+  // Get unread message count
+  async getUnreadCount() {
+    const response = await axios.get('/api/messages/unread/count');
+    return response.data.unreadCount;
+  }
+
+  // No-op real-time placeholders to maintain backward compatibility with components that still call these methods
+  initialize() {
+    // In REST-only mode, no initialization is required
+  }
+
+  connect() {
+    // No real-time socket connection in REST-only mode
+  }
+
+  disconnect() {
+    // No socket to disconnect from
+  }
+
+  // Mark all messages in a conversation as read
+  async markConversationAsRead(conversationId) {
+    try {
+      await axios.post(`/api/conversations/${conversationId}/read`);
+    } catch (err) {
+      // Silently fail – backend may not implement read receipts yet
+      console.warn('markConversationAsRead failed or is not implemented on backend', err);
     }
-
-    // Initialize with user credentials
-    initialize(userId, token) {
-        this.userId = userId;
-        this.token = token;
-    }
-
-    // Connect to the messaging service
-    connect() {
-        if (this.socket) {
-            // Already connected
-            return;
-        }
-
-        // Create socket connection with correct path and authentication
-        this.socket = io(API_BASE_URL, {
-            path: '/ws',
-            auth: { token: this.token },
-            query: { userId: this.userId },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
-        });
-
-        // Set up base event listeners
-        this.socket.on('connect', () => {
-            console.log('Socket connected');
-            this.connected = true;
-            this._triggerEvent('connect');
-        });
-
-        this.socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected:', reason);
-            this.connected = false;
-            this._triggerEvent('disconnect', reason);
-        });
-
-        this.socket.on('error', (error) => {
-            console.error('Socket error:', error);
-            this._triggerEvent('error', error);
-        });
-
-        // Set up application event listeners
-        this.socket.on('message', (data) => {
-            this._triggerEvent('message', data);
-        });
-
-        this.socket.on('typing', (data) => {
-            this._triggerEvent('typing', data);
-        });
-
-        this.socket.on('read', (data) => {
-            this._triggerEvent('read', data);
-        });
-
-        this.socket.on('user_status', (data) => {
-            this._triggerEvent('user_status', data);
-        });
-    }
-
-    // Disconnect from the messaging service
-    disconnect() {
-        if (this.socket) {
-            this.socket.disconnect();
-            this.socket = null;
-            this.connected = false;
-        }
-    }
-
-    // Event handling
-    on(event, callback) {
-        if (!this.eventHandlers[event]) {
-            this.eventHandlers[event] = [];
-        }
-        this.eventHandlers[event].push(callback);
-        return () => this.off(event, callback);
-    }
-
-    off(event, callback) {
-        if (!this.eventHandlers[event]) return;
-        this.eventHandlers[event] = this.eventHandlers[event].filter(cb => cb !== callback);
-    }
-
-    // NEW: Convenience helpers specifically for "message" events used by MessageContext
-    onNewMessage(callback) {
-        // Returns the unsubscribe function generated by on()
-        return this.on('message', callback);
-    }
-
-    offNewMessage(callback) {
-        this.off('message', callback);
-    }
-
-    _triggerEvent(event, data) {
-        if (!this.eventHandlers[event]) return;
-        this.eventHandlers[event].forEach(callback => {
-            try {
-                callback(data);
-            } catch (err) {
-                console.error(`Error in ${event} handler:`, err);
-            }
-        });
-    }
-
-    // Join a conversation room
-    joinConversation(conversationId) {
-        if (!this.connected || !this.socket) {
-            console.warn('Cannot join conversation: not connected');
-            return;
-        }
-        this.socket.emit('join_conversation', { conversationId });
-    }
-
-    // Leave a conversation room
-    leaveConversation(conversationId) {
-        if (!this.connected || !this.socket) {
-            console.warn('Cannot leave conversation: not connected');
-            return;
-        }
-        this.socket.emit('leave_conversation', { conversationId });
-    }
-
-    // Send a typing indicator
-    sendTypingIndicator(conversationId, isTyping) {
-        if (!this.connected || !this.socket) {
-            console.warn('Cannot send typing indicator: not connected');
-            return;
-        }
-        this.socket.emit('typing', {
-            conversationId,
-            isTyping
-        });
-    }
-
-    // API Methods
-
-    // Get all conversations
-    async getConversations() {
-        try {
-            const response = await axios.get('/api/messages/conversations');
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching conversations:', error);
-            throw error;
-        }
-    }
-
-    // Get messages for a conversation
-    async getMessages(conversationId, page = 1, limit = 50) {
-        // MOCK MODE FOR DEVELOPMENT
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`[MOCK] Fetching messages for conversationId: ${conversationId}`);
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    resolve(MOCK_MESSAGE_STORE[conversationId] || []);
-                }, 500);
-            });
-        }
-        // END MOCK MODE
-
-        try {
-            const response = await axios.get(`/api/messages/conversations/${conversationId}/messages`, {
-                params: { page, limit }
-            });
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-            throw error;
-        }
-    }
-
-    // Upload attachments with optional progress callback
-    async _uploadAttachments(files, onProgress) {
-        try {
-            const formData = new FormData();
-            files.forEach(file => {
-                formData.append('files', file);
-            });
-
-            const response = await axios.post(
-                `${API_BASE_URL}/api/messages/attachments`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${this.token}`
-                    },
-                    onUploadProgress: (progressEvent) => {
-                        if (typeof onProgress === 'function' && progressEvent.total) {
-                            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            onProgress(percentCompleted);
-                        }
-                    }
-                }
-            );
-
-            return response.data.data;
-        } catch (error) {
-            console.error('Error uploading attachments:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Send a message
-     * @param {string} conversationId
-     * @param {string} content
-     * @param {Array<File>} attachments
-     * @param {function} onProgress optional callback for upload progress (0-100)
-     * @returns {Promise<Object>} Sent message data
-     */
-    async sendMessage(conversationId, content, attachments = [], onProgress) {
-         // MOCK MODE FOR DEVELOPMENT
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`[MOCK] Sending message to conversationId: ${conversationId}`);
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    const newMessage = {
-                        id: Math.random().toString(36).substr(2, 9),
-                        content: content,
-                        attachments: attachments,
-                        createdAt: new Date().toISOString(),
-                        sender: { id: this.userId, name: 'You' }, // Assuming the current user is the sender
-                    };
-                    resolve(newMessage);
-                }, 300);
-            });
-        }
-        // END MOCK MODE
-        try {
-            let uploadedAttachments = [];
-            if (attachments && attachments.length > 0) {
-                uploadedAttachments = await this._uploadAttachments(attachments, onProgress);
-            }
-
-            // Send the message with attachment references
-            const response = await axios.post(
-                `${API_BASE_URL}/api/messages/conversations/${conversationId}/messages`,
-                {
-                    content,
-                    attachments: uploadedAttachments.map(att => att.id)
-                },
-                {
-                    headers: { Authorization: `Bearer ${this.token}` }
-                }
-            );
-
-            return response.data.data;
-        } catch (error) {
-            console.error('Error sending message:', error);
-            throw error;
-        }
-    }
-
-    // Mark a message as read
-    async markMessageAsRead(messageId) {
-        try {
-            // Single-message read not supported; delegate to conversation read
-            return this.markConversationAsRead(messageId);
-        } catch (error) {
-            console.error('Error marking message as read:', error);
-            throw error;
-        }
-    }
-
-    // Mark all messages in a conversation as read
-    async markConversationAsRead(conversationId) {
-        try {
-            const response = await axios.patch(`/api/messages/conversations/${conversationId}/read`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error marking conversation as read:', error);
-            throw error;
-        }
-    }
-
-    // Create a direct conversation
-    async createDirectConversation(recipientId) {
-        try {
-            const response = await axios.post('/api/messages/conversations', { participantId: recipientId });
-            return response.data.data;
-        } catch (error) {
-            console.error('Error creating direct conversation:', error);
-            throw error;
-        }
-    }
-
-    // Create a group conversation
-    async createGroupConversation(name, participantIds, avatar = null) {
-        try {
-            const formData = new FormData();
-            formData.append('name', name);
-            participantIds.forEach(id => {
-                formData.append('participants', id);
-            });
-            if (avatar) {
-                formData.append('avatar', avatar);
-            }
-
-            const response = await axios.post(
-                `${API_BASE_URL}/api/conversations/group`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${this.token}`
-                    }
-                }
-            );
-            return response.data.data;
-        } catch (error) {
-            console.error('Error creating group conversation:', error);
-            throw error;
-        }
-    }
-
-    // Get attachment URL
-    getAttachmentUrl(attachmentId) {
-        return `${API_BASE_URL}/api/messages/attachments/${attachmentId}`;
-    }
-
-    // Get conversation details
-    async getConversation(conversationId) {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/api/conversations/${conversationId}`,
-                {
-                    headers: { Authorization: `Bearer ${this.token}` }
-                }
-            );
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching conversation:', error);
-            throw error;
-        }
-    }
-
-    // Search messages
-    async searchMessages(query, conversationId = null) {
-        try {
-            const params = { query };
-            if (conversationId) {
-                params.conversationId = conversationId;
-            }
-
-            const response = await axios.get(
-                `${API_BASE_URL}/api/messages/search`,
-                {
-                    params,
-                    headers: { Authorization: `Bearer ${this.token}` }
-                }
-            );
-            return response.data.data;
-        } catch (error) {
-            console.error('Error searching messages:', error);
-            throw error;
-        }
-    }
-
-    // Get unread message count
-    async getUnreadCount() {
-        try {
-            const response = await axios.get(
-                `${API_BASE_URL}/api/messages/unread`,
-                {
-                    headers: { Authorization: `Bearer ${this.token}` }
-                }
-            );
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching unread count:', error);
-            throw error;
-        }
-    }
+  }
 }
 
 const MOCK_MESSAGE_STORE = {
-    '1': [
-        {
-            id: 'msg1',
-            content: 'Hi there! I saw your job posting for bathroom plumbing repair. I\'m interested in taking it on.',
-            createdAt: '2023-10-27T10:30:00Z',
-            sender: { id: '2', name: 'John Smith', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' }
-        },
-        {
-            id: 'msg2',
-            content: 'Hey John! Thanks for reaching out. Could you tell me more about your experience with similar projects?',
-            createdAt: '2023-10-27T10:35:00Z',
-            sender: { id: 'mock-user-id', name: 'You' } // Assume this is the current user
-        },
-        {
-            id: 'msg3',
-            content: 'I\'ve been a licensed plumber for 15 years and have handled countless bathroom repairs. Most recently, I completed a full bathroom renovation for a client in downtown. I specialize in fixing leaks and installing new fixtures.',
-            createdAt: '2023-10-27T10:38:00Z',
-            sender: { id: '2', name: 'John Smith', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' }
-        },
-        {
-            id: 'msg4',
-            content: 'That sounds perfect! When would you be available to come take a look?',
-            createdAt: '2023-10-27T10:40:00Z',
-            sender: { id: 'mock-user-id', name: 'You' }
-        },
-        {
-            id: 'msg5',
-            content: 'I could come by tomorrow afternoon, around 2pm. Would that work for you?',
-            createdAt: '2023-10-27T10:42:00Z',
-            sender: { id: '2', name: 'John Smith', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' }
-        }
-    ],
-    '2': [
-        {
-            id: 'msg6',
-            content: 'Hello! I\'m interested in the graphic design gig.',
-            createdAt: '2023-10-27T09:10:00Z',
-            sender: { id: '3', name: 'Maria Garcia', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' }
-        },
-        {
-            id: 'msg7',
-            content: 'Hi Maria, glad to hear it. Can you share your portfolio?',
-            createdAt: '2023-10-27T09:12:00Z',
-            sender: { id: 'mock-user-id', name: 'You' }
-        },
-        {
-            id: 'msg8',
-            content: 'Of course, here\'s the link: [portfolio link].',
-            createdAt: '2023-10-27T09:14:00Z',
-            sender: { id: '3', name: 'Maria Garcia', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' }
-        },
-        {
-            id: 'msg9',
-            content: 'Sounds good, thank you!',
-            createdAt: '2023-10-27T09:15:00Z',
-            sender: { id: '3', name: 'Maria Garcia', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' }
-        }
-    ]
+  1: [
+    {
+      id: 'msg1',
+      content:
+        "Hi there! I saw your job posting for bathroom plumbing repair. I'm interested in taking it on.",
+      createdAt: '2023-10-27T10:30:00Z',
+      sender: {
+        id: '2',
+        name: 'John Smith',
+        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      },
+    },
+    {
+      id: 'msg2',
+      content:
+        'Hey John! Thanks for reaching out. Could you tell me more about your experience with similar projects?',
+      createdAt: '2023-10-27T10:35:00Z',
+      sender: { id: 'mock-user-id', name: 'You' }, // Assume this is the current user
+    },
+    {
+      id: 'msg3',
+      content:
+        "I've been a licensed plumber for 15 years and have handled countless bathroom repairs. Most recently, I completed a full bathroom renovation for a client in downtown. I specialize in fixing leaks and installing new fixtures.",
+      createdAt: '2023-10-27T10:38:00Z',
+      sender: {
+        id: '2',
+        name: 'John Smith',
+        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      },
+    },
+    {
+      id: 'msg4',
+      content:
+        'That sounds perfect! When would you be available to come take a look?',
+      createdAt: '2023-10-27T10:40:00Z',
+      sender: { id: 'mock-user-id', name: 'You' },
+    },
+    {
+      id: 'msg5',
+      content:
+        'I could come by tomorrow afternoon, around 2pm. Would that work for you?',
+      createdAt: '2023-10-27T10:42:00Z',
+      sender: {
+        id: '2',
+        name: 'John Smith',
+        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      },
+    },
+  ],
+  2: [
+    {
+      id: 'msg6',
+      content: "Hello! I'm interested in the graphic design gig.",
+      createdAt: '2023-10-27T09:10:00Z',
+      sender: {
+        id: '3',
+        name: 'Maria Garcia',
+        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      },
+    },
+    {
+      id: 'msg7',
+      content: 'Hi Maria, glad to hear it. Can you share your portfolio?',
+      createdAt: '2023-10-27T09:12:00Z',
+      sender: { id: 'mock-user-id', name: 'You' },
+    },
+    {
+      id: 'msg8',
+      content: "Of course, here's the link: [portfolio link].",
+      createdAt: '2023-10-27T09:14:00Z',
+      sender: {
+        id: '3',
+        name: 'Maria Garcia',
+        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      },
+    },
+    {
+      id: 'msg9',
+      content: 'Sounds good, thank you!',
+      createdAt: '2023-10-27T09:15:00Z',
+      sender: {
+        id: '3',
+        name: 'Maria Garcia',
+        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      },
+    },
+  ],
 };
 
 const messagingService = new MessagingService();

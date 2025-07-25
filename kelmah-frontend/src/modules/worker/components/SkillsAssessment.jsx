@@ -11,5 +11,4 @@ const SkillsAssessment = () => {
   );
 };
 
-export default SkillsAssessment; 
-
+export default SkillsAssessment;

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-    Box,
+import {
+  Box,
   Paper,
-    Typography,
-    TextField,
-  Button, 
-  Grid, 
-    CircularProgress,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  CircularProgress,
   Alert,
   Divider,
   Card,
@@ -27,7 +27,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  FormHelperText
+  FormHelperText,
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -40,7 +40,7 @@ import {
   BusinessCenter,
   Schedule,
   Paid,
-  LocationOn
+  LocationOn,
 } from '@mui/icons-material';
 import jobsApi from '../../../../api/jobsApi';
 import { useAuth } from '../../auth/contexts/AuthContext';
@@ -51,7 +51,7 @@ import axiosInstance from '../../../../common/services/axios';
 const ApplicationPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-  overflow: 'hidden'
+  overflow: 'hidden',
 }));
 
 const JobInfoCard = styled(Card)(({ theme }) => ({
@@ -59,7 +59,7 @@ const JobInfoCard = styled(Card)(({ theme }) => ({
   boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
   marginBottom: theme.spacing(3),
   border: '1px solid',
-  borderColor: theme.palette.divider
+  borderColor: theme.palette.divider,
 }));
 
 const MilestoneCard = styled(Card)(({ theme }) => ({
@@ -67,32 +67,37 @@ const MilestoneCard = styled(Card)(({ theme }) => ({
   boxShadow: 'none',
   border: '1px solid',
   borderColor: theme.palette.divider,
-  marginBottom: theme.spacing(2)
+  marginBottom: theme.spacing(2),
 }));
 
 const ApplicationButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 4,
   padding: theme.spacing(1.2, 4),
-  fontWeight: 600
+  fontWeight: 600,
 }));
 
 function JobApplication() {
   const { id: jobId } = useParams();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const theme = useTheme();
-  
+
   // Application form steps
   const [activeStep, setActiveStep] = useState(0);
-  const steps = ['Job Overview', 'Your Proposal', 'Milestones', 'Review & Submit'];
-  
+  const steps = [
+    'Job Overview',
+    'Your Proposal',
+    'Milestones',
+    'Review & Submit',
+  ];
+
   // State
   const [job, setJob] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState(null);
+  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  
+
   // Form state
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
@@ -100,167 +105,169 @@ function JobApplication() {
     currency: 'GHS',
     estimatedDuration: '',
     attachments: [],
-    milestoneProposal: []
+    milestoneProposal: [],
   });
-  
+
   // Milestone form state
   const [currentMilestone, setCurrentMilestone] = useState({
     title: '',
     description: '',
     amount: '',
-    estimatedDays: ''
+    estimatedDays: '',
   });
 
   // Form validation
   const [formErrors, setFormErrors] = useState({});
-  
+
   // Fetch job details on component mount
-    useEffect(() => {
+  useEffect(() => {
     const fetchJobDetails = async () => {
-        try {
+      try {
         setLoading(true);
         const response = await jobsApi.getJobById(jobId);
         setJob(response.data);
-        
+
         // Set defaults from job
-        setApplicationData(prev => ({
+        setApplicationData((prev) => ({
           ...prev,
           proposedBudget: response.data.budget,
-          currency: response.data.currency || 'GHS'
+          currency: response.data.currency || 'GHS',
         }));
-        
+
         setError(null);
-        } catch (err) {
+      } catch (err) {
         setError(err.message || 'Failed to fetch job details');
       } finally {
-            setLoading(false);
-        }
+        setLoading(false);
+      }
     };
 
     fetchJobDetails();
   }, [jobId]);
-  
+
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setApplicationData(prev => ({
+    setApplicationData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error for this field if it exists
     if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: null }));
+      setFormErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
-  
+
   // Handle milestone input changes
   const handleMilestoneChange = (e) => {
     const { name, value } = e.target;
-    setCurrentMilestone(prev => ({
+    setCurrentMilestone((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   // Add a milestone to the proposal
   const handleAddMilestone = () => {
     // Validate milestone
     const errors = {};
     if (!currentMilestone.title) errors.milestoneTitle = 'Title is required';
     if (!currentMilestone.amount) errors.milestoneAmount = 'Amount is required';
-    
+
     if (Object.keys(errors).length > 0) {
       setFormErrors({ ...formErrors, ...errors });
       return;
     }
-    
+
     // Add milestone to proposal
-    setApplicationData(prev => ({
+    setApplicationData((prev) => ({
       ...prev,
-      milestoneProposal: [
-        ...prev.milestoneProposal,
-        { ...currentMilestone }
-      ]
+      milestoneProposal: [...prev.milestoneProposal, { ...currentMilestone }],
     }));
-    
+
     // Clear milestone form
     setCurrentMilestone({
       title: '',
       description: '',
       amount: '',
-      estimatedDays: ''
+      estimatedDays: '',
     });
   };
-  
+
   // Remove a milestone from the proposal
   const handleRemoveMilestone = (index) => {
-    setApplicationData(prev => ({
+    setApplicationData((prev) => ({
       ...prev,
-      milestoneProposal: prev.milestoneProposal.filter((_, i) => i !== index)
+      milestoneProposal: prev.milestoneProposal.filter((_, i) => i !== index),
     }));
   };
 
   // Handle file upload
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
-    const fileObjects = files.map(file => ({
+    const fileObjects = files.map((file) => ({
       file,
       name: file.name,
       size: file.size,
-      type: file.type
+      type: file.type,
     }));
-    
-    setApplicationData(prev => ({
+
+    setApplicationData((prev) => ({
       ...prev,
-      attachments: [...prev.attachments, ...fileObjects]
+      attachments: [...prev.attachments, ...fileObjects],
     }));
   };
 
   // Remove an attachment
   const handleRemoveAttachment = (index) => {
-    setApplicationData(prev => ({
+    setApplicationData((prev) => ({
       ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index)
+      attachments: prev.attachments.filter((_, i) => i !== index),
     }));
   };
 
   // Go to next step
   const handleNext = () => {
     const errors = validateStep(activeStep);
-    
+
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-    
-        setActiveStep(prev => prev + 1);
+
+    setActiveStep((prev) => prev + 1);
   };
 
   // Go to previous step
   const handleBack = () => {
-        setActiveStep(prev => prev - 1);
+    setActiveStep((prev) => prev - 1);
   };
 
   // Validate current step form inputs
   const validateStep = (step) => {
     const errors = {};
-    
+
     switch (step) {
       case 0: // Job Overview - no validation needed
         break;
       case 1: // Your Proposal
-        if (!applicationData.coverLetter) errors.coverLetter = 'Cover letter is required';
-        if (!applicationData.proposedBudget) errors.proposedBudget = 'Proposed budget is required';
+        if (!applicationData.coverLetter)
+          errors.coverLetter = 'Cover letter is required';
+        if (!applicationData.proposedBudget)
+          errors.proposedBudget = 'Proposed budget is required';
         break;
       case 2: // Milestones
         // Milestones are optional, but if any are added, they should total to the proposed budget
         if (applicationData.milestoneProposal.length > 0) {
           const totalMilestoneAmount = applicationData.milestoneProposal.reduce(
-            (sum, milestone) => sum + parseFloat(milestone.amount || 0), 0
+            (sum, milestone) => sum + parseFloat(milestone.amount || 0),
+            0,
           );
-          
-          if (totalMilestoneAmount !== parseFloat(applicationData.proposedBudget)) {
+
+          if (
+            totalMilestoneAmount !== parseFloat(applicationData.proposedBudget)
+          ) {
             errors.milestones = `Milestone amounts should total to the proposed budget (${applicationData.proposedBudget} ${applicationData.currency})`;
           }
         }
@@ -270,10 +277,10 @@ function JobApplication() {
       default:
         break;
     }
-    
+
     return errors;
   };
-  
+
   // Submit application
   const handleSubmit = async () => {
     // Final validation
@@ -282,7 +289,7 @@ function JobApplication() {
       const stepErrors = validateStep(i);
       combinedErrors = { ...combinedErrors, ...stepErrors };
     }
-    
+
     if (Object.keys(combinedErrors).length > 0) {
       setFormErrors(combinedErrors);
       // Go to the first step with errors
@@ -294,55 +301,63 @@ function JobApplication() {
       }
       return;
     }
-    
+
     try {
       // Process attachments properly
       let processedAttachments = [];
-      
+
       if (applicationData.attachments.length > 0) {
         setSubmitting(true);
-        
+
         try {
           // Create a FormData object for file uploads
           const formData = new FormData();
-          
+
           // Append each file to the FormData
           applicationData.attachments.forEach((attachment, index) => {
             formData.append(`file${index}`, attachment.file);
           });
-          
+
           // Upload the files first
-          const uploadResponse = await axiosInstance.post('/uploads', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-          
+          const uploadResponse = await axiosInstance.post(
+            '/uploads',
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            },
+          );
+
           // Get the file URLs from the response
-          processedAttachments = uploadResponse.data.files.map((fileData, index) => ({
-            fileName: applicationData.attachments[index].name,
-            fileSize: applicationData.attachments[index].size,
-            fileType: applicationData.attachments[index].type,
-            fileUrl: fileData.url,
-            fileId: fileData.id
-          }));
+          processedAttachments = uploadResponse.data.files.map(
+            (fileData, index) => ({
+              fileName: applicationData.attachments[index].name,
+              fileSize: applicationData.attachments[index].size,
+              fileType: applicationData.attachments[index].type,
+              fileUrl: fileData.url,
+              fileId: fileData.id,
+            }),
+          );
         } catch (uploadError) {
-          setError('Failed to upload attachments. ' + (uploadError.message || ''));
+          setError(
+            'Failed to upload attachments. ' + (uploadError.message || ''),
+          );
           setSubmitting(false);
           return;
         }
       }
-      
+
       // Create submission data with processed attachments
       const submissionData = {
         ...applicationData,
-        attachments: processedAttachments
+        attachments: processedAttachments,
       };
-      
+
       // Submit the application with attachment references
       await jobsApi.applyForJob(jobId, submissionData);
       setSuccess(true);
-      
+
       // Redirect after successful submission (with delay)
       setTimeout(() => {
         navigate('/dashboard/applications');
@@ -353,7 +368,7 @@ function JobApplication() {
       setSubmitting(false);
     }
   };
-  
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -361,7 +376,7 @@ function JobApplication() {
       </Box>
     );
   }
-  
+
   if (error && !job) {
     return (
       <Box sx={{ py: 3 }}>
@@ -377,8 +392,8 @@ function JobApplication() {
         </Button>
       </Box>
     );
-        }
-  
+  }
+
   if (success) {
     return (
       <Box sx={{ py: 3 }}>
@@ -398,7 +413,7 @@ function JobApplication() {
       </Box>
     );
   }
-  
+
   return (
     <Box sx={{ py: 3 }}>
       <Button
@@ -408,20 +423,28 @@ function JobApplication() {
       >
         Back to Job Details
       </Button>
-      
-      <Typography variant="h4" component="h1" gutterBottom fontWeight={700} color="primary">
+
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        fontWeight={700}
+        color="primary"
+      >
         Apply for Job
       </Typography>
-      
+
       <ApplicationPaper elevation={3} sx={{ mt: 3, overflow: 'hidden' }}>
         {/* Stepper */}
-        <Box sx={{ 
-          p: 3, 
-          pb: 2, 
-          bgcolor: theme.palette.background.default,
-          borderBottom: '1px solid',
-          borderColor: theme.palette.divider
-        }}>
+        <Box
+          sx={{
+            p: 3,
+            pb: 2,
+            bgcolor: theme.palette.background.default,
+            borderBottom: '1px solid',
+            borderColor: theme.palette.divider,
+          }}
+        >
           <Stepper activeStep={activeStep} alternativeLabel>
             {steps.map((label) => (
               <Step key={label}>
@@ -430,71 +453,96 @@ function JobApplication() {
             ))}
           </Stepper>
         </Box>
-        
+
         <Box sx={{ p: 3 }}>
           {/* Step content */}
           {activeStep === 0 && (
-        <Box>
+            <Box>
               <Typography variant="h6" gutterBottom>
                 Job Overview
               </Typography>
-              
+
               <JobInfoCard>
                 <CardContent>
                   <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-                {job?.title}
-            </Typography>
-                  
+                    {job?.title}
+                  </Typography>
+
                   <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
                         <AccountCircle color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
-                          <strong>Posted by:</strong> {job?.hirerName || 'Anonymous Client'}
+                          <strong>Posted by:</strong>{' '}
+                          {job?.hirerName || 'Anonymous Client'}
                         </Typography>
                       </Box>
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
                         <BusinessCenter color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
                           <strong>Category:</strong> {job?.category}
                         </Typography>
                       </Box>
                     </Grid>
-                    
+
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
                         <Paid color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
                           <strong>Budget:</strong> {job?.budget} {job?.currency}
                         </Typography>
                       </Box>
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
                         <Schedule color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
-                          <strong>Duration:</strong> {job?.duration || 'Not specified'} days
+                          <strong>Duration:</strong>{' '}
+                          {job?.duration || 'Not specified'} days
                         </Typography>
                       </Box>
                     </Grid>
                   </Grid>
-                  
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 600, mb: 1 }}
+                  >
                     Job Description
                   </Typography>
-                  
-                  <Typography variant="body2" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
-                {job?.description}
-            </Typography>
-                  
+
+                  <Typography
+                    variant="body2"
+                    sx={{ mb: 2, whiteSpace: 'pre-line' }}
+                  >
+                    {job?.description}
+                  </Typography>
+
                   {job?.skills?.length > 0 && (
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 600, mb: 1 }}
+                      >
                         Skills Required
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {job.skills.map((skill, index) => (
-                          <Chip key={index} label={skill} size="small" color="primary" variant="outlined" />
+                          <Chip
+                            key={index}
+                            label={skill}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
                         ))}
                       </Box>
                     </Box>
@@ -503,31 +551,34 @@ function JobApplication() {
               </JobInfoCard>
             </Box>
           )}
-          
+
           {activeStep === 1 && (
             <Box>
               <Typography variant="h6" gutterBottom>
                 Your Proposal
               </Typography>
-              
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-                <TextField
+
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
                     name="coverLetter"
                     label="Cover Letter"
                     fullWidth
-                multiline
+                    multiline
                     rows={6}
                     value={applicationData.coverLetter}
                     onChange={handleInputChange}
                     error={!!formErrors.coverLetter}
-                    helperText={formErrors.coverLetter || 'Introduce yourself and explain why you are the right person for this job'}
+                    helperText={
+                      formErrors.coverLetter ||
+                      'Introduce yourself and explain why you are the right person for this job'
+                    }
                     variant="outlined"
-                />
-            </Grid>
-                
+                  />
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                <TextField
+                  <TextField
                     name="proposedBudget"
                     label="Your Proposed Budget"
                     fullWidth
@@ -537,14 +588,18 @@ function JobApplication() {
                     error={!!formErrors.proposedBudget}
                     helperText={formErrors.proposedBudget}
                     InputProps={{
-                      startAdornment: <InputAdornment position="start">{applicationData.currency}</InputAdornment>
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          {applicationData.currency}
+                        </InputAdornment>
+                      ),
                     }}
                     variant="outlined"
-                />
-            </Grid>
-                
+                  />
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                <TextField
+                  <TextField
                     name="estimatedDuration"
                     label="Estimated Duration (days)"
                     fullWidth
@@ -554,15 +609,17 @@ function JobApplication() {
                     error={!!formErrors.estimatedDuration}
                     helperText={formErrors.estimatedDuration}
                     variant="outlined"
-                />
-            </Grid>
-                
+                  />
+                </Grid>
+
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" sx={{ mb: 1 }}>
                     Attachments
                   </Typography>
-                  
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                  >
                     <Button
                       variant="outlined"
                       component="label"
@@ -577,14 +634,17 @@ function JobApplication() {
                         onChange={handleFileUpload}
                       />
                     </Button>
-                    
+
                     {applicationData.attachments.length > 0 && (
                       <List>
                         {applicationData.attachments.map((file, index) => (
                           <ListItem
                             key={index}
                             secondaryAction={
-                              <IconButton edge="end" onClick={() => handleRemoveAttachment(index)}>
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleRemoveAttachment(index)}
+                              >
                                 <DeleteIcon />
                               </IconButton>
                             }
@@ -599,36 +659,37 @@ function JobApplication() {
                     )}
                   </Box>
                 </Grid>
-          </Grid>
+              </Grid>
             </Box>
           )}
-          
+
           {activeStep === 2 && (
             <Box>
               <Typography variant="h6" gutterBottom>
                 Proposed Milestones
               </Typography>
-              
+
               <Typography variant="body2" paragraph color="text.secondary">
-                Break down the project into milestones to structure the work and payments.
+                Break down the project into milestones to structure the work and
+                payments.
               </Typography>
-              
+
               <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={6}>
-                <TextField
+                  <TextField
                     name="title"
                     label="Milestone Title"
-                fullWidth
+                    fullWidth
                     value={currentMilestone.title}
                     onChange={handleMilestoneChange}
                     error={!!formErrors.milestoneTitle}
                     helperText={formErrors.milestoneTitle}
                     variant="outlined"
-              />
-            </Grid>
-                
+                  />
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                <TextField
+                  <TextField
                     name="amount"
                     label="Amount"
                     fullWidth
@@ -638,14 +699,18 @@ function JobApplication() {
                     error={!!formErrors.milestoneAmount}
                     helperText={formErrors.milestoneAmount}
                     InputProps={{
-                      startAdornment: <InputAdornment position="start">{applicationData.currency}</InputAdornment>
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          {applicationData.currency}
+                        </InputAdornment>
+                      ),
                     }}
                     variant="outlined"
-                />
-            </Grid>
-                
+                  />
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                <TextField
+                  <TextField
                     name="estimatedDays"
                     label="Estimated Days"
                     fullWidth
@@ -653,11 +718,17 @@ function JobApplication() {
                     value={currentMilestone.estimatedDays}
                     onChange={handleMilestoneChange}
                     variant="outlined"
-              />
-            </Grid>
-                
+                  />
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', height: '100%', alignItems: 'center' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      height: '100%',
+                      alignItems: 'center',
+                    }}
+                  >
                     <Button
                       variant="contained"
                       startIcon={<AddIcon />}
@@ -668,9 +739,9 @@ function JobApplication() {
                     </Button>
                   </Box>
                 </Grid>
-                
-            <Grid item xs={12}>
-                <TextField
+
+                <Grid item xs={12}>
+                  <TextField
                     name="description"
                     label="Milestone Description"
                     fullWidth
@@ -679,26 +750,32 @@ function JobApplication() {
                     value={currentMilestone.description}
                     onChange={handleMilestoneChange}
                     variant="outlined"
-                />
-            </Grid>
-          </Grid>
-              
+                  />
+                </Grid>
+              </Grid>
+
               {applicationData.milestoneProposal.length > 0 ? (
                 <Box>
                   <Typography variant="subtitle1" sx={{ mb: 2 }}>
                     Your Milestones
                   </Typography>
-                  
+
                   {formErrors.milestones && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                       {formErrors.milestones}
                     </Alert>
                   )}
-                  
+
                   {applicationData.milestoneProposal.map((milestone, index) => (
                     <MilestoneCard key={index} sx={{ mb: 2 }}>
                       <CardContent sx={{ py: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
                           <Typography variant="subtitle1" fontWeight={600}>
                             {index + 1}. {milestone.title}
                           </Typography>
@@ -727,37 +804,54 @@ function JobApplication() {
                           </Box>
                         </Box>
                         {milestone.description && (
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 1 }}
+                          >
                             {milestone.description}
                           </Typography>
                         )}
                       </CardContent>
                     </MilestoneCard>
                   ))}
-                  
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-                    <Typography variant="subtitle1">
-                      Total:
-                    </Typography>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary">
-                      {applicationData.milestoneProposal.reduce((sum, m) => sum + parseFloat(m.amount || 0), 0)} {applicationData.currency}
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mt: 3,
+                    }}
+                  >
+                    <Typography variant="subtitle1">Total:</Typography>
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={600}
+                      color="primary"
+                    >
+                      {applicationData.milestoneProposal.reduce(
+                        (sum, m) => sum + parseFloat(m.amount || 0),
+                        0,
+                      )}{' '}
+                      {applicationData.currency}
                     </Typography>
                   </Box>
                 </Box>
               ) : (
                 <Alert severity="info" sx={{ mt: 2 }}>
-                  Breaking your work into milestones can increase your chances of getting hired.
+                  Breaking your work into milestones can increase your chances
+                  of getting hired.
                 </Alert>
               )}
             </Box>
           )}
-          
+
           {activeStep === 3 && (
-        <Box>
-            <Typography variant="h6" gutterBottom>
+            <Box>
+              <Typography variant="h6" gutterBottom>
                 Review Your Application
-            </Typography>
-              
+              </Typography>
+
               <Accordion defaultExpanded>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
@@ -770,29 +864,33 @@ function JobApplication() {
                   </Typography>
                 </AccordionDetails>
               </Accordion>
-              
+
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
                     Budget & Duration
-            </Typography>
+                  </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-            <Grid container spacing={2}>
+                  <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2">
-                        <strong>Proposed Budget:</strong> {applicationData.proposedBudget} {applicationData.currency}
+                        <strong>Proposed Budget:</strong>{' '}
+                        {applicationData.proposedBudget}{' '}
+                        {applicationData.currency}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <Typography variant="body2">
-                        <strong>Estimated Duration:</strong> {applicationData.estimatedDuration || 'Not specified'} days
+                        <strong>Estimated Duration:</strong>{' '}
+                        {applicationData.estimatedDuration || 'Not specified'}{' '}
+                        days
                       </Typography>
                     </Grid>
                   </Grid>
                 </AccordionDetails>
               </Accordion>
-              
+
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
@@ -802,14 +900,22 @@ function JobApplication() {
                 <AccordionDetails>
                   {applicationData.milestoneProposal.length > 0 ? (
                     <List>
-                      {applicationData.milestoneProposal.map((milestone, index) => (
-                        <ListItem key={index} divider={index < applicationData.milestoneProposal.length - 1}>
-                          <ListItemText
-                            primary={`${index + 1}. ${milestone.title} (${milestone.amount} ${applicationData.currency})`}
-                            secondary={milestone.description}
-                          />
-                        </ListItem>
-                      ))}
+                      {applicationData.milestoneProposal.map(
+                        (milestone, index) => (
+                          <ListItem
+                            key={index}
+                            divider={
+                              index <
+                              applicationData.milestoneProposal.length - 1
+                            }
+                          >
+                            <ListItemText
+                              primary={`${index + 1}. ${milestone.title} (${milestone.amount} ${applicationData.currency})`}
+                              secondary={milestone.description}
+                            />
+                          </ListItem>
+                        ),
+                      )}
                     </List>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
@@ -818,7 +924,7 @@ function JobApplication() {
                   )}
                 </AccordionDetails>
               </Accordion>
-              
+
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
@@ -829,7 +935,12 @@ function JobApplication() {
                   {applicationData.attachments.length > 0 ? (
                     <List>
                       {applicationData.attachments.map((file, index) => (
-                        <ListItem key={index} divider={index < applicationData.attachments.length - 1}>
+                        <ListItem
+                          key={index}
+                          divider={
+                            index < applicationData.attachments.length - 1
+                          }
+                        >
                           <ListItemText
                             primary={file.name}
                             secondary={`${(file.size / 1024).toFixed(1)} KB`}
@@ -844,7 +955,7 @@ function JobApplication() {
                   )}
                 </AccordionDetails>
               </Accordion>
-              
+
               {error && (
                 <Alert severity="error" sx={{ mt: 3 }}>
                   {error}
@@ -852,7 +963,7 @@ function JobApplication() {
               )}
             </Box>
           )}
-          
+
           {/* Navigation buttons */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
             <Button
@@ -863,7 +974,7 @@ function JobApplication() {
             >
               Back
             </Button>
-            
+
             <Box>
               {activeStep === steps.length - 1 ? (
                 <ApplicationButton
@@ -871,27 +982,31 @@ function JobApplication() {
                   color="primary"
                   onClick={handleSubmit}
                   disabled={submitting}
-                  endIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                  endIcon={
+                    submitting ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      <SendIcon />
+                    )
+                  }
                 >
                   {submitting ? 'Submitting...' : 'Submit Application'}
                 </ApplicationButton>
               ) : (
                 <ApplicationButton
-                                variant="contained"
+                  variant="contained"
                   color="primary"
-                                onClick={handleNext}
-                            >
-                                Next
+                  onClick={handleNext}
+                >
+                  Next
                 </ApplicationButton>
-            )}
+              )}
             </Box>
           </Box>
         </Box>
       </ApplicationPaper>
-        </Box>
-    );
+    </Box>
+  );
 }
 
-export default JobApplication; 
-
-
+export default JobApplication;

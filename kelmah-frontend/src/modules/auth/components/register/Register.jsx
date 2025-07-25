@@ -20,24 +20,29 @@ import {
   IconButton,
   Alert,
   CircularProgress,
-  Checkbox
+  Checkbox,
 } from '@mui/material';
-import { 
-  Visibility, 
-  VisibilityOff, 
+import {
+  Visibility,
+  VisibilityOff,
   Person as PersonIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
   Work as WorkIcon,
   Business as BusinessIcon,
   Google as GoogleIcon,
-  LinkedIn as LinkedInIcon
+  LinkedIn as LinkedInIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 
 const Register = () => {
-  const steps = ['Account Type', 'Personal Information', 'Account Details', 'Review'];
+  const steps = [
+    'Account Type',
+    'Personal Information',
+    'Account Details',
+    'Review',
+  ];
   const [activeStep, setActiveStep] = useState(0);
   const [accountType, setAccountType] = useState('worker');
   const [firstName, setFirstName] = useState('');
@@ -51,10 +56,10 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleNext = () => {
     if (activeStep === steps.length - 1) {
       handleSubmit();
@@ -62,11 +67,11 @@ const Register = () => {
       setActiveStep((prevStep) => prevStep + 1);
     }
   };
-  
+
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
-  
+
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
     if (name === 'acceptTerms') {
@@ -81,16 +86,16 @@ const Register = () => {
       if (name === 'role') setAccountType(value);
       if (name === 'companyName') setCompanyName(value);
     }
-    
+
     // Clear error when field is modified
     if (error) {
       setError('');
     }
   };
-  
+
   const validateStep = () => {
     let isValid = true;
-    
+
     if (activeStep === 0) {
       if (!firstName || !lastName || !email || !phone) {
         setError('Please fill out all required fields');
@@ -122,13 +127,13 @@ const Register = () => {
         isValid = false;
       }
     }
-    
+
     return isValid;
   };
-  
+
   const handleSubmit = async () => {
     if (!validateStep()) return;
-    
+
     try {
       setLoading(true);
       const userData = {
@@ -139,9 +144,9 @@ const Register = () => {
         password,
         role: accountType,
         ...(accountType === 'hirer' && { companyName }),
-        acceptTerms
+        acceptTerms,
       };
-      
+
       await register(userData);
       navigate('/login', { state: { registered: true } });
     } catch (err) {
@@ -151,7 +156,7 @@ const Register = () => {
       setLoading(false);
     }
   };
-  
+
   // Render step content based on active step
   const getStepContent = (step) => {
     switch (step) {
@@ -164,20 +169,29 @@ const Register = () => {
                   I want to:
                 </Typography>
               </FormLabel>
-              <RadioGroup 
-                value={accountType} 
+              <RadioGroup
+                value={accountType}
                 onChange={(e) => setAccountType(e.target.value)}
               >
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <Paper 
+                    <Paper
                       elevation={accountType === 'worker' ? 8 : 2}
-                      sx={{ 
-                        p: 2, 
-                        borderRadius: 3, 
-                        border: accountType === 'worker' ? '3px solid #FFD700' : '2px solid #444',
-                        background: accountType === 'worker' ? 'rgba(255, 215, 0, 0.13)' : 'rgba(38,38,38,0.85)',
-                        boxShadow: accountType === 'worker' ? '0 4px 24px 0 rgba(255,215,0,0.13)' : '0 2px 8px 0 rgba(0,0,0,0.10)',
+                      sx={{
+                        p: 2,
+                        borderRadius: 3,
+                        border:
+                          accountType === 'worker'
+                            ? '3px solid #FFD700'
+                            : '2px solid #444',
+                        background:
+                          accountType === 'worker'
+                            ? 'rgba(255, 215, 0, 0.13)'
+                            : 'rgba(38,38,38,0.85)',
+                        boxShadow:
+                          accountType === 'worker'
+                            ? '0 4px 24px 0 rgba(255,215,0,0.13)'
+                            : '0 2px 8px 0 rgba(0,0,0,0.10)',
                         color: accountType === 'worker' ? '#FFD700' : '#fff',
                         cursor: 'pointer',
                         transition: 'all 0.3s',
@@ -197,7 +211,13 @@ const Register = () => {
                         value="worker"
                         control={<Radio />}
                         label={
-                          <Box sx={{ display: 'flex', flexDirection: 'column', ml: 1 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              ml: 1,
+                            }}
+                          >
                             <Typography variant="h6">Find Work</Typography>
                             <Typography variant="body2" color="text.secondary">
                               I'm looking for work and want to bid on jobs
@@ -209,14 +229,23 @@ const Register = () => {
                     </Paper>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Paper 
+                    <Paper
                       elevation={accountType === 'hirer' ? 8 : 2}
-                      sx={{ 
-                        p: 2, 
-                        borderRadius: 3, 
-                        border: accountType === 'hirer' ? '3px solid #FFD700' : '2px solid #444',
-                        background: accountType === 'hirer' ? 'rgba(255, 215, 0, 0.13)' : 'rgba(38,38,38,0.85)',
-                        boxShadow: accountType === 'hirer' ? '0 4px 24px 0 rgba(255,215,0,0.13)' : '0 2px 8px 0 rgba(0,0,0,0.10)',
+                      sx={{
+                        p: 2,
+                        borderRadius: 3,
+                        border:
+                          accountType === 'hirer'
+                            ? '3px solid #FFD700'
+                            : '2px solid #444',
+                        background:
+                          accountType === 'hirer'
+                            ? 'rgba(255, 215, 0, 0.13)'
+                            : 'rgba(38,38,38,0.85)',
+                        boxShadow:
+                          accountType === 'hirer'
+                            ? '0 4px 24px 0 rgba(255,215,0,0.13)'
+                            : '0 2px 8px 0 rgba(0,0,0,0.10)',
                         color: accountType === 'hirer' ? '#FFD700' : '#fff',
                         cursor: 'pointer',
                         transition: 'all 0.3s',
@@ -236,7 +265,13 @@ const Register = () => {
                         value="hirer"
                         control={<Radio />}
                         label={
-                          <Box sx={{ display: 'flex', flexDirection: 'column', ml: 1 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              ml: 1,
+                            }}
+                          >
                             <Typography variant="h6">Hire Talent</Typography>
                             <Typography variant="body2" color="text.secondary">
                               I want to hire skilled professionals
@@ -406,36 +441,38 @@ const Register = () => {
             <Typography variant="h6" gutterBottom>
               Review Your Information
             </Typography>
-            
+
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2">Account Type:</Typography>
                 <Typography variant="body1" gutterBottom>
-                  {accountType === 'worker' ? 'Worker (Find Work)' : 'Hirer (Hire Talent)'}
+                  {accountType === 'worker'
+                    ? 'Worker (Find Work)'
+                    : 'Hirer (Hire Talent)'}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2">Name:</Typography>
                 <Typography variant="body1" gutterBottom>
                   {firstName} {lastName}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2">Email:</Typography>
                 <Typography variant="body1" gutterBottom>
                   {email}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2">Phone:</Typography>
                 <Typography variant="body1" gutterBottom>
                   {phone}
                 </Typography>
               </Grid>
-              
+
               {accountType === 'hirer' && (
                 <Grid item xs={12}>
                   <Typography variant="subtitle2">Company:</Typography>
@@ -445,9 +482,10 @@ const Register = () => {
                 </Grid>
               )}
             </Grid>
-            
+
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              By clicking "Register", you agree to our Terms of Service and Privacy Policy.
+              By clicking "Register", you agree to our Terms of Service and
+              Privacy Policy.
             </Typography>
           </Box>
         );
@@ -455,27 +493,57 @@ const Register = () => {
         return 'Unknown step';
     }
   };
-  
+
   return (
-    <Paper elevation={6} sx={{
-      p: { xs: 2, sm: 4 },
-      maxWidth: 700,
-      mx: 'auto',
-      borderRadius: 4,
-      background: 'rgba(38, 38, 38, 0.98)',
-      boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)',
-      border: '2px solid #FFD700',
-      backdropFilter: 'blur(10px)',
-    }}>
+    <Paper
+      elevation={6}
+      sx={{
+        p: { xs: 2, sm: 4 },
+        maxWidth: 700,
+        mx: 'auto',
+        borderRadius: 4,
+        background: 'rgba(38, 38, 38, 0.98)',
+        boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)',
+        border: '2px solid #FFD700',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ color: '#FFD700', fontWeight: 800, fontSize: { xs: '2rem', sm: '2.5rem' }, letterSpacing: 1, textShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>
+        <Typography
+          variant="h3"
+          component="h1"
+          gutterBottom
+          sx={{
+            color: '#FFD700',
+            fontWeight: 800,
+            fontSize: { xs: '2rem', sm: '2.5rem' },
+            letterSpacing: 1,
+            textShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          }}
+        >
           Create Your Account
         </Typography>
-        <Typography variant="h6" color="#fff" sx={{ fontWeight: 500, fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+        <Typography
+          variant="h6"
+          color="#fff"
+          sx={{ fontWeight: 500, fontSize: { xs: '1rem', sm: '1.2rem' } }}
+        >
           Join Kelmah to find work or hire talent
         </Typography>
       </Box>
-      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4, '& .MuiStepLabel-label': { color: '#FFD700', fontWeight: 700, fontSize: '1.1rem' }, '& .MuiStepIcon-root': { color: '#FFD700 !important' } }}>
+      <Stepper
+        activeStep={activeStep}
+        alternativeLabel
+        sx={{
+          mb: 4,
+          '& .MuiStepLabel-label': {
+            color: '#FFD700',
+            fontWeight: 700,
+            fontSize: '1.1rem',
+          },
+          '& .MuiStepIcon-root': { color: '#FFD700 !important' },
+        }}
+      >
         {steps.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
@@ -500,7 +568,10 @@ const Register = () => {
             py: 1.5,
             borderColor: '#FFD700',
             color: activeStep === 0 ? '#FFD70099' : '#FFD700',
-            background: activeStep === 0 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+            background:
+              activeStep === 0
+                ? 'rgba(255,255,255,0.08)'
+                : 'rgba(255,255,255,0.04)',
             boxShadow: '0 2px 8px 0 rgba(255,215,0,0.08)',
             opacity: activeStep === 0 ? 0.7 : 1,
             cursor: activeStep === 0 ? 'not-allowed' : 'pointer',
@@ -560,15 +631,15 @@ const Register = () => {
         </Typography>
         <Divider sx={{ my: 3, borderColor: '#FFD700' }}>
           <Typography variant="body2" color="#FFD700" sx={{ fontWeight: 700 }}>
-                OR
-              </Typography>
-            </Divider>
-            <Grid container spacing={2}>
+            OR
+          </Typography>
+        </Divider>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<GoogleIcon />}
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<GoogleIcon />}
               sx={{
                 py: 1.5,
                 fontWeight: 700,
@@ -583,15 +654,15 @@ const Register = () => {
                   borderColor: '#4285F4',
                 },
               }}
-                >
-                  Google
-                </Button>
-              </Grid>
+            >
+              Google
+            </Button>
+          </Grid>
           <Grid item xs={12} sm={6}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<LinkedInIcon />}
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<LinkedInIcon />}
               sx={{
                 py: 1.5,
                 fontWeight: 700,
@@ -606,14 +677,14 @@ const Register = () => {
                   borderColor: '#0077B5',
                 },
               }}
-                >
-                  LinkedIn
-                </Button>
-              </Grid>
-            </Grid>
+            >
+              LinkedIn
+            </Button>
+          </Grid>
+        </Grid>
       </Box>
     </Paper>
   );
 };
 
-export default Register; 
+export default Register;

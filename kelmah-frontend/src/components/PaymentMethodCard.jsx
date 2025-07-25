@@ -4,15 +4,15 @@ import { CreditCard as CreditCardIcon } from '@mui/icons-material';
 
 const PaymentMethodCard = ({ method, onEdit }) => {
   return (
-    <Paper 
-      elevation={1} 
-      sx={{ 
-        mb: 2, 
-        p: 2, 
+    <Paper
+      elevation={1}
+      sx={{
+        mb: 2,
+        p: 2,
         borderLeft: method.isDefault ? '4px solid #4caf50' : 'none',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -21,11 +21,11 @@ const PaymentMethodCard = ({ method, onEdit }) => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="subtitle1">{method.cardNumber}</Typography>
             {method.isDefault && (
-              <Chip 
-                label="Default" 
-                size="small" 
-                color="success" 
-                sx={{ ml: 1, height: 20 }} 
+              <Chip
+                label="Default"
+                size="small"
+                color="success"
+                sx={{ ml: 1, height: 20 }}
               />
             )}
           </Box>
@@ -37,12 +37,9 @@ const PaymentMethodCard = ({ method, onEdit }) => {
           </Typography>
         </Box>
       </Box>
-      
+
       <Box>
-        <Button
-          size="small"
-          onClick={() => onEdit(method)}
-        >
+        <Button size="small" onClick={() => onEdit(method)}>
           Edit
         </Button>
       </Box>
@@ -50,4 +47,4 @@ const PaymentMethodCard = ({ method, onEdit }) => {
   );
 };
 
-export default PaymentMethodCard; 
+export default PaymentMethodCard;

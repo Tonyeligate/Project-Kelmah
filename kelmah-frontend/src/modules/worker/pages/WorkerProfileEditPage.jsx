@@ -39,10 +39,13 @@ import {
   School as EducationIcon,
   Language as LanguageIcon,
   Description as DescriptionIcon,
-  Build as SkillsIcon
+  Build as SkillsIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { updateWorkerProfile, fetchWorkerProfile } from '../services/workerSlice';
+import {
+  updateWorkerProfile,
+  fetchWorkerProfile,
+} from '../services/workerSlice';
 
 const Input = styled('input')({
   display: 'none',
@@ -53,16 +56,16 @@ const WorkerProfileEditPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  const { user } = useSelector(state => state.auth);
-  const { profile, loading, error } = useSelector(state => state.worker);
-  
+
+  const { user } = useSelector((state) => state.auth);
+  const { profile, loading, error } = useSelector((state) => state.worker);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'success'
+    severity: 'success',
   });
-  
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -76,19 +79,26 @@ const WorkerProfileEditPage = () => {
     location: '',
     phone: '',
     profileImage: null,
-    portfolio: []
+    portfolio: [],
   });
-  
+
   const [imagePreview, setImagePreview] = useState(null);
   const [newSkill, setNewSkill] = useState('');
-  const [newEducation, setNewEducation] = useState({ degree: '', institution: '', year: '' });
-  const [newLanguage, setNewLanguage] = useState({ language: '', proficiency: 'Beginner' });
-  
+  const [newEducation, setNewEducation] = useState({
+    degree: '',
+    institution: '',
+    year: '',
+  });
+  const [newLanguage, setNewLanguage] = useState({
+    language: '',
+    proficiency: 'Beginner',
+  });
+
   // Load profile data when component mounts
   useEffect(() => {
     dispatch(fetchWorkerProfile())
       .unwrap()
-      .then(profile => {
+      .then((profile) => {
         // Populate form with existing profile data
         setFormData({
           firstName: profile.firstName || user?.firstName || '',
@@ -103,37 +113,37 @@ const WorkerProfileEditPage = () => {
           location: profile.location || '',
           phone: profile.phone || '',
           profileImage: null, // Will be populated only when user changes it
-          portfolio: profile.portfolio || []
+          portfolio: profile.portfolio || [],
         });
-        
+
         setImagePreview(profile.profileImageUrl);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error loading profile:', err);
         setSnackbar({
           open: true,
           message: 'Failed to load profile. Please try again.',
-          severity: 'error'
+          severity: 'error',
         });
       });
   }, [dispatch, user]);
-  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        profileImage: file
+        profileImage: file,
       }));
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -142,158 +152,166 @@ const WorkerProfileEditPage = () => {
       reader.readAsDataURL(file);
     }
   };
-  
+
   // Skills handling
   const handleAddSkill = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
+        skills: [...prev.skills, newSkill.trim()],
       }));
       setNewSkill('');
     }
   };
-  
+
   const handleRemoveSkill = (skillToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.filter(skill => skill !== skillToRemove)
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
   };
-  
+
   // Education handling
   const handleEducationChange = (e) => {
     const { name, value } = e.target;
-    setNewEducation(prev => ({
+    setNewEducation((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   const handleAddEducation = () => {
     if (newEducation.degree && newEducation.institution) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        education: [...prev.education, { ...newEducation }]
+        education: [...prev.education, { ...newEducation }],
       }));
       setNewEducation({ degree: '', institution: '', year: '' });
     }
   };
-  
+
   const handleRemoveEducation = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      education: prev.education.filter((_, i) => i !== index)
+      education: prev.education.filter((_, i) => i !== index),
     }));
   };
-  
+
   // Language handling
   const handleLanguageChange = (e) => {
     const { name, value } = e.target;
-    setNewLanguage(prev => ({
+    setNewLanguage((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   const handleAddLanguage = () => {
     if (newLanguage.language) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        languages: [...prev.languages, { ...newLanguage }]
+        languages: [...prev.languages, { ...newLanguage }],
       }));
       setNewLanguage({ language: '', proficiency: 'Beginner' });
     }
   };
-  
+
   const handleRemoveLanguage = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      languages: prev.languages.filter((_, i) => i !== index)
+      languages: prev.languages.filter((_, i) => i !== index),
     }));
   };
-  
+
   // Portfolio handling
   const handleAddPortfolioItem = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      portfolio: [...prev.portfolio, { title: '', description: '', image: null, imagePreview: null }]
+      portfolio: [
+        ...prev.portfolio,
+        { title: '', description: '', image: null, imagePreview: null },
+      ],
     }));
   };
-  
+
   const handleRemovePortfolioItem = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      portfolio: prev.portfolio.filter((_, i) => i !== index)
+      portfolio: prev.portfolio.filter((_, i) => i !== index),
     }));
   };
-  
+
   const handlePortfolioItemChange = (index, field, value) => {
     const updatedPortfolio = [...formData.portfolio];
     updatedPortfolio[index] = {
       ...updatedPortfolio[index],
-      [field]: value
+      [field]: value,
     };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      portfolio: updatedPortfolio
+      portfolio: updatedPortfolio,
     }));
   };
-  
+
   const handlePortfolioImageChange = (e, index) => {
     const file = e.target.files[0];
     if (file) {
       const updatedPortfolio = [...formData.portfolio];
       updatedPortfolio[index] = {
         ...updatedPortfolio[index],
-        image: file
+        image: file,
       };
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         updatedPortfolio[index].imagePreview = reader.result;
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          portfolio: updatedPortfolio
+          portfolio: updatedPortfolio,
         }));
       };
       reader.readAsDataURL(file);
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Create FormData for file uploads
     const profileFormData = new FormData();
-    
+
     // Add profile fields
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       if (key === 'profileImage' && formData[key]) {
         profileFormData.append('profileImage', formData[key]);
-      } else if (key === 'skills' || key === 'education' || key === 'languages' || key === 'portfolio') {
+      } else if (
+        key === 'skills' ||
+        key === 'education' ||
+        key === 'languages' ||
+        key === 'portfolio'
+      ) {
         profileFormData.append(key, JSON.stringify(formData[key]));
       } else {
         profileFormData.append(key, formData[key]);
       }
     });
-    
+
     // Add portfolio images if any
     formData.portfolio.forEach((item, index) => {
       if (item.image) {
         profileFormData.append(`portfolioImage${index}`, item.image);
       }
     });
-    
+
     try {
       await dispatch(updateWorkerProfile(profileFormData)).unwrap();
       setSnackbar({
         open: true,
         message: 'Profile updated successfully!',
-        severity: 'success'
+        severity: 'success',
       });
-      
+
       // Navigate back to profile page after successful update
       setTimeout(() => {
         navigate('/worker/profile');
@@ -303,22 +321,22 @@ const WorkerProfileEditPage = () => {
       setSnackbar({
         open: true,
         message: 'Failed to update profile. Please try again.',
-        severity: 'error'
+        severity: 'error',
       });
     }
   };
-  
+
   const handleCancel = () => {
     navigate('/worker/profile');
   };
-  
+
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({
+    setSnackbar((prev) => ({
       ...prev,
-      open: false
+      open: false,
     }));
   };
-  
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
@@ -329,32 +347,47 @@ const WorkerProfileEditPage = () => {
           Complete your profile to attract more job opportunities
         </Typography>
       </Box>
-      
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Basic Information
           </Typography>
-          
+
           {/* Profile Image */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mb: 4,
+            }}
+          >
             <Avatar
               src={imagePreview}
               alt={`${formData.firstName} ${formData.lastName}`}
@@ -376,7 +409,7 @@ const WorkerProfileEditPage = () => {
               </Button>
             </label>
           </Box>
-          
+
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -458,13 +491,17 @@ const WorkerProfileEditPage = () => {
             </Grid>
           </Grid>
         </Paper>
-        
+
         {/* Professional Info */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Professional Information
           </Typography>
-          
+
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -512,7 +549,10 @@ const WorkerProfileEditPage = () => {
                 placeholder="Tell potential clients about yourself, your experience, and why they should hire you."
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}>
+                    <InputAdornment
+                      position="start"
+                      sx={{ alignSelf: 'flex-start', mt: 1.5 }}
+                    >
                       <DescriptionIcon />
                     </InputAdornment>
                   ),
@@ -521,13 +561,17 @@ const WorkerProfileEditPage = () => {
             </Grid>
           </Grid>
         </Paper>
-        
+
         {/* Skills */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Skills
           </Typography>
-          
+
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', mb: 2 }}>
               <TextField
@@ -554,7 +598,7 @@ const WorkerProfileEditPage = () => {
                 Add
               </Button>
             </Box>
-            
+
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {formData.skills.map((skill, index) => (
                 <Chip
@@ -568,13 +612,17 @@ const WorkerProfileEditPage = () => {
             </Box>
           </Box>
         </Paper>
-        
+
         {/* Education */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Education & Certifications
           </Typography>
-          
+
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={5}>
               <TextField
@@ -624,18 +672,24 @@ const WorkerProfileEditPage = () => {
               </Button>
             </Grid>
           </Grid>
-          
+
           {formData.education.length > 0 && (
             <Box>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle1" gutterBottom>
                 Added Education & Certifications
               </Typography>
-              
+
               {formData.education.map((edu, index) => (
                 <Card key={index} variant="outlined" sx={{ mb: 1 }}>
                   <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Box>
                         <Typography variant="subtitle1">
                           {edu.degree}
@@ -658,13 +712,17 @@ const WorkerProfileEditPage = () => {
             </Box>
           )}
         </Paper>
-        
+
         {/* Languages */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Languages
           </Typography>
-          
+
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -685,7 +743,9 @@ const WorkerProfileEditPage = () => {
             </Grid>
             <Grid item xs={12} sm={5}>
               <FormControl fullWidth>
-                <InputLabel id="language-proficiency-label">Proficiency</InputLabel>
+                <InputLabel id="language-proficiency-label">
+                  Proficiency
+                </InputLabel>
                 <Select
                   labelId="language-proficiency-label"
                   name="proficiency"
@@ -711,18 +771,24 @@ const WorkerProfileEditPage = () => {
               </Button>
             </Grid>
           </Grid>
-          
+
           {formData.languages.length > 0 && (
             <Box>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle1" gutterBottom>
                 Added Languages
               </Typography>
-              
+
               {formData.languages.map((lang, index) => (
                 <Card key={index} variant="outlined" sx={{ mb: 1 }}>
                   <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Box>
                         <Typography variant="subtitle1">
                           {lang.language}
@@ -745,17 +811,21 @@ const WorkerProfileEditPage = () => {
             </Box>
           )}
         </Paper>
-        
+
         {/* Portfolio */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Portfolio
           </Typography>
-          
+
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Add examples of your previous work to showcase your skills
           </Typography>
-          
+
           <Button
             variant="outlined"
             onClick={handleAddPortfolioItem}
@@ -764,7 +834,7 @@ const WorkerProfileEditPage = () => {
           >
             Add Portfolio Item
           </Button>
-          
+
           <Grid container spacing={3}>
             {formData.portfolio.map((item, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
@@ -783,25 +853,37 @@ const WorkerProfileEditPage = () => {
                         <DeleteIcon />
                       </IconButton>
                     </Box>
-                    
+
                     <TextField
                       fullWidth
                       label="Title"
                       value={item.title || ''}
-                      onChange={(e) => handlePortfolioItemChange(index, 'title', e.target.value)}
+                      onChange={(e) =>
+                        handlePortfolioItemChange(
+                          index,
+                          'title',
+                          e.target.value,
+                        )
+                      }
                       sx={{ mb: 2 }}
                     />
-                    
+
                     <TextField
                       fullWidth
                       label="Description"
                       value={item.description || ''}
-                      onChange={(e) => handlePortfolioItemChange(index, 'description', e.target.value)}
+                      onChange={(e) =>
+                        handlePortfolioItemChange(
+                          index,
+                          'description',
+                          e.target.value,
+                        )
+                      }
                       multiline
                       rows={2}
                       sx={{ mb: 2 }}
                     />
-                    
+
                     <Box sx={{ textAlign: 'center' }}>
                       {item.imagePreview || item.image ? (
                         <Box
@@ -813,7 +895,7 @@ const WorkerProfileEditPage = () => {
                             height: 150,
                             objectFit: 'cover',
                             mb: 2,
-                            borderRadius: 1
+                            borderRadius: 1,
                           }}
                         />
                       ) : (
@@ -826,7 +908,7 @@ const WorkerProfileEditPage = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             mb: 2,
-                            borderRadius: 1
+                            borderRadius: 1,
                           }}
                         >
                           <Typography variant="body2" color="text.secondary">
@@ -834,7 +916,7 @@ const WorkerProfileEditPage = () => {
                           </Typography>
                         </Box>
                       )}
-                      
+
                       <label htmlFor={`portfolio-image-${index}`}>
                         <Input
                           accept="image/*"
@@ -848,7 +930,9 @@ const WorkerProfileEditPage = () => {
                           size="small"
                           startIcon={<CameraIcon />}
                         >
-                          {item.imagePreview || item.image ? 'Change Image' : 'Add Image'}
+                          {item.imagePreview || item.image
+                            ? 'Change Image'
+                            : 'Add Image'}
                         </Button>
                       </label>
                     </Box>
@@ -858,7 +942,7 @@ const WorkerProfileEditPage = () => {
             ))}
           </Grid>
         </Paper>
-        
+
         {/* Action buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
           <Button
@@ -870,7 +954,7 @@ const WorkerProfileEditPage = () => {
           >
             Cancel
           </Button>
-          
+
           <Button
             type="submit"
             variant="contained"
@@ -887,7 +971,4 @@ const WorkerProfileEditPage = () => {
   );
 };
 
-export default WorkerProfileEditPage; 
-
-
-
+export default WorkerProfileEditPage;

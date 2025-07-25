@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { 
-  Box, Typography, List, ListItem, ListItemIcon, ListItemText, Divider, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions, Stepper, Step, StepLabel,
-  CircularProgress
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stepper,
+  Step,
+  StepLabel,
+  CircularProgress,
 } from '@mui/material';
 import DashboardCard from '../common/DashboardCard';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
@@ -20,9 +33,9 @@ const Credentials = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [verifiedSkillIds, setVerifiedSkillIds] = useState(
-    skills.filter(s => s.verified).map(s => s.name)
+    skills.filter((s) => s.verified).map((s) => s.name),
   );
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeSkill, setActiveSkill] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
@@ -30,10 +43,10 @@ const Credentials = () => {
   const [isComplete, setIsComplete] = useState(false);
 
   const steps = [
-    'Upload Documentation', 
-    'Verification Review', 
-    'Skills Assessment', 
-    'Certification'
+    'Upload Documentation',
+    'Verification Review',
+    'Skills Assessment',
+    'Certification',
   ];
 
   // Fetch skills and licenses
@@ -42,10 +55,12 @@ const Credentials = () => {
       try {
         setIsLoading(true);
         const data = await workersApi.getSkillsAndLicenses();
-        
+
         setSkills(data.skills || []);
         setLicenses(data.licenses || []);
-        setVerifiedSkillIds(data.skills.filter(s => s.verified).map(s => s.id));
+        setVerifiedSkillIds(
+          data.skills.filter((s) => s.verified).map((s) => s.id),
+        );
         setError(null);
       } catch (err) {
         console.error('Error fetching credentials:', err);
@@ -75,26 +90,28 @@ const Credentials = () => {
     if (activeStep === steps.length - 1) {
       // Final step - submit verification request
       setIsProcessing(true);
-      
+
       try {
         // Send verification request to API
         await workersApi.requestSkillVerification(activeSkill.id, {
           // Include verification data if needed
           documentUrls: [], // Would be populated in a real implementation
-          notes: 'Verification requested through worker dashboard'
+          notes: 'Verification requested through worker dashboard',
         });
-        
+
         setIsComplete(true);
-        
+
         // Add to verified skills (in a real app, this would be pending until approved)
-        setVerifiedSkillIds(prev => [...prev, activeSkill.id]);
-        
+        setVerifiedSkillIds((prev) => [...prev, activeSkill.id]);
+
         // Update skills list
-        setSkills(prev => prev.map(skill => 
-          skill.id === activeSkill.id 
-            ? { ...skill, verified: true, verificationStatus: 'pending' } 
-            : skill
-        ));
+        setSkills((prev) =>
+          prev.map((skill) =>
+            skill.id === activeSkill.id
+              ? { ...skill, verified: true, verificationStatus: 'pending' }
+              : skill,
+          ),
+        );
       } catch (err) {
         console.error('Error requesting verification:', err);
         // Handle error (would show error message in real implementation)
@@ -121,8 +138,8 @@ const Credentials = () => {
       <DashboardCard title="Credentials & Skills">
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography color="error">{error}</Typography>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             sx={{ mt: 2 }}
             onClick={() => window.location.reload()}
           >
@@ -134,15 +151,24 @@ const Credentials = () => {
   }
 
   // Recalculate which skills are verified based on our state
-  const verifiedSkills = skills.filter(s => verifiedSkillIds.includes(s.name));
-  const unverifiedSkills = skills.filter(s => !verifiedSkillIds.includes(s.name));
+  const verifiedSkills = skills.filter((s) =>
+    verifiedSkillIds.includes(s.name),
+  );
+  const unverifiedSkills = skills.filter(
+    (s) => !verifiedSkillIds.includes(s.name),
+  );
 
   return (
     <DashboardCard title="Credentials & Skills">
       {/* Verified Skills Section */}
       {verifiedSkills.length > 0 && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography
+            variant="subtitle1"
+            fontWeight="bold"
+            color="text.secondary"
+            sx={{ mb: 1 }}
+          >
             Verified Skills
           </Typography>
           <List dense sx={{ p: 0 }}>
@@ -151,7 +177,12 @@ const Credentials = () => {
                 <ListItemIcon sx={{ minWidth: 36, color: 'success.main' }}>
                   <VerifiedUserIcon />
                 </ListItemIcon>
-                <ListItemText primary={skill.name} sx={{ '& .MuiListItemText-primary': { fontWeight: 'medium' } }} />
+                <ListItemText
+                  primary={skill.name}
+                  sx={{
+                    '& .MuiListItemText-primary': { fontWeight: 'medium' },
+                  }}
+                />
               </ListItem>
             ))}
           </List>
@@ -162,7 +193,12 @@ const Credentials = () => {
       {unverifiedSkills.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography
+            variant="subtitle1"
+            fontWeight="bold"
+            color="text.secondary"
+            sx={{ mb: 1 }}
+          >
             Unverified Skills
           </Typography>
           <List dense sx={{ p: 0 }}>
@@ -172,8 +208,8 @@ const Credentials = () => {
                   <GppBadIcon />
                 </ListItemIcon>
                 <ListItemText primary={skill.name} />
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   variant="contained"
                   endIcon={<AddTaskIcon />}
                   sx={{ ml: 1, borderRadius: '20px' }}
@@ -192,7 +228,12 @@ const Credentials = () => {
         <>
           <Divider sx={{ my: 2 }} />
           <Box>
-            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              color="text.secondary"
+              sx={{ mb: 1 }}
+            >
               Licenses
             </Typography>
             <List dense sx={{ p: 0 }}>
@@ -204,9 +245,12 @@ const Credentials = () => {
                   <ListItemText
                     primary={license.name}
                     secondary={`Expires: ${license.expiry}`}
-                    sx={{ 
-                        '& .MuiListItemText-primary': { fontWeight: 'medium' },
-                        '& .MuiListItemText-secondary': { fontSize: '0.85rem', fontWeight: 'medium' } 
+                    sx={{
+                      '& .MuiListItemText-primary': { fontWeight: 'medium' },
+                      '& .MuiListItemText-secondary': {
+                        fontSize: '0.85rem',
+                        fontWeight: 'medium',
+                      },
                     }}
                   />
                 </ListItem>
@@ -217,15 +261,21 @@ const Credentials = () => {
       )}
 
       {/* Verification Dialog */}
-      <Dialog 
-        open={dialogOpen} 
+      <Dialog
+        open={dialogOpen}
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
       >
         <DialogTitle>
           {isComplete ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                color: 'success.main',
+              }}
+            >
               <CheckCircleIcon sx={{ mr: 1 }} />
               Verification Complete
             </Box>
@@ -236,12 +286,15 @@ const Credentials = () => {
         <DialogContent>
           {isComplete ? (
             <Box sx={{ textAlign: 'center', py: 3 }}>
-              <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+              <CheckCircleIcon
+                sx={{ fontSize: 64, color: 'success.main', mb: 2 }}
+              />
               <Typography variant="h6" gutterBottom>
                 Congratulations!
               </Typography>
               <Typography variant="body1">
-                Your {activeSkill?.name} skill has been verified. This verification will be visible to potential hirers.
+                Your {activeSkill?.name} skill has been verified. This
+                verification will be visible to potential hirers.
               </Typography>
             </Box>
           ) : (
@@ -254,10 +307,14 @@ const Credentials = () => {
                 ))}
               </Stepper>
               <Typography sx={{ mt: 2, mb: 1 }}>
-                {activeStep === 0 && "Upload documents that prove your qualifications for this skill."}
-                {activeStep === 1 && "Our team will review your documentation for accuracy and completeness."}
-                {activeStep === 2 && "Complete a brief assessment to demonstrate your proficiency."}
-                {activeStep === 3 && "Final review and certification of your skill."}
+                {activeStep === 0 &&
+                  'Upload documents that prove your qualifications for this skill.'}
+                {activeStep === 1 &&
+                  'Our team will review your documentation for accuracy and completeness.'}
+                {activeStep === 2 &&
+                  'Complete a brief assessment to demonstrate your proficiency.'}
+                {activeStep === 3 &&
+                  'Final review and certification of your skill.'}
               </Typography>
             </>
           )}
@@ -269,16 +326,16 @@ const Credentials = () => {
             </Button>
           ) : (
             <>
-              <Button 
-                onClick={handleCloseDialog} 
+              <Button
+                onClick={handleCloseDialog}
                 disabled={isProcessing}
                 startIcon={<CloseIcon />}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleNextStep}
-                variant="contained" 
+                variant="contained"
                 color="primary"
                 disabled={isProcessing}
                 endIcon={isProcessing ? <CircularProgress size={24} /> : null}
@@ -298,14 +355,14 @@ Credentials.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       verified: PropTypes.bool,
-    })
+    }),
   ),
   licenses: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       expiry: PropTypes.string.isRequired,
-    })
+    }),
   ),
 };
 
-export default Credentials; 
+export default Credentials;

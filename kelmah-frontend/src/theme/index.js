@@ -34,7 +34,7 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 16
+    borderRadius: 16,
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -150,6 +150,12 @@ const theme = createTheme({
           backgroundColor: '#2c2c2c',
           backgroundImage: 'none',
           border: '1px solid #ffd700',
+          transition:
+            'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
+          '&:hover': {
+            boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)',
+            borderColor: '#ffeb52',
+          },
         },
       },
     },
@@ -175,6 +181,10 @@ const theme = createTheme({
             sm: 12,
           },
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'box-shadow 0.3s ease-in-out',
+          '&:hover': {
+            boxShadow: '0 0 12px rgba(255, 215, 0, 0.3)',
+          },
         },
       },
     },
@@ -254,4 +264,27 @@ const theme = createTheme({
   },
 });
 
-export default theme; 
+export default theme;
+
+export const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+      contrastText: '#ffffff',
+    },
+    secondary: theme.palette.secondary,
+    background: {
+      default: '#fafafa',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#000000',
+      secondary: '#555555',
+    },
+  },
+  breakpoints: theme.breakpoints,
+  shape: theme.shape,
+  typography: theme.typography,
+  components: theme.components,
+});

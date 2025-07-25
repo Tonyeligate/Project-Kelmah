@@ -4,7 +4,7 @@ const initialState = {
   notifications: [],
   unreadCount: 0,
   loading: false,
-  error: null
+  error: null,
 };
 
 export const notificationSlice = createSlice({
@@ -13,7 +13,7 @@ export const notificationSlice = createSlice({
   reducers: {
     setNotifications: (state, action) => {
       state.notifications = action.payload;
-      state.unreadCount = action.payload.filter(n => !n.read).length;
+      state.unreadCount = action.payload.filter((n) => !n.read).length;
     },
     addNotification: (state, action) => {
       state.notifications.unshift(action.payload);
@@ -22,16 +22,18 @@ export const notificationSlice = createSlice({
       }
     },
     removeNotification: (state, action) => {
-      const notif = state.notifications.find(n => n.id === action.payload);
+      const notif = state.notifications.find((n) => n.id === action.payload);
       state.notifications = state.notifications.filter(
-        notification => notification.id !== action.payload
+        (notification) => notification.id !== action.payload,
       );
       if (notif && !notif.read) {
         state.unreadCount = Math.max(0, state.unreadCount - 1);
       }
     },
     markAsRead: (state, action) => {
-      const index = state.notifications.findIndex(n => n.id === action.payload);
+      const index = state.notifications.findIndex(
+        (n) => n.id === action.payload,
+      );
       if (index !== -1 && !state.notifications[index].read) {
         state.notifications[index].read = true;
         state.unreadCount = Math.max(0, state.unreadCount - 1);
@@ -48,19 +50,19 @@ export const notificationSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
-    }
-  }
+    },
+  },
 });
 
-export const { 
-  setNotifications, 
+export const {
+  setNotifications,
   addNotification,
   removeNotification,
   markAsRead,
   setUnreadCount,
-  setLoading, 
+  setLoading,
   setError,
-  clearError
+  clearError,
 } = notificationSlice.actions;
 
 // Selectors
@@ -69,4 +71,4 @@ export const selectUnreadCount = (state) => state.notification.unreadCount;
 export const selectLoading = (state) => state.notification.loading;
 export const selectError = (state) => state.notification.error;
 
-export default notificationSlice.reducer; 
+export default notificationSlice.reducer;

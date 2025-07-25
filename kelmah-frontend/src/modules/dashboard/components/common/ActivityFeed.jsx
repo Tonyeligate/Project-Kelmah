@@ -11,31 +11,35 @@ import ActivityItem from './ActivityItem'; // Import the new component
 const ActivityFeed = ({ activities = [], maxItems = 5 }) => {
   return (
     <DashboardCard
-      title={<span style={{ color: '#FFD700', fontWeight: 700 }}>Recent Activity</span>}
+      title={
+        <span style={{ color: '#FFD700', fontWeight: 700 }}>
+          Recent Activity
+        </span>
+      }
       action={
-        <Button 
-          component={RouterLink} 
-          to="/notifications" 
-          size="small" 
+        <Button
+          component={RouterLink}
+          to="/notifications"
+          size="small"
           color="primary"
-          sx={{ 
+          sx={{
             fontWeight: 700,
             '&:hover': {
-              background: 'rgba(255, 255, 255, 0.1)'
-            }
+              background: 'rgba(255, 255, 255, 0.1)',
+            },
           }}
         >
           View All
         </Button>
       }
-      sx={{ 
+      sx={{
         height: '100%',
         background: 'rgba(35, 35, 35, 0.8)',
         backdropFilter: 'blur(10px)',
         transition: 'all 0.3s ease-in-out',
         '&:hover': {
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
-        }
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+        },
       }}
     >
       <Box sx={{ p: 2 }}>
@@ -46,9 +50,11 @@ const ActivityFeed = ({ activities = [], maxItems = 5 }) => {
             </Typography>
           </Box>
         ) : (
-          activities.slice(0, maxItems).map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} />
-          ))
+          activities
+            .slice(0, maxItems)
+            .map((activity) => (
+              <ActivityItem key={activity.id} activity={activity} />
+            ))
         )}
       </Box>
     </DashboardCard>
@@ -67,7 +73,7 @@ ActivityFeed.propTypes = {
         text: PropTypes.string.isRequired,
         onClick: PropTypes.func.isRequired,
       }),
-    })
+    }),
   ),
   maxItems: PropTypes.number,
 };

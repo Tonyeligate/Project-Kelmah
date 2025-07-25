@@ -1,5 +1,12 @@
 import React from 'react';
-import { Box, Container, Typography, Breadcrumbs, Link, Paper } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Breadcrumbs,
+  Link,
+  Paper,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import ContractsList from '../../../components/contracts/ContractsList';
 
@@ -13,11 +20,11 @@ const ContractsPage = () => {
           </Link>
           <Typography color="text.primary">Contracts</Typography>
         </Breadcrumbs>
-        
+
         <ContractsList />
       </Box>
     </Container>
   );
 };
 
-export default ContractsPage; 
+export default ContractsPage;

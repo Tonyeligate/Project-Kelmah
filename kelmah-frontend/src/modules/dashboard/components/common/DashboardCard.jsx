@@ -5,18 +5,18 @@ import { Card, CardHeader, CardContent, Divider } from '@mui/material';
 /**
  * Reusable card component for dashboard sections with consistent styling
  */
-const DashboardCard = ({ 
-  title, 
-  subheader, 
-  action, 
-  children, 
+const DashboardCard = ({
+  title,
+  subheader,
+  action,
+  children,
   elevation = 1,
-  sx = {}
+  sx = {},
 }) => {
   return (
-    <Card 
-      elevation={elevation} 
-      sx={{ 
+    <Card
+      elevation={elevation}
+      sx={{
         height: '100%',
         background: 'rgba(35, 35, 35, 0.8)',
         backdropFilter: 'blur(10px)',
@@ -28,34 +28,32 @@ const DashboardCard = ({
           boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
           borderColor: 'rgba(255, 215, 0, 0.5)',
         },
-        ...sx
+        ...sx,
       }}
     >
-      <CardHeader 
+      <CardHeader
         title={title}
         subheader={subheader}
         action={action}
-        titleTypographyProps={{ 
-          variant: 'h6', 
+        titleTypographyProps={{
+          variant: 'h6',
           fontWeight: 700,
           color: '#fff',
-          letterSpacing: 0.5
+          letterSpacing: 0.5,
         }}
-        subheaderTypographyProps={{ 
-          variant: 'body2', 
+        subheaderTypographyProps={{
+          variant: 'body2',
           color: 'textSecondary',
-          opacity: 0.8
+          opacity: 0.8,
         }}
-        sx={{ 
+        sx={{
           pb: 1,
           px: 3,
-          pt: 2
+          pt: 2,
         }}
       />
       <Divider sx={{ opacity: 0.1 }} />
-      <CardContent sx={{ p: 3 }}>
-        {children}
-      </CardContent>
+      <CardContent sx={{ p: 3 }}>{children}</CardContent>
     </Card>
   );
 };
@@ -69,4 +67,4 @@ DashboardCard.propTypes = {
   sx: PropTypes.object,
 };
 
-export default DashboardCard; 
+export default DashboardCard;

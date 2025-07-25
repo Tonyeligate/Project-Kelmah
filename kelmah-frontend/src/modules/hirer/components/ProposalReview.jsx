@@ -28,7 +28,7 @@ import {
   ListItemAvatar,
   ListItemSecondaryAction,
   Tooltip,
-  LinearProgress
+  LinearProgress,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -40,7 +40,7 @@ import {
   AttachMoney as AttachMoneyIcon,
   AccessTime as AccessTimeIcon,
   Star as StarIcon,
-  Description as DescriptionIcon
+  Description as DescriptionIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -57,7 +57,7 @@ const ProposalReview = () => {
   const [reviewForm, setReviewForm] = useState({
     rating: 0,
     feedback: '',
-    decision: ''
+    decision: '',
   });
 
   useEffect(() => {
@@ -101,20 +101,23 @@ const ProposalReview = () => {
     setReviewForm({
       rating: 0,
       feedback: '',
-      decision: ''
+      decision: '',
     });
   };
 
   const handleReviewSubmit = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/proposals/${selectedProposal.id}/review`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `/api/proposals/${selectedProposal.id}/review`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(reviewForm),
         },
-        body: JSON.stringify(reviewForm)
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to submit review');
@@ -136,9 +139,9 @@ const ProposalReview = () => {
       const response = await fetch(`/api/proposals/${proposalId}/decision`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ decision })
+        body: JSON.stringify({ decision }),
       });
 
       if (!response.ok) {
@@ -172,16 +175,24 @@ const ProposalReview = () => {
   const renderProposalCard = (proposal) => (
     <Card key={proposal.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6">{proposal.jobTitle}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <Avatar src={proposal.workerAvatar} sx={{ width: 24, height: 24 }}>
+              <Avatar
+                src={proposal.workerAvatar}
+                sx={{ width: 24, height: 24 }}
+              >
                 <PersonIcon />
               </Avatar>
-              <Typography variant="body2">
-                {proposal.workerName}
-              </Typography>
+              <Typography variant="body2">{proposal.workerName}</Typography>
               <Rating value={proposal.workerRating} readOnly size="small" />
             </Box>
           </Box>
@@ -204,18 +215,14 @@ const ProposalReview = () => {
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <AccessTimeIcon color="primary" />
-              <Typography variant="body1">
-                {proposal.estimatedTime}
-              </Typography>
+              <Typography variant="body1">{proposal.estimatedTime}</Typography>
             </Box>
           </Grid>
           <Grid item xs={12}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Cover Letter
             </Typography>
-            <Typography variant="body1">
-              {proposal.coverLetter}
-            </Typography>
+            <Typography variant="body1">{proposal.coverLetter}</Typography>
           </Grid>
           {proposal.workerSkills && (
             <Grid item xs={12}>
@@ -265,10 +272,7 @@ const ProposalReview = () => {
         >
           Message
         </Button>
-        <IconButton
-          size="small"
-          onClick={(e) => handleMenuOpen(e, proposal)}
-        >
+        <IconButton size="small" onClick={(e) => handleMenuOpen(e, proposal)}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -293,14 +297,10 @@ const ProposalReview = () => {
         </Box>
       ) : proposals.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">
-            No proposals to review
-          </Typography>
+          <Typography color="text.secondary">No proposals to review</Typography>
         </Paper>
       ) : (
-        <Box>
-          {proposals.map(renderProposalCard)}
-        </Box>
+        <Box>{proposals.map(renderProposalCard)}</Box>
       )}
 
       <Menu
@@ -359,7 +359,9 @@ const ProposalReview = () => {
                     multiline
                     rows={4}
                     value={reviewForm.feedback}
-                    onChange={(e) => setReviewForm({ ...reviewForm, feedback: e.target.value })}
+                    onChange={(e) =>
+                      setReviewForm({ ...reviewForm, feedback: e.target.value })
+                    }
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -368,7 +370,9 @@ const ProposalReview = () => {
                     select
                     label="Decision"
                     value={reviewForm.decision}
-                    onChange={(e) => setReviewForm({ ...reviewForm, decision: e.target.value })}
+                    onChange={(e) =>
+                      setReviewForm({ ...reviewForm, decision: e.target.value })
+                    }
                   >
                     <MenuItem value="accepted">Accept</MenuItem>
                     <MenuItem value="rejected">Reject</MenuItem>
@@ -443,7 +447,9 @@ const ProposalReview = () => {
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button
-            onClick={dialogType === 'review' ? handleReviewSubmit : handleDialogClose}
+            onClick={
+              dialogType === 'review' ? handleReviewSubmit : handleDialogClose
+            }
             variant="contained"
           >
             Submit
@@ -454,6 +460,4 @@ const ProposalReview = () => {
   );
 };
 
-export default ProposalReview; 
-
-
+export default ProposalReview;

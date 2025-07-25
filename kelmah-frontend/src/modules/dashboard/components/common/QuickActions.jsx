@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Typography, Box, Badge, CircularProgress, Snackbar, Alert, Tooltip } from '@mui/material';
+import {
+  Grid,
+  Typography,
+  Box,
+  Badge,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Tooltip,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import DashboardCard from './DashboardCard';
 
@@ -9,37 +18,44 @@ import DashboardCard from './DashboardCard';
  */
 const QuickActions = ({ actions = [] }) => {
   const [actionStates, setActionStates] = useState(
-    actions.map(() => ({ loading: false }))
+    actions.map(() => ({ loading: false })),
   );
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'success' });
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const handleActionClick = (index, event) => {
     // Prevent default navigation for RouterLink
     event.preventDefault();
-    
+
     // Set loading state
     const newActionStates = [...actionStates];
     newActionStates[index] = { loading: true };
     setActionStates(newActionStates);
-    
+
     // Simulate loading/processing with 500-800ms delay
-    setTimeout(() => {
-      // Reset loading state
-      newActionStates[index] = { loading: false };
-      setActionStates(newActionStates);
-      
-      // Show feedback (simulating successful navigation)
-      setFeedback({
-        open: true,
-        message: `Navigating to ${actions[index].title}...`,
-        severity: 'info'
-      });
-      
-      // Actually navigate after feedback is shown
-      setTimeout(() => {
-        window.location.href = actions[index].path;
-      }, 1000);
-    }, 500 + Math.random() * 300);
+    setTimeout(
+      () => {
+        // Reset loading state
+        newActionStates[index] = { loading: false };
+        setActionStates(newActionStates);
+
+        // Show feedback (simulating successful navigation)
+        setFeedback({
+          open: true,
+          message: `Navigating to ${actions[index].title}...`,
+          severity: 'info',
+        });
+
+        // Actually navigate after feedback is shown
+        setTimeout(() => {
+          window.location.href = actions[index].path;
+        }, 1000);
+      },
+      500 + Math.random() * 300,
+    );
   };
 
   const handleCloseFeedback = () => {
@@ -53,21 +69,21 @@ const QuickActions = ({ actions = [] }) => {
           <Grid item xs={6} sm={3} key={index}>
             <Tooltip title={action.description || action.title} arrow>
               <Box
-              component={RouterLink}
-              to={action.path}
+                component={RouterLink}
+                to={action.path}
                 onClick={(e) => handleActionClick(index, e)}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   textDecoration: 'none',
                   color: 'text.primary',
                   p: 2,
                   borderRadius: '8px',
                   transition: 'all 0.2s ease',
                   position: 'relative',
-                '&:hover': {
+                  '&:hover': {
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     transform: 'translateY(-3px)',
                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
@@ -80,32 +96,32 @@ const QuickActions = ({ actions = [] }) => {
                 }}
               >
                 <Badge badgeContent={action.badgeContent} color="error">
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       width: 60,
                       height: 60,
-                    borderRadius: '50%',
+                      borderRadius: '50%',
                       mb: 1,
                       backgroundColor: `${action.color}30`, // Faded background from theme
-                    color: action.color,
+                      color: action.color,
                       position: 'relative',
                     }}
                   >
                     {actionStates[index].loading ? (
-                      <CircularProgress 
-                        size={30} 
-                        sx={{ 
+                      <CircularProgress
+                        size={30}
+                        sx={{
                           position: 'absolute',
-                          color: action.color
-                        }} 
+                          color: action.color,
+                        }}
                       />
                     ) : (
                       action.icon
                     )}
-                </Box>
+                  </Box>
                 </Badge>
                 <Typography
                   variant="body2"
@@ -121,15 +137,15 @@ const QuickActions = ({ actions = [] }) => {
           </Grid>
         ))}
       </Grid>
-      
+
       <Snackbar
         open={feedback.open}
         autoHideDuration={2000}
         onClose={handleCloseFeedback}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseFeedback} 
+        <Alert
+          onClose={handleCloseFeedback}
           severity={feedback.severity}
           variant="filled"
           sx={{ width: '100%' }}
@@ -150,8 +166,8 @@ QuickActions.propTypes = {
       path: PropTypes.string.isRequired,
       color: PropTypes.string,
       badgeContent: PropTypes.number,
-    })
+    }),
   ).isRequired,
 };
 
-export default QuickActions; 
+export default QuickActions;

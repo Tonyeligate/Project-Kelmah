@@ -18,27 +18,31 @@ class NotificationsApi {
     const response = await apiClient.get('/api/notifications', { params });
     return response.data;
   }
-  
+
   /**
    * Get a specific notification
    * @param {string} notificationId - Notification ID
    * @returns {Promise<Object>} Notification data
    */
   async getNotification(notificationId) {
-    const response = await apiClient.get(`/api/notifications/${notificationId}`);
+    const response = await apiClient.get(
+      `/api/notifications/${notificationId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Mark notification as read
    * @param {string} notificationId - Notification ID
    * @returns {Promise<Object>} Updated notification
    */
   async markAsRead(notificationId) {
-    const response = await apiClient.put(`/api/notifications/${notificationId}/read`);
+    const response = await apiClient.put(
+      `/api/notifications/${notificationId}/read`,
+    );
     return response.data;
   }
-  
+
   /**
    * Mark all notifications as read
    * @returns {Promise<Object>} Operation result
@@ -46,21 +50,25 @@ class NotificationsApi {
   async markAllAsRead() {
     // Note: backend does not support bulk, fallback to individual operations
     const response = await apiClient.get('/api/notifications');
-    const ids = response.data.data.map(n => n.id);
-    await Promise.all(ids.map(id => apiClient.put(`/api/notifications/${id}/read`)));
+    const ids = response.data.data.map((n) => n.id);
+    await Promise.all(
+      ids.map((id) => apiClient.put(`/api/notifications/${id}/read`)),
+    );
     return { success: true };
   }
-  
+
   /**
    * Delete a notification
    * @param {string} notificationId - Notification ID
    * @returns {Promise<Object>} Operation result
    */
   async deleteNotification(notificationId) {
-    const response = await apiClient.delete(`/api/notifications/${notificationId}`);
+    const response = await apiClient.delete(
+      `/api/notifications/${notificationId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Delete all notifications
    * @returns {Promise<Object>} Operation result
@@ -68,11 +76,13 @@ class NotificationsApi {
   async deleteAllNotifications() {
     // Delete each notification since bulk endpoint is not available
     const resp = await apiClient.get('/api/notifications');
-    const ids = resp.data.data.map(n => n.id);
-    await Promise.all(ids.map(id => apiClient.delete(`/api/notifications/${id}`)));
+    const ids = resp.data.data.map((n) => n.id);
+    await Promise.all(
+      ids.map((id) => apiClient.delete(`/api/notifications/${id}`)),
+    );
     return { success: true };
   }
-  
+
   /**
    * Get notification preferences
    * @returns {Promise<Object>} Notification preferences
@@ -81,17 +91,20 @@ class NotificationsApi {
     const response = await apiClient.get('/notifications/preferences');
     return response.data;
   }
-  
+
   /**
    * Update notification preferences
    * @param {Object} preferences - Updated preferences
    * @returns {Promise<Object>} Updated preferences
    */
   async updateNotificationPreferences(preferences) {
-    const response = await apiClient.put('/notifications/preferences', preferences);
+    const response = await apiClient.put(
+      '/notifications/preferences',
+      preferences,
+    );
     return response.data;
   }
-  
+
   /**
    * Get unread notification count
    * @returns {Promise<Object>} Unread count data
@@ -100,23 +113,28 @@ class NotificationsApi {
     const response = await apiClient.get('/notifications/unread-count');
     return response.data;
   }
-  
+
   /**
    * Subscribe to push notifications
    * @param {Object} subscription - Push subscription data
    * @returns {Promise<Object>} Subscription result
    */
   async subscribeToPushNotifications(subscription) {
-    const response = await apiClient.post('/api/notifications/push/subscribe', subscription);
+    const response = await apiClient.post(
+      '/api/notifications/push/subscribe',
+      subscription,
+    );
     return response.data;
   }
-  
+
   /**
    * Unsubscribe from push notifications
    * @returns {Promise<Object>} Unsubscription result
    */
   async unsubscribeFromPushNotifications() {
-    const response = await apiClient.post('/api/notifications/push/unsubscribe');
+    const response = await apiClient.post(
+      '/api/notifications/push/unsubscribe',
+    );
     return response.data;
   }
 }
@@ -127,4 +145,4 @@ const notificationsInstance = new NotificationsApi();
 export const notifications = notificationsInstance;
 
 // Keep the default export
-export default notificationsInstance; 
+export default notificationsInstance;

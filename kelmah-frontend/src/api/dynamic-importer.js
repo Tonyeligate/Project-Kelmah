@@ -13,18 +13,18 @@ let moduleCache = {};
  */
 export const loadWorkersApi = async (useMock = true) => {
   const cacheKey = useMock ? 'mock-workers' : 'real-workers';
-  
+
   // Return from cache if already loaded
   if (moduleCache[cacheKey]) {
     return moduleCache[cacheKey];
   }
-  
+
   try {
     // Dynamic import based on mode
-    const module = useMock 
+    const module = useMock
       ? await import('./services/mockWorkersApi')
       : await import('./services/workersApi');
-    
+
     // Cache the module
     moduleCache[cacheKey] = module.default;
     return module.default;
@@ -42,4 +42,4 @@ export const loadWorkersApi = async (useMock = true) => {
 export const initializeWorkersApi = async (useMock = true) => {
   const api = await loadWorkersApi(useMock);
   return api;
-}; 
+};

@@ -11,7 +11,7 @@ import {
   Chip,
   Box,
   LinearProgress,
-  Link as MuiLink
+  Link as MuiLink,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -20,14 +20,17 @@ const getStatusChip = (status) => {
     active: 'success',
     completed: 'primary',
     disputed: 'error',
-    pending: 'warning'
+    pending: 'warning',
   }[status];
   return <Chip label={status} color={color} size="small" />;
 };
 
 const EscrowDetails = ({ escrows }) => {
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: 'none', borderRadius: 0 }}>
+    <TableContainer
+      component={Paper}
+      sx={{ boxShadow: 'none', borderRadius: 0 }}
+    >
       <Table sx={{ minWidth: 650 }} aria-label="escrow details table">
         <TableHead>
           <TableRow>
@@ -42,21 +45,27 @@ const EscrowDetails = ({ escrows }) => {
           {escrows.map((row) => (
             <TableRow key={row.id}>
               <TableCell>
-                <MuiLink component={Link} to={`/jobs/${row.jobId}`} underline="hover">
+                <MuiLink
+                  component={Link}
+                  to={`/jobs/${row.jobId}`}
+                  underline="hover"
+                >
                   {row.jobTitle}
                 </MuiLink>
               </TableCell>
               <TableCell>{row.hirer.name}</TableCell>
               <TableCell>{getStatusChip(row.status)}</TableCell>
               <TableCell align="right">
-                <Typography fontWeight="bold">${row.totalAmount.toFixed(2)}</Typography>
+                <Typography fontWeight="bold">
+                  ${row.totalAmount.toFixed(2)}
+                </Typography>
               </TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Box sx={{ width: '100%', mr: 1 }}>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={(row.releasedAmount / row.totalAmount) * 100} 
+                    <LinearProgress
+                      variant="determinate"
+                      value={(row.releasedAmount / row.totalAmount) * 100}
                     />
                   </Box>
                   <Box sx={{ minWidth: 110 }}>
@@ -74,4 +83,4 @@ const EscrowDetails = ({ escrows }) => {
   );
 };
 
-export default EscrowDetails; 
+export default EscrowDetails;

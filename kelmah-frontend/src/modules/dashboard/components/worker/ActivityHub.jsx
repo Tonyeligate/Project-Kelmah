@@ -12,29 +12,31 @@ const StyledTabs = styled(Tabs)({
   },
 });
 
-const StyledTab = styled((props) => <Tab disableRipple {...props} />)(({ theme }) => ({
-  textTransform: 'none',
-  minWidth: 0,
-  [theme.breakpoints.up('sm')]: {
+const StyledTab = styled((props) => <Tab disableRipple {...props} />)(
+  ({ theme }) => ({
+    textTransform: 'none',
     minWidth: 0,
-  },
-  fontWeight: theme.typography.fontWeightRegular,
-  marginRight: theme.spacing(1),
-  color: 'rgba(255, 255, 255, 0.7)',
-  fontSize: '1rem', // Increased font size
-  padding: '12px 16px', // Increased padding
-  '&:hover': {
-    color: '#FFD700',
-    opacity: 1,
-  },
-  '&.Mui-selected': {
-    color: '#FFD700',
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  '&.Mui-focusVisible': {
-    backgroundColor: 'rgba(100, 95, 228, 0.32)',
-  },
-}));
+    [theme.breakpoints.up('sm')]: {
+      minWidth: 0,
+    },
+    fontWeight: theme.typography.fontWeightRegular,
+    marginRight: theme.spacing(1),
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: '1rem', // Increased font size
+    padding: '12px 16px', // Increased padding
+    '&:hover': {
+      color: '#FFD700',
+      opacity: 1,
+    },
+    '&.Mui-selected': {
+      color: '#FFD700',
+      fontWeight: theme.typography.fontWeightMedium,
+    },
+    '&.Mui-focusVisible': {
+      backgroundColor: 'rgba(100, 95, 228, 0.32)',
+    },
+  }),
+);
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -61,21 +63,25 @@ const ActivityHub = ({ activities, applications, messages }) => {
   return (
     <DashboardCard title="Activity Hub" sx={{ p: 0 }}>
       <Box sx={{ width: '100%' }}>
-        <StyledTabs value={value} onChange={handleChange} aria-label="Activity Hub Tabs">
+        <StyledTabs
+          value={value}
+          onChange={handleChange}
+          aria-label="Activity Hub Tabs"
+        >
           <StyledTab label="Recent Activity" />
-          <StyledTab 
+          <StyledTab
             label={
               <Badge badgeContent={applications?.length || 0} color="error">
                 Applications
               </Badge>
-            } 
+            }
           />
-          <StyledTab 
+          <StyledTab
             label={
               <Badge badgeContent={messages?.length || 0} color="error">
                 Messages
               </Badge>
-            } 
+            }
           />
         </StyledTabs>
       </Box>
@@ -84,7 +90,9 @@ const ActivityHub = ({ activities, applications, messages }) => {
       </TabPanel>
       <TabPanel value={value} index={1}>
         {/* Placeholder for Applications List */}
-        <Typography>You have {applications?.length || 0} application updates.</Typography>
+        <Typography>
+          You have {applications?.length || 0} application updates.
+        </Typography>
       </TabPanel>
       <TabPanel value={value} index={2}>
         {/* Placeholder for Messages List */}
@@ -95,9 +103,9 @@ const ActivityHub = ({ activities, applications, messages }) => {
 };
 
 ActivityHub.propTypes = {
-    activities: PropTypes.array,
-    applications: PropTypes.array,
-    messages: PropTypes.array,
+  activities: PropTypes.array,
+  applications: PropTypes.array,
+  messages: PropTypes.array,
 };
 
-export default ActivityHub; 
+export default ActivityHub;

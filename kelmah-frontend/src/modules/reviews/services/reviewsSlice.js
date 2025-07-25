@@ -8,57 +8,53 @@ export const submitReview = createAsyncThunk(
   async (reviewData, { rejectWithValue, getState }) => {
     try {
       const { auth } = getState();
-      
-      const response = await axios.post(
-        `${API_URL}/reviews`, 
-        reviewData,
-        {
-          headers: { 
-            Authorization: `Bearer ${auth.token}` 
-          }
-        }
-      );
-      
+
+      const response = await axios.post(`${API_URL}/reviews`, reviewData, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      });
+
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        'Failed to submit review. Please try again.'
+        error.response?.data?.message ||
+          'Failed to submit review. Please try again.',
       );
     }
-  }
+  },
 );
 
 // Create async thunk for fetching reviews by recipient ID
 export const fetchReviewsByRecipient = createAsyncThunk(
   'reviews/fetchByRecipient',
-  async ({ recipientId, recipientType, page = 1, limit = 10 }, { rejectWithValue, getState }) => {
+  async (
+    { recipientId, recipientType, page = 1, limit = 10 },
+    { rejectWithValue, getState },
+  ) => {
     try {
       const { auth } = getState();
-      
-      const response = await axios.get(
-        `${API_URL}/reviews`, 
-        {
-          params: { 
-            recipientId,
-            recipientType,
-            page,
-            limit
-          },
-          headers: { 
-            Authorization: `Bearer ${auth.token}` 
-          }
-        }
-      );
-      
+
+      const response = await axios.get(`${API_URL}/reviews`, {
+        params: {
+          recipientId,
+          recipientType,
+          page,
+          limit,
+        },
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      });
+
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        'Failed to fetch reviews. Please try again.'
+        error.response?.data?.message ||
+          'Failed to fetch reviews. Please try again.',
       );
     }
-  }
+  },
 );
 
 // Create async thunk for fetching reviews by contract ID
@@ -67,24 +63,24 @@ export const fetchReviewsByContract = createAsyncThunk(
   async (contractId, { rejectWithValue, getState }) => {
     try {
       const { auth } = getState();
-      
+
       const response = await axios.get(
-        `${API_URL}/reviews/contract/${contractId}`, 
+        `${API_URL}/reviews/contract/${contractId}`,
         {
-          headers: { 
-            Authorization: `Bearer ${auth.token}` 
-          }
-        }
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        },
       );
-      
+
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        'Failed to fetch reviews for this contract. Please try again.'
+        error.response?.data?.message ||
+          'Failed to fetch reviews for this contract. Please try again.',
       );
     }
-  }
+  },
 );
 
 // Initial state
@@ -96,7 +92,7 @@ const initialState = {
   loading: false,
   submitting: false,
   error: null,
-  success: false
+  success: false,
 };
 
 // Create slice
@@ -116,7 +112,7 @@ const reviewsSlice = createSlice({
       state.submitting = false;
       state.success = false;
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -134,7 +130,7 @@ const reviewsSlice = createSlice({
         state.submitting = false;
         state.error = action.payload;
       })
-      
+
       // Fetch by recipient
       .addCase(fetchReviewsByRecipient.pending, (state) => {
         state.loading = true;
@@ -150,7 +146,7 @@ const reviewsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Fetch by contract
       .addCase(fetchReviewsByContract.pending, (state) => {
         state.loading = true;
@@ -167,6 +163,7 @@ const reviewsSlice = createSlice({
   },
 });
 
-export const { clearReviewsState, resetReviewSubmission } = reviewsSlice.actions;
+export const { clearReviewsState, resetReviewSubmission } =
+  reviewsSlice.actions;
 
-export default reviewsSlice.reducer; 
+export default reviewsSlice.reducer;

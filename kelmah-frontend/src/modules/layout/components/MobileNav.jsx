@@ -4,20 +4,27 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import useNavLinks from '../../../hooks/useNavLinks';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectCurrentUser, selectIsAuthenticated, logoutUser } from '../../auth/services/authSlice';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
+import { useAuth } from '../../auth/contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../auth/services/authSlice';
 
 const MobileNav = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const user = useSelector(selectCurrentUser);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const {
+    user,
+    isAuthenticated: isAuthFn,
+    hasRole,
+    isInitialized,
+    logout,
+  } = useAuth();
+  const isAuthenticated = isAuthFn();
   const { navLinks } = useNavLinks();
   const { unreadCount } = useNotifications();
-  const showAuthButtons = !isAuthenticated;
-  const userRole = user?.role || user?.userType || user?.userRole;
-  const hasRole = (role) => userRole === role;
+  // Only show auth items after initialization
+  const showAuthButtons = isInitialized && !isAuthenticated;
+  const showUserMenu = isInitialized && isAuthenticated;
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -28,7 +35,7 @@ const MobileNav = () => {
     handleClose();
     sessionStorage.setItem('dev-logout', 'true');
     dispatch(logoutUser());
-    navigate('/login');
+    logout();
   };
 
   const handleNavigate = (path) => {
@@ -38,7 +45,10 @@ const MobileNav = () => {
 
   return (
     <>
-      <IconButton onClick={handleOpen} sx={{ color: theme.palette.primary.main }}>
+      <IconButton
+        onClick={handleOpen}
+        sx={{ color: theme.palette.primary.main }}
+      >
         <MenuIcon />
       </IconButton>
       <Menu
@@ -53,28 +63,63 @@ const MobileNav = () => {
             {label}
           </MenuItem>
         ))}
-        {showAuthButtons ? (
-          <>
-            <MenuItem onClick={() => handleNavigate('/login')}>Login</MenuItem>
-            <MenuItem onClick={() => handleNavigate('/register')}>Register</MenuItem>
-          </>
-        ) : (
-          <>
-            <MenuItem onClick={() => handleNavigate('/notifications')}>
-              <Badge badgeContent={unreadCount} color="error" sx={{ mr: 1 }}>
-                <NotificationsIcon />
-              </Badge>
-              Notifications
-            </MenuItem>
-            <MenuItem onClick={() => handleNavigate('/dashboard')}>Dashboard</MenuItem>
-            <MenuItem onClick={() => handleNavigate(hasRole('worker') ? '/worker/profile' : '/profile')}>Profile</MenuItem>
-            <MenuItem onClick={() => handleNavigate('/settings')}>Settings</MenuItem>
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
-          </>
-        )}
+        {showAuthButtons
+          ? [
+              <MenuItem key="login" onClick={() => handleNavigate('/login')}>
+                Login
+              </MenuItem>,
+              <MenuItem
+                key="register"
+                onClick={() => handleNavigate('/register')}
+              >
+                Register
+              </MenuItem>,
+            ]
+          : showUserMenu
+            ? [
+                <MenuItem
+                  key="notifications"
+                  onClick={() => handleNavigate('/notifications')}
+                >
+                  <Badge
+                    badgeContent={unreadCount}
+                    color="error"
+                    sx={{ mr: 1 }}
+                  >
+                    <NotificationsIcon />
+                  </Badge>
+                  Notifications
+                </MenuItem>,
+                <MenuItem
+                  key="dashboard"
+                  onClick={() => handleNavigate('/dashboard')}
+                >
+                  Dashboard
+                </MenuItem>,
+                <MenuItem
+                  key="profile"
+                  onClick={() =>
+                    handleNavigate(
+                      hasRole('worker') ? '/worker/profile' : '/profile',
+                    )
+                  }
+                >
+                  Profile
+                </MenuItem>,
+                <MenuItem
+                  key="settings"
+                  onClick={() => handleNavigate('/settings')}
+                >
+                  Settings
+                </MenuItem>,
+                <MenuItem key="logout" onClick={handleLogout}>
+                  Logout
+                </MenuItem>,
+              ]
+            : null}
       </Menu>
     </>
   );
 };
 
-export default MobileNav; 
+export default MobileNav;

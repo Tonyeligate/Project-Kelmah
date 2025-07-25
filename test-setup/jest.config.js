@@ -1,9 +1,17 @@
+const path = require('path');
+
 module.exports = {
+  transformIgnorePatterns: [],
   // Separate test configurations for frontend and backend
   projects: [
     {
       displayName: 'frontend',
+      moduleDirectories: ['kelmah-frontend/node_modules', 'node_modules'],
       testEnvironment: 'jsdom',
+      transformIgnorePatterns: [],
+      transform: {
+        '^.+\\.[jt]sx?$': 'babel-jest'
+      },
       testMatch: ['<rootDir>/kelmah-frontend/src/**/*.test.{js,jsx,ts,tsx}'],
       moduleNameMapper: {
         // Handle module aliases and CSS/asset imports
@@ -30,17 +38,19 @@ module.exports = {
     },
     {
       displayName: 'backend',
+      // Run backend tests within the kelmah-backend directory
+      rootDir: path.resolve(__dirname, '../kelmah-backend'),
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/kelmah-backend/tests/**/*.test.{js,ts}'],
+      testMatch: ['<rootDir>/tests/**/*.test.{js,ts}'],
       moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/backend/src/$1'
+        '^@\/(.*)$': '<rootDir>/src/$1'
       },
-      setupFilesAfterEnv: ['<rootDir>/test-setup/backend-setup.js'],
+      setupFilesAfterEnv: ['<rootDir>/../test-setup/backend-setup.js'],
       collectCoverageFrom: [
-        'backend/src/**/*.{js,ts}',
-        '!backend/src/**/*.d.ts',
-        '!backend/src/**/index.{js,ts}',
-        '!backend/src/types/**/*'
+        'src/**/*.{js,ts}',
+        '!src/**/*.d.ts',
+        '!src/**/index.{js,ts}',
+        '!src/types/**/*'
       ],
       coverageThreshold: {
         global: {
@@ -49,8 +59,7 @@ module.exports = {
           functions: 10,
           lines: 10
         }
-      },
-      rootDir: process.cwd()
+      }
     }
   ],
   // Global configuration
@@ -67,5 +76,6 @@ module.exports = {
         outputName: 'junit.xml'
       }
     ]
-  ]
+  ],
+  rootDir: path.resolve(__dirname, '..')
 }; 

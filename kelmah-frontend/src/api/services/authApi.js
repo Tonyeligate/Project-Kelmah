@@ -4,7 +4,11 @@
  */
 
 import apiClient from '../index';
-import { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY, REFRESH_TOKEN_KEY } from '../../config';
+import {
+  JWT_LOCAL_STORAGE_KEY,
+  AUTH_USER_KEY,
+  REFRESH_TOKEN_KEY,
+} from '../../config';
 
 class AuthApi {
   /**
@@ -16,7 +20,7 @@ class AuthApi {
    */
   async login(credentials) {
     const response = await apiClient.post('/auth/login', credentials);
-    
+
     if (response.data.token) {
       localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
       if (response.data.refreshToken) {
@@ -24,10 +28,10 @@ class AuthApi {
       }
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.data.user));
     }
-    
+
     return response.data;
   }
-  
+
   /**
    * Register a new user
    * @param {Object} userData - User data for registration
@@ -40,7 +44,7 @@ class AuthApi {
    */
   async register(userData) {
     const response = await apiClient.post('/auth/register', userData);
-    
+
     if (response.data.token) {
       localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
       if (response.data.refreshToken) {
@@ -48,10 +52,10 @@ class AuthApi {
       }
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.data.user));
     }
-    
+
     return response.data;
   }
-  
+
   /**
    * Log out current user
    */
@@ -59,7 +63,7 @@ class AuthApi {
     localStorage.removeItem(JWT_LOCAL_STORAGE_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
   }
-  
+
   /**
    * Verify current auth token
    * @returns {Promise<Object>} User data if token is valid
@@ -68,7 +72,7 @@ class AuthApi {
     const response = await apiClient.get('/auth/verify');
     return response.data;
   }
-  
+
   /**
    * Request password reset
    * @param {Object} data - Reset request data
@@ -76,10 +80,10 @@ class AuthApi {
    * @returns {Promise<Object>} Reset request response
    */
   async requestPasswordReset(data) {
-    const response = await apiClient.post('/auth/password/request-reset', data);
+    const response = await apiClient.post('/auth/forgot-password', data);
     return response.data;
   }
-  
+
   /**
    * Reset password with token
    * @param {Object} data - Password reset data
@@ -88,10 +92,13 @@ class AuthApi {
    * @returns {Promise<Object>} Reset response
    */
   async resetPassword(data) {
-    const response = await apiClient.post('/auth/password/reset', data);
+    const response = await apiClient.post(
+      `/auth/reset-password/${data.token}`,
+      { password: data.password },
+    );
     return response.data;
   }
-  
+
   /**
    * Change password for logged in user
    * @param {Object} data - Password change data
@@ -103,7 +110,7 @@ class AuthApi {
     const response = await apiClient.post('/auth/change-password', data);
     return response.data;
   }
-  
+
   /**
    * Get current user profile
    * @returns {Promise<Object>} User profile data
@@ -122,6 +129,27 @@ class AuthApi {
     const response = await apiClient.put('/auth/security', settings);
     return response.data;
   }
+
+  /**
+   * Verify email with token
+   * @param {string} token - Verification token
+   * @returns {Promise<Object>} Verification response
+   */
+  async verifyEmail(token) {
+    const response = await apiClient.get(`/auth/verify/${token}`);
+    return response.data;
+  }
+
+  /**
+   * Resend verification email
+   * @param {Object} data - Email data
+   * @param {string} data.email - User email
+   * @returns {Promise<Object>} Resend response
+   */
+  async resendVerificationEmail(data) {
+    const response = await apiClient.post('/auth/resend-verification', data);
+    return response.data;
+  }
 }
 
-export default new AuthApi(); 
+export default new AuthApi();

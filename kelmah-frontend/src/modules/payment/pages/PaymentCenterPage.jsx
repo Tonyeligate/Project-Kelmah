@@ -56,38 +56,96 @@ import { usePayments } from '../contexts/PaymentContext';
 import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink } from 'react-router-dom';
 import { format } from 'date-fns';
+import { glowPulse } from '../../../styles/animations';
 
 // Add currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' });
+const currencyFormatter = new Intl.NumberFormat('en-GH', {
+  style: 'currency',
+  currency: 'GHS',
+});
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
-  <Paper elevation={4} sx={{ p: 3, borderRadius: 2, background: 'linear-gradient(to right, #28313b, #485461, #ffd700)', color: 'white', border: '2px solid', borderColor: 'secondary.main' }}>
+  <Paper
+    elevation={4}
+    sx={{
+      p: 3,
+      borderRadius: 2,
+      background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
+      color: 'white',
+      border: '2px solid',
+      borderColor: 'secondary.main',
+    }}
+  >
     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-      <AccountBalanceWalletIcon sx={{ mr: 1.5, fontSize: 32, opacity: 0.9, color: 'secondary.main' }} />
-      <Typography variant="h6" sx={{ opacity: 0.9, color: 'secondary.main' }}>Wallet Balance</Typography>
+      <AccountBalanceWalletIcon
+        sx={{ mr: 1.5, fontSize: 32, opacity: 0.9, color: 'secondary.main' }}
+      />
+      <Typography variant="h6" sx={{ opacity: 0.9, color: 'secondary.main' }}>
+        Wallet Balance
+      </Typography>
     </Box>
-    <Typography variant="h3" fontWeight="bold" sx={{ my: 1 }}>{currencyFormatter.format(balance)}</Typography>
+    <Typography variant="h3" fontWeight="bold" sx={{ my: 1 }}>
+      {currencyFormatter.format(balance)}
+    </Typography>
     <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-      <Button variant="contained" color="success" startIcon={<ArrowUpwardIcon />} onClick={onDepositClick}>Deposit</Button>
-      <Button variant="contained" color="warning" startIcon={<ArrowDownwardIcon />} onClick={onWithdrawClick}>Withdraw</Button>
+      <Button
+        variant="contained"
+        color="success"
+        startIcon={<ArrowUpwardIcon />}
+        onClick={onDepositClick}
+      >
+        Deposit
+      </Button>
+      <Button
+        variant="contained"
+        color="warning"
+        startIcon={<ArrowDownwardIcon />}
+        onClick={onWithdrawClick}
+      >
+        Withdraw
+      </Button>
     </Box>
   </Paper>
 );
 
 const TransactionHistory = ({ transactions }) => (
   <Paper sx={{ p: 3, borderRadius: 2 }}>
-    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Recent Transactions</Typography>
+    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+      Recent Transactions
+    </Typography>
     <List>
       {transactions.slice(0, 5).map((tx, idx) => (
         <React.Fragment key={tx.id}>
           <ListItem>
-            <ListItemIcon><Avatar sx={{ bgcolor: tx.type === 'deposit' ? 'success.light' : 'error.light' }}>{tx.type === 'deposit' ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}</Avatar></ListItemIcon>
-            <ListItemText primary={tx.title} secondary={format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a')} />
-            <Typography color={tx.type === 'deposit' ? 'success.main' : 'error.main'} fontWeight="bold">
-              {(tx.type === 'deposit' ? '+' : '-') + currencyFormatter.format(tx.amount)}
+            <ListItemIcon>
+              <Avatar
+                sx={{
+                  bgcolor:
+                    tx.type === 'deposit' ? 'success.light' : 'error.light',
+                }}
+              >
+                {tx.type === 'deposit' ? (
+                  <ArrowUpwardIcon />
+                ) : (
+                  <ArrowDownwardIcon />
+                )}
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText
+              primary={tx.title}
+              secondary={format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a')}
+            />
+            <Typography
+              color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
+              fontWeight="bold"
+            >
+              {(tx.type === 'deposit' ? '+' : '-') +
+                currencyFormatter.format(tx.amount)}
             </Typography>
           </ListItem>
-          {idx < transactions.slice(0, 4).length && <Divider variant="inset" component="li" />}
+          {idx < transactions.slice(0, 4).length && (
+            <Divider variant="inset" component="li" />
+          )}
         </React.Fragment>
       ))}
     </List>
@@ -110,9 +168,18 @@ const PaymentMethodsView = ({ methods }) => {
   }
 
   return (
-  <Paper sx={{ p: 3, borderRadius: 2 }}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" fontWeight="bold">Methods</Typography>
+    <Paper sx={{ p: 3, borderRadius: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold">
+          Methods
+        </Typography>
         <Tooltip title="Add method">
           <Button
             variant="contained"
@@ -125,11 +192,11 @@ const PaymentMethodsView = ({ methods }) => {
             Add
           </Button>
         </Tooltip>
-    </Box>
+      </Box>
 
-    <Grid container spacing={2}>
-      {methods.map(method => (
-        <Grid item xs={12} md={6} key={method.id}>
+      <Grid container spacing={2}>
+        {methods.map((method) => (
+          <Grid item xs={12} md={6} key={method.id}>
             <Card variant="outlined" sx={{ p: 1, position: 'relative' }}>
               {method.isDefault && (
                 <Tooltip title="Default method">
@@ -141,22 +208,40 @@ const PaymentMethodsView = ({ methods }) => {
                   />
                 </Tooltip>
               )}
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Tooltip title={method.type === 'card' ? 'Card payment' : 'Mobile money'}>
-                    {method.type === 'card'
-                      ? <CreditCardIcon sx={{ mr: 1.5, fontSize: 30 }} color="action" />
-                      : <PhoneIphoneIcon sx={{ mr: 1.5, fontSize: 30 }} color="action" />
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Tooltip
+                    title={
+                      method.type === 'card' ? 'Card payment' : 'Mobile money'
                     }
+                  >
+                    {method.type === 'card' ? (
+                      <CreditCardIcon
+                        sx={{ mr: 1.5, fontSize: 30 }}
+                        color="action"
+                      />
+                    ) : (
+                      <PhoneIphoneIcon
+                        sx={{ mr: 1.5, fontSize: 30 }}
+                        color="action"
+                      />
+                    )}
                   </Tooltip>
                   <Typography variant="subtitle1">{method.name}</Typography>
-              </Box>
+                </Box>
 
                 <Typography color="text.secondary" sx={{ ml: '38px' }}>
                   {method.cardNumber || method.phoneNumber}
                 </Typography>
 
-              <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: 'flex',
+                    gap: 1,
+                    justifyContent: 'flex-end',
+                  }}
+                >
                   <Tooltip title="Edit this method">
                     <IconButton size="small">
                       <EditIcon />
@@ -167,25 +252,49 @@ const PaymentMethodsView = ({ methods }) => {
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
-  </Paper>
-);
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Paper>
+  );
 };
 
 const getStatusChip = (status) => {
-    switch (status) {
-        case 'Funded':
-            return <Chip icon={<CheckCircleIcon />} label={status} color="success" size="small" variant="outlined" />;
-        case 'Pending Release':
-            return <Chip icon={<HourglassEmptyIcon />} label={status} color="warning" size="small" variant="outlined" />;
-        default:
-            return <Chip icon={<HelpOutlineIcon />} label={status} color="default" size="small" variant="outlined" />;
-    }
+  switch (status) {
+    case 'Funded':
+      return (
+        <Chip
+          icon={<CheckCircleIcon />}
+          label={status}
+          color="success"
+          size="small"
+          variant="outlined"
+        />
+      );
+    case 'Pending Release':
+      return (
+        <Chip
+          icon={<HourglassEmptyIcon />}
+          label={status}
+          color="warning"
+          size="small"
+          variant="outlined"
+        />
+      );
+    default:
+      return (
+        <Chip
+          icon={<HelpOutlineIcon />}
+          label={status}
+          color="default"
+          size="small"
+          variant="outlined"
+        />
+      );
+  }
 };
 
 const ActiveEscrows = ({ escrows }) => {
@@ -193,9 +302,9 @@ const ActiveEscrows = ({ escrows }) => {
   if (!escrows || escrows.length === 0) {
     return (
       <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
-    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-      Active Escrows
-    </Typography>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+          Active Escrows
+        </Typography>
         <Typography color="text.secondary">
           You have no active escrows.
         </Typography>
@@ -204,61 +313,108 @@ const ActiveEscrows = ({ escrows }) => {
   }
   return (
     <Paper sx={{ p: 3, borderRadius: 2 }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Active Escrows ({escrows.length})</Typography>
-        <Grid container spacing={3}>
-            {escrows.map(escrow => (
-                <Grid item xs={12} md={6} key={escrow.id}>
-                    <Card variant="outlined">
-                        <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                              {/* Status icon for quick recognition */}
-                              <Avatar sx={{ bgcolor: 'transparent', color: escrow.status === 'Funded' ? 'success.main' : escrow.status === 'Pending Release' ? 'warning.main' : 'text.secondary' }}>
-                                {escrow.status === 'Funded' ? <CheckCircleIcon /> : escrow.status === 'Pending Release' ? <HourglassEmptyIcon /> : <HelpOutlineIcon />}
-                              </Avatar>
-                              <Box sx={{ flexGrow: 1 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {escrow.otherParty}
-                                    </Typography>
-                                    <Typography variant="h6" component="div" fontWeight="bold">
-                                        {escrow.title}
-                                    </Typography>
-                                </Box>
-                                {getStatusChip(escrow.status)}
-                            </Box>
+      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+        Active Escrows ({escrows.length})
+      </Typography>
+      <Grid container spacing={3}>
+        {escrows.map((escrow) => (
+          <Grid item xs={12} md={6} key={escrow.id}>
+            <Card variant="outlined">
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  {/* Status icon for quick recognition */}
+                  <Avatar
+                    sx={{
+                      bgcolor: 'transparent',
+                      color:
+                        escrow.status === 'Funded'
+                          ? 'success.main'
+                          : escrow.status === 'Pending Release'
+                            ? 'warning.main'
+                            : 'text.secondary',
+                    }}
+                  >
+                    {escrow.status === 'Funded' ? (
+                      <CheckCircleIcon />
+                    ) : escrow.status === 'Pending Release' ? (
+                      <HourglassEmptyIcon />
+                    ) : (
+                      <HelpOutlineIcon />
+                    )}
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {escrow.otherParty}
+                    </Typography>
+                    <Typography variant="h6" component="div" fontWeight="bold">
+                      {escrow.title}
+                    </Typography>
+                  </Box>
+                  {getStatusChip(escrow.status)}
+                </Box>
 
-                            <Typography sx={{ my: 2, fontSize: 24, fontWeight: 'bold' }} color="primary.main">
-                                {currencyFormatter.format(escrow.amount)}
-                            </Typography>
-                            
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
-                                <Tooltip title="View escrow contract details">
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    size="small"
-                                    sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
-                                    component={RouterLink}
-                                    to={`/contracts/${escrow.contractId}`}
-                                >
-                                    View Contract
-                                </Button>
-                                </Tooltip>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            ))}
-        </Grid>
+                <Typography
+                  sx={{ my: 2, fontSize: 24, fontWeight: 'bold' }}
+                  color="primary.main"
+                >
+                  {currencyFormatter.format(escrow.amount)}
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: 1,
+                    mt: 1,
+                  }}
+                >
+                  <Tooltip title="View escrow contract details">
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      size="small"
+                      sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+                      component={RouterLink}
+                      to={`/contracts/${escrow.contractId}`}
+                    >
+                      View Contract
+                    </Button>
+                  </Tooltip>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Paper>
-);
+  );
 };
 
 // NEW: big icon-plus-number cards for quick at-a-glance metrics
 const SummaryCard = ({ icon: Icon, count, label }) => (
-  <Paper elevation={2} sx={{ p: 2, borderRadius: 2, textAlign: 'center', transition: 'transform 0.2s', border: '2px solid', borderColor: 'secondary.main', '&:hover': { transform: 'scale(1.03)', boxShadow: '0 4px 20px rgba(255,215,0,0.3)' } }}>
+  <Paper
+    elevation={2}
+    sx={{
+      p: 2,
+      borderRadius: 2,
+      textAlign: 'center',
+      transition: 'transform 0.2s',
+      animation: `${glowPulse} 3s ease-in-out infinite`,
+      border: '2px solid',
+      borderColor: 'secondary.main',
+      '&:hover': {
+        transform: 'scale(1.03)',
+        boxShadow: '0 4px 20px rgba(255,215,0,0.3)',
+      },
+    }}
+  >
     <Icon sx={{ fontSize: 28, mb: 0.5, color: 'secondary.main' }} />
-    <Typography variant="h5" fontWeight="bold" sx={{ color: 'secondary.main' }}>{count}</Typography>
-    <Typography variant="caption" sx={{ color: 'text.secondary' }}>{label}</Typography>
+    <Typography variant="h5" fontWeight="bold" sx={{ color: 'secondary.main' }}>
+      {count}
+    </Typography>
+    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+      {label}
+    </Typography>
   </Paper>
 );
 
@@ -267,12 +423,12 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
   if (!bills || bills.length === 0) {
     return (
       <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
-    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Your Bills
         </Typography>
         <Typography sx={{ color: 'text.secondary' }}>
           You have no bills to pay at this time.
-    </Typography>
+        </Typography>
       </Paper>
     );
   }
@@ -296,7 +452,11 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
                       onClick={() => onPayBill(bill.id)}
                       disabled={actionLoading === bill.id}
                     >
-                      {actionLoading === bill.id ? <CircularProgress size={20} /> : 'Pay'}
+                      {actionLoading === bill.id ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        'Pay'
+                      )}
                     </Button>
                   </Tooltip>
                 ) : null
@@ -321,23 +481,31 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
                   bill.status === 'overdue'
                     ? 'error.main'
                     : bill.status === 'paid'
-                    ? 'success.main'
-                    : 'text.primary'
+                      ? 'success.main'
+                      : 'text.primary'
                 }
                 sx={{ ml: 2 }}
               >
                 {currencyFormatter.format(bill.amount)}
               </Typography>
               <Chip
-                label={bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
+                label={
+                  bill.status.charAt(0).toUpperCase() + bill.status.slice(1)
+                }
                 size="small"
                 color={
-                  bill.status === 'paid' ? 'success' : bill.status === 'overdue' ? 'error' : 'warning'
+                  bill.status === 'paid'
+                    ? 'success'
+                    : bill.status === 'overdue'
+                      ? 'error'
+                      : 'warning'
                 }
                 sx={{ ml: 1 }}
               />
             </ListItem>
-            {idx < bills.length - 1 && <Divider variant="inset" component="li" />}
+            {idx < bills.length - 1 && (
+              <Divider variant="inset" component="li" />
+            )}
           </React.Fragment>
         ))}
       </List>
@@ -346,7 +514,20 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
 };
 
 const PaymentCenterPage = () => {
-  const { loading, error, walletBalance, transactions, paymentMethods, escrows, bills, actionLoading, payBill, addFunds, withdrawFunds, fetchTransactions } = usePayments();
+  const {
+    loading,
+    error,
+    walletBalance,
+    transactions,
+    paymentMethods,
+    escrows,
+    bills,
+    actionLoading,
+    payBill,
+    addFunds,
+    withdrawFunds,
+    fetchTransactions,
+  } = usePayments();
   const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
   const [depositOpen, setDepositOpen] = useState(false);
@@ -369,7 +550,10 @@ const PaymentCenterPage = () => {
   const [page, setPage] = useState(1);
   const perPage = 5;
   const pageCount = Math.ceil(transactions.length / perPage);
-  const pagedTransactions = transactions.slice((page - 1) * perPage, page * perPage);
+  const pagedTransactions = transactions.slice(
+    (page - 1) * perPage,
+    page * perPage,
+  );
 
   // Bills filters & pagination
   const [billStartDate, setBillStartDate] = useState('');
@@ -397,13 +581,18 @@ const PaymentCenterPage = () => {
   };
   const filteredBills = bills.filter((b) => {
     let ok = true;
-    if (appliedBillStartDate) ok = ok && new Date(b.dueDate) >= new Date(appliedBillStartDate);
-    if (appliedBillEndDate) ok = ok && new Date(b.dueDate) <= new Date(appliedBillEndDate);
+    if (appliedBillStartDate)
+      ok = ok && new Date(b.dueDate) >= new Date(appliedBillStartDate);
+    if (appliedBillEndDate)
+      ok = ok && new Date(b.dueDate) <= new Date(appliedBillEndDate);
     if (appliedBillStatus !== 'all') ok = ok && b.status === appliedBillStatus;
     return ok;
   });
   const billPageCount = Math.ceil(filteredBills.length / billPerPage);
-  const pagedBills = filteredBills.slice((billPage - 1) * billPerPage, billPage * billPerPage);
+  const pagedBills = filteredBills.slice(
+    (billPage - 1) * billPerPage,
+    billPage * billPerPage,
+  );
 
   // Escrows filters & pagination
   const [escrowStatusFilter, setEscrowStatusFilter] = useState('all');
@@ -414,49 +603,95 @@ const PaymentCenterPage = () => {
     setAppliedEscrowStatus(escrowStatusFilter);
     setEscrowPage(1);
   };
-  const filteredEscrows = escrows.filter(e =>
-    appliedEscrowStatus === 'all' || e.status === appliedEscrowStatus
+  const filteredEscrows = escrows.filter(
+    (e) => appliedEscrowStatus === 'all' || e.status === appliedEscrowStatus,
   );
   const escrowPageCount = Math.ceil(filteredEscrows.length / escrowPerPage);
   const pagedEscrows = filteredEscrows.slice(
     (escrowPage - 1) * escrowPerPage,
-    escrowPage * escrowPerPage
+    escrowPage * escrowPerPage,
   );
 
-  const openDepositDialog = () => { setAmount(''); setMethodId(''); setDepositOpen(true); };
+  const openDepositDialog = () => {
+    setAmount('');
+    setMethodId('');
+    setDepositOpen(true);
+  };
   const closeDepositDialog = () => setDepositOpen(false);
-  const openWithdrawDialog = () => { setAmount(''); setMethodId(''); setWithdrawOpen(true); };
+  const openWithdrawDialog = () => {
+    setAmount('');
+    setMethodId('');
+    setWithdrawOpen(true);
+  };
   const closeWithdrawDialog = () => setWithdrawOpen(false);
 
   const handleTabChange = (_, newVal) => setTabIndex(newVal);
 
-  if (loading) return <Container sx={{ py: 4 }}><Skeleton variant="rectangular" height={300} /></Container>;
-  if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
+  if (loading)
+    return (
+      <Container sx={{ py: 4 }}>
+        <Skeleton variant="rectangular" height={300} />
+      </Container>
+    );
+  if (error)
+    return (
+      <Container sx={{ py: 4 }}>
+        <Alert severity="error">{error}</Alert>
+      </Container>
+    );
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: 'secondary.main' }}>Payments</Typography>
-      <Typography color="text.secondary" sx={{ mb: 4 }}>Manage your wallet, transactions, and payment methods.</Typography>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        sx={{ mb: 1, color: 'secondary.main' }}
+      >
+        Payments
+      </Typography>
+      <Typography color="text.secondary" sx={{ mb: 4 }}>
+        Manage your wallet, transactions, and payment methods.
+      </Typography>
 
       <Grid container spacing={4}>
         <Grid item xs={12} lg={4}>
-          <WalletSummary balance={walletBalance} onDepositClick={openDepositDialog} onWithdrawClick={openWithdrawDialog} />
+          <WalletSummary
+            balance={walletBalance}
+            onDepositClick={openDepositDialog}
+            onWithdrawClick={openWithdrawDialog}
+          />
         </Grid>
-        
+
         <Grid item xs={12} lg={8}>
           {/* Summary row for illiterate-friendly icon counts */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={3}>
-              <SummaryCard icon={ReceiptIcon} count={transactions.length} label="Transactions" />
+              <SummaryCard
+                icon={ReceiptIcon}
+                count={transactions.length}
+                label="Transactions"
+              />
             </Grid>
             <Grid item xs={3}>
-              <SummaryCard icon={CreditCardIcon} count={paymentMethods.length} label="Methods" />
+              <SummaryCard
+                icon={CreditCardIcon}
+                count={paymentMethods.length}
+                label="Methods"
+              />
             </Grid>
             <Grid item xs={3}>
-              <SummaryCard icon={GavelIcon} count={escrows.length} label="Escrows" />
+              <SummaryCard
+                icon={GavelIcon}
+                count={escrows.length}
+                label="Escrows"
+              />
             </Grid>
             <Grid item xs={3}>
-              <SummaryCard icon={ReceiptLongIcon} count={bills.length} label="Bills" />
+              <SummaryCard
+                icon={ReceiptLongIcon}
+                count={bills.length}
+                label="Bills"
+              />
             </Grid>
           </Grid>
 
@@ -467,19 +702,40 @@ const PaymentCenterPage = () => {
               aria-label="payment center tabs"
               indicatorColor="secondary"
               textColor="inherit"
-              sx={{ '& .MuiTab-root': { color: 'text.secondary' }, '& .Mui-selected': { color: 'secondary.main' } }}
+              sx={{
+                '& .MuiTab-root': { color: 'text.secondary' },
+                '& .Mui-selected': { color: 'secondary.main' },
+              }}
             >
-              <Tab icon={<ReceiptIcon />} iconPosition="start" label="Transactions" />
-              <Tab icon={<CreditCardIcon />} iconPosition="start" label="Payment Methods" />
-              <Tab icon={<GavelIcon />} iconPosition="start" label="Active Escrows" />
-              <Tab icon={<ReceiptLongIcon />} iconPosition="start" label="Bills" />
+              <Tab
+                icon={<ReceiptIcon />}
+                iconPosition="start"
+                label="Transactions"
+              />
+              <Tab
+                icon={<CreditCardIcon />}
+                iconPosition="start"
+                label="Payment Methods"
+              />
+              <Tab
+                icon={<GavelIcon />}
+                iconPosition="start"
+                label="Active Escrows"
+              />
+              <Tab
+                icon={<ReceiptLongIcon />}
+                iconPosition="start"
+                label="Bills"
+              />
             </Tabs>
           </Box>
-          
+
           {tabIndex === 0 && (
             <>
               {/* Filters bar */}
-              <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Box
+                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
+              >
                 <Tooltip title="Transactions from this date">
                   <TextField
                     label="From"
@@ -513,13 +769,23 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyFilters}>Filter</Button>
+                  <Button variant="outlined" onClick={applyFilters}>
+                    Filter
+                  </Button>
                 </Tooltip>
               </Box>
-              <TransactionsList transactions={pagedTransactions} loading={loading} />
+              <TransactionsList
+                transactions={pagedTransactions}
+                loading={loading}
+              />
               {pageCount > 1 && (
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Pagination count={pageCount} page={page} onChange={(e, val) => setPage(val)} color="primary" />
+                  <Pagination
+                    count={pageCount}
+                    page={page}
+                    onChange={(e, val) => setPage(val)}
+                    color="primary"
+                  />
                 </Box>
               )}
             </>
@@ -528,7 +794,9 @@ const PaymentCenterPage = () => {
           {tabIndex === 2 && (
             <>
               {/* Escrows filters */}
-              <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Box
+                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
+              >
                 <Tooltip title="Filter by status">
                   <FormControl sx={{ minWidth: 140 }}>
                     <InputLabel>Status</InputLabel>
@@ -539,18 +807,27 @@ const PaymentCenterPage = () => {
                     >
                       <MenuItem value="all">All</MenuItem>
                       <MenuItem value="Funded">Funded</MenuItem>
-                      <MenuItem value="Pending Release">Pending Release</MenuItem>
+                      <MenuItem value="Pending Release">
+                        Pending Release
+                      </MenuItem>
                     </Select>
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyEscrowFilters}>Filter</Button>
+                  <Button variant="outlined" onClick={applyEscrowFilters}>
+                    Filter
+                  </Button>
                 </Tooltip>
               </Box>
               <ActiveEscrows escrows={pagedEscrows} />
               {escrowPageCount > 1 && (
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Pagination count={escrowPageCount} page={escrowPage} onChange={(e, val) => setEscrowPage(val)} color="primary" />
+                  <Pagination
+                    count={escrowPageCount}
+                    page={escrowPage}
+                    onChange={(e, val) => setEscrowPage(val)}
+                    color="primary"
+                  />
                 </Box>
               )}
             </>
@@ -558,7 +835,9 @@ const PaymentCenterPage = () => {
           {tabIndex === 3 && (
             <>
               {/* Bills filters */}
-              <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Box
+                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
+              >
                 <Tooltip title="Bills from this date">
                   <TextField
                     label="From"
@@ -593,23 +872,42 @@ const PaymentCenterPage = () => {
                   </FormControl>
                 </Tooltip>
                 <Tooltip title="Filter">
-                  <Button variant="outlined" onClick={applyBillFilters}>Filter</Button>
+                  <Button variant="outlined" onClick={applyBillFilters}>
+                    Filter
+                  </Button>
                 </Tooltip>
                 <Tooltip title="Clear filters">
-                  <Button variant="outlined" color="secondary" onClick={clearBillFilters}>Clear</Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={clearBillFilters}
+                  >
+                    Clear
+                  </Button>
                 </Tooltip>
               </Box>
               {filteredBills.length > 0 && (
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Showing {(billPage - 1) * billPerPage + 1} - {Math.min(filteredBills.length, billPage * billPerPage)} of {filteredBills.length} bills
+                    Showing {(billPage - 1) * billPerPage + 1} -{' '}
+                    {Math.min(filteredBills.length, billPage * billPerPage)} of{' '}
+                    {filteredBills.length} bills
                   </Typography>
                 </Box>
               )}
-              <BillsView bills={pagedBills} actionLoading={actionLoading} onPayBill={payBill} />
+              <BillsView
+                bills={pagedBills}
+                actionLoading={actionLoading}
+                onPayBill={payBill}
+              />
               {billPageCount > 1 && (
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Pagination count={billPageCount} page={billPage} onChange={(e, val) => setBillPage(val)} color="primary" />
+                  <Pagination
+                    count={billPageCount}
+                    page={billPage}
+                    onChange={(e, val) => setBillPage(val)}
+                    color="primary"
+                  />
                 </Box>
               )}
             </>
@@ -622,21 +920,39 @@ const PaymentCenterPage = () => {
         onClose={closeDepositDialog}
         fullWidth
         maxWidth="xs"
-        BackdropProps={{ sx: { backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(4px)' } }}
-        PaperProps={{ sx: {
-          bgcolor: theme.palette.grey[900],
-          color: theme.palette.text.primary,
-          borderRadius: '24px',
-          p: 3,
-          border: `2px solid ${theme.palette.secondary.main}`,
-          boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)'
-        } }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(4px)',
+          },
+        }}
+        PaperProps={{
+          sx: {
+            bgcolor: theme.palette.grey[900],
+            color: theme.palette.text.primary,
+            borderRadius: '24px',
+            p: 3,
+            border: `2px solid ${theme.palette.secondary.main}`,
+            boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)',
+          },
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <ArrowUpwardIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-          <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>Add Money</Typography>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+        >
+          <ArrowUpwardIcon
+            sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+          >
+            Add Money
+          </Typography>
         </DialogTitle>
-        <Divider sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }} />
+        <Divider
+          sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }}
+        />
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <Tooltip title="Enter amount in Ghana Cedi">
@@ -648,20 +964,38 @@ const PaymentCenterPage = () => {
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
                 InputProps={{ disableUnderline: true }}
-                InputLabelProps={{ sx: { color: theme.palette.secondary.main } }}
-                sx={{ bgcolor: theme.palette.grey[800], borderRadius: 1, p: 1, color: theme.palette.text.primary, border: `1px solid ${theme.palette.secondary.main}`, boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)' }}
+                InputLabelProps={{
+                  sx: { color: theme.palette.secondary.main },
+                }}
+                sx={{
+                  bgcolor: theme.palette.grey[800],
+                  borderRadius: 1,
+                  p: 1,
+                  color: theme.palette.text.primary,
+                  border: `1px solid ${theme.palette.secondary.main}`,
+                  boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
+                }}
               />
             </Tooltip>
             <Tooltip title="Choose a payment method">
               <FormControl fullWidth>
-                <InputLabel sx={{ color: theme.palette.secondary.main }}>Method</InputLabel>
+                <InputLabel sx={{ color: theme.palette.secondary.main }}>
+                  Method
+                </InputLabel>
                 <Select
                   variant="filled"
                   label="Method"
                   value={methodId}
                   onChange={(e) => setMethodId(e.target.value)}
                   inputProps={{ disableUnderline: true }}
-                  sx={{ bgcolor: theme.palette.grey[800], borderRadius: 1, p: '8px 12px', color: theme.palette.text.primary, border: `1px solid ${theme.palette.secondary.main}`, boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)' }}
+                  sx={{
+                    bgcolor: theme.palette.grey[800],
+                    borderRadius: 1,
+                    p: '8px 12px',
+                    color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.secondary.main}`,
+                    boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
+                  }}
                 >
                   {paymentMethods.map((m) => (
                     <MenuItem key={m.id} value={m.id}>
@@ -674,9 +1008,19 @@ const PaymentCenterPage = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDepositDialog} variant="outlined" color="secondary" sx={{ borderWidth: 2 }}>Cancel</Button>
           <Button
-            onClick={() => { addFunds(Number(amount), methodId); closeDepositDialog(); }}
+            onClick={closeDepositDialog}
+            variant="outlined"
+            color="secondary"
+            sx={{ borderWidth: 2 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              addFunds(Number(amount), methodId);
+              closeDepositDialog();
+            }}
             variant="contained"
             color="secondary"
             startIcon={<AddIcon />}
@@ -692,21 +1036,39 @@ const PaymentCenterPage = () => {
         onClose={closeWithdrawDialog}
         fullWidth
         maxWidth="xs"
-        BackdropProps={{ sx: { backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(4px)' } }}
-        PaperProps={{ sx: {
-          bgcolor: theme.palette.grey[900],
-          color: theme.palette.text.primary,
-          borderRadius: '24px',
-          p: 3,
-          border: `2px solid ${theme.palette.secondary.main}`,
-          boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)'
-        } }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(4px)',
+          },
+        }}
+        PaperProps={{
+          sx: {
+            bgcolor: theme.palette.grey[900],
+            color: theme.palette.text.primary,
+            borderRadius: '24px',
+            p: 3,
+            border: `2px solid ${theme.palette.secondary.main}`,
+            boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)',
+          },
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <ArrowDownwardIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-          <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>Withdraw</Typography>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+        >
+          <ArrowDownwardIcon
+            sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+          >
+            Withdraw
+          </Typography>
         </DialogTitle>
-        <Divider sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }} />
+        <Divider
+          sx={{ borderColor: theme.palette.secondary.main, my: 1, height: 2 }}
+        />
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <Tooltip title="Enter amount to withdraw">
@@ -718,20 +1080,38 @@ const PaymentCenterPage = () => {
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
                 InputProps={{ disableUnderline: true }}
-                InputLabelProps={{ sx: { color: theme.palette.secondary.main } }}
-                sx={{ bgcolor: theme.palette.grey[800], borderRadius: 1, p: 1, color: theme.palette.text.primary, border: `1px solid ${theme.palette.secondary.main}`, boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)' }}
+                InputLabelProps={{
+                  sx: { color: theme.palette.secondary.main },
+                }}
+                sx={{
+                  bgcolor: theme.palette.grey[800],
+                  borderRadius: 1,
+                  p: 1,
+                  color: theme.palette.text.primary,
+                  border: `1px solid ${theme.palette.secondary.main}`,
+                  boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
+                }}
               />
             </Tooltip>
             <Tooltip title="Choose a withdrawal method">
               <FormControl fullWidth>
-                <InputLabel sx={{ color: theme.palette.secondary.main }}>Method</InputLabel>
+                <InputLabel sx={{ color: theme.palette.secondary.main }}>
+                  Method
+                </InputLabel>
                 <Select
                   variant="filled"
                   label="Method"
                   value={methodId}
                   onChange={(e) => setMethodId(e.target.value)}
                   inputProps={{ disableUnderline: true }}
-                  sx={{ bgcolor: theme.palette.grey[800], borderRadius: 1, p: '8px 12px', color: theme.palette.text.primary, border: `1px solid ${theme.palette.secondary.main}`, boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)' }}
+                  sx={{
+                    bgcolor: theme.palette.grey[800],
+                    borderRadius: 1,
+                    p: '8px 12px',
+                    color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.secondary.main}`,
+                    boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
+                  }}
                 >
                   {paymentMethods.map((m) => (
                     <MenuItem key={m.id} value={m.id}>
@@ -744,9 +1124,19 @@ const PaymentCenterPage = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeWithdrawDialog} variant="outlined" color="secondary" sx={{ borderWidth: 2 }}>Cancel</Button>
           <Button
-            onClick={() => { withdrawFunds(Number(amount), methodId); closeWithdrawDialog(); }}
+            onClick={closeWithdrawDialog}
+            variant="outlined"
+            color="secondary"
+            sx={{ borderWidth: 2 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              withdrawFunds(Number(amount), methodId);
+              closeWithdrawDialog();
+            }}
             variant="contained"
             color="secondary"
             startIcon={<ArrowDownwardIcon />}
@@ -762,4 +1152,3 @@ const PaymentCenterPage = () => {
 };
 
 export default PaymentCenterPage;
- 

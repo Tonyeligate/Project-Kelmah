@@ -1,6 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material';
 import DashboardCard from '../common/DashboardCard';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 
@@ -30,8 +37,8 @@ LicensesAndCertifications.propTypes = {
       name: PropTypes.string.isRequired,
       issuer: PropTypes.string.isRequired,
       expiry: PropTypes.string.isRequired,
-    })
+    }),
   ),
 };
 
-export default LicensesAndCertifications; 
+export default LicensesAndCertifications;

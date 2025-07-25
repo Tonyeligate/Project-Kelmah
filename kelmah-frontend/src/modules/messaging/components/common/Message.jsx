@@ -1,19 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { 
-  Avatar, 
-  Box, 
-  Typography, 
-  IconButton, 
-  Menu, 
-  MenuItem, 
-  ListItemIcon, 
+import {
+  Avatar,
+  Box,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
   ListItemText,
   Tooltip,
   Paper,
   Fade,
   Chip,
-  Badge
+  Badge,
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
@@ -28,7 +28,7 @@ import {
   Image as ImageIcon,
   PictureAsPdf as PdfIcon,
   Videocam as VideoIcon,
-  AudioFile as AudioIcon
+  AudioFile as AudioIcon,
 } from '@mui/icons-material';
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
@@ -41,7 +41,7 @@ const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({
   maxWidth: '80%',
   width: 'auto',
   wordBreak: 'break-word',
-  backgroundColor: isOwn 
+  backgroundColor: isOwn
     ? alpha(theme.palette.primary.main, 0.15)
     : alpha(theme.palette.background.paper, 0.7),
   color: theme.palette.text.primary,
@@ -55,70 +55,70 @@ const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({
     [isOwn ? 'right' : 'left']: -8,
     width: 12,
     height: 12,
-    backgroundColor: isOwn 
+    backgroundColor: isOwn
       ? alpha(theme.palette.primary.main, 0.15)
       : alpha(theme.palette.background.paper, 0.7),
-    clipPath: isOwn 
+    clipPath: isOwn
       ? 'polygon(0 0, 100% 100%, 100% 0)'
       : 'polygon(0 100%, 100% 0, 0 0)',
-  }
+  },
 }));
 
 const MessageTime = styled(Typography)(({ theme }) => ({
   fontSize: '0.7rem',
   color: theme.palette.text.secondary,
   marginTop: theme.spacing(0.5),
-  textAlign: 'right'
+  textAlign: 'right',
 }));
 
 const MessageStatus = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-end',
-  marginTop: theme.spacing(0.5)
+  marginTop: theme.spacing(0.5),
 }));
 
-const Message = ({ 
-  message, 
-  isOwn, 
-  showAvatar, 
-  onReply, 
-  onDelete, 
+const Message = ({
+  message,
+  isOwn,
+  showAvatar,
+  onReply,
+  onDelete,
   onCopy,
-  onVisibilityChange
+  onVisibilityChange,
 }) => {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
   const messageRef = useRef(null);
-  
+
   // Setup intersection observer to track when message is visible
   const { ref, inView } = useInView({
     threshold: 0.5,
-    triggerOnce: !message.isRead && !isOwn // Only trigger once for unread messages
+    triggerOnce: !message.isRead && !isOwn, // Only trigger once for unread messages
   });
-  
+
   // Combine refs
   const setRefs = (element) => {
     messageRef.current = element;
     ref(element);
   };
-  
+
   // Call visibility change handler when message becomes visible
   useEffect(() => {
     if (inView && !isOwn && !message.isRead) {
       onVisibilityChange && onVisibilityChange(true);
     }
   }, [inView, message.isRead, isOwn, onVisibilityChange]);
-  
+
   const handleMenuOpen = (event) => {
     event.stopPropagation();
     setMenuAnchorEl(event.currentTarget);
   };
-  
+
   const handleMenuClose = () => {
     setMenuAnchorEl(null);
   };
-  
+
   const handleCopy = () => {
     if (onCopy) {
       onCopy(message);
@@ -127,17 +127,17 @@ const Message = ({
     }
     handleMenuClose();
   };
-  
+
   const handleReply = () => {
     onReply && onReply(message);
     handleMenuClose();
   };
-  
+
   const handleDelete = () => {
     onDelete && onDelete(message);
     handleMenuClose();
   };
-  
+
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     try {
@@ -147,121 +147,149 @@ const Message = ({
       return '';
     }
   };
-  
+
   const renderMessageContent = () => {
     switch (message.type) {
       case 'image':
-        return <Box>
-          <Typography variant="body2" sx={{ mb: 1 }}>{message.content}</Typography>
-          <Box component="img" src={message.imageUrl} alt="Shared image" sx={{ maxWidth: '100%', borderRadius: 1 }} />
-        </Box>;
-        
-      case 'file':
-        return <Box>
-          <Typography variant="body2" sx={{ mb: 1 }}>{message.content}</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', p: 1, bgcolor: 'background.paper', borderRadius: 1 }}>
-            <FileIcon sx={{ mr: 1 }} />
-            <Typography variant="body2" noWrap>{message.fileName}</Typography>
+        return (
+          <Box>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {message.content}
+            </Typography>
+            <Box
+              component="img"
+              src={message.imageUrl}
+              alt="Shared image"
+              sx={{ maxWidth: '100%', borderRadius: 1 }}
+            />
           </Box>
-        </Box>;
-        
+        );
+
+      case 'file':
+        return (
+          <Box>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {message.content}
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                p: 1,
+                bgcolor: 'background.paper',
+                borderRadius: 1,
+              }}
+            >
+              <FileIcon sx={{ mr: 1 }} />
+              <Typography variant="body2" noWrap>
+                {message.fileName}
+              </Typography>
+            </Box>
+          </Box>
+        );
+
       case 'system':
-        return <Box sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-          {message.content}
-        </Box>;
-        
+        return (
+          <Box sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+            {message.content}
+          </Box>
+        );
+
       default:
         return <Typography variant="body2">{message.content}</Typography>;
     }
   };
-  
+
   return (
     <Box
       ref={setRefs}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={{ 
+      sx={{
         display: 'flex',
         flexDirection: isOwn ? 'row-reverse' : 'row',
         alignItems: 'flex-end',
         mb: 1,
-        position: 'relative'
+        position: 'relative',
       }}
     >
       {showAvatar && !isOwn && (
         <Avatar
           src={message.sender?.avatar}
           alt={message.sender?.name || 'User'}
-          sx={{ 
-            width: 32, 
-            height: 32, 
+          sx={{
+            width: 32,
+            height: 32,
             mr: 1,
-            ml: isOwn ? 1 : 0
+            ml: isOwn ? 1 : 0,
           }}
         />
       )}
-      
+
       {!showAvatar && !isOwn && (
         <Box sx={{ width: 40 }} /> // Spacer when avatar is not shown
       )}
-      
+
       <Box sx={{ maxWidth: '80%' }}>
         {/* Sender name (for group chats) */}
         {!isOwn && message.sender && message.conversation?.type === 'group' && (
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              ml: 1, 
-              mb: 0.5, 
+          <Typography
+            variant="caption"
+            sx={{
+              ml: 1,
+              mb: 0.5,
               display: 'block',
               color: 'primary.main',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             {message.sender.name}
           </Typography>
         )}
-        
+
         {/* Reply reference */}
         {message.replyTo && (
-          <Box 
-            sx={{ 
-              ml: isOwn ? 0 : 1, 
+          <Box
+            sx={{
+              ml: isOwn ? 0 : 1,
               mr: isOwn ? 1 : 0,
               mb: 0.5,
               pl: 1,
               borderLeft: '2px solid',
               borderColor: 'primary.main',
-              opacity: 0.7
+              opacity: 0.7,
             }}
           >
-            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography
+              variant="caption"
+              sx={{ display: 'flex', alignItems: 'center' }}
+            >
               <ReplyIcon fontSize="inherit" sx={{ mr: 0.5 }} />
               Replying to {message.replyTo.sender?.name || 'User'}
             </Typography>
-            <Typography 
-              variant="caption" 
-              noWrap 
-              sx={{ 
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{
                 display: 'block',
                 maxWidth: 200,
                 overflow: 'hidden',
-                textOverflow: 'ellipsis'
+                textOverflow: 'ellipsis',
               }}
             >
               {message.replyTo.content}
             </Typography>
           </Box>
         )}
-        
+
         <MessageBubble isOwn={isOwn} elevation={0}>
           {renderMessageContent()}
-          
+
           {/* Attachments */}
           {message.attachments?.length > 0 && (
             <MessageAttachments attachments={message.attachments} />
           )}
-          
+
           {/* Encrypted message indicator */}
           {message.encrypted && (
             <Tooltip title="This message is encrypted end-to-end">
@@ -270,11 +298,15 @@ const Message = ({
                 label="Encrypted"
                 variant="outlined"
                 size="small"
-                sx={{ mt: 1, height: 20, '& .MuiChip-label': { fontSize: '0.6rem' } }}
+                sx={{
+                  mt: 1,
+                  height: 20,
+                  '& .MuiChip-label': { fontSize: '0.6rem' },
+                }}
               />
             </Tooltip>
           )}
-          
+
           {/* Message menu button (visible on hover) */}
           <Fade in={isHovered}>
             <IconButton
@@ -288,36 +320,38 @@ const Message = ({
                 height: 24,
                 backgroundColor: 'background.paper',
                 '&:hover': { backgroundColor: 'action.hover' },
-                boxShadow: 1
+                boxShadow: 1,
               }}
             >
               <MoreIcon fontSize="small" />
             </IconButton>
           </Fade>
         </MessageBubble>
-        
+
         {/* Message timestamp and read status */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: isOwn ? 'flex-end' : 'flex-start',
-          mt: 0.5
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isOwn ? 'flex-end' : 'flex-start',
+            mt: 0.5,
+          }}
+        >
           <MessageTime>{formatTime(message.createdAt)}</MessageTime>
-          
+
           {isOwn && (
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
-              <Tooltip title={message.isRead ? "Read" : "Delivered"}>
-                <ReadIcon 
-                  color={message.isRead ? "primary" : "action"} 
-                  sx={{ fontSize: '0.8rem' }} 
+              <Tooltip title={message.isRead ? 'Read' : 'Delivered'}>
+                <ReadIcon
+                  color={message.isRead ? 'primary' : 'action'}
+                  sx={{ fontSize: '0.8rem' }}
                 />
               </Tooltip>
             </Box>
           )}
         </Box>
       </Box>
-      
+
       {/* Message menu */}
       <Menu
         anchorEl={menuAnchorEl}
@@ -368,18 +402,18 @@ Message.propTypes = {
     attachments: PropTypes.array,
     encrypted: PropTypes.bool,
     replyTo: PropTypes.object,
-    conversation: PropTypes.object
+    conversation: PropTypes.object,
   }).isRequired,
   isOwn: PropTypes.bool.isRequired,
   showAvatar: PropTypes.bool,
   onReply: PropTypes.func,
   onDelete: PropTypes.func,
   onCopy: PropTypes.func,
-  onVisibilityChange: PropTypes.func
+  onVisibilityChange: PropTypes.func,
 };
 
 Message.defaultProps = {
-  showAvatar: true
+  showAvatar: true,
 };
 
-export default Message; 
+export default Message;

@@ -1,11 +1,18 @@
 import React from 'react';
-import { Box, Container, Typography, Breadcrumbs, Link, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Breadcrumbs,
+  Link,
+  CircularProgress,
+} from '@mui/material';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import ContractForm from '../../../components/contracts/ContractForm';
 
 const EditContractPage = () => {
   const { id } = useParams();
-  
+
   if (!id) {
     return (
       <Container>
@@ -17,7 +24,7 @@ const EditContractPage = () => {
       </Container>
     );
   }
-  
+
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 3 }}>
@@ -25,21 +32,21 @@ const EditContractPage = () => {
           <Link component={RouterLink} to="/" underline="hover" color="inherit">
             Dashboard
           </Link>
-          <Link 
-            component={RouterLink} 
-            to="/contracts" 
-            underline="hover" 
+          <Link
+            component={RouterLink}
+            to="/contracts"
+            underline="hover"
             color="inherit"
           >
             Contracts
           </Link>
           <Typography color="text.primary">Edit Contract #{id}</Typography>
         </Breadcrumbs>
-        
+
         <ContractForm contractId={id} />
       </Box>
     </Container>
   );
 };
 
-export default EditContractPage; 
+export default EditContractPage;

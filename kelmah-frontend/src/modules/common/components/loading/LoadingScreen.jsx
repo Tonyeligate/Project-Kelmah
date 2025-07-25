@@ -5,7 +5,7 @@ const LoadingScreen = ({ isLoading = true, message = 'Loading...' }) => {
   if (!isLoading) return null;
 
   return (
-    <Box 
+    <Box
       sx={{
         position: 'fixed',
         top: 0,
@@ -28,4 +28,4 @@ const LoadingScreen = ({ isLoading = true, message = 'Loading...' }) => {
   );
 };
 
-export default LoadingScreen; 
+export default LoadingScreen;

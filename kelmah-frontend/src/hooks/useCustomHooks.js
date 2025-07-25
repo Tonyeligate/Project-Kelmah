@@ -6,20 +6,23 @@ export const useApi = (apiFunction) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const execute = useCallback(async (...args) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await apiFunction(...args);
-      setData(result);
-      return result;
-    } catch (err) {
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [apiFunction]);
+  const execute = useCallback(
+    async (...args) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await apiFunction(...args);
+        setData(result);
+        return result;
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiFunction],
+  );
 
   return { data, loading, error, execute };
 };
@@ -28,7 +31,7 @@ export const useApi = (apiFunction) => {
 export const useInfiniteScroll = (callback, options = {}) => {
   const { threshold = 100 } = options;
   const [isFetching, setIsFetching] = useState(false);
-  
+
   const handleScroll = useCallback(() => {
     const scrollHeight = document.documentElement.scrollHeight;
     const scrollTop = document.documentElement.scrollTop;
@@ -110,4 +113,4 @@ export const useKeyboardShortcut = (targetKey, callback, options = {}) => {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [targetKey, callback, ctrlKey, altKey, shiftKey]);
-}; 
+};

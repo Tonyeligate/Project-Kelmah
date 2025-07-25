@@ -10,7 +10,9 @@ const MyEarnings = () => {
       <Grid container spacing={2} alignItems="center" sx={{ p: 1 }}>
         <Grid item xs={12}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <MonetizationOnIcon sx={{ fontSize: 48, color: 'success.main', mr: 1.5 }} />
+            <MonetizationOnIcon
+              sx={{ fontSize: 48, color: 'success.main', mr: 1.5 }}
+            />
             <Box>
               <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
                 $2,850
@@ -39,4 +41,4 @@ const MyEarnings = () => {
   );
 };
 
-export default MyEarnings; 
+export default MyEarnings;

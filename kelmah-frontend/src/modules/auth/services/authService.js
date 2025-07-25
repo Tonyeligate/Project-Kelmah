@@ -1,4 +1,5 @@
 import axiosInstance from '../../common/services/axios';
+import { API_ENDPOINTS } from '../../../config/services';
 
 // Mock data for development mode when backend is not available
 const DEV_MODE_USER = {
@@ -100,19 +101,19 @@ const authService = {
     }
 
     try {
-      // Create a config object with explicit headers
+      console.log('Registering user with data:', userData);
+      
       const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
       };
 
       // Use stringified JSON for the request
-      const response = await axiosInstance.post(
-        `/api/auth/register`,
-        userData,
-        config,
-      );
+              const response = await axiosInstance.post(
+          '/auth/register', // Keep simple path for now - services config will be used later
+          userData,
+          config,
+        );
 
       // Handle both API response structures like we did for login
       const responseData = response.data;

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { 
-  Box, 
-  TextField, 
-  IconButton, 
+import {
+  Box,
+  TextField,
+  IconButton,
   Paper,
   CircularProgress,
   Typography,
@@ -17,17 +17,21 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { 
+import {
   Send as SendIcon,
   AttachFile as AttachFileIcon,
   Close as CloseIcon,
   Image as ImageIcon,
-  InsertDriveFile as FileIcon
+  InsertDriveFile as FileIcon,
 } from '@mui/icons-material';
-import { MAX_ATTACHMENTS, MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from '../../../../config/constants';
+import {
+  MAX_ATTACHMENTS,
+  MAX_FILE_SIZE,
+  ALLOWED_FILE_TYPES,
+} from '../../../../config/constants';
 
 // Styled components
 const InputContainer = styled(Paper)(({ theme }) => ({
@@ -35,7 +39,7 @@ const InputContainer = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
   padding: theme.spacing(1, 2),
   marginTop: theme.spacing(2),
-  boxShadow: theme.shadows[2]
+  boxShadow: theme.shadows[2],
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -137,11 +141,11 @@ const formatFileSize = (bytes) => {
   }
 };
 
-const MessageInput = ({ 
-  onSendMessage, 
-  disabled = false, 
+const MessageInput = ({
+  onSendMessage,
+  disabled = false,
   loading = false,
-  placeholder = "Type a message..." 
+  placeholder = 'Type a message...',
 }) => {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -177,13 +181,13 @@ const MessageInput = ({
     const validFiles = [];
     const errors = [];
 
-    files.forEach(file => {
+    files.forEach((file) => {
       // Check file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
         errors.push(`${file.name} is too large. Maximum size is 10MB.`);
-      return;
-    }
-    
+        return;
+      }
+
       // Check file type
       const allowedTypes = [
         'image/jpeg',
@@ -194,7 +198,7 @@ const MessageInput = ({
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/plain'
+        'text/plain',
       ];
 
       if (!allowedTypes.includes(file.type)) {
@@ -210,20 +214,20 @@ const MessageInput = ({
       return;
     }
 
-    setAttachments(prev => [...prev, ...validFiles]);
+    setAttachments((prev) => [...prev, ...validFiles]);
     setFileError('');
   };
 
   // Remove attachment
   const removeAttachment = (index) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
     <Box sx={{ p: 2 }}>
       {/* Attachment Dialog */}
-      <Dialog 
-        open={showAttachmentDialog} 
+      <Dialog
+        open={showAttachmentDialog}
         onClose={() => setShowAttachmentDialog(false)}
         maxWidth="sm"
         fullWidth
@@ -236,24 +240,24 @@ const MessageInput = ({
             </Typography>
           )}
           <List>
-              {attachments.map((file, index) => (
-                <ListItem key={index}>
-                  <ListItemText 
-                    primary={file.name} 
+            {attachments.map((file, index) => (
+              <ListItem key={index}>
+                <ListItemText
+                  primary={file.name}
                   secondary={`${formatFileSize(file.size)} • ${file.type}`}
-                  />
-                  <ListItemSecondaryAction>
-                  <IconButton 
-                    edge="end" 
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    edge="end"
                     onClick={() => removeAttachment(index)}
                     size="small"
                   >
-                      <CloseIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
+                    <CloseIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowAttachmentDialog(false)}>Close</Button>
@@ -261,15 +265,15 @@ const MessageInput = ({
       </Dialog>
 
       {/* Message Input */}
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: 2, 
-          display: 'flex', 
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          display: 'flex',
           alignItems: 'flex-end',
           backgroundColor: 'background.paper',
           border: 1,
-          borderColor: 'divider'
+          borderColor: 'divider',
         }}
       >
         {/* Attachment Button */}
@@ -311,7 +315,9 @@ const MessageInput = ({
         <IconButton
           color="primary"
           onClick={handleSend}
-          disabled={disabled || loading || (!message.trim() && attachments.length === 0)}
+          disabled={
+            disabled || loading || (!message.trim() && attachments.length === 0)
+          }
         >
           {loading ? <CircularProgress size={24} /> : <SendIcon />}
         </IconButton>
@@ -329,5 +335,4 @@ const MessageInput = ({
   );
 };
 
-export default MessageInput; 
-
+export default MessageInput;

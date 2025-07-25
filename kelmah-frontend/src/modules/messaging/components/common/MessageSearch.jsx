@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Drawer, 
-  TextField, 
-  InputAdornment, 
-  IconButton, 
-  Typography, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  Divider, 
+import {
+  Box,
+  Drawer,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
   CircularProgress,
-  Chip
+  Chip,
 } from '@mui/material';
-import { Search, Close, ArrowBack, CalendarMonth, Person, Attachment } from '@mui/icons-material';
+import {
+  Search,
+  Close,
+  ArrowBack,
+  CalendarMonth,
+  Person,
+  Attachment,
+} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { messagingService } from '../../../services/messagingService';
@@ -44,10 +51,14 @@ const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
 
 const FilterChip = styled(Chip)(({ theme, selected }) => ({
   margin: theme.spacing(0.5),
-  backgroundColor: selected ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+  backgroundColor: selected
+    ? 'rgba(255, 215, 0, 0.2)'
+    : 'rgba(255, 255, 255, 0.1)',
   borderColor: selected ? '#FFA500' : 'transparent',
   '&:hover': {
-    backgroundColor: selected ? 'rgba(255, 215, 0, 0.3)' : 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: selected
+      ? 'rgba(255, 215, 0, 0.3)'
+      : 'rgba(255, 255, 255, 0.2)',
   },
 }));
 
@@ -60,22 +71,22 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
     period: 'all', // all, today, week, month
     sender: null,
   });
-  
+
   const handleSearch = async () => {
     if (!query.trim()) {
       setResults([]);
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const options = {
         attachments: filters.attachments,
         period: filters.period !== 'all' ? filters.period : undefined,
         sender: filters.sender,
       };
-      
+
       const response = await messagingService.searchMessages(query, options);
       setResults(response.messages || []);
     } catch (error) {
@@ -85,51 +96,51 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       setLoading(false);
     }
   };
-  
+
   // Search when query or filters change
   useEffect(() => {
     if (open) {
       const delayDebounceFn = setTimeout(() => {
         handleSearch();
       }, 500);
-      
+
       return () => clearTimeout(delayDebounceFn);
     }
   }, [query, filters, open]);
-  
+
   const handleSelectResult = (message) => {
     if (onSelectMessage) {
       onSelectMessage(message);
     }
     onClose();
   };
-  
+
   const toggleFilter = (filterType, value) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       if (filterType === 'attachments') {
         return { ...prev, attachments: !prev.attachments };
       }
-      
+
       if (filterType === 'period') {
         return { ...prev, period: prev.period === value ? 'all' : value };
       }
-      
+
       if (filterType === 'sender') {
         return { ...prev, sender: prev.sender === value ? null : value };
       }
-      
+
       return prev;
     });
   };
-  
+
   // Add highlight to matching text
   const highlightMatches = (text, query) => {
     if (!text || !query) return text;
-    
+
     const regex = new RegExp(`(${query})`, 'gi');
     return text.replace(regex, '<span class="highlight">$1</span>');
   };
-  
+
   return (
     <Drawer
       anchor="right"
@@ -148,7 +159,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
         </IconButton>
         <Typography variant="h6">Message Search</Typography>
       </SearchHeader>
-      
+
       <Box sx={{ p: 2 }}>
         <TextField
           fullWidth
@@ -171,7 +182,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             ),
           }}
         />
-        
+
         <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap' }}>
           <FilterChip
             icon={<Attachment />}
@@ -180,7 +191,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             selected={filters.attachments}
             onClick={() => toggleFilter('attachments')}
           />
-          
+
           <FilterChip
             icon={<CalendarMonth />}
             label="Today"
@@ -188,7 +199,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             selected={filters.period === 'today'}
             onClick={() => toggleFilter('period', 'today')}
           />
-          
+
           <FilterChip
             icon={<CalendarMonth />}
             label="This week"
@@ -196,7 +207,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             selected={filters.period === 'week'}
             onClick={() => toggleFilter('period', 'week')}
           />
-          
+
           <FilterChip
             icon={<CalendarMonth />}
             label="This month"
@@ -206,9 +217,9 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           />
         </Box>
       </Box>
-      
+
       <Divider />
-      
+
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
@@ -220,8 +231,12 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
               <SearchResult onClick={() => handleSelectResult(message)}>
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body1">{message.conversation.title}</Typography>
+                    <Box
+                      sx={{ display: 'flex', justifyContent: 'space-between' }}
+                    >
+                      <Typography variant="body1">
+                        {message.conversation.title}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {format(new Date(message.createdAt), 'MMM d, yyyy')}
                       </Typography>
@@ -229,7 +244,14 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                   }
                   secondary={
                     <>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 0.5,
+                        }}
+                      >
                         <Person fontSize="small" />
                         <Typography variant="body2" color="text.secondary">
                           {message.sender.name}
@@ -238,17 +260,28 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                       <ContentPreview
                         variant="body2"
                         dangerouslySetInnerHTML={{
-                          __html: highlightMatches(message.content, query)
+                          __html: highlightMatches(message.content, query),
                         }}
                       />
-                      {message.attachments && message.attachments.length > 0 && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                          <Attachment fontSize="small" sx={{ mr: 0.5 }} />
-                          <Typography variant="caption" color="text.secondary">
-                            {message.attachments.length} attachment{message.attachments.length !== 1 ? 's' : ''}
-                          </Typography>
-                        </Box>
-                      )}
+                      {message.attachments &&
+                        message.attachments.length > 0 && (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              mt: 0.5,
+                            }}
+                          >
+                            <Attachment fontSize="small" sx={{ mr: 0.5 }} />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {message.attachments.length} attachment
+                              {message.attachments.length !== 1 ? 's' : ''}
+                            </Typography>
+                          </Box>
+                        )}
                     </>
                   }
                 />
@@ -258,13 +291,27 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           ))}
         </List>
       ) : query ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            p: 4,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
             No messages found matching "{query}"
           </Typography>
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            p: 4,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
             Enter a search term to find messages
           </Typography>
@@ -274,4 +321,4 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
   );
 };
 
-export default MessageSearch; 
+export default MessageSearch;

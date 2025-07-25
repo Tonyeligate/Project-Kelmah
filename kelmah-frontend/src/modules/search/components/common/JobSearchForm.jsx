@@ -9,7 +9,7 @@ import {
   InputLabel,
   Select,
   Chip,
-  Paper
+  Paper,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
@@ -33,7 +33,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
     'Marketing',
     'Accounting',
     'Consulting',
-    'Legal'
+    'Legal',
   ];
 
   // Sample job types
@@ -42,7 +42,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
     'Part-time',
     'Contract',
     'Freelance',
-    'Internship'
+    'Internship',
   ];
 
   const handleSubmit = (e) => {
@@ -52,7 +52,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
       location,
       jobType,
       category,
-      skills
+      skills,
     });
   };
 
@@ -64,7 +64,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
   };
 
   const handleRemoveSkill = (skillToRemove) => {
-    setSkills(skills.filter(s => s !== skillToRemove));
+    setSkills(skills.filter((s) => s !== skillToRemove));
   };
 
   return (
@@ -81,7 +81,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
               placeholder="Job title, skills, or company"
             />
           </Grid>
-          
+
           <Grid item xs={12} md={4}>
             <TextField
               fullWidth
@@ -92,7 +92,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
               placeholder="City, state, or remote"
             />
           </Grid>
-          
+
           <Grid item xs={12} md={4}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Job Type</InputLabel>
@@ -102,13 +102,15 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
                 label="Job Type"
               >
                 <MenuItem value="">Any</MenuItem>
-                {jobTypes.map(type => (
-                  <MenuItem key={type} value={type}>{type}</MenuItem>
+                {jobTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} md={4}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Category</InputLabel>
@@ -118,13 +120,15 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
                 label="Category"
               >
                 <MenuItem value="">Any</MenuItem>
-                {jobCategories.map(cat => (
-                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                {jobCategories.map((cat) => (
+                  <MenuItem key={cat} value={cat}>
+                    {cat}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} md={8}>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <TextField
@@ -149,7 +153,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
                 Add Skill
               </Button>
             </Box>
-            
+
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
               {skills.map((s) => (
                 <Chip
@@ -162,7 +166,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
               ))}
             </Box>
           </Grid>
-          
+
           <Grid item xs={12}>
             <Button
               type="submit"
@@ -176,14 +180,14 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
             </Button>
           </Grid>
         </Grid>
-    </Box>
+      </Box>
     </Paper>
   );
 };
 
 JobSearchForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  initialValues: PropTypes.object
+  initialValues: PropTypes.object,
 };
 
 export default JobSearchForm;

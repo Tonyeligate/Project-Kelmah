@@ -52,8 +52,12 @@ const FeatureCard = ({ icon, title, description }) => (
     <Box color="primary.main" mb={2}>
       {React.cloneElement(icon, { sx: { fontSize: 48 } })}
     </Box>
-    <Typography variant="h6" fontWeight="bold" gutterBottom>{title}</Typography>
-    <Typography variant="body2" color="text.secondary">{description}</Typography>
+    <Typography variant="h6" fontWeight="bold" gutterBottom>
+      {title}
+    </Typography>
+    <Typography variant="body2" color="text.secondary">
+      {description}
+    </Typography>
   </Paper>
 );
 
@@ -70,14 +74,26 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
     }}
   >
     {plan.isPopular && (
-      <Chip label="Most Popular" color="primary" sx={{ position: 'absolute', top: 16, right: 16 }} />
+      <Chip
+        label="Most Popular"
+        color="primary"
+        sx={{ position: 'absolute', top: 16, right: 16 }}
+      />
     )}
-    <Typography variant="h5" fontWeight="bold">{plan.name}</Typography>
-    <Typography variant="subtitle1" color="text.secondary" mb={2}>{plan.description}</Typography>
-    
+    <Typography variant="h5" fontWeight="bold">
+      {plan.name}
+    </Typography>
+    <Typography variant="subtitle1" color="text.secondary" mb={2}>
+      {plan.description}
+    </Typography>
+
     <Box display="flex" alignItems="baseline" my={2}>
-      <Typography variant="h3" fontWeight="bold">${price}</Typography>
-      <Typography variant="subtitle1" color="text.secondary">/{isYearly ? 'year' : 'month'}</Typography>
+      <Typography variant="h3" fontWeight="bold">
+        ${price}
+      </Typography>
+      <Typography variant="subtitle1" color="text.secondary">
+        /{isYearly ? 'year' : 'month'}
+      </Typography>
     </Box>
 
     <List dense>
@@ -93,7 +109,7 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
 
     <Button
       fullWidth
-      variant={plan.isPopular ? "contained" : "outlined"}
+      variant={plan.isPopular ? 'contained' : 'outlined'}
       color="primary"
       size="large"
       sx={{ mt: 3, py: 1.5, fontWeight: 'bold' }}
@@ -105,9 +121,8 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
 );
 
 const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide direction="up" ref={ref} {...props} />;
 });
-
 
 // --- Main Premium Page ---
 
@@ -115,7 +130,8 @@ const tiers = [
   {
     title: 'Basic',
     price: '0',
-    description: 'For individuals starting out and getting to know the platform.',
+    description:
+      'For individuals starting out and getting to know the platform.',
     features: [
       'Create a professional profile',
       'Apply to 5 jobs per month',
@@ -130,7 +146,8 @@ const tiers = [
     title: 'Pro',
     price: '15',
     subheader: 'Most Popular',
-    description: 'For professionals aiming to maximize their opportunities and stand out.',
+    description:
+      'For professionals aiming to maximize their opportunities and stand out.',
     features: [
       'All features in Basic plan',
       'Unlimited job applications',
@@ -145,7 +162,8 @@ const tiers = [
   {
     title: 'Business',
     price: '45',
-    description: 'For established freelancers and businesses managing multiple projects.',
+    description:
+      'For established freelancers and businesses managing multiple projects.',
     features: [
       'All features in Pro plan',
       'Ability to post featured job listings',
@@ -177,8 +195,12 @@ const PricingCard = ({ tier, isAnnual, onUpgrade }) => (
       display: 'flex',
       flexDirection: 'column',
       border: tier.isCurrent ? '2px solid' : '1px solid',
-      borderColor: tier.isCurrent ? theme.palette.primary.main : theme.palette.divider,
-      backgroundColor: tier.subheader ? alpha(theme.palette.secondary.main, 0.05) : 'transparent',
+      borderColor: tier.isCurrent
+        ? theme.palette.primary.main
+        : theme.palette.divider,
+      backgroundColor: tier.subheader
+        ? alpha(theme.palette.secondary.main, 0.05)
+        : 'transparent',
       position: 'relative',
     })}
   >
@@ -227,12 +249,21 @@ const PricingCard = ({ tier, isAnnual, onUpgrade }) => (
 );
 
 const BenefitCard = ({ icon, title, description }) => (
-    <Paper elevation={1} sx={{p:3, textAlign:'center', height:'100%', borderRadius: 2}}>
-        <Box color="primary.main" mb={1.5}>{React.cloneElement(icon, {sx: {fontSize: 40}})}</Box>
-        <Typography variant="h6" fontWeight="bold" mb={1}>{title}</Typography>
-        <Typography variant="body2" color="text.secondary">{description}</Typography>
-    </Paper>
-)
+  <Paper
+    elevation={1}
+    sx={{ p: 3, textAlign: 'center', height: '100%', borderRadius: 2 }}
+  >
+    <Box color="primary.main" mb={1.5}>
+      {React.cloneElement(icon, { sx: { fontSize: 40 } })}
+    </Box>
+    <Typography variant="h6" fontWeight="bold" mb={1}>
+      {title}
+    </Typography>
+    <Typography variant="body2" color="text.secondary">
+      {description}
+    </Typography>
+  </Paper>
+);
 
 const PremiumPage = () => {
   const [isYearly, setIsYearly] = useState(false);
@@ -255,7 +286,7 @@ const PremiumPage = () => {
     setSelectedPlan(planName);
     setOpenDialog(true);
   };
-  
+
   const handleConfirmUpgrade = () => {
     setIsUpgrading(true);
     // Simulate API call
@@ -267,15 +298,52 @@ const PremiumPage = () => {
   };
 
   const features = [
-    { icon: <TrendingUpIcon />, title: 'Priority Job Matching', description: 'Get your profile seen by top hirers first.' },
-    { icon: <WorkspacePremiumIcon />, title: 'Premium Profile Badge', description: 'Stand out from the competition with a badge that builds trust.' },
-    { icon: <SupportAgentIcon />, title: 'Dedicated Support', description: 'Access to our priority support team, 24/7.' },
-    { icon: <AttachMoneyIcon />, title: 'Lower Service Fees', description: 'Keep more of your earnings with reduced service fees on every completed job.' },
+    {
+      icon: <TrendingUpIcon />,
+      title: 'Priority Job Matching',
+      description: 'Get your profile seen by top hirers first.',
+    },
+    {
+      icon: <WorkspacePremiumIcon />,
+      title: 'Premium Profile Badge',
+      description:
+        'Stand out from the competition with a badge that builds trust.',
+    },
+    {
+      icon: <SupportAgentIcon />,
+      title: 'Dedicated Support',
+      description: 'Access to our priority support team, 24/7.',
+    },
+    {
+      icon: <AttachMoneyIcon />,
+      title: 'Lower Service Fees',
+      description:
+        'Keep more of your earnings with reduced service fees on every completed job.',
+    },
   ];
-  
+
   const planDetails = [
-      { name: 'Pro', description: 'For individual professionals.', features: ['Priority Job Matching', 'Premium Profile Badge', 'Basic Analytics'], isPopular: true },
-      { name: 'Business', description: 'For agencies and teams.', features: ['All Pro features', 'Team Management', 'Advanced Analytics', 'Dedicated Support'], isPopular: false },
+    {
+      name: 'Pro',
+      description: 'For individual professionals.',
+      features: [
+        'Priority Job Matching',
+        'Premium Profile Badge',
+        'Basic Analytics',
+      ],
+      isPopular: true,
+    },
+    {
+      name: 'Business',
+      description: 'For agencies and teams.',
+      features: [
+        'All Pro features',
+        'Team Management',
+        'Advanced Analytics',
+        'Dedicated Support',
+      ],
+      isPopular: false,
+    },
   ];
 
   return (
@@ -283,12 +351,23 @@ const PremiumPage = () => {
       <Container maxWidth="lg">
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Chip icon={<StarIcon />} label="Premium Access" color="primary" sx={{ mb: 2 }} />
+          <Chip
+            icon={<StarIcon />}
+            label="Premium Access"
+            color="primary"
+            sx={{ mb: 2 }}
+          />
           <Typography variant="h2" fontWeight="bold" gutterBottom>
             Unlock Your Full Potential
           </Typography>
-          <Typography variant="h6" color="text.secondary" maxWidth="md" mx="auto">
-            Upgrade to Kelmah Premium to get exclusive features that help you find work faster and manage your business more efficiently.
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            maxWidth="md"
+            mx="auto"
+          >
+            Upgrade to Kelmah Premium to get exclusive features that help you
+            find work faster and manage your business more efficiently.
           </Typography>
         </Box>
 
@@ -303,27 +382,49 @@ const PremiumPage = () => {
 
         {/* Pricing Section */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>Choose Your Plan</Typography>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            Choose Your Plan
+          </Typography>
           <FormControlLabel
-            control={<Switch checked={isYearly} onChange={(e) => setIsYearly(e.target.checked)} />}
+            control={
+              <Switch
+                checked={isYearly}
+                onChange={(e) => setIsYearly(e.target.checked)}
+              />
+            }
             label={
-                <Typography>
-                Bill Annually <Chip label="Save 20%" color="success" size="small" sx={{ ml: 1 }}/>
-                </Typography>
+              <Typography>
+                Bill Annually{' '}
+                <Chip
+                  label="Save 20%"
+                  color="success"
+                  size="small"
+                  sx={{ ml: 1 }}
+                />
+              </Typography>
             }
           />
         </Box>
         <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} md={5}>
-            <PricingTier plan={planDetails[0]} price={isYearly ? plans.yearly.pro : plans.monthly.pro} isYearly={isYearly} onUpgrade={handleUpgradeClick} />
+            <PricingTier
+              plan={planDetails[0]}
+              price={isYearly ? plans.yearly.pro : plans.monthly.pro}
+              isYearly={isYearly}
+              onUpgrade={handleUpgradeClick}
+            />
           </Grid>
           <Grid item xs={12} md={5}>
-            <PricingTier plan={planDetails[1]} price={isYearly ? plans.yearly.business : plans.monthly.business} isYearly={isYearly} onUpgrade={handleUpgradeClick} />
+            <PricingTier
+              plan={planDetails[1]}
+              price={isYearly ? plans.yearly.business : plans.monthly.business}
+              isYearly={isYearly}
+              onUpgrade={handleUpgradeClick}
+            />
           </Grid>
         </Grid>
-
       </Container>
-      
+
       {/* Confirmation Dialog */}
       <Dialog
         open={openDialog}
@@ -331,28 +432,53 @@ const PremiumPage = () => {
         TransitionComponent={Transition}
         PaperProps={{ sx: { borderRadius: 3, bgcolor: 'background.paper' } }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" fontWeight="bold">Confirm Upgrade</Typography>
-          <IconButton onClick={() => setOpenDialog(false)} disabled={isUpgrading}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            Confirm Upgrade
+          </Typography>
+          <IconButton
+            onClick={() => setOpenDialog(false)}
+            disabled={isUpgrading}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography>
             You are about to upgrade to the{' '}
-            <Typography component="span" fontWeight="bold">{selectedPlan}</Typography> plan.
-            Your payment method will be charged {' '}
             <Typography component="span" fontWeight="bold">
-              ${isYearly ? plans.yearly[selectedPlan.toLowerCase()] : plans.monthly[selectedPlan.toLowerCase()]}
+              {selectedPlan}
+            </Typography>{' '}
+            plan. Your payment method will be charged{' '}
+            <Typography component="span" fontWeight="bold">
+              $
+              {isYearly
+                ? plans.yearly[selectedPlan.toLowerCase()]
+                : plans.monthly[selectedPlan.toLowerCase()]}
             </Typography>
             .
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: '16px 24px' }}>
-          <Button onClick={() => setOpenDialog(false)} color="secondary" disabled={isUpgrading}>
+          <Button
+            onClick={() => setOpenDialog(false)}
+            color="secondary"
+            disabled={isUpgrading}
+          >
             Cancel
           </Button>
-          <Button onClick={handleConfirmUpgrade} variant="contained" color="primary" disabled={isUpgrading}>
+          <Button
+            onClick={handleConfirmUpgrade}
+            variant="contained"
+            color="primary"
+            disabled={isUpgrading}
+          >
             {isUpgrading ? <CircularProgress size={24} /> : 'Confirm & Pay'}
           </Button>
         </DialogActions>
@@ -361,4 +487,4 @@ const PremiumPage = () => {
   );
 };
 
-export default PremiumPage; 
+export default PremiumPage;

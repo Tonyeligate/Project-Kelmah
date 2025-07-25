@@ -61,21 +61,6 @@ jest.mock('jsonwebtoken', () => ({
   verify: jest.fn(() => ({ id: 'test-user-id', role: 'worker' })),
 }));
 
-// Mock Redis client
-jest.mock('redis', () => {
-  const mockClient = {
-    connect: jest.fn(),
-    on: jest.fn(),
-    set: jest.fn(),
-    get: jest.fn(),
-    del: jest.fn(),
-  };
-  
-  return {
-    createClient: jest.fn(() => mockClient),
-  };
-});
-
 // Mock Stripe
 jest.mock('stripe', () => {
   return jest.fn().mockImplementation(() => ({

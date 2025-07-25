@@ -68,7 +68,12 @@ const PremiumPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       <Paper sx={{ p: 4, textAlign: 'center', mb: 5 }}>
-        <Chip icon={<Star />} label="Premium" color="secondary" sx={{ mb: 2 }} />
+        <Chip
+          icon={<Star />}
+          label="Premium"
+          color="secondary"
+          sx={{ mb: 2 }}
+        />
         <Typography variant="h3" component="h1" fontWeight="bold">
           Unlock Your Potential
         </Typography>
@@ -85,9 +90,10 @@ const PremiumPage = () => {
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                border: tier.title === 'Pro'
-                  ? `2px solid ${theme.palette.secondary.main}`
-                  : `1px solid ${theme.palette.divider}`,
+                border:
+                  tier.title === 'Pro'
+                    ? `2px solid ${theme.palette.secondary.main}`
+                    : `1px solid ${theme.palette.divider}`,
               }}
             >
               <CardContent sx={{ flexGrow: 1 }}>
@@ -102,13 +108,19 @@ const PremiumPage = () => {
                     {tier.price !== 'Custom' && '/mo'}
                   </Typography>
                 </Box>
-                <Typography variant="subtitle1" color="text.secondary" paragraph>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  paragraph
+                >
                   {tier.description}
                 </Typography>
                 <List>
                   {tier.features.map((line) => (
                     <ListItem key={line} disableGutters>
-                      <ListItemIcon sx={{ minWidth: 'auto', mr: 1, color: 'success.main' }}>
+                      <ListItemIcon
+                        sx={{ minWidth: 'auto', mr: 1, color: 'success.main' }}
+                      >
                         <CheckCircle fontSize="small" />
                       </ListItemIcon>
                       <ListItemText primary={line} />
@@ -117,7 +129,12 @@ const PremiumPage = () => {
                 </List>
               </CardContent>
               <CardActions sx={{ p: 2 }}>
-                <Button fullWidth variant={tier.buttonVariant} color="primary" size="large">
+                <Button
+                  fullWidth
+                  variant={tier.buttonVariant}
+                  color="primary"
+                  size="large"
+                >
                   {tier.buttonText}
                 </Button>
               </CardActions>
@@ -129,4 +146,4 @@ const PremiumPage = () => {
   );
 };
 
-export default PremiumPage; 
+export default PremiumPage;

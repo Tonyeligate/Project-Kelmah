@@ -13,7 +13,7 @@ const useLocalStorage = (key, initialValue) => {
     if (typeof window === 'undefined') {
       return initialValue;
     }
-    
+
     try {
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
@@ -25,7 +25,7 @@ const useLocalStorage = (key, initialValue) => {
       return initialValue;
     }
   });
-  
+
   // Return a wrapped version of useState's setter function that
   // persists the new value to localStorage.
   const setValue = (value) => {
@@ -33,10 +33,10 @@ const useLocalStorage = (key, initialValue) => {
       // Allow value to be a function so we have same API as useState
       const valueToStore =
         value instanceof Function ? value(storedValue) : value;
-        
+
       // Save state
       setStoredValue(valueToStore);
-      
+
       // Save to local storage
       if (typeof window !== 'undefined') {
         if (valueToStore === undefined) {
@@ -49,7 +49,7 @@ const useLocalStorage = (key, initialValue) => {
       console.error(`Error setting localStorage key "${key}":`, error);
     }
   };
-  
+
   // Listen for changes to this localStorage key in other windows/tabs
   useEffect(() => {
     const handleStorageChange = (e) => {
@@ -57,18 +57,21 @@ const useLocalStorage = (key, initialValue) => {
         try {
           setStoredValue(e.newValue ? JSON.parse(e.newValue) : initialValue);
         } catch (error) {
-          console.error(`Error parsing localStorage change for key "${key}":`, error);
+          console.error(
+            `Error parsing localStorage change for key "${key}":`,
+            error,
+          );
         }
       }
     };
-    
+
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', handleStorageChange);
       return () => window.removeEventListener('storage', handleStorageChange);
     }
   }, [key, initialValue]);
-  
+
   return [storedValue, setValue];
 };
 
-export default useLocalStorage; 
+export default useLocalStorage;

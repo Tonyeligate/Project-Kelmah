@@ -14,7 +14,7 @@ const applicationsApi = {
       console.error('Error fetching applications:', error);
       throw error;
     }
-  }
+  },
 };
 
-export default applicationsApi; 
+export default applicationsApi;

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Layout from './modules/layout/components/Layout';
-import theme from './theme';
+import theme, { lightTheme } from './theme';
 import Home from './modules/home/pages/HomePage';
 import Dashboard from './modules/dashboard/pages/DashboardPage';
 import WorkerDashboardPage from './modules/worker/pages/WorkerDashboardPage';
@@ -49,15 +49,31 @@ import JobsPage from './modules/jobs/pages/JobsPage';
 import WorkerProfile from './modules/worker/components/WorkerProfile';
 import publicRoutes from './routes/publicRoutes';
 import { ContractProvider } from './modules/contracts/contexts/ContractContext';
+import WorkerRoutes from './routes/workerRoutes';
+import HirerRoutes from './routes/hirerRoutes';
+import ForgotPasswordPage from './modules/auth/pages/ForgotPasswordPage';
+import ResetPasswordPage from './modules/auth/pages/ResetPasswordPage';
+import VerifyEmailPage from './modules/auth/pages/VerifyEmailPage';
+import MfaSetupPage from './modules/auth/pages/MfaSetupPage';
 
 // Simple wrapper component to fix the missing TempSchedulingPage reference
 const TempSchedulingPage = () => <SchedulingPage />;
 
 function App() {
+  // Set up light/dark theme toggle
+  const [mode, setMode] = useState(
+    () => localStorage.getItem('themeMode') || 'dark',
+  );
+  const toggleTheme = useCallback(() => {
+    const newMode = mode === 'dark' ? 'light' : 'dark';
+    setMode(newMode);
+    localStorage.setItem('themeMode', newMode);
+  }, [mode]);
+  const appliedTheme = mode === 'dark' ? theme : lightTheme;
   const dispatch = useDispatch();
   const location = useLocation();
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
-  
+
   // Verify auth on component mount and location change
   useEffect(() => {
     // Skip auto-auth when on login or register to respect explicit logout
@@ -67,8 +83,11 @@ function App() {
     }
     const checkAuth = () => {
       // In development mode, set up mock authentication
-      const isDevelopment = process.env.NODE_ENV === 'development' || import.meta.env.DEV || window.location.hostname.includes('ngrok');
-      
+      const isDevelopment =
+        process.env.NODE_ENV === 'development' ||
+        import.meta.env.DEV ||
+        window.location.hostname.includes('ngrok');
+
       if (isDevelopment) {
         // Skip mock auth after manual logout
         if (sessionStorage.getItem('dev-logout') === 'true') {
@@ -76,49 +95,60 @@ function App() {
           return;
         }
         console.log('Development mode: Setting up mock authentication');
-        
+
         // Set up mock user if none exists
         if (!localStorage.getItem('user') || !localStorage.getItem(TOKEN_KEY)) {
           const mockUser = {
-            id: "dev-user-123",
-            email: "dev@example.com",
-            firstName: "Development",
-            lastName: "User",
-            name: "Development User",
-            role: "worker",
-            skills: ["Carpentry", "Plumbing", "Electrical"],
+            id: 'dev-user-123',
+            email: 'dev@example.com',
+            firstName: 'Development',
+            lastName: 'User',
+            name: 'Development User',
+            role: 'worker',
+            skills: ['Carpentry', 'Plumbing', 'Electrical'],
             rating: 4.8,
-            profileImage: null
+            profileImage: null,
           };
-          
+
           localStorage.setItem('user', JSON.stringify(mockUser));
           localStorage.setItem(TOKEN_KEY, 'dev-mode-fake-token-12345');
         }
-        
+
         // Dispatch login action with mock user data
         const storedUser = JSON.parse(localStorage.getItem('user'));
-        dispatch({ 
-          type: 'auth/login/fulfilled', 
-          payload: { 
-            user: storedUser, 
-            token: 'dev-mode-fake-token-12345' 
-          }
+        dispatch({
+          type: 'auth/login/fulfilled',
+          payload: {
+            user: storedUser,
+            token: 'dev-mode-fake-token-12345',
+          },
         });
-        
+
         return;
       }
-      
+
       // Production mode: Check if token exists before dispatching verification
       const token = localStorage.getItem(TOKEN_KEY);
-      
-      if (token) {
-        console.log('Token found, verifying auth state...');
-        dispatch(verifyAuth());
+
+      // Only verify auth if Redux state is currently unauthenticated.
+      // This prevents unnecessary re-verification on every route change
+      // which previously could clear auth state and cause redirect loops
+      // when the backend was temporarily unreachable.
+      if (!isAuthenticated) {
+        if (token) {
+          console.log(
+            'Token found and no authenticated user – verifying auth state...',
+          );
+          dispatch(verifyAuth());
+        } else {
+          console.log('No token found in storage');
+        }
       } else {
-        console.log('No token found in storage');
+        // Already authenticated; skip verification to avoid redundant network calls
+        console.log('User already authenticated – skipping verifyAuth');
       }
     };
-    
+
     // Check auth when component mounts or location changes
     checkAuth();
   }, [dispatch, location.pathname]);
@@ -126,40 +156,56 @@ function App() {
   // Enhanced user role detection that works with different API response formats
   const getUserRole = () => {
     if (!user) return null;
-    
+
     // Check all common role property names
-    return user.role || user.userType || user.userRole || (user.roles && user.roles[0]);
+    return (
+      user.role ||
+      user.userType ||
+      user.userRole ||
+      (user.roles && user.roles[0])
+    );
   };
 
   // Determine which dashboard to render based on user role
   const getDashboardRoute = () => {
     console.log('Dashboard route check - User:', user);
-    console.log('Dashboard route check - Auth state:', isAuthenticated, loading);
-    
+    console.log(
+      'Dashboard route check - Auth state:',
+      isAuthenticated,
+      loading,
+    );
+
     // Also check directly from localStorage for debugging
     const storedUserData = localStorage.getItem('user');
     if (storedUserData) {
       const storedUser = JSON.parse(storedUserData);
       console.log('User data from localStorage:', storedUser);
     }
-    
+
     if (loading) {
       return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '80vh',
+          }}
+        >
           <CircularProgress />
         </Box>
       );
     }
-    
+
     if (!isAuthenticated) {
       console.log('User not authenticated, redirecting to login');
       return <Navigate to="/login" />;
     }
-    
+
     // Get user role using enhanced detection
     const userRole = getUserRole();
     console.log('Detected user role:', userRole);
-    
+
     if (userRole === 'worker') {
       console.log('Worker role detected, redirecting to worker dashboard');
       return <Navigate to="/worker/dashboard" />;
@@ -170,426 +216,247 @@ function App() {
       console.log('Admin role detected, redirecting to admin dashboard');
       return <Navigate to="/admin/dashboard" />;
     } else {
-      console.log('No specific role detected, showing generic dashboard. Role:', userRole);
-      
+      console.log(
+        'No specific role detected, showing generic dashboard. Role:',
+        userRole,
+      );
+
       // Check if there are any role-related properties on the user object
       if (user) {
         console.log('Available user properties:', Object.keys(user));
       }
-      
+
       // In development mode, default to worker dashboard even if no role is detected
       if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === 'true') {
         console.log('Development mode: Defaulting to worker dashboard');
         return <Navigate to="/worker/dashboard" />;
       }
-      
+
       return <Dashboard />;
     }
   };
-  
+
   // First, create a helper function to check roles
   const hasRole = (user, role) => {
-    return (user?.role === role || user?.userType === role || user?.userRole === role);
+    return (
+      user?.role === role || user?.userType === role || user?.userRole === role
+    );
   };
 
-    return (
-    <ThemeProvider theme={theme}>
+  return (
+    <ThemeProvider theme={appliedTheme}>
       <CssBaseline />
       <ContractProvider>
-        <Layout>
-                <Routes>
-              {/* Public routes */}
-              {publicRoutes}
-              <Route path="/profile" element={
-                  <ProtectedRoute
-                      isAllowed={isAuthenticated}
-                      redirectPath="/login"
-                      loading={loading}
-                  >
-                      <ProfilePage />
-                  </ProtectedRoute>
-              } />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <SettingsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Dashboard routes */}
-              <Route path="/dashboard" element={getDashboardRoute()} />
-              
-              {/* Worker routes */}
-              <Route 
-                path="/worker/dashboard" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <WorkerDashboardPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/skills" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <SkillsAssessmentPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/skills/test/:testId" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <SkillsAssessmentPage />
-                  </ProtectedRoute>
-                } 
-              />
+        <Layout toggleTheme={toggleTheme} mode={mode}>
+          <Routes>
+            {/* Public routes */}
+            {publicRoutes}
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
+            <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+            <Route
+              path="/mfa/setup"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <MfaSetupPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
 
-              <Route 
-                path="/worker/applications" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <MyApplicationsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/schedule" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <SchedulingPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/reviews" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <WorkerReviewsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/disputes" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <DisputesPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/profile/edit" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <WorkerProfileEditPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/profile"
-                element={
-                  <ProtectedRoute
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')}
-                    redirectPath="/login"
-                    loading={loading}
-                  >
-                    <WorkerProfile />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/find-work" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <JobSearchPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/contracts" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <ContractManagementPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Hirer routes */}
-              <Route 
-                path="/hirer/dashboard" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'hirer')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <HirerDashboardPage />
-                  </ProtectedRoute>
-                } 
-              />
+            {/* Dashboard routes */}
+            <Route path="/dashboard" element={getDashboardRoute()} />
 
-              <Route 
-                path="/hirer/applications" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'hirer')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <ApplicationManagementPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/hirer/jobs/post" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'hirer')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <JobPostingPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/hirer/jobs" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'hirer')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <JobManagementPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/hirer/find-talent" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'hirer')} 
-                    redirectPath="/find-talents" 
-                    loading={loading}
-                  >
-                    <WorkerSearchPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Admin routes */}
-              <Route 
-                path="/admin/skills" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'admin')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <SkillsAssessmentPage />
-                  </ProtectedRoute>
-                } 
-              />
-          
-          {/* Contract routes */}
-          <Route 
-            path="/contracts" 
-            element={
-              <ProtectedRoute 
-                isAllowed={isAuthenticated} 
-                redirectPath="/login" 
-                loading={loading}
-              >
-                <ContractManagementPage />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/contracts/create" 
-            element={
-              <ProtectedRoute 
-                isAllowed={isAuthenticated} 
-                redirectPath="/login" 
-                loading={loading}
-              >
-                <CreateContractPage />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/contracts/:contractId" 
-            element={
-              <ProtectedRoute 
-                isAllowed={isAuthenticated} 
-                redirectPath="/login" 
-                loading={loading}
-              >
-                <ContractDetailsPage />
-              </ProtectedRoute>
-            } 
-          />
-              
-              {/* Common protected routes */}
-              <Route 
-                path="/notifications" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <NotificationsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/messages" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <MessagingPage />
-                  </ProtectedRoute>
-                } 
-              />
-                    
-              {/* Worker payment routes */}
-              <Route 
-                path="/worker/payment" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <PaymentCenterPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/worker/wallet" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <WalletPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/payment/methods" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <PaymentMethodsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/escrows/:escrowId" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated && hasRole(user, 'worker')} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <EscrowDetailsPage />
-                  </ProtectedRoute>
-                } 
-              />
+            {/* Worker and Hirer routes moved to dedicated components */}
+            <>
+              {WorkerRoutes()}
+              {HirerRoutes()}
+            </>
 
-              <Route 
-                path="/payment/bill" 
-                element={
-                  <ProtectedRoute 
-                    isAllowed={isAuthenticated} 
-                    redirectPath="/login" 
-                    loading={loading}
-                  >
-                    <BillPage />
-                  </ProtectedRoute>
-                } 
-              />
-                    
-              {/* Catch all route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-          </Layout>
-        </ContractProvider>
-      </ThemeProvider>
-    );
+            {/* Admin routes */}
+            <Route
+              path="/admin/skills"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated && hasRole(user, 'admin')}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <SkillsAssessmentPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Contract routes */}
+            <Route
+              path="/contracts"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <ContractManagementPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/contracts/create"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <CreateContractPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/contracts/:contractId"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <ContractDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Common protected routes */}
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <NotificationsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <MessagingPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Worker payment routes */}
+            <Route
+              path="/worker/payment"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated && hasRole(user, 'worker')}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <PaymentCenterPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/worker/wallet"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated && hasRole(user, 'worker')}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <WalletPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/payment/methods"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <PaymentMethodsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/escrows/:escrowId"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated && hasRole(user, 'worker')}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <EscrowDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/payment/bill"
+              element={
+                <ProtectedRoute
+                  isAllowed={isAuthenticated}
+                  redirectPath="/login"
+                  loading={loading}
+                >
+                  <BillPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </ContractProvider>
+    </ThemeProvider>
+  );
 }
 
 export default App;
-

@@ -29,7 +29,7 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  LinearProgress
+  LinearProgress,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -43,7 +43,7 @@ import {
   Assessment as AssessmentIcon,
   AttachMoney as AttachMoneyIcon,
   TrendingUp as TrendingUpIcon,
-  CalendarToday as CalendarIcon
+  CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -55,7 +55,7 @@ import {
   CartesianGrid,
   Tooltip as ChartTooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from 'recharts';
 
 const HirerJobManagement = () => {
@@ -75,7 +75,7 @@ const HirerJobManagement = () => {
     activeJobs: 0,
     completedJobs: 0,
     totalSpent: 0,
-    averageJobValue: 0
+    averageJobValue: 0,
   });
   const [chartData, setChartData] = useState([]);
 
@@ -87,7 +87,9 @@ const HirerJobManagement = () => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/hirers/${user.id}/jobs?status=${getStatusForTab(activeTab)}`);
+      const response = await fetch(
+        `/api/hirers/${user.id}/jobs?status=${getStatusForTab(activeTab)}`,
+      );
       const data = await response.json();
       setJobs(data);
       setError(null);
@@ -161,7 +163,7 @@ const HirerJobManagement = () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/jobs/${jobId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       if (!response.ok) {
@@ -183,9 +185,9 @@ const HirerJobManagement = () => {
       const response = await fetch(`/api/jobs/${jobId}/status`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
@@ -227,9 +229,7 @@ const HirerJobManagement = () => {
               <WorkIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6">Total Jobs</Typography>
             </Box>
-            <Typography variant="h4">
-              {summary.totalJobs}
-            </Typography>
+            <Typography variant="h4">{summary.totalJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
@@ -240,9 +240,7 @@ const HirerJobManagement = () => {
               <TrendingUpIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6">Active Jobs</Typography>
             </Box>
-            <Typography variant="h4">
-              {summary.activeJobs}
-            </Typography>
+            <Typography variant="h4">{summary.activeJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
@@ -253,9 +251,7 @@ const HirerJobManagement = () => {
               <CheckCircleIcon color="success" sx={{ mr: 1 }} />
               <Typography variant="h6">Completed</Typography>
             </Box>
-            <Typography variant="h4">
-              {summary.completedJobs}
-            </Typography>
+            <Typography variant="h4">{summary.completedJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
@@ -309,7 +305,14 @@ const HirerJobManagement = () => {
   const renderJobCard = (job) => (
     <Card key={job.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6">{job.title}</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -328,9 +331,7 @@ const HirerJobManagement = () => {
             <Typography variant="body2" color="text.secondary">
               Budget
             </Typography>
-            <Typography variant="body1">
-              ${job.budget}
-            </Typography>
+            <Typography variant="body1">${job.budget}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
@@ -344,19 +345,17 @@ const HirerJobManagement = () => {
             <Typography variant="body2" color="text.secondary">
               Description
             </Typography>
-            <Typography variant="body1">
-              {job.description}
-            </Typography>
+            <Typography variant="body1">{job.description}</Typography>
           </Grid>
           {job.progress && (
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+              >
                 <Typography variant="body2" color="text.secondary">
                   Progress
                 </Typography>
-                <Typography variant="body2">
-                  {job.progress}%
-                </Typography>
+                <Typography variant="body2">{job.progress}%</Typography>
               </Box>
               <LinearProgress
                 variant="determinate"
@@ -385,10 +384,7 @@ const HirerJobManagement = () => {
             Review Milestone
           </Button>
         )}
-        <IconButton
-          size="small"
-          onClick={(e) => handleMenuOpen(e, job)}
-        >
+        <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -412,21 +408,13 @@ const HirerJobManagement = () => {
           scrollButtons="auto"
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
-          <Tab
-            icon={<WorkIcon />}
-            label="Active Jobs"
-            iconPosition="start"
-          />
+          <Tab icon={<WorkIcon />} label="Active Jobs" iconPosition="start" />
           <Tab
             icon={<CheckCircleIcon />}
             label="Completed"
             iconPosition="start"
           />
-          <Tab
-            icon={<PendingIcon />}
-            label="Drafts"
-            iconPosition="start"
-          />
+          <Tab icon={<PendingIcon />} label="Drafts" iconPosition="start" />
         </Tabs>
       </Paper>
 
@@ -442,14 +430,10 @@ const HirerJobManagement = () => {
         </Box>
       ) : jobs.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">
-            No jobs found
-          </Typography>
+          <Typography color="text.secondary">No jobs found</Typography>
         </Paper>
       ) : (
-        <Box>
-          {jobs.map(renderJobCard)}
-        </Box>
+        <Box>{jobs.map(renderJobCard)}</Box>
       )}
 
       <Menu
@@ -554,10 +538,7 @@ const HirerJobManagement = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button
-            onClick={handleDialogClose}
-            variant="contained"
-          >
+          <Button onClick={handleDialogClose} variant="contained">
             Submit
           </Button>
         </DialogActions>
@@ -566,6 +547,4 @@ const HirerJobManagement = () => {
   );
 };
 
-export default HirerJobManagement; 
-
-
+export default HirerJobManagement;

@@ -44,6 +44,26 @@ export default defineConfig({
         target: 'https://kelmah-auth-service.onrender.com',
         changeOrigin: true
       },
+      '/api/users': {
+        target: 'https://kelmah-user-service.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/users/, '/api')
+      },
+      '/api/jobs': {
+        target: 'https://kelmah-job-service.onrender.com', 
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/jobs/, '/api')
+      },
+      '/api/messages': {
+        target: 'https://kelmah-messaging-service.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/messages/, '/api')
+      },
+      '/api/payments': {
+        target: 'https://kelmah-payment-service.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/payments/, '/api')
+      },
       '/ws': {
         target: process.env.VITE_MESSAGING_URL || 'http://localhost:3003',
         ws: true,

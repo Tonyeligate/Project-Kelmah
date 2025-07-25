@@ -23,6 +23,11 @@ import {
   IconButton,
   InputAdornment,
   Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -32,6 +37,8 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
+import Toast from '../../common/components/common/Toast';
 
 // Import contract slice actions and selectors
 import {
@@ -71,11 +78,31 @@ const CreateContractPage = () => {
   const [contract, setContract] = useState(initialContractState);
   const [activeStep, setActiveStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState({});
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+  const [isDirty, setIsDirty] = useState(false);
 
   // Load contract templates on mount
   useEffect(() => {
     dispatch(fetchContractTemplates());
   }, [dispatch]);
+
+  // Warn if the user tries to close/reload with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 
   // Steps for contract creation process
   const steps = [
@@ -88,6 +115,7 @@ const CreateContractPage = () => {
 
   // Handle form field changes
   const handleChange = (e) => {
+    setIsDirty(true);
     const { name, value } = e.target;
     setContract((prev) => ({
       ...prev,
@@ -97,6 +125,7 @@ const CreateContractPage = () => {
 
   // Handle date changes
   const handleDateChange = (name, value) => {
+    setIsDirty(true);
     setContract((prev) => ({
       ...prev,
       [name]: value,
@@ -105,6 +134,7 @@ const CreateContractPage = () => {
 
   // Handle milestone changes
   const handleMilestoneChange = (index, field, value) => {
+    setIsDirty(true);
     const updatedMilestones = [...contract.milestones];
     updatedMilestones[index] = {
       ...updatedMilestones[index],
@@ -118,6 +148,7 @@ const CreateContractPage = () => {
 
   // Add a new milestone
   const handleAddMilestone = () => {
+    setIsDirty(true);
     setContract((prev) => ({
       ...prev,
       milestones: [
@@ -134,6 +165,7 @@ const CreateContractPage = () => {
 
   // Remove a milestone
   const handleRemoveMilestone = (index) => {
+    setIsDirty(true);
     const updatedMilestones = [...contract.milestones];
     updatedMilestones.splice(index, 1);
     setContract((prev) => ({
@@ -144,6 +176,7 @@ const CreateContractPage = () => {
 
   // Handle template selection
   const handleTemplateChange = (e) => {
+    setIsDirty(true);
     const { value } = e.target;
     setContract((prev) => ({
       ...prev,
@@ -151,7 +184,9 @@ const CreateContractPage = () => {
     }));
 
     if (value) {
-      const selectedTemplate = templates.find((template) => template.id === value);
+      const selectedTemplate = templates.find(
+        (template) => template.id === value,
+      );
       if (selectedTemplate) {
         // Prefill form based on template
         setContract((prev) => ({
@@ -170,16 +205,23 @@ const CreateContractPage = () => {
     switch (activeStep) {
       case 0: // Basic Details
         if (!contract.title.trim()) errors.title = 'Title is required';
-        if (!contract.description.trim()) errors.description = 'Description is required';
+        if (!contract.description.trim())
+          errors.description = 'Description is required';
         break;
       case 1: // Parties
-        if (!contract.clientName.trim()) errors.clientName = 'Client name is required';
-        if (!contract.workerName.trim()) errors.workerName = 'Worker name is required';
+        if (!contract.clientName.trim())
+          errors.clientName = 'Client name is required';
+        if (!contract.workerName.trim())
+          errors.workerName = 'Worker name is required';
         break;
       case 2: // Contract Terms
         if (!contract.startDate) errors.startDate = 'Start date is required';
         if (!contract.endDate) errors.endDate = 'End date is required';
-        if (contract.endDate && contract.startDate && contract.endDate < contract.startDate) {
+        if (
+          contract.endDate &&
+          contract.startDate &&
+          contract.endDate < contract.startDate
+        ) {
           errors.endDate = 'End date must be after start date';
         }
         if (!contract.value) {
@@ -194,11 +236,16 @@ const CreateContractPage = () => {
 
         contract.milestones.forEach((milestone, index) => {
           const milestoneError = {};
-          if (!milestone.title.trim()) milestoneError.title = 'Title is required';
-          if (!milestone.dueDate) milestoneError.dueDate = 'Due date is required';
+          if (!milestone.title.trim())
+            milestoneError.title = 'Title is required';
+          if (!milestone.dueDate)
+            milestoneError.dueDate = 'Due date is required';
           if (!milestone.amount) {
             milestoneError.amount = 'Amount is required';
-          } else if (isNaN(milestone.amount) || parseFloat(milestone.amount) <= 0) {
+          } else if (
+            isNaN(milestone.amount) ||
+            parseFloat(milestone.amount) <= 0
+          ) {
             milestoneError.amount = 'Amount must be a positive number';
           } else {
             totalAmount += parseFloat(milestone.amount);
@@ -244,8 +291,32 @@ const CreateContractPage = () => {
       dispatch(createContract(contract))
         .unwrap()
         .then((response) => {
-          navigate(`/contracts/${response.id}`);
+          navigate(`/contracts/${response.id}`, {
+            state: {
+              toast: {
+                open: true,
+                message: 'Contract created successfully',
+                severity: 'success',
+              },
+            },
+          });
+        })
+        .catch((err) => {
+          setToast({
+            open: true,
+            message: err || 'Failed to create contract',
+            severity: 'error',
+          });
         });
+    }
+  };
+
+  // Handle top-level back/navigation
+  const handleBackToList = () => {
+    if (isDirty) {
+      setDiscardDialogOpen(true);
+    } else {
+      navigate('/contracts');
     }
   };
 
@@ -263,7 +334,9 @@ const CreateContractPage = () => {
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <FormControl fullWidth variant="outlined" margin="normal">
-                <InputLabel id="template-label">Contract Template (Optional)</InputLabel>
+                <InputLabel id="template-label">
+                  Contract Template (Optional)
+                </InputLabel>
                 <Select
                   labelId="template-label"
                   id="templateId"
@@ -296,7 +369,10 @@ const CreateContractPage = () => {
                 value={contract.title}
                 onChange={handleChange}
                 error={!!validationErrors.title}
-                helperText={validationErrors.title || 'Enter a descriptive title for the contract'}
+                helperText={
+                  validationErrors.title ||
+                  'Enter a descriptive title for the contract'
+                }
               />
             </Grid>
             <Grid item xs={12}>
@@ -332,7 +408,10 @@ const CreateContractPage = () => {
                 value={contract.clientName}
                 onChange={handleChange}
                 error={!!validationErrors.clientName}
-                helperText={validationErrors.clientName || 'Enter the client name or company'}
+                helperText={
+                  validationErrors.clientName ||
+                  'Enter the client name or company'
+                }
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -345,7 +424,10 @@ const CreateContractPage = () => {
                 value={contract.workerName}
                 onChange={handleChange}
                 error={!!validationErrors.workerName}
-                helperText={validationErrors.workerName || 'Enter the worker name or company'}
+                helperText={
+                  validationErrors.workerName ||
+                  'Enter the worker name or company'
+                }
               />
             </Grid>
           </Grid>
@@ -364,7 +446,10 @@ const CreateContractPage = () => {
                       {...params}
                       fullWidth
                       error={!!validationErrors.startDate}
-                      helperText={validationErrors.startDate || 'Select contract start date'}
+                      helperText={
+                        validationErrors.startDate ||
+                        'Select contract start date'
+                      }
                     />
                   )}
                 />
@@ -379,7 +464,9 @@ const CreateContractPage = () => {
                       {...params}
                       fullWidth
                       error={!!validationErrors.endDate}
-                      helperText={validationErrors.endDate || 'Select contract end date'}
+                      helperText={
+                        validationErrors.endDate || 'Select contract end date'
+                      }
                     />
                   )}
                   minDate={contract.startDate}
@@ -396,10 +483,14 @@ const CreateContractPage = () => {
                   onChange={handleChange}
                   type="number"
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                    startAdornment: (
+                      <InputAdornment position="start">$</InputAdornment>
+                    ),
                   }}
                   error={!!validationErrors.value}
-                  helperText={validationErrors.value || 'Enter the total contract value'}
+                  helperText={
+                    validationErrors.value || 'Enter the total contract value'
+                  }
                 />
               </Grid>
             </Grid>
@@ -409,7 +500,9 @@ const CreateContractPage = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Box
+                sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}
+              >
                 <Typography variant="h6">Define Milestones</Typography>
                 <Button
                   variant="outlined"
@@ -426,8 +519,16 @@ const CreateContractPage = () => {
               )}
               {contract.milestones.map((milestone, index) => (
                 <Paper key={index} sx={{ p: 2, mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="subtitle1">Milestone {index + 1}</Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle1">
+                      Milestone {index + 1}
+                    </Typography>
                     {contract.milestones.length > 1 && (
                       <IconButton
                         color="error"
@@ -445,10 +546,13 @@ const CreateContractPage = () => {
                         fullWidth
                         label="Milestone Title"
                         value={milestone.title}
-                        onChange={(e) => handleMilestoneChange(index, 'title', e.target.value)}
+                        onChange={(e) =>
+                          handleMilestoneChange(index, 'title', e.target.value)
+                        }
                         error={validationErrors.milestones?.[index]?.title}
                         helperText={
-                          validationErrors.milestones?.[index]?.title || 'Enter milestone title'
+                          validationErrors.milestones?.[index]?.title ||
+                          'Enter milestone title'
                         }
                       />
                     </Grid>
@@ -458,7 +562,11 @@ const CreateContractPage = () => {
                         label="Description"
                         value={milestone.description}
                         onChange={(e) =>
-                          handleMilestoneChange(index, 'description', e.target.value)
+                          handleMilestoneChange(
+                            index,
+                            'description',
+                            e.target.value,
+                          )
                         }
                         multiline
                         rows={2}
@@ -469,12 +577,16 @@ const CreateContractPage = () => {
                         <DatePicker
                           label="Due Date *"
                           value={milestone.dueDate}
-                          onChange={(value) => handleMilestoneChange(index, 'dueDate', value)}
+                          onChange={(value) =>
+                            handleMilestoneChange(index, 'dueDate', value)
+                          }
                           renderInput={(params) => (
                             <TextField
                               {...params}
                               fullWidth
-                              error={validationErrors.milestones?.[index]?.dueDate}
+                              error={
+                                validationErrors.milestones?.[index]?.dueDate
+                              }
                               helperText={
                                 validationErrors.milestones?.[index]?.dueDate ||
                                 'Select milestone due date'
@@ -492,10 +604,14 @@ const CreateContractPage = () => {
                         fullWidth
                         label="Amount"
                         value={milestone.amount}
-                        onChange={(e) => handleMilestoneChange(index, 'amount', e.target.value)}
+                        onChange={(e) =>
+                          handleMilestoneChange(index, 'amount', e.target.value)
+                        }
                         type="number"
                         InputProps={{
-                          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                          startAdornment: (
+                            <InputAdornment position="start">$</InputAdornment>
+                          ),
                         }}
                         error={validationErrors.milestones?.[index]?.amount}
                         helperText={
@@ -593,12 +709,36 @@ const CreateContractPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 {contract.milestones.map((milestone, index) => (
-                  <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < contract.milestones.length - 1 ? '1px dashed #ddd' : 'none' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="subtitle1">{milestone.title}</Typography>
-                      <Typography variant="subtitle1">${parseFloat(milestone.amount).toFixed(2)}</Typography>
+                  <Box
+                    key={index}
+                    sx={{
+                      mb: 2,
+                      pb: 2,
+                      borderBottom:
+                        index < contract.milestones.length - 1
+                          ? '1px dashed #ddd'
+                          : 'none',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="subtitle1">
+                        {milestone.title}
+                      </Typography>
+                      <Typography variant="subtitle1">
+                        ${parseFloat(milestone.amount).toFixed(2)}
+                      </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       {milestone.description}
                     </Typography>
                     <Typography variant="body2">
@@ -626,14 +766,39 @@ const CreateContractPage = () => {
 
       {/* Back button and header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <Button startIcon={<BackIcon />} onClick={() => navigate('/contracts')} sx={{ mr: 2 }}>
+        <Button
+          startIcon={<BackIcon />}
+          onClick={handleBackToList}
+          variant="outlined"
+          color="secondary"
+          sx={{ mr: 2, borderWidth: 2 }}
+        >
           Back to Contracts
         </Button>
-        <Typography variant="h4">Create New Contract</Typography>
+        <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+          Create New Contract
+        </Typography>
       </Box>
 
       {/* Stepper */}
-      <Paper sx={{ p: 3, mb: 4 }}>
+      <Paper
+        elevation={0}
+        sx={(theme) => ({
+          p: 3,
+          mb: 4,
+          backgroundColor: alpha(theme.palette.primary.main, 0.7),
+          backdropFilter: 'blur(10px)',
+          borderRadius: theme.spacing(2),
+          border: `2px solid ${theme.palette.secondary.main}`,
+          boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+          transition:
+            'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
+          '&:hover': {
+            boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+            borderColor: theme.palette.secondary.light,
+          },
+        })}
+      >
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
@@ -644,15 +809,30 @@ const CreateContractPage = () => {
       </Paper>
 
       {/* Step content */}
-      <Paper sx={{ p: 3, mb: 4 }}>
+      <Paper
+        elevation={0}
+        sx={(theme) => ({
+          p: 3,
+          mb: 4,
+          backgroundColor: alpha(theme.palette.primary.main, 0.7),
+          backdropFilter: 'blur(10px)',
+          borderRadius: theme.spacing(2),
+          border: `2px solid ${theme.palette.secondary.main}`,
+          boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+          transition:
+            'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
+          '&:hover': {
+            boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+            borderColor: theme.palette.secondary.light,
+          },
+        })}
+      >
         {loading.createContract ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
             <CircularProgress />
           </Box>
         ) : (
-          <>
-            {getStepContent(activeStep)}
-          </>
+          <>{getStepContent(activeStep)}</>
         )}
       </Paper>
 
@@ -660,6 +840,7 @@ const CreateContractPage = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button
           variant="outlined"
+          color="secondary"
           onClick={handleBack}
           disabled={activeStep === 0}
         >
@@ -667,14 +848,81 @@ const CreateContractPage = () => {
         </Button>
         <Button
           variant="contained"
-          color="primary"
-          onClick={activeStep === steps.length - 1 ? handleCreateContract : handleNext}
+          color="secondary"
+          onClick={() => {
+            if (activeStep === steps.length - 1) {
+              if (validateStep()) setConfirmDialogOpen(true);
+            } else {
+              handleNext();
+            }
+          }}
         >
           {activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
         </Button>
       </Box>
+
+      {/* Discard changes confirmation dialog */}
+      <Dialog
+        open={discardDialogOpen}
+        onClose={() => setDiscardDialogOpen(false)}
+      >
+        <DialogTitle>Discard changes?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            You have unsaved changes. Are you sure you want to leave and discard
+            them?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDiscardDialogOpen(false)}>Cancel</Button>
+          <Button
+            color="error"
+            onClick={() => {
+              setDiscardDialogOpen(false);
+              navigate('/contracts');
+            }}
+          >
+            Discard and Leave
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm create contract dialog */}
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Contract Creation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to create this contract? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button
+            color="primary"
+            onClick={() => {
+              setConfirmDialogOpen(false);
+              handleCreateContract();
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Toast notifications */}
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={() => setToast({ ...toast, open: false })}
+        fullWidth
+      />
     </Container>
   );
 };
 
-export default CreateContractPage; 
+export default CreateContractPage;

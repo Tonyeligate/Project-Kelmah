@@ -27,7 +27,7 @@ import {
   Slider,
   Rating,
   Avatar,
-  Pagination
+  Pagination,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,7 +38,7 @@ import {
   AttachMoney as MoneyIcon,
   Message as MessageIcon,
   Bookmark as BookmarkIcon,
-  BookmarkBorder as BookmarkBorderIcon
+  BookmarkBorder as BookmarkBorderIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -55,7 +55,7 @@ const WorkerSearch = () => {
     maxRate: 1000,
     location: '',
     availability: 'all',
-    experience: 'all'
+    experience: 'all',
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
@@ -74,12 +74,12 @@ const WorkerSearch = () => {
       const queryParams = new URLSearchParams({
         page,
         ...filters,
-        search: searchQuery
+        search: searchQuery,
       });
 
       const response = await fetch(`/api/workers/search?${queryParams}`);
       const data = await response.json();
-      
+
       setWorkers(data.workers);
       setTotalPages(data.totalPages);
       setError(null);
@@ -92,9 +92,9 @@ const WorkerSearch = () => {
   };
 
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
     setPage(1);
   };
@@ -123,16 +123,16 @@ const WorkerSearch = () => {
       const response = await fetch(`/api/hirers/${user.id}/saved-workers`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ workerId })
+        body: JSON.stringify({ workerId }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to save worker');
       }
 
-      setSavedWorkers(prev => [...prev, workerId]);
+      setSavedWorkers((prev) => [...prev, workerId]);
     } catch (err) {
       console.error('Failed to save worker:', err);
     }
@@ -140,15 +140,18 @@ const WorkerSearch = () => {
 
   const handleRemoveSavedWorker = async (workerId) => {
     try {
-      const response = await fetch(`/api/hirers/${user.id}/saved-workers/${workerId}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(
+        `/api/hirers/${user.id}/saved-workers/${workerId}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       if (!response.ok) {
         throw new Error('Failed to remove saved worker');
       }
 
-      setSavedWorkers(prev => prev.filter(id => id !== workerId));
+      setSavedWorkers((prev) => prev.filter((id) => id !== workerId));
     } catch (err) {
       console.error('Failed to remove saved worker:', err);
     }
@@ -157,7 +160,14 @@ const WorkerSearch = () => {
   const renderWorkerCard = (worker) => (
     <Card key={worker.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar
               src={worker.avatar}
@@ -172,12 +182,17 @@ const WorkerSearch = () => {
             </Box>
           </Box>
           <IconButton
-            onClick={() => savedWorkers.includes(worker.id)
-              ? handleRemoveSavedWorker(worker.id)
-              : handleSaveWorker(worker.id)
+            onClick={() =>
+              savedWorkers.includes(worker.id)
+                ? handleRemoveSavedWorker(worker.id)
+                : handleSaveWorker(worker.id)
             }
           >
-            {savedWorkers.includes(worker.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+            {savedWorkers.includes(worker.id) ? (
+              <BookmarkIcon />
+            ) : (
+              <BookmarkBorderIcon />
+            )}
           </IconButton>
         </Box>
         <Divider sx={{ my: 2 }} />
@@ -197,9 +212,7 @@ const WorkerSearch = () => {
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MoneyIcon color="action" />
-              <Typography variant="body2">
-                ${worker.hourlyRate}/hr
-              </Typography>
+              <Typography variant="body2">${worker.hourlyRate}/hr</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -222,7 +235,7 @@ const WorkerSearch = () => {
       <Divider />
       <CardActions>
         {user ? (
-          <>        
+          <>
             <Button
               size="small"
               startIcon={<MessageIcon />}
@@ -258,7 +271,7 @@ const WorkerSearch = () => {
       maxRate: 1000,
       location: '',
       availability: 'all',
-      experience: 'all'
+      experience: 'all',
     });
     setSearchQuery('');
     setPage(1);
@@ -279,7 +292,9 @@ const WorkerSearch = () => {
               value={searchQuery}
               onChange={handleSearch}
               InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                startAdornment: (
+                  <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                ),
               }}
             />
           </Grid>
@@ -289,7 +304,9 @@ const WorkerSearch = () => {
               <Select
                 value={filters.experience}
                 label="Experience Level"
-                onChange={(e) => handleFilterChange('experience', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange('experience', e.target.value)
+                }
               >
                 <MenuItem value="all">All Levels</MenuItem>
                 <MenuItem value="entry">Entry Level</MenuItem>
@@ -304,7 +321,9 @@ const WorkerSearch = () => {
               <Select
                 value={filters.availability}
                 label="Availability"
-                onChange={(e) => handleFilterChange('availability', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange('availability', e.target.value)
+                }
               >
                 <MenuItem value="all">All</MenuItem>
                 <MenuItem value="immediate">Immediate</MenuItem>
@@ -314,9 +333,7 @@ const WorkerSearch = () => {
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography gutterBottom>
-              Minimum Rating
-            </Typography>
+            <Typography gutterBottom>Minimum Rating</Typography>
             <Rating
               value={filters.minRating}
               onChange={(_, value) => handleFilterChange('minRating', value)}
@@ -324,9 +341,7 @@ const WorkerSearch = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Typography gutterBottom>
-              Maximum Rate ($/hr)
-            </Typography>
+            <Typography gutterBottom>Maximum Rate ($/hr)</Typography>
             <Slider
               value={filters.maxRate}
               onChange={(_, value) => handleFilterChange('maxRate', value)}
@@ -382,9 +397,7 @@ const WorkerSearch = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>
-          Worker Profile
-        </DialogTitle>
+        <DialogTitle>Worker Profile</DialogTitle>
         <DialogContent>
           {selectedWorker && (
             <Box sx={{ pt: 2 }}>
@@ -396,9 +409,7 @@ const WorkerSearch = () => {
                       alt={selectedWorker.name}
                       sx={{ width: 120, height: 120, mx: 'auto', mb: 2 }}
                     />
-                    <Typography variant="h6">
-                      {selectedWorker.name}
-                    </Typography>
+                    <Typography variant="h6">{selectedWorker.name}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {selectedWorker.profession}
                     </Typography>
@@ -414,7 +425,9 @@ const WorkerSearch = () => {
                   <Typography variant="subtitle1" gutterBottom>
                     Skills
                   </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                  <Box
+                    sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}
+                  >
                     {selectedWorker.skills.map((skill) => (
                       <Chip
                         key={skill}
@@ -445,8 +458,14 @@ const WorkerSearch = () => {
                       <Typography variant="body2" color="text.secondary">
                         Rating
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Rating value={selectedWorker.rating} precision={0.5} readOnly />
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
+                        <Rating
+                          value={selectedWorker.rating}
+                          precision={0.5}
+                          readOnly
+                        />
                         <Typography variant="body2">
                           ({selectedWorker.reviews} reviews)
                         </Typography>
@@ -484,6 +503,4 @@ const WorkerSearch = () => {
   );
 };
 
-export default WorkerSearch; 
-
-
+export default WorkerSearch;

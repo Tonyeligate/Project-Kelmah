@@ -5,9 +5,9 @@ export const particleConfigs = {
         value: 80,
         density: { enable: true, value_area: 800 },
       },
-      color: { value: "#ffd700" },
+      color: { value: '#ffd700' },
       shape: {
-        type: "circle",
+        type: 'circle',
         stroke: { width: 0 },
         polygon: { nb_sides: 5 },
       },
@@ -34,26 +34,26 @@ export const particleConfigs = {
       line_linked: {
         enable: true,
         distance: 150,
-        color: "#ffd700",
+        color: '#ffd700',
         opacity: 0.4,
         width: 1,
       },
       move: {
         enable: true,
         speed: 2,
-        direction: "none",
+        direction: 'none',
         random: false,
         straight: false,
-        out_mode: "out",
+        out_mode: 'out',
         bounce: false,
         attract: { enable: true, rotateX: 600, rotateY: 1200 },
       },
     },
     interactivity: {
-      detect_on: "canvas",
+      detect_on: 'canvas',
       events: {
-        onhover: { enable: true, mode: "repulse" },
-        onclick: { enable: true, mode: "push" },
+        onhover: { enable: true, mode: 'repulse' },
+        onclick: { enable: true, mode: 'push' },
         resize: true,
       },
       modes: {
@@ -62,16 +62,16 @@ export const particleConfigs = {
       },
     },
   },
-  
+
   constellation: {
     // ... constellation effect config
   },
-  
+
   bubbles: {
     // ... bubbles effect config
   },
-  
+
   snow: {
     // ... snow effect config
-  }
-}; 
+  },
+};

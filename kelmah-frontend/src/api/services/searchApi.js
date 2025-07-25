@@ -19,7 +19,7 @@ class SearchApi {
     const response = await apiClient.get('/api/search', { params });
     return response.data;
   }
-  
+
   /**
    * Search for jobs
    * @param {Object} params - Search parameters
@@ -37,7 +37,7 @@ class SearchApi {
     const response = await apiClient.get('/api/search', { params });
     return response.data;
   }
-  
+
   /**
    * Search for workers
    * @param {Object} params - Search parameters
@@ -56,7 +56,7 @@ class SearchApi {
     const response = await apiClient.get('/api/search/workers', { params });
     return response.data;
   }
-  
+
   /**
    * Search for hirers
    * @param {Object} params - Search parameters
@@ -74,27 +74,31 @@ class SearchApi {
     const response = await apiClient.get('/api/search/hirers', { params });
     return response.data;
   }
-  
+
   /**
    * Get location suggestions based on partial input
    * @param {string} query - Location query
    * @returns {Promise<Object>} Location suggestions
    */
   async getLocationSuggestions(query) {
-    const response = await apiClient.get('/api/search/locations', { params: { query } });
+    const response = await apiClient.get('/api/search/locations', {
+      params: { query },
+    });
     return response.data;
   }
-  
+
   /**
    * Get skill suggestions based on partial input
    * @param {string} query - Skill query
    * @returns {Promise<Object>} Skill suggestions
    */
   async getSkillSuggestions(query) {
-    const response = await apiClient.get('/api/search/skills', { params: { query } });
+    const response = await apiClient.get('/api/search/skills', {
+      params: { query },
+    });
     return response.data;
   }
-  
+
   /**
    * Get job category suggestions
    * @returns {Promise<Object>} Job category suggestions
@@ -103,7 +107,7 @@ class SearchApi {
     const response = await apiClient.get('/api/search/job-categories');
     return response.data;
   }
-  
+
   /**
    * Get recent searches for current user
    * @returns {Promise<Object>} Recent searches
@@ -112,7 +116,7 @@ class SearchApi {
     const response = await apiClient.get('/api/search/recent');
     return response.data;
   }
-  
+
   /**
    * Clear recent searches for current user
    * @returns {Promise<Object>} Operation result
@@ -121,7 +125,7 @@ class SearchApi {
     const response = await apiClient.delete('/api/search/recent');
     return response.data;
   }
-  
+
   /**
    * Get popular searches
    * @returns {Promise<Object>} Popular searches
@@ -133,5 +137,3 @@ class SearchApi {
 }
 
 export default new SearchApi();
-
-

@@ -17,10 +17,12 @@ class ReviewsApi {
    * @returns {Promise<Object>} Worker reviews
    */
   async getWorkerReviews(workerId, params = {}) {
-    const response = await apiClient.get(`/reviews/workers/${workerId}`, { params });
+    const response = await apiClient.get(`/reviews/workers/${workerId}`, {
+      params,
+    });
     return response.data;
   }
-  
+
   /**
    * Get reviews for a hirer
    * @param {string} hirerId - Hirer ID
@@ -32,10 +34,12 @@ class ReviewsApi {
    * @returns {Promise<Object>} Hirer reviews
    */
   async getHirerReviews(hirerId, params = {}) {
-    const response = await apiClient.get(`/reviews/hirers/${hirerId}`, { params });
+    const response = await apiClient.get(`/reviews/hirers/${hirerId}`, {
+      params,
+    });
     return response.data;
   }
-  
+
   /**
    * Get reviews written by current user
    * @param {Object} params - Query parameters
@@ -45,7 +49,7 @@ class ReviewsApi {
     const response = await apiClient.get('/reviews/my-reviews', { params });
     return response.data;
   }
-  
+
   /**
    * Get a specific review
    * @param {string} reviewId - Review ID
@@ -55,7 +59,7 @@ class ReviewsApi {
     const response = await apiClient.get(`/reviews/${reviewId}`);
     return response.data;
   }
-  
+
   /**
    * Create a review for a worker
    * @param {Object} reviewData - Review data
@@ -70,7 +74,7 @@ class ReviewsApi {
     const response = await apiClient.post('/reviews/workers', reviewData);
     return response.data;
   }
-  
+
   /**
    * Create a review for a hirer
    * @param {Object} reviewData - Review data
@@ -84,7 +88,7 @@ class ReviewsApi {
     const response = await apiClient.post('/reviews/hirers', reviewData);
     return response.data;
   }
-  
+
   /**
    * Update a review
    * @param {string} reviewId - Review ID
@@ -95,7 +99,7 @@ class ReviewsApi {
     const response = await apiClient.put(`/reviews/${reviewId}`, reviewData);
     return response.data;
   }
-  
+
   /**
    * Delete a review
    * @param {string} reviewId - Review ID
@@ -105,7 +109,7 @@ class ReviewsApi {
     const response = await apiClient.delete(`/reviews/${reviewId}`);
     return response.data;
   }
-  
+
   /**
    * Report a review
    * @param {string} reviewId - Review ID
@@ -115,20 +119,25 @@ class ReviewsApi {
    * @returns {Promise<Object>} Report response
    */
   async reportReview(reviewId, reportData) {
-    const response = await apiClient.post(`/reviews/${reviewId}/report`, reportData);
+    const response = await apiClient.post(
+      `/reviews/${reviewId}/report`,
+      reportData,
+    );
     return response.data;
   }
-  
+
   /**
    * Get review summary for a worker
    * @param {string} workerId - Worker ID
    * @returns {Promise<Object>} Review summary
    */
   async getWorkerReviewSummary(workerId) {
-    const response = await apiClient.get(`/reviews/workers/${workerId}/summary`);
+    const response = await apiClient.get(
+      `/reviews/workers/${workerId}/summary`,
+    );
     return response.data;
   }
-  
+
   /**
    * Get review summary for a hirer
    * @param {string} hirerId - Hirer ID
@@ -138,7 +147,7 @@ class ReviewsApi {
     const response = await apiClient.get(`/reviews/hirers/${hirerId}/summary`);
     return response.data;
   }
-  
+
   /**
    * Get pending reviews that user needs to write
    * @returns {Promise<Object>} Pending reviews to write
@@ -163,7 +172,9 @@ class ReviewsApi {
    * @param {Object} params - pagination options
    */
   async getReviewsForWorker(workerId, params = {}) {
-    const response = await apiClient.get(`/reviews/worker/${workerId}`, { params });
+    const response = await apiClient.get(`/reviews/worker/${workerId}`, {
+      params,
+    });
     return response.data;
   }
 
@@ -176,4 +187,4 @@ class ReviewsApi {
   }
 }
 
-export default new ReviewsApi(); 
+export default new ReviewsApi();

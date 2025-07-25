@@ -1,11 +1,19 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ContractProvider, useContracts } from '../../../modules/contracts/contexts/ContractContext';
+import { NotificationProvider } from '../../../modules/notifications/contexts/NotificationContext';
+import { AuthProvider } from '../../../modules/auth/contexts/AuthContext';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 
 // Mock USE_MOCK_DATA to true
 jest.mock('../../../config/env', () => ({
   USE_MOCK_DATA: true,
 }));
+
+const mockStore = configureStore({
+  reducer: { auth: (state = { isAuthenticated: true, user: { id: 'user1' }, token: null, loading: false, error: null }) => state }
+});
 
 test('ContractProvider supplies mock contracts when USE_MOCK_DATA is true', async () => {
   // Use fake timers to control setTimeout
@@ -28,9 +36,13 @@ test('ContractProvider supplies mock contracts when USE_MOCK_DATA is true', asyn
   };
 
   render(
-    <ContractProvider>
-      <TestComponent />
-    </ContractProvider>
+    <Provider store={mockStore}>
+      <NotificationProvider>
+        <ContractProvider>
+          <TestComponent />
+        </ContractProvider>
+      </NotificationProvider>
+    </Provider>
   );
 
   // Initially loading
@@ -45,4 +57,4 @@ test('ContractProvider supplies mock contracts when USE_MOCK_DATA is true', asyn
   expect(screen.getByText('New Website Design')).toBeInTheDocument();
 
   jest.useRealTimers();
-}); 
+});

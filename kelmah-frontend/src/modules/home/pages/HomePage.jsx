@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Container, Typography, Button, Grid, CircularProgress, Card, CardMedia, CardContent, Chip, useTheme } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  CircularProgress,
+  Card,
+  CardMedia,
+  CardContent,
+  Chip,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
@@ -49,7 +62,8 @@ const HeroBackgroundImage = styled(Box)(({ theme }) => ({
     height: '100%',
     zIndex: 1,
     pointerEvents: 'none',
-    background: 'linear-gradient(90deg, #000 0%, rgba(0,0,0,0.7) 15%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.7) 85%, #000 100%)',
+    background:
+      'linear-gradient(90deg, #000 0%, rgba(0,0,0,0.7) 15%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.7) 85%, #000 100%)',
   },
 }));
 
@@ -101,8 +115,8 @@ const ServiceCard = styled(Card)(({ theme }) => ({
     boxShadow: '0 12px 20px rgba(0, 0, 0, 0.3)',
     '& .MuiCardMedia-root': {
       transform: 'scale(1.05)',
-    }
-  }
+    },
+  },
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
@@ -111,29 +125,51 @@ const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
 }));
 
 const ServiceCardContent = styled(CardContent)(({ theme }) => ({
-  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(44,44,44,0.4) 100%)',
+  background:
+    'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(44,44,44,0.4) 100%)',
 }));
 
 const HomePage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
-  const [apiStatus, setApiStatus] = useState({ isReachable: true, checking: false });
+  const [apiStatus, setApiStatus] = useState({
+    isReachable: true,
+    checking: false,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [bgIndex, setBgIndex] = useState(0);
 
   // Hoist services and features above the rotate useEffect
   const services = [
-    { title: "Plumbing", description: "Expert plumbing services for residential and commercial properties", image: plumbingImg },
-    { title: "Electrical", description: "Professional electrical installations and maintenance", image: electricalImg },
-    { title: "Carpentry", description: "Custom woodworking and structural carpentry services", image: carpentryImg },
-    { title: "Construction", description: "Full-service construction and renovation projects", image: constructionImg }
+    {
+      title: 'Plumbing',
+      description:
+        'Expert plumbing services for residential and commercial properties',
+      image: plumbingImg,
+    },
+    {
+      title: 'Electrical',
+      description: 'Professional electrical installations and maintenance',
+      image: electricalImg,
+    },
+    {
+      title: 'Carpentry',
+      description: 'Custom woodworking and structural carpentry services',
+      image: carpentryImg,
+    },
+    {
+      title: 'Construction',
+      description: 'Full-service construction and renovation projects',
+      image: constructionImg,
+    },
   ];
 
   const features = [
-    "Verified Professionals",
-    "Secure Payments",
-    "Quality Assurance"
+    'Verified Professionals',
+    'Secure Payments',
+    'Quality Assurance',
   ];
 
   // Control loading screen
@@ -142,7 +178,7 @@ const HomePage = () => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -151,10 +187,11 @@ const HomePage = () => {
     const checkApiStatus = async () => {
       try {
         // In development, bypass API health check to prevent blocking UI
-        const isReachable = import.meta.env.DEV || await checkApiHealth(false);
-        
+        const isReachable =
+          import.meta.env.DEV || (await checkApiHealth(false));
+
         // Only update state if the reachability changed
-        setApiStatus(prev => {
+        setApiStatus((prev) => {
           if (prev.isReachable !== isReachable) {
             return { isReachable, checking: false };
           }
@@ -162,17 +199,20 @@ const HomePage = () => {
         });
       } catch (error) {
         // This shouldn't happen with our improved error handling
-        console.warn("API check failed, continuing anyway:", error);
+        console.warn('API check failed, continuing anyway:', error);
         setApiStatus({ isReachable: true, checking: false }); // Assume reachable to avoid UI blocks
       }
     };
-    
+
     // Initial check without showing loading state
     checkApiStatus();
   }, []);
 
   useEffect(() => {
-    const rotate = setInterval(() => setBgIndex(i => (i + 1) % services.length), 8000);
+    const rotate = setInterval(
+      () => setBgIndex((i) => (i + 1) % services.length),
+      8000,
+    );
     return () => clearInterval(rotate);
   }, [services.length]);
 
@@ -189,7 +229,9 @@ const HomePage = () => {
             sx={{ position: 'absolute', top: 16, right: 16, zIndex: 2 }}
           />
           <Section>
-            <HeroBackgroundImage sx={{ backgroundImage: `url(${services[bgIndex].image})` }} />
+            <HeroBackgroundImage
+              sx={{ backgroundImage: `url(${services[bgIndex].image})` }}
+            />
             <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
               <Grid container spacing={4}>
                 <Grid item xs={12} md={8}>
@@ -199,20 +241,24 @@ const HomePage = () => {
                     transition={{ duration: 0.8 }}
                   >
                     {user && (
-                      <Typography variant="h4" sx={{ color: theme.palette.secondary.main, mb: 2 }}>
+                      <Typography
+                        variant="h4"
+                        sx={{ color: theme.palette.secondary.main, mb: 2 }}
+                      >
                         Welcome back, {user.firstName || user.username}!
                       </Typography>
                     )}
                     <Typography
-                      variant="h1"
+                      variant={isSm ? 'h4' : 'h1'}
                       sx={{
-                        fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                        fontSize: { xs: '2rem', sm: '3.5rem', md: '4.5rem' },
                         fontWeight: 'bold',
                         color: theme.palette.secondary.main,
                         mb: 3,
                       }}
                     >
-                      Connect & Grow<br />
+                      Connect & Grow
+                      <br />
                       Your Trade Network
                     </Typography>
                     <Typography
@@ -224,37 +270,52 @@ const HomePage = () => {
                         maxWidth: '80%',
                       }}
                     >
-                      Your professional platform for skilled trades, connecting experts, and growing businesses
+                      Your professional platform for skilled trades, connecting
+                      experts, and growing businesses
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: isSm ? 'column' : 'row',
+                        gap: isSm ? 1 : 2,
+                        mt: 4,
+                      }}
+                    >
                       {!user ? (
                         <>
-                      <StyledButton
-                        variant="contained"
-                        sx={{
-                          background: theme.palette.secondary.main,
-                          color: theme.palette.secondary.contrastText,
-                          '&:hover': { background: theme.palette.secondary.dark }
-                        }}
-                        onClick={() => navigate('/register')}
-                      >
-                        Join Network
-                      </StyledButton>
-                      <StyledButton
-                        variant="outlined"
-                        sx={{
-                          borderColor: theme.palette.secondary.main,
-                          color: theme.palette.secondary.main,
-                          borderWidth: 2,
-                          '&:hover': {
-                            borderColor: theme.palette.secondary.dark,
-                            background: alpha(theme.palette.secondary.main, 0.1)
-                          }
-                        }}
-                        onClick={() => navigate('/search')}
-                      >
-                        Explore Services
-                      </StyledButton>
+                          <StyledButton
+                            variant="contained"
+                            sx={{
+                              background: theme.palette.secondary.main,
+                              color: theme.palette.secondary.contrastText,
+                              '&:hover': {
+                                background: theme.palette.secondary.dark,
+                              },
+                            }}
+                            fullWidth={isSm}
+                            onClick={() => navigate('/register')}
+                          >
+                            Join Network
+                          </StyledButton>
+                          <StyledButton
+                            variant="outlined"
+                            sx={{
+                              borderColor: theme.palette.secondary.main,
+                              color: theme.palette.secondary.main,
+                              borderWidth: 2,
+                              '&:hover': {
+                                borderColor: theme.palette.secondary.dark,
+                                background: alpha(
+                                  theme.palette.secondary.main,
+                                  0.1,
+                                ),
+                              },
+                            }}
+                            fullWidth={isSm}
+                            onClick={() => navigate('/search')}
+                          >
+                            Explore Services
+                          </StyledButton>
                         </>
                       ) : user.role === 'worker' ? (
                         <StyledButton
@@ -262,7 +323,9 @@ const HomePage = () => {
                           sx={{
                             background: theme.palette.secondary.main,
                             color: theme.palette.secondary.contrastText,
-                            '&:hover': { background: theme.palette.secondary.dark }
+                            '&:hover': {
+                              background: theme.palette.secondary.dark,
+                            },
                           }}
                           onClick={() => navigate('/jobs')}
                         >
@@ -274,7 +337,9 @@ const HomePage = () => {
                           sx={{
                             background: theme.palette.secondary.main,
                             color: theme.palette.secondary.contrastText,
-                            '&:hover': { background: theme.palette.secondary.dark }
+                            '&:hover': {
+                              background: theme.palette.secondary.dark,
+                            },
                           }}
                           onClick={() => navigate('/hirer/jobs/post')}
                         >
@@ -313,33 +378,52 @@ const HomePage = () => {
               </Grid>
             </Container>
             {/* Scroll down arrow */}
-            <Box sx={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 32,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 2,
+              }}
+            >
               <motion.div
                 initial={{ y: -10 }}
                 animate={{ y: 10 }}
-                transition={{ y: { repeat: Infinity, repeatType: 'reverse', duration: 1 } }}
+                transition={{
+                  y: { repeat: Infinity, repeatType: 'reverse', duration: 1 },
+                }}
                 style={{ cursor: 'pointer' }}
-                onClick={() => document.getElementById('services').scrollIntoView({ behavior: 'smooth' })}
+                onClick={() =>
+                  document
+                    .getElementById('services')
+                    .scrollIntoView({ behavior: 'smooth' })
+                }
               >
-                <KeyboardArrowDownIcon sx={{ fontSize: 40, color: theme.palette.secondary.main }} />
+                <KeyboardArrowDownIcon
+                  sx={{ fontSize: 40, color: theme.palette.secondary.main }}
+                />
               </motion.div>
             </Box>
           </Section>
 
-          <Section id="services" sx={{ minHeight: 'auto', py: 12, background: '#111' }}>
+          <Section
+            id="services"
+            sx={{ minHeight: 'auto', py: 12, background: '#111' }}
+          >
             <Container maxWidth="lg">
-              <Typography 
-                variant="h2" 
-                sx={{ 
-                  textAlign: 'center', 
+              <Typography
+                variant="h2"
+                sx={{
+                  textAlign: 'center',
                   mb: 8,
                   color: theme.palette.secondary.main,
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 }}
               >
                 Our Services
               </Typography>
-              
+
               <Grid container spacing={4}>
                 {services.map((service, index) => (
                   <Grid item xs={12} sm={6} md={3} key={service.title}>
@@ -354,10 +438,18 @@ const HomePage = () => {
                           title={service.title}
                         />
                         <ServiceCardContent>
-                          <Typography gutterBottom variant="h5" component="div" color="white">
+                          <Typography
+                            gutterBottom
+                            variant="h5"
+                            component="div"
+                            color="white"
+                          >
                             {service.title}
                           </Typography>
-                          <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                          <Typography
+                            variant="body2"
+                            color="rgba(255,255,255,0.7)"
+                          >
                             {service.description}
                           </Typography>
                         </ServiceCardContent>
@@ -374,4 +466,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage; 
+export default HomePage;

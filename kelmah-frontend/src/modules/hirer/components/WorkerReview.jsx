@@ -31,7 +31,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  InputAdornment
+  InputAdornment,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -46,7 +46,7 @@ import {
   Star as StarIcon,
   ThumbUp as ThumbUpIcon,
   ThumbDown as ThumbDownIcon,
-  History as HistoryIcon
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -67,7 +67,7 @@ const WorkerReview = () => {
     deadline: 0,
     professionalism: 0,
     comment: '',
-    recommend: ''
+    recommend: '',
   });
 
   useEffect(() => {
@@ -115,7 +115,7 @@ const WorkerReview = () => {
       deadline: 0,
       professionalism: 0,
       comment: '',
-      recommend: ''
+      recommend: '',
     });
   };
 
@@ -125,9 +125,9 @@ const WorkerReview = () => {
       const response = await fetch(`/api/workers/${selectedWorker.id}/review`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(reviewForm)
+        body: JSON.stringify(reviewForm),
       });
 
       if (!response.ok) {
@@ -154,12 +154,16 @@ const WorkerReview = () => {
   const renderWorkerCard = (worker) => (
     <Card key={worker.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar
-              src={worker.avatar}
-              sx={{ width: 64, height: 64 }}
-            >
+            <Avatar src={worker.avatar} sx={{ width: 64, height: 64 }}>
               <PersonIcon />
             </Avatar>
             <Box>
@@ -219,7 +223,9 @@ const WorkerReview = () => {
                   <ListItem key={index}>
                     <ListItemText
                       primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
                           <Rating value={review.rating} readOnly size="small" />
                           <Typography variant="body2">
                             {review.comment}
@@ -251,10 +257,7 @@ const WorkerReview = () => {
         >
           Review
         </Button>
-        <IconButton
-          size="small"
-          onClick={(e) => handleMenuOpen(e, worker)}
-        >
+        <IconButton size="small" onClick={(e) => handleMenuOpen(e, worker)}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -279,9 +282,7 @@ const WorkerReview = () => {
         </Box>
       ) : workers.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">
-            No workers to review
-          </Typography>
+          <Typography color="text.secondary">No workers to review</Typography>
         </Paper>
       ) : (
         <Grid container spacing={3}>
@@ -370,7 +371,10 @@ const WorkerReview = () => {
                   <Rating
                     value={reviewForm.professionalism}
                     onChange={(event, newValue) => {
-                      setReviewForm({ ...reviewForm, professionalism: newValue });
+                      setReviewForm({
+                        ...reviewForm,
+                        professionalism: newValue,
+                      });
                     }}
                   />
                 </Grid>
@@ -381,7 +385,9 @@ const WorkerReview = () => {
                     multiline
                     rows={4}
                     value={reviewForm.comment}
-                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    onChange={(e) =>
+                      setReviewForm({ ...reviewForm, comment: e.target.value })
+                    }
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -389,7 +395,12 @@ const WorkerReview = () => {
                     <InputLabel>Would you recommend this worker?</InputLabel>
                     <Select
                       value={reviewForm.recommend}
-                      onChange={(e) => setReviewForm({ ...reviewForm, recommend: e.target.value })}
+                      onChange={(e) =>
+                        setReviewForm({
+                          ...reviewForm,
+                          recommend: e.target.value,
+                        })
+                      }
                       label="Would you recommend this worker?"
                     >
                       <MenuItem value="yes">Yes, I would recommend</MenuItem>
@@ -432,8 +443,14 @@ const WorkerReview = () => {
                   <ListItemText
                     primary="Rating"
                     secondary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Rating value={selectedWorker.rating} readOnly size="small" />
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
+                        <Rating
+                          value={selectedWorker.rating}
+                          readOnly
+                          size="small"
+                        />
                         <Typography variant="body2">
                           ({selectedWorker.reviewCount} reviews)
                         </Typography>
@@ -476,7 +493,9 @@ const WorkerReview = () => {
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button
-            onClick={dialogType === 'review' ? handleReviewSubmit : handleDialogClose}
+            onClick={
+              dialogType === 'review' ? handleReviewSubmit : handleDialogClose
+            }
             variant="contained"
           >
             Submit
@@ -488,5 +507,3 @@ const WorkerReview = () => {
 };
 
 export default WorkerReview;
-
-

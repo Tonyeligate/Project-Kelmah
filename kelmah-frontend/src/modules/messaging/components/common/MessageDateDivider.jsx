@@ -8,26 +8,27 @@ import { alpha } from '@mui/material/styles';
  */
 const MessageDateDivider = ({ date }) => {
   return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        my: 2, 
-        px: 2 
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        my: 2,
+        px: 2,
       }}
     >
       <Divider sx={{ flexGrow: 1, mr: 2 }} />
-      <Typography 
-        variant="caption" 
+      <Typography
+        variant="caption"
         color="text.secondary"
-        sx={{ 
-          px: 1.5, 
-          py: 0.5, 
-          borderRadius: 1, 
-          backgroundColor: theme => alpha(theme.palette.background.paper, 0.8),
+        sx={{
+          px: 1.5,
+          py: 0.5,
+          borderRadius: 1,
+          backgroundColor: (theme) =>
+            alpha(theme.palette.background.paper, 0.8),
           backdropFilter: 'blur(4px)',
           border: '1px solid',
-          borderColor: 'divider'
+          borderColor: 'divider',
         }}
       >
         {date}
@@ -38,7 +39,7 @@ const MessageDateDivider = ({ date }) => {
 };
 
 MessageDateDivider.propTypes = {
-  date: PropTypes.string.isRequired
+  date: PropTypes.string.isRequired,
 };
 
-export default MessageDateDivider; 
+export default MessageDateDivider;

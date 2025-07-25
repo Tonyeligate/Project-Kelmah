@@ -18,9 +18,9 @@ const SkillsShowcase = ({ skills = [] }) => {
     <DashboardCard title="My Skills Showcase">
       <Box>
         {skills.map((skill, index) => (
-          <Tooltip 
-            key={index} 
-            title={skill.verified ? 'Verified Skill' : 'Not Verified'} 
+          <Tooltip
+            key={index}
+            title={skill.verified ? 'Verified Skill' : 'Not Verified'}
             arrow
           >
             <Chip
@@ -51,8 +51,8 @@ SkillsShowcase.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       verified: PropTypes.bool,
-    })
+    }),
   ),
 };
 
-export default SkillsShowcase; 
+export default SkillsShowcase;

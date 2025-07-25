@@ -24,17 +24,19 @@ class WorkersApi {
     const response = await apiClient.get('/workers', { params });
     return response.data;
   }
-  
+
   /**
    * Get featured workers for homepage
    * @param {number} limit - Number of workers to retrieve
    * @returns {Promise<Object>} Featured workers
    */
   async getFeaturedWorkers(limit = 6) {
-    const response = await apiClient.get('/workers/featured', { params: { limit } });
+    const response = await apiClient.get('/workers/featured', {
+      params: { limit },
+    });
     return response.data;
   }
-  
+
   /**
    * Get worker profile by ID
    * @param {string} workerId - Worker ID
@@ -44,7 +46,7 @@ class WorkersApi {
     const response = await apiClient.get(`/workers/${workerId}`);
     return response.data;
   }
-  
+
   /**
    * Get current worker's profile
    * @returns {Promise<Object>} Current worker profile
@@ -53,7 +55,7 @@ class WorkersApi {
     const response = await apiClient.get('/workers/me');
     return response.data;
   }
-  
+
   /**
    * Update worker profile
    * @param {Object} profileData - Profile data to update
@@ -63,7 +65,7 @@ class WorkersApi {
     const response = await apiClient.put('/workers/me', profileData);
     return response.data;
   }
-  
+
   /**
    * Upload worker profile image
    * @param {FormData} formData - Form data with image file
@@ -72,22 +74,25 @@ class WorkersApi {
   async uploadProfileImage(formData) {
     const response = await apiClient.post('/workers/me/image', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   }
-  
+
   /**
    * Add work experience to profile
    * @param {Object} experienceData - Work experience data
    * @returns {Promise<Object>} Updated profile
    */
   async addWorkExperience(experienceData) {
-    const response = await apiClient.post('/workers/me/experience', experienceData);
+    const response = await apiClient.post(
+      '/workers/me/experience',
+      experienceData,
+    );
     return response.data;
   }
-  
+
   /**
    * Update work experience
    * @param {string} experienceId - Experience ID to update
@@ -95,20 +100,25 @@ class WorkersApi {
    * @returns {Promise<Object>} Updated profile
    */
   async updateWorkExperience(experienceId, experienceData) {
-    const response = await apiClient.put(`/workers/me/experience/${experienceId}`, experienceData);
+    const response = await apiClient.put(
+      `/workers/me/experience/${experienceId}`,
+      experienceData,
+    );
     return response.data;
   }
-  
+
   /**
    * Delete work experience
    * @param {string} experienceId - Experience ID to delete
    * @returns {Promise<Object>} Updated profile
    */
   async deleteWorkExperience(experienceId) {
-    const response = await apiClient.delete(`/workers/me/experience/${experienceId}`);
+    const response = await apiClient.delete(
+      `/workers/me/experience/${experienceId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Add skill to worker profile
    * @param {Object} skillData - Skill data
@@ -118,7 +128,7 @@ class WorkersApi {
     const response = await apiClient.post('/workers/me/skills', skillData);
     return response.data;
   }
-  
+
   /**
    * Remove skill from worker profile
    * @param {string} skillId - Skill ID to remove
@@ -128,7 +138,7 @@ class WorkersApi {
     const response = await apiClient.delete(`/workers/me/skills/${skillId}`);
     return response.data;
   }
-  
+
   /**
    * Add portfolio item
    * @param {FormData} formData - Form data with portfolio item
@@ -137,12 +147,12 @@ class WorkersApi {
   async addPortfolioItem(formData) {
     const response = await apiClient.post('/workers/me/portfolio', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   }
-  
+
   /**
    * Delete portfolio item
    * @param {string} itemId - Portfolio item ID to delete
@@ -152,17 +162,20 @@ class WorkersApi {
     const response = await apiClient.delete(`/workers/me/portfolio/${itemId}`);
     return response.data;
   }
-  
+
   /**
    * Update availability settings
    * @param {Object} availabilityData - Availability data
    * @returns {Promise<Object>} Updated availability
    */
   async updateAvailability(availabilityData) {
-    const response = await apiClient.put('/workers/me/availability', availabilityData);
+    const response = await apiClient.put(
+      '/workers/me/availability',
+      availabilityData,
+    );
     return response.data;
   }
-  
+
   /**
    * Get worker reviews
    * @param {string} workerId - Worker ID
@@ -170,10 +183,12 @@ class WorkersApi {
    * @returns {Promise<Object>} Worker reviews
    */
   async getWorkerReviews(workerId, params = {}) {
-    const response = await apiClient.get(`/workers/${workerId}/reviews`, { params });
+    const response = await apiClient.get(`/workers/${workerId}/reviews`, {
+      params,
+    });
     return response.data;
   }
-  
+
   /**
    * Get available skills list
    * @returns {Promise<Object>} Available skills
@@ -217,7 +232,10 @@ class WorkersApi {
    * @returns {Promise<Object>} Verification response
    */
   async requestSkillVerification(skillId, verificationData) {
-    const response = await apiClient.post(`/workers/me/skills/${skillId}/verify`, verificationData);
+    const response = await apiClient.post(
+      `/workers/me/skills/${skillId}/verify`,
+      verificationData,
+    );
     return response.data;
   }
 
@@ -240,4 +258,4 @@ class WorkersApi {
   }
 }
 
-export default new WorkersApi(); 
+export default new WorkersApi();

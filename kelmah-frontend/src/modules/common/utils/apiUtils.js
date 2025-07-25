@@ -1,6 +1,9 @@
 import axiosInstance from '../services/axios';
 import { API_BASE_URL } from '../../../config/constants';
 
+// Use Node.js environment variables for tests
+const metaEnv = process.env;
+
 /**
  * Check if the API is reachable
  * @param {boolean} showLoading - Whether to show loading state in component
@@ -13,8 +16,9 @@ export const checkApiHealth = async (showLoading = true) => {
       console.log('Development mode: Assuming API is available');
       return true;
     }
-    
-    const response = await axiosInstance.get('/api/health', {
+
+    // Check actual health endpoint
+    const response = await axiosInstance.get('/health', {
       timeout: 3000, // Shorter timeout for faster development
       skipAuthRefresh: true, // Don't try to refresh tokens on health check
       skipErrorHandling: true, // Handle errors locally
@@ -36,8 +40,9 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   get: (url, params = {}, options = {}) => {
-    return axiosInstance.get(url, { params, ...options })
-      .then(response => response.data);
+    return axiosInstance
+      .get(url, { params, ...options })
+      .then((response) => response.data);
   },
 
   /**
@@ -48,8 +53,9 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   post: (url, data = {}, options = {}) => {
-    return axiosInstance.post(url, data, options)
-      .then(response => response.data);
+    return axiosInstance
+      .post(url, data, options)
+      .then((response) => response.data);
   },
 
   /**
@@ -60,8 +66,9 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   put: (url, data = {}, options = {}) => {
-    return axiosInstance.put(url, data, options)
-      .then(response => response.data);
+    return axiosInstance
+      .put(url, data, options)
+      .then((response) => response.data);
   },
 
   /**
@@ -71,7 +78,6 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   delete: (url, options = {}) => {
-    return axiosInstance.delete(url, options)
-      .then(response => response.data);
-  }
-}; 
+    return axiosInstance.delete(url, options).then((response) => response.data);
+  },
+};

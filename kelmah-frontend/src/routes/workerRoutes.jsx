@@ -169,4 +169,4 @@ const WorkerRoutes = () => {
   );
 };
 
-export default WorkerRoutes; 
+export default WorkerRoutes;

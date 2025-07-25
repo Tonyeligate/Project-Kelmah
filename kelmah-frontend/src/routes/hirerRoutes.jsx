@@ -79,4 +79,4 @@ const HirerRoutes = () => {
   );
 };
 
-export default HirerRoutes; 
+export default HirerRoutes;

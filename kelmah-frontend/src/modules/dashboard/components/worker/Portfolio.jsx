@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardMedia, 
-  CardContent, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
   CardActions,
-  CardActionArea, 
-  Button, 
+  CardActionArea,
+  Button,
   Collapse,
   IconButton,
   Divider,
@@ -20,7 +20,7 @@ import {
   Slide,
   Chip,
   LinearProgress,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import DashboardCard from '../common/DashboardCard';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -29,7 +29,7 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import CloseIcon from '@mui/icons-material/Close';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import workersApi from '../../../../api/services/workersApi';
+import { workersApi } from '../../../../api';
 
 // Transition for dialog
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -43,7 +43,7 @@ const Portfolio = () => {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Fetch portfolio projects
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -62,12 +62,12 @@ const Portfolio = () => {
 
     fetchPortfolio();
   }, []);
-  
+
   // Handle expand/collapse with animation
   const handleExpandToggle = () => {
     setExpanded(!expanded);
   };
-  
+
   // Handle opening project details dialog
   const handleOpenProject = (project) => {
     setSelectedProject(project);
@@ -77,15 +77,15 @@ const Portfolio = () => {
       setLoading(false);
     }, 500);
   };
-  
+
   // Handle closing project dialog
   const handleCloseProject = () => {
     setSelectedProject(null);
   };
-  
+
   if (isLoading) {
     return (
-      <DashboardCard 
+      <DashboardCard
         title={
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <PhotoLibraryIcon sx={{ mr: 1 }} />
@@ -99,10 +99,10 @@ const Portfolio = () => {
       </DashboardCard>
     );
   }
-  
+
   if (error) {
     return (
-      <DashboardCard 
+      <DashboardCard
         title={
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <PhotoLibraryIcon sx={{ mr: 1 }} />
@@ -112,8 +112,8 @@ const Portfolio = () => {
       >
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography color="error">{error}</Typography>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             sx={{ mt: 2 }}
             onClick={() => window.location.reload()}
           >
@@ -123,11 +123,11 @@ const Portfolio = () => {
       </DashboardCard>
     );
   }
-  
+
   // Early return if no projects
   if (projects.length === 0) {
     return (
-      <DashboardCard 
+      <DashboardCard
         title={
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <PhotoLibraryIcon sx={{ mr: 1 }} />
@@ -143,11 +143,11 @@ const Portfolio = () => {
   }
 
   // Split projects into featured and others
-  const featuredProject = projects[0];
-  const otherProjects = projects.slice(1);
-  
+  const featuredProject = Array.isArray(projects) ? projects[0] : null;
+  const otherProjects = Array.isArray(projects) ? projects.slice(1) : [];
+
   return (
-    <DashboardCard 
+    <DashboardCard
       title={
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <PhotoLibraryIcon sx={{ mr: 1 }} />
@@ -155,17 +155,17 @@ const Portfolio = () => {
         </Box>
       }
       action={
-        <Button 
+        <Button
           onClick={handleExpandToggle}
           endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           size="large"
           variant="outlined"
-          sx={{ 
+          sx={{
             borderRadius: '20px',
             px: 2,
             fontWeight: 'bold',
             fontSize: '0.9rem',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
           }}
         >
           {expanded ? 'Show Less' : 'Show More'}
@@ -181,25 +181,28 @@ const Portfolio = () => {
                 <CardMedia
                   component="img"
                   height="200"
-                  image={featuredProject.imageUrl || 'https://via.placeholder.com/400x200?text=Featured+Project'}
-                  alt={featuredProject.title}
+                  image={
+                    featuredProject?.imageUrl ||
+                    'https://via.placeholder.com/400x200?text=Featured+Project'
+                  }
+                  alt={featuredProject?.title}
                   sx={{ objectFit: 'cover' }}
                 />
               </Grid>
               <Grid item xs={12} md={8}>
                 <CardContent>
                   <Typography variant="h6" component="div" fontWeight="bold">
-                    {featuredProject.title}
+                    {featuredProject?.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {featuredProject.description}
+                    {featuredProject?.description}
                   </Typography>
                 </CardContent>
               </Grid>
             </Grid>
           </CardActionArea>
         </Card>
-        
+
         {/* Other Projects */}
         {otherProjects.length > 0 && (
           <Box sx={{ mt: 2 }}>
@@ -207,22 +210,31 @@ const Portfolio = () => {
             <Grid container spacing={2}>
               {otherProjects.map((project, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
                     <CardActionArea onClick={() => handleOpenProject(project)}>
                       <CardMedia
                         component="img"
                         height="140"
-                        image={project.imageUrl || `https://via.placeholder.com/300x140?text=Project+${index + 2}`}
-                        alt={project.title}
+                        image={
+                          project?.imageUrl ||
+                          `https://via.placeholder.com/300x140?text=Project+${index + 2}`
+                        }
+                        alt={project?.title}
                       />
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Typography variant="h6" component="div">
-                          {project.title}
+                          {project?.title}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {project.description.length > 100
-                            ? `${project.description.substring(0, 100)}...`
-                            : project.description}
+                          {project?.description.length > 100
+                            ? `${project?.description.substring(0, 100)}...`
+                            : project?.description}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
@@ -233,7 +245,7 @@ const Portfolio = () => {
           </Box>
         )}
       </Collapse>
-      
+
       {/* Project Details Dialog */}
       <Dialog
         open={selectedProject !== null}
@@ -243,13 +255,17 @@ const Portfolio = () => {
         maxWidth="md"
         fullWidth
       >
-        {loading ? (
-          <LinearProgress />
-        ) : null}
-        
+        {loading ? <LinearProgress /> : null}
+
         {selectedProject && (
           <>
-            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <DialogTitle
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
               <Typography variant="h5" component="div" fontWeight="bold">
                 {selectedProject.title}
               </Typography>
@@ -257,39 +273,43 @@ const Portfolio = () => {
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
-            
+
             <DialogContent>
               <CardMedia
                 component="img"
                 height="400"
-                image={selectedProject.imageUrl || 'https://via.placeholder.com/800x400?text=Project+Image'}
+                image={
+                  selectedProject.imageUrl ||
+                  'https://via.placeholder.com/800x400?text=Project+Image'
+                }
                 alt={selectedProject.title}
                 sx={{ borderRadius: 1, mb: 2 }}
               />
-              
+
               <Box sx={{ mb: 3 }}>
                 <Typography variant="body1" paragraph>
                   {selectedProject.description}
-                  
+
                   {/* Additional details if available */}
-                  {selectedProject.fullDescription && ` ${selectedProject.fullDescription}`}
+                  {selectedProject.fullDescription &&
+                    ` ${selectedProject.fullDescription}`}
                 </Typography>
               </Box>
-              
+
               <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                <Chip 
-                  icon={<DateRangeIcon />} 
-                  label={`Completed: ${selectedProject.completionDate || 'Not specified'}`} 
+                <Chip
+                  icon={<DateRangeIcon />}
+                  label={`Completed: ${selectedProject.completionDate || 'Not specified'}`}
                 />
                 {selectedProject.clientSatisfaction && (
-                  <Chip 
-                    icon={<CheckCircleIcon />} 
-                    label={`Client: ${selectedProject.clientSatisfaction}`} 
-                    color="success" 
+                  <Chip
+                    icon={<CheckCircleIcon />}
+                    label={`Client: ${selectedProject.clientSatisfaction}`}
+                    color="success"
                   />
                 )}
               </Box>
-              
+
               <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                 Skills Utilized
               </Typography>
@@ -307,7 +327,7 @@ const Portfolio = () => {
                 )}
               </Box>
             </DialogContent>
-            
+
             <DialogActions>
               <Button onClick={handleCloseProject}>Close</Button>
               <Button variant="contained">Contact for Similar Work</Button>
@@ -329,4 +349,4 @@ Portfolio.propTypes = {
   ),
 };
 
-export default Portfolio; 
+export default Portfolio;

@@ -6,9 +6,9 @@ import {
   Container,
   Breadcrumbs,
   Link,
-  Typography, 
-  Grid, 
-  Paper, 
+  Typography,
+  Grid,
+  Paper,
   Box,
   TextField,
   Button,
@@ -27,7 +27,7 @@ import {
   MenuItem,
   Stack,
   Skeleton,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import jobsApi from '../../jobs/services/jobsApi';
 import {
@@ -39,7 +39,7 @@ import {
   Bookmark as BookmarkIcon,
   FilterList as FilterListIcon,
   WorkOutline as WorkOutlineIcon,
-  AccessTime as AccessTimeIcon
+  AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -70,17 +70,17 @@ const JobApplicationPage = () => {
         if (jobType) params.type = jobType;
         // Map sortBy to API sort parameter
         switch (sortBy) {
-      case 'salary-high':
+          case 'salary-high':
             params.sort = '-budget';
             break;
-      case 'salary-low':
+          case 'salary-low':
             params.sort = 'budget';
             break;
-      case 'recent':
+          case 'recent':
             params.sort = '-createdAt';
             break;
           // 'relevant' not directly supported by API
-      default:
+          default:
             break;
         }
         const response = await jobsApi.getJobs(params);
@@ -106,7 +106,7 @@ const JobApplicationPage = () => {
 
   const handleSaveJob = (jobId) => {
     if (savedJobs.includes(jobId)) {
-      setSavedJobs(savedJobs.filter(id => id !== jobId));
+      setSavedJobs(savedJobs.filter((id) => id !== jobId));
     } else {
       setSavedJobs([...savedJobs, jobId]);
     }
@@ -129,7 +129,12 @@ const JobApplicationPage = () => {
     <Grow in timeout={500}>
       <Container sx={{ py: 4 }}>
         <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-          <Link component={RouterLink} to="/worker/dashboard" underline="hover" color="inherit">
+          <Link
+            component={RouterLink}
+            to="/worker/dashboard"
+            underline="hover"
+            color="inherit"
+          >
             Dashboard
           </Link>
           <Typography color="text.primary">Find Work</Typography>
@@ -137,13 +142,13 @@ const JobApplicationPage = () => {
         <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
           Find Work
         </Typography>
-        
+
         {/* Search and Filter Section */}
         <Paper sx={{ p: 3, mb: 4 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
-                <TextField
-                  fullWidth
+              <TextField
+                fullWidth
                 label="Search Jobs"
                 variant="outlined"
                 value={searchTerm}
@@ -158,21 +163,21 @@ const JobApplicationPage = () => {
               />
             </Grid>
             <Grid item xs={12} md={3}>
-                <TextField
-                  fullWidth
+              <TextField
+                fullWidth
                 label="Location"
-                              variant="outlined"
+                variant="outlined"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                        InputProps={{
+                InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <LocationIcon />
                     </InputAdornment>
                   ),
-                        }}
-                      />
-                    </Grid>
+                }}
+              />
+            </Grid>
             <Grid item xs={12} md={2}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
@@ -204,10 +209,10 @@ const JobApplicationPage = () => {
                   <MenuItem value="Part-time">Part-time</MenuItem>
                 </Select>
               </FormControl>
-                    </Grid>
+            </Grid>
             {/* Removed redundant Filter button */}
-                  </Grid>
-                </Paper>
+          </Grid>
+        </Paper>
 
         {/* Clear all filters button */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
@@ -224,12 +229,21 @@ const JobApplicationPage = () => {
                 <Card sx={{ mb: 3, borderRadius: 2 }}>
                   <CardContent>
                     <Skeleton variant="text" width="40%" height={30} />
-                    <Skeleton variant="rectangular" height={150} sx={{ mt: 1 }} />
+                    <Skeleton
+                      variant="rectangular"
+                      height={150}
+                      sx={{ mt: 1 }}
+                    />
                   </CardContent>
                   <Divider />
                   <CardActions>
                     <Skeleton variant="rectangular" height={36} width="30%" />
-                    <Skeleton variant="rectangular" height={36} width="30%" sx={{ ml: 'auto' }} />
+                    <Skeleton
+                      variant="rectangular"
+                      height={36}
+                      width="30%"
+                      sx={{ ml: 'auto' }}
+                    />
                   </CardActions>
                 </Card>
               </Grid>
@@ -237,10 +251,17 @@ const JobApplicationPage = () => {
           </Grid>
         ) : (
           <>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
               <Typography variant="h6" component="h2">
                 {totalItems} jobs found
-                </Typography>
+              </Typography>
               <FormControl sx={{ minWidth: 150 }} size="small">
                 <InputLabel>Sort By</InputLabel>
                 <Select
@@ -254,12 +275,16 @@ const JobApplicationPage = () => {
                   <MenuItem value="salary-low">Lowest Salary</MenuItem>
                 </Select>
               </FormControl>
-                </Box>
-                
+            </Box>
+
             {jobs.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: 'center' }}>
-                <WorkOutlineIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6">No jobs found matching your criteria</Typography>
+                <WorkOutlineIcon
+                  sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }}
+                />
+                <Typography variant="h6">
+                  No jobs found matching your criteria
+                </Typography>
                 <Typography color="textSecondary">
                   Try adjusting your search filters or search term
                 </Typography>
@@ -275,43 +300,90 @@ const JobApplicationPage = () => {
                           borderRadius: 2,
                           boxShadow: 3,
                           transition: 'all 0.3s ease',
-                          '&:hover': { boxShadow: 6, transform: 'translateY(-2px)' },
+                          '&:hover': {
+                            boxShadow: 6,
+                            transform: 'translateY(-2px)',
+                          },
                         }}
                       >
                         <CardContent>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                            }}
+                          >
                             <Box>
-                              <Typography variant="h5" component="h2" gutterBottom>
+                              <Typography
+                                variant="h5"
+                                component="h2"
+                                gutterBottom
+                              >
                                 {job.title}
-                          </Typography>
+                              </Typography>
                               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                  <BusinessIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                                  <Typography variant="body2" color="text.secondary">
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  <BusinessIcon
+                                    fontSize="small"
+                                    sx={{ mr: 0.5, color: 'text.secondary' }}
+                                  />
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
                                     {job.company}
-                            </Typography>
+                                  </Typography>
                                 </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                  <LocationIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                                  <Typography variant="body2" color="text.secondary">
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  <LocationIcon
+                                    fontSize="small"
+                                    sx={{ mr: 0.5, color: 'text.secondary' }}
+                                  />
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
                                     {job.location}
-                            </Typography>
+                                  </Typography>
                                 </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                  <MoneyIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                                  <Typography variant="body2" color="text.secondary">
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  <MoneyIcon
+                                    fontSize="small"
+                                    sx={{ mr: 0.5, color: 'text.secondary' }}
+                                  />
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
                                     {job.salary}
                                   </Typography>
                                 </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                  <AccessTimeIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                                  <Typography variant="body2" color="text.secondary">
+                                <Box
+                                  sx={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  <AccessTimeIcon
+                                    fontSize="small"
+                                    sx={{ mr: 0.5, color: 'text.secondary' }}
+                                  />
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
                                     {new Date(job.date).toLocaleDateString()}
                                   </Typography>
                                 </Box>
                               </Stack>
                             </Box>
-                            <IconButton onClick={() => handleSaveJob(job._id || job.id)}>
+                            <IconButton
+                              onClick={() => handleSaveJob(job._id || job.id)}
+                            >
                               {savedJobs.includes(job._id || job.id) ? (
                                 <BookmarkIcon color="primary" />
                               ) : (
@@ -323,24 +395,30 @@ const JobApplicationPage = () => {
                             {job.description}
                           </Typography>
                           <Box sx={{ mb: 2 }}>
-                            <Chip 
-                              label={job.type} 
-                              size="small" 
-                              sx={{ mr: 1, backgroundColor: job.type === 'Contract' ? theme.palette.info.light : theme.palette.success.light }}
+                            <Chip
+                              label={job.type}
+                              size="small"
+                              sx={{
+                                mr: 1,
+                                backgroundColor:
+                                  job.type === 'Contract'
+                                    ? theme.palette.info.light
+                                    : theme.palette.success.light,
+                              }}
                             />
-                            <Chip 
-                              label={job.category} 
-                              size="small" 
+                            <Chip
+                              label={job.category}
+                              size="small"
                               sx={{ mr: 1 }}
                               color="primary"
                               variant="outlined"
                             />
                             {job.skills.map((skill) => (
                               <Chip
-                                key={skill} 
-                                label={skill} 
-                                size="small" 
-                                sx={{ mr: 1 }} 
+                                key={skill}
+                                label={skill}
+                                size="small"
+                                sx={{ mr: 1 }}
                               />
                             ))}
                           </Box>
@@ -370,14 +448,21 @@ const JobApplicationPage = () => {
                 </Grid>
 
                 {/* Pagination */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
-                  <Pagination 
-                    count={totalPages} 
-                    page={page} 
-                    onChange={handleChangePage} 
-                      color="primary"
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    mt: 4,
+                    mb: 2,
+                  }}
+                >
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handleChangePage}
+                    color="primary"
                   />
-              </Box>
+                </Box>
               </>
             )}
           </>

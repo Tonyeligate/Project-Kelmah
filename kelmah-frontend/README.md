@@ -67,7 +67,23 @@ git clone https://github.com/your-username/kelmah-frontend.git
 npm run dev
 ```
 
-## Scripts
+### Environment Variables
+
+This project supports toggling between mock data and the real API using Vite environment variables. Create a file named `.env` in the project root and add:
+
+```
+# Toggle use of mock data (default true if not set)
+VITE_USE_MOCK_DATA=false
+
+# Base URL of the API Gateway, including the `/api` suffix
+VITE_API_URL=http://localhost:5000/api
+```
+
+- `VITE_USE_MOCK_DATA`: Set to `false` to use the real API; set to `true` to use mock data (default is `true`).
+  
+- `VITE_API_URL`: Base URL for all API requests (default is `http://localhost:5000/api`).
+
+### Scripts
 - `npm run dev` - Start the development server
 - `npm run build` - Build the production version
 - `npm run lint` - Run ESLint

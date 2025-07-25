@@ -19,7 +19,7 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Tooltip
+  Tooltip,
 } from '@mui/material';
 import {
   CalendarToday as CalendarIcon,
@@ -28,7 +28,7 @@ import {
   Delete as DeleteIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-  AccessTime as AccessTimeIcon
+  AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format, parseISO, isSameDay } from 'date-fns';
@@ -48,7 +48,7 @@ const AvailabilityCalendar = () => {
   const [formData, setFormData] = useState({
     startTime: null,
     endTime: null,
-    status: 'available'
+    status: 'available',
   });
 
   useEffect(() => {
@@ -58,7 +58,9 @@ const AvailabilityCalendar = () => {
   const fetchAvailability = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/workers/${user.id}/availability?date=${format(selectedDate, 'yyyy-MM-dd')}`);
+      const response = await fetch(
+        `/api/workers/${user.id}/availability?date=${format(selectedDate, 'yyyy-MM-dd')}`,
+      );
       const data = await response.json();
       setAvailability(data);
       setError(null);
@@ -80,13 +82,13 @@ const AvailabilityCalendar = () => {
       setFormData({
         startTime: parseISO(slot.startTime),
         endTime: parseISO(slot.endTime),
-        status: slot.status
+        status: slot.status,
       });
     } else {
       setFormData({
         startTime: null,
         endTime: null,
-        status: 'available'
+        status: 'available',
       });
     }
     setDialogOpen(true);
@@ -98,14 +100,14 @@ const AvailabilityCalendar = () => {
     setFormData({
       startTime: null,
       endTime: null,
-      status: 'available'
+      status: 'available',
     });
   };
 
   const handleInputChange = (field) => (value) => {
     setFormData({
       ...formData,
-      [field]: value
+      [field]: value,
     });
   };
 
@@ -115,18 +117,18 @@ const AvailabilityCalendar = () => {
       const url = editingSlot
         ? `/api/workers/${user.id}/availability/${editingSlot.id}`
         : `/api/workers/${user.id}/availability`;
-      
+
       const method = editingSlot ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           date: format(selectedDate, 'yyyy-MM-dd'),
-          ...formData
-        })
+          ...formData,
+        }),
       });
 
       if (!response.ok) {
@@ -146,9 +148,12 @@ const AvailabilityCalendar = () => {
   const handleDelete = async (slotId) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/workers/${user.id}/availability/${slotId}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(
+        `/api/workers/${user.id}/availability/${slotId}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       if (!response.ok) {
         throw new Error('Failed to delete availability slot');
@@ -185,14 +190,15 @@ const AvailabilityCalendar = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        bgcolor: 'background.default'
+        bgcolor: 'background.default',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <AccessTimeIcon color="action" />
         <Box>
           <Typography variant="body1">
-            {format(parseISO(slot.startTime), 'h:mm a')} - {format(parseISO(slot.endTime), 'h:mm a')}
+            {format(parseISO(slot.startTime), 'h:mm a')} -{' '}
+            {format(parseISO(slot.endTime), 'h:mm a')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
@@ -224,10 +230,15 @@ const AvailabilityCalendar = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">
-          Availability Calendar
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant="h5">Availability Calendar</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -270,9 +281,7 @@ const AvailabilityCalendar = () => {
                 No time slots scheduled
               </Typography>
             ) : (
-              <Box>
-                {availability.map(renderTimeSlot)}
-              </Box>
+              <Box>{availability.map(renderTimeSlot)}</Box>
             )}
           </Paper>
         </Grid>
@@ -296,7 +305,9 @@ const AvailabilityCalendar = () => {
                     label="Start Time"
                     value={formData.startTime}
                     onChange={handleInputChange('startTime')}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -306,7 +317,9 @@ const AvailabilityCalendar = () => {
                     label="End Time"
                     value={formData.endTime}
                     onChange={handleInputChange('endTime')}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -316,7 +329,9 @@ const AvailabilityCalendar = () => {
                   <Select
                     value={formData.status}
                     label="Status"
-                    onChange={(e) => handleInputChange('status')(e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('status')(e.target.value)
+                    }
                   >
                     <MenuItem value="available">Available</MenuItem>
                     <MenuItem value="unavailable">Unavailable</MenuItem>
@@ -342,6 +357,4 @@ const AvailabilityCalendar = () => {
   );
 };
 
-export default AvailabilityCalendar; 
-
-
+export default AvailabilityCalendar;

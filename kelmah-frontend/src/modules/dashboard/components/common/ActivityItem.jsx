@@ -24,21 +24,25 @@ const ActivityItem = ({ activity }) => {
   const icon = iconMap[type] || iconMap.default;
 
   return (
-    <Paper 
+    <Paper
       elevation={2}
-      sx={{ 
-        p: 2, 
-        display: 'flex', 
-        alignItems: 'center', 
+      sx={{
+        p: 2,
+        display: 'flex',
+        alignItems: 'center',
         mb: 2,
-        backgroundColor: 'background.paper'
+        backgroundColor: 'background.paper',
       }}
     >
       <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>{icon}</Avatar>
       <Box>
         <Typography variant="subtitle2">{title}</Typography>
-        <Typography variant="body2" color="text.secondary">{description}</Typography>
-        <Typography variant="caption" color="text.secondary">{time}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {time}
+        </Typography>
       </Box>
     </Paper>
   );
@@ -53,4 +57,4 @@ ActivityItem.propTypes = {
   }).isRequired,
 };
 
-export default ActivityItem; 
+export default ActivityItem;

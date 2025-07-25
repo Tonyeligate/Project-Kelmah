@@ -8,4 +8,4 @@ import workersApi from './services/workersApi';
 
 // Export the appropriate API based on mock mode
 const USE_MOCK_MODE = true;
-export default USE_MOCK_MODE ? mockWorkersApi : workersApi; 
+export default USE_MOCK_MODE ? mockWorkersApi : workersApi;

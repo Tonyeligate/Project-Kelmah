@@ -3,7 +3,7 @@ export const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 export const isTokenValid = (token) => {
   if (!token) return false;
-  
+
   try {
     // Decode the JWT token (without verification)
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -22,4 +22,4 @@ export const getTokenExpiryTime = (token) => {
   } catch (error) {
     return null;
   }
-}; 
+};

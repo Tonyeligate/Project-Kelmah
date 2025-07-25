@@ -50,7 +50,7 @@ const AppointmentCard = ({ appointment, onUpdate }) => {
     if (!onUpdate) return;
     setLoading(action);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     onUpdate(id, action === 'accept' ? 'confirmed' : 'cancelled');
     setLoading(null);
   };
@@ -68,14 +68,25 @@ const AppointmentCard = ({ appointment, onUpdate }) => {
         borderColor: `${currentStatus.color}.main`,
       }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="flex-start"
+      >
         <Box>
-          <Typography variant="h6" fontWeight="bold">{jobTitle}</Typography>
+          <Typography variant="h6" fontWeight="bold">
+            {jobTitle}
+          </Typography>
           <Box display="flex" alignItems="center" mt={1} color="text.secondary">
             <PersonIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
             <Typography variant="body2">{hirerName}</Typography>
           </Box>
-          <Box display="flex" alignItems="center" mt={0.5} color="text.secondary">
+          <Box
+            display="flex"
+            alignItems="center"
+            mt={0.5}
+            color="text.secondary"
+          >
             <LocationOnIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
             <Typography variant="body2">{location}</Typography>
           </Box>
@@ -109,7 +120,11 @@ const AppointmentCard = ({ appointment, onUpdate }) => {
               onClick={() => handleAction('decline')}
               disabled={!!loading}
             >
-              {loading === 'decline' ? <CircularProgress size={20} /> : 'Decline'}
+              {loading === 'decline' ? (
+                <CircularProgress size={20} />
+              ) : (
+                'Decline'
+              )}
             </Button>
             <Button
               variant="contained"
@@ -118,7 +133,7 @@ const AppointmentCard = ({ appointment, onUpdate }) => {
               onClick={() => handleAction('accept')}
               disabled={!!loading}
             >
-             {loading === 'accept' ? <CircularProgress size={20} /> : 'Accept'}
+              {loading === 'accept' ? <CircularProgress size={20} /> : 'Accept'}
             </Button>
           </Box>
         )}
@@ -133,10 +148,11 @@ AppointmentCard.propTypes = {
     jobTitle: PropTypes.string.isRequired,
     hirerName: PropTypes.string.isRequired,
     date: PropTypes.string.isRequired,
-    status: PropTypes.oneOf(['pending', 'confirmed', 'completed', 'cancelled']).isRequired,
+    status: PropTypes.oneOf(['pending', 'confirmed', 'completed', 'cancelled'])
+      .isRequired,
     location: PropTypes.string.isRequired,
   }).isRequired,
   onUpdate: PropTypes.func,
 };
 
-export default AppointmentCard; 
+export default AppointmentCard;

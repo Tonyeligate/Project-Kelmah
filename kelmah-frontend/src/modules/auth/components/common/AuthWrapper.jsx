@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, Typography, Container, useTheme, useMediaQuery } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Typography,
+  Container,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import PropTypes from 'prop-types';
 // Corrected path for the background image
 import backgroundImg from '../../../../assets/images/background.jpg';
@@ -23,7 +30,7 @@ const AuthWrapper = ({ children }) => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        height: '100vh',
         width: '100vw',
         position: 'relative',
         display: 'flex',
@@ -31,7 +38,8 @@ const AuthWrapper = ({ children }) => {
         justifyContent: 'center',
         backgroundColor: theme.palette.background.default,
         py: 4,
-        overflow: 'hidden',
+        overflowY: 'auto',
+        overflowX: 'hidden',
       }}
     >
       {/* Background image, blur, and gradient overlay */}
@@ -54,7 +62,8 @@ const AuthWrapper = ({ children }) => {
             left: 0,
             width: '100%',
             height: '100%',
-            background: 'linear-gradient(120deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.7) 100%)',
+            background:
+              'linear-gradient(120deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.7) 100%)',
             zIndex: 1,
           },
         }}
@@ -65,7 +74,9 @@ const AuthWrapper = ({ children }) => {
           sx={{
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
-            overflow: 'hidden',
+            width: { xs: '90%', sm: '75%', md: 'auto' },
+            mx: 'auto',
+            overflow: 'visible',
             borderRadius: 5,
             background: 'rgba(30, 30, 30, 0.75)',
             boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)',
@@ -83,14 +94,25 @@ const AuthWrapper = ({ children }) => {
               alignItems: 'center',
               p: { xs: 2, md: 3 },
               background: 'rgba(40,40,40,0.55)',
-              borderRight: isMobile ? 'none' : '1.5px solid rgba(255,255,255,0.10)',
+              borderRight: isMobile
+                ? 'none'
+                : '1.5px solid rgba(255,255,255,0.10)',
               color: theme.palette.primary.contrastText,
               position: 'relative',
-              minWidth: 320,
+              minWidth: { xs: 'auto', md: 320 },
+              width: { xs: '100%', md: 'auto' },
               minHeight: { xs: 0, md: 600 },
             }}
           >
-            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+              }}
+            >
               {/* Large, centered cartoon image filling the panel */}
               <Box
                 sx={{
@@ -115,7 +137,8 @@ const AuthWrapper = ({ children }) => {
                     height: '90%',
                     borderRadius: '50%',
                     zIndex: 0,
-                    background: 'radial-gradient(circle, rgba(255,215,0,0.18) 0%, rgba(255,215,0,0.08) 60%, rgba(255,215,0,0) 100%)',
+                    background:
+                      'radial-gradient(circle, rgba(255,215,0,0.18) 0%, rgba(255,215,0,0.08) 60%, rgba(255,215,0,0) 100%)',
                     filter: 'blur(8px)',
                     animation: 'glowPulse 3s ease-in-out infinite',
                     '@keyframes glowPulse': {
@@ -152,9 +175,9 @@ const AuthWrapper = ({ children }) => {
               </Box>
             </Box>
             <Box sx={{ width: '100%', mt: 2, mb: 1, textAlign: 'center' }}>
-              <Typography 
-                variant="h4" 
-                component="h1" 
+              <Typography
+                variant="h4"
+                component="h1"
                 gutterBottom
                 sx={{
                   textShadow: '0 2px 12px rgba(0,0,0,0.25)',
@@ -165,15 +188,22 @@ const AuthWrapper = ({ children }) => {
                   mb: 1,
                 }}
               >
-              Welcome to Kelmah
-            </Typography>
-              <Typography 
-                variant="body1" 
-                align="center" 
-                sx={{ maxWidth: 400, color: 'rgba(255,255,255,0.85)', textAlign: 'center', fontWeight: 500, mx: 'auto' }}
+                Welcome to Kelmah
+              </Typography>
+              <Typography
+                variant="body1"
+                align="center"
+                sx={{
+                  maxWidth: 400,
+                  color: 'rgba(255,255,255,0.85)',
+                  textAlign: 'center',
+                  fontWeight: 500,
+                  mx: 'auto',
+                }}
               >
-              Connect with skilled professionals and find your next opportunity in our global marketplace.
-            </Typography>
+                Connect with skilled professionals and find your next
+                opportunity in our global marketplace.
+              </Typography>
             </Box>
           </Box>
           <Box
@@ -183,9 +213,10 @@ const AuthWrapper = ({ children }) => {
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              p: 5,
+              p: { xs: 2, md: 5 },
+              minWidth: { xs: 'auto', md: 350 },
+              width: { xs: '100%', md: 'auto' },
               backgroundColor: 'transparent',
-              minWidth: 350,
             }}
           >
             {children}
@@ -200,4 +231,4 @@ AuthWrapper.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default AuthWrapper; 
+export default AuthWrapper;

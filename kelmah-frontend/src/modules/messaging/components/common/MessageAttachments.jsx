@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  IconButton, 
-  CircularProgress, 
+import {
+  Box,
+  Paper,
+  Typography,
+  IconButton,
+  CircularProgress,
   Dialog,
   DialogContent,
   Tooltip,
   Card,
-  CardMedia
+  CardMedia,
 } from '@mui/material';
-import { 
-  Description, 
-  PictureAsPdf, 
-  Image, 
-  InsertDriveFile, 
-  Download, 
-  Close, 
-  Visibility 
+import {
+  Description,
+  PictureAsPdf,
+  Image,
+  InsertDriveFile,
+  Download,
+  Close,
+  Visibility,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
@@ -88,25 +88,25 @@ const FileName = styled(Typography)({
  * @param {Function} props.onRemove - Function to call when attachment is removed
  * @param {boolean} props.readonly - If true, removes the ability to remove attachments
  */
-const MessageAttachments = ({ 
-  attachments = [], 
-  isUploading = false, 
-  uploadProgress = 0, 
+const MessageAttachments = ({
+  attachments = [],
+  isUploading = false,
+  uploadProgress = 0,
   onRemove,
-  readonly = false
+  readonly = false,
 }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
-  
+
   // Handle opening image preview
   const handleOpenPreview = (url) => {
     setPreviewUrl(url);
   };
-  
+
   // Handle closing image preview
   const handleClosePreview = () => {
     setPreviewUrl(null);
   };
-  
+
   // Get icon for file type
   const getFileIcon = (fileType) => {
     if (fileType.startsWith('image/')) {
@@ -119,7 +119,7 @@ const MessageAttachments = ({
       return <InsertDriveFile color="action" />;
     }
   };
-  
+
   // Format file size
   const formatFileSize = (bytes) => {
     if (bytes < 1024) {
@@ -130,7 +130,7 @@ const MessageAttachments = ({
       return (bytes / 1048576).toFixed(1) + ' MB';
     }
   };
-  
+
   return (
     <>
       {(attachments.length > 0 || isUploading) && (
@@ -138,11 +138,11 @@ const MessageAttachments = ({
           {/* Handle uploading state */}
           {isUploading && (
             <AttachmentItem>
-              <CircularProgress 
-                size={24} 
-                variant="determinate" 
-                value={uploadProgress} 
-                color="primary" 
+              <CircularProgress
+                size={24}
+                variant="determinate"
+                value={uploadProgress}
+                color="primary"
               />
               <Box sx={{ ml: 1 }}>
                 <Typography variant="body2">Uploading...</Typography>
@@ -152,12 +152,18 @@ const MessageAttachments = ({
               </Box>
             </AttachmentItem>
           )}
-          
+
           {/* Render attachments */}
           {attachments.map((attachment, index) => (
             <React.Fragment key={attachment.id || index}>
               {attachment.type && attachment.type.startsWith('image/') ? (
-                <ImagePreview onClick={() => handleOpenPreview(attachment.url || URL.createObjectURL(attachment))}>
+                <ImagePreview
+                  onClick={() =>
+                    handleOpenPreview(
+                      attachment.url || URL.createObjectURL(attachment),
+                    )
+                  }
+                >
                   <CardMedia
                     component="img"
                     height="100"
@@ -187,8 +193,8 @@ const MessageAttachments = ({
                   </Box>
                   {!readonly && (
                     <Tooltip title="Remove">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => onRemove && onRemove(index)}
                         sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                       >
@@ -198,7 +204,7 @@ const MessageAttachments = ({
                   )}
                   {readonly && attachment.url && (
                     <Tooltip title="Download">
-                      <IconButton 
+                      <IconButton
                         size="small"
                         href={attachment.url}
                         download={attachment.name}
@@ -216,13 +222,9 @@ const MessageAttachments = ({
           ))}
         </AttachmentContainer>
       )}
-      
+
       {/* Image preview dialog */}
-      <Dialog
-        open={!!previewUrl}
-        onClose={handleClosePreview}
-        maxWidth="lg"
-      >
+      <Dialog open={!!previewUrl} onClose={handleClosePreview} maxWidth="lg">
         <IconButton
           sx={{
             position: 'absolute',
@@ -232,17 +234,17 @@ const MessageAttachments = ({
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            }
+            },
           }}
           onClick={handleClosePreview}
         >
           <Close />
         </IconButton>
         <DialogContent sx={{ p: 1 }}>
-          <img 
-            src={previewUrl} 
-            alt="Attachment preview" 
-            style={{ maxWidth: '100%', maxHeight: '80vh' }} 
+          <img
+            src={previewUrl}
+            alt="Attachment preview"
+            style={{ maxWidth: '100%', maxHeight: '80vh' }}
           />
         </DialogContent>
       </Dialog>
@@ -250,4 +252,4 @@ const MessageAttachments = ({
   );
 };
 
-export default MessageAttachments; 
+export default MessageAttachments;

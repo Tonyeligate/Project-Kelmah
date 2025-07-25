@@ -11,7 +11,7 @@ export const fetchContracts = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchContractById = createAsyncThunk(
@@ -23,7 +23,7 @@ export const fetchContractById = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const createContract = createAsyncThunk(
@@ -35,43 +35,50 @@ export const createContract = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const updateContract = createAsyncThunk(
   'contracts/updateContract',
   async ({ contractId, contractData }, { rejectWithValue }) => {
     try {
-      const response = await contractService.updateContract(contractId, contractData);
+      const response = await contractService.updateContract(
+        contractId,
+        contractData,
+      );
       return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const signContract = createAsyncThunk(
   'contracts/signContract',
   async ({ contractId, signatureData }, { rejectWithValue }) => {
     try {
-      const response = await contractService.signContract(contractId, signatureData);
+      const response = await contractService.signContract(
+        contractId,
+        signatureData,
+      );
       return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const sendContractForSignature = createAsyncThunk(
   'contracts/sendContractForSignature',
   async (contractId, { rejectWithValue }) => {
     try {
-      const response = await contractService.sendContractForSignature(contractId);
+      const response =
+        await contractService.sendContractForSignature(contractId);
       return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchContractMilestones = createAsyncThunk(
@@ -83,31 +90,38 @@ export const fetchContractMilestones = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const createMilestone = createAsyncThunk(
   'contracts/createMilestone',
   async ({ contractId, milestoneData }, { rejectWithValue }) => {
     try {
-      const response = await contractService.createMilestone(contractId, milestoneData);
+      const response = await contractService.createMilestone(
+        contractId,
+        milestoneData,
+      );
       return { contractId, milestone: response };
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const completeMilestone = createAsyncThunk(
   'contracts/completeMilestone',
   async ({ contractId, milestoneId, completionData }, { rejectWithValue }) => {
     try {
-      const response = await contractService.completeMilestone(contractId, milestoneId, completionData);
+      const response = await contractService.completeMilestone(
+        contractId,
+        milestoneId,
+        completionData,
+      );
       return { contractId, milestoneId, updatedMilestone: response };
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const cancelContract = createAsyncThunk(
@@ -119,19 +133,22 @@ export const cancelContract = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const createDispute = createAsyncThunk(
   'contracts/createDispute',
   async ({ contractId, disputeData }, { rejectWithValue }) => {
     try {
-      const response = await contractService.createDispute(contractId, disputeData);
+      const response = await contractService.createDispute(
+        contractId,
+        disputeData,
+      );
       return { contractId, dispute: response };
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchContractTemplates = createAsyncThunk(
@@ -143,7 +160,7 @@ export const fetchContractTemplates = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Initial state
@@ -161,7 +178,7 @@ const initialState = {
     createContract: false,
     updateContract: false,
     signContract: false,
-    dispute: false
+    dispute: false,
   },
   error: {
     contracts: null,
@@ -171,8 +188,8 @@ const initialState = {
     createContract: null,
     updateContract: null,
     signContract: null,
-    dispute: null
-  }
+    dispute: null,
+  },
 };
 
 // Contract slice
@@ -189,12 +206,12 @@ const contractSlice = createSlice({
         createContract: null,
         updateContract: null,
         signContract: null,
-        dispute: null
+        dispute: null,
       };
     },
     clearCurrentContract: (state) => {
       state.currentContract = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     // Fetch contracts
@@ -212,7 +229,7 @@ const contractSlice = createSlice({
         state.error.contracts = action.payload;
       })
 
-    // Fetch contract by ID
+      // Fetch contract by ID
       .addCase(fetchContractById.pending, (state) => {
         state.loading.currentContract = true;
         state.error.currentContract = null;
@@ -226,7 +243,7 @@ const contractSlice = createSlice({
         state.error.currentContract = action.payload;
       })
 
-    // Create contract
+      // Create contract
       .addCase(createContract.pending, (state) => {
         state.loading.createContract = true;
         state.error.createContract = null;
@@ -241,7 +258,7 @@ const contractSlice = createSlice({
         state.error.createContract = action.payload;
       })
 
-    // Update contract
+      // Update contract
       .addCase(updateContract.pending, (state) => {
         state.loading.updateContract = true;
         state.error.updateContract = null;
@@ -249,12 +266,15 @@ const contractSlice = createSlice({
       .addCase(updateContract.fulfilled, (state, action) => {
         state.loading.updateContract = false;
         const updatedContract = action.payload;
-        
-        state.contracts = state.contracts.map(contract => 
-          contract.id === updatedContract.id ? updatedContract : contract
+
+        state.contracts = state.contracts.map((contract) =>
+          contract.id === updatedContract.id ? updatedContract : contract,
         );
-        
-        if (state.currentContract && state.currentContract.id === updatedContract.id) {
+
+        if (
+          state.currentContract &&
+          state.currentContract.id === updatedContract.id
+        ) {
           state.currentContract = updatedContract;
         }
       })
@@ -263,7 +283,7 @@ const contractSlice = createSlice({
         state.error.updateContract = action.payload;
       })
 
-    // Sign contract
+      // Sign contract
       .addCase(signContract.pending, (state) => {
         state.loading.signContract = true;
         state.error.signContract = null;
@@ -271,12 +291,15 @@ const contractSlice = createSlice({
       .addCase(signContract.fulfilled, (state, action) => {
         state.loading.signContract = false;
         const signedContract = action.payload;
-        
-        state.contracts = state.contracts.map(contract => 
-          contract.id === signedContract.id ? signedContract : contract
+
+        state.contracts = state.contracts.map((contract) =>
+          contract.id === signedContract.id ? signedContract : contract,
         );
-        
-        if (state.currentContract && state.currentContract.id === signedContract.id) {
+
+        if (
+          state.currentContract &&
+          state.currentContract.id === signedContract.id
+        ) {
           state.currentContract = signedContract;
         }
       })
@@ -285,7 +308,7 @@ const contractSlice = createSlice({
         state.error.signContract = action.payload;
       })
 
-    // Send contract for signature
+      // Send contract for signature
       .addCase(sendContractForSignature.pending, (state) => {
         state.loading.currentContract = true;
         state.error.currentContract = null;
@@ -293,12 +316,15 @@ const contractSlice = createSlice({
       .addCase(sendContractForSignature.fulfilled, (state, action) => {
         state.loading.currentContract = false;
         const updatedContract = action.payload;
-        
-        state.contracts = state.contracts.map(contract => 
-          contract.id === updatedContract.id ? updatedContract : contract
+
+        state.contracts = state.contracts.map((contract) =>
+          contract.id === updatedContract.id ? updatedContract : contract,
         );
-        
-        if (state.currentContract && state.currentContract.id === updatedContract.id) {
+
+        if (
+          state.currentContract &&
+          state.currentContract.id === updatedContract.id
+        ) {
           state.currentContract = updatedContract;
         }
       })
@@ -307,7 +333,7 @@ const contractSlice = createSlice({
         state.error.currentContract = action.payload;
       })
 
-    // Fetch contract milestones
+      // Fetch contract milestones
       .addCase(fetchContractMilestones.pending, (state) => {
         state.loading.milestones = true;
         state.error.milestones = null;
@@ -322,7 +348,7 @@ const contractSlice = createSlice({
         state.error.milestones = action.payload;
       })
 
-    // Create milestone
+      // Create milestone
       .addCase(createMilestone.pending, (state) => {
         state.loading.milestones = true;
         state.error.milestones = null;
@@ -330,7 +356,7 @@ const contractSlice = createSlice({
       .addCase(createMilestone.fulfilled, (state, action) => {
         state.loading.milestones = false;
         const { contractId, milestone } = action.payload;
-        
+
         if (state.contractMilestones[contractId]) {
           state.contractMilestones[contractId].push(milestone);
         } else {
@@ -342,7 +368,7 @@ const contractSlice = createSlice({
         state.error.milestones = action.payload;
       })
 
-    // Complete milestone
+      // Complete milestone
       .addCase(completeMilestone.pending, (state) => {
         state.loading.milestones = true;
         state.error.milestones = null;
@@ -350,10 +376,12 @@ const contractSlice = createSlice({
       .addCase(completeMilestone.fulfilled, (state, action) => {
         state.loading.milestones = false;
         const { contractId, milestoneId, updatedMilestone } = action.payload;
-        
+
         if (state.contractMilestones[contractId]) {
-          state.contractMilestones[contractId] = state.contractMilestones[contractId].map(
-            milestone => milestone.id === milestoneId ? updatedMilestone : milestone
+          state.contractMilestones[contractId] = state.contractMilestones[
+            contractId
+          ].map((milestone) =>
+            milestone.id === milestoneId ? updatedMilestone : milestone,
           );
         }
       })
@@ -362,7 +390,7 @@ const contractSlice = createSlice({
         state.error.milestones = action.payload;
       })
 
-    // Cancel contract
+      // Cancel contract
       .addCase(cancelContract.pending, (state) => {
         state.loading.currentContract = true;
         state.error.currentContract = null;
@@ -370,12 +398,15 @@ const contractSlice = createSlice({
       .addCase(cancelContract.fulfilled, (state, action) => {
         state.loading.currentContract = false;
         const cancelledContract = action.payload;
-        
-        state.contracts = state.contracts.map(contract => 
-          contract.id === cancelledContract.id ? cancelledContract : contract
+
+        state.contracts = state.contracts.map((contract) =>
+          contract.id === cancelledContract.id ? cancelledContract : contract,
         );
-        
-        if (state.currentContract && state.currentContract.id === cancelledContract.id) {
+
+        if (
+          state.currentContract &&
+          state.currentContract.id === cancelledContract.id
+        ) {
           state.currentContract = cancelledContract;
         }
       })
@@ -384,7 +415,7 @@ const contractSlice = createSlice({
         state.error.currentContract = action.payload;
       })
 
-    // Create dispute
+      // Create dispute
       .addCase(createDispute.pending, (state) => {
         state.loading.dispute = true;
         state.error.dispute = null;
@@ -399,7 +430,7 @@ const contractSlice = createSlice({
         state.error.dispute = action.payload;
       })
 
-    // Fetch contract templates
+      // Fetch contract templates
       .addCase(fetchContractTemplates.pending, (state) => {
         state.loading.templates = true;
         state.error.templates = null;
@@ -412,21 +443,23 @@ const contractSlice = createSlice({
         state.loading.templates = false;
         state.error.templates = action.payload;
       });
-  }
+  },
 });
 
 // Selectors
 export const selectContracts = (state) => state.contracts.contracts;
 export const selectCurrentContract = (state) => state.contracts.currentContract;
-export const selectContractMilestones = (state, contractId) => 
+export const selectContractMilestones = (state, contractId) =>
   state.contracts.contractMilestones[contractId] || [];
-export const selectContractTemplates = (state) => state.contracts.contractTemplates;
+export const selectContractTemplates = (state) =>
+  state.contracts.contractTemplates;
 export const selectDisputes = (state) => state.contracts.disputes;
 export const selectContractsLoading = (state) => state.contracts.loading;
 export const selectContractsError = (state) => state.contracts.error;
 
 // Actions
-export const { resetContractErrors, clearCurrentContract } = contractSlice.actions;
+export const { resetContractErrors, clearCurrentContract } =
+  contractSlice.actions;
 
 // Reducer
-export default contractSlice.reducer; 
+export default contractSlice.reducer;

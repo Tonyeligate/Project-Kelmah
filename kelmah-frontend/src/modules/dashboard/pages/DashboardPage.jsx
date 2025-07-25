@@ -1,5 +1,12 @@
 import React, { useEffect } from 'react';
-import { Box, Grid, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  Paper,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
@@ -19,17 +26,19 @@ const DashboardPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, loading: authLoading } = useAuth();
   // Get data from Redux store
-  const { loading: dataLoading, error: dataError } = useSelector(state => state.dashboard);
+  const { loading: dataLoading, error: dataError } = useSelector(
+    (state) => state.dashboard,
+  );
 
   useEffect(() => {
     dispatch(fetchDashboardData());
   }, [dispatch]);
-  
+
   // Show loading screen if auth or data is loading
   if (authLoading || dataLoading) {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
-  
+
   // Show error if there was a problem loading data
   if (dataError) {
     return (
@@ -37,13 +46,11 @@ const DashboardPage = () => {
         <Typography variant="h6" color="error" gutterBottom>
           There was a problem loading your dashboard
         </Typography>
-        <Typography variant="body1">
-          {dataError}
-        </Typography>
+        <Typography variant="body1">{dataError}</Typography>
       </Box>
     );
   }
-  
+
   // Determine which dashboard to render based on user role
   const renderDashboard = () => {
     if (!user) {
@@ -55,9 +62,9 @@ const DashboardPage = () => {
         </Box>
       );
     }
-    
+
     const userRole = user.role || user.userType || 'worker';
-    
+
     switch (userRole) {
       case 'worker':
         return <WorkerDashboard user={user} />;
@@ -84,7 +91,7 @@ const DashboardPage = () => {
         );
     }
   };
-  
+
   return (
     <Box
       sx={{
@@ -92,10 +99,10 @@ const DashboardPage = () => {
         padding: isMobile ? 2 : 3,
       }}
     >
-      <Paper 
+      <Paper
         elevation={2}
-        sx={{ 
-          p: 3, 
+        sx={{
+          p: 3,
           mb: 3,
           borderRadius: 2,
           background: 'rgba(25, 25, 25, 0.8)',
@@ -110,7 +117,7 @@ const DashboardPage = () => {
           Here's an overview of your activities and important information.
         </Typography>
       </Paper>
-      
+
       <Grid container spacing={3}>
         <Grid item xs={12}>
           {renderDashboard()}
@@ -120,7 +127,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage; 
-
-
-
+export default DashboardPage;

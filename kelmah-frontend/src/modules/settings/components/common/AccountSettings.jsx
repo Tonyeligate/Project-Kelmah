@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, CircularProgress, Snackbar, Alert, Typography } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Typography,
+} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useProfile } from '../../../profile/hooks/useProfile';
-import { selectProfile, selectProfileLoading, selectProfileError } from '../../../../store/slices/profileSlice';
+import {
+  selectProfile,
+  selectProfileLoading,
+  selectProfileError,
+} from '../../../../store/slices/profileSlice';
 
 const AccountSettings = () => {
   const dispatch = useDispatch();
@@ -17,7 +29,11 @@ const AccountSettings = () => {
     email: profile?.email || '',
     phone: profile?.phone || '',
   });
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     setFormData({
@@ -36,9 +52,17 @@ const AccountSettings = () => {
   const handleSave = async () => {
     try {
       await updateProfile(formData);
-      setSnackbar({ open: true, message: 'Account settings updated!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Account settings updated!',
+        severity: 'success',
+      });
     } catch (err) {
-      setSnackbar({ open: true, message: err.message || 'Error updating settings', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err.message || 'Error updating settings',
+        severity: 'error',
+      });
     }
   };
 
@@ -51,20 +75,60 @@ const AccountSettings = () => {
       <Typography variant="h5" gutterBottom>
         Account Settings
       </Typography>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <TextField label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} fullWidth />
-        <TextField label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} fullWidth />
-        <TextField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} fullWidth />
-        <TextField label="Phone" name="phone" value={formData.phone} onChange={handleChange} fullWidth />
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      <Box
+        component="form"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
+        <TextField
+          label="First Name"
+          name="firstName"
+          value={formData.firstName}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Last Name"
+          name="lastName"
+          value={formData.lastName}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label="Phone"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          fullWidth
+        />
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
           <Button variant="contained" onClick={handleSave} disabled={loading}>
             {loading ? <CircularProgress size={24} /> : 'Save Changes'}
           </Button>
         </Box>
       </Box>
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

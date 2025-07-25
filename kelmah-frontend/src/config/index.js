@@ -1,12 +1,16 @@
 /**
  * Configuration Index
- * 
+ *
  * This file exports all configuration variables from the config directory.
  * It serves as a single entry point for importing configuration values.
  */
 
 // Import required modules
-import env, { API_BASE_URL as envApiBaseUrl, WS_URL as envWsUrl, USE_MOCK_DATA as envUseMockData } from './env';
+import env, {
+  API_BASE_URL as envApiBaseUrl,
+  WS_URL as envWsUrl,
+  USE_MOCK_DATA as envUseMockData,
+} from './env';
 import * as constants from './constants';
 import { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY } from './config';
 
@@ -47,11 +51,11 @@ export const {
   ALLOWED_FILE_TYPES,
   MAX_ATTACHMENTS,
   WORKER_CATEGORIES,
-  JOB_STATUS,       
+  JOB_STATUS,
   REVIEW_STRENGTHS,
   TOKEN_KEY,
   REFRESH_TOKEN_KEY,
-  USER_KEY
+  USER_KEY,
 } = constants;
 
 // Re-export authentication constants with consistent naming
@@ -66,7 +70,7 @@ const config = {
   USE_MOCK_DATA,
   JWT_LOCAL_STORAGE_KEY,
   AUTH_USER_KEY,
-  REFRESH_TOKEN_KEY
+  REFRESH_TOKEN_KEY,
 };
 
 export default config;

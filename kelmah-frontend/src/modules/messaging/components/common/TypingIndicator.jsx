@@ -34,7 +34,10 @@ const BubbleContainer = styled(Box)(({ theme }) => ({
 const Dot = styled(Box)(({ theme, delay }) => ({
   width: 8,
   height: 8,
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[700],
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? theme.palette.grey[500]
+      : theme.palette.grey[700],
   borderRadius: '50%',
   margin: theme.spacing(0, 0.25),
   animation: `${bounce} 1.5s infinite ${delay}s`,
@@ -46,22 +49,22 @@ const Dot = styled(Box)(({ theme, delay }) => ({
 const TypingIndicator = ({ user }) => {
   return (
     <TypingContainer>
-      <Avatar 
-        src={user?.avatar || ''} 
-        alt={user?.name || 'User'} 
+      <Avatar
+        src={user?.avatar || ''}
+        alt={user?.name || 'User'}
         sx={{ width: 32, height: 32 }}
       />
-      
+
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {user?.name && (
-          <Typography 
-            variant="caption" 
+          <Typography
+            variant="caption"
             sx={{ ml: 1, mb: 0.2, fontSize: '0.7rem', color: 'text.secondary' }}
           >
             {user.name}
           </Typography>
         )}
-        
+
         <BubbleContainer>
           <Dot delay={0} />
           <Dot delay={0.2} />
@@ -77,7 +80,7 @@ TypingIndicator.propTypes = {
     id: PropTypes.string,
     name: PropTypes.string,
     avatar: PropTypes.string,
-  })
+  }),
 };
 
-export default TypingIndicator; 
+export default TypingIndicator;

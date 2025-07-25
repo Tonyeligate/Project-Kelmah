@@ -31,7 +31,7 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepContent
+  StepContent,
 } from '@mui/material';
 import {
   Timeline,
@@ -39,7 +39,7 @@ import {
   TimelineSeparator,
   TimelineConnector,
   TimelineContent,
-  TimelineDot
+  TimelineDot,
 } from '@mui/lab';
 import {
   Work as WorkIcon,
@@ -54,7 +54,7 @@ import {
   Assignment as AssignmentIcon,
   Flag as FlagIcon,
   Comment as CommentIcon,
-  AttachFile as AttachFileIcon
+  AttachFile as AttachFileIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -72,7 +72,7 @@ const JobProgressTracker = () => {
     title: '',
     description: '',
     dueDate: '',
-    amount: ''
+    amount: '',
   });
 
   useEffect(() => {
@@ -117,7 +117,7 @@ const JobProgressTracker = () => {
       title: '',
       description: '',
       dueDate: '',
-      amount: ''
+      amount: '',
     });
   };
 
@@ -127,9 +127,9 @@ const JobProgressTracker = () => {
       const response = await fetch(`/api/jobs/${selectedJob.id}/milestones`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(milestoneForm)
+        body: JSON.stringify(milestoneForm),
       });
 
       if (!response.ok) {
@@ -149,13 +149,16 @@ const JobProgressTracker = () => {
   const handleMilestoneReview = async (jobId, milestoneId, status) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/jobs/${jobId}/milestones/${milestoneId}/review`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `/api/jobs/${jobId}/milestones/${milestoneId}/review`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status }),
         },
-        body: JSON.stringify({ status })
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to review milestone');
@@ -188,28 +191,26 @@ const JobProgressTracker = () => {
   const renderJobCard = (job) => (
     <Card key={job.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6">{job.title}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
               <Avatar src={job.workerAvatar} sx={{ width: 24, height: 24 }}>
                 <PersonIcon />
               </Avatar>
-              <Typography variant="body2">
-                {job.workerName}
-              </Typography>
+              <Typography variant="body2">{job.workerName}</Typography>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip
-              label={`${job.progress}%`}
-              color="primary"
-              size="small"
-            />
-            <IconButton
-              size="small"
-              onClick={(e) => handleMenuOpen(e, job)}
-            >
+            <Chip label={`${job.progress}%`} color="primary" size="small" />
+            <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)}>
               <MoreVertIcon />
             </IconButton>
           </Box>
@@ -219,9 +220,7 @@ const JobProgressTracker = () => {
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <AttachMoneyIcon color="primary" />
-              <Typography variant="body1">
-                ${job.budget}
-              </Typography>
+              <Typography variant="body1">${job.budget}</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -270,12 +269,22 @@ const JobProgressTracker = () => {
         <TimelineItem key={milestone.id}>
           <TimelineSeparator>
             <TimelineDot color={getStatusColor(milestone.status)}>
-              {milestone.status === 'completed' ? <CheckCircleIcon /> : <FlagIcon />}
+              {milestone.status === 'completed' ? (
+                <CheckCircleIcon />
+              ) : (
+                <FlagIcon />
+              )}
             </TimelineDot>
             {index < job.milestones.length - 1 && <TimelineConnector />}
           </TimelineSeparator>
           <TimelineContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+              }}
+            >
               <Box>
                 <Typography variant="subtitle2">{milestone.title}</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -291,7 +300,9 @@ const JobProgressTracker = () => {
                     size="small"
                     color="success"
                     startIcon={<CheckCircleIcon />}
-                    onClick={() => handleMilestoneReview(job.id, milestone.id, 'completed')}
+                    onClick={() =>
+                      handleMilestoneReview(job.id, milestone.id, 'completed')
+                    }
                   >
                     Complete
                   </Button>
@@ -416,7 +427,12 @@ const JobProgressTracker = () => {
                     fullWidth
                     label="Milestone Title"
                     value={milestoneForm.title}
-                    onChange={(e) => setMilestoneForm({ ...milestoneForm, title: e.target.value })}
+                    onChange={(e) =>
+                      setMilestoneForm({
+                        ...milestoneForm,
+                        title: e.target.value,
+                      })
+                    }
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -426,7 +442,12 @@ const JobProgressTracker = () => {
                     multiline
                     rows={4}
                     value={milestoneForm.description}
-                    onChange={(e) => setMilestoneForm({ ...milestoneForm, description: e.target.value })}
+                    onChange={(e) =>
+                      setMilestoneForm({
+                        ...milestoneForm,
+                        description: e.target.value,
+                      })
+                    }
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -435,7 +456,12 @@ const JobProgressTracker = () => {
                     label="Due Date"
                     type="date"
                     value={milestoneForm.dueDate}
-                    onChange={(e) => setMilestoneForm({ ...milestoneForm, dueDate: e.target.value })}
+                    onChange={(e) =>
+                      setMilestoneForm({
+                        ...milestoneForm,
+                        dueDate: e.target.value,
+                      })
+                    }
                     InputLabelProps={{
                       shrink: true,
                     }}
@@ -447,7 +473,12 @@ const JobProgressTracker = () => {
                     label="Amount"
                     type="number"
                     value={milestoneForm.amount}
-                    onChange={(e) => setMilestoneForm({ ...milestoneForm, amount: e.target.value })}
+                    onChange={(e) =>
+                      setMilestoneForm({
+                        ...milestoneForm,
+                        amount: e.target.value,
+                      })
+                    }
                   />
                 </Grid>
               </Grid>
@@ -484,7 +515,10 @@ const JobProgressTracker = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary="Deadline"
-                    secondary={format(new Date(selectedJob.deadline), 'MMM dd, yyyy')}
+                    secondary={format(
+                      new Date(selectedJob.deadline),
+                      'MMM dd, yyyy',
+                    )}
                   />
                 </ListItem>
                 <ListItem>
@@ -500,7 +534,11 @@ const JobProgressTracker = () => {
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button
-            onClick={dialogType === 'milestone' ? handleMilestoneSubmit : handleDialogClose}
+            onClick={
+              dialogType === 'milestone'
+                ? handleMilestoneSubmit
+                : handleDialogClose
+            }
             variant="contained"
           >
             Submit
@@ -511,6 +549,4 @@ const JobProgressTracker = () => {
   );
 };
 
-export default JobProgressTracker; 
-
-
+export default JobProgressTracker;

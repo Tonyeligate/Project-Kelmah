@@ -31,7 +31,7 @@ const axiosInstance = axios.create({
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
 });
 
 // Request interceptor for adding auth token
@@ -43,7 +43,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor for error handling
@@ -51,19 +51,23 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Handle token expiration (401 errors)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
         // Request new tokens
-        const resp = await axiosInstance.post('/auth/refresh-token', { refreshToken });
-        const { token: newToken, refreshToken: newRefreshToken } = resp.data;
+        const resp = await axiosInstance.post('/auth/refresh-token', {
+          refreshToken,
+        });
+        // Extract tokens from response (support nested data format)
+        const payload = resp.data.data || resp.data;
+        const { token: newToken, refreshToken: newRefreshToken } = payload;
         // Store new tokens
         localStorage.setItem(JWT_LOCAL_STORAGE_KEY, newToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
@@ -74,12 +78,12 @@ axiosInstance.interceptors.response.use(
         // Handle refresh failure - clear storage and redirect to login
         localStorage.removeItem(JWT_LOCAL_STORAGE_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
-        window.location.href = '/login';
+        // window.location.href = '/login'; // removed to prevent full page reload on 401
       }
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 
 // Export configured axios instance
@@ -90,7 +94,7 @@ export { default as authApi } from './services/authApi';
 export { default as jobsApi } from './services/jobsApi';
 
 // Use mockWorkersApi if in mock mode, otherwise use the real API
-export const workersApi = USE_MOCK_MODE 
+export const workersApi = USE_MOCK_MODE
   ? mockWorkersApiDefault
   : workersApiDefault;
 

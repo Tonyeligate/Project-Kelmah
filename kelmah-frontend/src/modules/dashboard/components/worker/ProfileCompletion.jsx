@@ -1,5 +1,12 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box, LinearProgress, Button } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  LinearProgress,
+  Button,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
 const ProfileCompletion = ({ completion = 75 }) => {
@@ -35,4 +42,4 @@ const ProfileCompletion = ({ completion = 75 }) => {
   );
 };
 
-export default ProfileCompletion; 
+export default ProfileCompletion;

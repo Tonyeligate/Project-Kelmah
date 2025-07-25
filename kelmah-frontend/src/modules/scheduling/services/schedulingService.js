@@ -23,7 +23,9 @@ class SchedulingService {
    */
   async getAppointmentsByJob(jobId, params = {}) {
     try {
-      const response = await axios.get(`/api/appointments/job/${jobId}`, { params });
+      const response = await axios.get(`/api/appointments/job/${jobId}`, {
+        params,
+      });
       return response.data.data;
     } catch (error) {
       console.error(`Error fetching appointments for job ${jobId}:`, error);
@@ -42,9 +44,11 @@ class SchedulingService {
     if (role) {
       queryParams.role = role;
     }
-    
+
     try {
-      const response = await axios.get(`/api/appointments/user/${userId}`, { params: queryParams });
+      const response = await axios.get(`/api/appointments/user/${userId}`, {
+        params: queryParams,
+      });
       return response.data.data;
     } catch (error) {
       console.error(`Error fetching appointments for user ${userId}:`, error);
@@ -59,7 +63,9 @@ class SchedulingService {
    */
   async getUpcomingAppointments(days = 7, params = {}) {
     try {
-      const response = await axios.get('/api/appointments/upcoming', { params: { ...params, days } });
+      const response = await axios.get('/api/appointments/upcoming', {
+        params: { ...params, days },
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error fetching upcoming appointments:', error);
@@ -95,7 +101,10 @@ class SchedulingService {
   // Update an appointment
   async updateAppointment(appointmentId, updateData) {
     try {
-      const response = await axios.patch(`/api/appointments/${appointmentId}`, updateData);
+      const response = await axios.patch(
+        `/api/appointments/${appointmentId}`,
+        updateData,
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating appointment:', error);
@@ -121,10 +130,16 @@ class SchedulingService {
    */
   async updateAppointmentStatus(appointmentId, status) {
     try {
-      const response = await axios.patch(`/api/appointments/${appointmentId}/status`, { status });
+      const response = await axios.patch(
+        `/api/appointments/${appointmentId}/status`,
+        { status },
+      );
       return response.data.data;
     } catch (error) {
-      console.error(`Error updating appointment ${appointmentId} status:`, error);
+      console.error(
+        `Error updating appointment ${appointmentId} status:`,
+        error,
+      );
       throw error;
     }
   }
@@ -136,7 +151,10 @@ class SchedulingService {
    */
   async rescheduleAppointment(appointmentId, newDate) {
     try {
-      const response = await axios.patch(`/api/appointments/${appointmentId}/reschedule`, { date: newDate });
+      const response = await axios.patch(
+        `/api/appointments/${appointmentId}/reschedule`,
+        { date: newDate },
+      );
       return response.data.data;
     } catch (error) {
       console.error(`Error rescheduling appointment ${appointmentId}:`, error);
@@ -150,13 +168,18 @@ class SchedulingService {
    */
   async sendAppointmentReminder(appointmentId) {
     try {
-      const response = await axios.post(`/api/appointments/${appointmentId}/send-reminder`);
+      const response = await axios.post(
+        `/api/appointments/${appointmentId}/send-reminder`,
+      );
       return response.data;
     } catch (error) {
-      console.error(`Error sending reminder for appointment ${appointmentId}:`, error);
+      console.error(
+        `Error sending reminder for appointment ${appointmentId}:`,
+        error,
+      );
       throw error;
     }
   }
 }
 
-export default new SchedulingService(); 
+export default new SchedulingService();

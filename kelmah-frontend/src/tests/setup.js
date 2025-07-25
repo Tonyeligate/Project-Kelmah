@@ -1,4 +1,44 @@
 import '@testing-library/jest-dom';
+import React from 'react';
+// Stub MUI styles to bypass ThemeProvider context issues
+jest.mock('@mui/material/styles', () => {
+  const actual = jest.requireActual('@mui/material/styles');
+  return {
+    ...actual,
+    ThemeProvider: ({ children }) => <>{children}</>,
+    createTheme: () => ({}),
+    useTheme: () => ({}),
+  };
+});
+// Mock MUI material components to avoid context issues
+jest.mock('@mui/material', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    Box: ({ children, ...props }) => React.createElement('div', props, children),
+    Button: ({ children, ...props }) => React.createElement('button', props, children),
+    TextField: ({ label, ...props }) => React.createElement('input', { 'aria-label': label, ...props }),
+    Typography: ({ children, ...props }) => React.createElement('span', props, children),
+    Paper: ({ children, ...props }) => React.createElement('div', props, children),
+    Grid: ({ children, ...props }) => React.createElement('div', props, children),
+    Link: ({ children, ...props }) => React.createElement('a', props, children),
+    Divider: (props) => React.createElement('hr', props),
+    FormControlLabel: ({ label, control, ...props }) => React.createElement('label', props, label, control),
+    Checkbox: (props) => React.createElement('input', { type: 'checkbox', ...props }),
+    InputAdornment: ({ children, ...props }) => React.createElement('div', props, children),
+    IconButton: ({ children, ...props }) => React.createElement('button', props, children),
+    Alert: ({ children, ...props }) => React.createElement('div', props, children),
+    CircularProgress: () => React.createElement('div', { 'data-testid': 'circular-progress' }),
+  };
+});
+// Mock useNavigate to be a no-op to avoid Router context requirement
+jest.mock('react-router-dom', () => {
+  const actual = jest.requireActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => () => {},
+  };
+});
 import { cleanup } from '@testing-library/react';
 
 // Mock localStorage

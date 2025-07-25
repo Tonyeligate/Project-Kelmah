@@ -25,7 +25,7 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepContent
+  StepContent,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -33,7 +33,7 @@ import {
   AttachMoney as AttachMoneyIcon,
   Schedule as ScheduleIcon,
   Send as SendIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -50,7 +50,7 @@ const JobApplication = () => {
     proposedBudget: '',
     estimatedTime: '',
     availability: '',
-    additionalNotes: ''
+    additionalNotes: '',
   });
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
 
@@ -85,7 +85,7 @@ const JobApplication = () => {
   const handleInputChange = (field) => (event) => {
     setApplicationData({
       ...applicationData,
-      [field]: event.target.value
+      [field]: event.target.value,
     });
   };
 
@@ -99,13 +99,13 @@ const JobApplication = () => {
       const response = await fetch('/api/applications', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           jobId: selectedJob.id,
           workerId: user.id,
-          ...applicationData
-        })
+          ...applicationData,
+        }),
       });
 
       if (!response.ok) {
@@ -119,7 +119,7 @@ const JobApplication = () => {
         proposedBudget: '',
         estimatedTime: '',
         availability: '',
-        additionalNotes: ''
+        additionalNotes: '',
       });
       setActiveStep(0);
       setError(null);
@@ -132,9 +132,20 @@ const JobApplication = () => {
   };
 
   const renderJobCard = (job) => (
-    <Card key={job.id} sx={{ mb: 2, cursor: 'pointer' }} onClick={() => handleJobSelect(job)}>
+    <Card
+      key={job.id}
+      sx={{ mb: 2, cursor: 'pointer' }}
+      onClick={() => handleJobSelect(job)}
+    >
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6">{job.title}</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -170,9 +181,7 @@ const JobApplication = () => {
             <Typography variant="body2" color="text.secondary">
               Description
             </Typography>
-            <Typography variant="body1">
-              {job.description}
-            </Typography>
+            <Typography variant="body1">{job.description}</Typography>
           </Grid>
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -207,12 +216,10 @@ const JobApplication = () => {
               </Typography>
             </Paper>
           ) : (
-            <Box>
-              {availableJobs.map(renderJobCard)}
-            </Box>
+            <Box>{availableJobs.map(renderJobCard)}</Box>
           )}
         </Box>
-      )
+      ),
     },
     {
       label: 'Submit Proposal',
@@ -238,7 +245,9 @@ const JobApplication = () => {
                 value={applicationData.proposedBudget}
                 onChange={handleInputChange('proposedBudget')}
                 InputProps={{
-                  startAdornment: <AttachMoneyIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  startAdornment: (
+                    <AttachMoneyIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  ),
                 }}
                 required
               />
@@ -250,7 +259,9 @@ const JobApplication = () => {
                 value={applicationData.estimatedTime}
                 onChange={handleInputChange('estimatedTime')}
                 InputProps={{
-                  startAdornment: <ScheduleIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  startAdornment: (
+                    <ScheduleIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  ),
                 }}
                 required
               />
@@ -302,8 +313,8 @@ const JobApplication = () => {
             </Grid>
           </Grid>
         </Box>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -323,9 +334,7 @@ const JobApplication = () => {
           {steps.map((step, index) => (
             <Step key={step.label}>
               <StepLabel>{step.label}</StepLabel>
-              <StepContent>
-                {step.content}
-              </StepContent>
+              <StepContent>{step.content}</StepContent>
             </Step>
           ))}
         </Stepper>
@@ -337,9 +346,7 @@ const JobApplication = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>
-          Application Preview
-        </DialogTitle>
+        <DialogTitle>Application Preview</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Typography variant="h6" gutterBottom>
@@ -357,34 +364,26 @@ const JobApplication = () => {
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">
-                  Proposed Budget
-                </Typography>
+                <Typography variant="subtitle1">Proposed Budget</Typography>
                 <Typography variant="body1">
                   ${applicationData.proposedBudget}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">
-                  Estimated Time
-                </Typography>
+                <Typography variant="subtitle1">Estimated Time</Typography>
                 <Typography variant="body1">
                   {applicationData.estimatedTime}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle1">
-                  Availability
-                </Typography>
+                <Typography variant="subtitle1">Availability</Typography>
                 <Typography variant="body1">
                   {applicationData.availability}
                 </Typography>
               </Grid>
               {applicationData.additionalNotes && (
                 <Grid item xs={12}>
-                  <Typography variant="subtitle1">
-                    Additional Notes
-                  </Typography>
+                  <Typography variant="subtitle1">Additional Notes</Typography>
                   <Typography variant="body1">
                     {applicationData.additionalNotes}
                   </Typography>
@@ -401,7 +400,4 @@ const JobApplication = () => {
   );
 };
 
-export default JobApplication; 
-
-
-
+export default JobApplication;

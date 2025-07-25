@@ -31,7 +31,7 @@ class MockWorkersApi {
       activeContracts: 3,
       pendingApplications: 7,
       monthlyEarnings: 2850,
-      completionRate: 94
+      completionRate: 94,
     });
   }
 
@@ -43,7 +43,7 @@ class MockWorkersApi {
     return Promise.resolve({
       messages: 5,
       applications: 2,
-      contracts: 1
+      contracts: 1,
     });
   }
 
@@ -53,18 +53,22 @@ class MockWorkersApi {
    */
   async getPortfolioProjects() {
     return Promise.resolve([
-      { 
-        id: 1, 
-        title: 'Modern Kitchen Remodel', 
-        description: 'Complete overhaul of a kitchen with custom cabinets and granite countertops.', 
-        imageUrl: 'https://images.pexels.com/photos/2724749/pexels-photo-2724749.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' 
+      {
+        id: 1,
+        title: 'Modern Kitchen Remodel',
+        description:
+          'Complete overhaul of a kitchen with custom cabinets and granite countertops.',
+        imageUrl:
+          'https://images.pexels.com/photos/2724749/pexels-photo-2724749.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
       },
-      { 
-        id: 2, 
-        title: 'Luxury Bathroom Tiling', 
-        description: 'New tile installation for a spa-like bathroom, featuring a walk-in shower.', 
-        imageUrl: 'https://images.pexels.com/photos/3288102/pexels-photo-3288102.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' 
-      }
+      {
+        id: 2,
+        title: 'Luxury Bathroom Tiling',
+        description:
+          'New tile installation for a spa-like bathroom, featuring a walk-in shower.',
+        imageUrl:
+          'https://images.pexels.com/photos/3288102/pexels-photo-3288102.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      },
     ]);
   }
 
@@ -77,12 +81,16 @@ class MockWorkersApi {
       skills: [
         { name: 'Carpentry', verified: true },
         { name: 'Plumbing', verified: true },
-        { name: 'Electrical', verified: false }
+        { name: 'Electrical', verified: false },
       ],
       licenses: [
         { name: 'Master Plumber', issuer: 'State Board', expiry: '12/2025' },
-        { name: 'Certified Electrician', issuer: 'National Electrical Board', expiry: '06/2026' }
-      ]
+        {
+          name: 'Certified Electrician',
+          issuer: 'National Electrical Board',
+          expiry: '06/2026',
+        },
+      ],
     });
   }
 
@@ -95,7 +103,7 @@ class MockWorkersApi {
       workers: [],
       total: 0,
       page: 1,
-      limit: 10
+      limit: 10,
     });
   }
 
@@ -110,7 +118,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: '/path/to/default-avatar.jpg'
+      profileImage: '/path/to/default-avatar.jpg',
     });
   }
 
@@ -125,7 +133,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: '/path/to/default-avatar.jpg'
+      profileImage: '/path/to/default-avatar.jpg',
     });
   }
 }

@@ -30,7 +30,7 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  LinearProgress
+  LinearProgress,
 } from '@mui/material';
 import {
   AttachMoney as AttachMoneyIcon,
@@ -39,7 +39,7 @@ import {
   Download as DownloadIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
-  Receipt as ReceiptIcon
+  Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
@@ -51,7 +51,7 @@ import {
   CartesianGrid,
   Tooltip as ChartTooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from 'recharts';
 
 const EarningsTracker = () => {
@@ -64,7 +64,7 @@ const EarningsTracker = () => {
     monthlyEarnings: 0,
     pendingEarnings: 0,
     completedJobs: 0,
-    averageEarnings: 0
+    averageEarnings: 0,
   });
   const [timeRange, setTimeRange] = useState('month');
   const [page, setPage] = useState(0);
@@ -80,14 +80,16 @@ const EarningsTracker = () => {
   const fetchEarnings = async () => {
     try {
       setLoading(true);
-      const startDate = startOfMonth(subMonths(new Date(), getMonthsForRange(timeRange)));
+      const startDate = startOfMonth(
+        subMonths(new Date(), getMonthsForRange(timeRange)),
+      );
       const endDate = endOfMonth(new Date());
 
       const response = await fetch(
-        `/api/workers/${user.id}/earnings?startDate=${format(startDate, 'yyyy-MM-dd')}&endDate=${format(endDate, 'yyyy-MM-dd')}`
+        `/api/workers/${user.id}/earnings?startDate=${format(startDate, 'yyyy-MM-dd')}&endDate=${format(endDate, 'yyyy-MM-dd')}`,
       );
       const data = await response.json();
-      
+
       setEarnings(data.earnings);
       setSummary(data.summary);
       setChartData(data.chartData);
@@ -140,7 +142,9 @@ const EarningsTracker = () => {
 
   const handleDownloadReceipt = async (earningId) => {
     try {
-      const response = await fetch(`/api/workers/${user.id}/earnings/${earningId}/receipt`);
+      const response = await fetch(
+        `/api/workers/${user.id}/earnings/${earningId}/receipt`,
+      );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -204,9 +208,7 @@ const EarningsTracker = () => {
               <CalendarIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6">Completed Jobs</Typography>
             </Box>
-            <Typography variant="h4">
-              {summary.completedJobs}
-            </Typography>
+            <Typography variant="h4">{summary.completedJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
@@ -215,7 +217,14 @@ const EarningsTracker = () => {
 
   const renderEarningsChart = () => (
     <Paper sx={{ p: 2, mb: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}
+      >
         <Typography variant="h6">Earnings Trend</Typography>
         <FormControl size="small">
           <Select
@@ -252,11 +261,20 @@ const EarningsTracker = () => {
 
   const renderEarningsTable = () => (
     <Paper sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}
+      >
         <Typography variant="h6">Earnings History</Typography>
         <Button
           startIcon={<DownloadIcon />}
-          onClick={() => {/* Implement export functionality */}}
+          onClick={() => {
+            /* Implement export functionality */
+          }}
         >
           Export
         </Button>
@@ -277,13 +295,17 @@ const EarningsTracker = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((earning) => (
                 <TableRow key={earning.id}>
-                  <TableCell>{format(new Date(earning.date), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell>
+                    {format(new Date(earning.date), 'MMM dd, yyyy')}
+                  </TableCell>
                   <TableCell>{earning.jobTitle}</TableCell>
                   <TableCell>${earning.amount.toFixed(2)}</TableCell>
                   <TableCell>
                     <Chip
                       label={earning.status}
-                      color={earning.status === 'completed' ? 'success' : 'warning'}
+                      color={
+                        earning.status === 'completed' ? 'success' : 'warning'
+                      }
                       size="small"
                     />
                   </TableCell>
@@ -324,10 +346,15 @@ const EarningsTracker = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">
-          Earnings Tracker
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant="h5">Earnings Tracker</Typography>
         <Button
           startIcon={<RefreshIcon />}
           onClick={fetchEarnings}
@@ -361,9 +388,7 @@ const EarningsTracker = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
-          Earning Details
-        </DialogTitle>
+        <DialogTitle>Earning Details</DialogTitle>
         <DialogContent>
           {selectedEarning && (
             <Box sx={{ pt: 2 }}>
@@ -398,7 +423,11 @@ const EarningsTracker = () => {
                   </Typography>
                   <Chip
                     label={selectedEarning.status}
-                    color={selectedEarning.status === 'completed' ? 'success' : 'warning'}
+                    color={
+                      selectedEarning.status === 'completed'
+                        ? 'success'
+                        : 'warning'
+                    }
                     size="small"
                     sx={{ mt: 0.5 }}
                   />
@@ -440,6 +469,4 @@ const EarningsTracker = () => {
   );
 };
 
-export default EarningsTracker; 
-
-
+export default EarningsTracker;

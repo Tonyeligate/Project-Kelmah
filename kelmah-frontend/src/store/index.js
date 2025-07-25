@@ -24,7 +24,7 @@ const store = configureStore({
     contract: contractReducer,
     app: appReducer,
     reviews: reviewsReducer,
-    settings: settingsReducer
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -9,8 +9,8 @@ class MilestoneService {
     this.axios = axios.create({
       baseURL: BASE_URL,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
 
     // Add auth token to requests
@@ -22,7 +22,7 @@ class MilestoneService {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
   }
 
@@ -64,7 +64,10 @@ class MilestoneService {
    */
   async createMilestone(contractId, milestoneData) {
     try {
-      const response = await this.axios.post(`/contract/${contractId}`, milestoneData);
+      const response = await this.axios.post(
+        `/contract/${contractId}`,
+        milestoneData,
+      );
       return response.data;
     } catch (error) {
       console.error('Error creating milestone:', error);
@@ -111,7 +114,7 @@ class MilestoneService {
   async startMilestone(milestoneId) {
     try {
       const response = await this.axios.put(`/${milestoneId}`, {
-        status: 'in_progress'
+        status: 'in_progress',
       });
       return response.data;
     } catch (error) {
@@ -132,7 +135,7 @@ class MilestoneService {
       const response = await this.axios.put(`/${milestoneId}`, {
         status: 'submitted',
         submissionNotes,
-        deliverables
+        deliverables,
       });
       return response.data;
     } catch (error) {
@@ -151,7 +154,7 @@ class MilestoneService {
     try {
       const response = await this.axios.put(`/${milestoneId}`, {
         status: 'approved',
-        feedback
+        feedback,
       });
       return response.data;
     } catch (error) {
@@ -170,7 +173,7 @@ class MilestoneService {
     try {
       const response = await this.axios.put(`/${milestoneId}`, {
         status: 'rejected',
-        rejectionReason
+        rejectionReason,
       });
       return response.data;
     } catch (error) {
@@ -195,4 +198,4 @@ class MilestoneService {
   }
 }
 
-export default new MilestoneService(); 
+export default new MilestoneService();

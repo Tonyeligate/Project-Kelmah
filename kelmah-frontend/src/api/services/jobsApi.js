@@ -23,17 +23,19 @@ class JobsApi {
     const response = await apiClient.get('/jobs', { params });
     return response.data;
   }
-  
+
   /**
    * Get featured jobs for homepage
    * @param {number} limit - Number of jobs to retrieve
    * @returns {Promise<Object>} Featured jobs data
    */
   async getFeaturedJobs(limit = 6) {
-    const response = await apiClient.get('/jobs/featured', { params: { limit } });
+    const response = await apiClient.get('/jobs/featured', {
+      params: { limit },
+    });
     return response.data;
   }
-  
+
   /**
    * Get a specific job by ID
    * @param {string} jobId - Job ID
@@ -43,7 +45,7 @@ class JobsApi {
     const response = await apiClient.get(`/jobs/${jobId}`);
     return response.data;
   }
-  
+
   /**
    * Create a new job
    * @param {Object} jobData - Job data
@@ -53,7 +55,7 @@ class JobsApi {
     const response = await apiClient.post('/jobs', jobData);
     return response.data;
   }
-  
+
   /**
    * Update an existing job
    * @param {string} jobId - Job ID to update
@@ -64,7 +66,7 @@ class JobsApi {
     const response = await apiClient.put(`/jobs/${jobId}`, jobData);
     return response.data;
   }
-  
+
   /**
    * Delete a job
    * @param {string} jobId - Job ID to delete
@@ -74,7 +76,7 @@ class JobsApi {
     const response = await apiClient.delete(`/jobs/${jobId}`);
     return response.data;
   }
-  
+
   /**
    * Get jobs posted by current hirer
    * @param {Object} params - Query parameters
@@ -84,7 +86,7 @@ class JobsApi {
     const response = await apiClient.get('/jobs/my-jobs', { params });
     return response.data;
   }
-  
+
   /**
    * Apply to a job
    * @param {string} jobId - Job ID to apply for
@@ -92,10 +94,13 @@ class JobsApi {
    * @returns {Promise<Object>} Application response
    */
   async applyToJob(jobId, applicationData) {
-    const response = await apiClient.post(`/jobs/${jobId}/apply`, applicationData);
+    const response = await apiClient.post(
+      `/jobs/${jobId}/apply`,
+      applicationData,
+    );
     return response.data;
   }
-  
+
   /**
    * Get applications for a job
    * @param {string} jobId - Job ID
@@ -103,10 +108,12 @@ class JobsApi {
    * @returns {Promise<Object>} Job applications
    */
   async getJobApplications(jobId, params = {}) {
-    const response = await apiClient.get(`/jobs/${jobId}/applications`, { params });
+    const response = await apiClient.get(`/jobs/${jobId}/applications`, {
+      params,
+    });
     return response.data;
   }
-  
+
   /**
    * Get applications submitted by current worker
    * @param {Object} params - Query parameters
@@ -116,7 +123,7 @@ class JobsApi {
     const response = await apiClient.get('/jobs/my-applications', { params });
     return response.data;
   }
-  
+
   /**
    * Update application status
    * @param {string} jobId - Job ID
@@ -125,10 +132,13 @@ class JobsApi {
    * @returns {Promise<Object>} Updated application
    */
   async updateApplicationStatus(jobId, applicationId, status) {
-    const response = await apiClient.put(`/jobs/${jobId}/applications/${applicationId}`, { status });
+    const response = await apiClient.put(
+      `/jobs/${jobId}/applications/${applicationId}`,
+      { status },
+    );
     return response.data;
   }
-  
+
   /**
    * Save a job for later
    * @param {string} jobId - Job ID to save
@@ -138,7 +148,7 @@ class JobsApi {
     const response = await apiClient.post(`/jobs/${jobId}/save`);
     return response.data;
   }
-  
+
   /**
    * Remove a saved job
    * @param {string} jobId - Job ID to unsave
@@ -148,7 +158,7 @@ class JobsApi {
     const response = await apiClient.delete(`/jobs/${jobId}/save`);
     return response.data;
   }
-  
+
   /**
    * Get saved jobs for current user
    * @param {Object} params - Query parameters
@@ -158,7 +168,7 @@ class JobsApi {
     const response = await apiClient.get('/jobs/saved', { params });
     return response.data;
   }
-  
+
   /**
    * Get job categories
    * @returns {Promise<Object>} Job categories
@@ -169,4 +179,4 @@ class JobsApi {
   }
 }
 
-export default new JobsApi(); 
+export default new JobsApi();

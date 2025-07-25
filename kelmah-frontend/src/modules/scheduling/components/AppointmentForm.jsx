@@ -18,111 +18,112 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format } from 'date-fns';
 import PropTypes from 'prop-types';
 
-const AppointmentForm = ({ 
-  formData, 
-  setFormData, 
-  onSubmit, 
-  onCancel, 
-  jobs = [], 
-  users = [], 
-  loadingJobs = false, 
+const AppointmentForm = ({
+  formData,
+  setFormData,
+  onSubmit,
+  onCancel,
+  jobs = [],
+  users = [],
+  loadingJobs = false,
   loadingUsers = false,
-  mode = 'create'
+  mode = 'create',
 }) => {
   const [errors, setErrors] = useState({});
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.jobId && !formData.jobTitle) {
       newErrors.job = 'Job is required';
     }
-    
+
     if (!formData.hirerId && !formData.hirer) {
       newErrors.hirer = 'Hirer is required';
     }
-    
+
     if (!formData.date) {
       newErrors.date = 'Date and time are required';
     }
-    
+
     if (formData.appointmentType === 'in-person' && !formData.location) {
       newErrors.location = 'Location is required for in-person appointments';
     }
-    
+
     if (formData.appointmentType === 'virtual' && !formData.meetingLink) {
-      newErrors.meetingLink = 'Meeting link is required for virtual appointments';
+      newErrors.meetingLink =
+        'Meeting link is required for virtual appointments';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when field is edited
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
-  
+
   const handleJobChange = (event, newValue) => {
     if (newValue) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         jobId: newValue.id,
-        jobTitle: newValue.title
+        jobTitle: newValue.title,
       }));
-      
+
       if (errors.job) {
-        setErrors(prev => ({ ...prev, job: null }));
+        setErrors((prev) => ({ ...prev, job: null }));
       }
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         jobId: '',
-        jobTitle: ''
+        jobTitle: '',
       }));
     }
   };
-  
+
   const handleHirerChange = (event, newValue) => {
     if (newValue) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         hirerId: newValue.id,
-        hirer: newValue.name
+        hirer: newValue.name,
       }));
-      
+
       if (errors.hirer) {
-        setErrors(prev => ({ ...prev, hirer: null }));
+        setErrors((prev) => ({ ...prev, hirer: null }));
       }
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         hirerId: '',
-        hirer: ''
+        hirer: '',
       }));
     }
   };
-  
+
   const handleDateChange = (newDate) => {
-    setFormData(prev => ({ ...prev, date: newDate }));
-    
+    setFormData((prev) => ({ ...prev, date: newDate }));
+
     if (errors.date) {
-      setErrors(prev => ({ ...prev, date: null }));
+      setErrors((prev) => ({ ...prev, date: null }));
     }
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
       onSubmit();
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <Grid container spacing={2}>
@@ -133,7 +134,7 @@ const AppointmentForm = ({
             getOptionLabel={(option) => option.title || ''}
             loading={loadingJobs}
             onChange={handleJobChange}
-            value={jobs.find(job => job.id === formData.jobId) || null}
+            value={jobs.find((job) => job.id === formData.jobId) || null}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -145,7 +146,9 @@ const AppointmentForm = ({
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {loadingJobs ? <CircularProgress color="inherit" size={20} /> : null}
+                      {loadingJobs ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
@@ -154,7 +157,7 @@ const AppointmentForm = ({
             )}
           />
         </Grid>
-        
+
         {/* Hirer Selection */}
         <Grid item xs={12}>
           <Autocomplete
@@ -162,7 +165,7 @@ const AppointmentForm = ({
             getOptionLabel={(option) => option.name || ''}
             loading={loadingUsers}
             onChange={handleHirerChange}
-            value={users.find(user => user.id === formData.hirerId) || null}
+            value={users.find((user) => user.id === formData.hirerId) || null}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -174,7 +177,9 @@ const AppointmentForm = ({
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {loadingUsers ? <CircularProgress color="inherit" size={20} /> : null}
+                      {loadingUsers ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
@@ -183,7 +188,7 @@ const AppointmentForm = ({
             )}
           />
         </Grid>
-        
+
         {/* Date & Time */}
         <Grid item xs={12}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -192,16 +197,16 @@ const AppointmentForm = ({
               value={formData.date}
               onChange={handleDateChange}
               slotProps={{
-                textField: { 
+                textField: {
                   fullWidth: true,
                   error: !!errors.date,
-                  helperText: errors.date
-                }
+                  helperText: errors.date,
+                },
               }}
             />
           </LocalizationProvider>
         </Grid>
-        
+
         {/* Status */}
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
@@ -219,7 +224,7 @@ const AppointmentForm = ({
             </Select>
           </FormControl>
         </Grid>
-        
+
         {/* Appointment Type */}
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
@@ -235,7 +240,7 @@ const AppointmentForm = ({
             </Select>
           </FormControl>
         </Grid>
-        
+
         {/* Location or Meeting Link based on type */}
         <Grid item xs={12}>
           {formData.appointmentType === 'in-person' ? (
@@ -260,7 +265,7 @@ const AppointmentForm = ({
             />
           )}
         </Grid>
-        
+
         {/* Notes */}
         <Grid item xs={12}>
           <TextField
@@ -273,44 +278,79 @@ const AppointmentForm = ({
             rows={3}
           />
         </Grid>
-        
+
         {/* Preview Section */}
         <Grid item xs={12}>
           <Divider sx={{ my: 2 }} />
-          <Typography variant="h6" sx={{ mb: 2 }}>Appointment Preview</Typography>
-          <Box sx={(theme) => ({ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 1, bgcolor: 'background.paper' })}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Appointment Preview
+          </Typography>
+          <Box
+            sx={(theme) => ({
+              p: 2,
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 1,
+              bgcolor: 'background.paper',
+            })}
+          >
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Job:</Typography>
-                <Typography variant="body1" fontWeight="medium">{formData.jobTitle || 'Not selected'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Hirer:</Typography>
-                <Typography variant="body1" fontWeight="medium">{formData.hirer || 'Not selected'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Date & Time:</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Job:
+                </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {formData.date ? format(new Date(formData.date), 'PPp') : 'Not selected'}
+                  {formData.jobTitle || 'Not selected'}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">Status:</Typography>
-                <Typography variant="body1" fontWeight="medium" sx={{ textTransform: 'capitalize' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Hirer:
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {formData.hirer || 'Not selected'}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Date & Time:
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {formData.date
+                    ? format(new Date(formData.date), 'PPp')
+                    : 'Not selected'}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Status:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontWeight="medium"
+                  sx={{ textTransform: 'capitalize' }}
+                >
                   {formData.status}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="body2" color="text.secondary">Type:</Typography>
-                <Typography variant="body1" fontWeight="medium" sx={{ textTransform: 'capitalize' }}>
-                  {formData.appointmentType === 'in-person' 
-                    ? `In-person at ${formData.location || 'No location specified'}` 
+                <Typography variant="body2" color="text.secondary">
+                  Type:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontWeight="medium"
+                  sx={{ textTransform: 'capitalize' }}
+                >
+                  {formData.appointmentType === 'in-person'
+                    ? `In-person at ${formData.location || 'No location specified'}`
                     : `Virtual meeting at ${formData.meetingLink || 'No link provided'}`}
                 </Typography>
               </Grid>
               {formData.notes && (
                 <Grid item xs={12}>
-                  <Typography variant="body2" color="text.secondary">Notes:</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Notes:
+                  </Typography>
                   <Typography variant="body1">{formData.notes}</Typography>
                 </Grid>
               )}
@@ -318,15 +358,11 @@ const AppointmentForm = ({
           </Box>
         </Grid>
       </Grid>
-      
+
       {/* Form Actions */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
         <Button onClick={onCancel}>Cancel</Button>
-        <Button 
-          type="submit" 
-          variant="contained" 
-          color="primary"
-        >
+        <Button type="submit" variant="contained" color="primary">
           {mode === 'create' ? 'Create Appointment' : 'Update Appointment'}
         </Button>
       </Box>
@@ -345,7 +381,7 @@ AppointmentForm.propTypes = {
     appointmentType: PropTypes.string,
     location: PropTypes.string,
     meetingLink: PropTypes.string,
-    notes: PropTypes.string
+    notes: PropTypes.string,
   }).isRequired,
   setFormData: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
@@ -354,7 +390,7 @@ AppointmentForm.propTypes = {
   users: PropTypes.array,
   loadingJobs: PropTypes.bool,
   loadingUsers: PropTypes.bool,
-  mode: PropTypes.oneOf(['create', 'edit'])
+  mode: PropTypes.oneOf(['create', 'edit']),
 };
 
 export default AppointmentForm;

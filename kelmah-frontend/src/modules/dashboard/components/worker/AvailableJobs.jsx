@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, Typography, List, ListItem, ListItemIcon, ListItemText, Button, 
-  Chip, Grid, CircularProgress, Snackbar, Alert, Dialog, DialogTitle, 
-  DialogContent, DialogActions, Divider
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Button,
+  Chip,
+  Grid,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
 } from '@mui/material';
 import PlumbingIcon from '@mui/icons-material/Plumbing';
 import CarpenterIcon from '@mui/icons-material/Carpenter';
@@ -18,9 +32,9 @@ import jobsApi from '../../../../api/services/jobsApi';
 
 // Map for trade icons
 const tradeIconMap = {
-  'Plumbing': <PlumbingIcon />,
-  'Carpentry': <CarpenterIcon />,
-  'Electrical': <ElectricalServicesIcon />,
+  Plumbing: <PlumbingIcon />,
+  Carpentry: <CarpenterIcon />,
+  Electrical: <ElectricalServicesIcon />,
   // Add more mappings as needed
 };
 
@@ -33,7 +47,11 @@ const getJobIcon = (job) => {
 const AvailableJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'success' });
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,19 +61,19 @@ const AvailableJobs = () => {
       try {
         setIsLoading(true);
         // Use params to get relevant jobs (nearby, matching skills, etc.)
-        const response = await jobsApi.getJobs({ 
+        const response = await jobsApi.getJobs({
           status: 'open',
           nearby: true,
-          limit: 10
+          limit: 10,
         });
-        
+
         // Map API response to component state
-        const mappedJobs = response.jobs.map(job => ({
+        const mappedJobs = response.jobs.map((job) => ({
           ...job,
           icon: getJobIcon(job),
-          status: 'idle' // Initial application status
+          status: 'idle', // Initial application status
         }));
-        
+
         setJobs(mappedJobs);
         setError(null);
       } catch (err) {
@@ -72,50 +90,57 @@ const AvailableJobs = () => {
   // Handle job application
   const handleApply = async (jobId) => {
     // Update UI immediately
-    setJobs(prevJobs => prevJobs.map(job =>
-      job.id === jobId ? { ...job, status: 'loading' } : job
-    ));
+    setJobs((prevJobs) =>
+      prevJobs.map((job) =>
+        job.id === jobId ? { ...job, status: 'loading' } : job,
+      ),
+    );
 
     try {
       // Send application to API
-      await jobsApi.applyToJob(jobId, { 
-        coverMessage: 'I am interested in this job and believe my skills are a good match.' 
+      await jobsApi.applyToJob(jobId, {
+        coverMessage:
+          'I am interested in this job and believe my skills are a good match.',
       });
-      
+
       // Update UI after successful application
-      setJobs(prevJobs => prevJobs.map(job =>
-        job.id === jobId ? { ...job, status: 'applied' } : job
-      ));
-      
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.id === jobId ? { ...job, status: 'applied' } : job,
+        ),
+      );
+
       setFeedback({
         open: true,
         message: 'Application submitted successfully!',
-        severity: 'success'
+        severity: 'success',
       });
     } catch (err) {
       console.error('Error applying to job:', err);
-      
+
       // Revert to idle state on error
-      setJobs(prevJobs => prevJobs.map(job =>
-        job.id === jobId ? { ...job, status: 'idle' } : job
-      ));
-      
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.id === jobId ? { ...job, status: 'idle' } : job,
+        ),
+      );
+
       setFeedback({
         open: true,
         message: 'Failed to submit application. Please try again.',
-        severity: 'error'
+        severity: 'error',
       });
     }
   };
-  
+
   const handleViewDetails = (job) => {
     setSelectedJob(job);
   };
-  
+
   const handleCloseDetails = () => {
     setSelectedJob(null);
   };
-  
+
   const handleCloseFeedback = () => {
     setFeedback({ ...feedback, open: false });
   };
@@ -135,8 +160,8 @@ const AvailableJobs = () => {
       <DashboardCard title="Available Jobs Near You">
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography color="error">{error}</Typography>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             sx={{ mt: 2 }}
             onClick={() => window.location.reload()}
           >
@@ -178,7 +203,12 @@ const AvailableJobs = () => {
               },
             }}
           >
-            <Grid container spacing={2} alignItems="center" sx={{ width: '100%' }}>
+            <Grid
+              container
+              spacing={2}
+              alignItems="center"
+              sx={{ width: '100%' }}
+            >
               <Grid item>
                 <ListItemIcon sx={{ minWidth: 'auto', color: 'primary.light' }}>
                   {job.icon}
@@ -187,16 +217,34 @@ const AvailableJobs = () => {
               <Grid item xs>
                 <ListItemText
                   primary={
-                    <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    <Typography
+                      variant="h5"
+                      component="div"
+                      sx={{ fontWeight: 'bold', mb: 0.5 }}
+                    >
                       {job.title}
                     </Typography>
                   }
                   secondary={
                     <>
-                      <Typography component="div" variant="body1" color="text.primary" sx={{ fontWeight: 'medium' }}>
+                      <Typography
+                        component="div"
+                        variant="body1"
+                        color="text.primary"
+                        sx={{ fontWeight: 'medium' }}
+                      >
                         {job.company}
                       </Typography>
-                      <Box component="div" sx={{ display: 'flex', alignItems: 'center', mt: 1, fontSize: '0.9rem', color: 'text.secondary' }}>
+                      <Box
+                        component="div"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          mt: 1,
+                          fontSize: '0.9rem',
+                          color: 'text.secondary',
+                        }}
+                      >
                         <LocationOnIcon sx={{ fontSize: 18, mr: 0.5 }} />
                         {job.location}
                       </Box>
@@ -208,15 +256,23 @@ const AvailableJobs = () => {
                 <Button
                   variant="contained"
                   color={job.status === 'applied' ? 'success' : 'primary'}
-                  sx={{ borderRadius: '20px', px: 3, fontWeight: 'bold', minWidth: '130px' }}
-                  onClick={job.status === 'applied' ? 
-                    () => handleViewDetails(job) : 
-                    () => handleViewDetails(job)
+                  sx={{
+                    borderRadius: '20px',
+                    px: 3,
+                    fontWeight: 'bold',
+                    minWidth: '130px',
+                  }}
+                  onClick={
+                    job.status === 'applied'
+                      ? () => handleViewDetails(job)
+                      : () => handleViewDetails(job)
                   }
                   disabled={job.status === 'loading'}
                 >
                   {job.status === 'idle' && 'View & Apply'}
-                  {job.status === 'loading' && <CircularProgress size={24} color="inherit" />}
+                  {job.status === 'loading' && (
+                    <CircularProgress size={24} color="inherit" />
+                  )}
                   {job.status === 'applied' && (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <CheckCircleIcon sx={{ mr: 1 }} />
@@ -226,19 +282,26 @@ const AvailableJobs = () => {
                 </Button>
               </Grid>
             </Grid>
-            
+
             <Box sx={{ width: '100%', mt: 1 }}>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                {job.tags && job.tags.map((tag, index) => (
-                  <Chip 
-                    key={index} 
-                    label={tag} 
-                    size="small" 
-                    sx={{ borderRadius: '4px' }} 
-                    color={tag === 'Urgent' ? 'error' : 'default'} 
-                  />
-                ))}
-                <Box sx={{ ml: 'auto', color: 'text.secondary', fontSize: '0.8rem' }}>
+                {job.tags &&
+                  job.tags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      size="small"
+                      sx={{ borderRadius: '4px' }}
+                      color={tag === 'Urgent' ? 'error' : 'default'}
+                    />
+                  ))}
+                <Box
+                  sx={{
+                    ml: 'auto',
+                    color: 'text.secondary',
+                    fontSize: '0.8rem',
+                  }}
+                >
                   Posted {job.postedDate || job.posted}
                 </Box>
               </Box>
@@ -246,10 +309,10 @@ const AvailableJobs = () => {
           </ListItem>
         ))}
       </List>
-      
+
       {/* Job Details Dialog */}
-      <Dialog 
-        open={selectedJob !== null} 
+      <Dialog
+        open={selectedJob !== null}
         onClose={handleCloseDetails}
         maxWidth="md"
         fullWidth
@@ -258,9 +321,7 @@ const AvailableJobs = () => {
           <>
             <DialogTitle>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box sx={{ mr: 2 }}>
-                  {selectedJob.icon}
-                </Box>
+                <Box sx={{ mr: 2 }}>{selectedJob.icon}</Box>
                 <Typography variant="h5" component="div">
                   {selectedJob.title}
                 </Typography>
@@ -274,51 +335,68 @@ const AvailableJobs = () => {
                     <Typography variant="h6">{selectedJob.company}</Typography>
                   </Box>
                 </Grid>
-                
+
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <LocationOnIcon sx={{ mr: 1, color: 'text.secondary' }} />
                     <Typography>{selectedJob.location}</Typography>
                   </Box>
                 </Grid>
-                
+
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <CalendarTodayIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                    <Typography>Duration: {selectedJob.duration || 'Not specified'}</Typography>
+                    <CalendarTodayIcon
+                      sx={{ mr: 1, color: 'text.secondary' }}
+                    />
+                    <Typography>
+                      Duration: {selectedJob.duration || 'Not specified'}
+                    </Typography>
                   </Box>
                 </Grid>
-                
+
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <AttachMoneyIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                    <Typography>Rate: {selectedJob.rate || selectedJob.budget || 'Not specified'}</Typography>
+                    <Typography>
+                      Rate:{' '}
+                      {selectedJob.rate ||
+                        selectedJob.budget ||
+                        'Not specified'}
+                    </Typography>
                   </Box>
                 </Grid>
               </Grid>
-              
+
               <Divider sx={{ my: 2 }} />
-              
-              <Typography variant="h6" gutterBottom>Job Description</Typography>
+
+              <Typography variant="h6" gutterBottom>
+                Job Description
+              </Typography>
               <Typography paragraph>{selectedJob.description}</Typography>
-              
-              <Typography variant="h6" gutterBottom>Requirements</Typography>
+
+              <Typography variant="h6" gutterBottom>
+                Requirements
+              </Typography>
               <Box component="ul">
                 {selectedJob.requirements ? (
                   selectedJob.requirements.map((req, index) => (
-                    <Typography component="li" key={index}>{req}</Typography>
+                    <Typography component="li" key={index}>
+                      {req}
+                    </Typography>
                   ))
                 ) : (
-                  <Typography component="li">No specific requirements listed</Typography>
+                  <Typography component="li">
+                    No specific requirements listed
+                  </Typography>
                 )}
               </Box>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDetails}>Close</Button>
               {selectedJob.status !== 'applied' && (
-                <Button 
-                  variant="contained" 
-                  color="primary" 
+                <Button
+                  variant="contained"
+                  color="primary"
                   onClick={() => {
                     handleApply(selectedJob.id);
                     handleCloseDetails();
@@ -329,8 +407,8 @@ const AvailableJobs = () => {
                 </Button>
               )}
               {selectedJob.status === 'applied' && (
-                <Button 
-                  variant="contained" 
+                <Button
+                  variant="contained"
                   color="success"
                   disabled
                   startIcon={<CheckCircleIcon />}
@@ -342,7 +420,7 @@ const AvailableJobs = () => {
           </>
         )}
       </Dialog>
-      
+
       {/* Feedback Snackbar */}
       <Snackbar
         open={feedback.open}
@@ -350,8 +428,8 @@ const AvailableJobs = () => {
         onClose={handleCloseFeedback}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseFeedback} 
+        <Alert
+          onClose={handleCloseFeedback}
           severity={feedback.severity}
           sx={{ width: '100%' }}
         >
@@ -362,4 +440,4 @@ const AvailableJobs = () => {
   );
 };
 
-export default AvailableJobs; 
+export default AvailableJobs;

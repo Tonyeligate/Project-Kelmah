@@ -1,11 +1,33 @@
 import React from 'react';
-import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Divider,
+} from '@mui/material';
 import { Event } from '@mui/icons-material';
 
 const appointments = [
-  { id: 1, title: 'Client Meeting: Johnson Residence', time: 'Tomorrow, 10:00 AM' },
-  { id: 2, title: 'Project Start: Downtown Office Renovation', time: 'Wednesday, 9:00 AM' },
-  { id: 3, title: 'Final Inspection: Miller Residence', time: 'Friday, 2:00 PM' },
+  {
+    id: 1,
+    title: 'Client Meeting: Johnson Residence',
+    time: 'Tomorrow, 10:00 AM',
+  },
+  {
+    id: 2,
+    title: 'Project Start: Downtown Office Renovation',
+    time: 'Wednesday, 9:00 AM',
+  },
+  {
+    id: 3,
+    title: 'Final Inspection: Miller Residence',
+    time: 'Friday, 2:00 PM',
+  },
 ];
 
 const UpcomingAppointments = () => {
@@ -24,9 +46,14 @@ const UpcomingAppointments = () => {
                     <Event />
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={appointment.title} secondary={appointment.time} />
+                <ListItemText
+                  primary={appointment.title}
+                  secondary={appointment.time}
+                />
               </ListItem>
-              {index < appointments.length - 1 && <Divider variant="inset" component="li" />}
+              {index < appointments.length - 1 && (
+                <Divider variant="inset" component="li" />
+              )}
             </React.Fragment>
           ))}
         </List>
@@ -35,4 +62,4 @@ const UpcomingAppointments = () => {
   );
 };
 
-export default UpcomingAppointments; 
+export default UpcomingAppointments;

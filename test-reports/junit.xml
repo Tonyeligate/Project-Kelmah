@@ -1,3 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="0" failures="0" errors="0" time="101.775">
+<testsuites name="jest tests" tests="8" failures="0" errors="0" time="9.88">
+  <testsuite name="validate middleware" errors="0" failures="0" skipped="0" timestamp="2025-07-07T05:51:16" time="5.255" tests="2">
+    <testcase classname="validate middleware should call next when schema validation passes" name="validate middleware should call next when schema validation passes" time="0.036">
+    </testcase>
+    <testcase classname="validate middleware should return 400 with error details when validation fails" name="validate middleware should return 400 with error details when validation fails" time="0.099">
+    </testcase>
+  </testsuite>
+  <testsuite name="authenticateUser middleware" errors="0" failures="0" skipped="0" timestamp="2025-07-07T05:51:16" time="9.285" tests="6">
+    <testcase classname="authenticateUser middleware should return 401 if no Authorization header" name="authenticateUser middleware should return 401 if no Authorization header" time="0.025">
+    </testcase>
+    <testcase classname="authenticateUser middleware should return 401 if token is invalid" name="authenticateUser middleware should return 401 if token is invalid" time="0.003">
+    </testcase>
+    <testcase classname="authenticateUser middleware should set req.user and call next for valid token" name="authenticateUser middleware should set req.user and call next for valid token" time="0.003">
+    </testcase>
+    <testcase classname="authorizeRoles middleware should return 401 if no req.user" name="authorizeRoles middleware should return 401 if no req.user" time="0.004">
+    </testcase>
+    <testcase classname="authorizeRoles middleware should return 403 if user role not allowed" name="authorizeRoles middleware should return 403 if user role not allowed" time="0.004">
+    </testcase>
+    <testcase classname="authorizeRoles middleware should call next if role is allowed" name="authorizeRoles middleware should call next if role is allowed" time="0.002">
+    </testcase>
+  </testsuite>
 </testsuites>

@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Avatar, 
-  Paper, 
-  Divider, 
+import {
+  Box,
+  Typography,
+  Avatar,
+  Paper,
+  Divider,
   CircularProgress,
   IconButton,
   Menu,
@@ -15,20 +15,20 @@ import {
   ImageList,
   ImageListItem,
   ImageListItemBar,
-  Button
+  Button,
 } from '@mui/material';
-import { 
-  MoreVert as MoreIcon, 
+import {
+  MoreVert as MoreIcon,
   Delete as DeleteIcon,
   ContentCopy as CopyIcon,
   InsertDriveFile as FileIcon,
   Image as ImageIcon,
-  Download as DownloadIcon
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { styled } from '@mui/material/styles';
-import { useMessages } from '../../../../messaging/contexts/MessageContext';
-import { useAuth } from '../../../../auth/contexts/AuthContext';
+import { useMessages } from '../../contexts/MessageContext';
+import { useAuth } from '../../../auth/contexts/AuthContext';
 import { MESSAGE_TYPES } from '../../../../config/constants';
 import { useInView } from 'react-intersection-observer';
 import Message from './Message';
@@ -56,15 +56,15 @@ const MessageBubble = styled(Paper)(({ theme, variant }) => ({
   maxWidth: '70%',
   width: 'fit-content',
   marginBottom: theme.spacing(1),
-  borderRadius: variant === 'sender' 
-    ? theme.spacing(2, 0, 2, 2) 
-    : theme.spacing(0, 2, 2, 2),
-  backgroundColor: variant === 'sender'
-    ? theme.palette.primary.light
-    : theme.palette.background.dark,
-  color: variant === 'sender'
-    ? theme.palette.primary.contrastText
-    : '#fff',
+  borderRadius:
+    variant === 'sender'
+      ? theme.spacing(2, 0, 2, 2)
+      : theme.spacing(0, 2, 2, 2),
+  backgroundColor:
+    variant === 'sender'
+      ? theme.palette.primary.light
+      : theme.palette.background.dark,
+  color: variant === 'sender' ? theme.palette.primary.contrastText : '#fff',
   boxShadow: theme.shadows[1],
   position: 'relative',
 }));
@@ -147,15 +147,15 @@ const EmptyStateContainer = styled(Box)(({ theme }) => ({
   textAlign: 'center',
 }));
 
-const MessageList = ({ 
-  messages, 
-  currentUserId, 
-  isLoading, 
-  typingUsers = [], 
-  onLoadMore, 
+const MessageList = ({
+  messages,
+  currentUserId,
+  isLoading,
+  typingUsers = [],
+  onLoadMore,
   hasMore,
   conversation,
-  onMessageRead 
+  onMessageRead,
 }) => {
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
@@ -164,29 +164,29 @@ const MessageList = ({
   const [loadingMore, setLoadingMore] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [visibleMessages, setVisibleMessages] = useState(new Set());
-  
+
   // Ref for intersection observer to detect when we're at the top of the list
   const { ref: topRef, inView: isTopVisible } = useInView({
     threshold: 0.1,
-    rootMargin: '100px 0px 0px 0px'
+    rootMargin: '100px 0px 0px 0px',
   });
-  
+
   // Group messages by date for dividers
   const groupedMessages = React.useMemo(() => {
     if (!messages || messages.length === 0) return [];
-    
+
     const groups = [];
     let currentDate = null;
     let currentGroup = [];
-    
-    messages.forEach(message => {
+
+    messages.forEach((message) => {
       const messageDate = new Date(message.createdAt).toDateString();
-      
+
       if (messageDate !== currentDate) {
         if (currentGroup.length > 0) {
           groups.push({
             date: currentDate,
-            messages: [...currentGroup]
+            messages: [...currentGroup],
           });
         }
         currentDate = messageDate;
@@ -195,24 +195,24 @@ const MessageList = ({
         currentGroup.push(message);
       }
     });
-    
+
     if (currentGroup.length > 0) {
       groups.push({
         date: currentDate,
-        messages: [...currentGroup]
+        messages: [...currentGroup],
       });
     }
-    
+
     return groups;
   }, [messages]);
-  
+
   // Format date headers
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
       return 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -221,7 +221,7 @@ const MessageList = ({
       return format(date, 'EEEE, MMMM d, yyyy');
     }
   };
-  
+
   // Handle loading more messages when scrolling to top
   useEffect(() => {
     const handleLoadMore = async () => {
@@ -231,66 +231,80 @@ const MessageList = ({
         setLoadingMore(false);
       }
     };
-    
+
     handleLoadMore();
   }, [isTopVisible, hasMore, loadingMore, isLoading, onLoadMore]);
-  
+
   // Scroll to bottom on first load or new messages
   useEffect(() => {
     if (isFirstLoad && messages.length > 0 && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
       setIsFirstLoad(false);
-    } else if (!isFirstLoad && !loadingMore && messages.length > 0 && messagesEndRef.current) {
+    } else if (
+      !isFirstLoad &&
+      !loadingMore &&
+      messages.length > 0 &&
+      messagesEndRef.current
+    ) {
       // Check if we're already at the bottom before scrolling
       const container = messagesEndRef.current.parentElement;
-      const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-      
+      const isAtBottom =
+        container.scrollHeight - container.scrollTop <=
+        container.clientHeight + 100;
+
       if (isAtBottom) {
         messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
       }
     }
   }, [messages, isFirstLoad, loadingMore]);
-  
+
   // Track visible messages for read receipts
-  const updateVisibleMessages = useCallback((messageId, isVisible) => {
-    if (isVisible) {
-      setVisibleMessages(prev => {
-        const newSet = new Set(prev);
-        newSet.add(messageId);
-        return newSet;
-      });
-      
-      // Mark message as read
-      if (onMessageRead) {
-        onMessageRead(messageId);
+  const updateVisibleMessages = useCallback(
+    (messageId, isVisible) => {
+      if (isVisible) {
+        setVisibleMessages((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(messageId);
+          return newSet;
+        });
+
+        // Mark message as read
+        if (onMessageRead) {
+          onMessageRead(messageId);
+        }
+      } else {
+        setVisibleMessages((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(messageId);
+          return newSet;
+        });
       }
-    } else {
-      setVisibleMessages(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(messageId);
-        return newSet;
-      });
-    }
-  }, [onMessageRead]);
-  
+    },
+    [onMessageRead],
+  );
+
   // Handle scroll position preservation when loading older messages
   const [prevMessagesLength, setPrevMessagesLength] = useState(messages.length);
   const [scrollHeight, setScrollHeight] = useState(0);
   const containerRef = useRef(null);
-  
+
   useEffect(() => {
-    if (containerRef.current && loadingMore && messages.length > prevMessagesLength) {
+    if (
+      containerRef.current &&
+      loadingMore &&
+      messages.length > prevMessagesLength
+    ) {
       const container = containerRef.current;
       // After new messages are loaded, restore scroll position
       const scrollTo = container.scrollHeight - scrollHeight;
       container.scrollTop = scrollTo > 0 ? scrollTo : 0;
     }
-    
+
     if (containerRef.current && !loadingMore) {
       // Save current scroll height before loading more messages
       setScrollHeight(containerRef.current.scrollHeight);
     }
-    
+
     setPrevMessagesLength(messages.length);
   }, [messages.length, loadingMore, prevMessagesLength, scrollHeight]);
 
@@ -325,9 +339,7 @@ const MessageList = ({
 
   // Render system message
   const renderSystemMessage = (message) => (
-    <SystemMessage key={message.id}>
-      {message.content}
-    </SystemMessage>
+    <SystemMessage key={message.id}>{message.content}</SystemMessage>
   );
 
   // Render attachments
@@ -337,7 +349,7 @@ const MessageList = ({
     return (
       <AttachmentContainer>
         {message.attachments.map((attachment, index) => (
-          <AttachmentItem 
+          <AttachmentItem
             key={index}
             component="a"
             href={attachment.url}
@@ -364,18 +376,22 @@ const MessageList = ({
       case MESSAGE_TYPES.IMAGE:
         return (
           <>
-            {message.content && <Typography variant="body1">{message.content}</Typography>}
-            <ImagePreview 
-              src={message.attachment?.url} 
-              alt="Message attachment" 
-              loading="lazy" 
+            {message.content && (
+              <Typography variant="body1">{message.content}</Typography>
+            )}
+            <ImagePreview
+              src={message.attachment?.url}
+              alt="Message attachment"
+              loading="lazy"
             />
           </>
         );
       case MESSAGE_TYPES.ATTACHMENT:
         return (
           <>
-            {message.content && <Typography variant="body1">{message.content}</Typography>}
+            {message.content && (
+              <Typography variant="body1">{message.content}</Typography>
+            )}
             <FilePreview>
               <FileIcon sx={{ mr: 1 }} />
               <Typography variant="body2" noWrap>
@@ -396,14 +412,16 @@ const MessageList = ({
     }
 
     const isSender = message.senderId === user?.id;
-    
+
     return (
       <Message
         key={message.id}
         message={message}
         isOwn={isSender}
-        showAvatar={!isSender && (message.senderId !== messages[0]?.senderId)}
-        onVisibilityChange={(isVisible) => updateVisibleMessages(message.id, isVisible)}
+        showAvatar={!isSender && message.senderId !== messages[0]?.senderId}
+        onVisibilityChange={(isVisible) =>
+          updateVisibleMessages(message.id, isVisible)
+        }
       />
     );
   };
@@ -422,7 +440,14 @@ const MessageList = ({
 
   // Render loading state
   const renderLoadingState = () => (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+      }}
+    >
       <CircularProgress size={40} />
     </Box>
   );
@@ -442,72 +467,82 @@ const MessageList = ({
               </Box>
             )}
           </div>
-          
+
           {/* No messages placeholder */}
           {!isLoading && messages.length === 0 && (
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'center',
                 flexGrow: 1,
-                p: 3
+                p: 3,
               }}
             >
-              <Typography color="text.secondary" variant="body1" align="center" sx={{ mb: 2 }}>
+              <Typography
+                color="text.secondary"
+                variant="body1"
+                align="center"
+                sx={{ mb: 2 }}
+              >
                 No messages yet. Start a conversation!
               </Typography>
               {conversation?.type === 'group' && (
-                <Typography color="text.secondary" variant="body2" align="center">
+                <Typography
+                  color="text.secondary"
+                  variant="body2"
+                  align="center"
+                >
                   This is the beginning of the group chat {conversation.name}
                 </Typography>
               )}
             </Box>
           )}
-          
+
           {/* Messages by date groups */}
           {groupedMessages.map((group, groupIndex) => (
             <Box key={`group-${groupIndex}`} sx={{ mb: 2 }}>
               <MessageDateDivider date={formatDate(group.date)} />
-              
+
               {group.messages.map((message, index) => {
                 const isCurrentUser = message.senderId === currentUserId;
-                const showAvatar = !isCurrentUser && (index === 0 || 
-                  group.messages[index - 1].senderId !== message.senderId);
-                
+                const showAvatar =
+                  !isCurrentUser &&
+                  (index === 0 ||
+                    group.messages[index - 1].senderId !== message.senderId);
+
                 return (
                   <Message
                     key={message.id}
                     message={message}
                     isOwn={isCurrentUser}
                     showAvatar={showAvatar}
-                    onVisibilityChange={(isVisible) => updateVisibleMessages(message.id, isVisible)}
+                    onVisibilityChange={(isVisible) =>
+                      updateVisibleMessages(message.id, isVisible)
+                    }
                   />
                 );
               })}
             </Box>
           ))}
-          
+
           {/* Typing indicators */}
           {typingUsers.length > 0 && (
             <Box sx={{ mb: 2 }}>
-              {typingUsers.map(user => (
-                <TypingIndicator 
-                  key={user.id} 
-                  user={user} 
-                />
+              {typingUsers.map((user) => (
+                <TypingIndicator key={user.id} user={user} />
               ))}
             </Box>
           )}
-          
+
           {/* Loading indicator */}
           {isLoading && !loadingMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
               <CircularProgress size={28} />
             </Box>
           )}
-          
+
           {/* Anchor for scrolling to bottom */}
           <div ref={messagesEndRef} />
         </MessagesContainer>
@@ -527,7 +562,7 @@ const MessageList = ({
           </Typography>
         </Box>
       )}
-      
+
       {/* Message options menu */}
       <Menu
         anchorEl={menuAnchorEl}
@@ -552,5 +587,3 @@ const MessageList = ({
 };
 
 export default MessageList;
-
-

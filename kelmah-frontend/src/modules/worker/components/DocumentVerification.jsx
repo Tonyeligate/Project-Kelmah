@@ -28,7 +28,7 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
 } from '@mui/material';
 import {
   Upload as UploadIcon,
@@ -41,7 +41,7 @@ import {
   Description as DescriptionIcon,
   Verified as VerifiedIcon,
   Warning as WarningIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 
@@ -58,7 +58,7 @@ const DocumentVerification = () => {
     title: '',
     description: '',
     file: null,
-    expiryDate: null
+    expiryDate: null,
   });
 
   useEffect(() => {
@@ -88,7 +88,7 @@ const DocumentVerification = () => {
         title: document.title,
         description: document.description,
         file: null,
-        expiryDate: document.expiryDate
+        expiryDate: document.expiryDate,
       });
     } else {
       setFormData({
@@ -96,7 +96,7 @@ const DocumentVerification = () => {
         title: '',
         description: '',
         file: null,
-        expiryDate: null
+        expiryDate: null,
       });
     }
     setDialogOpen(true);
@@ -110,7 +110,7 @@ const DocumentVerification = () => {
       title: '',
       description: '',
       file: null,
-      expiryDate: null
+      expiryDate: null,
     });
     setUploadProgress(0);
   };
@@ -118,14 +118,14 @@ const DocumentVerification = () => {
   const handleInputChange = (field) => (event) => {
     setFormData({
       ...formData,
-      [field]: event.target.value
+      [field]: event.target.value,
     });
   };
 
   const handleFileChange = (event) => {
     setFormData({
       ...formData,
-      file: event.target.files[0]
+      file: event.target.files[0],
     });
   };
 
@@ -133,7 +133,7 @@ const DocumentVerification = () => {
     try {
       setLoading(true);
       const formDataToSend = new FormData();
-      Object.keys(formData).forEach(key => {
+      Object.keys(formData).forEach((key) => {
         if (formData[key] !== null) {
           formDataToSend.append(key, formData[key]);
         }
@@ -142,7 +142,7 @@ const DocumentVerification = () => {
       const url = editingDocument
         ? `/api/workers/${user.id}/documents/${editingDocument.id}`
         : `/api/workers/${user.id}/documents`;
-      
+
       const method = editingDocument ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -151,7 +151,7 @@ const DocumentVerification = () => {
         onUploadProgress: (progressEvent) => {
           const progress = (progressEvent.loaded / progressEvent.total) * 100;
           setUploadProgress(progress);
-        }
+        },
       });
 
       if (!response.ok) {
@@ -172,9 +172,12 @@ const DocumentVerification = () => {
   const handleDelete = async (documentId) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/workers/${user.id}/documents/${documentId}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(
+        `/api/workers/${user.id}/documents/${documentId}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       if (!response.ok) {
         throw new Error('Failed to delete document');
@@ -191,7 +194,9 @@ const DocumentVerification = () => {
 
   const handleDownload = async (documentId) => {
     try {
-      const response = await fetch(`/api/workers/${user.id}/documents/${documentId}/download`);
+      const response = await fetch(
+        `/api/workers/${user.id}/documents/${documentId}/download`,
+      );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -240,7 +245,14 @@ const DocumentVerification = () => {
   const renderDocumentCard = (document) => (
     <Card key={document.id} sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6">{document.title}</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -249,7 +261,9 @@ const DocumentVerification = () => {
           </Box>
           <Chip
             icon={getStatusIcon(document.status)}
-            label={document.status.charAt(0).toUpperCase() + document.status.slice(1)}
+            label={
+              document.status.charAt(0).toUpperCase() + document.status.slice(1)
+            }
             color={getStatusColor(document.status)}
             size="small"
           />
@@ -299,10 +313,15 @@ const DocumentVerification = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">
-          Document Verification
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography variant="h5">Document Verification</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -337,16 +356,11 @@ const DocumentVerification = () => {
               </Typography>
               <List>
                 {documents
-                  .filter(doc => doc.required)
-                  .map(doc => (
+                  .filter((doc) => doc.required)
+                  .map((doc) => (
                     <ListItem key={doc.id}>
-                      <ListItemIcon>
-                        {getStatusIcon(doc.status)}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={doc.title}
-                        secondary={doc.type}
-                      />
+                      <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
+                      <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
                         <IconButton
                           edge="end"
@@ -367,16 +381,11 @@ const DocumentVerification = () => {
               </Typography>
               <List>
                 {documents
-                  .filter(doc => !doc.required)
-                  .map(doc => (
+                  .filter((doc) => !doc.required)
+                  .map((doc) => (
                     <ListItem key={doc.id}>
-                      <ListItemIcon>
-                        {getStatusIcon(doc.status)}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={doc.title}
-                        secondary={doc.type}
-                      />
+                      <ListItemIcon>{getStatusIcon(doc.status)}</ListItemIcon>
+                      <ListItemText primary={doc.title} secondary={doc.type} />
                       <ListItemSecondaryAction>
                         <IconButton
                           edge="end"
@@ -463,7 +472,11 @@ const DocumentVerification = () => {
                   />
                 </Button>
                 {formData.file && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1 }}
+                  >
                     {formData.file.name}
                   </Typography>
                 )}
@@ -495,7 +508,13 @@ const DocumentVerification = () => {
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={loading || !formData.type || !formData.title || !formData.description || (!editingDocument && !formData.file)}
+            disabled={
+              loading ||
+              !formData.type ||
+              !formData.title ||
+              !formData.description ||
+              (!editingDocument && !formData.file)
+            }
           >
             {editingDocument ? 'Update' : 'Upload'} Document
           </Button>
@@ -505,6 +524,4 @@ const DocumentVerification = () => {
   );
 };
 
-export default DocumentVerification; 
-
-
+export default DocumentVerification;

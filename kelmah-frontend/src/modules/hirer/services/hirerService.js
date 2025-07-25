@@ -1,5 +1,8 @@
 import { apiService } from '../../common/utils/apiUtils';
 
+// Use Node.js environment variables for tests
+const metaEnv = process.env;
+
 /**
  * Service for making API calls related to hirers
  */
@@ -15,7 +18,7 @@ export const hirerService = {
     } catch (error) {
       console.error('Error fetching hirer profile:', error);
       // Return mock data in case of API failure in development
-      if (import.meta.env.DEV) {
+      if (metaEnv.DEV) {
         console.warn('API call for hirer profile failed. Returning mock data.');
         return Promise.resolve(mockHirerProfile);
       }
@@ -123,13 +126,17 @@ export const hirerService = {
    */
   getJobApplications: async (jobId, status = 'pending') => {
     try {
-      const raw = await apiService.get(`/api/jobs/${jobId}/applications?status=${status}`);
+      const raw = await apiService.get(
+        `/api/jobs/${jobId}/applications?status=${status}`,
+      );
       // Return the applications array from the API response
       return raw.data;
     } catch (error) {
       console.error(`Error fetching applications for job ${jobId}:`, error);
-      if (import.meta.env.DEV) {
-        console.warn(`API call for job applications failed. Returning mock data for job ${jobId}.`);
+      if (metaEnv.DEV) {
+        console.warn(
+          `API call for job applications failed. Returning mock data for job ${jobId}.`,
+        );
         return Promise.resolve(getMockJobApplications(jobId, status));
       }
       return [];
@@ -144,16 +151,27 @@ export const hirerService = {
    * @param {string} feedback - Optional feedback message
    * @returns {Promise<Object>} - Updated application object
    */
-  updateApplicationStatus: async (jobId, applicationId, status, feedback = '') => {
+  updateApplicationStatus: async (
+    jobId,
+    applicationId,
+    status,
+    feedback = '',
+  ) => {
     try {
-      const raw = await apiService.put(`/api/jobs/${jobId}/applications/${applicationId}`, {
-        status,
-        feedback
-      });
+      const raw = await apiService.put(
+        `/api/jobs/${jobId}/applications/${applicationId}`,
+        {
+          status,
+          feedback,
+        },
+      );
       // Return the updated application from the API response
       return raw.data;
     } catch (error) {
-      console.error(`Error updating application ${applicationId} status:`, error);
+      console.error(
+        `Error updating application ${applicationId} status:`,
+        error,
+      );
       throw error;
     }
   },
@@ -165,7 +183,10 @@ export const hirerService = {
    */
   searchWorkers: async (searchParams) => {
     try {
-      const data = await apiService.get('/api/hirer/workers/search', searchParams);
+      const data = await apiService.get(
+        '/api/hirer/workers/search',
+        searchParams,
+      );
       return data;
     } catch (error) {
       console.error('Error searching workers:', error);
@@ -194,7 +215,9 @@ export const hirerService = {
    */
   saveWorker: async (workerId) => {
     try {
-      const data = await apiService.post('/api/hirer/saved-workers', { workerId });
+      const data = await apiService.post('/api/hirer/saved-workers', {
+        workerId,
+      });
       return data;
     } catch (error) {
       console.error(`Error saving worker ${workerId}:`, error);
@@ -209,7 +232,9 @@ export const hirerService = {
    */
   unsaveWorker: async (workerId) => {
     try {
-      const data = await apiService.delete(`/api/hirer/saved-workers/${workerId}`);
+      const data = await apiService.delete(
+        `/api/hirer/saved-workers/${workerId}`,
+      );
       return data;
     } catch (error) {
       console.error(`Error removing saved worker ${workerId}:`, error);
@@ -226,12 +251,18 @@ export const hirerService = {
    */
   releasePayment: async (jobId, milestoneId, amount) => {
     try {
-      const data = await apiService.post(`/api/hirer/jobs/${jobId}/milestones/${milestoneId}/payment`, {
-        amount
-      });
+      const data = await apiService.post(
+        `/api/hirer/jobs/${jobId}/milestones/${milestoneId}/payment`,
+        {
+          amount,
+        },
+      );
       return data;
     } catch (error) {
-      console.error(`Error releasing payment for milestone ${milestoneId}:`, error);
+      console.error(
+        `Error releasing payment for milestone ${milestoneId}:`,
+        error,
+      );
       throw error;
     }
   },
@@ -245,16 +276,19 @@ export const hirerService = {
    */
   createReview: async (workerId, jobId, reviewData) => {
     try {
-      const data = await apiService.post(`/api/hirer/workers/${workerId}/reviews`, {
-        jobId,
-        ...reviewData
-      });
+      const data = await apiService.post(
+        `/api/hirer/workers/${workerId}/reviews`,
+        {
+          jobId,
+          ...reviewData,
+        },
+      );
       return data;
     } catch (error) {
       console.error(`Error creating review for worker ${workerId}:`, error);
       throw error;
     }
-  }
+  },
 };
 
 const mockHirerProfile = {
@@ -268,57 +302,77 @@ const mockHirerProfile = {
   businessLogo: '/logo.png',
   bio: 'A leading construction company specializing in residential and commercial projects. We are committed to quality, safety, and customer satisfaction.',
   recentActivity: [
-    { 
-      id: 1, 
-      type: 'application', 
+    {
+      id: 1,
+      type: 'application',
       title: 'New application received',
-      description: 'Michael Johnson applied for your "Plumbing Repair Project".',
+      description:
+        'Michael Johnson applied for your "Plumbing Repair Project".',
       time: '30 minutes ago',
-      isRead: false
+      isRead: false,
     },
-    { 
-      id: 2, 
-      type: 'contract', 
+    {
+      id: 2,
+      type: 'contract',
       title: 'Contract accepted',
-      description: 'Sarah Williams accepted the contract for "Bathroom Renovation".',
+      description:
+        'Sarah Williams accepted the contract for "Bathroom Renovation".',
       time: '2 hours ago',
-      isRead: false
+      isRead: false,
     },
-    { 
-      id: 3, 
-      type: 'message', 
+    {
+      id: 3,
+      type: 'message',
       title: 'New message received',
-      description: 'David Brown sent you a message regarding the "Electrical Installation" job.',
+      description:
+        'David Brown sent you a message regarding the "Electrical Installation" job.',
       time: '5 hours ago',
-      isRead: true
+      isRead: true,
     },
-    { 
-      id: 4, 
-      type: 'job_expired', 
+    {
+      id: 4,
+      type: 'job_expired',
       title: 'Job posting expiring soon',
-      description: 'Your job posting "Kitchen Renovation" will expire in 2 days.',
+      description:
+        'Your job posting "Kitchen Renovation" will expire in 2 days.',
       time: '1 day ago',
-      isRead: true
+      isRead: true,
     },
     {
       id: 5,
       type: 'payment',
       title: 'Payment Released',
-      description: 'You released a payment of $500 for the "Landscaping Project".',
+      description:
+        'You released a payment of $500 for the "Landscaping Project".',
       time: '2 days ago',
-      isRead: true
-    }
+      isRead: true,
+    },
   ],
   notifications: [
-      { id: 1, message: 'You have 3 new job applicants.', type: 'info', link: '/hirer/applications' },
-      { id: 2, message: 'Contract for "Bathroom Renovation" is awaiting your signature.', type: 'warning', link: '/contracts/2' },
-      { id: 3, message: 'Milestone 1 for "Kitchen Remodeling" has been completed.', type: 'success', link: '/contracts/3' }
+    {
+      id: 1,
+      message: 'You have 3 new job applicants.',
+      type: 'info',
+      link: '/hirer/applications',
+    },
+    {
+      id: 2,
+      message: 'Contract for "Bathroom Renovation" is awaiting your signature.',
+      type: 'warning',
+      link: '/contracts/2',
+    },
+    {
+      id: 3,
+      message: 'Milestone 1 for "Kitchen Remodeling" has been completed.',
+      type: 'success',
+      link: '/contracts/3',
+    },
   ],
   stats: {
     activeJobs: 5,
     pendingApplications: 28,
     activeContracts: 3,
-    totalSpent: 12500
+    totalSpent: 12500,
   },
 };
 
@@ -337,7 +391,8 @@ const getMockJobApplications = (jobId, status = 'pending') => {
       workerName: 'Robert Johnson',
       workerAvatar: 'https://randomuser.me/api/portraits/men/2.jpg',
       workerRating: 4.6,
-      coverLetter: "I have extensive experience with home theater setups and smart home integrations. I'm confident I can deliver a high-quality installation.",
+      coverLetter:
+        "I have extensive experience with home theater setups and smart home integrations. I'm confident I can deliver a high-quality installation.",
       status: 'pending',
       appliedAt: '2023-10-19T10:00:00Z',
     },
@@ -348,7 +403,8 @@ const getMockJobApplications = (jobId, status = 'pending') => {
       workerName: 'Michael Davis',
       workerAvatar: 'https://randomuser.me/api/portraits/men/3.jpg',
       workerRating: 4.9,
-      coverLetter: 'As a master carpenter, I have an eye for detail and can build beautiful, functional pieces. I would love to create your custom bookshelves.',
+      coverLetter:
+        'As a master carpenter, I have an eye for detail and can build beautiful, functional pieces. I would love to create your custom bookshelves.',
       status: 'pending',
       appliedAt: '2023-10-20T14:30:00Z',
     },
@@ -359,25 +415,29 @@ const getMockJobApplications = (jobId, status = 'pending') => {
       workerName: 'John Smith',
       workerAvatar: 'https://randomuser.me/api/portraits/men/1.jpg',
       workerRating: 4.8,
-      coverLetter: 'With over 15 years of experience in plumbing, I can handle your bathroom renovation efficiently and professionally. I am available to start next week.',
+      coverLetter:
+        'With over 15 years of experience in plumbing, I can handle your bathroom renovation efficiently and professionally. I am available to start next week.',
       status: 'accepted',
       appliedAt: '2023-10-16T09:00:00Z',
     },
-     {
+    {
       id: 'app-004',
       jobId: 2,
       workerId: 4,
       workerName: 'David Miller',
       workerAvatar: 'https://randomuser.me/api/portraits/men/4.jpg',
       workerRating: 4.5,
-      coverLetter: "I'm a professional painter with a great portfolio of exterior house painting projects. I can provide a high-quality finish for your home.",
+      coverLetter:
+        "I'm a professional painter with a great portfolio of exterior house painting projects. I can provide a high-quality finish for your home.",
       status: 'rejected',
       appliedAt: '2023-09-06T11:00:00Z',
-    }
+    },
   ];
 
   const numericJobId = parseInt(jobId, 10);
-  return allApplications.filter(app => app.jobId === numericJobId && app.status === status);
+  return allApplications.filter(
+    (app) => app.jobId === numericJobId && app.status === status,
+  );
 };
 
 /**
@@ -386,7 +446,7 @@ const getMockJobApplications = (jobId, status = 'pending') => {
  * @returns {Array} - Array of job objects
  */
 const getMockHirerJobs = (status = 'active') => {
-  return mockJobs.filter(job => job.status === status);
+  return mockJobs.filter((job) => job.status === status);
 };
 
 /**
@@ -396,38 +456,39 @@ const getMockHirerJobs = (status = 'active') => {
  */
 const getMockWorkerSearchResults = (searchParams = {}) => {
   let filteredWorkers = [...mockWorkers];
-  
+
   // Apply search term filter
   if (searchParams.searchTerm) {
     const term = searchParams.searchTerm.toLowerCase();
-    filteredWorkers = filteredWorkers.filter(worker => 
-      worker.name.toLowerCase().includes(term) ||
-      worker.skills.some(skill => skill.toLowerCase().includes(term))
+    filteredWorkers = filteredWorkers.filter(
+      (worker) =>
+        worker.name.toLowerCase().includes(term) ||
+        worker.skills.some((skill) => skill.toLowerCase().includes(term)),
     );
   }
-  
+
   // Apply skill filter
   if (searchParams.skills && searchParams.skills.length > 0) {
-    filteredWorkers = filteredWorkers.filter(worker => 
-      searchParams.skills.some(skill => worker.skills.includes(skill))
+    filteredWorkers = filteredWorkers.filter((worker) =>
+      searchParams.skills.some((skill) => worker.skills.includes(skill)),
     );
   }
-  
+
   // Apply rating filter
   if (searchParams.minRating) {
-    filteredWorkers = filteredWorkers.filter(worker => 
-      worker.rating >= searchParams.minRating
+    filteredWorkers = filteredWorkers.filter(
+      (worker) => worker.rating >= searchParams.minRating,
     );
   }
-  
+
   // Apply location filter
   if (searchParams.location) {
     const location = searchParams.location.toLowerCase();
-    filteredWorkers = filteredWorkers.filter(worker => 
-      worker.location.toLowerCase().includes(location)
+    filteredWorkers = filteredWorkers.filter((worker) =>
+      worker.location.toLowerCase().includes(location),
     );
   }
-  
+
   // Calculate pagination
   const page = searchParams.page || 1;
   const limit = searchParams.limit || 10;
@@ -435,14 +496,14 @@ const getMockWorkerSearchResults = (searchParams = {}) => {
   const totalPages = Math.ceil(totalItems / limit);
   const offset = (page - 1) * limit;
   const paginatedWorkers = filteredWorkers.slice(offset, offset + limit);
-  
+
   return {
     workers: paginatedWorkers,
     pagination: {
       currentPage: page,
       totalPages,
-      totalItems
-    }
+      totalItems,
+    },
   };
 };
 
@@ -451,38 +512,40 @@ const mockJobs = [
   {
     id: 1,
     title: 'Bathroom Renovation',
-    description: 'Complete renovation of a master bathroom including new fixtures, tiling, and plumbing.',
+    description:
+      'Complete renovation of a master bathroom including new fixtures, tiling, and plumbing.',
     category: 'Plumbing',
     skills: ['Pipe Repair', 'Tiling', 'Fixture Installation'],
     status: 'active',
     budget: {
       min: 60,
       max: 80,
-      fixed: null
+      fixed: null,
     },
     paymentType: 'hourly',
     duration: '2 weeks',
     location: 'New York, NY',
     createdAt: '2023-10-15',
-    applicationsCount: 12
+    applicationsCount: 12,
   },
   {
     id: 2,
     title: 'Home Theater Setup',
-    description: 'Installation of home theater system including wiring, speaker setup, and smart home integration.',
+    description:
+      'Installation of home theater system including wiring, speaker setup, and smart home integration.',
     category: 'Electrical',
     skills: ['Wiring', 'Home Automation', 'Audio Systems'],
     status: 'active',
     budget: {
       min: null,
       max: null,
-      fixed: 1200
+      fixed: 1200,
     },
     paymentType: 'fixed',
     duration: '3 days',
     location: 'Remote',
     createdAt: '2023-10-18',
-    applicationsCount: 8
+    applicationsCount: 8,
   },
   {
     id: 3,
@@ -494,13 +557,13 @@ const mockJobs = [
     budget: {
       min: null,
       max: null,
-      fixed: 2500
+      fixed: 2500,
     },
     paymentType: 'fixed',
     duration: '2 weeks',
     location: 'Chicago, IL',
     createdAt: '2023-10-20',
-    applicationsCount: 0
+    applicationsCount: 0,
   },
   {
     id: 4,
@@ -512,34 +575,35 @@ const mockJobs = [
     budget: {
       min: 35,
       max: 50,
-      fixed: null
+      fixed: null,
     },
     paymentType: 'hourly',
     duration: '1 week',
     location: 'Austin, TX',
     createdAt: '2023-09-05',
     completedAt: '2023-09-15',
-    applicationsCount: 15
+    applicationsCount: 15,
   },
   {
     id: 5,
     title: 'HVAC System Maintenance',
-    description: 'Regular maintenance check for central HVAC system before winter season.',
+    description:
+      'Regular maintenance check for central HVAC system before winter season.',
     category: 'HVAC',
     skills: ['Maintenance', 'Diagnostics'],
     status: 'cancelled',
     budget: {
       min: 75,
       max: 100,
-      fixed: null
+      fixed: null,
     },
     paymentType: 'hourly',
     duration: '1 day',
     location: 'Remote',
     createdAt: '2023-09-28',
     cancelledAt: '2023-10-02',
-    applicationsCount: 5
-  }
+    applicationsCount: 5,
+  },
 ];
 
 // Mock data for workers
@@ -553,7 +617,7 @@ const mockWorkers = [
     rating: 4.8,
     location: 'New York, NY',
     hourlyRate: 65,
-    completedJobs: 124
+    completedJobs: 124,
   },
   {
     id: 2,
@@ -564,7 +628,7 @@ const mockWorkers = [
     rating: 4.6,
     location: 'Chicago, IL',
     hourlyRate: 70,
-    completedJobs: 98
+    completedJobs: 98,
   },
   {
     id: 3,
@@ -575,7 +639,7 @@ const mockWorkers = [
     rating: 4.9,
     location: 'Los Angeles, CA',
     hourlyRate: 75,
-    completedJobs: 147
+    completedJobs: 147,
   },
   {
     id: 4,
@@ -586,7 +650,7 @@ const mockWorkers = [
     rating: 4.5,
     location: 'Houston, TX',
     hourlyRate: 45,
-    completedJobs: 73
+    completedJobs: 73,
   },
   {
     id: 5,
@@ -597,8 +661,8 @@ const mockWorkers = [
     rating: 4.7,
     location: 'Philadelphia, PA',
     hourlyRate: 80,
-    completedJobs: 112
-  }
+    completedJobs: 112,
+  },
 ];
 
-export default hirerService; 
+export default hirerService;

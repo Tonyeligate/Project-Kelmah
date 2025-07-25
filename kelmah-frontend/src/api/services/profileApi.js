@@ -14,7 +14,7 @@ class ProfileApi {
     const response = await apiClient.get('/profile');
     return response.data;
   }
-  
+
   /**
    * Update current user profile
    * @param {Object} profileData - Profile data to update
@@ -24,7 +24,7 @@ class ProfileApi {
     const response = await apiClient.put('/profile', profileData);
     return response.data;
   }
-  
+
   /**
    * Upload profile picture
    * @param {FormData} formData - Form data with image file
@@ -33,12 +33,12 @@ class ProfileApi {
   async uploadProfilePicture(formData) {
     const response = await apiClient.post('/profile/picture', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   }
-  
+
   /**
    * Delete profile picture
    * @returns {Promise<Object>} Deletion response
@@ -47,7 +47,7 @@ class ProfileApi {
     const response = await apiClient.delete('/profile/picture');
     return response.data;
   }
-  
+
   /**
    * Get user account settings
    * @returns {Promise<Object>} Account settings
@@ -56,7 +56,7 @@ class ProfileApi {
     const response = await apiClient.get('/profile/settings');
     return response.data;
   }
-  
+
   /**
    * Update account settings
    * @param {Object} settings - Updated settings
@@ -66,7 +66,7 @@ class ProfileApi {
     const response = await apiClient.put('/profile/settings', settings);
     return response.data;
   }
-  
+
   /**
    * Update email address
    * @param {Object} emailData - Email data
@@ -78,7 +78,7 @@ class ProfileApi {
     const response = await apiClient.put('/profile/email', emailData);
     return response.data;
   }
-  
+
   /**
    * Verify email address
    * @param {Object} verificationData - Verification data
@@ -86,10 +86,13 @@ class ProfileApi {
    * @returns {Promise<Object>} Verification response
    */
   async verifyEmail(verificationData) {
-    const response = await apiClient.post('/profile/email/verify', verificationData);
+    const response = await apiClient.post(
+      '/profile/email/verify',
+      verificationData,
+    );
     return response.data;
   }
-  
+
   /**
    * Get notification preferences
    * @returns {Promise<Object>} Notification preferences
@@ -98,7 +101,7 @@ class ProfileApi {
     const response = await apiClient.get('/profile/notifications');
     return response.data;
   }
-  
+
   /**
    * Update notification preferences
    * @param {Object} preferences - Updated preferences
@@ -108,7 +111,7 @@ class ProfileApi {
     const response = await apiClient.put('/profile/notifications', preferences);
     return response.data;
   }
-  
+
   /**
    * Get privacy settings
    * @returns {Promise<Object>} Privacy settings
@@ -117,7 +120,7 @@ class ProfileApi {
     const response = await apiClient.get('/profile/privacy');
     return response.data;
   }
-  
+
   /**
    * Update privacy settings
    * @param {Object} settings - Updated privacy settings
@@ -127,7 +130,7 @@ class ProfileApi {
     const response = await apiClient.put('/profile/privacy', settings);
     return response.data;
   }
-  
+
   /**
    * Get user's connected accounts
    * @returns {Promise<Object>} Connected accounts
@@ -136,27 +139,32 @@ class ProfileApi {
     const response = await apiClient.get('/profile/connected-accounts');
     return response.data;
   }
-  
+
   /**
    * Connect external account
    * @param {Object} accountData - Account connection data
    * @returns {Promise<Object>} Connection response
    */
   async connectAccount(accountData) {
-    const response = await apiClient.post('/profile/connected-accounts', accountData);
+    const response = await apiClient.post(
+      '/profile/connected-accounts',
+      accountData,
+    );
     return response.data;
   }
-  
+
   /**
    * Disconnect external account
    * @param {string} accountId - Connected account ID
    * @returns {Promise<Object>} Disconnection response
    */
   async disconnectAccount(accountId) {
-    const response = await apiClient.delete(`/profile/connected-accounts/${accountId}`);
+    const response = await apiClient.delete(
+      `/profile/connected-accounts/${accountId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Request account deletion
    * @param {Object} deletionData - Deletion request data
@@ -165,7 +173,10 @@ class ProfileApi {
    * @returns {Promise<Object>} Deletion request response
    */
   async requestAccountDeletion(deletionData) {
-    const response = await apiClient.post('/profile/delete-account', deletionData);
+    const response = await apiClient.post(
+      '/profile/delete-account',
+      deletionData,
+    );
     return response.data;
   }
 }

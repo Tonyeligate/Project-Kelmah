@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import CircularProgress from '@mui/material/CircularProgress';
 import { fetchDashboardData } from '../../services/dashboardSlice';
 import PropTypes from 'prop-types';
-import { Box, Grid, Grow } from '@mui/material';
+import { Box, Grid, Grow, useTheme, useMediaQuery } from '@mui/material';
 import StatisticsCard from '../common/StatisticsCard';
 import QuickActions from '../common/QuickActions';
 import Portfolio from './Portfolio';
@@ -26,11 +26,20 @@ import ProfileCompletion from './ProfileCompletion';
  */
 const WorkerDashboard = ({ user = {} }) => {
   const dispatch = useDispatch();
-  const { data, loading } = useSelector(state => state.dashboard);
-  useEffect(() => { dispatch(fetchDashboardData()); }, [dispatch]);
+  const { data, loading } = useSelector((state) => state.dashboard);
+  useEffect(() => {
+    dispatch(fetchDashboardData());
+  }, [dispatch]);
   const metrics = data.metrics || {};
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress color="primary"/></Box>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress color="primary" />
+      </Box>
+    );
   }
   const statistics = [
     {
@@ -39,15 +48,17 @@ const WorkerDashboard = ({ user = {} }) => {
       color: '#FFD700',
       icon: <DescriptionIcon sx={{ fontSize: 32 }} />,
       trend: metrics.newContracts ? `+${metrics.newContracts}` : null,
-      linkTo: '/worker/contracts'
+      linkTo: '/worker/contracts',
     },
     {
       title: 'Pending Applications',
       value: metrics.pendingApplications || 0,
       color: '#2196F3',
       icon: <AssignmentIcon sx={{ fontSize: 32 }} />,
-      trend: metrics.applicationsViewedDiff ? `${metrics.applicationsViewedDiff > 0 ? '-' : '+'}${Math.abs(metrics.applicationsViewedDiff)}` : null,
-      linkTo: '/worker/applications'
+      trend: metrics.applicationsViewedDiff
+        ? `${metrics.applicationsViewedDiff > 0 ? '-' : '+'}${Math.abs(metrics.applicationsViewedDiff)}`
+        : null,
+      linkTo: '/worker/applications',
     },
     {
       title: 'Earnings (This Month)',
@@ -55,32 +66,72 @@ const WorkerDashboard = ({ user = {} }) => {
       color: '#4CAF50',
       icon: <MonetizationOnIcon sx={{ fontSize: 32 }} />,
       trend: metrics.earningsChange ? `+${metrics.earningsChange}%` : null,
-      linkTo: '/worker/payment'
+      linkTo: '/worker/payment',
     },
     {
       title: 'Job Completion Rate',
       value: `${metrics.completionRate || 0}%`,
       color: '#9C27B0',
       icon: <CheckCircleIcon sx={{ fontSize: 32 }} />,
-      trend: metrics.completionRateChange ? `${metrics.completionRateChange}%` : null
+      trend: metrics.completionRateChange
+        ? `${metrics.completionRateChange}%`
+        : null,
     },
   ];
 
   const quickActions = [
-    { title: 'Find Jobs', icon: <SearchIcon sx={{ fontSize: 30 }} />, path: '/worker/find-work', color: '#2196F3' },
-    { title: 'My Applications', icon: <AssignmentIcon sx={{ fontSize: 30 }} />, path: '/worker/applications', color: '#4CAF50', badgeContent: 2 },
-    { title: 'Messages', icon: <MailIcon sx={{ fontSize: 30 }} />, path: '/messages', color: '#FF9800', badgeContent: 5 },
-    { title: 'My Contracts', icon: <GavelIcon sx={{ fontSize: 30 }} />, path: '/worker/contracts', color: '#9C27B0' },
+    {
+      title: 'Find Jobs',
+      icon: <SearchIcon sx={{ fontSize: 30 }} />,
+      path: '/worker/find-work',
+      color: '#2196F3',
+    },
+    {
+      title: 'My Applications',
+      icon: <AssignmentIcon sx={{ fontSize: 30 }} />,
+      path: '/worker/applications',
+      color: '#4CAF50',
+      badgeContent: 2,
+    },
+    {
+      title: 'Messages',
+      icon: <MailIcon sx={{ fontSize: 30 }} />,
+      path: '/messages',
+      color: '#FF9800',
+      badgeContent: 5,
+    },
+    {
+      title: 'My Contracts',
+      icon: <GavelIcon sx={{ fontSize: 30 }} />,
+      path: '/worker/contracts',
+      color: '#9C27B0',
+    },
   ];
 
   const mockProjects = [
-    { title: 'Modern Kitchen Remodel', description: 'Complete overhaul of a kitchen with custom cabinets and granite countertops.', imageUrl: 'https://images.pexels.com/photos/2724749/pexels-photo-2724749.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' },
-    { title: 'Luxury Bathroom Tiling', description: 'New tile installation for a spa-like bathroom, featuring a walk-in shower.', imageUrl: 'https://images.pexels.com/photos/3288102/pexels-photo-3288102.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' },
+    {
+      title: 'Modern Kitchen Remodel',
+      description:
+        'Complete overhaul of a kitchen with custom cabinets and granite countertops.',
+      imageUrl:
+        'https://images.pexels.com/photos/2724749/pexels-photo-2724749.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
+    {
+      title: 'Luxury Bathroom Tiling',
+      description:
+        'New tile installation for a spa-like bathroom, featuring a walk-in shower.',
+      imageUrl:
+        'https://images.pexels.com/photos/3288102/pexels-photo-3288102.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
   ];
 
   const mockCerts = [
     { name: 'Master Plumber', issuer: 'State Board', expiry: '12/2025' },
-    { name: 'Certified Electrician', issuer: 'National Electrical Board', expiry: '06/2026' },
+    {
+      name: 'Certified Electrician',
+      issuer: 'National Electrical Board',
+      expiry: '06/2026',
+    },
   ];
 
   const mockSkills = [
@@ -90,7 +141,15 @@ const WorkerDashboard = ({ user = {} }) => {
   ];
 
   const MainContent = () => (
-    <Grid item lg={8} md={7} xs={12} container spacing={3} alignContent="flex-start">
+    <Grid
+      item
+      lg={8}
+      md={7}
+      xs={12}
+      container
+      spacing={3}
+      alignContent="flex-start"
+    >
       <Grid item xs={12}>
         <AvailableJobs />
       </Grid>
@@ -104,36 +163,73 @@ const WorkerDashboard = ({ user = {} }) => {
   );
 
   const RightSidebar = () => (
-    <Grid item lg={4} md={5} xs={12} container spacing={3} alignContent="flex-start">
-        <Grid item xs={12}>
-            <AvailabilityStatus />
-        </Grid>
-        <Grid item xs={12}>
-          <ProfileCompletion />
-        </Grid>
-        <Grid item xs={12}>
-          <UpcomingAppointments />
-        </Grid>
+    <Grid
+      item
+      lg={4}
+      md={5}
+      xs={12}
+      container
+      spacing={3}
+      alignContent="flex-start"
+    >
+      <Grid item xs={12}>
+        <AvailabilityStatus />
+      </Grid>
+      <Grid item xs={12}>
+        <ProfileCompletion />
+      </Grid>
+      <Grid item xs={12}>
+        <UpcomingAppointments />
+      </Grid>
+      {isMdUp && (
         <Grid item xs={12}>
           <QuickActions actions={quickActions} />
         </Grid>
-        <Grid item xs={12}>
-          <Credentials skills={mockSkills} licenses={mockCerts} />
-        </Grid>
+      )}
+      <Grid item xs={12}>
+        <Credentials skills={mockSkills} licenses={mockCerts} />
+      </Grid>
     </Grid>
   );
 
   return (
     <Grow in timeout={500}>
       <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          {statistics.map((stat, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <StatisticsCard {...stat} />
-            </Grid>
-          ))}
-        </Grid>
-        
+        {!isMdUp && (
+          <Box sx={{ mb: 2 }}>
+            <QuickActions actions={quickActions} />
+          </Box>
+        )}
+        {/* Statistics cards: carousel on xs, grid on larger */}
+        {isSm ? (
+          <Box
+            sx={{
+              display: 'flex',
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              '&::-webkit-scrollbar': { display: 'none' },
+              py: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {statistics.map((stat, index) => (
+              <Box key={index} sx={{ minWidth: 200, scrollSnapAlign: 'start' }}>
+                <StatisticsCard {...stat} />
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            {statistics.map((stat, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <StatisticsCard {...stat} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
         <Grid container spacing={4}>
           <MainContent />
           <RightSidebar />
@@ -147,5 +243,4 @@ WorkerDashboard.propTypes = {
   user: PropTypes.object,
 };
 
-export default WorkerDashboard; 
-
+export default WorkerDashboard;

@@ -17,7 +17,7 @@ class MessagesApi {
     const response = await apiClient.get('/messages/conversations', { params });
     return response.data;
   }
-  
+
   /**
    * Get a specific conversation
    * @param {string} conversationId - Conversation ID
@@ -25,10 +25,13 @@ class MessagesApi {
    * @returns {Promise<Object>} Conversation with messages
    */
   async getConversation(conversationId, params = {}) {
-    const response = await apiClient.get(`/messages/conversations/${conversationId}`, { params });
+    const response = await apiClient.get(
+      `/messages/conversations/${conversationId}`,
+      { params },
+    );
     return response.data;
   }
-  
+
   /**
    * Get messages from a conversation
    * @param {string} conversationId - Conversation ID
@@ -38,10 +41,13 @@ class MessagesApi {
    * @returns {Promise<Object>} Messages data
    */
   async getMessages(conversationId, params = {}) {
-    const response = await apiClient.get(`/messages/conversations/${conversationId}/messages`, { params });
+    const response = await apiClient.get(
+      `/messages/conversations/${conversationId}/messages`,
+      { params },
+    );
     return response.data;
   }
-  
+
   /**
    * Send a message
    * @param {string} conversationId - Conversation ID
@@ -50,10 +56,13 @@ class MessagesApi {
    * @returns {Promise<Object>} Sent message data
    */
   async sendMessage(conversationId, messageData) {
-    const response = await apiClient.post(`/messages/conversations/${conversationId}/messages`, messageData);
+    const response = await apiClient.post(
+      `/messages/conversations/${conversationId}/messages`,
+      messageData,
+    );
     return response.data;
   }
-  
+
   /**
    * Start a new conversation
    * @param {Object} conversationData - Conversation data
@@ -62,30 +71,37 @@ class MessagesApi {
    * @returns {Promise<Object>} New conversation data
    */
   async startConversation(conversationData) {
-    const response = await apiClient.post('/messages/conversations', conversationData);
+    const response = await apiClient.post(
+      '/messages/conversations',
+      conversationData,
+    );
     return response.data;
   }
-  
+
   /**
    * Mark conversation as read
    * @param {string} conversationId - Conversation ID
    * @returns {Promise<Object>} Updated conversation
    */
   async markConversationAsRead(conversationId) {
-    const response = await apiClient.put(`/messages/conversations/${conversationId}/read`);
+    const response = await apiClient.put(
+      `/messages/conversations/${conversationId}/read`,
+    );
     return response.data;
   }
-  
+
   /**
    * Delete a conversation
    * @param {string} conversationId - Conversation ID to delete
    * @returns {Promise<Object>} Deletion response
    */
   async deleteConversation(conversationId) {
-    const response = await apiClient.delete(`/messages/conversations/${conversationId}`);
+    const response = await apiClient.delete(
+      `/messages/conversations/${conversationId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Get unread message count
    * @returns {Promise<Object>} Unread count data
@@ -94,7 +110,7 @@ class MessagesApi {
     const response = await apiClient.get('/messages/unread');
     return response.data;
   }
-  
+
   /**
    * Upload attachment to a message
    * @param {string} conversationId - Conversation ID
@@ -102,14 +118,18 @@ class MessagesApi {
    * @returns {Promise<Object>} Attachment data
    */
   async uploadAttachment(conversationId, formData) {
-    const response = await apiClient.post(`/messages/conversations/${conversationId}/attachments`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await apiClient.post(
+      `/messages/conversations/${conversationId}/attachments`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
     return response.data;
   }
-  
+
   /**
    * Search messages
    * @param {Object} params - Search parameters
@@ -121,7 +141,7 @@ class MessagesApi {
     const response = await apiClient.get('/messages/search', { params });
     return response.data;
   }
-  
+
   /**
    * Update notification settings for messaging
    * @param {Object} settings - Notification settings
@@ -133,4 +153,4 @@ class MessagesApi {
   }
 }
 
-export default new MessagesApi(); 
+export default new MessagesApi();

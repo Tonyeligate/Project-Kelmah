@@ -1,6 +1,14 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 const data = [
   { name: 'Jan', earnings: 4000 },
@@ -25,7 +33,12 @@ const EarningsChart = () => {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="earnings" stroke="#8884d8" activeDot={{ r: 8 }} />
+              <Line
+                type="monotone"
+                dataKey="earnings"
+                stroke="#8884d8"
+                activeDot={{ r: 8 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         </Box>
@@ -34,4 +47,4 @@ const EarningsChart = () => {
   );
 };
 
-export default EarningsChart; 
+export default EarningsChart;

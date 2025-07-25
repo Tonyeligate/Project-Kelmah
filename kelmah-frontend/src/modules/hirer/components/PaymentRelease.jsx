@@ -38,7 +38,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  InputAdornment
+  InputAdornment,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -53,7 +53,7 @@ import {
   Payment as PaymentIcon,
   Receipt as ReceiptIcon,
   Download as DownloadIcon,
-  History as HistoryIcon
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -72,13 +72,13 @@ const PaymentRelease = () => {
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
     method: '',
-    notes: ''
+    notes: '',
   });
   const [summary, setSummary] = useState({
     totalPending: 0,
     totalReleased: 0,
     totalAmount: 0,
-    recentTransactions: []
+    recentTransactions: [],
   });
 
   useEffect(() => {
@@ -133,7 +133,7 @@ const PaymentRelease = () => {
     setPaymentForm({
       amount: '',
       method: '',
-      notes: ''
+      notes: '',
     });
   };
 
@@ -149,13 +149,16 @@ const PaymentRelease = () => {
   const handlePaymentRelease = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/payments/${selectedPayment.id}/release`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `/api/payments/${selectedPayment.id}/release`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentForm),
         },
-        body: JSON.stringify(paymentForm)
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Failed to release payment');
@@ -283,7 +286,10 @@ const PaymentRelease = () => {
                 <TableCell>{payment.jobTitle}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar src={payment.workerAvatar} sx={{ width: 24, height: 24 }}>
+                    <Avatar
+                      src={payment.workerAvatar}
+                      sx={{ width: 24, height: 24 }}
+                    >
                       <PersonIcon />
                     </Avatar>
                     {payment.workerName}
@@ -364,9 +370,7 @@ const PaymentRelease = () => {
         </Box>
       ) : payments.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">
-            No payments to manage
-          </Typography>
+          <Typography color="text.secondary">No payments to manage</Typography>
         </Paper>
       ) : (
         renderPaymentsTable()
@@ -427,7 +431,12 @@ const PaymentRelease = () => {
                     <InputLabel>Payment Method</InputLabel>
                     <Select
                       value={paymentForm.method}
-                      onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
+                      onChange={(e) =>
+                        setPaymentForm({
+                          ...paymentForm,
+                          method: e.target.value,
+                        })
+                      }
                       label="Payment Method"
                     >
                       <MenuItem value="bank_transfer">Bank Transfer</MenuItem>
@@ -443,7 +452,9 @@ const PaymentRelease = () => {
                     multiline
                     rows={4}
                     value={paymentForm.notes}
-                    onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                    onChange={(e) =>
+                      setPaymentForm({ ...paymentForm, notes: e.target.value })
+                    }
                   />
                 </Grid>
               </Grid>
@@ -491,7 +502,10 @@ const PaymentRelease = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary="Date"
-                    secondary={format(new Date(selectedPayment.date), 'MMM dd, yyyy')}
+                    secondary={format(
+                      new Date(selectedPayment.date),
+                      'MMM dd, yyyy',
+                    )}
                   />
                 </ListItem>
                 <ListItem>
@@ -518,7 +532,11 @@ const PaymentRelease = () => {
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button
-            onClick={dialogType === 'release' ? handlePaymentRelease : handleDialogClose}
+            onClick={
+              dialogType === 'release'
+                ? handlePaymentRelease
+                : handleDialogClose
+            }
             variant="contained"
           >
             Submit
@@ -529,6 +547,4 @@ const PaymentRelease = () => {
   );
 };
 
-export default PaymentRelease; 
-
-
+export default PaymentRelease;

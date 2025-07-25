@@ -15,7 +15,7 @@ class HirersApi {
     const response = await apiClient.get(`/hirers/${hirerId}`);
     return response.data;
   }
-  
+
   /**
    * Get current hirer's profile
    * @returns {Promise<Object>} Current hirer profile
@@ -24,7 +24,7 @@ class HirersApi {
     const response = await apiClient.get('/hirers/me');
     return response.data;
   }
-  
+
   /**
    * Update hirer profile
    * @param {Object} profileData - Profile data to update
@@ -34,7 +34,7 @@ class HirersApi {
     const response = await apiClient.put('/hirers/me', profileData);
     return response.data;
   }
-  
+
   /**
    * Upload hirer profile image
    * @param {FormData} formData - Form data with image file
@@ -43,12 +43,12 @@ class HirersApi {
   async uploadProfileImage(formData) {
     const response = await apiClient.post('/hirers/me/image', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   }
-  
+
   /**
    * Get hirer's job postings
    * @param {Object} params - Query parameters
@@ -58,7 +58,7 @@ class HirersApi {
     const response = await apiClient.get(`/hirers/${hirerId}/jobs`, { params });
     return response.data;
   }
-  
+
   /**
    * Get hirer reviews
    * @param {string} hirerId - Hirer ID
@@ -66,10 +66,12 @@ class HirersApi {
    * @returns {Promise<Object>} Hirer reviews
    */
   async getHirerReviews(hirerId, params = {}) {
-    const response = await apiClient.get(`/hirers/${hirerId}/reviews`, { params });
+    const response = await apiClient.get(`/hirers/${hirerId}/reviews`, {
+      params,
+    });
     return response.data;
   }
-  
+
   /**
    * Update company information
    * @param {Object} companyData - Company data
@@ -79,7 +81,7 @@ class HirersApi {
     const response = await apiClient.put('/hirers/me/company', companyData);
     return response.data;
   }
-  
+
   /**
    * Upload company logo
    * @param {FormData} formData - Form data with logo file
@@ -88,12 +90,12 @@ class HirersApi {
   async uploadCompanyLogo(formData) {
     const response = await apiClient.post('/hirers/me/company/logo', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   }
-  
+
   /**
    * Get hirer's favorite workers
    * @param {Object} params - Query parameters
@@ -103,7 +105,7 @@ class HirersApi {
     const response = await apiClient.get('/hirers/me/favorites', { params });
     return response.data;
   }
-  
+
   /**
    * Add worker to favorites
    * @param {string} workerId - Worker ID to add to favorites
@@ -113,7 +115,7 @@ class HirersApi {
     const response = await apiClient.post(`/hirers/me/favorites/${workerId}`);
     return response.data;
   }
-  
+
   /**
    * Remove worker from favorites
    * @param {string} workerId - Worker ID to remove from favorites
@@ -123,7 +125,7 @@ class HirersApi {
     const response = await apiClient.delete(`/hirers/me/favorites/${workerId}`);
     return response.data;
   }
-  
+
   /**
    * Get hiring history
    * @param {Object} params - Query parameters
@@ -133,16 +135,19 @@ class HirersApi {
     const response = await apiClient.get('/hirers/me/history', { params });
     return response.data;
   }
-  
+
   /**
    * Update notification preferences
    * @param {Object} preferences - Notification preferences
    * @returns {Promise<Object>} Updated preferences
    */
   async updateNotificationPreferences(preferences) {
-    const response = await apiClient.put('/hirers/me/notifications', preferences);
+    const response = await apiClient.put(
+      '/hirers/me/notifications',
+      preferences,
+    );
     return response.data;
   }
 }
 
-export default new HirersApi(); 
+export default new HirersApi();

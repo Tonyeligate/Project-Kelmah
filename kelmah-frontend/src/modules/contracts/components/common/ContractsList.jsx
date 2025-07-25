@@ -15,12 +15,16 @@ const ContractsList = () => {
   }
 
   if (!contracts || contracts.length === 0) {
-    return <Typography variant="body2" color="text.secondary">No contracts found.</Typography>;
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No contracts found.
+      </Typography>
+    );
   }
 
   return (
     <Grid container spacing={3}>
-      {contracts.map(contract => (
+      {contracts.map((contract) => (
         <Grid item xs={12} sm={6} md={4} lg={3} key={contract.id}>
           <ContractCard contract={contract} />
         </Grid>

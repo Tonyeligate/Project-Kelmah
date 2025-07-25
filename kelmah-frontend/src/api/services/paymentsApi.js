@@ -14,37 +14,44 @@ class PaymentsApi {
     const response = await apiClient.get('/api/payments/methods');
     return response.data;
   }
-  
+
   /**
    * Add a new payment method
    * @param {Object} paymentMethodData - Payment method data
    * @returns {Promise<Object>} Added payment method
    */
   async addPaymentMethod(paymentMethodData) {
-    const response = await apiClient.post('/api/payments/methods', paymentMethodData);
+    const response = await apiClient.post(
+      '/api/payments/methods',
+      paymentMethodData,
+    );
     return response.data;
   }
-  
+
   /**
    * Delete a payment method
    * @param {string} paymentMethodId - Payment method ID to delete
    * @returns {Promise<Object>} Deletion response
    */
   async deletePaymentMethod(paymentMethodId) {
-    const response = await apiClient.delete(`/api/payments/methods/${paymentMethodId}`);
+    const response = await apiClient.delete(
+      `/api/payments/methods/${paymentMethodId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Set default payment method
    * @param {string} paymentMethodId - Payment method ID to set as default
    * @returns {Promise<Object>} Updated payment methods
    */
   async setDefaultPaymentMethod(paymentMethodId) {
-    const response = await apiClient.put(`/api/payments/methods/${paymentMethodId}/default`);
+    const response = await apiClient.put(
+      `/api/payments/methods/${paymentMethodId}/default`,
+    );
     return response.data;
   }
-  
+
   /**
    * Get transaction history
    * @param {Object} params - Query parameters
@@ -56,20 +63,24 @@ class PaymentsApi {
    * @returns {Promise<Object>} Transaction history
    */
   async getTransactionHistory(params = {}) {
-    const response = await apiClient.get('/api/payments/transactions', { params });
+    const response = await apiClient.get('/api/payments/transactions', {
+      params,
+    });
     return response.data;
   }
-  
+
   /**
    * Get transaction details
    * @param {string} transactionId - Transaction ID
    * @returns {Promise<Object>} Transaction details
    */
   async getTransactionDetails(transactionId) {
-    const response = await apiClient.get(`/api/payments/transactions/${transactionId}`);
+    const response = await apiClient.get(
+      `/api/payments/transactions/${transactionId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Make a payment for a job
    * @param {Object} paymentData - Payment data
@@ -82,7 +93,7 @@ class PaymentsApi {
     const response = await apiClient.post('/api/payments/job', paymentData);
     return response.data;
   }
-  
+
   /**
    * Request a refund
    * @param {Object} refundData - Refund request data
@@ -94,7 +105,7 @@ class PaymentsApi {
     const response = await apiClient.post('/api/payments/refunds', refundData);
     return response.data;
   }
-  
+
   /**
    * Get refund requests
    * @param {Object} params - Query parameters
@@ -104,7 +115,7 @@ class PaymentsApi {
     const response = await apiClient.get('/api/payments/refunds', { params });
     return response.data;
   }
-  
+
   /**
    * Get payment settings
    * @returns {Promise<Object>} Payment settings
@@ -113,7 +124,7 @@ class PaymentsApi {
     const response = await apiClient.get('/api/payments/settings');
     return response.data;
   }
-  
+
   /**
    * Update payment settings
    * @param {Object} settings - Payment settings
@@ -123,7 +134,7 @@ class PaymentsApi {
     const response = await apiClient.put('/api/payments/settings', settings);
     return response.data;
   }
-  
+
   /**
    * Get payout methods (for workers)
    * @returns {Promise<Object>} Payout methods
@@ -132,37 +143,44 @@ class PaymentsApi {
     const response = await apiClient.get('/api/payments/payout-methods');
     return response.data;
   }
-  
+
   /**
    * Add payout method (for workers)
    * @param {Object} payoutMethodData - Payout method data
    * @returns {Promise<Object>} Added payout method
    */
   async addPayoutMethod(payoutMethodData) {
-    const response = await apiClient.post('/api/payments/payout-methods', payoutMethodData);
+    const response = await apiClient.post(
+      '/api/payments/payout-methods',
+      payoutMethodData,
+    );
     return response.data;
   }
-  
+
   /**
    * Delete payout method (for workers)
    * @param {string} payoutMethodId - Payout method ID to delete
    * @returns {Promise<Object>} Deletion response
    */
   async deletePayoutMethod(payoutMethodId) {
-    const response = await apiClient.delete(`/api/payments/payout-methods/${payoutMethodId}`);
+    const response = await apiClient.delete(
+      `/api/payments/payout-methods/${payoutMethodId}`,
+    );
     return response.data;
   }
-  
+
   /**
    * Set default payout method (for workers)
    * @param {string} payoutMethodId - Payout method ID to set as default
    * @returns {Promise<Object>} Updated payout methods
    */
   async setDefaultPayoutMethod(payoutMethodId) {
-    const response = await apiClient.put(`/api/payments/payout-methods/${payoutMethodId}/default`);
+    const response = await apiClient.put(
+      `/api/payments/payout-methods/${payoutMethodId}/default`,
+    );
     return response.data;
   }
-  
+
   /**
    * Request payout (for workers)
    * @param {Object} payoutData - Payout request data
@@ -172,7 +190,7 @@ class PaymentsApi {
     const response = await apiClient.post('/api/payments/payouts', payoutData);
     return response.data;
   }
-  
+
   /**
    * Get payout history (for workers)
    * @param {Object} params - Query parameters
@@ -182,17 +200,20 @@ class PaymentsApi {
     const response = await apiClient.get('/api/payments/payouts', { params });
     return response.data;
   }
-  
+
   /**
    * Create a general transaction (deposit, withdrawal)
    * @param {Object} transactionData - { amount, type, paymentMethodId, currency }
    * @returns {Promise<Object>} Created transaction
    */
   async createTransaction(transactionData) {
-    const response = await apiClient.post('/api/payments/transactions', transactionData);
+    const response = await apiClient.post(
+      '/api/payments/transactions',
+      transactionData,
+    );
     return response.data;
   }
-  
+
   /**
    * Get wallet details for current user
    * @returns {Promise<Object>} Wallet object
@@ -201,7 +222,7 @@ class PaymentsApi {
     const response = await apiClient.get('/api/payments/wallet');
     return response.data;
   }
-  
+
   /**
    * Get escrow contracts for the current user
    * @returns {Promise<Object[]>} List of escrow objects
@@ -218,7 +239,10 @@ class PaymentsApi {
    * @returns {Promise<Object>} Release operation result
    */
   async releaseEscrow(escrowId, payload = {}) {
-    const response = await apiClient.post(`/payments/escrows/${escrowId}/release`, payload);
+    const response = await apiClient.post(
+      `/payments/escrows/${escrowId}/release`,
+      payload,
+    );
     return response.data;
   }
 
@@ -242,4 +266,4 @@ class PaymentsApi {
   }
 }
 
-export default new PaymentsApi(); 
+export default new PaymentsApi();

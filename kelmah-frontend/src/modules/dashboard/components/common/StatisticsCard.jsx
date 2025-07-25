@@ -8,9 +8,17 @@ import { Link as RouterLink } from 'react-router-dom';
 /**
  * Card component for displaying statistics with colored accents and trend indicators
  */
-const StatisticsCard = ({ title, value, color, icon, trend, trendLabel, linkTo }) => {
+const StatisticsCard = ({
+  title,
+  value,
+  color,
+  icon,
+  trend,
+  trendLabel,
+  linkTo,
+}) => {
   const isTrendPositive = trend && trend.startsWith('+');
-  
+
   const CardContent = (
     <Card
       sx={{
@@ -31,40 +39,46 @@ const StatisticsCard = ({ title, value, color, icon, trend, trendLabel, linkTo }
           boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
           background: 'rgba(35, 35, 35, 0.9)',
           borderColor: 'rgba(255, 215, 0, 0.5)',
-        }
+        },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <Box>
-          <Typography 
-            variant="h3" 
-            sx={{ 
+          <Typography
+            variant="h3"
+            sx={{
               fontWeight: 800,
               mb: 1,
               color: '#fff',
-              letterSpacing: 0.5
+              letterSpacing: 0.5,
             }}
           >
             {value}
           </Typography>
-          <Typography 
-            variant="subtitle1" 
-            sx={{ 
+          <Typography
+            variant="subtitle1"
+            sx={{
               color: 'text.secondary',
               opacity: 0.9,
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
           >
             {title}
           </Typography>
-          
+
           {trend && (
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 alignItems: 'center',
                 mt: 1,
-                color: isTrendPositive ? '#4caf50' : '#f44336'
+                color: isTrendPositive ? '#4caf50' : '#f44336',
               }}
             >
               {isTrendPositive ? (
@@ -81,8 +95,8 @@ const StatisticsCard = ({ title, value, color, icon, trend, trendLabel, linkTo }
           )}
         </Box>
         {icon && (
-          <Box 
-            sx={{ 
+          <Box
+            sx={{
               color: color || '#FFD700',
               opacity: 0.9,
               display: 'flex',
@@ -96,7 +110,7 @@ const StatisticsCard = ({ title, value, color, icon, trend, trendLabel, linkTo }
               '&:hover': {
                 transform: 'scale(1.1)',
                 background: `${color}25`,
-              }
+              },
             }}
           >
             {icon}
@@ -108,7 +122,11 @@ const StatisticsCard = ({ title, value, color, icon, trend, trendLabel, linkTo }
 
   if (linkTo) {
     return (
-      <CardActionArea component={RouterLink} to={linkTo} sx={{ borderRadius: 2 }}>
+      <CardActionArea
+        component={RouterLink}
+        to={linkTo}
+        sx={{ borderRadius: 2 }}
+      >
         {CardContent}
       </CardActionArea>
     );
@@ -127,4 +145,4 @@ StatisticsCard.propTypes = {
   linkTo: PropTypes.string,
 };
 
-export default StatisticsCard; 
+export default StatisticsCard;

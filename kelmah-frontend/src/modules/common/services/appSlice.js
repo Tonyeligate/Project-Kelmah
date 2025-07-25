@@ -11,7 +11,7 @@ export const fetchUserProfile = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
-  }
+  },
 );
 
 export const updateUserProfile = createAsyncThunk(
@@ -23,7 +23,7 @@ export const updateUserProfile = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
-  }
+  },
 );
 
 const appSlice = createSlice({
@@ -44,7 +44,7 @@ const appSlice = createSlice({
     },
     removeNotification: (state, action) => {
       state.notifications = state.notifications.filter(
-        (n) => n.id !== action.payload
+        (n) => n.id !== action.payload,
       );
     },
   },
@@ -64,5 +64,6 @@ const appSlice = createSlice({
   },
 });
 
-export const { setTheme, addNotification, removeNotification } = appSlice.actions;
-export default appSlice.reducer; 
+export const { setTheme, addNotification, removeNotification } =
+  appSlice.actions;
+export default appSlice.reducer;

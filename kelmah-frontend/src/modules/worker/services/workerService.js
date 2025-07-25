@@ -23,7 +23,7 @@ const workerService = {
   getWorkerById: (workerId) => {
     return axiosInstance.get(`${API_URL}/${workerId}`);
   },
-  
+
   /**
    * Get reviews for a specific worker
    * @param {string} workerId - Worker ID
@@ -31,9 +31,11 @@ const workerService = {
    * @returns {Promise<Array>} - Array of review objects
    */
   getWorkerReviews: (workerId, filters = {}) => {
-    return axiosInstance.get(`${API_URL}/${workerId}/reviews`, { params: filters });
+    return axiosInstance.get(`${API_URL}/${workerId}/reviews`, {
+      params: filters,
+    });
   },
-  
+
   /**
    * Submit a review for a worker
    * @param {string} workerId - Worker ID
@@ -55,7 +57,7 @@ const workerService = {
       },
     });
   },
-  
+
   getWorkerSkills: (workerId) => {
     return axiosInstance.get(`${API_URL}/${workerId}/skills`);
   },
@@ -65,13 +67,16 @@ const workerService = {
   },
 
   updateWorkerSkill: (workerId, skillId, skillData) => {
-    return axiosInstance.put(`${API_URL}/${workerId}/skills/${skillId}`, skillData);
+    return axiosInstance.put(
+      `${API_URL}/${workerId}/skills/${skillId}`,
+      skillData,
+    );
   },
 
   deleteWorkerSkill: (workerId, skillId) => {
     return axiosInstance.delete(`${API_URL}/${workerId}/skills/${skillId}`);
   },
-  
+
   getWorkerPortfolio: (workerId) => {
     return axiosInstance.get(`${API_URL}/${workerId}/portfolio`);
   },
@@ -79,9 +84,12 @@ const workerService = {
   addPortfolioItem: (workerId, itemData) => {
     return axiosInstance.post(`${API_URL}/${workerId}/portfolio`, itemData);
   },
-  
+
   updatePortfolioItem: (workerId, itemId, itemData) => {
-    return axiosInstance.put(`${API_URL}/${workerId}/portfolio/${itemId}`, itemData);
+    return axiosInstance.put(
+      `${API_URL}/${workerId}/portfolio/${itemId}`,
+      itemData,
+    );
   },
 
   deletePortfolioItem: (workerId, itemId) => {
@@ -97,11 +105,16 @@ const workerService = {
   },
 
   updateCertificate: (workerId, certId, certData) => {
-    return axiosInstance.put(`${API_URL}/${workerId}/certificates/${certId}`, certData);
+    return axiosInstance.put(
+      `${API_URL}/${workerId}/certificates/${certId}`,
+      certData,
+    );
   },
 
   deleteCertificate: (workerId, certId) => {
-    return axiosInstance.delete(`${API_URL}/${workerId}/certificates/${certId}`);
+    return axiosInstance.delete(
+      `${API_URL}/${workerId}/certificates/${certId}`,
+    );
   },
 
   getWorkHistory: (workerId) => {
@@ -109,4 +122,4 @@ const workerService = {
   },
 };
 
-export default workerService; 
+export default workerService;

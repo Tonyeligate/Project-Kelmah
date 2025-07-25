@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box, Tooltip, Typography, Avatar, AvatarGroup } from '@mui/material';
-import { 
-  CheckCircleOutline, 
-  Check, 
-  CheckCircle, 
-  AccessTime 
+import {
+  CheckCircleOutline,
+  Check,
+  CheckCircle,
+  AccessTime,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
@@ -38,33 +38,53 @@ const StyledAvatarGroup = styled(AvatarGroup)(({ theme }) => ({
  * @param {Array} props.readBy - Array of users who have read the message (for group chats)
  * @param {boolean} props.isGroupChat - Whether this is a group chat
  */
-const MessageStatus = ({ 
-  status = 'sent', 
-  timestamp, 
-  readBy = [], 
-  isGroupChat = false 
+const MessageStatus = ({
+  status = 'sent',
+  timestamp,
+  readBy = [],
+  isGroupChat = false,
 }) => {
   // Get status icon based on message status
   const getStatusIcon = () => {
     switch (status) {
       case 'read':
-        return <CheckCircle fontSize="small" sx={{ color: '#4CAF50', width: 14, height: 14 }} />;
+        return (
+          <CheckCircle
+            fontSize="small"
+            sx={{ color: '#4CAF50', width: 14, height: 14 }}
+          />
+        );
       case 'delivered':
-        return <CheckCircle fontSize="small" sx={{ color: 'rgba(255, 255, 255, 0.5)', width: 14, height: 14 }} />;
+        return (
+          <CheckCircle
+            fontSize="small"
+            sx={{ color: 'rgba(255, 255, 255, 0.5)', width: 14, height: 14 }}
+          />
+        );
       case 'sent':
-        return <Check fontSize="small" sx={{ color: 'rgba(255, 255, 255, 0.5)', width: 14, height: 14 }} />;
+        return (
+          <Check
+            fontSize="small"
+            sx={{ color: 'rgba(255, 255, 255, 0.5)', width: 14, height: 14 }}
+          />
+        );
       case 'pending':
-        return <AccessTime fontSize="small" sx={{ color: 'rgba(255, 255, 255, 0.3)', width: 14, height: 14 }} />;
+        return (
+          <AccessTime
+            fontSize="small"
+            sx={{ color: 'rgba(255, 255, 255, 0.3)', width: 14, height: 14 }}
+          />
+        );
       default:
         return null;
     }
   };
-  
+
   // Get tooltip text based on status
   const getTooltipText = () => {
     switch (status) {
       case 'read':
-        return isGroupChat 
+        return isGroupChat
           ? `Read by ${readBy.length} ${readBy.length === 1 ? 'person' : 'people'}`
           : 'Read';
       case 'delivered':
@@ -77,19 +97,19 @@ const MessageStatus = ({
         return '';
     }
   };
-  
+
   return (
     <StatusContainer>
       {timestamp && <TimeStamp>{timestamp}</TimeStamp>}
-      
+
       <Tooltip title={getTooltipText()} placement="top">
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {getStatusIcon()}
-          
+
           {/* For group chats, show avatars of users who read the message */}
           {isGroupChat && status === 'read' && readBy.length > 0 && (
             <StyledAvatarGroup max={3} sx={{ ml: 0.5 }}>
-              {readBy.map(user => (
+              {readBy.map((user) => (
                 <Tooltip key={user.id} title={`Read by ${user.name}`}>
                   <Avatar alt={user.name} src={user.avatar} />
                 </Tooltip>
@@ -102,4 +122,4 @@ const MessageStatus = ({
   );
 };
 
-export default MessageStatus; 
+export default MessageStatus;

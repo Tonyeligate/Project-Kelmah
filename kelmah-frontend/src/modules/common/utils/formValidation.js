@@ -19,4 +19,4 @@ export const isValidEmail = (email) => {
  */
 export const isValidPassword = (password) => {
   return password && password.length >= 8;
-}; 
+};

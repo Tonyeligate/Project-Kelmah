@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 /**
  * A hook that provides a debounced value for any rapidly changing value
  * Useful for search inputs to avoid making API calls on every keystroke
- * 
+ *
  * @param {any} value - The value to debounce
  * @param {number} delay - The delay in milliseconds
  * @returns {any} - The debounced value

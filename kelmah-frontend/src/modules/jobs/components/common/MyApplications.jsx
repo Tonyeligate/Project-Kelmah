@@ -8,4 +8,4 @@ const MyApplications = () => {
   return <MyApplicationsPage />;
 };
 
-export default MyApplications; 
+export default MyApplications;

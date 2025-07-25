@@ -33,7 +33,7 @@ export const contractService = {
       throw error;
     }
   },
-  
+
   /**
    * Create a new contract
    * @param {Object} contractData - Contract data to create
@@ -48,7 +48,7 @@ export const contractService = {
       throw error;
     }
   },
-  
+
   /**
    * Update an existing contract
    * @param {string} contractId - Contract ID to update
@@ -57,14 +57,17 @@ export const contractService = {
    */
   updateContract: async (contractId, contractData) => {
     try {
-      const data = await apiService.put(`/api/contracts/${contractId}`, contractData);
+      const data = await apiService.put(
+        `/api/contracts/${contractId}`,
+        contractData,
+      );
       return data;
     } catch (error) {
       console.error(`Error updating contract ${contractId}:`, error);
       throw error;
     }
   },
-  
+
   /**
    * Delete a contract
    * @param {string} contractId - Contract ID to delete
@@ -79,7 +82,7 @@ export const contractService = {
       throw error;
     }
   },
-  
+
   /**
    * Sign a contract
    * @param {string} contractId - Contract ID
@@ -88,14 +91,17 @@ export const contractService = {
    */
   signContract: async (contractId, signatureData) => {
     try {
-      const data = await apiService.post(`/api/contracts/${contractId}/sign`, signatureData);
+      const data = await apiService.post(
+        `/api/contracts/${contractId}/sign`,
+        signatureData,
+      );
       return data;
     } catch (error) {
       console.error(`Error signing contract ${contractId}:`, error);
       throw error;
     }
   },
-  
+
   /**
    * Send contract for signature
    * @param {string} contractId - Contract ID
@@ -103,14 +109,20 @@ export const contractService = {
    */
   sendContractForSignature: async (contractId) => {
     try {
-      const data = await apiService.post(`/api/contracts/${contractId}/send-for-signature`, {});
+      const data = await apiService.post(
+        `/api/contracts/${contractId}/send-for-signature`,
+        {},
+      );
       return data;
     } catch (error) {
-      console.error(`Error sending contract ${contractId} for signature:`, error);
+      console.error(
+        `Error sending contract ${contractId} for signature:`,
+        error,
+      );
       throw error;
     }
   },
-  
+
   /**
    * Get contract milestones
    * @param {string} contractId - Contract ID
@@ -118,14 +130,19 @@ export const contractService = {
    */
   getContractMilestones: async (contractId) => {
     try {
-      const data = await apiService.get(`/api/contracts/${contractId}/milestones`);
+      const data = await apiService.get(
+        `/api/contracts/${contractId}/milestones`,
+      );
       return data;
     } catch (error) {
-      console.error(`Error fetching milestones for contract ${contractId}:`, error);
+      console.error(
+        `Error fetching milestones for contract ${contractId}:`,
+        error,
+      );
       return [];
     }
   },
-  
+
   /**
    * Create a contract milestone
    * @param {string} contractId - Contract ID
@@ -134,14 +151,20 @@ export const contractService = {
    */
   createMilestone: async (contractId, milestoneData) => {
     try {
-      const data = await apiService.post(`/api/contracts/${contractId}/milestones`, milestoneData);
+      const data = await apiService.post(
+        `/api/contracts/${contractId}/milestones`,
+        milestoneData,
+      );
       return data;
     } catch (error) {
-      console.error(`Error creating milestone for contract ${contractId}:`, error);
+      console.error(
+        `Error creating milestone for contract ${contractId}:`,
+        error,
+      );
       throw error;
     }
   },
-  
+
   /**
    * Update a milestone
    * @param {string} contractId - Contract ID
@@ -151,14 +174,17 @@ export const contractService = {
    */
   updateMilestone: async (contractId, milestoneId, milestoneData) => {
     try {
-      const data = await apiService.put(`/api/contracts/${contractId}/milestones/${milestoneId}`, milestoneData);
+      const data = await apiService.put(
+        `/api/contracts/${contractId}/milestones/${milestoneId}`,
+        milestoneData,
+      );
       return data;
     } catch (error) {
       console.error(`Error updating milestone ${milestoneId}:`, error);
       throw error;
     }
   },
-  
+
   /**
    * Complete a milestone
    * @param {string} contractId - Contract ID
@@ -168,14 +194,17 @@ export const contractService = {
    */
   completeMilestone: async (contractId, milestoneId, completionData = {}) => {
     try {
-      const data = await apiService.post(`/api/contracts/${contractId}/milestones/${milestoneId}/complete`, completionData);
+      const data = await apiService.post(
+        `/api/contracts/${contractId}/milestones/${milestoneId}/complete`,
+        completionData,
+      );
       return data;
     } catch (error) {
       console.error(`Error completing milestone ${milestoneId}:`, error);
       throw error;
     }
   },
-  
+
   /**
    * Get contract templates
    * @returns {Promise<Array>} - Array of template objects
@@ -189,7 +218,7 @@ export const contractService = {
       return [];
     }
   },
-  
+
   /**
    * Get contract template by ID
    * @param {string} templateId - Template ID
@@ -197,14 +226,16 @@ export const contractService = {
    */
   getContractTemplateById: async (templateId) => {
     try {
-      const data = await apiService.get(`/api/contracts/templates/${templateId}`);
+      const data = await apiService.get(
+        `/api/contracts/templates/${templateId}`,
+      );
       return data;
     } catch (error) {
       console.error(`Error fetching contract template ${templateId}:`, error);
       throw error;
     }
   },
-  
+
   /**
    * Create a new contract template
    * @param {Object} templateData - Template data
@@ -212,14 +243,17 @@ export const contractService = {
    */
   createContractTemplate: async (templateData) => {
     try {
-      const data = await apiService.post('/api/contracts/templates', templateData);
+      const data = await apiService.post(
+        '/api/contracts/templates',
+        templateData,
+      );
       return data;
     } catch (error) {
       console.error('Error creating contract template:', error);
       throw error;
     }
   },
-  
+
   /**
    * Create contract from template
    * @param {string} templateId - Template ID
@@ -228,14 +262,20 @@ export const contractService = {
    */
   createFromTemplate: async (templateId, contractData) => {
     try {
-      const data = await apiService.post(`/api/contracts/templates/${templateId}/create`, contractData);
+      const data = await apiService.post(
+        `/api/contracts/templates/${templateId}/create`,
+        contractData,
+      );
       return data;
     } catch (error) {
-      console.error(`Error creating contract from template ${templateId}:`, error);
+      console.error(
+        `Error creating contract from template ${templateId}:`,
+        error,
+      );
       throw error;
     }
   },
-  
+
   /**
    * Cancel contract
    * @param {string} contractId - Contract ID
@@ -244,14 +284,17 @@ export const contractService = {
    */
   cancelContract: async (contractId, reason) => {
     try {
-      const data = await apiService.post(`/api/contracts/${contractId}/cancel`, { reason });
+      const data = await apiService.post(
+        `/api/contracts/${contractId}/cancel`,
+        { reason },
+      );
       return data;
     } catch (error) {
       console.error(`Error cancelling contract ${contractId}:`, error);
       throw error;
     }
   },
-  
+
   /**
    * Create a dispute for contract
    * @param {string} contractId - Contract ID
@@ -260,14 +303,20 @@ export const contractService = {
    */
   createDispute: async (contractId, disputeData) => {
     try {
-      const data = await apiService.post(`/api/contracts/${contractId}/disputes`, disputeData);
+      const data = await apiService.post(
+        `/api/contracts/${contractId}/disputes`,
+        disputeData,
+      );
       return data;
     } catch (error) {
-      console.error(`Error creating dispute for contract ${contractId}:`, error);
+      console.error(
+        `Error creating dispute for contract ${contractId}:`,
+        error,
+      );
       throw error;
     }
   },
-  
+
   /**
    * Get dispute by ID
    * @param {string} disputeId - Dispute ID
@@ -282,7 +331,7 @@ export const contractService = {
       throw error;
     }
   },
-  
+
   /**
    * Download contract as PDF
    * @param {string} contractId - Contract ID
@@ -290,15 +339,19 @@ export const contractService = {
    */
   downloadContract: async (contractId) => {
     try {
-      const response = await apiService.get(`/api/contracts/${contractId}/download`, {}, {
-        responseType: 'blob'
-      });
+      const response = await apiService.get(
+        `/api/contracts/${contractId}/download`,
+        {},
+        {
+          responseType: 'blob',
+        },
+      );
       return response;
     } catch (error) {
       console.error(`Error downloading contract ${contractId}:`, error);
       throw error;
     }
-  }
+  },
 };
 
-export default contractService; 
+export default contractService;

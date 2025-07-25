@@ -15,6 +15,6 @@ export const lazyLoad = (importFn) => {
       throw error;
     }
   });
-  
+
   return LazyComponent;
-}; 
+};

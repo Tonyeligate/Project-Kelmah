@@ -16,8 +16,8 @@ const searchService = {
       const response = await axios.get(`${API_URL}/search`, {
         params: {
           q: query,
-          ...filters
-        }
+          ...filters,
+        },
       });
       return response.data.results || response.data;
     } catch (error) {
@@ -34,7 +34,7 @@ const searchService = {
   searchWorkers: async (params = {}) => {
     try {
       const response = await axios.get(`${API_URL}/search/workers`, {
-        params
+        params,
       });
       return response.data.results || response.data;
     } catch (error) {
@@ -62,12 +62,12 @@ const searchService = {
     if (!partialQuery || partialQuery.trim() === '') {
       return [];
     }
-    
+
     try {
       const response = await axios.get(`${API_URL}/search/suggestions`, {
         params: {
-          q: partialQuery
-        }
+          q: partialQuery,
+        },
       });
       return response.data.suggestions || response.data;
     } catch (error) {
@@ -84,7 +84,7 @@ const searchService = {
   getPopularTerms: async (limit = 5) => {
     try {
       const response = await axios.get(`${API_URL}/search/popular`, {
-        params: { limit }
+        params: { limit },
       });
       return response.data.terms || response.data;
     } catch (error) {
@@ -108,7 +108,7 @@ const searchService = {
   // Get search suggestions
   getSearchSuggestions: async (keyword) => {
     const response = await axios.get(`${API_URL}/jobs/suggestions`, {
-      params: { keyword }
+      params: { keyword },
     });
     return response.data;
   },
@@ -117,7 +117,7 @@ const searchService = {
   getPopularSearches: async () => {
     const response = await axios.get(`${API_URL}/jobs/popular-searches`);
     return response.data;
-  }
+  },
 };
 
-export default searchService; 
+export default searchService;

@@ -15,7 +15,7 @@ import {
   Skeleton,
   Alert,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import { MapOutlined as MapIcon } from '@mui/icons-material';
 import JobCard from '../../../jobs/components/common/JobCard';
@@ -30,7 +30,7 @@ const SearchResults = ({
   onPageChange,
   showMap = false,
   onToggleView,
-  onSaveJob
+  onSaveJob,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -68,18 +68,18 @@ const SearchResults = ({
     if (filters.budgetMin || filters.budgetMax) {
       activeFilters.push({
         key: 'budget',
-        value: `$${filters.budgetMin || 0} - $${filters.budgetMax || 'Any'}`
+        value: `$${filters.budgetMin || 0} - $${filters.budgetMax || 'Any'}`,
       });
     }
 
     if (filters.categories && filters.categories.length > 0) {
-      filters.categories.forEach(category => {
+      filters.categories.forEach((category) => {
         activeFilters.push({ key: 'categories', value: category });
       });
     }
 
     if (filters.skills && filters.skills.length > 0) {
-      filters.skills.forEach(skill => {
+      filters.skills.forEach((skill) => {
         activeFilters.push({ key: 'skills', value: skill });
       });
     }
@@ -121,11 +121,19 @@ const SearchResults = ({
     <Box>
       {/* Results Header */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
           <Typography variant="h6">
             {loading ? 'Searching...' : `${pagination.totalItems || 0} Results`}
           </Typography>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="sort-select-label">Sort By</InputLabel>
@@ -147,9 +155,9 @@ const SearchResults = ({
               variant="outlined"
               startIcon={<MapIcon />}
               onClick={onToggleView}
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? 'small' : 'medium'}
             >
-              {showMap ? "List View" : "Map View"}
+              {showMap ? 'List View' : 'Map View'}
             </Button>
           </Box>
         </Box>
@@ -163,7 +171,11 @@ const SearchResults = ({
         <Grid container spacing={3} sx={{ my: 2 }}>
           {Array.from(new Array(6)).map((_, idx) => (
             <Grid item xs={12} key={idx}>
-              <Skeleton variant="rectangular" height={150} sx={{ borderRadius: 2 }} />
+              <Skeleton
+                variant="rectangular"
+                height={150}
+                sx={{ borderRadius: 2 }}
+              />
             </Grid>
           ))}
         </Grid>
@@ -172,18 +184,19 @@ const SearchResults = ({
       {/* Error State */}
       {!loading && jobs.length === 0 && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          No jobs found matching your search criteria. Try adjusting your filters.
+          No jobs found matching your search criteria. Try adjusting your
+          filters.
         </Alert>
       )}
 
       {/* Results Grid */}
       {!loading && jobs.length > 0 && (
         <Grid container spacing={3}>
-          {jobs.map(job => (
+          {jobs.map((job) => (
             <Grid item xs={12} key={job.id}>
-              <JobCard 
-                job={job} 
-                onViewDetails={() => window.location.href = `/jobs/${job.id}`} 
+              <JobCard
+                job={job}
+                onViewDetails={() => (window.location.href = `/jobs/${job.id}`)}
               />
             </Grid>
           ))}
@@ -206,4 +219,4 @@ const SearchResults = ({
   );
 };
 
-export default SearchResults; 
+export default SearchResults;

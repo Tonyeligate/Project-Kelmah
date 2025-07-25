@@ -1,40 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Grid, 
-  Paper, 
-  Button, 
-  Chip, 
-  Avatar, 
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Paper,
+  Button,
+  Chip,
+  Avatar,
   Divider,
   IconButton,
   CircularProgress,
   Alert,
-  Skeleton
+  Skeleton,
 } from '@mui/material';
-import { 
-  LocationOn, 
-  AttachMoney, 
-  Category, 
-  Schedule, 
-  Person, 
-  Star, 
-  ArrowBack, 
+import {
+  LocationOn,
+  AttachMoney,
+  Category,
+  Schedule,
+  Person,
+  Star,
+  ArrowBack,
   WorkOutline,
   BookmarkBorder,
   Bookmark,
   Share,
   Message,
-  NoteAlt
+  NoteAlt,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
 import JobApplication from '../components/job-application/JobApplication';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchJobById, selectCurrentJob, selectJobsLoading, selectJobsError } from '../services/jobSlice';
+import {
+  fetchJobById,
+  selectCurrentJob,
+  selectJobsLoading,
+  selectJobsError,
+} from '../services/jobSlice';
 
 // Styled components
 const DetailsPaper = styled(Paper)(({ theme }) => ({
@@ -53,7 +58,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-  }
+  },
 }));
 
 const SkillChip = styled(Chip)(({ theme }) => ({
@@ -63,7 +68,7 @@ const SkillChip = styled(Chip)(({ theme }) => ({
   borderColor: 'rgba(255, 215, 0, 0.5)',
   '&:hover': {
     background: 'rgba(255, 215, 0, 0.3)',
-  }
+  },
 }));
 
 const ProfileLink = styled(Box)(({ theme }) => ({
@@ -76,7 +81,7 @@ const ProfileLink = styled(Box)(({ theme }) => ({
   transition: 'all 0.2s ease',
   '&:hover': {
     background: 'rgba(255, 255, 255, 0.1)',
-  }
+  },
 }));
 
 const JobDetailsPage = () => {
@@ -138,7 +143,12 @@ const JobDetailsPage = () => {
       <Container maxWidth="lg">
         <Box sx={{ mt: 4 }}>
           <Skeleton variant="text" width="30%" height={40} />
-          <Skeleton variant="rectangular" height={60} width="20%" sx={{ my: 2 }} />
+          <Skeleton
+            variant="rectangular"
+            height={60}
+            width="20%"
+            sx={{ my: 2 }}
+          />
           <Grid container spacing={4}>
             <Grid item xs={12} md={8}>
               <Skeleton variant="rectangular" height={300} />
@@ -148,19 +158,21 @@ const JobDetailsPage = () => {
               <Skeleton variant="text" width="80%" sx={{ mt: 2 }} />
             </Grid>
           </Grid>
-      </Box>
+        </Box>
       </Container>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ 
-        minHeight: '80vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-      }}>
+      <Box
+        sx={{
+          minHeight: '80vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -169,12 +181,14 @@ const JobDetailsPage = () => {
   if (!job) return null;
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      py: 8, 
-      px: 2,
-      background: '#1a1a1a'
-    }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        py: 8,
+        px: 2,
+        background: '#1a1a1a',
+      }}
+    >
       <Container maxWidth="lg">
         {/* Back Button */}
         <motion.div
@@ -182,15 +196,15 @@ const JobDetailsPage = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Button 
-            startIcon={<ArrowBack />} 
+          <Button
+            startIcon={<ArrowBack />}
             onClick={() => navigate('/jobs')}
-            sx={{ 
-              mb: 3, 
+            sx={{
+              mb: 3,
               color: '#FFD700',
               '&:hover': {
                 background: 'rgba(255, 215, 0, 0.1)',
-              }
+              },
             }}
           >
             Back to Jobs
@@ -209,7 +223,15 @@ const JobDetailsPage = () => {
                 {/* Job Header */}
                 <Box sx={{ mb: 3 }}>
                   {/* Embedded Map for Job Location */}
-                  <Box sx={{ width: '100%', height: 300, mb: 3, borderRadius: 2, overflow: 'hidden' }}>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 300,
+                      mb: 3,
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                    }}
+                  >
                     <iframe
                       title="Job Location"
                       src={`https://maps.google.com/maps?q=${encodeURIComponent(job.location)}&output=embed`}
@@ -220,49 +242,52 @@ const JobDetailsPage = () => {
                       loading="lazy"
                     />
                   </Box>
-                  <Typography 
-                    variant="h3" 
-                    component="h1" 
-                    sx={theme => ({ 
+                  <Typography
+                    variant="h3"
+                    component="h1"
+                    sx={(theme) => ({
                       mb: 2,
                       background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
-                      fontWeight: 'bold'
+                      fontWeight: 'bold',
                     })}
                   >
                     {job.title}
                   </Typography>
-                  
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+
+                  <Box
+                    sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}
+                  >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <LocationOn sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
                         {job.location}
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Category sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
                         {job.category}
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        ${job.minRate} - ${job.maxRate} / {job.rateType === 'hourly' ? 'hr' : 'fixed'}
+                        ${job.minRate} - ${job.maxRate} /{' '}
+                        {job.rateType === 'hourly' ? 'hr' : 'fixed'}
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Schedule sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
                         Posted: {job.postedDate}
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <WorkOutline sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
@@ -270,54 +295,59 @@ const JobDetailsPage = () => {
                       </Typography>
                     </Box>
                   </Box>
-                  
-                  <Chip 
-                    label={job.status} 
-                    sx={{ 
-                      background: job.status === 'Open' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 152, 0, 0.2)',
+
+                  <Chip
+                    label={job.status}
+                    sx={{
+                      background:
+                        job.status === 'Open'
+                          ? 'rgba(76, 175, 80, 0.2)'
+                          : 'rgba(255, 152, 0, 0.2)',
                       color: job.status === 'Open' ? '#4caf50' : '#ff9800',
-                      fontWeight: 'bold'
-                    }} 
+                      fontWeight: 'bold',
+                    }}
                   />
                 </Box>
-                
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }} />
-                
+
+                <Divider
+                  sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }}
+                />
+
                 {/* Job Description */}
                 <Box sx={{ mb: 4 }}>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
+                  <Typography
+                    variant="h5"
+                    sx={{
                       color: '#FFD700',
                       mb: 2,
-                      fontWeight: 'medium'
+                      fontWeight: 'medium',
                     }}
                   >
                     Description
                   </Typography>
-                  
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
+
+                  <Typography
+                    variant="body1"
+                    sx={{
                       color: '#fff',
                       whiteSpace: 'pre-line',
-                      mb: 3
+                      mb: 3,
                     }}
                   >
                     {job.description}
                   </Typography>
-                  
+
                   <Box sx={{ mt: 3 }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
+                    <Typography
+                      variant="h6"
+                      sx={{
                         color: '#FFD700',
-                        mb: 1
+                        mb: 1,
                       }}
                     >
                       Required Skills
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {(job.skills || []).map((skill, index) => (
                         <SkillChip key={index} label={skill} />
@@ -325,23 +355,25 @@ const JobDetailsPage = () => {
                     </Box>
                   </Box>
                 </Box>
-                
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }} />
-                
+
+                <Divider
+                  sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }}
+                />
+
                 {/* Job Images */}
                 {job.images && job.images.length > 0 && (
                   <Box sx={{ mb: 4 }}>
-                    <Typography 
-                      variant="h5" 
-                      sx={{ 
+                    <Typography
+                      variant="h5"
+                      sx={{
                         color: '#FFD700',
                         mb: 2,
-                        fontWeight: 'medium'
+                        fontWeight: 'medium',
                       }}
                     >
                       Project Images
                     </Typography>
-                    
+
                     <Grid container spacing={2}>
                       {job.images.map((image, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
@@ -358,7 +390,7 @@ const JobDetailsPage = () => {
                               cursor: 'pointer',
                               '&:hover': {
                                 transform: 'scale(1.03)',
-                              }
+                              },
                             }}
                           />
                         </Grid>
@@ -366,9 +398,11 @@ const JobDetailsPage = () => {
                     </Grid>
                   </Box>
                 )}
-                
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }} />
-                
+
+                <Divider
+                  sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }}
+                />
+
                 {/* Additional Info */}
                 <Box>
                   {/* Communication Actions */}
@@ -380,17 +414,17 @@ const JobDetailsPage = () => {
                   >
                     Message Hirer
                   </Button>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
+                  <Typography
+                    variant="h5"
+                    sx={{
                       color: '#FFD700',
                       mb: 2,
-                      fontWeight: 'medium'
+                      fontWeight: 'medium',
                     }}
                   >
                     Deadline
                   </Typography>
-                  
+
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Schedule sx={{ color: '#FFD700', mr: 1 }} />
                     <Typography variant="body1" sx={{ color: '#fff' }}>
@@ -401,7 +435,7 @@ const JobDetailsPage = () => {
               </DetailsPaper>
             </motion.div>
           </Grid>
-          
+
           {/* Sidebar */}
           <Grid item xs={12} md={4}>
             <motion.div
@@ -410,24 +444,24 @@ const JobDetailsPage = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <DetailsPaper elevation={3} sx={{ mb: 3 }}>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
+                <Typography
+                  variant="h5"
+                  sx={{
                     color: '#FFD700',
                     mb: 3,
-                    fontWeight: 'medium'
+                    fontWeight: 'medium',
                   }}
                 >
                   Apply Now
                 </Typography>
-                
+
                 <ActionButton
                   variant="contained"
                   fullWidth
                   size="large"
                   onClick={handleApplyNow}
                   startIcon={<NoteAlt />}
-                  sx={{ 
+                  sx={{
                     mb: 2,
                     background: 'linear-gradient(45deg, #FFD700, #FFA500)',
                     color: '#000',
@@ -435,70 +469,78 @@ const JobDetailsPage = () => {
                 >
                   Apply for this Job
                 </ActionButton>
-                
+
                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                  <IconButton 
+                  <IconButton
                     onClick={handleToggleSave}
-                    sx={{ 
+                    sx={{
                       color: saved ? '#FFD700' : 'rgba(255, 255, 255, 0.7)',
                       '&:hover': {
                         background: 'rgba(255, 215, 0, 0.1)',
-                      }
+                      },
                     }}
                   >
                     {saved ? <Bookmark /> : <BookmarkBorder />}
                   </IconButton>
-                  
-                  <IconButton 
+
+                  <IconButton
                     onClick={handleShareJob}
-                    sx={{ 
+                    sx={{
                       color: 'rgba(255, 255, 255, 0.7)',
                       '&:hover': {
                         background: 'rgba(255, 215, 0, 0.1)',
-                        color: '#FFD700'
-                      }
+                        color: '#FFD700',
+                      },
                     }}
                   >
                     <Share />
                   </IconButton>
                 </Box>
               </DetailsPaper>
-              
+
               <DetailsPaper elevation={3}>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
+                <Typography
+                  variant="h5"
+                  sx={{
                     color: '#FFD700',
                     mb: 3,
-                    fontWeight: 'medium'
+                    fontWeight: 'medium',
                   }}
                 >
                   About the Client
                 </Typography>
-                
-                <ProfileLink onClick={() => navigate(`/profile/${job.hirer.id}`)}>
+
+                <ProfileLink
+                  onClick={() => navigate(`/profile/${job.hirer.id}`)}
+                >
                   <Avatar
                     src={job.hirer.avatar}
                     alt={job.hirer.name}
                     sx={{ width: 56, height: 56, mr: 2 }}
                   />
-                  
+
                   <Box>
                     <Typography variant="h6" sx={{ color: '#FFD700' }}>
                       {job.hirer.name}
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Star sx={{ color: '#FFD700', fontSize: 18, mr: 0.5 }} />
                       <Typography variant="body2" sx={{ color: '#fff', mr: 1 }}>
                         {job.hirer.rating.toFixed(1)}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                      >
                         ({job.hirer.reviews} reviews)
                       </Typography>
                     </Box>
-                    
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}>
+
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}
+                    >
                       {job.hirer.jobsPosted} jobs posted
                     </Typography>
                   </Box>
@@ -510,9 +552,9 @@ const JobDetailsPage = () => {
 
         {/* Add job application dialog */}
         {job && (
-          <JobApplication 
-            open={applicationOpen} 
-            onClose={handleCloseApplication} 
+          <JobApplication
+            open={applicationOpen}
+            onClose={handleCloseApplication}
             jobId={job.id}
             jobTitle={job.title}
           />
@@ -522,5 +564,4 @@ const JobDetailsPage = () => {
   );
 };
 
-export default JobDetailsPage; 
-
+export default JobDetailsPage;

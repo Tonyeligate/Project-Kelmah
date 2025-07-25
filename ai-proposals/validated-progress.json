@@ -850,10 +850,10 @@
   },
   "codeQuality": {
     "frontend": {
-      "totalFiles": 91118,
-      "documentedFiles": 58961,
+      "totalFiles": 91119,
+      "documentedFiles": 58962,
       "testFiles": 99,
-      "complexity": 143318,
+      "complexity": 143349,
       "issues": [
         "@mui_lab.js has too many functions (51)",
         "@mui_material.js has too many functions (189)",
@@ -2157,9 +2157,9 @@
         "index.development.js has too many functions (11)",
         "middleware.development.js has too many functions (31)"
       ],
-      "documentationCoverage": 64.70840009657806,
-      "testCoverage": 0.1086503215610527,
-      "averageComplexity": 1.5728835136855506
+      "documentationCoverage": 64.70878740987061,
+      "testCoverage": 0.10864912916076779,
+      "averageComplexity": 1.573206466269384
     },
     "backend": {
       "totalFiles": 64287,
@@ -3696,7 +3696,7 @@
       "averageComplexity": 8.714285714285714
     }
   },
-  "lastUpdated": "2025-05-22T06:58:12.621Z",
+  "lastUpdated": "2025-05-22T14:37:12.848Z",
   "featureValidation": {
     "services": {
       "Auth": {
@@ -3891,6 +3891,6 @@
       }
     },
     "overallCompleteness": 11,
-    "timestamp": "2025-05-22T14:26:54.586Z"
+    "timestamp": "2025-07-07T04:41:13.553Z"
   }
 }
