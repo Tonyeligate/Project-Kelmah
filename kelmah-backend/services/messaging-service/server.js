@@ -40,13 +40,19 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Set mongoose strictQuery option to suppress deprecation warning
+mongoose.set('strictQuery', false);
+
 // Connect to MongoDB
 const mongoUri = process.env.MESSAGING_MONGO_URI || process.env.MONGODB_URI;
+console.log("Attempting to connect to MongoDB...");
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 30000,
+    connectTimeoutMS: 30000,
+    socketTimeoutMS: 30000,
   })
   .then(() => {
     console.log("Connected to MongoDB");
@@ -58,7 +64,14 @@ mongoose
     });
   })
   .catch((error) => {
-    console.error("MongoDB connection error:", error);
+    console.error("MongoDB connection error:", error.message);
+    if (error.message.includes("IP") || error.message.includes("whitelist")) {
+      console.error("💡 SOLUTION: Add 0.0.0.0/0 to MongoDB Atlas Network Access whitelist for production deployment");
+      console.error("💡 Go to: MongoDB Atlas > Network Access > Add IP Address > Allow Access from Anywhere");
+    }
+    console.error("Environment check:");
+    console.error("MESSAGING_MONGO_URI:", process.env.MESSAGING_MONGO_URI ? "✅ Set" : "❌ Not set");
+    console.error("MONGODB_URI:", process.env.MONGODB_URI ? "✅ Set" : "❌ Not set");
     process.exit(1);
   });
 
