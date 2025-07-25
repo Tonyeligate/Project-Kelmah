@@ -1,48 +1,38 @@
 const express = require('express');
 const { authenticateUser } = require('../middlewares/auth');
-const axios = require('axios');
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const router = express.Router();
 
 // Protect payment routes
 router.use(authenticateUser);
 
-// Payment-service base URL
-const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost:5005';
+// Stripe integration: ensure STRIPE_SECRET_KEY is set in your .env
 
 // Create payment intent
 router.post('/create-payment-intent', async (req, res, next) => {
   try {
-    const response = await axios.post(
-      `${PAYMENT_SERVICE_URL}/api/payments/create-payment-intent`,
-      req.body,
-      { headers: { Authorization: req.headers.authorization } }
-    );
-    res.status(response.status).json(response.data);
+    const { amount, currency = 'USD', ...options } = req.body;
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: currency.toLowerCase(),
+      ...options
+    });
+    res.status(201).json({ clientSecret: paymentIntent.client_secret, id: paymentIntent.id });
   } catch (error) {
-    if (error.response) {
-      res.status(error.response.status).json(error.response.data);
-    } else {
-      next(error);
-    }
+    next(error);
   }
 });
 
 // Confirm payment
 router.post('/confirm-payment', async (req, res, next) => {
   try {
-    const response = await axios.post(
-      `${PAYMENT_SERVICE_URL}/api/payments/confirm-payment`,
-      req.body,
-      { headers: { Authorization: req.headers.authorization } }
-    );
-    res.status(response.status).json(response.data);
+    const { paymentIntentId } = req.body;
+    const confirmed = await stripe.paymentIntents.confirm(paymentIntentId);
+    res.json(confirmed);
   } catch (error) {
-    if (error.response) {
-      res.status(error.response.status).json(error.response.data);
-    } else {
-      next(error);
-    }
+    next(error);
   }
 });
 

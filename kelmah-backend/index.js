@@ -56,16 +56,10 @@ const services = [
     color: colors.yellow
   },
   {
-    name: 'Review Service',
-    path: path.join(__dirname, 'services', 'review-service'),
+    name: 'Payment Service',
+    path: path.join(__dirname, 'services', 'payment-service'),
     script: 'server.js',
-    color: colors.white
-  },
-  {
-    name: 'Notification Service',
-    path: path.join(__dirname, 'services', 'notification-service'),
-    script: 'server.js',
-    color: colors.red
+    color: colors.green
   }
 ];
 

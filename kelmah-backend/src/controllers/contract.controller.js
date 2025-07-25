@@ -1,6 +1,8 @@
 const Contract = require('../../services/job-service/models/Contract');
 const Application = require('../../services/job-service/models/Application');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
+const ContractTemplate = require('../../services/job-service/models/ContractTemplate');
+const ContractDispute = require('../../services/job-service/models/ContractDispute');
 
 /**
  * Create a new contract based on an application
@@ -117,6 +119,178 @@ exports.updateContract = async (req, res, next) => {
     await contract.save();
 
     return successResponse(res, 200, 'Contract updated successfully', contract);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** TEMPLATE ENDPOINTS **/
+// Get all contract templates
+exports.getContractTemplates = async (req, res, next) => {
+  try {
+    const templates = await ContractTemplate.find();
+    return successResponse(res, 200, 'Templates retrieved successfully', templates);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Get a single contract template by ID
+exports.getContractTemplateById = async (req, res, next) => {
+  try {
+    const template = await ContractTemplate.findById(req.params.id);
+    if (!template) {
+      return errorResponse(res, 404, 'Template not found');
+    }
+    return successResponse(res, 200, 'Template retrieved successfully', template);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Create a new contract template
+exports.createContractTemplate = async (req, res, next) => {
+  try {
+    const template = await ContractTemplate.create({ ...req.body, createdBy: req.user.id });
+    return successResponse(res, 201, 'Template created successfully', template);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** MILESTONE ENDPOINTS **/
+// Get milestones for a contract
+exports.getContractMilestones = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    return successResponse(res, 200, 'Milestones retrieved successfully', contract.milestones);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Create a milestone for a contract
+exports.createMilestone = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    contract.milestones.push(req.body);
+    await contract.save();
+    const milestone = contract.milestones[contract.milestones.length - 1];
+    return successResponse(res, 201, 'Milestone created successfully', milestone);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Update a milestone
+exports.updateMilestone = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    const milestone = contract.milestones.id(req.params.milestoneId);
+    if (!milestone) {
+      return errorResponse(res, 404, 'Milestone not found');
+    }
+    Object.assign(milestone, req.body);
+    await contract.save();
+    return successResponse(res, 200, 'Milestone updated successfully', milestone);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Complete a milestone
+exports.completeMilestone = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    const milestone = contract.milestones.id(req.params.milestoneId);
+    if (!milestone) {
+      return errorResponse(res, 404, 'Milestone not found');
+    }
+    milestone.status = 'completed';
+    milestone.completionDate = new Date();
+    await contract.save();
+    return successResponse(res, 200, 'Milestone completed successfully', milestone);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** SIGNATURE AND CANCELLATION **/
+// Sign a contract
+exports.signContract = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    contract.status = 'active';
+    await contract.save();
+    return successResponse(res, 200, 'Contract signed successfully', contract);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Send contract for signature
+exports.sendContractForSignature = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    // Placeholder for notification/email logic
+    return successResponse(res, 200, 'Contract sent for signature', contract);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Cancel a contract
+exports.cancelContract = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    contract.status = 'cancelled';
+    contract.terminationReason = req.body.reason;
+    contract.endDate = new Date();
+    await contract.save();
+    return successResponse(res, 200, 'Contract cancelled successfully', contract);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** DISPUTES **/
+// Create a dispute for a contract
+exports.createDispute = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+    const dispute = await ContractDispute.create({
+      contract: contract._id,
+      user: req.user.id,
+      reason: req.body.reason,
+      description: req.body.description
+    });
+    contract.status = 'disputed';
+    await contract.save();
+    return successResponse(res, 201, 'Dispute created successfully', dispute);
   } catch (error) {
     return next(error);
   }

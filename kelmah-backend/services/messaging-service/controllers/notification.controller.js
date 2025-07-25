@@ -1,5 +1,5 @@
-const Notification = require('../models/Notification');
-const { handleError } = require('../utils/errorHandler');
+const Notification = require("../models/Notification");
+const { handleError } = require("../utils/errorHandler");
 
 // Get user notifications
 exports.getUserNotifications = async (req, res) => {
@@ -7,25 +7,25 @@ exports.getUserNotifications = async (req, res) => {
     const { page = 1, limit = 20, unreadOnly = false } = req.query;
 
     const query = {
-      recipient: req.user._id
+      recipient: req.user._id,
     };
 
-    if (unreadOnly === 'true') {
-      query['readStatus.isRead'] = false;
+    if (unreadOnly === "true") {
+      query["readStatus.isRead"] = false;
     }
 
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .populate('relatedEntity.id');
+      .populate("relatedEntity.id");
 
     const totalNotifications = await Notification.countDocuments(query);
 
     res.json({
       notifications,
       totalPages: Math.ceil(totalNotifications / limit),
-      currentPage: page
+      currentPage: page,
     });
   } catch (error) {
     handleError(res, error);
@@ -39,16 +39,16 @@ exports.markNotificationAsRead = async (req, res) => {
 
     const notification = await Notification.findOne({
       _id: notificationId,
-      recipient: req.user._id
+      recipient: req.user._id,
     });
 
     if (!notification) {
-      return res.status(404).json({ message: 'Notification not found' });
+      return res.status(404).json({ message: "Notification not found" });
     }
 
     await notification.markAsRead();
 
-    res.json({ message: 'Notification marked as read' });
+    res.json({ message: "Notification marked as read" });
   } catch (error) {
     handleError(res, error);
   }
@@ -60,17 +60,17 @@ exports.markAllNotificationsAsRead = async (req, res) => {
     await Notification.updateMany(
       {
         recipient: req.user._id,
-        'readStatus.isRead': false
+        "readStatus.isRead": false,
       },
       {
         $set: {
-          'readStatus.isRead': true,
-          'readStatus.readAt': new Date()
-        }
-      }
+          "readStatus.isRead": true,
+          "readStatus.readAt": new Date(),
+        },
+      },
     );
 
-    res.json({ message: 'All notifications marked as read' });
+    res.json({ message: "All notifications marked as read" });
   } catch (error) {
     handleError(res, error);
   }
@@ -83,16 +83,16 @@ exports.deleteNotification = async (req, res) => {
 
     const notification = await Notification.findOne({
       _id: notificationId,
-      recipient: req.user._id
+      recipient: req.user._id,
     });
 
     if (!notification) {
-      return res.status(404).json({ message: 'Notification not found' });
+      return res.status(404).json({ message: "Notification not found" });
     }
 
     await notification.remove();
 
-    res.json({ message: 'Notification deleted successfully' });
+    res.json({ message: "Notification deleted successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -103,11 +103,11 @@ exports.getUnreadCount = async (req, res) => {
   try {
     const count = await Notification.countDocuments({
       recipient: req.user._id,
-      'readStatus.isRead': false
+      "readStatus.isRead": false,
     });
 
     res.json({ unreadCount: count });
   } catch (error) {
     handleError(res, error);
   }
-}; 
+};

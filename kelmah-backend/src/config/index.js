@@ -17,5 +17,6 @@ try {
 module.exports = {
   ...env,
   ...auth,
-  db
+  db,
+  frontendUrl: env.FRONTEND_URL
 }; 

@@ -4,14 +4,17 @@ FROM node:16-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy only this service’s package files and install dependencies
+# Copy only this service's package files and install dependencies
 COPY package*.json ./
 RUN npm install --only=production
-# Copy service source code
-COPY . .
 
-# DEBUG: Dump /app directory to verify routes folder presence
-RUN echo "DEBUG /app listing:" && ls -R /app
+# Copy specific directories that are needed
+COPY routes ./routes
+COPY controllers ./controllers
+COPY models ./models
+COPY config ./config
+COPY utils ./utils
+COPY server.js ./server.js
 
 # Create a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup

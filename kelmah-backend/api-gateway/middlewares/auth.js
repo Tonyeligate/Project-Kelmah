@@ -26,11 +26,8 @@ const authenticate = async (req, res, next) => {
 
     // Verify token locally first
     try {
-      // Note: This is just a preliminary check
-      // We're using the public key that only verifies the token structure
-      // The actual validation will be done by the auth service
-      const publicKey = process.env.JWT_PUBLIC_KEY || 'default-public-key';
-      jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+      // Preliminary check using HS256 with shared secret
+      jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
       return res.status(401).json({ message: 'Invalid token' });
     }

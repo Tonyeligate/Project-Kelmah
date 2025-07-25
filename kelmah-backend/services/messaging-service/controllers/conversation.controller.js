@@ -1,6 +1,6 @@
-const Conversation = require('../models/Conversation');
-const Message = require('../models/Message');
-const { handleError } = require('../utils/errorHandler');
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
+const { handleError } = require("../utils/errorHandler");
 
 // Get all conversations for a user
 exports.getUserConversations = async (req, res) => {
@@ -9,25 +9,25 @@ exports.getUserConversations = async (req, res) => {
 
     const conversations = await Conversation.find({
       participants: req.user._id,
-      status: 'active'
+      status: "active",
     })
       .sort({ updatedAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .populate('participants', 'name profilePicture')
-      .populate('lastMessage')
-      .populate('relatedJob', 'title')
-      .populate('relatedContract', 'status');
+      .populate("participants", "name profilePicture")
+      .populate("lastMessage")
+      .populate("relatedJob", "title")
+      .populate("relatedContract", "status");
 
     const totalConversations = await Conversation.countDocuments({
       participants: req.user._id,
-      status: 'active'
+      status: "active",
     });
 
     res.json({
       conversations,
       totalPages: Math.ceil(totalConversations / limit),
-      currentPage: page
+      currentPage: page,
     });
   } catch (error) {
     handleError(res, error);
@@ -47,13 +47,13 @@ exports.createConversation = async (req, res) => {
     // Check if conversation already exists
     const existingConversation = await Conversation.findOne({
       participants: { $all: participants },
-      status: 'active'
+      status: "active",
     });
 
     if (existingConversation) {
       return res.status(200).json({
-        message: 'Conversation already exists',
-        data: existingConversation
+        message: "Conversation already exists",
+        data: existingConversation,
       });
     }
 
@@ -61,14 +61,14 @@ exports.createConversation = async (req, res) => {
       participants,
       relatedJob,
       relatedContract,
-      metadata
+      metadata,
     });
 
     await conversation.save();
 
     res.status(201).json({
-      message: 'Conversation created successfully',
-      data: conversation
+      message: "Conversation created successfully",
+      data: conversation,
     });
   } catch (error) {
     handleError(res, error);
@@ -82,17 +82,17 @@ exports.archiveConversation = async (req, res) => {
 
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: req.user._id
+      participants: req.user._id,
     });
 
     if (!conversation) {
-      return res.status(404).json({ message: 'Conversation not found' });
+      return res.status(404).json({ message: "Conversation not found" });
     }
 
-    conversation.status = 'archived';
+    conversation.status = "archived";
     await conversation.save();
 
-    res.json({ message: 'Conversation archived successfully' });
+    res.json({ message: "Conversation archived successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -105,15 +105,15 @@ exports.getConversationDetails = async (req, res) => {
 
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: req.user._id
+      participants: req.user._id,
     })
-      .populate('participants', 'name profilePicture')
-      .populate('lastMessage')
-      .populate('relatedJob', 'title status')
-      .populate('relatedContract', 'status');
+      .populate("participants", "name profilePicture")
+      .populate("lastMessage")
+      .populate("relatedJob", "title status")
+      .populate("relatedContract", "status");
 
     if (!conversation) {
-      return res.status(404).json({ message: 'Conversation not found' });
+      return res.status(404).json({ message: "Conversation not found" });
     }
 
     res.json(conversation);
@@ -130,25 +130,25 @@ exports.updateConversationMetadata = async (req, res) => {
 
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      participants: req.user._id
+      participants: req.user._id,
     });
 
     if (!conversation) {
-      return res.status(404).json({ message: 'Conversation not found' });
+      return res.status(404).json({ message: "Conversation not found" });
     }
 
     conversation.metadata = {
       ...conversation.metadata,
-      ...metadata
+      ...metadata,
     };
 
     await conversation.save();
 
     res.json({
-      message: 'Conversation metadata updated successfully',
-      data: conversation
+      message: "Conversation metadata updated successfully",
+      data: conversation,
     });
   } catch (error) {
     handleError(res, error);
   }
-}; 
+};

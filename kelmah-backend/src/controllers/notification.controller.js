@@ -1,64 +1,72 @@
-const Notification = require('../models/Notification');
+const { Notification } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 
+// Create a new notification
+exports.createNotification = async (req, res, next) => {
+  try {
+    const notification = await Notification.create(req.body);
+    return successResponse(res, 201, 'Notification created successfully', notification);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Retrieve all notifications with pagination
 exports.getNotifications = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
-    const query = { user: req.user.id };
-
-    const notifications = await Notification.find(query)
-      .sort('-createdAt')
-      .skip(skip)
-      .limit(limit);
-
-    const total = await Notification.countDocuments(query);
-
-    return paginatedResponse(res, 200, 'Notifications retrieved successfully', notifications, page, limit, total);
-  } catch (err) {
-    next(err);
+    const offset = (page - 1) * limit;
+    const { count, rows } = await Notification.findAndCountAll({
+      offset,
+      limit,
+      order: [['createdAt', 'DESC']]
+    });
+    return paginatedResponse(res, 200, 'Notifications retrieved successfully', rows, page, limit, count);
+  } catch (error) {
+    next(error);
   }
 };
 
-exports.markAsRead = async (req, res, next) => {
+// Retrieve a single notification by ID
+exports.getNotificationById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const notification = await Notification.findOneAndUpdate(
-      { _id: id, user: req.user.id },
-      { isRead: true },
-      { new: true }
-    );
-
+    const notification = await Notification.findByPk(req.params.id);
     if (!notification) {
       return errorResponse(res, 404, 'Notification not found');
     }
-
-    // Emit dashboard update for notifications change
-    const dashboardSocket = req.app.get('dashboardSocket');
-    if (dashboardSocket) dashboardSocket.emitUpdate(req.user.id, { type: 'notificationRead', notification });
-
-    return successResponse(res, 200, 'Notification marked as read', notification);
-  } catch (err) {
-    next(err);
+    return successResponse(res, 200, 'Notification retrieved successfully', notification);
+  } catch (error) {
+    next(error);
   }
 };
 
+// Update a notification by ID
+exports.updateNotification = async (req, res, next) => {
+  try {
+    const [updated] = await Notification.update(req.body, {
+      where: { id: req.params.id },
+      returning: true
+    });
+    if (!updated) {
+      return errorResponse(res, 404, 'Notification not found');
+    }
+    const updatedNotification = await Notification.findByPk(req.params.id);
+    return successResponse(res, 200, 'Notification updated successfully', updatedNotification);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete a notification by ID
 exports.deleteNotification = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const notification = await Notification.findOneAndDelete({ _id: id, user: req.user.id });
-
-    if (!notification) {
+    const deleted = await Notification.destroy({ where: { id: req.params.id } });
+    if (!deleted) {
       return errorResponse(res, 404, 'Notification not found');
     }
-
-    // Emit dashboard update for notification deletion
-    const dashboardSocket = req.app.get('dashboardSocket');
-    if (dashboardSocket) dashboardSocket.emitUpdate(req.user.id, { type: 'notificationDeleted', notification });
-
     return successResponse(res, 200, 'Notification deleted successfully');
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 }; 

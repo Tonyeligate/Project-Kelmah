@@ -1,47 +1,51 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const ConversationSchema = new Schema(
   {
-    participants: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    }],
+    participants: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
     lastMessage: {
       type: Schema.Types.ObjectId,
-      ref: 'Message'
+      ref: "Message",
     },
-    unreadCounts: [{
-      user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+    unreadCounts: [
+      {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+        count: {
+          type: Number,
+          default: 0,
+        },
       },
-      count: {
-        type: Number,
-        default: 0
-      }
-    }],
+    ],
     relatedJob: {
       type: Schema.Types.ObjectId,
-      ref: 'Job'
+      ref: "Job",
     },
     relatedContract: {
       type: Schema.Types.ObjectId,
-      ref: 'Contract'
+      ref: "Contract",
     },
     status: {
       type: String,
-      enum: ['active', 'archived', 'deleted'],
-      default: 'active'
+      enum: ["active", "archived", "deleted"],
+      default: "active",
     },
     metadata: {
       title: String,
       description: String,
-      tags: [String]
-    }
+      tags: [String],
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for better query performance
@@ -51,8 +55,10 @@ ConversationSchema.index({ relatedContract: 1 });
 ConversationSchema.index({ status: 1 });
 
 // Helper methods
-ConversationSchema.methods.incrementUnreadCount = function(userId) {
-  const unreadCount = this.unreadCounts.find(count => count.user.toString() === userId.toString());
+ConversationSchema.methods.incrementUnreadCount = function (userId) {
+  const unreadCount = this.unreadCounts.find(
+    (count) => count.user.toString() === userId.toString(),
+  );
   if (unreadCount) {
     unreadCount.count += 1;
   } else {
@@ -61,14 +67,16 @@ ConversationSchema.methods.incrementUnreadCount = function(userId) {
   return this.save();
 };
 
-ConversationSchema.methods.resetUnreadCount = function(userId) {
-  const unreadCount = this.unreadCounts.find(count => count.user.toString() === userId.toString());
+ConversationSchema.methods.resetUnreadCount = function (userId) {
+  const unreadCount = this.unreadCounts.find(
+    (count) => count.user.toString() === userId.toString(),
+  );
   if (unreadCount) {
     unreadCount.count = 0;
   }
   return this.save();
 };
 
-const Conversation = mongoose.model('Conversation', ConversationSchema);
+const Conversation = mongoose.model("Conversation", ConversationSchema);
 
-module.exports = Conversation; 
+module.exports = Conversation;

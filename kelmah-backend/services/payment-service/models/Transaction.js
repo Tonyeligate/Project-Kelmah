@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const TransactionSchema = new Schema(
@@ -6,55 +6,55 @@ const TransactionSchema = new Schema(
     transactionId: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     amount: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
     currency: {
       type: String,
       required: true,
-      default: 'USD'
+      default: "USD",
     },
     type: {
       type: String,
-      enum: ['payment', 'refund', 'withdrawal', 'deposit'],
-      required: true
+      enum: ["payment", "refund", "withdrawal", "deposit"],
+      required: true,
     },
     status: {
       type: String,
-      enum: ['pending', 'processing', 'completed', 'failed', 'cancelled'],
-      default: 'pending'
+      enum: ["pending", "processing", "completed", "failed", "cancelled"],
+      default: "pending",
     },
     paymentMethod: {
       type: {
         type: String,
-        enum: ['credit_card', 'bank_transfer', 'paypal', 'stripe'],
-        required: true
+        enum: ["credit_card", "bank_transfer", "paypal", "stripe"],
+        required: true,
       },
       details: {
-        type: Schema.Types.Mixed
-      }
+        type: Schema.Types.Mixed,
+      },
     },
     sender: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+      ref: "User",
+      required: true,
     },
     recipient: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+      ref: "User",
+      required: true,
     },
     relatedContract: {
       type: Schema.Types.ObjectId,
-      ref: 'Contract'
+      ref: "Contract",
     },
     relatedJob: {
       type: Schema.Types.ObjectId,
-      ref: 'Job'
+      ref: "Job",
     },
     description: String,
     metadata: {
@@ -62,15 +62,15 @@ const TransactionSchema = new Schema(
       processingFee: Number,
       taxAmount: Number,
       paymentProvider: String,
-      paymentProviderTransactionId: String
+      paymentProviderTransactionId: String,
     },
     errorDetails: {
       code: String,
       message: String,
-      timestamp: Date
-    }
+      timestamp: Date,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for better query performance
@@ -83,19 +83,22 @@ TransactionSchema.index({ relatedContract: 1 });
 TransactionSchema.index({ relatedJob: 1 });
 
 // Helper methods
-TransactionSchema.methods.updateStatus = async function(newStatus, errorDetails = null) {
+TransactionSchema.methods.updateStatus = async function (
+  newStatus,
+  errorDetails = null,
+) {
   this.status = newStatus;
   if (errorDetails) {
     this.errorDetails = {
       ...errorDetails,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
   return this.save();
 };
 
-TransactionSchema.methods.calculateFees = function() {
-  const platformFeeRate = 0.10; // 10% platform fee
+TransactionSchema.methods.calculateFees = function () {
+  const platformFeeRate = 0.1; // 10% platform fee
   const processingFeeRate = 0.029; // 2.9% processing fee
   const taxRate = 0.05; // 5% tax
 
@@ -106,6 +109,6 @@ TransactionSchema.methods.calculateFees = function() {
   return this.save();
 };
 
-const Transaction = mongoose.model('Transaction', TransactionSchema);
+const Transaction = mongoose.model("Transaction", TransactionSchema);
 
-module.exports = Transaction; 
+module.exports = Transaction;

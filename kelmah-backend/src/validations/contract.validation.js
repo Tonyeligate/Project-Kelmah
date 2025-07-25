@@ -25,7 +25,60 @@ const updateContract = Joi.object({
   notes: Joi.string().optional()
 });
 
+// Validation for contract templates
+const createTemplate = Joi.object({
+  title: Joi.string().required().messages({ 'any.required': 'Template title is required' }),
+  description: Joi.string().allow('').optional(),
+  milestones: Joi.array()
+    .items(
+      Joi.object({
+        title: Joi.string().required().messages({ 'any.required': 'Milestone title is required' }),
+        description: Joi.string().allow('').optional(),
+        dueDate: Joi.date().required().messages({ 'any.required': 'Due date is required', 'date.base': 'Due date must be a valid date' }),
+        amount: Joi.number().positive().required().messages({ 'number.base': 'Amount must be a number', 'number.positive': 'Amount must be a positive number', 'any.required': 'Amount is required' })
+      })
+    )
+    .optional()
+});
+
+// Validation for milestones
+const createMilestone = Joi.object({
+  title: Joi.string().required(),
+  description: Joi.string().allow('').optional(),
+  dueDate: Joi.date().required(),
+  amount: Joi.number().positive().required()
+});
+
+const updateMilestone = Joi.object({
+  title: Joi.string().optional(),
+  description: Joi.string().allow('').optional(),
+  dueDate: Joi.date().optional(),
+  amount: Joi.number().positive().optional()
+});
+
+// Validation for cancelling contracts
+const cancelContract = Joi.object({
+  reason: Joi.string().required().messages({ 'any.required': 'Cancellation reason is required' })
+});
+
+// Validation for signing contracts
+const signContract = Joi.object({
+  signature: Joi.string().required().messages({ 'any.required': 'Signature is required' })
+});
+
+// Validation for creating disputes
+const createDispute = Joi.object({
+  reason: Joi.string().required().messages({ 'any.required': 'Dispute reason is required' }),
+  description: Joi.string().required().messages({ 'any.required': 'Dispute description is required' })
+});
+
 module.exports = {
   createContract,
-  updateContract
+  updateContract,
+  createTemplate,
+  createMilestone,
+  updateMilestone,
+  cancelContract,
+  signContract,
+  createDispute
 }; 

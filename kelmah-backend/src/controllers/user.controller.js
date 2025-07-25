@@ -111,4 +111,16 @@ exports.searchUsers = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
-}; 
+};
+
+// Create a new user (admin only)
+const createUser = async (req, res, next) => {
+  try {
+    const user = await User.create(req.body);
+    return successResponse(res, 201, 'User created successfully', user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createUser, getUsers, getUserById, updateUser, deleteUser, searchUsers }; 

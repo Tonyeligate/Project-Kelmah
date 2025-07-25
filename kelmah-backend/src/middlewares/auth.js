@@ -99,6 +99,29 @@ exports.isSameUser = (req, res, next) => {
   next();
 };
 
-// Aliases for backward compatibility
+// Ensure exports match app usage
+// Rename authenticate to authenticateUser
 exports.authenticateUser = exports.authenticate;
-exports.authorizeRoles = exports.authorize; 
+
+// Rename authorize to authorizeRoles for consistency
+exports.authorizeRoles = exports.authorize;
+
+// Placeholder for refresh token middleware
+exports.authenticateRefreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return next(new AppError('Refresh token missing', 400));
+    }
+    // Verify and decode refresh token
+    const decoded = jwt.verify(refreshToken, config.JWT_REFRESH_SECRET);
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return next(new AppError('Invalid refresh token', 401));
+    }
+    req.user = { id: user.id, email: user.email, role: user.role };
+    next();
+  } catch (error) {
+    return next(new AppError('Invalid or expired refresh token', 401));
+  }
+}; 

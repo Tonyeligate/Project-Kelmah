@@ -1,33 +1,12 @@
 const nodemailer = require('nodemailer');
 const { EMAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = require('../config');
 
-// Add more detailed logging to help diagnose environment variable issues
-console.log('SMTP config → host:', SMTP_HOST, 'port:', SMTP_PORT);
-console.log('EMAIL_FROM:', EMAIL_FROM);
-console.log('SMTP_USER:', SMTP_USER);
-console.log('SMTP_PASS:', SMTP_PASS ? '******' : 'undefined');
-console.log('Direct env access → SMTP_HOST:', process.env.SMTP_HOST);
-console.log('Direct env access → SMTP_PORT:', process.env.SMTP_PORT);
-
-// Create a test configuration object to verify values
-const smtpConfig = {
-  host: SMTP_HOST || 'smtp.gmail.com', // Fallback to gmail if undefined
-  port: Number(SMTP_PORT) || 465,      // Fallback to 465 if undefined
-  secure: (Number(SMTP_PORT) === 465) || false,
-  auth: { 
-    user: SMTP_USER || process.env.SMTP_USER, 
-    pass: SMTP_PASS || process.env.SMTP_PASS
-  }
-};
-
-console.log('Using SMTP config:', {
-  host: smtpConfig.host,
-  port: smtpConfig.port,
-  secure: smtpConfig.secure,
-  auth: { user: smtpConfig.auth.user, pass: smtpConfig.auth.pass ? '******' : 'undefined' }
+const transporter = nodemailer.createTransport({
+  host: SMTP_HOST,
+  port: Number(SMTP_PORT),
+  secure: Number(SMTP_PORT) === 465,
+  auth: { user: SMTP_USER, pass: SMTP_PASS }
 });
-
-const transporter = nodemailer.createTransport(smtpConfig);
 
 module.exports = {
   sendVerificationEmail: async ({ name, email, verificationUrl }) => {

@@ -1,10 +1,10 @@
-const Transaction = require('../models/Transaction');
-const Wallet = require('../models/Wallet');
-const PaymentMethod = require('../models/PaymentMethod');
-const { handleError } = require('../utils/errorHandler');
-const { validateTransaction } = require('../utils/validation');
-const stripe = require('../services/stripe');
-const paypal = require('../services/paypal');
+const Transaction = require("../models/Transaction");
+const Wallet = require("../models/Wallet");
+const PaymentMethod = require("../models/PaymentMethod");
+const { handleError } = require("../utils/errorHandler");
+const { validateTransaction } = require("../utils/validation");
+const stripe = require("../services/stripe");
+const paypal = require("../services/paypal");
 
 // Create a new transaction
 exports.createTransaction = async (req, res) => {
@@ -22,7 +22,7 @@ exports.createTransaction = async (req, res) => {
       recipient,
       relatedContract,
       relatedJob,
-      description
+      description,
     } = req.body;
 
     // Create transaction record
@@ -36,7 +36,7 @@ exports.createTransaction = async (req, res) => {
       recipient,
       relatedContract,
       relatedJob,
-      description
+      description,
     });
 
     // Calculate fees
@@ -44,22 +44,22 @@ exports.createTransaction = async (req, res) => {
 
     // Process payment based on type
     switch (type) {
-      case 'payment':
+      case "payment":
         await processPayment(transaction);
         break;
-      case 'withdrawal':
+      case "withdrawal":
         await processWithdrawal(transaction);
         break;
-      case 'refund':
+      case "refund":
         await processRefund(transaction);
         break;
       default:
-        throw new Error('Invalid transaction type');
+        throw new Error("Invalid transaction type");
     }
 
     res.status(201).json({
-      message: 'Transaction created successfully',
-      data: transaction
+      message: "Transaction created successfully",
+      data: transaction,
     });
   } catch (error) {
     handleError(res, error);
@@ -73,14 +73,11 @@ exports.getTransaction = async (req, res) => {
 
     const transaction = await Transaction.findOne({
       transactionId,
-      $or: [
-        { sender: req.user._id },
-        { recipient: req.user._id }
-      ]
-    }).populate('sender recipient relatedContract relatedJob');
+      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+    }).populate("sender recipient relatedContract relatedJob");
 
     if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
     res.json(transaction);
@@ -95,10 +92,7 @@ exports.getTransactionHistory = async (req, res) => {
     const { page = 1, limit = 20, type, status } = req.query;
 
     const query = {
-      $or: [
-        { sender: req.user._id },
-        { recipient: req.user._id }
-      ]
+      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
     };
 
     if (type) query.type = type;
@@ -108,14 +102,14 @@ exports.getTransactionHistory = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .populate('sender recipient relatedContract relatedJob');
+      .populate("sender recipient relatedContract relatedJob");
 
     const total = await Transaction.countDocuments(query);
 
     res.json({
       transactions,
       totalPages: Math.ceil(total / limit),
-      currentPage: page
+      currentPage: page,
     });
   } catch (error) {
     handleError(res, error);
@@ -130,16 +124,18 @@ exports.cancelTransaction = async (req, res) => {
     const transaction = await Transaction.findOne({
       transactionId,
       sender: req.user._id,
-      status: 'pending'
+      status: "pending",
     });
 
     if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found or cannot be cancelled' });
+      return res
+        .status(404)
+        .json({ message: "Transaction not found or cannot be cancelled" });
     }
 
-    await transaction.updateStatus('cancelled');
+    await transaction.updateStatus("cancelled");
 
-    res.json({ message: 'Transaction cancelled successfully' });
+    res.json({ message: "Transaction cancelled successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -152,28 +148,32 @@ const generateTransactionId = () => {
 
 const processPayment = async (transaction) => {
   try {
-    const paymentMethod = await PaymentMethod.findById(transaction.paymentMethod);
-    
+    const paymentMethod = await PaymentMethod.findById(
+      transaction.paymentMethod,
+    );
+
     switch (paymentMethod.metadata.provider) {
-      case 'stripe':
+      case "stripe":
         await stripe.processPayment(transaction, paymentMethod);
         break;
-      case 'paypal':
+      case "paypal":
         await paypal.processPayment(transaction, paymentMethod);
         break;
       default:
-        throw new Error('Unsupported payment provider');
+        throw new Error("Unsupported payment provider");
     }
 
     // Update recipient's wallet
-    const recipientWallet = await Wallet.findOne({ user: transaction.recipient });
+    const recipientWallet = await Wallet.findOne({
+      user: transaction.recipient,
+    });
     await recipientWallet.addFunds(transaction.amount, transaction);
 
-    await transaction.updateStatus('completed');
+    await transaction.updateStatus("completed");
   } catch (error) {
-    await transaction.updateStatus('failed', {
+    await transaction.updateStatus("failed", {
       code: error.code,
-      message: error.message
+      message: error.message,
     });
     throw error;
   }
@@ -182,30 +182,32 @@ const processPayment = async (transaction) => {
 const processWithdrawal = async (transaction) => {
   try {
     const senderWallet = await Wallet.findOne({ user: transaction.sender });
-    
+
     if (senderWallet.balance < transaction.amount) {
-      throw new Error('Insufficient funds');
+      throw new Error("Insufficient funds");
     }
 
-    const paymentMethod = await PaymentMethod.findById(transaction.paymentMethod);
-    
+    const paymentMethod = await PaymentMethod.findById(
+      transaction.paymentMethod,
+    );
+
     switch (paymentMethod.metadata.provider) {
-      case 'stripe':
+      case "stripe":
         await stripe.processWithdrawal(transaction, paymentMethod);
         break;
-      case 'paypal':
+      case "paypal":
         await paypal.processWithdrawal(transaction, paymentMethod);
         break;
       default:
-        throw new Error('Unsupported payment provider');
+        throw new Error("Unsupported payment provider");
     }
 
     await senderWallet.deductFunds(transaction.amount, transaction);
-    await transaction.updateStatus('completed');
+    await transaction.updateStatus("completed");
   } catch (error) {
-    await transaction.updateStatus('failed', {
+    await transaction.updateStatus("failed", {
       code: error.code,
-      message: error.message
+      message: error.message,
     });
     throw error;
   }
@@ -214,39 +216,43 @@ const processWithdrawal = async (transaction) => {
 const processRefund = async (transaction) => {
   try {
     const originalTransaction = await Transaction.findOne({
-      transactionId: transaction.relatedTransaction
+      transactionId: transaction.relatedTransaction,
     });
 
     if (!originalTransaction) {
-      throw new Error('Original transaction not found');
+      throw new Error("Original transaction not found");
     }
 
-    const paymentMethod = await PaymentMethod.findById(originalTransaction.paymentMethod);
-    
+    const paymentMethod = await PaymentMethod.findById(
+      originalTransaction.paymentMethod,
+    );
+
     switch (paymentMethod.metadata.provider) {
-      case 'stripe':
+      case "stripe":
         await stripe.processRefund(transaction, originalTransaction);
         break;
-      case 'paypal':
+      case "paypal":
         await paypal.processRefund(transaction, originalTransaction);
         break;
       default:
-        throw new Error('Unsupported payment provider');
+        throw new Error("Unsupported payment provider");
     }
 
     // Update wallets
     const senderWallet = await Wallet.findOne({ user: transaction.sender });
-    const recipientWallet = await Wallet.findOne({ user: transaction.recipient });
+    const recipientWallet = await Wallet.findOne({
+      user: transaction.recipient,
+    });
 
     await senderWallet.addFunds(transaction.amount, transaction);
     await recipientWallet.deductFunds(transaction.amount, transaction);
 
-    await transaction.updateStatus('completed');
+    await transaction.updateStatus("completed");
   } catch (error) {
-    await transaction.updateStatus('failed', {
+    await transaction.updateStatus("failed", {
       code: error.code,
-      message: error.message
+      message: error.message,
     });
     throw error;
   }
-}; 
+};

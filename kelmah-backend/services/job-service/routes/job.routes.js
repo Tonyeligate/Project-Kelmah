@@ -2,45 +2,45 @@
  * Job Routes
  */
 
-const express = require('express');
-const { validate } = require('../middlewares/validator');
-const { authenticateUser, authorizeRoles } = require('../middlewares/auth');
-const jobController = require('../controllers/job.controller');
-const jobValidation = require('../validations/job.validation');
+const express = require("express");
+const { validate } = require("../middlewares/validator");
+const { authenticateUser, authorizeRoles } = require("../middlewares/auth");
+const jobValidation = require("../../../src/validations/job.validation");
+const jobController = require("../controllers/job.controller");
 
 const router = express.Router();
 
 // Public routes
-router.get('/', jobController.getJobs);
-router.get('/:id', jobController.getJobById);
+router.get("/", jobController.getJobs);
+router.get("/:id", jobController.getJobById);
 
 // Protected routes
 router.use(authenticateUser);
 
 // Hirer only routes
 router.post(
-  '/',
-  authorizeRoles('hirer'),
+  "/",
+  authorizeRoles("hirer"),
   validate(jobValidation.createJob),
-  jobController.createJob
+  jobController.createJob,
 );
 
-router.get('/my-jobs', authorizeRoles('hirer'), jobController.getMyJobs);
+router.get("/my-jobs", authorizeRoles("hirer"), jobController.getMyJobs);
 
 router.put(
-  '/:id',
-  authorizeRoles('hirer'),
+  "/:id",
+  authorizeRoles("hirer"),
   validate(jobValidation.updateJob),
-  jobController.updateJob
+  jobController.updateJob,
 );
 
-router.delete('/:id', authorizeRoles('hirer'), jobController.deleteJob);
+router.delete("/:id", authorizeRoles("hirer"), jobController.deleteJob);
 
 router.patch(
-  '/:id/status',
-  authorizeRoles('hirer'),
+  "/:id/status",
+  authorizeRoles("hirer"),
   validate(jobValidation.changeJobStatus),
-  jobController.changeJobStatus
+  jobController.changeJobStatus,
 );
 
-module.exports = router; 
+module.exports = router;

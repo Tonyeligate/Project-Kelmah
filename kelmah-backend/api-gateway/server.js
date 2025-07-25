@@ -11,12 +11,13 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const client = require('prom-client');
 
 // Load environment variables
 dotenv.config({ path: '../.env' });
 
 const app = express();
-const PORT = process.env.API_GATEWAY_PORT || 8080;
+const PORT = process.env.API_GATEWAY_PORT || process.env.PORT || 5000;
 
 // MongoDB connection
 const connectDB = async () => {
@@ -102,8 +103,25 @@ const User = mongoose.model('User', userSchema);
 // Connect to database
 connectDB();
 
-// CORS middleware
-app.use(cors());
+// CORS middleware: whitelist frontend origins for cross-domain auth
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://localhost:5173'
+];
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin (e.g. mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    }
+  },
+  credentials: true
+};
+app.use(cors(corsOptions));
 
 // Security middleware
 app.use(helmet());
@@ -736,7 +754,7 @@ app.all('/api/conversations/*', authenticate, async (req, res) => {
 });
 
 // Proxy payment-service endpoints
-const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost:3004';
+const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost:3005';
 
 app.all('/api/payments/*', authenticate, async (req, res) => {
   try {

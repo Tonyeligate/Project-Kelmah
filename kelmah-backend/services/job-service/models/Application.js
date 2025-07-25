@@ -1,69 +1,72 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const ApplicationSchema = new Schema(
   {
     job: {
       type: Schema.Types.ObjectId,
-      ref: 'Job',
-      required: true
+      ref: "Job",
+      required: true,
     },
     worker: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+      ref: "User",
+      required: true,
     },
     proposedRate: {
       type: Number,
-      required: true
+      required: true,
     },
     coverLetter: {
       type: String,
-      required: true
+      required: true,
     },
     estimatedDuration: {
       value: Number,
       unit: {
         type: String,
-        enum: ['hour', 'day', 'week', 'month'],
-        default: 'day'
-      }
+        enum: ["hour", "day", "week", "month"],
+        default: "day",
+      },
     },
-    attachments: [{
-      name: String,
-      fileUrl: String,
-      fileType: String,
-      uploadDate: Date
-    }],
+    attachments: [
+      {
+        name: String,
+        fileUrl: String,
+        fileType: String,
+        uploadDate: Date,
+      },
+    ],
     status: {
       type: String,
-      enum: ['pending', 'under_review', 'accepted', 'rejected', 'withdrawn'],
-      default: 'pending'
+      enum: ["pending", "under_review", "accepted", "rejected", "withdrawn"],
+      default: "pending",
     },
     notes: String,
     availabilityStartDate: Date,
-    questionResponses: [{
-      question: String,
-      answer: String
-    }],
+    questionResponses: [
+      {
+        question: String,
+        answer: String,
+      },
+    ],
     isInvited: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Ensure a worker can't apply to the same job multiple times
 ApplicationSchema.index({ job: 1, worker: 1 }, { unique: true });
 
 // Add methods to the model as needed
-ApplicationSchema.methods.updateStatus = function(newStatus) {
+ApplicationSchema.methods.updateStatus = function (newStatus) {
   this.status = newStatus;
   return this.save();
 };
 
-const Application = mongoose.model('Application', ApplicationSchema);
+const Application = mongoose.model("Application", ApplicationSchema);
 
 module.exports = Application;
-

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 /**
  * Stubbed PayPal service for payment intents, confirmations, and method management.
@@ -10,9 +10,9 @@ require('dotenv').config();
  * @param {string} currency
  * @returns {Promise<object>}
  */
-async function createPaymentIntent(amount, currency = 'USD') {
+async function createPaymentIntent(amount, currency = "USD") {
   // Implement PayPal order creation logic using PayPal SDK or REST API
-  throw new Error('PayPal createPaymentIntent not implemented');
+  throw new Error("PayPal createPaymentIntent not implemented");
 }
 
 /**
@@ -22,7 +22,7 @@ async function createPaymentIntent(amount, currency = 'USD') {
  */
 async function confirmPayment(orderId) {
   // Implement PayPal order capture logic
-  throw new Error('PayPal confirmPayment not implemented');
+  throw new Error("PayPal confirmPayment not implemented");
 }
 
 /**
@@ -32,7 +32,7 @@ async function confirmPayment(orderId) {
  */
 async function processPayment(transaction, paymentMethod) {
   // Implement PayPal payment processing
-  throw new Error('PayPal processPayment not implemented');
+  throw new Error("PayPal processPayment not implemented");
 }
 
 /**
@@ -42,7 +42,7 @@ async function processPayment(transaction, paymentMethod) {
  */
 async function processWithdrawal(transaction, paymentMethod) {
   // Implement PayPal payout logic
-  throw new Error('PayPal processWithdrawal not implemented');
+  throw new Error("PayPal processWithdrawal not implemented");
 }
 
 /**
@@ -51,7 +51,7 @@ async function processWithdrawal(transaction, paymentMethod) {
  */
 async function processRefund(originalTransaction) {
   // Implement PayPal refund logic
-  throw new Error('PayPal processRefund not implemented');
+  throw new Error("PayPal processRefund not implemented");
 }
 
 /**
@@ -60,7 +60,7 @@ async function processRefund(originalTransaction) {
  */
 async function addPayPalAccount(paypalDetails) {
   // Implement linking PayPal account
-  throw new Error('PayPal addPayPalAccount not implemented');
+  throw new Error("PayPal addPayPalAccount not implemented");
 }
 
 /**
@@ -69,7 +69,7 @@ async function addPayPalAccount(paypalDetails) {
  */
 async function removePayPalAccount(providerId) {
   // Implement unlinking PayPal account
-  throw new Error('PayPal removePayPalAccount not implemented');
+  throw new Error("PayPal removePayPalAccount not implemented");
 }
 
 /**
@@ -79,7 +79,7 @@ async function removePayPalAccount(providerId) {
  */
 async function verifyPayPalAccount(providerId, verificationData) {
   // Implement PayPal account verification
-  throw new Error('PayPal verifyPayPalAccount not implemented');
+  throw new Error("PayPal verifyPayPalAccount not implemented");
 }
 
 module.exports = {
@@ -90,5 +90,5 @@ module.exports = {
   processRefund,
   addPayPalAccount,
   removePayPalAccount,
-  verifyPayPalAccount
-}; 
+  verifyPayPalAccount,
+};

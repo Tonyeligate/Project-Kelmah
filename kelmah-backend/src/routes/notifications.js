@@ -1,25 +1,48 @@
 const express = require('express');
-const { authenticateUser } = require('../middlewares/auth');
-const { validate } = require('../middlewares/validator');
-const notificationController = require('../controllers/notification.controller');
-const notificationValidation = require('../validations/notification.validation');
-
 const router = express.Router();
+const { authenticateUser, authorizeRoles } = require('../middlewares/auth');
+const { validate } = require('../middlewares/validator');
+const notificationValidation = require('../validations/notification.validation');
+const notificationController = require('../controllers/notification.controller');
 
-// All routes require authentication
+// All notification routes require authentication
 router.use(authenticateUser);
 
-// Get my notifications (paginated)
-router.get('/', notificationController.getNotifications);
-
-// Mark a notification as read
-router.put(
-  '/:id/read',
-  validate(notificationValidation.markRead),
-  notificationController.markAsRead
+// Create a notification (admin only)
+router.post(
+  '/',
+  authorizeRoles(['admin']),
+  validate(notificationValidation.createNotification),
+  notificationController.createNotification
 );
 
-// Delete a notification
-router.delete('/:id', notificationController.deleteNotification);
+// List all notifications (admin only)
+router.get(
+  '/',
+  authorizeRoles(['admin']),
+  notificationController.getNotifications
+);
+
+// Get notification by ID (admin only)
+router.get(
+  '/:id',
+  authorizeRoles(['admin']),
+  notificationController.getNotificationById
+);
+
+// Update notification by ID (admin only)
+router.put(
+  '/:id',
+  authorizeRoles(['admin']),
+  validate(notificationValidation.updateNotification),
+  notificationController.updateNotification
+);
+
+// Delete notification by ID (admin only)
+router.delete(
+  '/:id',
+  authorizeRoles(['admin']),
+  notificationController.deleteNotification
+);
 
 module.exports = router; 

@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Copy the rest of the code
 COPY . .
@@ -27,4 +27,4 @@ ENV NODE_ENV=production
 EXPOSE 5000
 
 # Command to run the application
-CMD ["node", "server.js"] 
+CMD ["node", "api-gateway/server.js"] 

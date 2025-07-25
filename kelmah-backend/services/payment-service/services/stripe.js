@@ -1,5 +1,5 @@
-require('dotenv').config();
-const Stripe = require('stripe');
+require("dotenv").config();
+const Stripe = require("stripe");
 const stripeClient = Stripe(process.env.STRIPE_SECRET_KEY);
 
 /**
@@ -9,11 +9,11 @@ const stripeClient = Stripe(process.env.STRIPE_SECRET_KEY);
  * @param {object} [options]
  * @returns {Promise<object>}
  */
-async function createPaymentIntent(amount, currency = 'usd', options = {}) {
+async function createPaymentIntent(amount, currency = "usd", options = {}) {
   return stripeClient.paymentIntents.create({
     amount,
     currency,
-    ...options
+    ...options,
   });
 }
 
@@ -33,7 +33,7 @@ async function confirmPayment(paymentIntentId) {
  */
 async function processPayment(transaction, paymentMethod) {
   if (!transaction.metadata || !transaction.metadata.paymentIntentId) {
-    throw new Error('Missing paymentIntentId in transaction metadata');
+    throw new Error("Missing paymentIntentId in transaction metadata");
   }
   return confirmPayment(transaction.metadata.paymentIntentId);
 }
@@ -44,7 +44,14 @@ async function processPayment(transaction, paymentMethod) {
  * @param {object} paymentMethod
  */
 async function processWithdrawal(transaction, paymentMethod) {
-  throw new Error('Stripe withdrawal not implemented');
+  // Create a payout to the user's bank or card
+  const payout = await stripeClient.payouts.create({
+    amount: transaction.amount,
+    currency: transaction.currency || "usd",
+    destination: paymentMethod.providerId,
+    metadata: { transactionId: transaction.transactionId },
+  });
+  return payout;
 }
 
 /**
@@ -52,12 +59,15 @@ async function processWithdrawal(transaction, paymentMethod) {
  * @param {object} originalTransaction
  */
 async function processRefund(originalTransaction) {
-  if (!originalTransaction.metadata || !originalTransaction.metadata.paymentIntentId) {
-    throw new Error('Missing paymentIntentId in transaction metadata');
+  if (
+    !originalTransaction.metadata ||
+    !originalTransaction.metadata.paymentIntentId
+  ) {
+    throw new Error("Missing paymentIntentId in transaction metadata");
   }
   return stripeClient.refunds.create({
     payment_intent: originalTransaction.metadata.paymentIntentId,
-    amount: originalTransaction.amount
+    amount: originalTransaction.amount,
   });
 }
 
@@ -73,15 +83,15 @@ async function addCard(cardDetails) {
       exp_month: expMonth,
       exp_year: expYear,
       cvc,
-      name: cardholderName
-    }
+      name: cardholderName,
+    },
   });
   return {
     providerId: token.card.id,
     last4: token.card.last4,
     brand: token.card.brand,
     expMonth: token.card.exp_month,
-    expYear: token.card.exp_year
+    expYear: token.card.exp_year,
   };
 }
 
@@ -93,19 +103,19 @@ async function addBankAccount(bankDetails) {
   const { accountNumber, routingNumber, bankName } = bankDetails;
   const token = await stripeClient.tokens.create({
     bank_account: {
-      country: 'US',
-      currency: 'usd',
-      account_holder_name: bankDetails.accountHolderName || '',
-      account_holder_type: 'individual',
+      country: "US",
+      currency: "usd",
+      account_holder_name: bankDetails.accountHolderName || "",
+      account_holder_type: "individual",
       routing_number: routingNumber,
-      account_number: accountNumber
-    }
+      account_number: accountNumber,
+    },
   });
   return {
     providerId: token.bank_account.id,
     bankName: token.bank_account.bank_name,
     last4: token.bank_account.last4,
-    currency: token.bank_account.currency
+    currency: token.bank_account.currency,
   };
 }
 
@@ -137,5 +147,5 @@ module.exports = {
   addCard,
   addBankAccount,
   removePaymentMethod,
-  verifyPaymentMethod
-}; 
+  verifyPaymentMethod,
+};

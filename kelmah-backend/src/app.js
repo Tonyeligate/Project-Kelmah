@@ -20,6 +20,7 @@ const userRoutes = require('./routes/users');
 const jobRoutes = require('./routes/job.routes');
 const contractRoutes = require('./routes/contracts');
 const reviewRoutes = require('./routes/reviews');
+const disputeRoutes = require('./routes/disputes');
 const messagingRoutes = require('./routes/messaging');
 const notificationRoutes = require('./routes/notifications');
 const searchRoutes = require('./routes/search');
@@ -28,6 +29,11 @@ const profileRoutes = require('./routes/profile');
 const paymentRoutes = require('./routes/payments');
 const appointmentRoutes = require('./routes/appointments');
 const dashboardRoutes = require('./routes/dashboard');
+const transactionRoutes = require('./routes/transactions');
+const subscriptionRoutes = require('./routes/subscriptions');
+const planRoutes = require('./routes/plans');
+const escrowRoutes = require('./routes/escrows');
+const walletRoutes = require('./routes/wallets');
 
 // Import application controller and auth middleware
 const applicationController = require('./controllers/application.controller');
@@ -93,6 +99,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/contracts', contractRoutes);
+app.use('/api/disputes', disputeRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/messages', messagingRoutes);
 app.use('/api/notifications', notificationRoutes);
@@ -102,6 +109,11 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/plans', planRoutes);
+app.use('/api/escrows', escrowRoutes);
+app.use('/api/wallets', walletRoutes);
 app.use('/api/docs', express.static(path.join(__dirname, '../docs')));
 
 // Application endpoints

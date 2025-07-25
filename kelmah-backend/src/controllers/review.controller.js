@@ -1,62 +1,72 @@
-const Review = require('../../services/review-service/models/Review');
+const { Review } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 
-/**
- * Create a new review
- */
+// Create a new review record
 exports.createReview = async (req, res, next) => {
   try {
-    const { job, reviewee, rating, comment } = req.body;
-    const reviewer = req.user.id;
-
-    // Prevent reviewing someone twice for same job
-    const existing = await Review.findOne({ job, reviewer });
-    if (existing) {
-      return errorResponse(res, 400, 'You have already reviewed this job');
-    }
-
-    const review = await Review.create({ job, reviewer, reviewee, rating, comment });
+    const review = await Review.create(req.body);
     return successResponse(res, 201, 'Review created successfully', review);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
-/**
- * Get reviews for a specific worker
- */
-exports.getReviewsForWorker = async (req, res, next) => {
+// Retrieve all reviews with pagination
+exports.getReviews = async (req, res, next) => {
   try {
-    const { id: reviewee } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
-
-    const query = { reviewee };
-    const total = await Review.countDocuments(query);
-    const reviews = await Review.find(query)
-      .populate('reviewer', 'firstName lastName profilePicture')
-      .sort('-createdAt')
-      .skip(skip)
-      .limit(limit);
-
-    return paginatedResponse(res, 200, 'Reviews retrieved successfully', reviews, page, limit, total);
+    const offset = (page - 1) * limit;
+    const { count, rows } = await Review.findAndCountAll({
+      offset,
+      limit,
+      order: [['createdAt', 'DESC']]
+    });
+    return paginatedResponse(res, 200, 'Reviews retrieved successfully', rows, page, limit, count);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 };
 
-/**
- * Get reviews submitted by current user
- */
-exports.getMyReviews = async (req, res, next) => {
+// Retrieve a single review by ID
+exports.getReviewById = async (req, res, next) => {
   try {
-    const reviewer = req.user.id;
-    const reviews = await Review.find({ reviewer })
-      .populate('reviewee', 'firstName lastName profilePicture')
-      .sort('-createdAt');
-    return successResponse(res, 200, 'My reviews retrieved successfully', reviews);
+    const review = await Review.findByPk(req.params.id);
+    if (!review) {
+      return errorResponse(res, 404, 'Review not found');
+    }
+    return successResponse(res, 200, 'Review retrieved successfully', review);
   } catch (error) {
-    return next(error);
+    next(error);
+  }
+};
+
+// Update a review by ID
+exports.updateReview = async (req, res, next) => {
+  try {
+    const [updated] = await Review.update(req.body, {
+      where: { id: req.params.id },
+      returning: true
+    });
+    if (!updated) {
+      return errorResponse(res, 404, 'Review not found');
+    }
+    const updatedReview = await Review.findByPk(req.params.id);
+    return successResponse(res, 200, 'Review updated successfully', updatedReview);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete a review by ID
+exports.deleteReview = async (req, res, next) => {
+  try {
+    const deleted = await Review.destroy({ where: { id: req.params.id } });
+    if (!deleted) {
+      return errorResponse(res, 404, 'Review not found');
+    }
+    return successResponse(res, 200, 'Review deleted successfully');
+  } catch (error) {
+    next(error);
   }
 }; 
