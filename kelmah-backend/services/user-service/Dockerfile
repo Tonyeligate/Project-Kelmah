@@ -7,8 +7,7 @@ WORKDIR /app
 # Copy only this service’s package files and install dependencies
 COPY package*.json ./
 RUN npm install --only=production
-
-# Copy all service source files into the container
+# Copy service source code
 COPY . .
 
 # DEBUG: Dump /app directory to verify routes folder presence
