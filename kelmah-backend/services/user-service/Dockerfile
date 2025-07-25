@@ -11,6 +11,9 @@ RUN npm install --only=production
 # Copy all service source files into the container
 COPY . .
 
+# DEBUG: Dump /app directory to verify routes folder presence
+RUN echo "DEBUG /app listing:" && ls -R /app
+
 # Create a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 RUN chown -R appuser:appgroup /app
