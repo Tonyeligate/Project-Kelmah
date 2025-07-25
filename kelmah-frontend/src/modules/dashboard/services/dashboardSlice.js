@@ -12,10 +12,10 @@ export const fetchDashboardData = createAsyncThunk(
         workersResponse,
         analyticsResponse,
       ] = await Promise.all([
-        api.get('/api/dashboard/metrics'),
-        api.get('/api/dashboard/jobs'),
-        api.get('/api/dashboard/workers'),
-        api.get('/api/dashboard/analytics'),
+        api.get('/api/users/dashboard/metrics'),    // Route to user service for user metrics
+        api.get('/api/jobs/dashboard'),             // Route to job service for job data
+        api.get('/api/users/dashboard/workers'),    // Route to user service for worker data
+        api.get('/api/users/dashboard/analytics'),  // Route to user service for analytics
       ]);
 
       return {

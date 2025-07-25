@@ -52,7 +52,7 @@ class WorkersApi {
    * @returns {Promise<Object>} Current worker profile
    */
   async getMyWorkerProfile() {
-    const response = await apiClient.get('/workers/me');
+    const response = await apiClient.get('/api/users/me');
     return response.data;
   }
 
@@ -62,7 +62,7 @@ class WorkersApi {
    * @returns {Promise<Object>} Updated profile
    */
   async updateWorkerProfile(profileData) {
-    const response = await apiClient.put('/workers/me', profileData);
+    const response = await apiClient.put('/api/users/me', profileData);
     return response.data;
   }
 

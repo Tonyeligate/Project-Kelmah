@@ -16,7 +16,7 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Add request interceptor to inject auth token
+// Add request interceptor to inject auth token and fix routing
 axiosInstance.interceptors.request.use(
   (config) => {
     // Get token from localStorage
@@ -25,6 +25,31 @@ axiosInstance.interceptors.request.use(
     // If token exists, add it to the headers
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Fix legacy API paths for proper microservice routing
+    if (config.url) {
+      // Fix workers API paths to route to user service
+      if (config.url.includes('/workers/me')) {
+        config.url = config.url.replace('/workers/me', '/api/users/me');
+      }
+      // Fix dashboard paths to route to correct services
+      else if (config.url.includes('/api/dashboard/metrics') || 
+               config.url.includes('/api/dashboard/workers') || 
+               config.url.includes('/api/dashboard/analytics')) {
+        config.url = config.url.replace('/api/dashboard/', '/api/users/dashboard/');
+      }
+      else if (config.url.includes('/api/dashboard/jobs')) {
+        config.url = config.url.replace('/api/dashboard/jobs', '/api/jobs/dashboard');
+      }
+      // Fix messaging paths
+      else if (config.url.includes('/conversations') && !config.url.includes('/api/messages')) {
+        config.url = config.url.replace('/conversations', '/api/messages/conversations');
+      }
+      // Fix job paths that don't have /api prefix
+      else if (config.url.match(/^\/jobs[\/\?]/) && !config.url.includes('/api/jobs')) {
+        config.url = config.url.replace(/^\/jobs/, '/api/jobs');
+      }
     }
 
     return config;
