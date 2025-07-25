@@ -14,7 +14,7 @@ class MessagesApi {
    * @returns {Promise<Object>} Conversations data
    */
   async getConversations(params = {}) {
-    const response = await apiClient.get('/messages/conversations', { params });
+    const response = await apiClient.get('/api/messages/conversations', { params }); // Route to messaging service
     return response.data;
   }
 

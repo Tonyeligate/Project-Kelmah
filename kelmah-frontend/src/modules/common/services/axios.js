@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { API_BASE_URL, TOKEN_KEY } from '../../../config';
 
-// In development, use Vite's proxy to avoid CORS; in production, hit the real API_BASE_URL
+// In development, use empty baseURL to leverage Vite's proxy; in production, hit the real API_BASE_URL
 const isDevelopment = import.meta.env.MODE === 'development';
-const baseURL = isDevelopment ? '/api' : API_BASE_URL;
+const baseURL = isDevelopment ? '' : API_BASE_URL; // Empty string for dev to use full paths
 
 // Create an axios instance with default config
 const axiosInstance = axios.create({

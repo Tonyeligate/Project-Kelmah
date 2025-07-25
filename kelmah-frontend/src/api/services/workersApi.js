@@ -221,7 +221,7 @@ class WorkersApi {
    * @returns {Promise<Object>} Skills and licenses
    */
   async getSkillsAndLicenses() {
-    const response = await apiClient.get('/workers/me/credentials');
+    const response = await apiClient.get('/api/users/me/credentials'); // Route to user service
     return response.data;
   }
 
@@ -244,7 +244,7 @@ class WorkersApi {
    * @returns {Promise<Object>} Availability status
    */
   async getAvailabilityStatus() {
-    const response = await apiClient.get('/workers/me/availability');
+    const response = await apiClient.get('/api/users/me/availability'); // Route to user service
     return response.data;
   }
 
