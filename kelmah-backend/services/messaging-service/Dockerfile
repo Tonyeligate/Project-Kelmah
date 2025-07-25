@@ -18,4 +18,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3003
 
-CMD ["node", "services/messaging-service/server.js"] 
+CMD ["node", "server.js"] 
