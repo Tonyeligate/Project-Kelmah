@@ -11,6 +11,11 @@ RUN npm install --only=production
 # Copy this service’s code
 COPY . .
 
+#=== DEBUG START ===
+RUN echo "=== /app/routes BEFORE START ===" && ls -R /app/routes
+RUN cat /app/routes/user.routes.js
+#=== DEBUG END ===
+
 # DEBUG: list current directory to verify routes are present
 RUN echo "DEBUG: Contents of /app:" && ls -R /app
 
