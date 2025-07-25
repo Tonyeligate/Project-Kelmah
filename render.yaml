@@ -15,6 +15,7 @@ services:
     env: docker
     rootDirectory: kelmah-backend/services/user-service
     dockerfilePath: Dockerfile
+    buildContextDirectory: .
     buildCommand: npm ci --only=production
     startCommand: node server.js
     plan: free
