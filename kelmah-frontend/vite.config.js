@@ -40,10 +40,7 @@ export default defineConfig({
       ]
     },
     proxy: {
-      '/api': {
-        target: 'https://kelmah-auth-service.onrender.com',
-        changeOrigin: true
-      },
+      // Specific service proxies (more specific paths first)
       '/api/users': {
         target: 'https://kelmah-user-service.onrender.com',
         changeOrigin: true,
@@ -64,6 +61,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/payments/, '/api')
       },
+      // Default /api proxy (for auth service and fallback)
+      '/api': {
+        target: 'https://kelmah-auth-service.onrender.com',
+        changeOrigin: true
+      },
+      // WebSocket proxy for real-time messaging
       '/ws': {
         target: process.env.VITE_MESSAGING_URL || 'http://localhost:3003',
         ws: true,

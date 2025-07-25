@@ -19,63 +19,94 @@ const PRODUCTION_SERVICES = {
 
 // Development URLs (through Vite proxy)
 const DEVELOPMENT_SERVICES = {
-  AUTH_SERVICE: '/api',           // Proxied to auth service
-  USER_SERVICE: '/api/users',     // Proxied to user service  
-  JOB_SERVICE: '/api/jobs',       // Proxied to job service
-  MESSAGING_SERVICE: '/api/messages', // Proxied to messaging service
-  PAYMENT_SERVICE: '/api/payments'    // Proxied to payment service
+  AUTH_SERVICE: '',                   // Uses main /api proxy to auth service
+  USER_SERVICE: '',                   // Uses /api/users proxy to user service  
+  JOB_SERVICE: '',                    // Uses /api/jobs proxy to job service
+  MESSAGING_SERVICE: '',              // Uses /api/messages proxy to messaging service
+  PAYMENT_SERVICE: ''                 // Uses /api/payments proxy to payment service
 };
 
 // Select services based on environment
 const SERVICES = isDevelopment ? DEVELOPMENT_SERVICES : PRODUCTION_SERVICES;
 
+// Base API paths for each service
+const getServicePath = (service, path) => {
+  if (isDevelopment) {
+    // Development: use proxy paths
+    switch (service) {
+      case 'AUTH_SERVICE': return `/api${path}`;
+      case 'USER_SERVICE': return `/api/users${path}`;
+      case 'JOB_SERVICE': return `/api/jobs${path}`;
+      case 'MESSAGING_SERVICE': return `/api/messages${path}`;
+      case 'PAYMENT_SERVICE': return `/api/payments${path}`;
+      default: return `/api${path}`;
+    }
+  } else {
+    // Production: direct service URLs
+    return `${SERVICES[service]}/api${path}`;
+  }
+};
+
 // API endpoints for each service
 export const API_ENDPOINTS = {
   // Auth Service
   AUTH: {
-    BASE: SERVICES.AUTH_SERVICE,
-    REGISTER: `${SERVICES.AUTH_SERVICE}/api/auth/register`,
-    LOGIN: `${SERVICES.AUTH_SERVICE}/api/auth/login`,
-    VERIFY: `${SERVICES.AUTH_SERVICE}/api/auth/verify`,
-    REFRESH: `${SERVICES.AUTH_SERVICE}/api/auth/refresh-token`,
-    LOGOUT: `${SERVICES.AUTH_SERVICE}/api/auth/logout`,
-    FORGOT_PASSWORD: `${SERVICES.AUTH_SERVICE}/api/auth/forgot-password`,
-    RESET_PASSWORD: `${SERVICES.AUTH_SERVICE}/api/auth/reset-password`
+    BASE: getServicePath('AUTH_SERVICE', ''),
+    REGISTER: getServicePath('AUTH_SERVICE', '/auth/register'),
+    LOGIN: getServicePath('AUTH_SERVICE', '/auth/login'),
+    VERIFY: getServicePath('AUTH_SERVICE', '/auth/verify'),
+    REFRESH: getServicePath('AUTH_SERVICE', '/auth/refresh-token'),
+    LOGOUT: getServicePath('AUTH_SERVICE', '/auth/logout'),
+    FORGOT_PASSWORD: getServicePath('AUTH_SERVICE', '/auth/forgot-password'),
+    RESET_PASSWORD: getServicePath('AUTH_SERVICE', '/auth/reset-password')
   },
   
   // User Service  
   USER: {
-    BASE: SERVICES.USER_SERVICE,
-    PROFILE: `${SERVICES.USER_SERVICE}/api/users/profile`,
-    UPDATE: `${SERVICES.USER_SERVICE}/api/users/update`,
-    DELETE: `${SERVICES.USER_SERVICE}/api/users/delete`
+    BASE: getServicePath('USER_SERVICE', ''),
+    PROFILE: getServicePath('USER_SERVICE', '/profile'),
+    UPDATE: getServicePath('USER_SERVICE', '/profile/update'),
+    DELETE: getServicePath('USER_SERVICE', '/profile/delete'),
+    LIST: getServicePath('USER_SERVICE', '/users')
   },
   
   // Job Service
   JOB: {
-    BASE: SERVICES.JOB_SERVICE,
-    LIST: `${SERVICES.JOB_SERVICE}/api/jobs`,
-    CREATE: `${SERVICES.JOB_SERVICE}/api/jobs/create`,
-    UPDATE: `${SERVICES.JOB_SERVICE}/api/jobs/update`,
-    DELETE: `${SERVICES.JOB_SERVICE}/api/jobs/delete`,
-    APPLY: `${SERVICES.JOB_SERVICE}/api/jobs/apply`
+    BASE: getServicePath('JOB_SERVICE', ''),
+    LIST: getServicePath('JOB_SERVICE', '/jobs'),
+    CREATE: getServicePath('JOB_SERVICE', '/jobs'),
+    UPDATE: getServicePath('JOB_SERVICE', '/jobs'),
+    DELETE: getServicePath('JOB_SERVICE', '/jobs'),
+    APPLY: getServicePath('JOB_SERVICE', '/jobs/apply'),
+    BY_ID: (id) => getServicePath('JOB_SERVICE', `/jobs/${id}`)
   },
   
   // Messaging Service
   MESSAGING: {
-    BASE: SERVICES.MESSAGING_SERVICE,
-    CONVERSATIONS: `${SERVICES.MESSAGING_SERVICE}/api/conversations`,
-    MESSAGES: `${SERVICES.MESSAGING_SERVICE}/api/messages`,
-    SEND: `${SERVICES.MESSAGING_SERVICE}/api/messages/send`
+    BASE: getServicePath('MESSAGING_SERVICE', ''),
+    CONVERSATIONS: getServicePath('MESSAGING_SERVICE', '/conversations'),
+    MESSAGES: getServicePath('MESSAGING_SERVICE', '/messages'),
+    SEND: getServicePath('MESSAGING_SERVICE', '/messages/send')
   },
   
   // Payment Service
   PAYMENT: {
-    BASE: SERVICES.PAYMENT_SERVICE,
-    PROCESS: `${SERVICES.PAYMENT_SERVICE}/api/payments/process`,
-    HISTORY: `${SERVICES.PAYMENT_SERVICE}/api/payments/history`,
-    WEBHOOKS: `${SERVICES.PAYMENT_SERVICE}/api/payments/webhooks`
+    BASE: getServicePath('PAYMENT_SERVICE', ''),
+    METHODS: getServicePath('PAYMENT_SERVICE', '/payments/methods'),
+    PROCESS: getServicePath('PAYMENT_SERVICE', '/payments/process'),
+    HISTORY: getServicePath('PAYMENT_SERVICE', '/payments/history'),
+    WEBHOOKS: getServicePath('PAYMENT_SERVICE', '/payments/webhooks')
   }
 };
+
+// Debugging helper
+if (isDevelopment) {
+  console.log('🔧 Development Mode - API Endpoints:', {
+    AUTH_REGISTER: API_ENDPOINTS.AUTH.REGISTER,
+    JOBS_LIST: API_ENDPOINTS.JOB.LIST,
+    MESSAGES_CONVERSATIONS: API_ENDPOINTS.MESSAGING.CONVERSATIONS,
+    PAYMENTS_METHODS: API_ENDPOINTS.PAYMENT.METHODS
+  });
+}
 
 export default SERVICES; 
