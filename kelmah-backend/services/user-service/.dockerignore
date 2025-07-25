@@ -1,0 +1,11 @@
+**
+!package.json
+!package-lock.json
+!server.js
+!routes/**
+!controllers/**
+!models/**
+!config/**
+!utils/**
+!middlewares/**
+.DS_Store 
