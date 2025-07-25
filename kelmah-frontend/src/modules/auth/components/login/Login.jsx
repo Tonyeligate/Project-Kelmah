@@ -120,563 +120,542 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ width: '100%', px: { xs: 2, sm: 3 } }}>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        style={{ width: '100%' }}
-      >
-        <Paper
-          elevation={12}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        maxHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: { xs: 1, sm: 2 },
+        py: { xs: 1, sm: 2 },
+        overflow: 'hidden',
+      }}
+    >
+      <Container maxWidth="sm" sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          style={{ width: '100%' }}
+        >
+          <Paper
+            elevation={12}
+            sx={{
+              p: { xs: 2, sm: 3, md: 4 },
+              width: '100%',
+              maxWidth: 420,
+              mx: 'auto',
+              borderRadius: { xs: 3, sm: 4 },
+              background: 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)',
+              boxShadow: {
+                xs: '0 6px 24px 0 rgba(0,0,0,0.25)',
+                sm: '0 8px 32px 0 rgba(0,0,0,0.3)',
+              },
+              border: { xs: '1px solid rgba(255,215,0,0.2)', sm: '2px solid rgba(255,215,0,0.3)' },
+              backdropFilter: 'blur(20px)',
+              position: 'relative',
+              overflow: 'hidden',
+              maxHeight: { xs: '95vh', sm: 'auto' },
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: { xs: '2px', sm: '3px' },
+                background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
+                animation: 'shimmer 2s ease-in-out infinite',
+                '@keyframes shimmer': {
+                  '0%': { opacity: 0.5 },
+                  '50%': { opacity: 1 },
+                  '100%': { opacity: 0.5 },
+                },
+              },
+            }}
+          >
+            {/* Compact Header Section */}
+            <Stack spacing={{ xs: 1.5, sm: 2 }} alignItems="center" sx={{ mb: { xs: 2, sm: 3 } }}>
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+              >
+                <Box
+                  sx={{
+                    width: { xs: 45, sm: 55 },
+                    height: { xs: 45, sm: 55 },
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
+                  }}
+                >
+                  <WorkOutline sx={{ fontSize: { xs: 22, sm: 28 }, color: '#000' }} />
+                </Box>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                style={{ textAlign: 'center' }}
+              >
+                <Stack spacing={0.5} alignItems="center">
+        <Typography
+                    variant="h4"
+          component="h1"
           sx={{
-            p: { xs: 3, sm: 4, md: 5 },
-            width: '100%',
-            maxWidth: 480,
-            mx: 'auto',
-            borderRadius: { xs: 4, sm: 5 },
-            background: 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)',
-            boxShadow: {
-              xs: '0 8px 32px 0 rgba(0,0,0,0.3)',
-              sm: '0 12px 50px 0 rgba(0,0,0,0.4)',
-            },
-            border: { xs: '1px solid rgba(255,215,0,0.2)', sm: '2px solid rgba(255,215,0,0.3)' },
-            backdropFilter: 'blur(20px)',
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: { xs: '3px', sm: '4px' },
-              background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
-              animation: 'shimmer 2s ease-in-out infinite',
-              '@keyframes shimmer': {
-                '0%': { opacity: 0.5 },
-                '50%': { opacity: 1 },
-                '100%': { opacity: 0.5 },
+            color: '#FFD700',
+            fontWeight: 800,
+                      fontSize: { xs: '1.4rem', sm: '1.6rem' },
+                      letterSpacing: 0.3,
+                      textShadow: '0 2px 10px rgba(255,215,0,0.3)',
+                      lineHeight: 1.1,
+          }}
+        >
+          Welcome Back
+        </Typography>
+        <Typography
+                    variant="body2"
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.8)',
+                      fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                      textAlign: 'center',
+                    }}
+                  >
+                    Access Kelmah - Ghana's Skilled Trades Platform
+                  </Typography>
+                </Stack>
+              </motion.div>
+            </Stack>
+
+            {/* Compact Welcome Security Message */}
+            {showWelcomeMessage && (
+              <Fade in={showWelcomeMessage} timeout={800}>
+                <Box
+                  sx={{
+                    mb: { xs: 1.5, sm: 2 },
+                    p: { xs: 1, sm: 1.5 },
+                    borderRadius: 1.5,
+                    background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)',
+                    border: '1px solid rgba(255,215,0,0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <SecurityOutlined sx={{ color: '#FFD700', fontSize: { xs: 16, sm: 18 }, flexShrink: 0 }} />
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#FFD700', 
+                      fontWeight: 600,
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    Secure & Protected Login
+        </Typography>
+      </Box>
+              </Fade>
+            )}
+
+            {/* Compact Error Alerts */}
+            {(apiError || loginError) && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Alert 
+                  severity="error" 
+                  sx={{ 
+                    mb: { xs: 1.5, sm: 2 },
+                    borderRadius: 1.5,
+                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                    py: { xs: 0.5, sm: 1 },
+                    '& .MuiAlert-message': { fontWeight: 500 }
+                  }}
+                >
+                  {apiError || loginError}
+        </Alert>
+              </motion.div>
+            )}
+
+            {/* Compact Login Form */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <Box component="form" onSubmit={handleSubmit} noValidate>
+                <Stack spacing={{ xs: 1.8, sm: 2.2 }}>
+                  {/* Email Field */}
+        <TextField
+                    label="Email"
+          variant="outlined"
+          fullWidth
+          required
+                    size="small"
+                    type="email"
+                    autoComplete="email"
+          error={Boolean(errors.email)}
+          helperText={errors.email}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmailOutlined sx={{ color: 'rgba(255,215,0,0.7)', fontSize: { xs: 18, sm: 20 } }} />
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        fontWeight: 500,
+                        color: 'white',
+                        background: 'rgba(255,255,255,0.04)',
+                        borderRadius: 1.5,
+                        minHeight: { xs: '44px', sm: '48px' },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255,215,0,0.25)',
+                          borderWidth: 1.5,
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255,215,0,0.4)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#FFD700',
+                          boxShadow: '0 0 0 2px rgba(255,215,0,0.1)',
+                        },
+                      },
+                    }}
+                    InputLabelProps={{
+                      sx: {
+                        color: 'rgba(255,215,0,0.8)',
+              fontWeight: 600,
+                        fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                        '&.Mui-focused': {
+              color: '#FFD700',
               },
             },
           }}
+                    FormHelperTextProps={{
+                      sx: {
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        mt: 0.5,
+                      },
+                    }}
+                  />
+                  
+                  {/* Password Field */}
+        <TextField
+          label="Password"
+          variant="outlined"
+          fullWidth
+          required
+                    size="small"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+          error={Boolean(errors.password)}
+          helperText={errors.password}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LockOutlined sx={{ color: 'rgba(255,215,0,0.7)', fontSize: { xs: 18, sm: 20 } }} />
+                        </InputAdornment>
+                      ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                            size="small"
+                            sx={{ 
+                              color: 'rgba(255,215,0,0.7)',
+                              minWidth: '36px',
+                              minHeight: '36px',
+                            }}
+                          >
+                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                </IconButton>
+              </InputAdornment>
+            ),
+            sx: {
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        fontWeight: 500,
+                        color: 'white',
+                        background: 'rgba(255,255,255,0.04)',
+                        borderRadius: 1.5,
+                        minHeight: { xs: '44px', sm: '48px' },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255,215,0,0.25)',
+                          borderWidth: 1.5,
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255,215,0,0.4)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#FFD700',
+                          boxShadow: '0 0 0 2px rgba(255,215,0,0.1)',
+                        },
+                      },
+                    }}
+                    InputLabelProps={{
+                      sx: {
+                        color: 'rgba(255,215,0,0.8)',
+              fontWeight: 600,
+                        fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                        '&.Mui-focused': {
+              color: '#FFD700',
+              },
+            },
+          }}
+                    FormHelperTextProps={{
+                      sx: {
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        mt: 0.5,
+                      },
+                    }}
+                  />
+                  
+                  {/* Compact Remember Me & Forgot Password */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+                      py: 0.5,
+          }}
         >
-          {/* Header Section - Better Structured */}
-          <Stack spacing={3} alignItems="center" sx={{ mb: { xs: 3, sm: 4 } }}>
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Box
-                sx={{
-                  width: { xs: 60, sm: 70 },
-                  height: { xs: 60, sm: 70 },
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 8px 25px rgba(255,215,0,0.3)',
-                }}
-              >
-                <WorkOutline sx={{ fontSize: { xs: 28, sm: 35 }, color: '#000' }} />
-              </Box>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              style={{ textAlign: 'center' }}
-            >
-              <Stack spacing={1} alignItems="center">
-                <Typography
-                  variant="h3"
-                  component="h1"
-                  sx={{
-                    color: '#FFD700',
-                    fontWeight: 800,
-                    fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
-                    letterSpacing: 0.5,
-                    textShadow: '0 2px 15px rgba(255,215,0,0.3)',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Welcome Back
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ 
-                    color: 'rgba(255,255,255,0.9)',
-                    fontWeight: 500, 
-                    fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
-                    textAlign: 'center',
-                  }}
-                >
-                  Access your Kelmah account
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ 
-                    color: 'rgba(255,255,255,0.7)',
-                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
-                    textAlign: 'center',
-                    maxWidth: { xs: '280px', sm: '320px' },
-                  }}
-                >
-                  Connect with Ghana's finest skilled workers
-                </Typography>
-              </Stack>
-            </motion.div>
-          </Stack>
-
-          {/* Welcome Security Message - Mobile Optimized */}
-          <Fade in={showWelcomeMessage} timeout={1000}>
-            <Box
-              sx={{
-                mb: { xs: 2, sm: 3 },
-                p: { xs: 1.5, sm: 2 },
-                borderRadius: { xs: 1.5, sm: 2 },
-                background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
-                border: '1px solid rgba(255,215,0,0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: { xs: 1.5, sm: 2 },
-              }}
-            >
-              <SecurityOutlined sx={{ color: '#FFD700', fontSize: { xs: 20, sm: 24 }, flexShrink: 0 }} />
-              <Box sx={{ minWidth: 0 }}>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: '#FFD700', 
-                    fontWeight: 600,
-                    fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                    mb: 0.5,
-                  }}
-                >
-                  Secure Login
-                </Typography>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    color: 'rgba(255,255,255,0.8)',
-                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                    lineHeight: 1.3,
-                  }}
-                >
-                  Your data is protected with enterprise-grade security
-                </Typography>
-              </Box>
-            </Box>
-          </Fade>
-
-          {/* Error Alerts - Better Positioned */}
-          <Stack spacing={2} sx={{ mb: { xs: 2, sm: 3 } }}>
-            {apiError && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert 
-                  severity="error" 
-                  sx={{ 
-                    borderRadius: { xs: 1.5, sm: 2 },
-                    fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                    '& .MuiAlert-message': { fontWeight: 500 }
-                  }}
-                >
-                  {apiError}
-                </Alert>
-              </motion.div>
-            )}
-            
-            {loginError && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert 
-                  severity="error" 
-                  sx={{ 
-                    borderRadius: { xs: 1.5, sm: 2 },
-                    fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                    '& .MuiAlert-message': { fontWeight: 500 }
-                  }}
-                >
-                  {loginError}
-                </Alert>
-              </motion.div>
-            )}
-          </Stack>
-
-          {/* Login Form - Improved Structure */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Box component="form" onSubmit={handleSubmit} noValidate>
-              <Stack spacing={{ xs: 2.5, sm: 3 }}>
-                {/* Email Field */}
-                <TextField
-                  label="Email Address"
-                  variant="outlined"
-                  fullWidth
-                  required
-                  type="email"
-                  autoComplete="email"
-                  error={Boolean(errors.email)}
-                  helperText={errors.email}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailOutlined sx={{ color: 'rgba(255,215,0,0.7)', fontSize: { xs: 20, sm: 24 } }} />
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      fontSize: { xs: '1rem', sm: '1.1rem' },
-                      fontWeight: 500,
-                      color: 'white',
-                      background: 'rgba(255,255,255,0.05)',
-                      borderRadius: { xs: 1.5, sm: 2 },
-                      minHeight: { xs: '56px', sm: '60px' },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255,215,0,0.3)',
-                        borderWidth: { xs: 1.5, sm: 2 },
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255,215,0,0.5)',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FFD700',
-                        boxShadow: '0 0 0 3px rgba(255,215,0,0.1)',
-                      },
-                    },
-                  }}
-                  InputLabelProps={{
-                    sx: {
-                      color: 'rgba(255,215,0,0.8)',
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      '&.Mui-focused': {
-                        color: '#FFD700',
-                      },
-                    },
-                  }}
-                />
-                
-                {/* Password Field */}
-                <TextField
-                  label="Password"
-                  variant="outlined"
-                  fullWidth
-                  required
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  error={Boolean(errors.password)}
-                  helperText={errors.password}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockOutlined sx={{ color: 'rgba(255,215,0,0.7)', fontSize: { xs: 20, sm: 24 } }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          size={window.innerWidth < 600 ? 'small' : 'medium'}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                          size="small"
                           sx={{ 
-                            color: 'rgba(255,215,0,0.7)',
-                            minWidth: { xs: '40px', sm: '48px' },
-                            minHeight: { xs: '40px', sm: '48px' },
+                            color: 'rgba(255,215,0,0.7)', 
+                            '&.Mui-checked': { color: '#FFD700' },
+                            p: 0.5,
+                          }}
+              />
+            }
+            label={
+                        <Typography 
+                          sx={{ 
+                            color: 'rgba(255,255,255,0.9)', 
+                            fontWeight: 500,
+                            fontSize: { xs: '0.8rem', sm: '0.85rem' },
                           }}
                         >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      fontSize: { xs: '1rem', sm: '1.1rem' },
-                      fontWeight: 500,
-                      color: 'white',
-                      background: 'rgba(255,255,255,0.05)',
-                      borderRadius: { xs: 1.5, sm: 2 },
-                      minHeight: { xs: '56px', sm: '60px' },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255,215,0,0.3)',
-                        borderWidth: { xs: 1.5, sm: 2 },
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255,215,0,0.5)',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FFD700',
-                        boxShadow: '0 0 0 3px rgba(255,215,0,0.1)',
-                      },
-                    },
-                  }}
-                  InputLabelProps={{
-                    sx: {
-                      color: 'rgba(255,215,0,0.8)',
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      '&.Mui-focused': {
-                        color: '#FFD700',
-                      },
-                    },
-                  }}
-                />
-                
-                {/* Remember Me & Forgot Password - Better Mobile Layout */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'flex-start', sm: 'center' },
-                    gap: { xs: 2, sm: 1 },
-                    pt: 1,
-                  }}
-                >
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        size={window.innerWidth < 600 ? 'small' : 'medium'}
-                        sx={{ 
-                          color: 'rgba(255,215,0,0.7)', 
-                          '&.Mui-checked': { color: '#FFD700' },
-                          p: { xs: 0.5, sm: 1 },
-                        }}
-                      />
-                    }
-                    label={
-                      <Typography 
-                        sx={{ 
-                          color: 'rgba(255,255,255,0.9)', 
-                          fontWeight: 500,
-                          fontSize: { xs: '0.9rem', sm: '1rem' },
-                        }}
-                      >
-                        Remember me
-                      </Typography>
-                    }
-                    sx={{ m: 0 }}
-                  />
-                  <Link
-                    component={RouterLink}
-                    to="/forgot-password"
-                    variant="body2"
-                    sx={{
-                      color: '#FFD700',
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      '&:hover': {
-                        color: '#FFC000',
-                        textDecoration: 'underline',
-                      },
-                    }}
-                  >
-                    Forgot password?
-                  </Link>
-                </Box>
-                
-                {/* Submit Button - Better Mobile Touch Target */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    size="large"
-                    disabled={submitting}
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: { xs: '1.1rem', sm: '1.2rem' },
-                      py: { xs: 1.75, sm: 2 },
-                      minHeight: { xs: '52px', sm: '60px' },
-                      background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                      color: '#000',
-                      boxShadow: '0 6px 20px rgba(255,215,0,0.25)',
-                      borderRadius: { xs: 1.5, sm: 2 },
-                      textTransform: 'none',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                        boxShadow: '0 8px 25px rgba(255,215,0,0.35)',
-                        transform: 'translateY(-1px)',
-                      },
-                      '&:disabled': {
-                        background: 'rgba(255,215,0,0.3)',
-                        color: 'rgba(0,0,0,0.5)',
-                      },
-                    }}
-                  >
-                    {submitting ? (
-                      <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <CircularProgress size={20} sx={{ color: '#000' }} />
-                        <Typography sx={{ fontSize: 'inherit', fontWeight: 'inherit' }}>
-                          Signing In...
+                Remember me
                         </Typography>
-                      </Stack>
-                    ) : (
-                      'Sign In to Kelmah'
-                    )}
-                  </Button>
-                </motion.div>
-              </Stack>
-            </Box>
-          </motion.div>
-
-          {/* Sign Up Section - Better Mobile Layout */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            }
+                      sx={{ m: 0 }}
+          />
+          <Link
+            component={RouterLink}
+            to="/forgot-password"
+            variant="body2"
+            sx={{
+              color: '#FFD700',
+                        fontWeight: 600,
+                        textDecoration: 'none',
+                        fontSize: { xs: '0.8rem', sm: '0.85rem' },
+              '&:hover': {
+                color: '#FFC000',
+                textDecoration: 'underline',
+              },
+            }}
           >
-            <Stack spacing={{ xs: 3, sm: 4 }} alignItems="center" sx={{ mt: { xs: 4, sm: 5 } }}>
-              {/* Sign Up Link */}
-              <Typography
-                variant="body1"
-                sx={{ 
-                  color: 'rgba(255,255,255,0.9)',
-                  textAlign: 'center', 
-                  fontSize: { xs: '0.95rem', sm: '1rem' },
-                  fontWeight: 500,
-                }}
-              >
-                New to Kelmah?{' '}
-                <Link
-                  component={RouterLink}
-                  to="/register"
-                  variant="body1"
-                  sx={{
-                    color: '#FFD700',
-                    fontWeight: 700,
-                    textDecoration: 'none',
-                    fontSize: 'inherit',
-                    '&:hover': {
-                      color: '#FFC000',
-                      textDecoration: 'underline',
+            Forgot password?
+          </Link>
+        </Box>
+                  
+                  {/* Compact Submit Button */}
+                  <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+                      disabled={submitting}
+          sx={{
+                        fontWeight: 700,
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
+                        py: { xs: 1.3, sm: 1.5 },
+                        minHeight: { xs: '44px', sm: '48px' },
+                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        color: '#000',
+                        boxShadow: '0 4px 16px rgba(255,215,0,0.2)',
+                        borderRadius: 1.5,
+                        textTransform: 'none',
+            '&:hover': {
+                          background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                          boxShadow: '0 6px 20px rgba(255,215,0,0.3)',
+                        },
+                        '&:disabled': {
+                          background: 'rgba(255,215,0,0.3)',
+                          color: 'rgba(0,0,0,0.5)',
+                        },
+                      }}
+                    >
+                      {submitting ? (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <CircularProgress size={16} sx={{ color: '#000' }} />
+                          <Typography sx={{ fontSize: 'inherit', fontWeight: 'inherit' }}>
+                            Signing In...
+                          </Typography>
+                        </Stack>
+                      ) : (
+                        'Sign In to Kelmah'
+                      )}
+        </Button>
+                  </motion.div>
+                </Stack>
+              </Box>
+            </motion.div>
+
+            {/* Compact Footer Section */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
+              <Stack spacing={{ xs: 2, sm: 2.5 }} alignItems="center" sx={{ mt: { xs: 2.5, sm: 3 } }}>
+                {/* Sign Up Link */}
+        <Typography
+                  variant="body2"
+                  sx={{ 
+                    color: 'rgba(255,255,255,0.9)',
+                    textAlign: 'center', 
+                    fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                    fontWeight: 500,
+                  }}
+                >
+                  New to Kelmah?{' '}
+          <Link
+            component={RouterLink}
+            to="/register"
+                    variant="body2"
+            sx={{
+              color: '#FFD700',
+              fontWeight: 700,
+                      textDecoration: 'none',
+                      fontSize: 'inherit',
+              '&:hover': {
+                color: '#FFC000',
+                textDecoration: 'underline',
+              },
+            }}
+          >
+                    Create account
+          </Link>
+        </Typography>
+                
+                {/* Compact Social Login */}
+                <Divider 
+                  sx={{ 
+                    width: '100%',
+                    borderColor: 'rgba(255,215,0,0.25)',
+                    '& .MuiDivider-wrapper': {
+                      px: 1.5,
                     },
                   }}
                 >
-                  Create your account
-                </Link>
-              </Typography>
-              
-              {/* Social Login Divider */}
-              <Divider 
-                sx={{ 
-                  width: '100%',
-                  borderColor: 'rgba(255,215,0,0.3)',
-                  '& .MuiDivider-wrapper': {
-                    px: { xs: 2, sm: 3 },
-                  },
-                }}
-              >
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: '#FFD700', 
-                    fontWeight: 600,
-                    fontSize: { xs: '0.8rem', sm: '0.85rem' },
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  OR CONTINUE WITH
-                </Typography>
-              </Divider>
-              
-              {/* Social Login Buttons - Improved Mobile Layout */}
-              <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%' }}>
-                <Grid item xs={12} sm={6}>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<GoogleIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
-                      onClick={() => {
-                        window.location.href = `${API_BASE_URL}/api/auth/google`;
-                      }}
-                      sx={{
-                        py: { xs: 1.5, sm: 2 },
-                        minHeight: { xs: '48px', sm: '56px' },
-                        fontWeight: 600,
-                        fontSize: { xs: '0.95rem', sm: '1rem' },
-                        background: 'rgba(255,255,255,0.95)',
-                        color: '#4285F4',
-                        borderColor: '#4285F4',
-                        borderWidth: { xs: 1.5, sm: 2 },
-                        borderRadius: { xs: 1.5, sm: 2 },
-                        textTransform: 'none',
-                        boxShadow: '0 3px 12px rgba(66,133,244,0.15)',
-                        '&:hover': {
-                          background: '#4285F4',
-                          color: '#fff',
-                          borderColor: '#4285F4',
-                          boxShadow: '0 5px 15px rgba(66,133,244,0.25)',
-                          borderWidth: { xs: 1.5, sm: 2 },
-                        },
-                      }}
-                    >
-                      Google
-                    </Button>
-                  </motion.div>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<LinkedInIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
-                      onClick={() => {
-                        window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
-                      }}
-                      sx={{
-                        py: { xs: 1.5, sm: 2 },
-                        minHeight: { xs: '48px', sm: '56px' },
-                        fontWeight: 600,
-                        fontSize: { xs: '0.95rem', sm: '1rem' },
-                        background: 'rgba(255,255,255,0.95)',
-                        color: '#0077B5',
-                        borderColor: '#0077B5',
-                        borderWidth: { xs: 1.5, sm: 2 },
-                        borderRadius: { xs: 1.5, sm: 2 },
-                        textTransform: 'none',
-                        boxShadow: '0 3px 12px rgba(0,119,181,0.15)',
-                        '&:hover': {
-                          background: '#0077B5',
-                          color: '#fff',
-                          borderColor: '#0077B5',
-                          boxShadow: '0 5px 15px rgba(0,119,181,0.25)',
-                          borderWidth: { xs: 1.5, sm: 2 },
-                        },
-                      }}
-                    >
-                      LinkedIn
-                    </Button>
-                  </motion.div>
-                </Grid>
-              </Grid>
-            </Stack>
-          </motion.div>
-        </Paper>
-      </motion.div>
-    </Container>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#FFD700', 
+                      fontWeight: 600,
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    OR CONTINUE WITH
+          </Typography>
+        </Divider>
+                
+                {/* Compact Social Buttons */}
+                <Grid container spacing={1.5} sx={{ width: '100%' }}>
+                  <Grid item xs={6}>
+                    <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+                        startIcon={<GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/api/auth/google`;
+              }}
+              sx={{
+                          py: { xs: 1, sm: 1.2 },
+                          minHeight: { xs: '38px', sm: '42px' },
+                          fontWeight: 600,
+                          fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                          background: 'rgba(255,255,255,0.95)',
+                color: '#4285F4',
+                borderColor: '#4285F4',
+                          borderWidth: 1.5,
+                          borderRadius: 1.5,
+                          textTransform: 'none',
+                '&:hover': {
+                  background: '#4285F4',
+                  color: '#fff',
+                  borderColor: '#4285F4',
+                            borderWidth: 1.5,
+                },
+              }}
+            >
+              Google
+            </Button>
+                    </motion.div>
+          </Grid>
+                  <Grid item xs={6}>
+                    <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+                        startIcon={<LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />}
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
+              }}
+              sx={{
+                          py: { xs: 1, sm: 1.2 },
+                          minHeight: { xs: '38px', sm: '42px' },
+                          fontWeight: 600,
+                          fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                          background: 'rgba(255,255,255,0.95)',
+                color: '#0077B5',
+                borderColor: '#0077B5',
+                          borderWidth: 1.5,
+                          borderRadius: 1.5,
+                          textTransform: 'none',
+                '&:hover': {
+                  background: '#0077B5',
+                  color: '#fff',
+                  borderColor: '#0077B5',
+                            borderWidth: 1.5,
+                },
+              }}
+            >
+              LinkedIn
+            </Button>
+                    </motion.div>
+          </Grid>
+        </Grid>
+              </Stack>
+            </motion.div>
+          </Paper>
+        </motion.div>
+      </Container>
+      </Box>
   );
 };
 
