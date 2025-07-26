@@ -9,28 +9,24 @@ import {
   Button,
   IconButton,
   Collapse,
-  Grid,
   Card,
   CardContent,
   Avatar,
   Rating,
-  Fab,
   Drawer,
   useMediaQuery,
   useTheme,
-  InputAdornment
+  InputAdornment,
+  Divider
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  FilterList as FilterIcon,
   Close as CloseIcon,
   TuneRounded as TuneIcon,
   LocationOn as LocationIcon,
   WorkOutline as JobIcon,
   Person as WorkerIcon,
-  StarRounded as StarIcon,
-  AttachMoney as MoneyIcon,
-  Schedule as ScheduleIcon
+  AttachMoney as MoneyIcon
 } from '@mui/icons-material';
 import LocationSelector from './LocationSelector';
 import mapService from '../../services/mapService';
@@ -41,7 +37,7 @@ const MapSearchOverlay = ({
   onLocationChange = () => {},
   searchResults = [],
   loading = false,
-  searchType = 'jobs', // 'jobs' or 'workers'
+  searchType = 'jobs',
   userLocation = null,
   isVisible = true,
   onClose = () => {}
@@ -56,8 +52,7 @@ const MapSearchOverlay = ({
     budget: [0, 10000],
     rating: 0,
     experience: '',
-    category: '',
-    availability: ''
+    category: ''
   });
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -66,13 +61,6 @@ const MapSearchOverlay = ({
   const jobCategories = [
     'Development', 'Design', 'Marketing', 'Writing', 'Video', 'Music',
     'Business', 'Data', 'Translation', 'Legal', 'Engineering', 'Sales'
-  ];
-
-  // Experience levels
-  const experienceLevels = [
-    { value: 'entry', label: 'Entry Level' },
-    { value: 'intermediate', label: 'Intermediate' },
-    { value: 'expert', label: 'Expert' }
   ];
 
   // Handle search
@@ -386,6 +374,7 @@ const MapSearchOverlay = ({
           
           <Box sx={{ height: 'calc(100% - 64px)', overflow: 'auto' }}>
             <SearchControls />
+            <Divider />
             <ResultsSection />
           </Box>
         </Box>
@@ -429,6 +418,7 @@ const MapSearchOverlay = ({
       
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         <SearchControls />
+        <Divider />
         <ResultsSection />
       </Box>
     </Paper>

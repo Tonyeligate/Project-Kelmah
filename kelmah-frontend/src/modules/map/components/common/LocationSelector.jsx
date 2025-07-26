@@ -8,7 +8,6 @@ import {
   ListItemText,
   ListItemIcon,
   IconButton,
-  Chip,
   Typography,
   CircularProgress,
   InputAdornment,
@@ -19,11 +18,8 @@ import {
   MyLocation as MyLocationIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
-  History as HistoryIcon,
-  Business as BusinessIcon,
-  Home as HomeIcon
+  History as HistoryIcon
 } from '@mui/icons-material';
-import { debounce } from 'lodash';
 import mapService from '../../services/mapService';
 
 const LocationSelector = ({
@@ -51,7 +47,7 @@ const LocationSelector = ({
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   
   const inputRef = useRef();
-  const listRef = useRef();
+  const searchTimeout = useRef();
 
   // Load recent locations from localStorage
   useEffect(() => {
@@ -92,26 +88,23 @@ const LocationSelector = ({
   }, [showCurrentLocation]);
 
   // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce(async (query) => {
-      if (!query || query.length < 3) {
-        setSuggestions([]);
-        setIsLoading(false);
-        return;
-      }
+  const performSearch = useCallback(async (query) => {
+    if (!query || query.length < 3) {
+      setSuggestions([]);
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const results = await mapService.geocodeAddress(query);
-        setSuggestions(results.slice(0, 5)); // Limit to 5 suggestions
-      } catch (error) {
-        console.error('Search error:', error);
-        setSuggestions([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300),
-    []
-  );
+    try {
+      const results = await mapService.geocodeAddress(query);
+      setSuggestions(results.slice(0, 5));
+    } catch (error) {
+      console.error('Search error:', error);
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Handle input change
   const handleInputChange = (event) => {
@@ -119,10 +112,16 @@ const LocationSelector = ({
     setInputValue(newValue);
     onChange(newValue);
     
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+    
     if (newValue.length >= 3) {
       setIsLoading(true);
       setIsOpen(true);
-      debouncedSearch(newValue);
+      searchTimeout.current = setTimeout(() => {
+        performSearch(newValue);
+      }, 300);
     } else {
       setSuggestions([]);
       setIsOpen(newValue.length > 0 || recentLocations.length > 0);
@@ -153,7 +152,7 @@ const LocationSelector = ({
     const newRecent = [
       location,
       ...recentLocations.filter(item => item.address !== location.address)
-    ].slice(0, 5); // Keep only last 5
+    ].slice(0, 5);
     
     setRecentLocations(newRecent);
     localStorage.setItem('recentLocations', JSON.stringify(newRecent));
@@ -191,52 +190,13 @@ const LocationSelector = ({
     }
   };
 
-  // Handle keyboard navigation
-  const handleKeyDown = (event) => {
-    const totalItems = suggestions.length + recentLocations.length + (currentLocation ? 1 : 0);
-    
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        setSelectedIndex(prev => (prev + 1) % totalItems);
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        setSelectedIndex(prev => prev <= 0 ? totalItems - 1 : prev - 1);
-        break;
-      case 'Enter':
-        event.preventDefault();
-        if (selectedIndex >= 0) {
-          let selectedItem;
-          if (currentLocation && selectedIndex === 0) {
-            selectedItem = currentLocation;
-          } else {
-            const adjustedIndex = currentLocation ? selectedIndex - 1 : selectedIndex;
-            selectedItem = adjustedIndex < suggestions.length 
-              ? suggestions[adjustedIndex]
-              : recentLocations[adjustedIndex - suggestions.length];
-          }
-          if (selectedItem) {
-            handleLocationSelect(selectedItem);
-          }
-        }
-        break;
-      case 'Escape':
-        setIsOpen(false);
-        setSelectedIndex(-1);
-        inputRef.current?.blur();
-        break;
-    }
-  };
-
   // Handle input focus
   const handleFocus = () => {
     setIsOpen(inputValue.length > 0 || recentLocations.length > 0 || currentLocation);
   };
 
   // Handle input blur
-  const handleBlur = (event) => {
-    // Delay closing to allow clicking on suggestions
+  const handleBlur = () => {
     setTimeout(() => {
       setIsOpen(false);
       setSelectedIndex(-1);
@@ -261,7 +221,6 @@ const LocationSelector = ({
         size={size}
         value={inputValue}
         onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder={placeholder}
@@ -291,7 +250,6 @@ const LocationSelector = ({
       {/* Suggestions dropdown */}
       {isOpen && (
         <Paper
-          ref={listRef}
           sx={{
             position: 'absolute',
             top: '100%',
@@ -309,7 +267,6 @@ const LocationSelector = ({
             {currentLocation && (
               <ListItem
                 button
-                selected={selectedIndex === 0}
                 onClick={() => handleLocationSelect(currentLocation, 'current')}
                 sx={{ py: 1.5 }}
               >
@@ -329,71 +286,46 @@ const LocationSelector = ({
             )}
 
             {/* Search Suggestions */}
-            {suggestions.map((suggestion, index) => {
-              const adjustedIndex = currentLocation ? index + 1 : index;
-              return (
-                <ListItem
-                  key={`suggestion-${index}`}
-                  button
-                  selected={selectedIndex === adjustedIndex}
-                  onClick={() => handleLocationSelect(suggestion, 'search')}
-                  sx={{ py: 1.5 }}
-                >
-                  <ListItemIcon>
-                    <LocationIcon color="action" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={suggestion.address}
-                    secondary={`${suggestion.city || ''} ${suggestion.state || ''}`}
-                  />
-                </ListItem>
-              );
-            })}
+            {suggestions.map((suggestion, index) => (
+              <ListItem
+                key={`suggestion-${index}`}
+                button
+                onClick={() => handleLocationSelect(suggestion, 'search')}
+                sx={{ py: 1.5 }}
+              >
+                <ListItemIcon>
+                  <LocationIcon color="action" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={suggestion.address}
+                  secondary={`${suggestion.city || ''} ${suggestion.state || ''}`}
+                />
+              </ListItem>
+            ))}
 
             {/* Recent Locations */}
             {recentLocations.length > 0 && (suggestions.length > 0 || currentLocation) && (
               <Divider />
             )}
             
-            {recentLocations.length > 0 && (
-              <>
-                {suggestions.length === 0 && !currentLocation && (
-                  <ListItem>
-                    <ListItemText
-                      primary="Recent Locations"
-                      primaryTypographyProps={{ 
-                        variant: 'caption', 
-                        color: 'text.secondary',
-                        fontWeight: 'medium'
-                      }}
-                    />
-                  </ListItem>
-                )}
-                
-                {recentLocations.map((location, index) => {
-                  const adjustedIndex = (currentLocation ? 1 : 0) + suggestions.length + index;
-                  return (
-                    <ListItem
-                      key={`recent-${index}`}
-                      button
-                      selected={selectedIndex === adjustedIndex}
-                      onClick={() => handleLocationSelect(location, 'recent')}
-                      sx={{ py: 1 }}
-                    >
-                      <ListItemIcon>
-                        <HistoryIcon color="action" fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={location.address}
-                        secondary={location.city}
-                        primaryTypographyProps={{ fontSize: '0.875rem' }}
-                        secondaryTypographyProps={{ fontSize: '0.75rem' }}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </>
-            )}
+            {recentLocations.map((location, index) => (
+              <ListItem
+                key={`recent-${index}`}
+                button
+                onClick={() => handleLocationSelect(location, 'recent')}
+                sx={{ py: 1 }}
+              >
+                <ListItemIcon>
+                  <HistoryIcon color="action" fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={location.address}
+                  secondary={location.city}
+                  primaryTypographyProps={{ fontSize: '0.875rem' }}
+                  secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                />
+              </ListItem>
+            ))}
 
             {/* No results */}
             {!isLoading && inputValue.length >= 3 && suggestions.length === 0 && (

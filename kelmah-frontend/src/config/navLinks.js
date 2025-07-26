@@ -3,6 +3,7 @@ export function getNavLinks(isAuthenticated, user) {
     { label: 'Home', to: '/' },
     { label: 'Jobs', to: '/jobs' },
     { label: 'Find Work', to: '/search' },
+    { label: 'Map Search', to: '/map' },
     {
       label: 'Find Talents',
       to:

@@ -15,6 +15,7 @@ import WorkerProfileEditPage from './modules/worker/pages/WorkerProfileEditPage'
 import JobSearchPage from './modules/worker/pages/JobApplicationPage';
 import GeoLocationSearch from './modules/search/pages/GeoLocationSearch';
 import SearchPage from './modules/search/pages/SearchPage';
+import ProfessionalMapPage from './modules/map/pages/ProfessionalMapPage';
 import NotificationsPage from './modules/notifications/pages/NotificationsPage';
 import LoginPage from './modules/auth/pages/LoginPage';
 import RegisterPage from './modules/auth/pages/RegisterPage';
