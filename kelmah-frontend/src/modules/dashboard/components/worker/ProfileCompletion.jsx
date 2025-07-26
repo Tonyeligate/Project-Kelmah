@@ -181,7 +181,7 @@ const ProfileCompletion = ({
                 }}
               >
                 {Math.round(actualCompletion)}%
-              </Typography>
+        </Typography>
               <Chip
                 label={`${completedItems.length}/${profileItems.length} Complete`}
                 size="small"
@@ -208,7 +208,7 @@ const ProfileCompletion = ({
                   },
                 }}
               />
-            </Box>
+          </Box>
 
             <Typography
               variant="body2"
@@ -298,7 +298,7 @@ const ProfileCompletion = ({
                           }}
                         >
                           {item.weight}%
-                        </Typography>
+        </Typography>
                       </ListItem>
                     </motion.div>
                   ))}
@@ -308,11 +308,11 @@ const ProfileCompletion = ({
           </AnimatePresence>
 
           {/* Action Button */}
-          <Button
-            component={RouterLink}
-            to="/worker/profile/edit"
+        <Button
+          component={RouterLink}
+          to="/worker/profile/edit"
             fullWidth
-            variant="contained"
+          variant="contained"
             onClick={onComplete}
             sx={{
               mt: 2,
@@ -333,7 +333,7 @@ const ProfileCompletion = ({
             }}
           >
             {actualCompletion >= 90 ? 'View Profile' : 'Complete Profile'}
-          </Button>
+        </Button>
 
           {/* Quick Tips */}
           {actualCompletion < 70 && (
@@ -370,8 +370,8 @@ const ProfileCompletion = ({
               </Typography>
             </Box>
           )}
-        </CardContent>
-      </Card>
+      </CardContent>
+    </Card>
     </motion.div>
   );
 };

@@ -104,7 +104,7 @@ const EnhancedWorkerDashboard = () => {
         title: 'Active Jobs',
         value: metrics.activeJobs || 0,
         subtitle: 'Currently working on',
-        color: '#FFD700',
+      color: '#FFD700',
         gradient: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
         icon: <WorkIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />,
         trend: metrics.activeJobsChange || 0,
@@ -115,9 +115,9 @@ const EnhancedWorkerDashboard = () => {
       {
         id: 'pending-applications',
         title: 'Applications',
-        value: metrics.pendingApplications || 0,
+      value: metrics.pendingApplications || 0,
         subtitle: 'Awaiting response',
-        color: '#2196F3',
+      color: '#2196F3',
         gradient: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
         icon: <AssignmentIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />,
         trend: metrics.applicationsTrend || 0,
@@ -130,7 +130,7 @@ const EnhancedWorkerDashboard = () => {
         title: 'This Month',
         value: `GH₵${(metrics.earningsThisMonth || 0).toLocaleString()}`,
         subtitle: 'Total earnings',
-        color: '#4CAF50',
+      color: '#4CAF50',
         gradient: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)',
         icon: <EarningsIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />,
         trend: metrics.earningsChange || 0,
@@ -141,9 +141,9 @@ const EnhancedWorkerDashboard = () => {
       {
         id: 'completion-rate',
         title: 'Success Rate',
-        value: `${metrics.completionRate || 0}%`,
+      value: `${metrics.completionRate || 0}%`,
         subtitle: 'Jobs completed',
-        color: '#9C27B0',
+      color: '#9C27B0',
         gradient: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
         icon: <CompletionIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />,
         trend: metrics.completionRateChange || 0,
@@ -370,7 +370,7 @@ const EnhancedWorkerDashboard = () => {
           {[...Array(4)].map((_, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Skeleton variant="rectangular" height={150} sx={{ borderRadius: 3 }} />
-            </Grid>
+      </Grid>
           ))}
         </Grid>
       </Box>
@@ -456,13 +456,13 @@ const EnhancedWorkerDashboard = () => {
             />
           </IconButton>
         </Stack>
-      </Box>
+              </Box>
 
       {/* Quick Actions - Mobile First */}
       {isMobile && (
         <Box sx={{ mb: 3 }}>
           <QuickActions actions={quickActions.filter(action => action.priority <= 1)} />
-        </Box>
+          </Box>
       )}
 
       {/* Statistics Grid */}
@@ -478,8 +478,8 @@ const EnhancedWorkerDashboard = () => {
               key={stat.id}
             >
               <EnhancedStatCard stat={stat} index={index} />
-            </Grid>
-          ))}
+              </Grid>
+            ))}
           
           {/* Show more button for mobile */}
           {isMobile && statistics.length > 2 && (
@@ -500,8 +500,8 @@ const EnhancedWorkerDashboard = () => {
                 {showAllStats ? 'Show Less' : `Show ${statistics.length - 2} More`}
                 {showAllStats ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </Button>
-            </Grid>
-          )}
+          </Grid>
+        )}
         </Grid>
       </Box>
 
