@@ -515,7 +515,7 @@ const EnhancedContractsPage = () => {
       };
     }, [contracts]);
 
-    return (
+  return (
       <Grid container spacing={3}>
         {[
           {
@@ -712,7 +712,7 @@ const EnhancedContractsPage = () => {
                     {contract.client.name}
                   </Typography>
                 </Stack>
-              </Box>
+      </Box>
 
               <Stack direction="row" alignItems="center" spacing={1}>
                 {(isOverdue || paymentDue) && (

@@ -145,7 +145,7 @@ class WorkersApi {
   async getProfile() {
     try {
       const response = await userServiceClient.get('/api/users/me/profile');
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for profile, using mock data:', error.message);
       return {
@@ -161,7 +161,7 @@ class WorkersApi {
   async updateProfile(profileData) {
     try {
       const response = await userServiceClient.put('/api/users/me/profile', profileData);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for profile update, simulating success:', error.message);
       return {
@@ -178,7 +178,7 @@ class WorkersApi {
   async getSkillsAndLicenses() {
     try {
       const response = await userServiceClient.get('/api/users/me/credentials');
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for credentials, using mock data:', error.message);
       return {
@@ -197,7 +197,7 @@ class WorkersApi {
   async updateSkill(skillData) {
     try {
       const response = await userServiceClient.post('/api/users/me/skills', skillData);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for skill update, simulating success:', error.message);
       return {
@@ -221,7 +221,7 @@ class WorkersApi {
   async getAvailabilityStatus() {
     try {
       const response = await userServiceClient.get('/api/users/me/availability');
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for availability, using mock data:', error.message);
       return {
@@ -237,7 +237,7 @@ class WorkersApi {
   async updateAvailability(availabilityData) {
     try {
       const response = await userServiceClient.put('/api/users/me/availability', availabilityData);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for availability update, simulating success:', error.message);
       return {
@@ -260,7 +260,7 @@ class WorkersApi {
   async getAnalytics() {
     try {
       const response = await userServiceClient.get('/api/users/me/analytics');
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for analytics, using mock data:', error.message);
       return {
@@ -276,7 +276,7 @@ class WorkersApi {
   async searchWorkers(params = {}) {
     try {
       const response = await userServiceClient.get('/api/users/workers', { params });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for worker search, using mock data:', error.message);
       
@@ -332,7 +332,7 @@ class WorkersApi {
   async getNotificationCounts() {
     try {
       const response = await userServiceClient.get('/api/users/me/notification-counts');
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for notifications, using mock data:', error.message);
       return {
@@ -355,8 +355,8 @@ class WorkersApi {
       const response = await userServiceClient.post(
         `/api/users/me/skills/${skillId}/verify`,
         verificationData
-      );
-      return response.data;
+    );
+    return response.data;
     } catch (error) {
       console.warn('User service unavailable for skill verification, simulating success:', error.message);
       return {

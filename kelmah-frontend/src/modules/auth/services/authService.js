@@ -395,7 +395,7 @@ class AuthService {
 
     try {
       const response = await axiosInstance.post(API_ENDPOINTS.AUTH.MFA_VERIFY, { token });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.error('MFA verification error:', error);
       throw this.handleApiError(error);
@@ -414,10 +414,10 @@ class AuthService {
 
     try {
       const response = await axiosInstance.post(API_ENDPOINTS.AUTH.MFA_DISABLE, {
-        password,
+      password,
         token
-      });
-      return response.data;
+    });
+    return response.data;
     } catch (error) {
       console.error('MFA disable error:', error);
       throw this.handleApiError(error);

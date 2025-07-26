@@ -144,15 +144,15 @@ const EnhancedAvailableJobs = () => {
       if (refresh) setIsRefreshing(true);
       else setIsLoading(true);
 
-      const response = await jobsApi.getJobs({
-        status: 'open',
-        nearby: true,
+        const response = await jobsApi.getJobs({
+          status: 'open',
+          nearby: true,
         limit: 20,
         userSkills: user?.skills || [],
-      });
+        });
 
       const mappedJobs = response.jobs?.map((job) => ({
-        ...job,
+          ...job,
         ...getJobIconData(job),
         status: savedJobs.has(job.id) ? 'saved' : 'idle',
         distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
@@ -161,16 +161,16 @@ const EnhancedAvailableJobs = () => {
         matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
       })) || [];
 
-      setJobs(mappedJobs);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching jobs:', err);
+        setJobs(mappedJobs);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching jobs:', err);
       setError('Failed to load jobs. Please try again.');
-    } finally {
-      setIsLoading(false);
+      } finally {
+        setIsLoading(false);
       setIsRefreshing(false);
-    }
-  };
+      }
+    };
 
   // Initial load
   useEffect(() => {
@@ -626,7 +626,7 @@ const EnhancedAvailableJobs = () => {
     );
   }
 
-  return (
+    return (
     <>
       <DashboardCard
         title={
@@ -795,11 +795,11 @@ const EnhancedAvailableJobs = () => {
             <WorkIcon sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
             <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
               No jobs found
-            </Typography>
+                    </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
               Try adjusting your search or filters
-            </Typography>
-          </Box>
+                      </Typography>
+                      </Box>
         ) : (
           <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
             <AnimatePresence mode="popLayout">
@@ -809,16 +809,16 @@ const EnhancedAvailableJobs = () => {
                 </Grid>
               ))}
             </AnimatePresence>
-          </Grid>
+              </Grid>
         )}
 
         {/* Load More Button */}
         {filteredJobs.length > 0 && filteredJobs.length < jobs.length && (
           <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Button
+                <Button
               variant="outlined"
               onClick={() => fetchJobs()}
-              sx={{
+                  sx={{
                 borderColor: 'rgba(255,215,0,0.3)',
                 color: '#FFD700',
                 '&:hover': {
@@ -829,8 +829,8 @@ const EnhancedAvailableJobs = () => {
             >
               Load More Jobs
             </Button>
-          </Box>
-        )}
+                    </Box>
+                  )}
       </DashboardCard>
 
       {/* Filter Menu */}
@@ -937,12 +937,12 @@ const EnhancedAvailableJobs = () => {
                 </Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700 }}>
-                    {selectedJob.title}
-                  </Typography>
+                  {selectedJob.title}
+                </Typography>
                   <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                     {selectedJob.company}
                   </Typography>
-                </Box>
+              </Box>
                 <IconButton
                   onClick={handleCloseDetails}
                   sx={{ color: 'rgba(255,255,255,0.7)' }}
@@ -999,7 +999,7 @@ const EnhancedAvailableJobs = () => {
                       <TimeIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
                       <Typography sx={{ color: '#fff' }}>
                         Posted {selectedJob.timeAgo || '2 hours ago'}
-                      </Typography>
+                    </Typography>
                     </Stack>
                   </Stack>
                 </Grid>
@@ -1011,19 +1011,19 @@ const EnhancedAvailableJobs = () => {
                   </Typography>
                   <Typography sx={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
                     {selectedJob.description}
-                  </Typography>
-                </Grid>
+                    </Typography>
+              </Grid>
 
                 {selectedJob.requirements && (
                   <Grid item xs={12}>
                     <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
-                      Requirements
+                Requirements
                     </Typography>
                     <Box component="ul" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                       {selectedJob.requirements.map((req, index) => (
                         <Typography component="li" key={index} sx={{ mb: 0.5 }}>
                           {req}
-                        </Typography>
+                  </Typography>
                       ))}
                     </Box>
                   </Grid>

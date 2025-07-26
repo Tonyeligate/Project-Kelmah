@@ -753,18 +753,18 @@ const EnhancedMessagingPage = () => {
   const EnhancedChatArea = () => {
     if (!selectedConversation) {
       return (
-        <Paper
+      <Paper
           sx={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
             background: 'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
             borderRadius: 3,
           }}
-        >
-          <Box textAlign="center">
+      >
+        <Box textAlign="center">
             <Box
               sx={{
                 width: 120,
@@ -780,18 +780,18 @@ const EnhancedMessagingPage = () => {
             >
               <SendIcon sx={{ fontSize: 48, color: 'rgba(255,215,0,0.5)' }} />
             </Box>
-            <Typography
-              variant="h6"
+          <Typography
+            variant="h6"
               sx={{
                 color: '#FFD700',
                 fontWeight: 600,
                 mb: 1,
               }}
-            >
-              Select a conversation
-            </Typography>
-            <Typography
-              variant="body1"
+          >
+            Select a conversation
+          </Typography>
+          <Typography
+            variant="body1"
               sx={{
                 color: 'rgba(255,255,255,0.5)',
                 maxWidth: '300px',
@@ -1205,7 +1205,7 @@ const EnhancedMessagingPage = () => {
                           }}
                         >
                           {file.name}
-                        </Typography>
+          </Typography>
                       </Stack>
                     )}
                   </Paper>

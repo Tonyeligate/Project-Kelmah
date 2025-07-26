@@ -209,7 +209,7 @@ class JobsApi {
     try {
       // Try to call the actual job service
       const response = await jobServiceClient.get('/api/jobs', { params });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock data:', error.message);
       
@@ -267,9 +267,9 @@ class JobsApi {
   async getFeaturedJobs(limit = 6) {
     try {
       const response = await jobServiceClient.get('/api/jobs/featured', {
-        params: { limit },
-      });
-      return response.data;
+      params: { limit },
+    });
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock featured jobs:', error.message);
       
@@ -290,7 +290,7 @@ class JobsApi {
   async getJobById(jobId) {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock job data:', error.message);
       
@@ -312,7 +312,7 @@ class JobsApi {
   async createJob(jobData) {
     try {
       const response = await jobServiceClient.post('/api/jobs', jobData);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, simulating job creation:', error.message);
       
@@ -341,7 +341,7 @@ class JobsApi {
   async updateJob(jobId, jobData) {
     try {
       const response = await jobServiceClient.put(`/api/jobs/${jobId}`, jobData);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, simulating job update:', error.message);
       
@@ -376,7 +376,7 @@ class JobsApi {
   async applyToJob(jobId, applicationData) {
     try {
       const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, simulating job application:', error.message);
       
@@ -402,7 +402,7 @@ class JobsApi {
   async getMyJobs(params = {}) {
     try {
       const response = await jobServiceClient.get('/api/jobs/my-jobs', { params });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock my jobs:', error.message);
       
@@ -423,7 +423,7 @@ class JobsApi {
   async getJobApplications(jobId, params = {}) {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}/applications`, { params });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock applications:', error.message);
       
@@ -443,7 +443,7 @@ class JobsApi {
   async getMyApplications(params = {}) {
     try {
       const response = await jobServiceClient.get('/api/jobs/my-applications', { params });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock applications:', error.message);
       
@@ -465,8 +465,8 @@ class JobsApi {
       const response = await jobServiceClient.put(
         `/api/jobs/${jobId}/applications/${applicationId}`,
         { status }
-      );
-      return response.data;
+    );
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, simulating status update:', error.message);
       
@@ -491,7 +491,7 @@ class JobsApi {
   async saveJob(jobId) {
     try {
       const response = await jobServiceClient.post(`/api/jobs/${jobId}/save`);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, simulating job save:', error.message);
       
@@ -508,7 +508,7 @@ class JobsApi {
   async unsaveJob(jobId) {
     try {
       const response = await jobServiceClient.delete(`/api/jobs/${jobId}/save`);
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, simulating job unsave:', error.message);
       
@@ -525,7 +525,7 @@ class JobsApi {
   async getSavedJobs(params = {}) {
     try {
       const response = await jobServiceClient.get('/api/jobs/saved', { params });
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock saved jobs:', error.message);
       
@@ -545,7 +545,7 @@ class JobsApi {
   async getJobCategories() {
     try {
       const response = await jobServiceClient.get('/api/jobs/categories');
-      return response.data;
+    return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock categories:', error.message);
       
