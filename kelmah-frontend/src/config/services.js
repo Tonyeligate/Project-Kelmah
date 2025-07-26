@@ -42,8 +42,8 @@ const getServicePath = (service, path) => {
       default: return `/api${path}`;
     }
   } else {
-    // Production: direct service URLs
-    return `${SERVICES[service]}/api${path}`;
+    // Production: direct service URLs (services already include /api in their routes)
+    return `${SERVICES[service]}${path}`;
   }
 };
 
