@@ -54,12 +54,17 @@ const Credentials = () => {
     const fetchCredentials = async () => {
       try {
         setIsLoading(true);
-        const data = await workersApi.getSkillsAndLicenses();
+        const response = await workersApi.getSkillsAndLicenses();
+        
+        // Handle both API response formats
+        const data = response.data || response;
+        const skills = data.skills || [];
+        const licenses = data.licenses || [];
 
-        setSkills(data.skills || []);
-        setLicenses(data.licenses || []);
+        setSkills(skills);
+        setLicenses(licenses);
         setVerifiedSkillIds(
-          data.skills.filter((s) => s.verified).map((s) => s.id),
+          skills.filter((s) => s.verified).map((s) => s.id),
         );
         setError(null);
       } catch (err) {

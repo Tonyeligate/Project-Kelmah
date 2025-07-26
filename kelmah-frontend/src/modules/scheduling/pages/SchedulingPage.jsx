@@ -54,7 +54,7 @@ import AppointmentForm from '../components/AppointmentForm';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import jobsService from '../../jobs/services/jobsApi';
-import userService from '../../auth/services/authService';
+import { workersApi } from '../../../api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -300,9 +300,17 @@ const SchedulingPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Extract dates with appointments for calendar badges
-  const appointmentDays = appointments.map((a) =>
-    format(new Date(a.date), 'yyyy-MM-dd'),
-  );
+  const appointmentDays = appointments.map((a) => {
+    const appointmentDate = a.startTime || a.date;
+    if (!appointmentDate) return null;
+    
+    try {
+      return format(new Date(appointmentDate), 'yyyy-MM-dd');
+    } catch (error) {
+      console.warn('Invalid appointment date:', appointmentDate);
+      return null;
+    }
+  }).filter(date => date !== null);
 
   // Load appointments helper
   const loadAppointments = async () => {
@@ -336,10 +344,14 @@ const SchedulingPage = () => {
   const loadUsers = async () => {
     setLoadingUsers(true);
     try {
-      const data = await userService.getUsers({ limit: 100, role: 'hirer' });
-      setUsers(data);
+      const response = await workersApi.searchWorkers({ limit: 100 });
+      const data = response.data || response;
+      const users = data.workers || [];
+      setUsers(users);
     } catch (err) {
       console.error('Error loading users:', err);
+      // Set empty array as fallback
+      setUsers([]);
     } finally {
       setLoadingUsers(false);
     }
