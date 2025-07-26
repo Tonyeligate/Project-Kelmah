@@ -37,27 +37,33 @@ export const login = createAsyncThunk(
 
       console.log('Login response in authSlice:', response);
 
-      // Make sure we have a token and user data
-      if (response.token) {
-        const userData = response.user || {};
+      // Handle different response structures - backend sends {success: true, data: {token, user}}
+      const responseData = response.data || response;
+      const token = responseData.token;
+      const user = responseData.user || {};
+      const refreshToken = responseData.refreshToken;
 
+      // Make sure we have a token and user data
+      if (token) {
         // Log the user data we're storing for debugging
-        console.log('Storing user data with role in authSlice:', userData);
+        console.log('Storing user data with role in authSlice:', user);
 
         // Store token and user data in localStorage
-        localStorage.setItem(TOKEN_KEY, response.token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        // FIRST_EDIT: store refresh token for future token refresh
-        localStorage.setItem('refreshToken', response.refreshToken);
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
 
         // Return structured data for the reducer
         return {
-          token: response.token,
-          user: userData,
-          refreshToken: response.refreshToken,
+          token,
+          user,
+          refreshToken,
         };
       } else {
-        console.warn('No token received in login response');
+        console.warn('No token received in login response. Response structure:', response);
         return rejectWithValue('No authentication token received');
       }
     } catch (error) {
