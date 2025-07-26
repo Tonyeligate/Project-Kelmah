@@ -125,10 +125,10 @@ axiosInstance.interceptors.response.use(
             localStorage.setItem(AUTH_CONFIG.tokenKey, newToken);
             
             // Update the failed request with new token
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
             
             // Retry the original request
-            return axiosInstance(originalRequest);
+          return axiosInstance(originalRequest);
           }
         } catch (refreshError) {
           console.error('Token refresh failed:', refreshError);

@@ -9,8 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import { AUTH_CONFIG } from '../../../config/environment';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '../services/authSlice';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -18,12 +16,10 @@ const AuthContext = createContext();
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(authService.getStoredToken());
-  const reduxAuth = useSelector(selectIsAuthenticated);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  
   // Attempt to get navigate function; fallback to no-op if outside a Router
   let navigate = () => {};
   try {
@@ -32,88 +28,33 @@ export const AuthProvider = ({ children }) => {
     // No Router context, navigation no-op
   }
 
-  // Clear context state when Redux logs out
-  useEffect(() => {
-    if (!reduxAuth) {
-      setUser(null);
-      setToken(null);
-    }
-  }, [reduxAuth]);
-
-  // Sync with stored auth data
-  useEffect(() => {
-    const syncAuthState = () => {
-      const storedToken = authService.getStoredToken();
-      const storedUser = authService.getStoredUser();
-
-      if (storedToken && storedUser) {
-        if (!user || user.id !== storedUser.id) {
-          console.log('🔄 Syncing auth state from storage');
-          setUser(storedUser);
-          setToken(storedToken);
-        }
-      } else if (!storedToken && (user || token)) {
-        console.log('🔄 Clearing auth state (no stored data)');
-        setUser(null);
-        setToken(null);
-      }
-    };
-
-    // Check immediately
-    syncAuthState();
-
-    // Setup polling interval (every 3 seconds)
-    const interval = setInterval(syncAuthState, 3000);
-
-    return () => clearInterval(interval);
-  }, [user, token]);
-
   // Initialize authentication state
   useEffect(() => {
     const initAuth = async () => {
       setLoading(true);
-      setError(null);
-
       try {
-        const storedToken = authService.getStoredToken();
-
-        if (storedToken) {
-          console.log('🔐 Validating stored token...');
-          
+        // Check if user is already authenticated
+        if (authService.isAuthenticated()) {
           try {
             const userData = await authService.getCurrentUser();
-            console.log('✅ Token valid, user authenticated:', userData);
-            
             setUser(userData);
-            setToken(storedToken);
           } catch (apiError) {
-            console.warn('⚠️ Token validation failed:', apiError.message);
+            console.error('Failed to get current user:', apiError);
             
-            // For development: If backend is not available, use stored user data
-            if (process.env.NODE_ENV === 'development') {
-              const storedUser = authService.getStoredUser();
-              if (storedUser) {
-                console.log('🧪 Using stored user data in development mode');
-                setUser(storedUser);
-                setToken(storedToken);
-              } else {
-                throw apiError;
-              }
+            // If API fails but we have stored user data, use it (development mode)
+            const storedUser = authService.getStoredUser();
+            if (storedUser) {
+              console.log('Using stored user data');
+              setUser(storedUser);
             } else {
-              throw apiError;
+              // Clear invalid authentication
+              authService.clearStorage();
             }
           }
-        } else {
-          console.log('ℹ️ No stored token found');
         }
       } catch (err) {
-        console.error('❌ Failed to initialize auth:', err);
-        
-        // Clear invalid authentication data
+        console.error('Failed to initialize auth:', err);
         authService.clearStorage();
-        setUser(null);
-        setToken(null);
-        setError('Session expired. Please log in again.');
       } finally {
         setLoading(false);
         setIsInitialized(true);
@@ -129,27 +70,20 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
-      console.log('🔐 Attempting login...');
       const response = await authService.login(credentials);
       
-      // Handle different response structures
-      const data = response.data || response;
-      const tokenValue = data.token;
-      const userData = data.user;
-
-      if (!tokenValue || !userData) {
-        throw new Error('Invalid response from server');
-      }
-
-      console.log('✅ Login successful:', userData);
+      // Get user data from response
+      const userData = response.data?.user || response.user;
       
-      // Update state
-      setToken(tokenValue);
-      setUser(userData);
-
-      return userData;
+      if (userData) {
+        setUser(userData);
+        console.log('Login successful. User:', userData);
+        return userData;
+      } else {
+        throw new Error('No user data received from login');
+      }
     } catch (err) {
-      console.error('❌ Login error:', err);
+      console.error('Login error:', err);
       const errorMessage = err.message || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -164,13 +98,10 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
-      console.log('📝 Attempting registration...');
       const response = await authService.register(userData);
-      console.log('✅ Registration successful');
-      
       return response;
     } catch (err) {
-      console.error('❌ Registration error:', err);
+      console.error('Registration error:', err);
       const errorMessage = err.message || 'Registration failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -181,24 +112,17 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
-    setLoading(true);
-    
     try {
-      console.log('🚪 Logging out...');
       await authService.logout();
-      console.log('✅ Logout successful');
     } catch (err) {
-      console.warn('⚠️ Logout API error:', err);
-      // Continue with local logout even if API fails
+      console.error('Logout error:', err);
     } finally {
-      // Clear state regardless of API success
-      setToken(null);
+      // Clear local state
       setUser(null);
       setError(null);
-      setLoading(false);
       
       // Redirect to login
-      navigate('/login?reason=logged_out');
+      navigate('/login');
     }
   }, [navigate]);
 
@@ -208,13 +132,10 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
-      console.log('📧 Requesting password reset for:', email);
       const response = await authService.requestPasswordReset(email);
-      console.log('✅ Password reset request successful');
-      
       return response;
     } catch (err) {
-      console.error('❌ Password reset request error:', err);
+      console.error('Password reset request error:', err);
       const errorMessage = err.message || 'Failed to request password reset. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -229,13 +150,10 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
-      console.log('🔑 Resetting password...');
       const response = await authService.resetPassword(token, newPassword);
-      console.log('✅ Password reset successful');
-      
       return response;
     } catch (err) {
-      console.error('❌ Password reset error:', err);
+      console.error('Password reset error:', err);
       const errorMessage = err.message || 'Failed to reset password. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -250,16 +168,11 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
-      console.log('👤 Updating profile...');
       const updatedUser = await authService.updateProfile(profileData);
-      
-      // Update user state
-      setUser(prevUser => ({ ...prevUser, ...updatedUser }));
-      console.log('✅ Profile updated successfully');
-      
+      setUser((prevUser) => ({ ...prevUser, ...updatedUser }));
       return updatedUser;
     } catch (err) {
-      console.error('❌ Profile update error:', err);
+      console.error('Profile update error:', err);
       const errorMessage = err.message || 'Failed to update profile. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -268,19 +181,15 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // MFA functions
+  // Setup two-factor authentication
   const setupMFA = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
     try {
-      console.log('🔐 Setting up MFA...');
       const data = await authService.setupMFA();
-      console.log('✅ MFA setup successful');
-      
       return data;
     } catch (err) {
-      console.error('❌ MFA setup error:', err);
+      console.error('MFA setup error:', err);
       const errorMessage = err.message || 'Failed to setup MFA.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -289,18 +198,15 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Verify two-factor authentication code
   const verifyMFA = useCallback(async (token) => {
     setLoading(true);
     setError(null);
-    
     try {
-      console.log('🔐 Verifying MFA...');
       const data = await authService.verifyMFA(token);
-      console.log('✅ MFA verification successful');
-      
       return data;
     } catch (err) {
-      console.error('❌ MFA verification error:', err);
+      console.error('MFA verify error:', err);
       const errorMessage = err.message || 'Failed to verify MFA code.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -309,18 +215,15 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const disableMFA = useCallback(async (password, mfaToken) => {
+  // Disable two-factor authentication
+  const disableMFA = useCallback(async (password, token) => {
     setLoading(true);
     setError(null);
-    
     try {
-      console.log('🔐 Disabling MFA...');
-      const data = await authService.disableMFA(password, mfaToken);
-      console.log('✅ MFA disabled successfully');
-      
+      const data = await authService.disableMFA(password, token);
       return data;
     } catch (err) {
-      console.error('❌ MFA disable error:', err);
+      console.error('MFA disable error:', err);
       const errorMessage = err.message || 'Failed to disable MFA.';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -329,37 +232,36 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Utility functions
+  // Check if user is authenticated
   const isAuthenticated = useCallback(() => {
     return authService.isAuthenticated();
   }, []);
 
+  // Get user role
   const getUserRole = useCallback(() => {
     return authService.getUserRole();
   }, []);
 
+  // Check if user has specific role
   const hasRole = useCallback((role) => {
     return authService.hasRole(role);
   }, []);
 
+  // Get stored token
   const getToken = useCallback(() => {
     return authService.getStoredToken();
   }, []);
 
-  // Clear error function
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
+  // Context value
   const value = {
-    // State
     user,
     loading,
     error,
     isInitialized,
-    token,
-    
-    // Functions
+    isAuthenticated,
+    getToken,
+    hasRole,
+    getUserRole,
     login,
     register,
     logout,
@@ -369,13 +271,6 @@ export const AuthProvider = ({ children }) => {
     setupMFA,
     verifyMFA,
     disableMFA,
-    
-    // Utilities
-    isAuthenticated,
-    getUserRole,
-    hasRole,
-    getToken,
-    clearError
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
