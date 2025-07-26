@@ -82,12 +82,9 @@ function App() {
       return;
     }
     const checkAuth = () => {
-      // In development mode, set up mock authentication
-      const isDevelopment =
-        process.env.NODE_ENV === 'development' ||
-        import.meta.env.DEV ||
-        window.location.hostname.includes('ngrok');
-
+      // Force disable development mock authentication to use real auth
+      const isDevelopment = false; // Disabled to use real authentication
+      
       if (isDevelopment) {
         // Skip mock auth after manual logout
         if (sessionStorage.getItem('dev-logout') === 'true') {

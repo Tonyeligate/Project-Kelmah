@@ -81,7 +81,7 @@ export const FEATURES = {
   
   // Development features
   debugMode: import.meta.env.VITE_DEBUG_MODE === 'true',
-  useMocks: import.meta.env.VITE_USE_MOCKS === 'true',
+  useMocks: false, // Force disable mocks to use real API data
   mockDelay: parseInt(import.meta.env.VITE_MOCK_DELAY || '1000')
 };
 

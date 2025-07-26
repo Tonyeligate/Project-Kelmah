@@ -17,7 +17,7 @@ import { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY } from './config';
 // Export renamed imports to avoid conflicts
 export const API_BASE_URL = envApiBaseUrl;
 export const WS_URL = envWsUrl;
-export const USE_MOCK_DATA = envUseMockData;
+export const USE_MOCK_DATA = false; // Force disable mocks to use real API data
 
 // Export other commonly used environment variables
 export const API_URL = env.API_URL;
