@@ -1,9 +1,16 @@
 import axios from 'axios';
-import { API_BASE_URL, TOKEN_KEY } from '../../../config';
+import { API_ENDPOINTS } from '../../../config/services';
 
-// In development, use empty baseURL to leverage Vite's proxy; in production, hit the real API_BASE_URL
+// Get the auth service URL for production vs development
 const isDevelopment = import.meta.env.MODE === 'development';
-const baseURL = isDevelopment ? '' : API_BASE_URL; // Empty string for dev to use full paths
+const baseURL = isDevelopment ? '' : 'https://kelmah-auth-service.onrender.com';
+
+console.log('🔧 Axios Configuration:', {
+  isDevelopment,
+  baseURL,
+  mode: import.meta.env.MODE,
+  authEndpoint: `${baseURL}/api/auth/login`
+});
 
 // Create an axios instance with default config
 const axiosInstance = axios.create({
@@ -20,7 +27,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // Get token from localStorage
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem('token');
 
     // If token exists, add it to the headers
     if (token) {
@@ -86,7 +93,7 @@ axiosInstance.interceptors.response.use(
         try {
           // Request new tokens using default axios (bypass interceptor)
           const tokenResponse = await axios.post(
-            `${API_BASE_URL}/api/auth/refresh-token`,
+            `${baseURL}/api/auth/refresh-token`,
             { refreshToken },
             { headers: { 'Content-Type': 'application/json' } },
           );
@@ -95,7 +102,7 @@ axiosInstance.interceptors.response.use(
           const newRefreshToken =
             resData.data?.refreshToken || resData.refreshToken;
           // Store updated tokens
-          localStorage.setItem(TOKEN_KEY, newToken);
+          localStorage.setItem('token', newToken);
           localStorage.setItem('refreshToken', newRefreshToken);
           // Update axios instance headers
           axiosInstance.defaults.headers.Authorization = `Bearer ${newToken}`;
@@ -104,7 +111,7 @@ axiosInstance.interceptors.response.use(
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           // Refresh failed, clear storage and redirect to login
-          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           window.location.href = '/login';
           return Promise.reject(refreshError);

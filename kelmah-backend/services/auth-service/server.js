@@ -28,15 +28,34 @@ app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
-// CORS middleware: reflect request origin to allow dynamic front-end domains
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+
+// CORS configuration for production and development
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://kelmah-frontend.onrender.com',
+      'https://project-kelmah.onrender.com'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  optionsSuccessStatus: 200 // for legacy browser support
+};
+
+app.use(cors(corsOptions));
 
 // Logging middleware
 if (process.env.NODE_ENV === "development") {
@@ -48,27 +67,39 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/auth", authRoutes);
 
-// Backward compatibility: also mount auth routes at `/auth`
-app.use("/auth", authRoutes);
-
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
     service: "Auth Service",
     status: "OK",
     timestamp: new Date().toISOString(),
+    endpoints: {
+      login: "/api/auth/login",
+      register: "/api/auth/register",
+      verify: "/api/auth/verify"
+    }
   });
 });
 
 // Root endpoint with API information
 app.get("/", (req, res) => {
   res.status(200).json({
-    name: "Auth Service API",
+    name: "Kelmah Auth Service",
     version: "1.0.0",
-    description: "Authentication service for the Kelmah platform",
+    description: "Authentication and authorization service for the Kelmah platform",
     health: "/health",
+    endpoints: {
+      register: "POST /api/auth/register",
+      login: "POST /api/auth/login", 
+      verify: "GET /api/auth/verify",
+      "refresh-token": "POST /api/auth/refresh-token",
+      logout: "POST /api/auth/logout"
+    }
   });
 });
+
+// Backward compatibility: also mount auth routes at `/auth`
+app.use("/auth", authRoutes);
 
 // 404 handler
 app.use(notFound);
