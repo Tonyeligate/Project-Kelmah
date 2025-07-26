@@ -41,7 +41,29 @@ import {
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon
 } from '@mui/icons-material';
-import { userServiceClient } from '../../../config/environment';
+import axios from 'axios';
+import { SERVICES } from '../../../config/environment';
+
+// Create dedicated user service client for worker operations
+const userServiceClient = axios.create({
+  baseURL: SERVICES.USER_SERVICE,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests
+userServiceClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('kelmah_auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Comprehensive mock worker data with completed jobs
 const mockWorkerData = [
