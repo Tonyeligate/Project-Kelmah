@@ -6,9 +6,8 @@ import React, {
   useCallback,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../common/services/axios';
-import { API_BASE_URL, TOKEN_KEY } from '../../../config/constants';
 import authService from '../services/authService';
+import { AUTH_CONFIG } from '../../../config/environment';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '../services/authSlice';
@@ -19,11 +18,12 @@ const AuthContext = createContext();
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY));
+  const [token, setToken] = useState(authService.getStoredToken());
   const reduxAuth = useSelector(selectIsAuthenticated);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+
   // Attempt to get navigate function; fallback to no-op if outside a Router
   let navigate = () => {};
   try {
@@ -40,90 +40,80 @@ export const AuthProvider = ({ children }) => {
     }
   }, [reduxAuth]);
 
-  // Set axios authorization header
+  // Sync with stored auth data
   useEffect(() => {
-    if (token) {
-      axiosInstance.defaults.headers.common['Authorization'] =
-        `Bearer ${token}`;
-    } else {
-      delete axiosInstance.defaults.headers.common['Authorization'];
-    }
-  }, [token]);
-
-  // Check for authentication status periodically
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      const storedToken = localStorage.getItem(TOKEN_KEY);
-      const storedUser = localStorage.getItem('user');
+    const syncAuthState = () => {
+      const storedToken = authService.getStoredToken();
+      const storedUser = authService.getStoredUser();
 
       if (storedToken && storedUser) {
-        if (!user) {
-          console.log(
-            '[AuthContext] User found in storage but not in state, restoring',
-          );
-          setUser(JSON.parse(storedUser));
+        if (!user || user.id !== storedUser.id) {
+          console.log('🔄 Syncing auth state from storage');
+          setUser(storedUser);
           setToken(storedToken);
         }
-      } else if (!storedToken && user) {
-        console.log(
-          '[AuthContext] No token in storage but user in state, clearing',
-        );
+      } else if (!storedToken && (user || token)) {
+        console.log('🔄 Clearing auth state (no stored data)');
         setUser(null);
         setToken(null);
       }
     };
 
     // Check immediately
-    checkAuthStatus();
+    syncAuthState();
 
-    // Setup a polling interval (every 3 seconds)
-    const interval = setInterval(checkAuthStatus, 3000);
+    // Setup polling interval (every 3 seconds)
+    const interval = setInterval(syncAuthState, 3000);
 
-    // Cleanup
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, token]);
 
-  // Initialize authentication state from local storage
+  // Initialize authentication state
   useEffect(() => {
     const initAuth = async () => {
       setLoading(true);
+      setError(null);
+
       try {
-        const storedToken = localStorage.getItem(TOKEN_KEY);
+        const storedToken = authService.getStoredToken();
 
         if (storedToken) {
-          // Try to validate token on the server
+          console.log('🔐 Validating stored token...');
+          
           try {
             const userData = await authService.getCurrentUser();
+            console.log('✅ Token valid, user authenticated:', userData);
+            
             setUser(userData);
             setToken(storedToken);
           } catch (apiError) {
-            console.error('API error while validating token:', apiError);
-
+            console.warn('⚠️ Token validation failed:', apiError.message);
+            
             // For development: If backend is not available, use stored user data
-            // In production this would be more secure, but for development it helps
             if (process.env.NODE_ENV === 'development') {
-              const storedUser = JSON.parse(
-                localStorage.getItem('user') || 'null',
-              );
+              const storedUser = authService.getStoredUser();
               if (storedUser) {
-                console.log('Using stored user data in development mode');
+                console.log('🧪 Using stored user data in development mode');
                 setUser(storedUser);
                 setToken(storedToken);
               } else {
-                throw apiError; // Rethrow if no stored user
+                throw apiError;
               }
             } else {
               throw apiError;
             }
           }
+        } else {
+          console.log('ℹ️ No stored token found');
         }
       } catch (err) {
-        console.error('Failed to initialize auth:', err);
-        // If token validation fails, clear authentication
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem('user');
+        console.error('❌ Failed to initialize auth:', err);
+        
+        // Clear invalid authentication data
+        authService.clearStorage();
         setUser(null);
         setToken(null);
+        setError('Session expired. Please log in again.');
       } finally {
         setLoading(false);
         setIsInitialized(true);
@@ -139,34 +129,30 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
+      console.log('🔐 Attempting login...');
       const response = await authService.login(credentials);
-      console.log('Login response in context:', response);
-
+      
       // Handle different response structures
-      const tokenValue = response.token || response.data?.token;
-      const userData = response.user || response.data?.user;
+      const data = response.data || response;
+      const tokenValue = data.token;
+      const userData = data.user;
 
-      if (!tokenValue) {
-        throw new Error('No token received from server');
+      if (!tokenValue || !userData) {
+        throw new Error('Invalid response from server');
       }
 
-      // Store token and user in localStorage
-      localStorage.setItem(TOKEN_KEY, tokenValue);
-      localStorage.setItem('user', JSON.stringify(userData));
-
+      console.log('✅ Login successful:', userData);
+      
       // Update state
       setToken(tokenValue);
       setUser(userData);
 
-      console.log('Login successful. User:', userData);
       return userData;
     } catch (err) {
-      console.error('Login error:', err);
-      setError(
-        err.response?.data?.message ||
-          'Login failed. Please check your credentials.',
-      );
-      throw err;
+      console.error('❌ Login error:', err);
+      const errorMessage = err.message || 'Login failed. Please check your credentials.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -178,14 +164,16 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
+      console.log('📝 Attempting registration...');
       const response = await authService.register(userData);
+      console.log('✅ Registration successful');
+      
       return response;
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(
-        err.response?.data?.message || 'Registration failed. Please try again.',
-      );
-      throw err;
+      console.error('❌ Registration error:', err);
+      const errorMessage = err.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -193,28 +181,26 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
+    setLoading(true);
+    
     try {
-      if (token) {
-        try {
-          await authService.logout();
-        } catch (err) {
-          console.warn('Logout API error:', err);
-          // Continue with local logout even if API fails
-        }
-      }
+      console.log('🚪 Logging out...');
+      await authService.logout();
+      console.log('✅ Logout successful');
     } catch (err) {
-      console.error('Logout error:', err);
+      console.warn('⚠️ Logout API error:', err);
+      // Continue with local logout even if API fails
     } finally {
-      // Clear token from localStorage
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('user');
-      // Update state
+      // Clear state regardless of API success
       setToken(null);
       setUser(null);
+      setError(null);
+      setLoading(false);
+      
       // Redirect to login
-      navigate('/login');
+      navigate('/login?reason=logged_out');
     }
-  }, [token, navigate]);
+  }, [navigate]);
 
   // Password reset request
   const requestPasswordReset = useCallback(async (email) => {
@@ -222,15 +208,16 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
+      console.log('📧 Requesting password reset for:', email);
       const response = await authService.requestPasswordReset(email);
+      console.log('✅ Password reset request successful');
+      
       return response;
     } catch (err) {
-      console.error('Password reset request error:', err);
-      setError(
-        err.response?.data?.message ||
-          'Failed to request password reset. Please try again.',
-      );
-      throw err;
+      console.error('❌ Password reset request error:', err);
+      const errorMessage = err.message || 'Failed to request password reset. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -242,15 +229,16 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
+      console.log('🔑 Resetting password...');
       const response = await authService.resetPassword(token, newPassword);
+      console.log('✅ Password reset successful');
+      
       return response;
     } catch (err) {
-      console.error('Password reset error:', err);
-      setError(
-        err.response?.data?.message ||
-          'Failed to reset password. Please try again.',
-      );
-      throw err;
+      console.error('❌ Password reset error:', err);
+      const errorMessage = err.message || 'Failed to reset password. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -262,124 +250,132 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
+      console.log('👤 Updating profile...');
       const updatedUser = await authService.updateProfile(profileData);
-      setUser((prevUser) => ({ ...prevUser, ...updatedUser }));
+      
+      // Update user state
+      setUser(prevUser => ({ ...prevUser, ...updatedUser }));
+      console.log('✅ Profile updated successfully');
+      
       return updatedUser;
     } catch (err) {
-      console.error('Profile update error:', err);
-      setError(
-        err.response?.data?.message ||
-          'Failed to update profile. Please try again.',
-      );
-      throw err;
+      console.error('❌ Profile update error:', err);
+      const errorMessage = err.message || 'Failed to update profile. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Setup two-factor authentication
-  const mfaSetup = useCallback(async () => {
+  // MFA functions
+  const setupMFA = useCallback(async () => {
     setLoading(true);
     setError(null);
+    
     try {
-      const data = await authService.mfaSetup();
+      console.log('🔐 Setting up MFA...');
+      const data = await authService.setupMFA();
+      console.log('✅ MFA setup successful');
+      
       return data;
     } catch (err) {
-      console.error('MFA setup error:', err);
-      setError(err.response?.data?.message || 'Failed to setup MFA.');
-      throw err;
+      console.error('❌ MFA setup error:', err);
+      const errorMessage = err.message || 'Failed to setup MFA.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Verify two-factor authentication code
-  const verifyTwoFactor = useCallback(async (token) => {
+  const verifyMFA = useCallback(async (token) => {
     setLoading(true);
     setError(null);
+    
     try {
-      const data = await authService.verifyTwoFactor(token);
+      console.log('🔐 Verifying MFA...');
+      const data = await authService.verifyMFA(token);
+      console.log('✅ MFA verification successful');
+      
       return data;
     } catch (err) {
-      console.error('MFA verify error:', err);
-      setError(err.response?.data?.message || 'Failed to verify MFA code.');
-      throw err;
+      console.error('❌ MFA verification error:', err);
+      const errorMessage = err.message || 'Failed to verify MFA code.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Disable two-factor authentication
-  const disableMfa = useCallback(async (password, token) => {
+  const disableMFA = useCallback(async (password, mfaToken) => {
     setLoading(true);
     setError(null);
+    
     try {
-      const data = await authService.disableMfa({ password, token });
+      console.log('🔐 Disabling MFA...');
+      const data = await authService.disableMFA(password, mfaToken);
+      console.log('✅ MFA disabled successfully');
+      
       return data;
     } catch (err) {
-      console.error('MFA disable error:', err);
-      setError(err.response?.data?.message || 'Failed to disable MFA.');
-      throw err;
+      console.error('❌ MFA disable error:', err);
+      const errorMessage = err.message || 'Failed to disable MFA.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Check if user is authenticated
+  // Utility functions
   const isAuthenticated = useCallback(() => {
-    // Check both context state and localStorage
-    const contextAuth = !!token && !!user;
-    const storageAuth =
-      !!localStorage.getItem(TOKEN_KEY) && !!localStorage.getItem('user');
+    return authService.isAuthenticated();
+  }, []);
 
-    return contextAuth || storageAuth;
-  }, [token, user]);
-
-  // Get user role
   const getUserRole = useCallback(() => {
-    if (!user) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          return parsedUser.role || parsedUser.userType || parsedUser.userRole;
-        } catch (e) {
-          console.error('Error parsing stored user:', e);
-        }
-      }
-      return null;
-    }
+    return authService.getUserRole();
+  }, []);
 
-    return user.role || user.userType || user.userRole;
-  }, [user]);
+  const hasRole = useCallback((role) => {
+    return authService.hasRole(role);
+  }, []);
 
-  // Check if user has specific role
-  const hasRole = useCallback(
-    (role) => {
-      const userRole = getUserRole();
-      return userRole === role;
-    },
-    [getUserRole],
-  );
+  const getToken = useCallback(() => {
+    return authService.getStoredToken();
+  }, []);
+
+  // Clear error function
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   const value = {
+    // State
     user,
     loading,
     error,
     isInitialized,
-    isAuthenticated,
-    getToken: useCallback(() => token, [token]),
-    hasRole,
-    getUserRole,
+    token,
+    
+    // Functions
     login,
     register,
     logout,
     requestPasswordReset,
     resetPassword,
     updateProfile,
-    mfaSetup,
-    verifyTwoFactor,
-    disableMfa,
+    setupMFA,
+    verifyMFA,
+    disableMFA,
+    
+    // Utilities
+    isAuthenticated,
+    getUserRole,
+    hasRole,
+    getToken,
+    clearError
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

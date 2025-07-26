@@ -1,129 +1,243 @@
+/**
+ * Axios Configuration
+ * 
+ * Centralized axios instance with interceptors for authentication,
+ * error handling, and request/response processing.
+ */
+
 import axios from 'axios';
-import { API_ENDPOINTS } from '../../../config/services';
+import { 
+  API_BASE_URL, 
+  AUTH_CONFIG, 
+  PERFORMANCE_CONFIG,
+  LOG_CONFIG 
+} from '../../../config/environment';
 
-// Get the auth service URL for production vs development
-const isDevelopment = import.meta.env.MODE === 'development';
-const baseURL = isDevelopment ? '' : 'https://kelmah-auth-service.onrender.com';
-
-console.log('🔧 Axios Configuration:', {
-  isDevelopment,
-  baseURL,
-  mode: import.meta.env.MODE,
-  authEndpoint: `${baseURL}/api/auth/login`
-});
-
-// Create an axios instance with default config
+// Create axios instance with default configuration
 const axiosInstance = axios.create({
-  baseURL,
-  timeout: 30000, // 30 seconds
+  baseURL: API_BASE_URL,
+  timeout: PERFORMANCE_CONFIG.apiTimeout,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
-  // Allow credentials (e.g., cookies) for cross-domain auth
-  withCredentials: true,
+  withCredentials: true
 });
 
-// Add request interceptor to inject auth token and fix routing
+// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-
-    // If token exists, add it to the headers
+    // Add auth token if available
+    const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Fix legacy API paths for proper microservice routing
-    if (config.url) {
-      // Fix workers API paths to route to user service
-      if (config.url.includes('/workers/me')) {
-        config.url = config.url.replace('/workers/me', '/api/users/me');
-      }
-      // Fix dashboard paths to route to correct services
-      else if (config.url.includes('/api/dashboard/metrics') || 
-               config.url.includes('/api/dashboard/workers') || 
-               config.url.includes('/api/dashboard/analytics')) {
-        config.url = config.url.replace('/api/dashboard/', '/api/users/dashboard/');
-      }
-      else if (config.url.includes('/api/dashboard/jobs')) {
-        config.url = config.url.replace('/api/dashboard/jobs', '/api/jobs/dashboard');
-      }
-      // Fix messaging paths
-      else if (config.url.includes('/conversations') && !config.url.includes('/api/messages')) {
-        config.url = config.url.replace('/conversations', '/api/messages/conversations');
-      }
-      // Fix job paths that don't have /api prefix
-      else if (config.url.match(/^\/jobs[\/\?]/) && !config.url.includes('/api/jobs')) {
-        config.url = config.url.replace(/^\/jobs/, '/api/jobs');
-      }
+    // Add request timestamp for debugging
+    config.metadata = { startTime: new Date() };
+
+    // Log request in development
+    if (LOG_CONFIG.enableConsole) {
+      console.group(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+      console.log('Config:', {
+        baseURL: config.baseURL,
+        url: config.url,
+        method: config.method,
+        headers: config.headers,
+        data: config.data
+      });
+      console.groupEnd();
     }
 
     return config;
   },
   (error) => {
+    console.error('❌ Request Error:', error);
     return Promise.reject(error);
-  },
+  }
 );
 
-// Add response interceptor for error handling
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
+    // Calculate request duration
+    const duration = new Date() - response.config.metadata.startTime;
+    
+    // Log response in development
+    if (LOG_CONFIG.enableConsole) {
+      console.group(`✅ API Response: ${response.status} (${duration}ms)`);
+      console.log('Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data
+      });
+      console.groupEnd();
+    }
+
     return response;
   },
   async (error) => {
-    // For dev mode, provide more helpful error logging
-    if (process.env.NODE_ENV === 'development') {
-      console.error('API Error:', {
-        url: error.config?.url,
-        method: error.config?.method,
+    const originalRequest = error.config;
+    
+    // Calculate request duration if available
+    const duration = originalRequest?.metadata?.startTime 
+      ? new Date() - originalRequest.metadata.startTime 
+      : 'unknown';
+
+    // Enhanced error logging
+    if (LOG_CONFIG.enableConsole) {
+      console.group(`❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`);
+      console.error('Error details:', {
+        url: originalRequest?.url,
+        method: originalRequest?.method,
         status: error.response?.status,
+        statusText: error.response?.statusText,
         message: error.message,
-        data: error.response?.data,
+        data: error.response?.data
       });
+      console.groupEnd();
     }
 
-    const originalRequest = error.config;
-
-    // Handle token expiration: attempt to refresh the access token on 401
+    // Handle 401 Unauthorized - attempt token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = localStorage.getItem('refreshToken');
+      
+      const refreshToken = localStorage.getItem(AUTH_CONFIG.refreshTokenKey);
+      
       if (refreshToken) {
         try {
-          // Request new tokens using default axios (bypass interceptor)
-          const tokenResponse = await axios.post(
-            `${baseURL}/api/auth/refresh-token`,
+          // Use a new axios instance to avoid interceptor loops
+          const refreshResponse = await axios.post(
+            `${API_BASE_URL}/api/auth/refresh-token`,
             { refreshToken },
-            { headers: { 'Content-Type': 'application/json' } },
+            { 
+              headers: { 'Content-Type': 'application/json' },
+              timeout: PERFORMANCE_CONFIG.apiTimeout
+            }
           );
-          const resData = tokenResponse.data;
-          const newToken = resData.data?.token || resData.token;
-          const newRefreshToken =
-            resData.data?.refreshToken || resData.refreshToken;
-          // Store updated tokens
-          localStorage.setItem('token', newToken);
-          localStorage.setItem('refreshToken', newRefreshToken);
-          // Update axios instance headers
-          axiosInstance.defaults.headers.Authorization = `Bearer ${newToken}`;
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          // Retry original request with new token
-          return axiosInstance(originalRequest);
+          
+          const newToken = refreshResponse.data.data?.token || 
+                          refreshResponse.data.token;
+          
+          if (newToken) {
+            // Update stored token
+            localStorage.setItem(AUTH_CONFIG.tokenKey, newToken);
+            
+            // Update the failed request with new token
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            
+            // Retry the original request
+            return axiosInstance(originalRequest);
+          }
         } catch (refreshError) {
-          // Refresh failed, clear storage and redirect to login
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
+          console.error('Token refresh failed:', refreshError);
+          
+          // Clear auth data and redirect to login
+          localStorage.removeItem(AUTH_CONFIG.tokenKey);
+          localStorage.removeItem(AUTH_CONFIG.refreshTokenKey);
+          localStorage.removeItem(AUTH_CONFIG.userKey);
+          
+          // Redirect to login page
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?reason=session_expired';
+          }
+          
           return Promise.reject(refreshError);
         }
       } else {
-        // No refresh token, redirect to login
-        window.location.href = '/login';
+        // No refresh token available, redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login?reason=no_token';
+        }
       }
     }
 
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.warn('Access forbidden - insufficient permissions');
+      
+      // You might want to redirect to an unauthorized page
+      if (typeof window !== 'undefined' && window.location.pathname !== '/unauthorized') {
+        window.location.href = '/unauthorized';
+      }
+    }
+
+    // Handle 404 Not Found
+    if (error.response?.status === 404) {
+      console.warn('Resource not found:', originalRequest?.url);
+    }
+
+    // Handle 500 Server Error
+    if (error.response?.status >= 500) {
+      console.error('Server error occurred');
+      
+      // You might want to show a global error notification here
+    }
+
+    // Network errors
+    if (!error.response) {
+      console.error('Network error - check your internet connection');
+    }
+
     return Promise.reject(error);
-  },
+  }
 );
+
+// Helper function to create API calls with consistent error handling
+export const createApiCall = (method, url, data = null, config = {}) => {
+  const requestConfig = {
+    method,
+    url,
+    ...config
+  };
+
+  if (data && ['post', 'put', 'patch'].includes(method.toLowerCase())) {
+    requestConfig.data = data;
+  } else if (data && method.toLowerCase() === 'get') {
+    requestConfig.params = data;
+  }
+
+  return axiosInstance(requestConfig);
+};
+
+// Helper functions for common HTTP methods
+export const apiGet = (url, params = null, config = {}) => 
+  createApiCall('GET', url, params, config);
+
+export const apiPost = (url, data = null, config = {}) => 
+  createApiCall('POST', url, data, config);
+
+export const apiPut = (url, data = null, config = {}) => 
+  createApiCall('PUT', url, data, config);
+
+export const apiPatch = (url, data = null, config = {}) => 
+  createApiCall('PATCH', url, data, config);
+
+export const apiDelete = (url, config = {}) => 
+  createApiCall('DELETE', url, null, config);
+
+// File upload helper
+export const uploadFile = (url, file, onProgress = null) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  };
+
+  if (onProgress) {
+    config.onUploadProgress = (progressEvent) => {
+      const percentCompleted = Math.round(
+        (progressEvent.loaded * 100) / progressEvent.total
+      );
+      onProgress(percentCompleted);
+    };
+  }
+
+  return apiPost(url, formData, config);
+};
 
 export default axiosInstance;
