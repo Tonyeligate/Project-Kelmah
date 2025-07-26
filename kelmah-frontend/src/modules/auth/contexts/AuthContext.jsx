@@ -40,12 +40,12 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
           } catch (apiError) {
             console.error('Failed to get current user:', apiError);
-            
+
             // If API fails but we have stored user data, use it (development mode)
             const storedUser = authService.getStoredUser();
-            if (storedUser) {
+              if (storedUser) {
               console.log('Using stored user data');
-              setUser(storedUser);
+                setUser(storedUser);
             } else {
               // Clear invalid authentication
               authService.clearStorage();
@@ -71,14 +71,14 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authService.login(credentials);
-      
+
       // Get user data from response
       const userData = response.data?.user || response.user;
-      
+
       if (userData) {
-        setUser(userData);
-        console.log('Login successful. User:', userData);
-        return userData;
+      setUser(userData);
+      console.log('Login successful. User:', userData);
+      return userData;
       } else {
         throw new Error('No user data received from login');
       }
@@ -112,8 +112,8 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
-    try {
-      await authService.logout();
+        try {
+          await authService.logout();
     } catch (err) {
       console.error('Logout error:', err);
     } finally {

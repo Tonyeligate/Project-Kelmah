@@ -53,8 +53,8 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   optionsSuccessStatus: 200 // for legacy browser support
 };
@@ -71,8 +71,7 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/auth", authRoutes);
 
-// Temporary proxy routes until proper deployment is fixed
-// Job endpoints
+// Temporary job proxy routes until proper deployment is fixed
 app.all("/api/jobs*", async (req, res) => {
   try {
     // Return mock job data for now
@@ -119,143 +118,10 @@ app.all("/api/jobs*", async (req, res) => {
       });
     }
     
-    if (req.method === 'GET' && req.path === '/api/jobs/dashboard') {
-      return res.json({
-        success: true,
-        data: [
-          {
-            id: '1',
-            title: 'Bathroom Renovation',
-            status: 'open',
-            applicants: 3,
-            budget: 4000,
-            deadline: '2023-11-20'
-          },
-          {
-            id: '2',
-            title: 'Kitchen Cabinet Installation',
-            status: 'in_progress',
-            applicants: 1,
-            budget: 2500,
-            deadline: '2023-11-25'
-          }
-        ]
-      });
-    }
-    
     // For other job endpoints, return appropriate responses
     res.json({
       success: true,
       message: "Endpoint temporarily available with mock data - job service deployment in progress",
-      data: null
-    });
-    
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message
-    });
-  }
-});
-
-// User/Dashboard endpoints
-app.all("/api/users*", async (req, res) => {
-  try {
-    // Dashboard metrics
-    if (req.method === 'GET' && req.path === '/api/users/dashboard/metrics') {
-      return res.json({
-        success: true,
-        data: {
-          totalJobs: 156,
-          activeWorkers: 89,
-          completedProjects: 67,
-          totalRevenue: 45000,
-          avgRating: 4.7,
-          responseTime: '2.3 hours'
-        }
-      });
-    }
-    
-    // Dashboard workers
-    if (req.method === 'GET' && req.path === '/api/users/dashboard/workers') {
-      return res.json({
-        success: true,
-        data: [
-          {
-            id: '1',
-            name: 'Kwame Asante',
-            skill: 'Plumbing',
-            rating: 4.8,
-            status: 'available',
-            location: 'Accra'
-          },
-          {
-            id: '2',
-            name: 'Akosua Mensah',
-            skill: 'Electrical',
-            rating: 4.9,
-            status: 'busy',
-            location: 'Kumasi'
-          }
-        ]
-      });
-    }
-    
-    // Dashboard analytics  
-    if (req.method === 'GET' && req.path === '/api/users/dashboard/analytics') {
-      return res.json({
-        success: true,
-        data: {
-          jobsThisMonth: 23,
-          revenueGrowth: 15.6,
-          workerGrowth: 8.2,
-          customerSatisfaction: 4.7
-        }
-      });
-    }
-    
-    // User credentials
-    if (req.method === 'GET' && req.path === '/api/users/me/credentials') {
-      return res.json({
-        success: true,
-        data: {
-          skills: [
-            { id: '1', name: 'Plumbing', level: 'Expert', verified: true },
-            { id: '2', name: 'Electrical', level: 'Intermediate', verified: false }
-          ],
-          licenses: [
-            { id: '1', name: 'Ghana Plumbing License', issuer: 'Ghana Standards Authority', verified: true }
-          ]
-        }
-      });
-    }
-    
-    // User availability
-    if (req.method === 'GET' && req.path === '/api/users/me/availability') {
-      return res.json({
-        success: true,
-        data: {
-          availability: {
-            status: 'available',
-            workingHours: {
-              monday: { start: '08:00', end: '17:00' },
-              tuesday: { start: '08:00', end: '17:00' },
-              wednesday: { start: '08:00', end: '17:00' },
-              thursday: { start: '08:00', end: '17:00' },
-              friday: { start: '08:00', end: '17:00' },
-              saturday: { start: '09:00', end: '15:00' },
-              sunday: { start: null, end: null }
-            }
-          }
-        }
-      });
-    }
-    
-    // For other user endpoints, return appropriate responses
-    res.json({
-      success: true,
-      message: "Endpoint temporarily available with mock data - user service deployment in progress",
       data: null
     });
     

@@ -285,7 +285,7 @@ export const hirerService = {
       return { 
         jobId, 
         milestoneId, 
-        amount, 
+          amount,
         totalPaid: amount, 
         message: 'Payment released successfully (mock)' 
       };
@@ -307,7 +307,7 @@ export const hirerService = {
       // Mock review creation for now
       return { 
         workerId, 
-        jobId, 
+          jobId,
         reviewData, 
         message: 'Review created successfully (mock)' 
       };

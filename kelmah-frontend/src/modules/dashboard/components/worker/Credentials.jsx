@@ -55,7 +55,7 @@ const Credentials = () => {
       try {
         setIsLoading(true);
         const response = await workersApi.getSkillsAndLicenses();
-        
+
         // Handle both API response formats
         const data = response.data || response;
         const skills = data.skills || [];

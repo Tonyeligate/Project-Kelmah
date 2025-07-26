@@ -1,27 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
-  Paper,
-  Typography,
-  Grid,
   Card,
   CardContent,
-  CardActions,
-  Button,
-  Chip,
+  Typography,
   Tabs,
   Tab,
-  CircularProgress,
-  Alert,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -29,104 +14,121 @@ import {
   TableHead,
   TableRow,
   TablePagination,
+  IconButton,
+  Menu,
+  MenuItem,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  Avatar,
+  Grid,
+  Paper,
   LinearProgress,
+  Skeleton,
+  Alert,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
-  Work as WorkIcon,
-  CheckCircle as CheckCircleIcon,
-  Pending as PendingIcon,
-  Cancel as CancelIcon,
   MoreVert as MoreVertIcon,
-  Message as MessageIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Assessment as AssessmentIcon,
-  AttachMoney as AttachMoneyIcon,
+  Visibility as ViewIcon,
+  Publish as PublishIcon,
   TrendingUp as TrendingUpIcon,
-  CalendarToday as CalendarIcon,
+  Work as WorkIcon,
+  AttachMoney as MoneyIcon,
+  People as PeopleIcon
 } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
-import { format } from 'date-fns';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as ChartTooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import { 
+  fetchHirerJobs, 
+  deleteHirerJob, 
+  updateJobStatus,
+  selectHirerJobs,
+  selectHirerLoading,
+  selectHirerError
+} from '../services/hirerSlice';
+
+// Mock analytics data for comprehensive dashboard
+const mockAnalytics = {
+  summary: {
+    totalJobs: 45,
+    activeJobs: 8,
+    completedJobs: 32,
+    draftJobs: 5,
+    totalSpent: 125000,
+    averageJobValue: 3289,
+    totalApplications: 284,
+    hireSuccessRate: 84
+  },
+  monthlyData: [
+    { month: 'Jan', jobs: 6, spending: 18500, applications: 45 },
+    { month: 'Feb', jobs: 4, spending: 12000, applications: 32 },
+    { month: 'Mar', jobs: 7, spending: 21500, applications: 58 },
+    { month: 'Apr', jobs: 5, spending: 15000, applications: 38 },
+    { month: 'May', jobs: 8, spending: 23500, applications: 67 },
+    { month: 'Jun', jobs: 6, spending: 18200, applications: 44 }
+  ],
+  topCategories: [
+    { category: 'Carpentry', jobs: 12, spending: 35000, avgRate: 2917 },
+    { category: 'Plumbing', jobs: 8, spending: 28000, avgRate: 3500 },
+    { category: 'Electrical', jobs: 6, spending: 22000, avgRate: 3667 },
+    { category: 'Painting', jobs: 5, spending: 15000, avgRate: 3000 },
+    { category: 'Landscaping', jobs: 4, spending: 12000, avgRate: 3000 }
+  ]
+};
 
 const HirerJobManagement = () => {
-  const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const dispatch = useDispatch();
+  
   const [activeTab, setActiveTab] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [jobs, setJobs] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [summary, setSummary] = useState({
-    totalJobs: 0,
-    activeJobs: 0,
-    completedJobs: 0,
-    totalSpent: 0,
-    averageJobValue: 0,
-  });
-  const [chartData, setChartData] = useState([]);
+
+  // Redux selectors
+  const activeJobs = useSelector(selectHirerJobs('active'));
+  const completedJobs = useSelector(selectHirerJobs('completed'));
+  const draftJobs = useSelector(selectHirerJobs('draft'));
+  const loading = useSelector(selectHirerLoading('jobs'));
+  const error = useSelector(selectHirerError('jobs'));
 
   useEffect(() => {
-    fetchJobs();
-    fetchSummary();
-  }, [activeTab]);
+    // Fetch jobs for all statuses
+    dispatch(fetchHirerJobs('active'));
+    dispatch(fetchHirerJobs('completed'));
+    dispatch(fetchHirerJobs('draft'));
+  }, [dispatch]);
 
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/hirers/${user.id}/jobs?status=${getStatusForTab(activeTab)}`,
-      );
-      const data = await response.json();
-      setJobs(data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load jobs');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSummary = async () => {
-    try {
-      const response = await fetch(`/api/hirers/${user.id}/jobs/summary`);
-      const data = await response.json();
-      setSummary(data);
-      setChartData(data.chartData);
-    } catch (err) {
-      console.error('Failed to load job summary:', err);
+  const getCurrentJobs = () => {
+    switch (activeTab) {
+      case 0: return activeJobs || [];
+      case 1: return completedJobs || [];
+      case 2: return draftJobs || [];
+      default: return [];
     }
   };
 
   const getStatusForTab = (tab) => {
     switch (tab) {
-      case 0:
-        return 'active';
-      case 1:
-        return 'completed';
-      case 2:
-        return 'draft';
-      default:
-        return 'all';
+      case 0: return 'active';
+      case 1: return 'completed';
+      case 2: return 'draft';
+      default: return 'active';
     }
   };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+    setPage(0); // Reset pagination when changing tabs
   };
 
   const handleMenuOpen = (event, job) => {
@@ -139,8 +141,8 @@ const HirerJobManagement = () => {
     setSelectedJob(null);
   };
 
-  const handleDialogOpen = (type) => {
-    setDialogType(type);
+  const handleAction = (action) => {
+    setDialogType(action);
     setDialogOpen(true);
     handleMenuClose();
   };
@@ -148,398 +150,386 @@ const HirerJobManagement = () => {
   const handleDialogClose = () => {
     setDialogOpen(false);
     setDialogType(null);
+    setSelectedJob(null);
   };
 
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleDelete = async (jobId) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/jobs/${jobId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete job');
+  const handleDeleteJob = async () => {
+    if (selectedJob) {
+      try {
+        await dispatch(deleteHirerJob(selectedJob.id)).unwrap();
+        handleDialogClose();
+      } catch (error) {
+        console.error('Error deleting job:', error);
       }
-
-      fetchJobs();
-    } catch (err) {
-      setError('Failed to delete job');
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleStatusUpdate = async (jobId, newStatus) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/jobs/${jobId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update job status');
+  const handlePublishJob = async () => {
+    if (selectedJob) {
+      try {
+        await dispatch(updateJobStatus({ 
+          jobId: selectedJob.id, 
+          status: 'active' 
+        })).unwrap();
+        handleDialogClose();
+      } catch (error) {
+        console.error('Error publishing job:', error);
       }
-
-      fetchJobs();
-    } catch (err) {
-      setError('Failed to update job status');
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'primary';
-      case 'completed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'cancelled':
-        return 'error';
-      case 'draft':
-        return 'default';
-      default:
-        return 'default';
+    switch (status) {
+      case 'active': return 'success';
+      case 'completed': return 'primary';
+      case 'draft': return 'warning';
+      case 'cancelled': return 'error';
+      default: return 'default';
     }
   };
 
-  const renderSummaryCards = () => (
-    <Grid container spacing={3}>
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Analytics Summary Cards
+  const AnalyticsSummary = () => (
+    <Grid container spacing={3} sx={{ mb: 3 }}>
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          height: '100%'
+        }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <WorkIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">Total Jobs</Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography variant="h4" fontWeight="bold">
+                  {mockAnalytics.summary.totalJobs}
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Jobs Posted
+                </Typography>
+              </Box>
+              <WorkIcon sx={{ fontSize: 40, opacity: 0.8 }} />
             </Box>
-            <Typography variant="h4">{summary.totalJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
+
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ 
+          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+          color: 'white',
+          height: '100%'
+        }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <TrendingUpIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">Active Jobs</Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography variant="h4" fontWeight="bold">
+                  {formatCurrency(mockAnalytics.summary.totalSpent)}
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Amount Spent
+                </Typography>
+              </Box>
+              <MoneyIcon sx={{ fontSize: 40, opacity: 0.8 }} />
             </Box>
-            <Typography variant="h4">{summary.activeJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
+
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ 
+          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+          color: 'white',
+          height: '100%'
+        }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-              <Typography variant="h6">Completed</Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography variant="h4" fontWeight="bold">
+                  {mockAnalytics.summary.totalApplications}
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Applications
+                </Typography>
+              </Box>
+              <PeopleIcon sx={{ fontSize: 40, opacity: 0.8 }} />
             </Box>
-            <Typography variant="h4">{summary.completedJobs}</Typography>
           </CardContent>
         </Card>
       </Grid>
+
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ 
+          background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+          color: 'white',
+          height: '100%'
+        }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AttachMoneyIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">Total Spent</Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography variant="h4" fontWeight="bold">
+                  {mockAnalytics.summary.hireSuccessRate}%
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Success Rate
+                </Typography>
+              </Box>
+              <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
             </Box>
-            <Typography variant="h4">
-              ${summary.totalSpent.toLocaleString()}
-            </Typography>
           </CardContent>
         </Card>
       </Grid>
     </Grid>
   );
 
-  const renderJobsChart = () => (
-    <Paper sx={{ p: 2, mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Job Activity
-      </Typography>
-      <Box sx={{ height: 300 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <ChartTooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="active"
-              stroke="#1976d2"
-              name="Active Jobs"
-            />
-            <Line
-              type="monotone"
-              dataKey="completed"
-              stroke="#2e7d32"
-              name="Completed Jobs"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
-    </Paper>
+  // Loading skeleton
+  const LoadingSkeleton = () => (
+    <Box>
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        {[...Array(4)].map((_, i) => (
+          <Grid item xs={12} sm={6} md={3} key={i}>
+            <Skeleton variant="rounded" height={120} animation="wave" />
+          </Grid>
+        ))}
+      </Grid>
+      <Card>
+        <CardContent>
+          <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
+          ))}
+        </CardContent>
+      </Card>
+    </Box>
   );
 
-  const renderJobCard = (job) => (
-    <Card key={job.id} sx={{ mb: 2 }}>
-      <CardContent>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            mb: 2,
-          }}
-        >
-          <Box>
-            <Typography variant="h6">{job.title}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {job.workerName || 'No worker assigned'}
-            </Typography>
-          </Box>
-          <Chip
-            label={job.status}
-            color={getStatusColor(job.status)}
-            size="small"
-          />
-        </Box>
-        <Divider sx={{ my: 2 }} />
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <Typography variant="body2" color="text.secondary">
-              Budget
-            </Typography>
-            <Typography variant="body1">${job.budget}</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography variant="body2" color="text.secondary">
-              Deadline
-            </Typography>
-            <Typography variant="body1">
-              {format(new Date(job.deadline), 'MMM dd, yyyy')}
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="body2" color="text.secondary">
-              Description
-            </Typography>
-            <Typography variant="body1">{job.description}</Typography>
-          </Grid>
-          {job.progress && (
-            <Grid item xs={12}>
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Progress
-                </Typography>
-                <Typography variant="body2">{job.progress}%</Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={job.progress}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </Grid>
-          )}
-        </Grid>
-      </CardContent>
-      <Divider />
-      <CardActions>
-        <Button
-          size="small"
-          startIcon={<MessageIcon />}
-          onClick={() => handleDialogOpen('message')}
-        >
-          Message
-        </Button>
-        {job.status === 'active' && (
-          <Button
-            size="small"
-            startIcon={<AssessmentIcon />}
-            onClick={() => handleDialogOpen('milestone')}
-          >
-            Review Milestone
-          </Button>
-        )}
-        <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)}>
-          <MoreVertIcon />
-        </IconButton>
-      </CardActions>
-    </Card>
-  );
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mb: 3 }}>
+        {error}
+      </Alert>
+    );
+  }
+
+  const currentJobs = getCurrentJobs();
+  const paginatedJobs = currentJobs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
-        Job Management
-      </Typography>
+      {/* Analytics Summary */}
+      <AnalyticsSummary />
 
-      {renderSummaryCards()}
-      {renderJobsChart()}
+      {/* Job Management Table */}
+      <Card>
+        <CardContent>
+          <Typography variant="h5" gutterBottom fontWeight="bold">
+            Job Management
+          </Typography>
 
-      <Paper sx={{ mb: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab icon={<WorkIcon />} label="Active Jobs" iconPosition="start" />
-          <Tab
-            icon={<CheckCircleIcon />}
-            label="Completed"
-            iconPosition="start"
-          />
-          <Tab icon={<PendingIcon />} label="Drafts" iconPosition="start" />
-        </Tabs>
-      </Paper>
+          <Tabs 
+            value={activeTab} 
+            onChange={handleTabChange} 
+            sx={{ mb: 3 }}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons="auto"
+          >
+            <Tab 
+              label={`Active (${activeJobs?.length || 0})`}
+              sx={{ fontWeight: 'bold' }}
+            />
+            <Tab 
+              label={`Completed (${completedJobs?.length || 0})`}
+              sx={{ fontWeight: 'bold' }}
+            />
+            <Tab 
+              label={`Draft (${draftJobs?.length || 0})`}
+              sx={{ fontWeight: 'bold' }}
+            />
+          </Tabs>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+          {currentJobs.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <WorkIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                No {getStatusForTab(activeTab)} jobs found
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {activeTab === 2 
+                  ? "Start by creating a new job posting"
+                  : `You don't have any ${getStatusForTab(activeTab)} jobs yet`
+                }
+              </Typography>
+              {activeTab === 2 && (
+                <Button variant="contained" color="primary">
+                  Post New Job
+                </Button>
+              )}
+            </Box>
+          ) : (
+            <>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell><strong>Job Title</strong></TableCell>
+                      <TableCell><strong>Category</strong></TableCell>
+                      <TableCell><strong>Budget</strong></TableCell>
+                      <TableCell><strong>Applications</strong></TableCell>
+                      <TableCell><strong>Status</strong></TableCell>
+                      <TableCell><strong>Created</strong></TableCell>
+                      <TableCell align="center"><strong>Actions</strong></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {paginatedJobs.map((job) => (
+                      <TableRow key={job.id} hover>
+                        <TableCell>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            {job.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" noWrap>
+                            {job.description?.substring(0, 60)}...
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={job.category} 
+                            size="small" 
+                            variant="outlined"
+                            color="primary"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            {formatCurrency(job.budget)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {job.type === 'hourly' ? 'Hourly' : 'Fixed Price'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <Avatar sx={{ width: 24, height: 24, fontSize: 12 }}>
+                              {job.applicationsCount || 0}
+                            </Avatar>
+                            <Typography variant="body2">
+                              Applications
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={job.status?.toUpperCase()} 
+                            size="small"
+                            color={getStatusColor(job.status)}
+                            variant="filled"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {formatDate(job.createdAt)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleMenuOpen(e, job)}
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-      {loading ? (
-        <Box display="flex" justifyContent="center" p={3}>
-          <CircularProgress />
-        </Box>
-      ) : jobs.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">No jobs found</Typography>
-        </Paper>
-      ) : (
-        <Box>{jobs.map(renderJobCard)}</Box>
-      )}
+              <TablePagination
+                component="div"
+                count={currentJobs.length}
+                page={page}
+                onPageChange={(e, newPage) => setPage(newPage)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) => {
+                  setRowsPerPage(parseInt(e.target.value, 10));
+                  setPage(0);
+                }}
+                rowsPerPageOptions={[5, 10, 25]}
+              />
+            </>
+          )}
+        </CardContent>
+      </Card>
 
+      {/* Action Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleDialogOpen('edit')}>
-          <EditIcon sx={{ mr: 1 }} /> Edit Job
+        <MenuItem onClick={() => handleAction('view')}>
+          <ViewIcon sx={{ mr: 1 }} />
+          View Details
         </MenuItem>
-        <MenuItem onClick={() => handleDialogOpen('message')}>
-          <MessageIcon sx={{ mr: 1 }} /> Send Message
+        <MenuItem onClick={() => handleAction('edit')}>
+          <EditIcon sx={{ mr: 1 }} />
+          Edit Job
         </MenuItem>
-        {selectedJob?.status === 'active' && (
-          <MenuItem onClick={() => handleDialogOpen('milestone')}>
-            <AssessmentIcon sx={{ mr: 1 }} /> Review Milestone
+        {selectedJob?.status === 'draft' && (
+          <MenuItem onClick={() => handleAction('publish')}>
+            <PublishIcon sx={{ mr: 1 }} />
+            Publish Job
           </MenuItem>
         )}
-        <MenuItem
-          onClick={() => {
-            handleMenuClose();
-            if (selectedJob) {
-              handleDelete(selectedJob.id);
-            }
-          }}
-        >
-          <DeleteIcon sx={{ mr: 1 }} /> Delete Job
+        <MenuItem onClick={() => handleAction('delete')} sx={{ color: 'error.main' }}>
+          <DeleteIcon sx={{ mr: 1 }} />
+          Delete Job
         </MenuItem>
       </Menu>
 
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        maxWidth="sm"
-        fullWidth
-      >
+      {/* Confirmation Dialogs */}
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>
-          {dialogType === 'message' && 'Send Message'}
-          {dialogType === 'milestone' && 'Review Milestone'}
-          {dialogType === 'edit' && 'Edit Job'}
+          {dialogType === 'delete' && 'Delete Job'}
+          {dialogType === 'publish' && 'Publish Job'}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            {dialogType === 'message' && (
-              <TextField
-                fullWidth
-                label="Message"
-                multiline
-                rows={4}
-                margin="normal"
-              />
-            )}
-            {dialogType === 'milestone' && (
-              <TextField
-                fullWidth
-                label="Milestone Review"
-                multiline
-                rows={4}
-                margin="normal"
-              />
-            )}
-            {dialogType === 'edit' && (
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Job Title"
-                    defaultValue={selectedJob?.title}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    multiline
-                    rows={4}
-                    defaultValue={selectedJob?.description}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Budget"
-                    type="number"
-                    defaultValue={selectedJob?.budget}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Deadline"
-                    type="date"
-                    defaultValue={selectedJob?.deadline}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            )}
-          </Box>
+          <Typography>
+            {dialogType === 'delete' && 
+              `Are you sure you want to delete "${selectedJob?.title}"? This action cannot be undone.`
+            }
+            {dialogType === 'publish' && 
+              `Are you sure you want to publish "${selectedJob?.title}"? It will become visible to workers.`
+            }
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button onClick={handleDialogClose} variant="contained">
-            Submit
+          <Button 
+            onClick={dialogType === 'delete' ? handleDeleteJob : handlePublishJob}
+            color={dialogType === 'delete' ? 'error' : 'primary'}
+            variant="contained"
+          >
+            {dialogType === 'delete' ? 'Delete' : 'Publish'}
           </Button>
         </DialogActions>
       </Dialog>
