@@ -20,40 +20,76 @@ const logger = require("../utils/logger");
  * Register a new user
  */
 exports.register = async (req, res, next) => {
+  console.log('Register payload:', req.body);
   try {
     const { firstName, lastName, email, phone, password, role } = req.body;
-    if (!firstName || !lastName || !email || !password) {
-      return next(new AppError("Missing required fields", 400));
+    
+    // Validate required fields
+    const missing = [];
+    if (!firstName) missing.push('firstName');
+    if (!lastName) missing.push('lastName');
+    if (!email) missing.push('email');
+    if (!password) missing.push('password');
+    
+    if (missing.length > 0) {
+      return next(new AppError(`Missing required fields: ${missing.join(', ')}`, 400));
     }
+    
     const userRole = ["worker", "hirer"].includes(role) ? role : "worker";
+    
+    // Check if user exists
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return next(new AppError("Email already in use", 400));
     }
+    
+    // Create user with improved error handling
     const newUser = await User.create({
       firstName,
       lastName,
       email,
-      phone,
+      phone: phone || null, // Handle empty phone gracefully
       password,
       role: userRole,
     });
+    
     // Generate a verification token (raw) and store hashed version on user
     const rawToken = newUser.generateVerificationToken();
     await newUser.save();
+    
     // Use the raw token in the URL so it can be properly verified
     const verificationUrl = `${config.frontendUrl}/verify-email/${rawToken}`;
-    await emailService.sendVerificationEmail({
-      name: `${newUser.firstName} ${newUser.lastName}`,
-      email: newUser.email,
-      verificationUrl,
-    });
+    
+    // Send verification email (don't fail registration if email fails)
+    try {
+      await emailService.sendVerificationEmail({
+        name: `${newUser.firstName} ${newUser.lastName}`,
+        email: newUser.email,
+        verificationUrl,
+      });
+    } catch (mailErr) {
+      console.error('Verification email failed:', mailErr.message);
+      // Continue with registration even if email fails
+    }
+    
     return res.status(201).json({
       success: true,
-      message:
-        "Registration successful, please check your email to verify your account.",
+      message: "Registration successful, please check your email to verify your account.",
     });
   } catch (error) {
+    console.error('Registration failed:', error);
+    
+    // Handle specific Sequelize validation errors
+    if (error.name === 'SequelizeValidationError') {
+      const validationErrors = error.errors.map(err => err.message);
+      return next(new AppError(`Validation failed: ${validationErrors.join(', ')}`, 400));
+    }
+    
+    // Handle unique constraint errors
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return next(new AppError(error.errors[0].message || 'Duplicate value', 400));
+    }
+    
     return next(new AppError(`Registration failed: ${error.message}`, 500));
   }
 };
