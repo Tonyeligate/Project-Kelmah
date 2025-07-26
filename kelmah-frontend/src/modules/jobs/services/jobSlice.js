@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSelector } from '@reduxjs/toolkit';
 import jobsApi from './jobsApi';
 
 // Async thunks
@@ -254,18 +255,24 @@ export const selectCurrentJob = (state) => state.jobs.currentJob;
 export const selectJobsLoading = (state) => state.jobs.loading;
 export const selectJobsError = (state) => state.jobs.error;
 export const selectJobFilters = (state) => state.jobs.filters;
-export const selectJobsPagination = (state) => ({
-  currentPage: state.jobs.currentPage,
-  totalPages: state.jobs.totalPages,
-});
+export const selectJobsPagination = createSelector(
+  [(state) => state.jobs.currentPage, (state) => state.jobs.totalPages],
+  (currentPage, totalPages) => ({
+    currentPage,
+    totalPages,
+  })
+);
 
 export const selectSavedJobs = (state) => state.jobs.savedJobs;
 export const selectSavedLoading = (state) => state.jobs.savedLoading;
 export const selectSavedError = (state) => state.jobs.savedError;
-export const selectSavedPagination = (state) => ({
-  currentPage: state.jobs.savedCurrentPage,
-  totalPages: state.jobs.savedTotalPages,
-});
+export const selectSavedPagination = createSelector(
+  [(state) => state.jobs.savedCurrentPage, (state) => state.jobs.savedTotalPages],
+  (currentPage, totalPages) => ({
+    currentPage,
+    totalPages,
+  })
+);
 
 export const {
   setFilters,

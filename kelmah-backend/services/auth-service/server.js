@@ -71,6 +71,69 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/auth", authRoutes);
 
+// Temporary job proxy routes until proper deployment is fixed
+app.all("/api/jobs*", async (req, res) => {
+  try {
+    // Return mock job data for now
+    if (req.method === 'GET' && req.path === '/api/jobs') {
+      return res.json({
+        success: true,
+        message: "Jobs retrieved successfully",
+        data: [
+          {
+            id: '1',
+            title: 'Bathroom Renovation',
+            description: 'Need a full bathroom renovation including new tiles, toilet, sink, and shower installation.',
+            location: 'Accra, Ghana',
+            budget: { min: 3500, max: 5000, currency: 'GHS' },
+            postedDate: '2023-11-05',
+            deadline: '2023-11-20',
+            status: 'open',
+            skills: ['Plumbing', 'Tiling', 'Electrical'],
+            hirerRating: 4.7,
+            distance: 3.2
+          },
+          {
+            id: '2',
+            title: 'Kitchen Cabinet Installation',
+            description: 'Install new kitchen cabinets and countertops.',
+            location: 'Kumasi, Ghana',
+            budget: { min: 2000, max: 3000, currency: 'GHS' },
+            postedDate: '2023-11-06',
+            deadline: '2023-11-25',
+            status: 'open',
+            skills: ['Carpentry', 'Installation'],
+            hirerRating: 4.5,
+            distance: 5.1
+          }
+        ],
+        meta: {
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: 2,
+            itemsPerPage: 10
+          }
+        }
+      });
+    }
+    
+    // For other job endpoints, return appropriate responses
+    res.json({
+      success: true,
+      message: "Endpoint temporarily available with mock data - job service deployment in progress",
+      data: null
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({

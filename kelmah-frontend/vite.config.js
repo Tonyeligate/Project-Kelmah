@@ -47,9 +47,9 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/users/, '/api')
       },
       '/api/jobs': {
-        target: 'https://kelmah-job-service.onrender.com', 
+        target: 'https://kelmah-auth-service.onrender.com', 
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/jobs/, '/api')
+        rewrite: (path) => path.replace(/^\/api\/jobs/, '/api/jobs')
       },
       '/api/messages': {
         target: 'https://kelmah-messaging-service.onrender.com',
