@@ -62,7 +62,7 @@ import {
 import {
   fetchHirerJobs,
   updateJobStatus,
-  deleteJob,
+  deleteHirerJob,
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
@@ -217,7 +217,7 @@ const JobManagementPage = () => {
 
   const handleDeleteConfirm = () => {
     if (selectedJob) {
-      dispatch(deleteJob(selectedJob.id));
+              dispatch(deleteHirerJob(selectedJob.id));
       setDeleteDialogOpen(false);
     }
     handleMenuClose();
