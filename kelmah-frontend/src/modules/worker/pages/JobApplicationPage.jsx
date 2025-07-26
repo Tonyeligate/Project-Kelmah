@@ -84,10 +84,24 @@ const JobApplicationPage = () => {
             break;
         }
         const response = await jobsApi.getJobs(params);
-        const { data, meta } = response;
-        setJobs(data);
-        setTotalPages(meta.pagination.totalPages);
-        setTotalItems(meta.pagination.totalItems);
+        
+        // Handle both old and new API response formats
+        if (response.data && response.data.jobs) {
+          // New format with nested data
+          setJobs(response.data.jobs);
+          setTotalPages(response.data.pagination?.totalPages || 1);
+          setTotalItems(response.data.pagination?.totalItems || response.data.jobs.length);
+        } else if (response.data) {
+          // Legacy format
+          setJobs(response.data);
+          setTotalPages(response.meta?.pagination?.totalPages || 1);
+          setTotalItems(response.meta?.pagination?.totalItems || response.data.length);
+        } else {
+          // Fallback
+          setJobs([]);
+          setTotalPages(1);
+          setTotalItems(0);
+        }
       } catch (error) {
         console.error('Error fetching jobs:', error);
       } finally {
