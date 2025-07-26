@@ -2,34 +2,31 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { SERVICES } from '../../../config/environment';
 
-// Create dedicated service clients
-const userServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE,
+// Create dedicated service clients - temporarily using AUTH_SERVICE for all calls
+// until USER_SERVICE and JOB_SERVICE are deployed
+const authServiceClient = axios.create({
+  baseURL: SERVICES.AUTH_SERVICE,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' }
 });
 
-const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
-});
+// For now, use auth service for both user and job operations
+const userServiceClient = authServiceClient;
+const jobServiceClient = authServiceClient;
 
 // Add auth tokens to requests
-[userServiceClient, jobServiceClient].forEach(client => {
-  client.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('kelmah_auth_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
-});
+authServiceClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('kelmah_auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// Mock hirer data
+// Comprehensive mock hirer data
 const mockHirerData = {
   profile: {
     id: 'hirer-001',
@@ -48,10 +45,20 @@ const mockHirerData = {
     currency: 'GH₵',
     verified: true,
     joinedAt: new Date('2021-08-15'),
-    lastActive: new Date(),
-    companySize: '10-50 employees',
-    industry: 'Construction',
-    website: 'https://mitchellconstruction.gh'
+    completionRate: 95,
+    responseTime: '2 hours',
+    preferences: {
+      communicationMethod: 'email',
+      jobNotifications: true,
+      marketingEmails: false,
+      currency: 'GHS'
+    },
+    businessDetails: {
+      registrationNumber: 'BN/2021/08/12345',
+      industry: 'Construction & Real Estate',
+      employees: '10-50',
+      website: 'https://mitchellconstruction.com.gh'
+    }
   },
 
   jobs: {
@@ -59,175 +66,333 @@ const mockHirerData = {
       {
         id: 'job-h1',
         title: 'Kitchen Renovation - Custom Cabinets',
-        description: 'Looking for an experienced carpenter to build custom kitchen cabinets. The project involves measuring, designing, and installing high-quality wooden cabinets with modern hardware.',
+        description: 'We need a skilled carpenter to design and install custom kitchen cabinets for a modern home renovation project.',
         category: 'Carpentry',
-        location: 'Accra, Greater Accra',
+        type: 'fixed',
         budget: 5500,
-        currency: 'GH₵',
-        type: 'fixed-price',
+        currency: 'GHS',
         status: 'active',
-        urgency: 'normal',
-        featured: true,
-        tags: ['Carpentry', 'Kitchen', 'Custom Work'],
-        requirements: [
-          'Minimum 5 years carpentry experience',
-          'Portfolio of kitchen cabinet work',
-          'Own tools and equipment',
-          'Available for 3-4 weeks project duration'
-        ],
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+        location: 'East Legon, Accra',
+        skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing'],
+        urgency: 'medium',
+        duration: '3 weeks',
+        applicationsCount: 8,
+        viewsCount: 24,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
         deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
-        applicationsCount: 12,
-        viewsCount: 67,
-        applications: [
-          {
-            id: 'app-h1',
-            workerId: '7a1f417c-e2e2-4210-9824-08d5fac336ac',
-            workerName: 'Tony Gate',
-            workerRating: 4.8,
-            proposedRate: 5200,
-            coverLetter: 'I am very interested in this kitchen cabinet project...',
-            status: 'pending',
-            appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
-          }
+        requirements: [
+          'Minimum 3 years carpentry experience',
+          'Portfolio of kitchen cabinet work',
+          'Own tools and transportation',
+          'Available for 3-week project timeline'
+        ],
+        benefits: [
+          'Competitive fixed rate payment',
+          'Potential for future projects',
+          'Professional reference provided',
+          'Material costs covered separately'
         ]
       },
       {
         id: 'job-h2',
         title: 'Office Interior Design & Setup',
-        description: 'Complete office interior design and furniture setup for a new branch office. Includes space planning, furniture selection, and installation.',
+        description: 'Looking for an experienced interior designer to completely redesign and set up our new office space.',
         category: 'Interior Design',
-        location: 'Tema, Greater Accra',
+        type: 'fixed',
         budget: 15000,
-        currency: 'GH₵',
-        type: 'fixed-price',
+        currency: 'GHS',
         status: 'active',
+        location: 'Airport City, Accra',
+        skills: ['Interior Design', 'Space Planning', 'Project Management'],
         urgency: 'high',
-        featured: false,
-        tags: ['Interior Design', 'Office Setup', 'Furniture'],
-        requirements: [
-          'Interior design certification',
-          'Experience with office spaces',
-          'Ability to work with suppliers',
-          'Project management skills'
-        ],
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12),
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21),
-        applicationsCount: 8,
+        duration: '4 weeks',
+        applicationsCount: 12,
         viewsCount: 45,
-        applications: []
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21),
+        requirements: [
+          'Interior design certification or equivalent experience',
+          'Proven track record with office designs',
+          'Ability to manage full project lifecycle',
+          'Experience with modern office layouts'
+        ],
+        benefits: [
+          'High-value project with room for creativity',
+          'Milestone-based payments',
+          'Portfolio piece for future marketing',
+          'Long-term client relationship potential'
+        ]
+      },
+      {
+        id: 'job-h3',
+        title: 'Residential Electrical System Upgrade',
+        description: 'Complete electrical system upgrade for a 4-bedroom house including new wiring, outlets, and modern electrical panel.',
+        category: 'Electrical',
+        type: 'fixed',
+        budget: 8500,
+        currency: 'GHS',
+        status: 'active',
+        location: 'Tema, Greater Accra',
+        skills: ['Electrical Installation', 'Wiring', 'Safety Certification'],
+        urgency: 'medium',
+        duration: '2 weeks',
+        applicationsCount: 6,
+        viewsCount: 18,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
+        requirements: [
+          'Licensed electrician certification',
+          'Experience with residential electrical systems',
+          'Safety protocol compliance',
+          'Insurance coverage required'
+        ],
+        benefits: [
+          'Fair market rate compensation',
+          'Materials provided by client',
+          'Flexible working hours',
+          'Safety equipment provided'
+        ]
       }
     ],
 
     completed: [
       {
-        id: 'job-h3',
-        title: 'Residential Plumbing Installation',
-        description: 'Complete plumbing installation for a new 3-bedroom house including bathroom fixtures, kitchen plumbing, and water heating system.',
+        id: 'job-c1',
+        title: 'Bathroom Renovation - Modern Design',
+        description: 'Complete bathroom renovation with modern fixtures and tiling.',
         category: 'Plumbing',
-        location: 'Accra, Greater Accra',
-        budget: 8500,
-        currency: 'GH₵',
-        type: 'fixed-price',
+        type: 'fixed',
+        budget: 7800,
+        currency: 'GHS',
         status: 'completed',
-        urgency: 'normal',
-        featured: false,
-        tags: ['Plumbing', 'Installation', 'Residential'],
-        requirements: [
-          'Licensed plumber',
-          'Experience with residential projects',
-          'Quality materials and workmanship',
-          'Warranty on work performed'
-        ],
+        location: 'Spintex, Accra',
+        skills: ['Plumbing', 'Tiling', 'Bathroom Design'],
+        duration: '2.5 weeks',
+        applicationsCount: 9,
+        completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 45),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-        deadline: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-        completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+        workerName: 'Michael Asante',
+        workerRating: 4.7,
+        finalAmount: 7800,
+        clientRating: 5,
+        clientReview: 'Excellent work! The bathroom looks amazing and everything was completed on schedule.'
+      },
+      {
+        id: 'job-c2',
+        title: 'Living Room Painting & Decoration',
+        description: 'Professional painting and decorative finishing for large living room.',
+        category: 'Painting',
+        type: 'fixed',
+        budget: 3200,
+        currency: 'GHS',
+        status: 'completed',
+        location: 'Achimota, Accra',
+        skills: ['Interior Painting', 'Color Consultation', 'Surface Preparation'],
+        duration: '1 week',
         applicationsCount: 15,
-        viewsCount: 89,
-        finalPayment: 8500,
-        workerRating: 5,
-        workerReview: 'Excellent work! Professional, timely, and high-quality installation.',
-        assignedWorker: {
-          id: 'worker-p1',
-          name: 'Emmanuel Asante',
-          rating: 4.9,
-          completedJobs: 32
-        }
+        completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 50),
+        workerName: 'David Mensah',
+        workerRating: 4.5,
+        finalAmount: 3200,
+        clientRating: 4,
+        clientReview: 'Good quality work. David was professional and completed the job as agreed.'
       }
     ],
 
     draft: [
       {
-        id: 'job-h4',
+        id: 'job-d1',
         title: 'Garden Landscaping Project',
-        description: 'Design and implement landscaping for residential garden including plant selection, hardscaping, and irrigation system.',
+        description: 'Design and implement landscaping for front and back garden areas.',
         category: 'Landscaping',
-        location: 'East Legon, Accra',
+        type: 'fixed',
         budget: 12000,
-        currency: 'GH₵',
-        type: 'fixed-price',
+        currency: 'GHS',
         status: 'draft',
-        urgency: 'normal',
-        featured: false,
-        tags: ['Landscaping', 'Garden Design', 'Irrigation'],
+        location: 'Labone, Accra',
+        skills: ['Landscaping', 'Garden Design', 'Plant Selection'],
+        urgency: 'low',
+        duration: '3 weeks',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
         requirements: [
-          'Landscaping experience',
-          'Knowledge of local plants',
-          'Irrigation system expertise',
-          'Portfolio of previous work'
+          'Landscaping certification preferred',
+          'Knowledge of local plants and climate',
+          'Creative design portfolio',
+          'Equipment and tools included'
         ],
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 8),
-        deadline: null,
-        applicationsCount: 0,
-        viewsCount: 0
+        benefits: [
+          'Creative freedom in design',
+          'Long-term maintenance contract potential',
+          'High-visibility project',
+          'Premium rate for quality work'
+        ]
+      },
+      {
+        id: 'job-d2',
+        title: 'Commercial Kitchen Equipment Installation',
+        description: 'Installation of professional kitchen equipment for new restaurant.',
+        category: 'Installation',
+        type: 'fixed',
+        budget: 18000,
+        currency: 'GHS',
+        status: 'draft',
+        location: 'Osu, Accra',
+        skills: ['Equipment Installation', 'Plumbing', 'Electrical'],
+        urgency: 'high',
+        duration: '2 weeks',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+        requirements: [
+          'Commercial kitchen experience',
+          'Multi-trade capabilities (plumbing/electrical)',
+          'Equipment manufacturer certifications',
+          'Health and safety compliance'
+        ],
+        benefits: [
+          'High-value commercial project',
+          'Opportunity for ongoing maintenance contracts',
+          'Professional kitchen environment',
+          'Potential restaurant chain expansion work'
+        ]
       }
     ]
   },
 
   analytics: {
-    totalJobsPosted: 45,
-    activeJobs: 2,
-    completedJobs: 38,
-    draftJobs: 5,
-    totalApplicationsReceived: 284,
-    averageApplicationsPerJob: 6.3,
-    totalAmountSpent: 125000,
-    averageJobValue: 3289,
-    successfulHires: 38,
-    hireSuccessRate: 84,
-    averageTimeToHire: '5.2 days',
-    workerRetentionRate: 72,
-    averageWorkerRating: 4.7,
-    monthlySpending: {
-      current: 23500,
-      previous: 18200,
-      growth: 29
+    overview: {
+      totalJobsPosted: 45,
+      activeJobs: 3,
+      completedJobs: 32,
+      draftJobs: 2,
+      cancelledJobs: 8,
+      totalSpent: 125000,
+      averageJobValue: 3289,
+      successRate: 84,
+      averageCompletionTime: 18 // days
     },
+
+    monthlyStats: [
+      { month: 'Jan', jobsPosted: 6, totalSpent: 18500, avgRating: 4.7 },
+      { month: 'Feb', jobsPosted: 4, totalSpent: 12000, avgRating: 4.8 },
+      { month: 'Mar', jobsPosted: 7, totalSpent: 21500, avgRating: 4.6 },
+      { month: 'Apr', jobsPosted: 5, totalSpent: 15000, avgRating: 4.9 },
+      { month: 'May', jobsPosted: 8, totalSpent: 23500, avgRating: 4.8 },
+      { month: 'Jun', jobsPosted: 6, totalSpent: 18200, avgRating: 4.7 }
+    ],
+
     topCategories: [
-      { category: 'Carpentry', jobs: 12, spending: 35000 },
-      { category: 'Plumbing', jobs: 8, spending: 28000 },
-      { category: 'Electrical', jobs: 6, spending: 22000 },
-      { category: 'Painting', jobs: 5, spending: 15000 }
+      { category: 'Carpentry', jobsPosted: 12, totalSpent: 35000, avgRating: 4.8 },
+      { category: 'Plumbing', jobsPosted: 8, totalSpent: 28000, avgRating: 4.7 },
+      { category: 'Electrical', jobsPosted: 6, totalSpent: 22000, avgRating: 4.9 },
+      { category: 'Painting', jobsPosted: 5, totalSpent: 15000, avgRating: 4.6 },
+      { category: 'Interior Design', jobsPosted: 4, totalSpent: 25000, avgRating: 4.8 }
+    ],
+
+    workerInteractions: {
+      totalApplicationsReceived: 284,
+      uniqueWorkersInteracted: 67,
+      averageApplicationsPerJob: 8.4,
+      topWorkers: [
+        { name: 'Tony Gate', jobsCompleted: 5, rating: 4.8, totalEarned: 18500 },
+        { name: 'Sarah Williams', jobsCompleted: 3, rating: 4.9, totalEarned: 22000 },
+        { name: 'Michael Asante', jobsCompleted: 4, rating: 4.7, totalEarned: 15800 }
+      ]
+    }
+  },
+
+  applications: [
+    {
+      id: 'app-1',
+      jobId: 'job-h1',
+      jobTitle: 'Kitchen Renovation - Custom Cabinets',
+      applicant: {
+        id: 'worker-1',
+        name: 'Tony Gate',
+        avatar: '/api/placeholder/50/50',
+        rating: 4.8,
+        completedJobs: 23,
+        skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing']
+      },
+      appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+      status: 'pending',
+      proposedRate: 5200,
+      estimatedDuration: '3 weeks',
+      coverLetter: 'I have extensive experience in custom cabinet making and would love to work on your kitchen renovation project.',
+      portfolio: ['cabinet1.jpg', 'cabinet2.jpg', 'kitchen_work.jpg']
+    },
+    {
+      id: 'app-2',
+      jobId: 'job-h2',
+      jobTitle: 'Office Interior Design & Setup',
+      applicant: {
+        id: 'worker-2',
+        name: 'Sarah Williams',
+        avatar: '/api/placeholder/50/50',
+        rating: 4.9,
+        completedJobs: 31,
+        skills: ['Interior Design', 'Space Planning', 'Project Management']
+      },
+      appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
+      status: 'pending',
+      proposedRate: 14500,
+      estimatedDuration: '4 weeks',
+      coverLetter: 'I specialize in modern office design and can transform your space into a productive and inspiring environment.',
+      portfolio: ['office1.jpg', 'office2.jpg', 'design_portfolio.pdf']
+    }
+  ],
+
+  payments: {
+    summary: {
+      totalPaid: 87500,
+      pendingPayments: 23500,
+      escrowBalance: 45000,
+      totalEscrowCreated: 156000,
+      averagePaymentTime: 2.3, // days
+      paymentMethods: {
+        mobileMoney: 65,
+        bankTransfer: 30,
+        cardPayment: 5
+      }
+    },
+    recentTransactions: [
+      {
+        id: 'pay-1',
+        type: 'payment_released',
+        jobTitle: 'Bathroom Renovation',
+        workerName: 'Michael Asante',
+        amount: 7800,
+        date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
+        status: 'completed',
+        method: 'Mobile Money'
+      },
+      {
+        id: 'pay-2',
+        type: 'escrow_created',
+        jobTitle: 'Kitchen Renovation',
+        amount: 5500,
+        date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        status: 'active',
+        method: 'Bank Transfer'
+      }
     ]
   }
 };
 
-// Async thunks for hirer operations with mock fallbacks
+// Async thunks for hirer operations with comprehensive mock fallbacks
 export const fetchHirerProfile = createAsyncThunk(
   'hirer/fetchProfile',
   async (_, { rejectWithValue }) => {
     try {
+      // Try the dedicated user service endpoint first, but it will likely fail
       const response = await userServiceClient.get('/api/users/me/profile');
       return response.data;
     } catch (error) {
-      console.warn('User service unavailable for hirer profile, using mock data:', error.message);
+      console.warn('User service unavailable for hirer profile, using comprehensive mock data:', error.message);
+      
+      // Return comprehensive mock data
       return {
         success: true,
-        data: { hirer: mockHirerData.profile }
+        data: mockHirerData.profile
       };
     }
   },
@@ -243,7 +408,7 @@ export const updateHirerProfile = createAsyncThunk(
       console.warn('User service unavailable for profile update, simulating success:', error.message);
       return {
         success: true,
-        data: { hirer: { ...mockHirerData.profile, ...profileData, updatedAt: new Date() } },
+        data: { ...mockHirerData.profile, ...profileData, updatedAt: new Date() },
         message: 'Profile updated successfully (mock)'
       };
     }
@@ -254,13 +419,15 @@ export const fetchHirerJobs = createAsyncThunk(
   'hirer/fetchJobs',
   async (status = 'active', { rejectWithValue }) => {
     try {
+      // Try the dedicated job service endpoint first, but it will likely fail
       const response = await jobServiceClient.get('/api/jobs/my-jobs', { 
         params: { status, role: 'hirer' } 
       });
       return { status, jobs: response.data };
     } catch (error) {
-      console.warn(`Job service unavailable for hirer jobs (${status}), using mock data:`, error.message);
+      console.warn(`Job service unavailable for hirer jobs (${status}), using comprehensive mock data:`, error.message);
       
+      // Return comprehensive mock data
       const jobs = mockHirerData.jobs[status] || [];
       return { status, jobs };
     }
@@ -279,35 +446,17 @@ export const createHirerJob = createAsyncThunk(
       const newJob = {
         id: `job-${Date.now()}`,
         ...jobData,
-        status: jobData.status || 'draft',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        status: 'draft',
         applicationsCount: 0,
-        viewsCount: 0
+        viewsCount: 0,
+        createdAt: new Date(),
+        currency: 'GHS'
       };
       
       return {
         success: true,
-        data: { job: newJob },
+        data: newJob,
         message: 'Job created successfully (mock)'
-      };
-    }
-  },
-);
-
-export const updateHirerJob = createAsyncThunk(
-  'hirer/updateJob',
-  async ({ jobId, jobData }, { rejectWithValue }) => {
-    try {
-      const response = await jobServiceClient.put(`/api/jobs/${jobId}`, jobData);
-      return response.data;
-    } catch (error) {
-      console.warn('Job service unavailable for job update, simulating success:', error.message);
-      
-      return {
-        success: true,
-        data: { job: { id: jobId, ...jobData, updatedAt: new Date() } },
-        message: 'Job updated successfully (mock)'
       };
     }
   },
@@ -317,16 +466,14 @@ export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.patch(`/api/jobs/${jobId}/status`, { status });
-      return { jobId, status, ...response.data };
+      const response = await jobServiceClient.put(`/api/jobs/${jobId}/status`, { status });
+      return response.data;
     } catch (error) {
       console.warn('Job service unavailable for status update, simulating success:', error.message);
-      
       return {
-        jobId,
-        status,
-        updatedAt: new Date(),
-        message: 'Job status updated successfully (mock)'
+        success: true,
+        data: { jobId, status, updatedAt: new Date() },
+        message: `Job status updated to ${status} (mock)`
       };
     }
   },
@@ -336,13 +483,13 @@ export const deleteHirerJob = createAsyncThunk(
   'hirer/deleteJob',
   async (jobId, { rejectWithValue }) => {
     try {
-      await jobServiceClient.delete(`/api/jobs/${jobId}`);
+      const response = await jobServiceClient.delete(`/api/jobs/${jobId}`);
       return { jobId };
     } catch (error) {
       console.warn('Job service unavailable for job deletion, simulating success:', error.message);
-      
-      return { 
-        jobId,
+      return {
+        success: true,
+        data: { jobId },
         message: 'Job deleted successfully (mock)'
       };
     }
@@ -351,237 +498,143 @@ export const deleteHirerJob = createAsyncThunk(
 
 export const fetchJobApplications = createAsyncThunk(
   'hirer/fetchJobApplications',
-  async ({ jobId, status = 'pending' }, { rejectWithValue }) => {
+  async ({ jobId, status }, { rejectWithValue }) => {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}/applications`, {
         params: { status }
       });
-      return { jobId, status, applications: response.data };
+      return { jobId, applications: response.data };
     } catch (error) {
-      console.warn(`Job service unavailable for applications (${jobId}), using mock data:`, error.message);
+      console.warn('Job service unavailable for applications, using mock data:', error.message);
       
-      // Find mock job and return its applications
-      const allJobs = [...mockHirerData.jobs.active, ...mockHirerData.jobs.completed];
-      const job = allJobs.find(j => j.id === jobId);
-      const applications = job?.applications || [];
-      
-      return { jobId, status, applications };
+      // Return mock applications for the specific job
+      const jobApplications = mockHirerData.applications.filter(app => app.jobId === jobId);
+      return { jobId, applications: jobApplications };
     }
   },
 );
 
-export const updateApplicationStatus = createAsyncThunk(
-  'hirer/updateApplicationStatus',
-  async ({ jobId, applicationId, status }, { rejectWithValue }) => {
-    try {
-      const response = await jobServiceClient.put(
-        `/api/jobs/${jobId}/applications/${applicationId}`,
-        { status }
-      );
-      return { jobId, applicationId, status, ...response.data };
-    } catch (error) {
-      console.warn('Job service unavailable for application status update, simulating success:', error.message);
-      
-      return {
-        jobId,
-        applicationId,
-        status,
-        updatedAt: new Date(),
-        message: 'Application status updated successfully (mock)'
-      };
-    }
-  },
-);
-
-export const searchWorkers = createAsyncThunk(
-  'hirer/searchWorkers',
-  async (searchParams, { rejectWithValue }) => {
-    try {
-      // Mock search for now, as no dedicated worker service is available
-      const mockWorkers = [
-        { id: 'worker-w1', name: 'John Doe', rating: 4.5, experience: '5 years', hourlyRate: 50 },
-        { id: 'worker-w2', name: 'Jane Smith', rating: 4.9, experience: '3 years', hourlyRate: 60 },
-        { id: 'worker-w3', name: 'Peter Jones', rating: 4.2, experience: '2 years', hourlyRate: 45 },
-      ];
-      return { workers: mockWorkers, pagination: { currentPage: 1, totalPages: 1, totalItems: 3 } };
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to search workers',
-      );
-    }
-  },
-);
-
-export const fetchSavedWorkers = createAsyncThunk(
-  'hirer/fetchSavedWorkers',
+export const fetchHirerAnalytics = createAsyncThunk(
+  'hirer/fetchAnalytics',
   async (_, { rejectWithValue }) => {
     try {
-      // Mock saved workers for now
-      const mockSavedWorkers = [
-        { id: 'worker-s1', name: 'Alice Brown', rating: 4.8, experience: '4 years' },
-        { id: 'worker-s2', name: 'Bob Green', rating: 4.9, experience: '6 years' },
-      ];
-      return mockSavedWorkers;
+      const response = await userServiceClient.get('/api/users/me/analytics');
+      return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch saved workers',
-      );
+      console.warn('User service unavailable for analytics, using comprehensive mock data:', error.message);
+      return {
+        success: true,
+        data: mockHirerData.analytics
+      };
     }
   },
 );
 
-export const saveWorker = createAsyncThunk(
-  'hirer/saveWorker',
-  async (workerId, { rejectWithValue }) => {
+export const fetchPaymentSummary = createAsyncThunk(
+  'hirer/fetchPaymentSummary',
+  async (_, { rejectWithValue }) => {
     try {
-      // Mock save worker for now
-      return { workerId, message: 'Worker saved successfully (mock)' };
+      const response = await userServiceClient.get('/api/payments/summary');
+      return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to save worker',
-      );
+      console.warn('Payment service unavailable, using mock payment data:', error.message);
+      return {
+        success: true,
+        data: mockHirerData.payments
+      };
     }
   },
 );
 
-export const unsaveWorker = createAsyncThunk(
-  'hirer/unsaveWorker',
-  async (workerId, { rejectWithValue }) => {
-    try {
-      // Mock unsave worker for now
-      return { workerId, message: 'Worker unsaved successfully (mock)' };
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to remove saved worker',
-      );
-    }
+// Initial state
+const initialState = {
+  profile: null,
+  jobs: {
+    active: [],
+    completed: [],
+    draft: []
   },
-);
-
-export const releasePayment = createAsyncThunk(
-  'hirer/releasePayment',
-  async ({ jobId, milestoneId, amount }, { rejectWithValue }) => {
-    try {
-      // Mock payment release for now
-      return { jobId, milestoneId, amount, totalPaid: amount, message: 'Payment released successfully (mock)' };
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to release payment',
-      );
-    }
+  applications: [],
+  analytics: null,
+  payments: null,
+  loading: {
+    profile: false,
+    jobs: false,
+    applications: false,
+    analytics: false,
+    payments: false
   },
-);
+  error: {
+    profile: null,
+    jobs: null,
+    applications: null,
+    analytics: null,
+    payments: null
+  }
+};
 
-export const createReview = createAsyncThunk(
-  'hirer/createReview',
-  async ({ workerId, jobId, reviewData }, { rejectWithValue }) => {
-    try {
-      // Mock review creation for now
-      return { workerId, jobId, reviewData, message: 'Review created successfully (mock)' };
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to create review',
-      );
-    }
-  },
-);
-
-// Hirer slice definition
+// Create slice
 const hirerSlice = createSlice({
   name: 'hirer',
-  initialState: {
-    profile: null,
-    jobs: {
-      active: [],
-      draft: [],
-      completed: [],
-      cancelled: [],
-    },
-    applications: {},
-    searchResults: {
-      workers: [],
-      pagination: {
-        currentPage: 1,
-        totalPages: 1,
-        totalItems: 0,
-      },
-    },
-    savedWorkers: [],
-    payments: {
-      pending: [],
-      completed: [],
-      total: 0,
-    },
-    reviews: [],
-    loading: {
-      profile: false,
-      jobs: false,
-      applications: false,
-      workers: false,
-      payments: false,
-      reviews: false,
-    },
-    error: {
-      profile: null,
-      jobs: null,
-      applications: null,
-      workers: null,
-      payments: null,
-      reviews: null,
-    },
-  },
+  initialState,
   reducers: {
+    clearHirerData: (state) => {
+      return initialState;
+    },
     clearHirerErrors: (state) => {
-      state.error = {
-        profile: null,
-        jobs: null,
-        applications: null,
-        workers: null,
-        payments: null,
-        reviews: null,
-      };
+      Object.keys(state.error).forEach(key => {
+        state.error[key] = null;
+      });
     },
-    updateSearchParams: (state, action) => {
-      state.searchParams = {
-        ...state.searchParams,
-        ...action.payload,
-      };
+    updateJobInList: (state, action) => {
+      const { jobId, updates } = action.payload;
+      Object.keys(state.jobs).forEach(status => {
+        const jobIndex = state.jobs[status].findIndex(job => job.id === jobId);
+        if (jobIndex !== -1) {
+          state.jobs[status][jobIndex] = { ...state.jobs[status][jobIndex], ...updates };
+        }
+      });
     },
-    setApplicationsPage: (state, action) => {
-      if (state.applications[action.payload.jobId]) {
-        state.applications[action.payload.jobId].pagination.currentPage =
-          action.payload.page;
-      }
-    },
+    removeJobFromList: (state, action) => {
+      const jobId = action.payload;
+      Object.keys(state.jobs).forEach(status => {
+        state.jobs[status] = state.jobs[status].filter(job => job.id !== jobId);
+      });
+    }
   },
   extraReducers: (builder) => {
     builder
-      // Profile
+      // Fetch Hirer Profile
       .addCase(fetchHirerProfile.pending, (state) => {
         state.loading.profile = true;
         state.error.profile = null;
       })
       .addCase(fetchHirerProfile.fulfilled, (state, action) => {
         state.loading.profile = false;
-        state.profile = action.payload.data.hirer;
+        state.profile = action.payload.data || action.payload;
       })
       .addCase(fetchHirerProfile.rejected, (state, action) => {
         state.loading.profile = false;
-        state.error.profile = action.payload;
+        state.error.profile = action.payload || 'Failed to fetch profile';
+        // Fallback to mock data even on rejection
+        state.profile = mockHirerData.profile;
       })
+
+      // Update Hirer Profile
       .addCase(updateHirerProfile.pending, (state) => {
         state.loading.profile = true;
+        state.error.profile = null;
       })
       .addCase(updateHirerProfile.fulfilled, (state, action) => {
         state.loading.profile = false;
-        state.profile = action.payload.data.hirer;
+        state.profile = action.payload.data || action.payload;
       })
       .addCase(updateHirerProfile.rejected, (state, action) => {
         state.loading.profile = false;
-        state.error.profile = action.payload;
+        state.error.profile = action.payload || 'Failed to update profile';
       })
 
-      // Jobs
+      // Fetch Hirer Jobs
       .addCase(fetchHirerJobs.pending, (state) => {
         state.loading.jobs = true;
         state.error.jobs = null;
@@ -593,180 +646,113 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchHirerJobs.rejected, (state, action) => {
         state.loading.jobs = false;
-        state.error.jobs = action.payload;
+        state.error.jobs = action.payload || 'Failed to fetch jobs';
+        // Fallback to mock data even on rejection
+        state.jobs = mockHirerData.jobs;
+      })
+
+      // Create Hirer Job
+      .addCase(createHirerJob.pending, (state) => {
+        state.loading.jobs = true;
+        state.error.jobs = null;
       })
       .addCase(createHirerJob.fulfilled, (state, action) => {
-        if (action.payload.status === 'draft') {
-          state.jobs.draft.unshift(action.payload.data.job);
-        } else {
-          state.jobs.active.unshift(action.payload.data.job);
+        state.loading.jobs = false;
+        const newJob = action.payload.data || action.payload;
+        state.jobs.draft.unshift(newJob);
+      })
+      .addCase(createHirerJob.rejected, (state, action) => {
+        state.loading.jobs = false;
+        state.error.jobs = action.payload || 'Failed to create job';
+      })
+
+      // Update Job Status
+      .addCase(updateJobStatus.fulfilled, (state, action) => {
+        const { jobId, status } = action.payload.data || action.payload;
+        // Move job between status lists
+        let movedJob = null;
+        Object.keys(state.jobs).forEach(currentStatus => {
+          const jobIndex = state.jobs[currentStatus].findIndex(job => job.id === jobId);
+          if (jobIndex !== -1) {
+            movedJob = { ...state.jobs[currentStatus][jobIndex], status };
+            state.jobs[currentStatus].splice(jobIndex, 1);
+          }
+        });
+        if (movedJob && state.jobs[status]) {
+          state.jobs[status].unshift(movedJob);
         }
       })
-      .addCase(updateHirerJob.fulfilled, (state, action) => {
-        const { id, status } = action.payload.data.job;
 
-        // Remove from all status categories
-        Object.keys(state.jobs).forEach((statusKey) => {
-          state.jobs[statusKey] = state.jobs[statusKey].filter(
-            (job) => job.id !== id,
-          );
-        });
-
-        // Add to the appropriate category
-        state.jobs[status].unshift(action.payload.data.job);
-      })
-      .addCase(updateJobStatus.fulfilled, (state, action) => {
-        const { jobId, status } = action.payload;
-
-        // Remove from all status categories
-        Object.keys(state.jobs).forEach((statusKey) => {
-          state.jobs[statusKey] = state.jobs[statusKey].filter(
-            (job) => job.id !== jobId,
-          );
-        });
-
-        // Add to the new status category
-        state.jobs[status].unshift(action.payload);
-      })
+      // Delete Hirer Job
       .addCase(deleteHirerJob.fulfilled, (state, action) => {
-        const jobId = action.payload.jobId;
-
-        // Remove from all status categories
-        Object.keys(state.jobs).forEach((statusKey) => {
-          state.jobs[statusKey] = state.jobs[statusKey].filter(
-            (job) => job.id !== jobId,
-          );
+        const jobId = action.payload.data?.jobId || action.payload.jobId;
+        Object.keys(state.jobs).forEach(status => {
+          state.jobs[status] = state.jobs[status].filter(job => job.id !== jobId);
         });
       })
 
-      // Applications
+      // Fetch Job Applications
       .addCase(fetchJobApplications.pending, (state) => {
         state.loading.applications = true;
         state.error.applications = null;
       })
       .addCase(fetchJobApplications.fulfilled, (state, action) => {
         state.loading.applications = false;
-        const { jobId, status, applications } = action.payload;
-
-        if (!state.applications[jobId]) {
-          state.applications[jobId] = {
-            pending: [],
-            accepted: [],
-            rejected: [],
-            pagination: {
-              currentPage: 1,
-              totalPages: 1,
-              totalItems: 0,
-            },
-          };
-        }
-
-        state.applications[jobId][status] = applications;
+        const { applications } = action.payload;
+        state.applications = applications;
       })
       .addCase(fetchJobApplications.rejected, (state, action) => {
         state.loading.applications = false;
-        state.error.applications = action.payload;
-      })
-      .addCase(updateApplicationStatus.fulfilled, (state, action) => {
-        const { jobId, applicationId, status, oldStatus } = action.payload;
-
-        if (state.applications[jobId]) {
-          // Remove application from old status array
-          state.applications[jobId][oldStatus] = state.applications[jobId][
-            oldStatus
-          ].filter((application) => application.id !== applicationId);
-
-          // Add application to new status array
-          state.applications[jobId][status].push(action.payload);
-        }
+        state.error.applications = action.payload || 'Failed to fetch applications';
+        // Fallback to mock data
+        state.applications = mockHirerData.applications;
       })
 
-      // Workers search
-      .addCase(searchWorkers.pending, (state) => {
-        state.loading.workers = true;
-        state.error.workers = null;
+      // Fetch Hirer Analytics
+      .addCase(fetchHirerAnalytics.pending, (state) => {
+        state.loading.analytics = true;
+        state.error.analytics = null;
       })
-      .addCase(searchWorkers.fulfilled, (state, action) => {
-        state.loading.workers = false;
-        state.searchResults = action.payload;
+      .addCase(fetchHirerAnalytics.fulfilled, (state, action) => {
+        state.loading.analytics = false;
+        state.analytics = action.payload.data || action.payload;
       })
-      .addCase(searchWorkers.rejected, (state, action) => {
-        state.loading.workers = false;
-        state.error.workers = action.payload;
-      })
-
-      // Saved workers
-      .addCase(fetchSavedWorkers.fulfilled, (state, action) => {
-        state.savedWorkers = action.payload;
-      })
-      .addCase(saveWorker.fulfilled, (state, action) => {
-        state.savedWorkers.push(action.payload.workerId);
-      })
-      .addCase(unsaveWorker.fulfilled, (state, action) => {
-        state.savedWorkers = state.savedWorkers.filter(
-          (worker) => worker.id !== action.payload.workerId,
-        );
+      .addCase(fetchHirerAnalytics.rejected, (state, action) => {
+        state.loading.analytics = false;
+        state.error.analytics = action.payload || 'Failed to fetch analytics';
+        // Fallback to mock data
+        state.analytics = mockHirerData.analytics;
       })
 
-      // Payments
-      .addCase(releasePayment.pending, (state) => {
+      // Fetch Payment Summary
+      .addCase(fetchPaymentSummary.pending, (state) => {
         state.loading.payments = true;
         state.error.payments = null;
       })
-      .addCase(releasePayment.fulfilled, (state, action) => {
+      .addCase(fetchPaymentSummary.fulfilled, (state, action) => {
         state.loading.payments = false;
-        state.payments.completed.push(action.payload);
-
-        // Update pending payments
-        state.payments.pending = state.payments.pending.filter(
-          (payment) => payment.milestoneId !== action.payload.milestoneId,
-        );
-
-        // Update job if applicable
-        const { jobId } = action.payload;
-        if (state.jobs.active) {
-          const jobIndex = state.jobs.active.findIndex(
-            (job) => job.id === jobId,
-          );
-          if (jobIndex !== -1) {
-            state.jobs.active[jobIndex].paidAmount = action.payload.totalPaid;
-          }
-        }
+        state.payments = action.payload.data || action.payload;
       })
-      .addCase(releasePayment.rejected, (state, action) => {
+      .addCase(fetchPaymentSummary.rejected, (state, action) => {
         state.loading.payments = false;
-        state.error.payments = action.payload;
-      })
-
-      // Reviews
-      .addCase(createReview.pending, (state) => {
-        state.loading.reviews = true;
-        state.error.reviews = null;
-      })
-      .addCase(createReview.fulfilled, (state, action) => {
-        state.loading.reviews = false;
-        state.reviews.push(action.payload);
-      })
-      .addCase(createReview.rejected, (state, action) => {
-        state.loading.reviews = false;
-        state.error.reviews = action.payload;
+        state.error.payments = action.payload || 'Failed to fetch payments';
+        // Fallback to mock data
+        state.payments = mockHirerData.payments;
       });
-  },
+  }
 });
 
 // Selectors
 export const selectHirerProfile = (state) => state.hirer.profile;
 export const selectHirerJobs = (status) => (state) => state.hirer.jobs[status];
-export const selectJobApplications = (jobId, status) => (state) =>
-  state.hirer.applications[jobId]?.[status] || [];
-export const selectSearchResults = (state) => state.hirer.searchResults;
-export const selectSavedWorkers = (state) => state.hirer.savedWorkers;
-export const selectPayments = (status) => (state) =>
-  state.hirer.payments[status];
+export const selectHirerApplications = (state) => state.hirer.applications;
+export const selectHirerAnalytics = (state) => state.hirer.analytics;
+export const selectHirerPayments = (state) => state.hirer.payments;
 export const selectHirerLoading = (key) => (state) => state.hirer.loading[key];
 export const selectHirerError = (key) => (state) => state.hirer.error[key];
 
-export const { clearHirerErrors, updateSearchParams, setApplicationsPage } =
-  hirerSlice.actions;
+// Actions
+export const { clearHirerData, clearHirerErrors, updateJobInList, removeJobFromList } = hirerSlice.actions;
 
+// Export reducer
 export default hirerSlice.reducer;
