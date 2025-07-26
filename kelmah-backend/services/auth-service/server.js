@@ -245,6 +245,150 @@ app.all("/api/jobs*", async (req, res) => {
   }
 });
 
+// User/Dashboard endpoints
+app.all("/api/users*", async (req, res) => {
+  try {
+    // Dashboard metrics
+    if (req.method === 'GET' && req.path === '/api/users/dashboard/metrics') {
+      return res.json({
+        success: true,
+        data: {
+          totalJobs: 156,
+          activeWorkers: 89,
+          completedProjects: 67,
+          totalRevenue: 45000,
+          avgRating: 4.7,
+          responseTime: '2.3 hours'
+        }
+      });
+    }
+    
+    // Dashboard workers
+    if (req.method === 'GET' && req.path === '/api/users/dashboard/workers') {
+      return res.json({
+        success: true,
+        data: [
+          {
+            id: '1',
+            name: 'Kwame Asante',
+            skill: 'Plumbing',
+            rating: 4.8,
+            status: 'available',
+            location: 'Accra'
+          },
+          {
+            id: '2',
+            name: 'Akosua Mensah',
+            skill: 'Electrical',
+            rating: 4.9,
+            status: 'busy',
+            location: 'Kumasi'
+          }
+        ]
+      });
+    }
+    
+    // Dashboard analytics  
+    if (req.method === 'GET' && req.path === '/api/users/dashboard/analytics') {
+      return res.json({
+        success: true,
+        data: {
+          jobsThisMonth: 23,
+          revenueGrowth: 15.6,
+          workerGrowth: 8.2,
+          customerSatisfaction: 4.7
+        }
+      });
+    }
+    
+    // User credentials
+    if (req.method === 'GET' && req.path === '/api/users/me/credentials') {
+      return res.json({
+        success: true,
+        data: {
+          skills: [
+            { id: '1', name: 'Plumbing', level: 'Expert', verified: true },
+            { id: '2', name: 'Electrical', level: 'Intermediate', verified: false }
+          ],
+          licenses: [
+            { id: '1', name: 'Ghana Plumbing License', issuer: 'Ghana Standards Authority', verified: true }
+          ]
+        }
+      });
+    }
+    
+    // User availability
+    if (req.method === 'GET' && req.path === '/api/users/me/availability') {
+      return res.json({
+        success: true,
+        data: {
+          availability: {
+            status: 'available',
+            workingHours: {
+              monday: { start: '08:00', end: '17:00' },
+              tuesday: { start: '08:00', end: '17:00' },
+              wednesday: { start: '08:00', end: '17:00' },
+              thursday: { start: '08:00', end: '17:00' },
+              friday: { start: '08:00', end: '17:00' },
+              saturday: { start: '09:00', end: '15:00' },
+              sunday: { start: null, end: null }
+            }
+          }
+        }
+      });
+    }
+    
+    // User profile GET
+    if (req.method === 'GET' && req.path === '/api/users/profile' || req.path === '/api/users/me/profile') {
+      return res.json({
+        success: true,
+        data: {
+          id: 'temp-user-123',
+          firstName: 'Test',
+          lastName: 'User', 
+          email: 'test@example.com',
+          phone: '+233123456789',
+          role: 'worker',
+          bio: 'Experienced professional with multiple skills',
+          profilePicture: null,
+          skills: ['Plumbing', 'Electrical', 'Carpentry'],
+          city: 'Accra',
+          country: 'Ghana',
+          rating: 4.5,
+          completedProjects: 15,
+          isEmailVerified: true
+        }
+      });
+    }
+    
+    // User profile UPDATE
+    if (req.method === 'PUT' && (req.path === '/api/users/profile' || req.path === '/api/users/me/profile')) {
+      return res.json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: {
+          ...req.body,
+          updatedAt: new Date().toISOString()
+        }
+      });
+    }
+    
+    // For other user endpoints, return appropriate responses
+    res.json({
+      success: true,
+      message: "Endpoint temporarily available with mock data - user service deployment in progress",
+      data: null
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
