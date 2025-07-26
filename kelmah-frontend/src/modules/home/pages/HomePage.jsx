@@ -40,10 +40,9 @@ import StarIcon from '@mui/icons-material/Star';
 import { alpha } from '@mui/material/styles';
 
 const Section = styled(Box)(({ theme }) => ({
-  minHeight: { xs: '100vh', sm: '100vh' },
-  maxHeight: { xs: '100vh', sm: 'auto' },
+  minHeight: { xs: 'auto', sm: '100vh' },
   position: 'relative',
-  overflow: { xs: 'hidden', sm: 'hidden' },
+  overflow: 'hidden',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -53,6 +52,8 @@ const Section = styled(Box)(({ theme }) => ({
   right: '50%',
   marginLeft: '-50vw',
   marginRight: '-50vw',
+  paddingTop: { xs: theme.spacing(8), sm: 0 },
+  paddingBottom: { xs: theme.spacing(6), sm: 0 },
 }));
 
 const HeroBackgroundImage = styled(Box)(({ theme }) => ({
@@ -81,19 +82,15 @@ const HeroBackgroundImage = styled(Box)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.spacing(2),
-  padding: {
-    xs: `${theme.spacing(1.2)} ${theme.spacing(2.5)}`,
-    sm: `${theme.spacing(1.8)} ${theme.spacing(4)}`,
-  },
-  fontSize: { xs: '0.9rem', sm: '1.1rem' },
+  padding: { xs: `${theme.spacing(1.2)} ${theme.spacing(3)}`, sm: `${theme.spacing(1.8)} ${theme.spacing(4)}` },
+  fontSize: { xs: '0.95rem', sm: '1.1rem' },
   textTransform: 'none',
   fontWeight: 'bold',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-  minHeight: { xs: '36px', sm: '44px' },
   '&:hover': {
     transform: { xs: 'none', sm: 'translateY(-3px)' },
-    boxShadow: { xs: '0 4px 20px rgba(0,0,0,0.25)', sm: '0 8px 25px rgba(0,0,0,0.35)' },
+    boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
   },
 }));
 
@@ -115,10 +112,10 @@ const FeatureBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: { xs: theme.spacing(2), sm: theme.spacing(3) },
-  borderRadius: { xs: theme.spacing(1.5), sm: theme.spacing(2) },
+  borderRadius: theme.spacing(2),
   background: 'rgba(50, 50, 50, 0.9)',
   backdropFilter: 'blur(10px)',
-  marginBottom: { xs: theme.spacing(1.5), sm: theme.spacing(3) },
+  marginBottom: { xs: theme.spacing(2), sm: theme.spacing(3) },
   border: '1px solid rgba(255,215,0,0.2)',
   transition: 'all 0.3s ease',
   '&:hover': {
@@ -139,19 +136,19 @@ const ServiceCard = styled(Card)(({ theme }) => ({
   cursor: 'pointer',
   '&:hover': {
     transform: { xs: 'scale(1.01)', sm: 'translateY(-12px) scale(1.02)' },
-    boxShadow: { xs: '0 8px 20px rgba(0, 0, 0, 0.3)', sm: '0 20px 40px rgba(0, 0, 0, 0.4)' },
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
     border: '2px solid rgba(255, 215, 0, 0.6)',
     '& .MuiCardMedia-root': {
       transform: { xs: 'scale(1.05)', sm: 'scale(1.1)' },
     },
     '& .service-icon': {
-      transform: { xs: 'rotate(180deg)', sm: 'rotate(360deg)' },
+      transform: { xs: 'none', sm: 'rotate(360deg)' },
     },
   },
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: { xs: 140, sm: 220 },
+  height: { xs: 160, sm: 220 },
   transition: 'transform 0.6s ease',
   position: 'relative',
 }));
@@ -297,8 +294,8 @@ const HomePage = () => {
             <HeroBackgroundImage
               sx={{ backgroundImage: `url(${services[bgIndex].image})` }}
             />
-            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, px: { xs: 1, sm: 2 }, py: { xs: 1, sm: 2 } }}>
-              <Grid container spacing={{ xs: 2, sm: 4 }} sx={{ height: '100%', alignItems: 'center' }}>
+            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+              <Grid container spacing={4}>
                 <Grid item xs={12} md={8}>
                   <motion.div
                     initial={{ opacity: 0, y: 50 }}
@@ -324,7 +321,7 @@ const HomePage = () => {
                       </motion.div>
                     )}
                     <Typography
-                      variant={isSm ? 'h5' : 'h1'}
+                      variant={isSm ? 'h4' : 'h1'}
                       sx={{
                         fontSize: { xs: '1.8rem', sm: '3.2rem', md: '4.5rem' },
                         fontWeight: 800,
@@ -352,14 +349,14 @@ const HomePage = () => {
                       {' '}Network
                     </Typography>
                     <Typography
-                      variant="h6"
+                      variant="h5"
                       sx={{
                         color: 'rgba(255, 255, 255, 0.95)',
-                        mb: { xs: 2, sm: 3 },
+                        mb: { xs: 3, sm: 4 },
                         fontWeight: 400,
-                        maxWidth: '90%',
-                        lineHeight: 1.3,
-                        fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.2rem' },
+                        maxWidth: '85%',
+                        lineHeight: 1.4,
+                        fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.3rem' },
                       }}
                     >
                       Connect with verified skilled workers across Ghana. 
@@ -375,22 +372,22 @@ const HomePage = () => {
                       sx={{
                         display: 'flex',
                         flexDirection: isSm ? 'column' : 'row',
-                          gap: isSm ? 1.5 : 2.5,
-                          mt: { xs: 2, sm: 4 },
+                          gap: isSm ? 2 : 3,
+                          mt: { xs: 3, sm: 4, md: 5 },
                       }}
                     >
                       {!user ? (
                         <>
                           <StyledButton
                             variant="contained"
-                              size={isSm ? "medium" : "large"}
+                              size="large"
                             sx={{
                                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                 color: '#000',
                                 fontWeight: 800,
-                                fontSize: { xs: '0.9rem', sm: '1.1rem' },
-                                px: { xs: 3, sm: 4 },
-                                py: { xs: 1.2, sm: 1.8 },
+                                fontSize: { xs: '1rem', sm: '1.2rem' },
+                                px: { xs: 3, sm: 5 },
+                                py: { xs: 1.5, sm: 2 },
                               '&:hover': {
                                   background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                               },
@@ -472,7 +469,7 @@ const HomePage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 1, delay: 0.4 }}
                   >
-                    <Box sx={{ mt: { xs: 2, sm: 3, md: 6 } }}>
+                    <Box sx={{ mt: { xs: 3, sm: 4, md: 8 } }}>
                       {features.map((feature, index) => (
                         <motion.div
                           key={feature.title}
@@ -487,14 +484,18 @@ const HomePage = () => {
                               <Typography 
                                 color="white" 
                                 variant="h6" 
-                                sx={{ fontWeight: 700, mb: 0.5, fontSize: { xs: '1rem', sm: '1.1rem' } }}
+                                sx={{ 
+                                  fontWeight: 700, 
+                                  mb: 0.5,
+                                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                                }}
                               >
                                 {feature.title}
                               </Typography>
                               <Typography 
                                 color="rgba(255,255,255,0.8)" 
                                 variant="body2"
-                                sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
+                                sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}
                               >
                                 {feature.description}
                             </Typography>
@@ -512,11 +513,11 @@ const HomePage = () => {
             <Box
               sx={{
                 position: 'absolute',
-                bottom: 32,
+                bottom: { xs: 20, sm: 32 },
                 left: '50%',
                 transform: 'translateX(-50%)',
                 zIndex: 2,
-                display: 'flex',
+                display: { xs: 'none', sm: 'flex' },
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 1,
@@ -556,9 +557,13 @@ const HomePage = () => {
           {/* Enhanced Services Section */}
           <Section
             id="services"
-            sx={{ minHeight: 'auto', py: { xs: 6, sm: 10, md: 12 }, background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)' }}
+            sx={{ 
+              minHeight: 'auto', 
+              py: { xs: 8, sm: 12, md: 16 }, 
+              background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)' 
+            }}
           >
-            <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2 } }}>
+            <Container maxWidth="lg">
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -566,13 +571,13 @@ const HomePage = () => {
                 transition={{ duration: 0.8 }}
               >
               <Typography
-                variant="h3"
+                variant="h2"
                 sx={{
                   textAlign: 'center',
                     mb: { xs: 2, sm: 3 },
                   color: theme.palette.secondary.main,
                     fontWeight: 800,
-                    fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' },
                   }}
                 >
                   Trade Services Available
@@ -581,19 +586,18 @@ const HomePage = () => {
                   variant="h6"
                   sx={{
                     textAlign: 'center',
-                    mb: { xs: 4, sm: 6, md: 8 },
+                    mb: { xs: 6, sm: 8, md: 10 },
                     color: 'rgba(255,255,255,0.8)',
                     maxWidth: 600,
                     mx: 'auto',
                     fontWeight: 400,
-                    fontSize: { xs: '1rem', sm: '1.1rem' },
                   }}
                 >
                   Professional skilled workers ready to tackle your projects with expertise and dedication
               </Typography>
               </motion.div>
 
-              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+              <Grid container spacing={{ xs: 3, sm: 4 }}>
                 {services.map((service, index) => (
                   <Grid item xs={12} sm={6} md={3} key={service.title}>
                     <motion.div
@@ -618,14 +622,22 @@ const HomePage = () => {
                             variant="h5"
                             component="div"
                             color="white"
-                            sx={{ fontWeight: 700, mb: 2 }}
+                            sx={{ 
+                              fontWeight: 700, 
+                              mb: 2,
+                              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                            }}
                           >
                             {service.title}
                           </Typography>
                           <Typography
                             variant="body2"
                             color="rgba(255,255,255,0.85)"
-                            sx={{ mb: 2, lineHeight: 1.5 }}
+                            sx={{ 
+                              mb: 2, 
+                              lineHeight: 1.5,
+                              fontSize: { xs: '0.85rem', sm: '0.875rem' }
+                            }}
                           >
                             {service.description}
                           </Typography>
@@ -658,26 +670,26 @@ const HomePage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <Box sx={{ textAlign: 'center', mt: { xs: 6, sm: 8, md: 10 } }}>
+                <Box sx={{ textAlign: 'center', mt: { xs: 8, sm: 10, md: 12 } }}>
                   <Typography
-                    variant="h5"
+                    variant="h4"
                     sx={{
                       color: 'white',
                       mb: { xs: 2, sm: 3 },
                       fontWeight: 700,
-                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
+                      fontSize: { xs: '1.8rem', sm: '2.125rem' }
                     }}
                   >
                     Ready to Get Started?
                   </Typography>
                   <Typography
-                    variant="body1"
+                    variant="h6"
                     sx={{
                       color: 'rgba(255,255,255,0.8)',
                       mb: { xs: 3, sm: 4 },
                       maxWidth: 500,
                       mx: 'auto',
-                      fontSize: { xs: '0.95rem', sm: '1.1rem' },
+                      fontSize: { xs: '1rem', sm: '1.25rem' }
                     }}
                   >
                     Join thousands of skilled workers and satisfied customers on Ghana's leading trade platform
