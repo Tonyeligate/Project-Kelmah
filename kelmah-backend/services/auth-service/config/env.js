@@ -173,7 +173,7 @@ const OAUTH_CONFIG = {
 
 const EXTERNAL_SERVICES_CONFIG = {
   // Frontend URL
-  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'https://kelmah-frontend-mu.vercel.app',
   
   // Other microservices
   USER_SERVICE_URL: process.env.USER_SERVICE_URL || 'http://localhost:5002',
@@ -272,15 +272,15 @@ if (!hasOAuthConfig) {
 // DEVELOPMENT LOGGING
 // ===============================================
 
-if (config.isDevelopment) {
-  console.log('🔧 Auth Service Configuration:');
-  console.log(`   Environment: ${config.NODE_ENV}`);
-  console.log(`   Port: ${config.PORT}`);
-  console.log(`   Database: ${config.SQL_URL ? 'PostgreSQL' : 'Not configured'}`);
-  console.log(`   MongoDB: ${config.MONGO_URI ? 'Connected' : 'Not configured'}`);
-  console.log(`   Frontend URL: ${config.FRONTEND_URL}`);
-  console.log(`   OAuth Providers: ${hasOAuthConfig ? 'Configured' : 'None'}`);
-  console.log(`   Email Service: ${EMAIL_CONFIG.SMTP_HOST || EMAIL_CONFIG.SENDGRID_API_KEY ? 'Configured' : 'Not configured'}`);
-}
+// Always log configuration for debugging
+console.log('🔧 Auth Service Configuration:');
+console.log(`   Environment: ${config.NODE_ENV}`);
+console.log(`   Port: ${config.PORT}`);
+console.log(`   Database: ${config.SQL_URL ? 'PostgreSQL' : 'Not configured'}`);
+console.log(`   MongoDB: ${config.MONGO_URI ? 'Connected' : 'Not configured'}`);
+console.log(`   Frontend URL: ${config.FRONTEND_URL}`);
+console.log(`   Direct env FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+console.log(`   OAuth Providers: ${hasOAuthConfig ? 'Configured' : 'None'}`);
+console.log(`   Email Service: ${EMAIL_CONFIG.SMTP_HOST || EMAIL_CONFIG.SENDGRID_API_KEY ? 'Configured' : 'Not configured'}`);
 
 module.exports = config;

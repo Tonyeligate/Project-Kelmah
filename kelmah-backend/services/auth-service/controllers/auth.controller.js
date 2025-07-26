@@ -58,7 +58,15 @@ exports.register = async (req, res, next) => {
     await newUser.save();
     
     // Use the raw token in the URL so it can be properly verified
-    const verificationUrl = `${config.frontendUrl}/verify-email/${rawToken}`;
+    const frontendUrl = config.frontendUrl || 
+                       config.FRONTEND_URL || 
+                       process.env.FRONTEND_URL || 
+                       'https://kelmah-frontend-mu.vercel.app';
+    
+    const verificationUrl = `${frontendUrl}/verify-email/${rawToken}`;
+    
+    console.log('Frontend URL used for verification:', frontendUrl);
+    console.log('Full verification URL:', verificationUrl);
     
     // Send verification email (don't fail registration if email fails)
     try {
