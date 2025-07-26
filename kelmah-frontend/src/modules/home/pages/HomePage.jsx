@@ -40,7 +40,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { alpha } from '@mui/material/styles';
 
 const Section = styled(Box)(({ theme }) => ({
-  minHeight: { xs: 'auto', sm: '100vh' },
+  minHeight: '100vh',
   position: 'relative',
   overflow: 'hidden',
   display: 'flex',
@@ -52,8 +52,14 @@ const Section = styled(Box)(({ theme }) => ({
   right: '50%',
   marginLeft: '-50vw',
   marginRight: '-50vw',
-  paddingTop: { xs: theme.spacing(8), sm: 0 },
-  paddingBottom: { xs: theme.spacing(6), sm: 0 },
+  // Ensure no horizontal scroll on small screens
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    left: 0,
+    right: 0,
+    marginLeft: 0,
+    marginRight: 0,
+  },
 }));
 
 const HeroBackgroundImage = styled(Box)(({ theme }) => ({
@@ -82,21 +88,21 @@ const HeroBackgroundImage = styled(Box)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.spacing(2),
-  padding: { xs: `${theme.spacing(1.2)} ${theme.spacing(3)}`, sm: `${theme.spacing(1.8)} ${theme.spacing(4)}` },
-  fontSize: { xs: '0.95rem', sm: '1.1rem' },
+  padding: `${theme.spacing(1.8)} ${theme.spacing(4)}`,
+  fontSize: '1.1rem',
   textTransform: 'none',
   fontWeight: 'bold',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
   '&:hover': {
-    transform: { xs: 'none', sm: 'translateY(-3px)' },
+    transform: 'translateY(-3px)',
     boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
   },
 }));
 
 const FeatureCircle = styled(Box)(({ theme }) => ({
-  width: { xs: 35, sm: 50 },
-  height: { xs: 35, sm: 50 },
+  width: 50,
+  height: 50,
   borderRadius: '50%',
   background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
   display: 'flex',
@@ -104,24 +110,24 @@ const FeatureCircle = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   color: theme.palette.secondary.contrastText,
   fontWeight: 'bold',
-  marginRight: { xs: theme.spacing(2), sm: theme.spacing(3) },
+  marginRight: theme.spacing(3),
   boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
 }));
 
 const FeatureBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  padding: { xs: theme.spacing(2), sm: theme.spacing(3) },
+  padding: theme.spacing(3),
   borderRadius: theme.spacing(2),
   background: 'rgba(50, 50, 50, 0.9)',
   backdropFilter: 'blur(10px)',
-  marginBottom: { xs: theme.spacing(2), sm: theme.spacing(3) },
+  marginBottom: theme.spacing(3),
   border: '1px solid rgba(255,215,0,0.2)',
   transition: 'all 0.3s ease',
   '&:hover': {
     background: 'rgba(60, 60, 60, 0.95)',
     border: '1px solid rgba(255,215,0,0.4)',
-    transform: { xs: 'none', sm: 'translateX(5px)' },
+    transform: 'translateX(5px)',
   },
 }));
 
@@ -129,26 +135,26 @@ const ServiceCard = styled(Card)(({ theme }) => ({
   height: '100%',
   background: 'rgba(44, 44, 44, 0.6)',
   backdropFilter: 'blur(8px)',
-  borderRadius: { xs: theme.spacing(2), sm: theme.spacing(3) },
+  borderRadius: theme.spacing(3),
   overflow: 'hidden',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   border: '2px solid rgba(255, 215, 0, 0.2)',
   cursor: 'pointer',
   '&:hover': {
-    transform: { xs: 'scale(1.01)', sm: 'translateY(-12px) scale(1.02)' },
+    transform: 'translateY(-12px) scale(1.02)',
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
     border: '2px solid rgba(255, 215, 0, 0.6)',
     '& .MuiCardMedia-root': {
-      transform: { xs: 'scale(1.05)', sm: 'scale(1.1)' },
+      transform: 'scale(1.1)',
     },
     '& .service-icon': {
-      transform: { xs: 'none', sm: 'rotate(360deg)' },
+      transform: 'rotate(360deg)',
     },
   },
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: { xs: 160, sm: 220 },
+  height: 220,
   transition: 'transform 0.6s ease',
   position: 'relative',
 }));
@@ -323,10 +329,10 @@ const HomePage = () => {
                     <Typography
                       variant={isSm ? 'h4' : 'h1'}
                       sx={{
-                        fontSize: { xs: '1.8rem', sm: '3.2rem', md: '4.5rem' },
+                        fontSize: { xs: '2.2rem', sm: '3.8rem', md: '5rem' },
                         fontWeight: 800,
                         color: theme.palette.secondary.main,
-                        mb: { xs: 2, sm: 3 },
+                        mb: 3,
                         textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
                         lineHeight: 1.1,
                       }}
@@ -352,11 +358,11 @@ const HomePage = () => {
                       variant="h5"
                       sx={{
                         color: 'rgba(255, 255, 255, 0.95)',
-                        mb: { xs: 3, sm: 4 },
+                        mb: 4,
                         fontWeight: 400,
                         maxWidth: '85%',
                         lineHeight: 1.4,
-                        fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.3rem' },
+                        fontSize: { xs: '1.1rem', md: '1.3rem' },
                       }}
                     >
                       Connect with verified skilled workers across Ghana. 
@@ -373,7 +379,7 @@ const HomePage = () => {
                         display: 'flex',
                         flexDirection: isSm ? 'column' : 'row',
                           gap: isSm ? 2 : 3,
-                          mt: { xs: 3, sm: 4, md: 5 },
+                          mt: 5,
                       }}
                     >
                       {!user ? (
@@ -385,9 +391,9 @@ const HomePage = () => {
                                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                 color: '#000',
                                 fontWeight: 800,
-                                fontSize: { xs: '1rem', sm: '1.2rem' },
-                                px: { xs: 3, sm: 5 },
-                                py: { xs: 1.5, sm: 2 },
+                                fontSize: '1.2rem',
+                                px: 5,
+                                py: 2,
                               '&:hover': {
                                   background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                               },
@@ -469,7 +475,7 @@ const HomePage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 1, delay: 0.4 }}
                   >
-                    <Box sx={{ mt: { xs: 3, sm: 4, md: 8 } }}>
+                    <Box sx={{ mt: { xs: 4, md: 8 } }}>
                       {features.map((feature, index) => (
                         <motion.div
                           key={feature.title}
@@ -484,18 +490,14 @@ const HomePage = () => {
                               <Typography 
                                 color="white" 
                                 variant="h6" 
-                                sx={{ 
-                                  fontWeight: 700, 
-                                  mb: 0.5,
-                                  fontSize: { xs: '1rem', sm: '1.25rem' }
-                                }}
+                                sx={{ fontWeight: 700, mb: 0.5 }}
                               >
                                 {feature.title}
                               </Typography>
                               <Typography 
                                 color="rgba(255,255,255,0.8)" 
                                 variant="body2"
-                                sx={{ fontSize: { xs: '0.85rem', sm: '0.95rem' } }}
+                                sx={{ fontSize: '0.95rem' }}
                               >
                                 {feature.description}
                             </Typography>
@@ -513,11 +515,11 @@ const HomePage = () => {
             <Box
               sx={{
                 position: 'absolute',
-                bottom: { xs: 20, sm: 32 },
+                bottom: 32,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 zIndex: 2,
-                display: { xs: 'none', sm: 'flex' },
+                display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 1,
@@ -557,11 +559,7 @@ const HomePage = () => {
           {/* Enhanced Services Section */}
           <Section
             id="services"
-            sx={{ 
-              minHeight: 'auto', 
-              py: { xs: 8, sm: 12, md: 16 }, 
-              background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)' 
-            }}
+            sx={{ minHeight: 'auto', py: 16, background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)' }}
           >
             <Container maxWidth="lg">
               <motion.div
@@ -574,10 +572,10 @@ const HomePage = () => {
                 variant="h2"
                 sx={{
                   textAlign: 'center',
-                    mb: { xs: 2, sm: 3 },
+                    mb: 3,
                   color: theme.palette.secondary.main,
                     fontWeight: 800,
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' },
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
                   }}
                 >
                   Trade Services Available
@@ -586,7 +584,7 @@ const HomePage = () => {
                   variant="h6"
                   sx={{
                     textAlign: 'center',
-                    mb: { xs: 6, sm: 8, md: 10 },
+                    mb: 10,
                     color: 'rgba(255,255,255,0.8)',
                     maxWidth: 600,
                     mx: 'auto',
@@ -597,7 +595,7 @@ const HomePage = () => {
               </Typography>
               </motion.div>
 
-              <Grid container spacing={{ xs: 3, sm: 4 }}>
+              <Grid container spacing={4}>
                 {services.map((service, index) => (
                   <Grid item xs={12} sm={6} md={3} key={service.title}>
                     <motion.div
@@ -622,22 +620,14 @@ const HomePage = () => {
                             variant="h5"
                             component="div"
                             color="white"
-                            sx={{ 
-                              fontWeight: 700, 
-                              mb: 2,
-                              fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                            }}
+                            sx={{ fontWeight: 700, mb: 2 }}
                           >
                             {service.title}
                           </Typography>
                           <Typography
                             variant="body2"
                             color="rgba(255,255,255,0.85)"
-                            sx={{ 
-                              mb: 2, 
-                              lineHeight: 1.5,
-                              fontSize: { xs: '0.85rem', sm: '0.875rem' }
-                            }}
+                            sx={{ mb: 2, lineHeight: 1.5 }}
                           >
                             {service.description}
                           </Typography>
@@ -670,14 +660,13 @@ const HomePage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <Box sx={{ textAlign: 'center', mt: { xs: 8, sm: 10, md: 12 } }}>
+                <Box sx={{ textAlign: 'center', mt: 12 }}>
                   <Typography
                     variant="h4"
                     sx={{
                       color: 'white',
-                      mb: { xs: 2, sm: 3 },
+                      mb: 3,
                       fontWeight: 700,
-                      fontSize: { xs: '1.8rem', sm: '2.125rem' }
                     }}
                   >
                     Ready to Get Started?
@@ -686,10 +675,9 @@ const HomePage = () => {
                     variant="h6"
                     sx={{
                       color: 'rgba(255,255,255,0.8)',
-                      mb: { xs: 3, sm: 4 },
+                      mb: 4,
                       maxWidth: 500,
                       mx: 'auto',
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
                     }}
                   >
                     Join thousands of skilled workers and satisfied customers on Ghana's leading trade platform
