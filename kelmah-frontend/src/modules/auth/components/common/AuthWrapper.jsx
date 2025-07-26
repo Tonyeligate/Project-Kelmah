@@ -188,8 +188,8 @@ const AuthWrapper = ({ children }) => {
                 background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
                 zIndex: 3,
               },
-            }}
-          >
+          }}
+        >
             {/* Left Panel - Branding & Features - Mobile Optimized */}
             {!isMobile && (
           <Box
@@ -377,8 +377,8 @@ const AuthWrapper = ({ children }) => {
                   fontWeight: 700,
                                 mb: 0.5,
                                 fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
-                              }}
-                            >
+                }}
+              >
                               {feature.title}
               </Typography>
               <Typography
@@ -387,8 +387,8 @@ const AuthWrapper = ({ children }) => {
                                 color: 'rgba(255,255,255,0.8)',
                                 fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                                 lineHeight: 1.3,
-                              }}
-                            >
+                }}
+              >
                               {feature.description}
               </Typography>
             </Box>

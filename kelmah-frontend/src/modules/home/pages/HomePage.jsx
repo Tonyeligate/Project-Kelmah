@@ -314,8 +314,8 @@ const HomePage = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8, delay: 0.3 }}
                       >
-                        <Typography
-                          variant="h4"
+                      <Typography
+                        variant="h4"
                           sx={{ 
                             color: theme.palette.secondary.main, 
                             mb: 2,
@@ -532,8 +532,8 @@ const HomePage = () => {
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: 1,
-                }}
-              >
+              }}
+            >
                 Explore Services
               </Typography>
               <motion.div
@@ -576,8 +576,8 @@ const HomePage = () => {
                   color: theme.palette.secondary.main,
                     fontWeight: 800,
                     fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  }}
-                >
+                }}
+              >
                   Trade Services Available
                 </Typography>
                 <Typography

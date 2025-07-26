@@ -71,6 +71,117 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/auth", authRoutes);
 
+// Admin routes for development/testing
+app.post("/api/admin/verify-user", async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required"
+      });
+    }
+
+    // Find user by email
+    const User = require("./models").User;
+    const user = await User.findOne({ where: { email } });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Force verify the user
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "User verified successfully",
+      data: {
+        email: user.email,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin verify user error:', error);
+    return res.status(500).json({
+      success: false,
+      message: "Error verifying user",
+      error: error.message
+    });
+  }
+});
+
+// Batch verify multiple users
+app.post("/api/admin/verify-users-batch", async (req, res) => {
+  try {
+    const { emails } = req.body;
+    
+    if (!emails || !Array.isArray(emails)) {
+      return res.status(400).json({
+        success: false,
+        message: "Emails array is required"
+      });
+    }
+
+    const User = require("./models").User;
+    const results = [];
+
+    for (const email of emails) {
+      try {
+        const user = await User.findOne({ where: { email } });
+        
+        if (user) {
+          user.isEmailVerified = true;
+          user.emailVerificationToken = null;
+          await user.save();
+          
+          results.push({
+            email,
+            status: 'verified',
+            success: true
+          });
+        } else {
+          results.push({
+            email,
+            status: 'not_found',
+            success: false
+          });
+        }
+      } catch (error) {
+        results.push({
+          email,
+          status: 'error',
+          success: false,
+          error: error.message
+        });
+      }
+    }
+
+    const successCount = results.filter(r => r.success).length;
+
+    return res.json({
+      success: true,
+      message: `Verified ${successCount}/${emails.length} users`,
+      data: results
+    });
+
+  } catch (error) {
+    console.error('Batch verify users error:', error);
+    return res.status(500).json({
+      success: false,
+      message: "Error verifying users",
+      error: error.message
+    });
+  }
+});
+
 // Temporary job proxy routes until proper deployment is fixed
 app.all("/api/jobs*", async (req, res) => {
   try {
