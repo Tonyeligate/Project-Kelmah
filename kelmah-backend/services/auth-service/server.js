@@ -38,9 +38,13 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5173',
+      'http://127.0.0.1:5173',
       'https://kelmah-frontend.onrender.com',
-      'https://project-kelmah.onrender.com'
-    ];
+      'https://project-kelmah.onrender.com',
+      'https://kelmah-frontend-ecru.vercel.app',
+      'https://kelmah-frontend-mu.vercel.app',
+      process.env.FRONTEND_URL // Dynamic frontend URL from environment
+    ].filter(Boolean); // Remove any undefined values
     
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
