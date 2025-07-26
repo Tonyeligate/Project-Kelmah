@@ -37,7 +37,18 @@ module.exports = (sequelize) => {
       phone: {
         type: DataTypes.STRING,
         unique: true,
-        validate: { is: /^((\+\d{1,3}[- ]?)?\d{10})$/ },
+        allowNull: true, // Make phone optional to avoid validation errors
+        validate: { 
+          isValidPhone(value) {
+            if (value && value.length > 0) {
+              // More flexible phone validation - accepts various formats
+              const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,15}$/;
+              if (!phoneRegex.test(value)) {
+                throw new Error('Phone number must be 10-15 digits and may include +, spaces, hyphens, or parentheses');
+              }
+            }
+          }
+        },
       },
       password: {
         type: DataTypes.STRING,
