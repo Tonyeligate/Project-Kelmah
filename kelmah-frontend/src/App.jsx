@@ -1,3 +1,8 @@
+/**
+ * Kelmah Frontend Application - v1.0.1
+ * Build fixes: Service client imports, email verification URLs
+ * Last updated: January 2025
+ */
 import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
