@@ -132,92 +132,207 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
         flexDirection: 'column',
         height: '100%',
         position: 'relative',
-        transition: 'transform 0.3s, box-shadow 0.3s',
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        background: theme.palette.background.paper,
+        border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+        borderRadius: 3,
+        overflow: 'hidden',
         '&:hover': {
-          transform: 'translateY(-8px)',
-          boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.3)}`,
+          transform: 'translateY(-8px) scale(1.02)',
+          boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.4)}`,
+          borderColor: theme.palette.secondary.main,
         },
       }}
     >
       {worker.verified && (
         <Chip
           icon={<CheckCircle />}
-          label="Verified"
-          color="success"
+          label="VERIFIED PRO"
           size="small"
-          sx={{ position: 'absolute', top: 8, left: 8, zIndex: 1 }}
+          sx={{ 
+            position: 'absolute', 
+            top: 12, 
+            left: 12, 
+            zIndex: 2,
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            fontWeight: 'bold',
+            fontSize: '0.75rem',
+            '& .MuiChip-icon': {
+              color: theme.palette.secondary.contrastText
+            }
+          }}
         />
       )}
       
       <IconButton
         onClick={() => !isDemo && onToggleSave(worker.id || worker._id)}
-        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
-        color={isSaved ? 'primary' : 'default'}
+        sx={{ 
+          position: 'absolute', 
+          top: 12, 
+          right: 12, 
+          zIndex: 2,
+          backgroundColor: alpha(theme.palette.background.default, 0.8),
+          color: isSaved ? theme.palette.secondary.main : theme.palette.text.secondary,
+          '&:hover': {
+            backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+            color: theme.palette.secondary.main,
+          }
+        }}
         disabled={isDemo}
       >
         {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
       </IconButton>
       
-      <CardContent sx={{ flexGrow: 1, pt: 5 }}>
-        <Avatar
-          src={worker.avatar}
-          sx={{ width: 90, height: 90, mb: 2, mx: 'auto', border: `3px solid ${theme.palette.primary.main}` }}
-        />
-        <Typography variant="h6" align="center" fontWeight="bold">
-          {worker.name}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          align="center"
-          gutterBottom
-          sx={{ minHeight: 40 }}
-        >
-          {worker.title}
-        </Typography>
+      <CardContent sx={{ flexGrow: 1, pt: 6, px: 3, pb: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Avatar
+            src={worker.avatar}
+            sx={{ 
+              width: 100, 
+              height: 100, 
+              mb: 2, 
+              mx: 'auto', 
+              border: `4px solid ${theme.palette.secondary.main}`,
+              boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.3)}`
+            }}
+          />
+          <Typography 
+            variant="h6" 
+            align="center" 
+            fontWeight="bold"
+            sx={{ 
+              color: theme.palette.text.primary,
+              fontSize: '1.25rem',
+              lineHeight: 1.3,
+              mb: 1
+            }}
+          >
+            {worker.name}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            align="center"
+            sx={{ 
+              minHeight: 44,
+              fontSize: '0.95rem',
+              lineHeight: 1.4,
+              fontWeight: 500,
+              color: theme.palette.text.secondary
+            }}
+          >
+            {worker.title}
+          </Typography>
+        </Box>
         
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
-          <Rating value={worker.rating} precision={0.1} readOnly size="small" />
-          <Typography variant="body2" sx={{ ml: 0.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+          <Rating 
+            value={worker.rating} 
+            precision={0.1} 
+            readOnly 
+            size="small"
+            sx={{
+              '& .MuiRating-iconFilled': {
+                color: theme.palette.secondary.main,
+              }
+            }}
+          />
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              ml: 1,
+              color: theme.palette.text.primary,
+              fontWeight: 'bold'
+            }}
+          >
             ({worker.reviewCount || 0})
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={1} sx={{ mb: 2 }} alignItems="center" justifyContent="center">
-          <LocationOn fontSize="small" color="action" />
-          <Typography variant="body2" color="text.secondary">
+        <Stack direction="row" spacing={1} sx={{ mb: 3 }} alignItems="center" justifyContent="center">
+          <LocationOn fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: theme.palette.text.primary,
+              fontWeight: 500
+            }}
+          >
             {worker.location}
           </Typography>
         </Stack>
 
-        <Stack direction="row" spacing={2} sx={{ mb: 2, justifyContent: 'center' }}>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="primary" fontWeight="bold">
-              ${worker.hourlyRate}/hr
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Rate
-            </Typography>
-          </Box>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="primary" fontWeight="bold">
-              {worker.completedJobs}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Jobs Done
-            </Typography>
-          </Box>
-        </Stack>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={6}>
+            <Box sx={{ 
+              textAlign: 'center',
+              p: 2,
+              borderRadius: 2,
+              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+            }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: theme.palette.secondary.main,
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem'
+                }}
+              >
+                ${worker.hourlyRate}/hr
+              </Typography>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: theme.palette.text.secondary,
+                  fontSize: '0.8rem',
+                  fontWeight: 600
+                }}
+              >
+                HOURLY RATE
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={6}>
+            <Box sx={{ 
+              textAlign: 'center',
+              p: 2,
+              borderRadius: 2,
+              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+            }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: theme.palette.secondary.main,
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem'
+                }}
+              >
+                {worker.completedJobs}
+              </Typography>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: theme.palette.text.secondary,
+                  fontSize: '0.8rem',
+                  fontWeight: 600
+                }}
+              >
+                JOBS DONE
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
         
         <Box
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'center',
-            gap: 0.5,
-            mb: 2,
+            gap: 1,
+            mb: 3,
           }}
         >
           {(worker.skills || []).slice(0, 3).map((skill) => (
@@ -225,34 +340,64 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
               key={skill} 
               label={skill} 
               size="small" 
-              variant="outlined"
               sx={{ 
-                fontSize: '0.7rem',
-                backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                backgroundColor: alpha(theme.palette.secondary.main, 0.2),
+                color: theme.palette.text.primary,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.3),
+                }
               }}
             />
           ))}
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-          <Schedule fontSize="small" color="success" />
-          <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          p: 2,
+          borderRadius: 2,
+          backgroundColor: alpha(theme.palette.secondary.main, 0.05),
+          border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+        }}>
+          <Schedule fontSize="small" sx={{ color: theme.palette.secondary.main, mr: 1 }} />
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: theme.palette.text.primary,
+              fontWeight: 'bold'
+            }}
+          >
             Responds {worker.responseTime}
           </Typography>
         </Box>
       </CardContent>
       
-      <CardActions
-        sx={{ p: 2, pt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}
-      >
+      <CardActions sx={{ p: 3, pt: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Button
           fullWidth
           variant="contained"
           onClick={() => !isDemo && navigate(`/profiles/user/${worker.id || worker._id}`)}
           disabled={isDemo}
           sx={{
-            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-            fontWeight: 'bold'
+            py: 1.5,
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            borderRadius: 2,
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+              transform: 'translateY(-2px)',
+              boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.4)}`
+            },
+            '&:disabled': {
+              backgroundColor: alpha(theme.palette.secondary.main, 0.5),
+              color: alpha(theme.palette.secondary.contrastText, 0.7)
+            }
           }}
         >
           {isDemo ? 'View Profile (Demo)' : 'View Profile'}
@@ -263,6 +408,24 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
           startIcon={<MessageIcon />}
           onClick={() => !isDemo && navigate('/messages?participantId=' + (worker.id || worker._id))}
           disabled={isDemo}
+          sx={{
+            py: 1.5,
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            borderColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.main,
+            borderWidth: 2,
+            borderRadius: 2,
+            '&:hover': {
+              borderColor: theme.palette.secondary.light,
+              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+              transform: 'translateY(-2px)',
+            },
+            '&:disabled': {
+              borderColor: alpha(theme.palette.secondary.main, 0.5),
+              color: alpha(theme.palette.secondary.main, 0.5)
+            }
+          }}
         >
           {isDemo ? 'Message (Demo)' : 'Message'}
         </Button>
@@ -280,32 +443,102 @@ const EmptyState = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
           borderRadius: 4,
-          p: 6,
+          p: { xs: 4, sm: 6, md: 8 },
           mb: 6,
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 70%)`,
+            pointerEvents: 'none'
+          }
         }}
       >
-        <Typography variant="h3" component="h2" gutterBottom fontWeight="bold">
+        <Typography 
+          variant="h2" 
+          component="h2" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            color: theme.palette.secondary.main,
+            textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           🔍 Discover Amazing Talent
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 4, 
+            maxWidth: 700, 
+            mx: 'auto',
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            lineHeight: 1.6,
+            fontWeight: 500,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           Connect with thousands of verified professionals ready to bring your projects to life. 
           From home repairs to custom installations, find the perfect match for any job.
         </Typography>
         
         {/* Platform Stats */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {platformStats.map((stat, index) => (
             <Grid item xs={6} md={3} key={index}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ color: theme.palette.primary.main, mb: 1 }}>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center',
+                  p: 3,
+                  borderRadius: 3,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                    borderColor: theme.palette.secondary.main,
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
+                  }
+                }}
+              >
+                <Box sx={{ color: theme.palette.secondary.main, mb: 2, fontSize: 48 }}>
                   {stat.icon}
                 </Box>
-                <Typography variant="h5" fontWeight="bold" color="primary">
+                <Typography 
+                  variant="h4" 
+                  fontWeight="bold" 
+                  sx={{ 
+                    color: theme.palette.secondary.main,
+                    fontSize: { xs: '1.5rem', sm: '2rem' }
+                  }}
+                >
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: theme.palette.text.primary,
+                    fontWeight: 600,
+                    textAlign: 'center',
+                    fontSize: { xs: '0.9rem', sm: '1rem' }
+                  }}
+                >
                   {stat.label}
                 </Typography>
               </Box>
@@ -313,16 +546,29 @@ const EmptyState = () => {
           ))}
         </Grid>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={3} 
+          justifyContent="center"
+          sx={{ position: 'relative', zIndex: 1 }}
+        >
           <Button
             variant="contained"
             size="large"
             onClick={() => navigate('/register')}
             sx={{
-              background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
               px: 4,
-              py: 1.5,
-              fontWeight: 'bold'
+              py: 2,
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              backgroundColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.contrastText,
+              borderRadius: 3,
+              '&:hover': {
+                backgroundColor: theme.palette.secondary.dark,
+                transform: 'translateY(-3px)',
+                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`
+              }
             }}
           >
             Join as Client
@@ -331,7 +577,21 @@ const EmptyState = () => {
             variant="outlined"
             size="large"
             onClick={() => navigate('/register?type=worker')}
-            sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
+            sx={{ 
+              px: 4, 
+              py: 2, 
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main,
+              borderWidth: 2,
+              borderRadius: 3,
+              '&:hover': {
+                borderColor: theme.palette.secondary.light,
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                transform: 'translateY(-3px)',
+              }
+            }}
           >
             Join as Professional
           </Button>
@@ -339,18 +599,37 @@ const EmptyState = () => {
       </Box>
 
       {/* Sample Workers Section */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold">
+      <Box sx={{ mb: 8 }}>
+        <Typography 
+          variant="h3" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            color: theme.palette.secondary.main,
+            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+            mb: 2
+          }}
+        >
           Meet Our Top Professionals
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 6,
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            fontWeight: 500,
+            maxWidth: 600,
+            mx: 'auto'
+          }}
+        >
           Here's a preview of the quality talent you'll find on our platform
         </Typography>
         
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
           {sampleWorkers.map((worker, index) => (
-            <Grid item xs={12} sm={6} md={3} key={worker.id}>
-              <Grow in timeout={300 + index * 200}>
+            <Grid item xs={12} sm={6} lg={3} key={worker.id}>
+              <Grow in timeout={500 + index * 200}>
                 <div>
                   <WorkerCard worker={worker} isDemo={true} />
                 </div>
@@ -361,53 +640,121 @@ const EmptyState = () => {
       </Box>
 
       {/* Success Stories */}
-      <Paper sx={{ p: 4, mb: 4, background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
-        <Typography variant="h5" gutterBottom fontWeight="bold">
+      <Box 
+        sx={{ 
+          p: { xs: 4, sm: 6 }, 
+          mb: 6,
+          borderRadius: 4,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+        }}
+      >
+        <Typography 
+          variant="h4" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            color: theme.palette.secondary.main,
+            mb: 4,
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}
+        >
           💬 What Our Clients Say
         </Typography>
-        <Grid container spacing={4} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, height: '100%' }}>
-              <Rating value={5} readOnly size="small" sx={{ mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                "Found the perfect electrician for my smart home project. Professional, fast, and great quality work!"
-              </Typography>
-              <Typography variant="subtitle2" color="primary">
-                - Jennifer M., Homeowner
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, height: '100%' }}>
-              <Rating value={5} readOnly size="small" sx={{ mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                "Kelmah made it so easy to find qualified contractors. Saved me weeks of searching!"
-              </Typography>
-              <Typography variant="subtitle2" color="primary">
-                - Robert K., Business Owner
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, height: '100%' }}>
-              <Rating value={5} readOnly size="small" sx={{ mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                "The verification process gives me confidence. All workers are truly skilled professionals."
-              </Typography>
-              <Typography variant="subtitle2" color="primary">
-                - Maria S., Property Manager
-              </Typography>
-            </Card>
-          </Grid>
+        <Grid container spacing={4}>
+          {[
+            {
+              rating: 5,
+              text: "Found the perfect electrician for my smart home project. Professional, fast, and great quality work!",
+              author: "Jennifer M., Homeowner"
+            },
+            {
+              rating: 5,
+              text: "Kelmah made it so easy to find qualified contractors. Saved me weeks of searching!",
+              author: "Robert K., Business Owner"
+            },
+            {
+              rating: 5,
+              text: "The verification process gives me confidence. All workers are truly skilled professionals.",
+              author: "Maria S., Property Manager"
+            }
+          ].map((testimonial, index) => (
+            <Grid item xs={12} md={4} key={index}>
+              <Box 
+                sx={{ 
+                  p: 4, 
+                  height: '100%',
+                  borderRadius: 3,
+                  backgroundColor: theme.palette.background.paper,
+                  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    borderColor: theme.palette.secondary.main,
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
+                  }
+                }}
+              >
+                <Rating 
+                  value={testimonial.rating} 
+                  readOnly 
+                  size="medium" 
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiRating-iconFilled': {
+                      color: theme.palette.secondary.main,
+                    }
+                  }} 
+                />
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 3, 
+                    fontStyle: 'italic',
+                    color: theme.palette.text.primary,
+                    fontSize: '1.1rem',
+                    lineHeight: 1.6
+                  }}
+                >
+                  "{testimonial.text}"
+                </Typography>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{
+                    color: theme.palette.secondary.main,
+                    fontWeight: 'bold'
+                  }}
+                >
+                  - {testimonial.author}
+                </Typography>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
-      </Paper>
+      </Box>
 
       {/* Call to Action */}
       <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="h5" gutterBottom>
+        <Typography 
+          variant="h4" 
+          gutterBottom
+          sx={{
+            color: theme.palette.secondary.main,
+            fontWeight: 'bold',
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}
+        >
           Ready to find your perfect professional?
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 4,
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem' },
+            fontWeight: 500
+          }}
+        >
           Start by adjusting your search filters above or browse our categories
         </Typography>
         <Button
@@ -416,10 +763,18 @@ const EmptyState = () => {
           startIcon={<Search />}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           sx={{
-            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-            px: 4,
-            py: 1.5,
-            fontWeight: 'bold'
+            px: 5,
+            py: 2.5,
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            borderRadius: 3,
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+              transform: 'translateY(-3px)',
+              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`
+            }
           }}
         >
           Start Your Search
@@ -528,39 +883,66 @@ const WorkerSearchPage = () => {
   return (
     <Grow in timeout={500}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
           <Link
             component={RouterLink}
             to="/hirer/dashboard"
             underline="hover"
-            color="inherit"
+            sx={{ 
+              color: theme.palette.text.secondary,
+              '&:hover': { color: theme.palette.secondary.main }
+            }}
           >
             Dashboard
           </Link>
-          <Typography color="text.primary">Find Talent</Typography>
+          <Typography sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+            Find Talent
+          </Typography>
         </Breadcrumbs>
         
         <Paper
           sx={{
-            p: 3,
+            p: 4,
             mb: 4,
             position: 'sticky',
-            top: (theme) => theme.spacing(10),
-            zIndex: 2,
+            top: (theme) => theme.spacing(2),
+            zIndex: 10,
             borderRadius: 3,
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
+            backgroundColor: theme.palette.background.paper,
+            border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.3)}`,
+            backdropFilter: 'blur(20px)',
           }}
         >
-          <Typography variant="h4" gutterBottom fontWeight="bold">
+          <Typography 
+            variant="h3" 
+            gutterBottom 
+            fontWeight="bold"
+            sx={{
+              color: theme.palette.secondary.main,
+              fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+              textAlign: 'center',
+              mb: 2
+            }}
+          >
             🎯 Find Your Perfect Professional
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              mb: 4,
+              color: theme.palette.text.primary,
+              textAlign: 'center',
+              fontSize: { xs: '1rem', sm: '1.1rem' },
+              fontWeight: 500,
+              maxWidth: 800,
+              mx: 'auto'
+            }}
+          >
             Search through thousands of verified professionals and find the perfect match for your project
           </Typography>
           
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
@@ -575,6 +957,29 @@ const WorkerSearchPage = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
+                    backgroundColor: alpha(theme.palette.background.default, 0.5),
+                    '& fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                      borderWidth: 2
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.secondary.light,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                    }
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: theme.palette.text.secondary,
+                    fontWeight: 600,
+                    '&.Mui-focused': {
+                      color: theme.palette.secondary.main
+                    }
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                    fontSize: '1rem',
+                    fontWeight: 500
                   }
                 }}
               />
@@ -593,6 +998,29 @@ const WorkerSearchPage = () => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
+                    backgroundColor: alpha(theme.palette.background.default, 0.5),
+                    '& fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                      borderWidth: 2
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.secondary.light,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                    }
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: theme.palette.text.secondary,
+                    fontWeight: 600,
+                    '&.Mui-focused': {
+                      color: theme.palette.secondary.main
+                    }
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                    fontSize: '1rem',
+                    fontWeight: 500
                   }
                 }}
               />
@@ -633,6 +1061,29 @@ const WorkerSearchPage = () => {
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
+                        backgroundColor: alpha(theme.palette.background.default, 0.5),
+                        '& fieldset': {
+                          borderColor: theme.palette.secondary.main,
+                          borderWidth: 2
+                        },
+                        '&:hover fieldset': {
+                          borderColor: theme.palette.secondary.light,
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: theme.palette.secondary.main,
+                        }
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: theme.palette.text.secondary,
+                        fontWeight: 600,
+                        '&.Mui-focused': {
+                          color: theme.palette.secondary.main
+                        }
+                      },
+                      '& .MuiInputBase-input': {
+                        color: theme.palette.text.primary,
+                        fontSize: '1rem',
+                        fontWeight: 500
                       }
                     }}
                   />
@@ -653,6 +1104,17 @@ const WorkerSearchPage = () => {
                   }
                   sx={{
                     borderRadius: 2,
+                    backgroundColor: alpha(theme.palette.background.default, 0.5),
+                    '& fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                      borderWidth: 2
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.palette.secondary.light,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                    }
                   }}
                 >
                   <MenuItem value="">All</MenuItem>

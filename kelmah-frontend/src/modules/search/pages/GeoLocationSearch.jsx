@@ -83,49 +83,137 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
   return (
     <Paper
       sx={{
-        p: 4,
+        p: { xs: 4, sm: 6 },
         mb: 4,
         textAlign: 'center',
-        background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
-        border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
         borderRadius: 3,
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.05)} 0%, transparent 70%)`,
+          pointerEvents: 'none'
+        }
       }}
     >
-      <Place sx={{ fontSize: 60, color: 'warning.main', mb: 2 }} />
-      <Typography variant="h5" gutterBottom fontWeight="bold">
+      <Place sx={{ 
+        fontSize: 80, 
+        color: theme.palette.secondary.main, 
+        mb: 3,
+        position: 'relative',
+        zIndex: 1
+      }} />
+      <Typography 
+        variant="h4" 
+        gutterBottom 
+        fontWeight="bold"
+        sx={{
+          color: theme.palette.secondary.main,
+          fontSize: { xs: '1.5rem', sm: '2rem' },
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         🌍 Let's Find Your Location!
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 4, 
+          maxWidth: 600, 
+          mx: 'auto',
+          color: theme.palette.text.primary,
+          fontSize: { xs: '1rem', sm: '1.1rem' },
+          lineHeight: 1.6,
+          fontWeight: 500,
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         To show you the most relevant jobs and professionals in your area, we need to know your location. 
         You can either allow location access or enter your city manually.
       </Typography>
       
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        spacing={3} 
+        justifyContent="center"
+        sx={{ mb: 4, position: 'relative', zIndex: 1 }}
+      >
         <Button
           variant="contained"
+          size="large"
           startIcon={<MyLocationIcon />}
           onClick={onRetry}
           sx={{
-            background: `linear-gradient(45deg, ${theme.palette.warning.main} 30%, ${theme.palette.info.main} 90%)`,
+            px: 4,
+            py: 2,
+            fontSize: '1.1rem',
             fontWeight: 'bold',
-            px: 3
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            borderRadius: 3,
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+              transform: 'translateY(-3px)',
+              boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`
+            }
           }}
         >
           Allow Location Access
         </Button>
         <Button
           variant="outlined"
+          size="large"
           startIcon={<TravelExplore />}
           onClick={onManualEntry}
-          sx={{ fontWeight: 'bold', px: 3 }}
+          sx={{ 
+            px: 4, 
+            py: 2,
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            borderColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.main,
+            borderWidth: 2,
+            borderRadius: 3,
+            '&:hover': {
+              borderColor: theme.palette.secondary.light,
+              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+              transform: 'translateY(-3px)',
+            }
+          }}
         >
           Enter Location Manually
         </Button>
       </Stack>
       
-      <Box sx={{ mt: 3, p: 2, bgcolor: alpha(theme.palette.info.main, 0.1), borderRadius: 2 }}>
-        <Typography variant="body2" color="info.main">
-          💡 <strong>Why location matters:</strong> We use your location to show nearby opportunities, 
+      <Box sx={{ 
+        p: 3, 
+        backgroundColor: alpha(theme.palette.secondary.main, 0.1), 
+        borderRadius: 3,
+        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <Typography 
+          variant="body1" 
+          sx={{
+            color: theme.palette.text.primary,
+            fontSize: '1rem',
+            fontWeight: 500,
+            lineHeight: 1.6
+          }}
+        >
+          💡 <Typography component="span" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}>
+            Why location matters:
+          </Typography> We use your location to show nearby opportunities, 
           calculate travel distances, and connect you with local professionals and clients.
         </Typography>
       </Box>
@@ -151,43 +239,131 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
       ];
 
   return (
-    <Box sx={{ textAlign: 'center', py: 6 }}>
+    <Box sx={{ textAlign: 'center', py: 8 }}>
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
           borderRadius: 4,
-          p: 6,
-          mb: 4,
+          p: { xs: 4, sm: 6, md: 8 },
+          mb: 6,
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 70%)`,
+            pointerEvents: 'none'
+          }
         }}
       >
         {searchType === 0 ? (
-          <WorkIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
+          <WorkIcon sx={{ 
+            fontSize: 100, 
+            color: theme.palette.secondary.main, 
+            mb: 3,
+            position: 'relative',
+            zIndex: 1
+          }} />
         ) : (
-          <PersonIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
+          <PersonIcon sx={{ 
+            fontSize: 100, 
+            color: theme.palette.secondary.main, 
+            mb: 3,
+            position: 'relative',
+            zIndex: 1
+          }} />
         )}
         
-        <Typography variant="h4" gutterBottom fontWeight="bold">
+        <Typography 
+          variant="h3" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+            color: theme.palette.secondary.main,
+            textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           {searchType === 0 ? '🔍 No Jobs Found' : '🔍 No Professionals Found'}
         </Typography>
         
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 4, 
+            maxWidth: 700, 
+            mx: 'auto',
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            lineHeight: 1.6,
+            fontWeight: 500,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           {searchType === 0 
             ? `We couldn't find any jobs matching your criteria in ${location || 'your area'}. But don't worry - new opportunities are posted daily!`
             : `We couldn't find any professionals matching your criteria in ${location || 'your area'}. Try adjusting your search parameters.`
           }
         </Typography>
 
-        <Typography variant="h6" gutterBottom color="primary" fontWeight="bold">
+        <Typography 
+          variant="h5" 
+          gutterBottom 
+          sx={{
+            color: theme.palette.secondary.main,
+            fontWeight: 'bold',
+            mb: 4,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           💡 Try These Suggestions:
         </Typography>
         
-        <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {suggestions.map((suggestion, index) => (
             <Grid item xs={12} sm={6} key={index}>
-              <Card sx={{ p: 2, height: '100%', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-                <CheckCircle color="success" sx={{ mb: 1 }} />
-                <Typography variant="body2">{suggestion}</Typography>
-              </Card>
+              <Box sx={{ 
+                p: 3, 
+                height: '100%',
+                borderRadius: 3,
+                backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  borderColor: theme.palette.secondary.main,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                  boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
+                }
+              }}>
+                <CheckCircle 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    mb: 2,
+                    fontSize: 32
+                  }} 
+                />
+                <Typography 
+                  variant="body1"
+                  sx={{
+                    color: theme.palette.text.primary,
+                    fontWeight: 500,
+                    fontSize: '1rem',
+                    lineHeight: 1.5
+                  }}
+                >
+                  {suggestion}
+                </Typography>
+              </Box>
             </Grid>
           ))}
         </Grid>
@@ -197,10 +373,20 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
           size="large"
           onClick={onGetStarted}
           sx={{
-            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-            px: 4,
-            py: 1.5,
-            fontWeight: 'bold'
+            px: 5,
+            py: 2.5,
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            borderRadius: 3,
+            position: 'relative',
+            zIndex: 1,
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+              transform: 'translateY(-3px)',
+              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`
+            }
           }}
         >
           {searchType === 0 ? 'Browse All Jobs' : 'Browse All Professionals'}
@@ -292,7 +478,7 @@ const GeoLocationSearch = () => {
             // In production, you would use a real geocoding service
             const mockLocations = [
               'Accra, Ghana',
-              'Kumasi, Ghana', 
+              'Kumasi, Ghana',
               'Tema, Ghana',
               'Cape Coast, Ghana',
               'Tamale, Ghana'
@@ -425,37 +611,78 @@ const GeoLocationSearch = () => {
         <title>Location-based Search | Kelmah</title>
       </Helmet>
 
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
-        <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+      <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Typography 
+          variant="h2" 
+          component="h1" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            color: theme.palette.secondary.main,
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
+            mb: 2
+          }}
+        >
           🌍 Find {searchType === 0 ? 'Jobs' : 'Talent'} Near You
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            maxWidth: 800, 
+            mx: 'auto',
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+            fontWeight: 500,
+            lineHeight: 1.6
+          }}
+        >
           Connect with local opportunities and professionals in your area. 
           Distance matters - find work and talent that's convenient for everyone.
         </Typography>
       </Box>
 
-      <Paper sx={{ mb: 4, borderRadius: 3, overflow: 'hidden' }}>
+      <Paper sx={{ 
+        mb: 4, 
+        borderRadius: 3, 
+        overflow: 'hidden',
+        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        backgroundColor: theme.palette.background.paper,
+        '&:hover': {
+          borderColor: theme.palette.secondary.main,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.secondary.main, 0.2)}`
+        }
+      }}>
         <Tabs
           value={searchType}
           onChange={handleTabChange}
           variant={isMobile ? 'fullWidth' : 'standard'}
           aria-label="search type tabs"
           sx={{
+            backgroundColor: alpha(theme.palette.secondary.main, 0.1),
             '& .MuiTab-root': {
               fontWeight: 'bold',
               textTransform: 'none',
-              fontSize: '1.1rem'
+              fontSize: { xs: '1rem', sm: '1.2rem' },
+              py: 2,
+              color: theme.palette.text.secondary,
+              '&.Mui-selected': {
+                color: theme.palette.secondary.main
+              }
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: theme.palette.secondary.main,
+              height: 4
             }
           }}
         >
           <Tab 
-            icon={<WorkIcon />} 
+            icon={<WorkIcon sx={{ fontSize: 28 }} />} 
             label="Find Jobs" 
             iconPosition="start"
           />
           <Tab 
-            icon={<PersonIcon />} 
+            icon={<PersonIcon sx={{ fontSize: 28 }} />} 
             label="Find Talent" 
             iconPosition="start"
           />
@@ -469,12 +696,33 @@ const GeoLocationSearch = () => {
         />
       )}
 
-      <Paper sx={{ p: 4, mb: 4, borderRadius: 3 }}>
-        <Typography variant="h5" gutterBottom fontWeight="bold" color="primary">
+      <Paper sx={{ 
+        p: { xs: 3, sm: 4, md: 5 }, 
+        mb: 4, 
+        borderRadius: 3,
+        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+        '&:hover': {
+          borderColor: theme.palette.secondary.main,
+          boxShadow: `0 12px 40px ${alpha(theme.palette.secondary.main, 0.2)}`
+        }
+      }}>
+        <Typography 
+          variant="h4" 
+          gutterBottom 
+          fontWeight="bold" 
+          sx={{
+            color: theme.palette.secondary.main,
+            textAlign: 'center',
+            mb: 4,
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}
+        >
           🎯 Search Parameters
         </Typography>
         
-        <Grid container spacing={3} alignItems="center">
+        <Grid container spacing={4} alignItems="center">
           <Grid item xs={12} md={5}>
             <Box sx={{ position: 'relative' }}>
               <TextField
@@ -485,13 +733,41 @@ const GeoLocationSearch = () => {
                 placeholder="City, State, Country"
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
+                    borderRadius: 3,
+                    backgroundColor: alpha(theme.palette.background.default, 0.3),
+                    fontSize: '1rem',
+                    '& fieldset': { 
+                      borderColor: theme.palette.secondary.main,
+                      borderWidth: 2
+                    },
+                    '&:hover fieldset': { 
+                      borderColor: theme.palette.secondary.light,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.secondary.main,
+                    }
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: theme.palette.text.secondary,
+                    fontWeight: 600,
+                    '&.Mui-focused': {
+                      color: theme.palette.secondary.main
+                    }
+                  },
+                  '& .MuiInputBase-input': {
+                    color: theme.palette.text.primary,
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    '&::placeholder': {
+                      color: theme.palette.text.secondary,
+                      opacity: 0.8
+                    }
                   }
                 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LocationIcon color="primary" />
+                      <LocationIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -501,9 +777,21 @@ const GeoLocationSearch = () => {
                           onClick={getCurrentLocation} 
                           edge="end"
                           disabled={loading}
-                          color="primary"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.secondary.main, 0.1)
+                            }
+                          }}
                         >
-                          {loading ? <CircularProgress size={20} /> : <MyLocationIcon />}
+                          {loading ? (
+                            <CircularProgress 
+                              size={24} 
+                              sx={{ color: theme.palette.secondary.main }} 
+                            />
+                          ) : (
+                            <MyLocationIcon sx={{ fontSize: 28 }} />
+                          )}
                         </IconButton>
                       </Tooltip>
                     </InputAdornment>
@@ -512,15 +800,17 @@ const GeoLocationSearch = () => {
               />
               {suggestedLocations.length > 0 && (
                 <Paper
-                  elevation={8}
+                  elevation={12}
                   sx={{
                     mt: 1,
                     position: 'absolute',
                     zIndex: 100,
                     width: '100%',
-                    maxHeight: 200,
+                    maxHeight: 250,
                     overflow: 'auto',
-                    borderRadius: 2,
+                    borderRadius: 3,
+                    border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                    backgroundColor: theme.palette.background.paper,
                   }}
                 >
                   <List dense>
@@ -533,15 +823,27 @@ const GeoLocationSearch = () => {
                           setSuggestedLocations([]);
                         }}
                         sx={{
+                          py: 1.5,
                           '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.1)
+                            backgroundColor: alpha(theme.palette.secondary.main, 0.1)
                           }
                         }}
                       >
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <LocationIcon fontSize="small" color="primary" />
+                          <LocationIcon 
+                            fontSize="small" 
+                            sx={{ color: theme.palette.secondary.main }} 
+                          />
                         </ListItemIcon>
-                        <ListItemText primary={item.description} />
+                        <ListItemText 
+                          primary={item.description}
+                          sx={{
+                            '& .MuiTypography-root': {
+                              color: theme.palette.text.primary,
+                              fontWeight: 500
+                            }
+                          }}
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -561,13 +863,41 @@ const GeoLocationSearch = () => {
               }
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
+                  borderRadius: 3,
+                  backgroundColor: alpha(theme.palette.background.default, 0.3),
+                  fontSize: '1rem',
+                  '& fieldset': { 
+                    borderColor: theme.palette.secondary.main,
+                    borderWidth: 2
+                  },
+                  '&:hover fieldset': { 
+                    borderColor: theme.palette.secondary.light,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.palette.secondary.main,
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: theme.palette.text.secondary,
+                  fontWeight: 600,
+                  '&.Mui-focused': {
+                    color: theme.palette.secondary.main
+                  }
+                },
+                '& .MuiInputBase-input': {
+                  color: theme.palette.text.primary,
+                  fontSize: '1rem',
+                  fontWeight: 500,
+                  '&::placeholder': {
+                    color: theme.palette.text.secondary,
+                    opacity: 0.8
+                  }
                 }
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon color="primary" />
+                    <SearchIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
                   </InputAdornment>
                 ),
               }}
@@ -576,7 +906,16 @@ const GeoLocationSearch = () => {
 
           <Grid item xs={8} md={2}>
             <Box>
-              <Typography variant="body2" gutterBottom fontWeight="medium" color="primary">
+              <Typography 
+                variant="h6" 
+                gutterBottom 
+                fontWeight="bold" 
+                sx={{
+                  color: theme.palette.secondary.main,
+                  fontSize: { xs: '1rem', sm: '1.1rem' },
+                  textAlign: 'center'
+                }}
+              >
                 Search Radius: {distance} miles
               </Typography>
               <Slider
@@ -588,7 +927,24 @@ const GeoLocationSearch = () => {
                 step={5}
                 sx={{
                   '& .MuiSlider-thumb': {
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+                    backgroundColor: theme.palette.secondary.main,
+                    border: `3px solid ${theme.palette.secondary.main}`,
+                    width: 24,
+                    height: 24,
+                    '&:hover': {
+                      boxShadow: `0 0 0 8px ${alpha(theme.palette.secondary.main, 0.16)}`
+                    }
+                  },
+                  '& .MuiSlider-track': {
+                    backgroundColor: theme.palette.secondary.main,
+                    height: 6
+                  },
+                  '& .MuiSlider-rail': {
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.3),
+                    height: 6
+                  },
+                  '& .MuiSlider-mark': {
+                    backgroundColor: theme.palette.secondary.main
                   }
                 }}
               />
@@ -602,13 +958,27 @@ const GeoLocationSearch = () => {
               onClick={() => handleSearch(1)}
               disabled={loading}
               sx={{
-                py: 2,
-                borderRadius: 2,
-                background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                fontWeight: 'bold'
+                py: 2.5,
+                borderRadius: 3,
+                backgroundColor: theme.palette.secondary.main,
+                color: theme.palette.secondary.contrastText,
+                fontWeight: 'bold',
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                '&:hover': {
+                  backgroundColor: theme.palette.secondary.dark,
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.4)}`
+                },
+                '&:disabled': {
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.5)
+                }
               }}
               startIcon={
-                loading ? <CircularProgress size={20} /> : <SearchIcon />
+                loading ? (
+                  <CircularProgress size={20} sx={{ color: 'currentColor' }} />
+                ) : (
+                  <SearchIcon />
+                )
               }
             >
               {isMobile ? '' : 'Search'}
@@ -622,7 +992,18 @@ const GeoLocationSearch = () => {
                 variant="outlined"
                 startIcon={<FilterIcon />}
                 onClick={toggleFilters}
-                sx={{ borderRadius: 2, fontWeight: 'bold' }}
+                sx={{ 
+                  borderRadius: 3, 
+                  fontWeight: 'bold',
+                  py: 1.5,
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.main,
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.light,
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1)
+                  }
+                }}
               >
                 {filtersVisible ? 'Hide Filters' : 'Show Filters'}
               </Button>

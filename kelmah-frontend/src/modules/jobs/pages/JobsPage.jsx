@@ -339,32 +339,102 @@ const EmptyState = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
           borderRadius: 4,
-          p: 6,
+          p: { xs: 4, sm: 6, md: 8 },
           mb: 6,
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 70%)`,
+            pointerEvents: 'none'
+          }
         }}
       >
-        <Typography variant="h3" component="h2" gutterBottom fontWeight="bold">
+        <Typography 
+          variant="h2" 
+          component="h2" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            color: theme.palette.secondary.main,
+            textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           💼 Discover Amazing Opportunities
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 4, 
+            maxWidth: 700, 
+            mx: 'auto',
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            lineHeight: 1.6,
+            fontWeight: 500,
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
           Connect with clients who need your skills. From quick tasks to long-term projects, 
           find work that matches your expertise and schedule.
         </Typography>
         
         {/* Platform Stats */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {platformStats.map((stat, index) => (
             <Grid item xs={6} md={3} key={index}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ color: theme.palette.primary.main, mb: 1, fontSize: 40 }}>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center',
+                  p: 3,
+                  borderRadius: 3,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                    borderColor: theme.palette.secondary.main,
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
+                  }
+                }}
+              >
+                <Box sx={{ color: theme.palette.secondary.main, mb: 2, fontSize: 48 }}>
                   {stat.icon}
                 </Box>
-                <Typography variant="h5" fontWeight="bold" color="primary">
+                <Typography 
+                  variant="h4" 
+                  fontWeight="bold" 
+                  sx={{ 
+                    color: theme.palette.secondary.main,
+                    fontSize: { xs: '1.5rem', sm: '2rem' }
+                  }}
+                >
                   {stat.value}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: theme.palette.text.primary,
+                    fontWeight: 600,
+                    textAlign: 'center',
+                    fontSize: { xs: '0.9rem', sm: '1rem' }
+                  }}
+                >
                   {stat.label}
                 </Typography>
               </Box>
@@ -372,16 +442,29 @@ const EmptyState = () => {
           ))}
         </Grid>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={3} 
+          justifyContent="center"
+          sx={{ position: 'relative', zIndex: 1 }}
+        >
           <Button
             variant="contained"
             size="large"
             onClick={() => navigate('/register?type=worker')}
             sx={{
-              background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
               px: 4,
-              py: 1.5,
-              fontWeight: 'bold'
+              py: 2,
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              backgroundColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.contrastText,
+              borderRadius: 3,
+              '&:hover': {
+                backgroundColor: theme.palette.secondary.dark,
+                transform: 'translateY(-3px)',
+                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`
+              }
             }}
           >
             Join as Professional
@@ -390,7 +473,21 @@ const EmptyState = () => {
             variant="outlined"
             size="large"
             onClick={() => navigate('/register')}
-            sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
+            sx={{ 
+              px: 4, 
+              py: 2, 
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main,
+              borderWidth: 2,
+              borderRadius: 3,
+              '&:hover': {
+                borderColor: theme.palette.secondary.light,
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                transform: 'translateY(-3px)',
+              }
+            }}
           >
             Post a Job
           </Button>
@@ -398,11 +495,30 @@ const EmptyState = () => {
       </Box>
 
       {/* Sample Jobs Section */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold">
+      <Box sx={{ mb: 8 }}>
+        <Typography 
+          variant="h3" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            color: theme.palette.secondary.main,
+            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+            mb: 2
+          }}
+        >
           Featured Opportunities
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 6,
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            fontWeight: 500,
+            maxWidth: 600,
+            mx: 'auto'
+          }}
+        >
           Here are some of the exciting projects waiting for skilled professionals
         </Typography>
         
@@ -420,53 +536,121 @@ const EmptyState = () => {
       </Box>
 
       {/* Success Stories */}
-      <Paper sx={{ p: 4, mb: 4, background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
-        <Typography variant="h5" gutterBottom fontWeight="bold">
+      <Box 
+        sx={{ 
+          p: { xs: 4, sm: 6 }, 
+          mb: 6,
+          borderRadius: 4,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+        }}
+      >
+        <Typography 
+          variant="h4" 
+          gutterBottom 
+          fontWeight="bold"
+          sx={{
+            color: theme.palette.secondary.main,
+            mb: 4,
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}
+        >
           💬 Success Stories
         </Typography>
-        <Grid container spacing={4} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, height: '100%' }}>
-              <Rating value={5} readOnly size="small" sx={{ mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                "Found my dream plumbing job through Kelmah. Great clients and fair pay!"
-              </Typography>
-              <Typography variant="subtitle2" color="primary">
-                - Michael O., Plumber
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, height: '100%' }}>
-              <Rating value={5} readOnly size="small" sx={{ mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                "Consistently find quality electrical projects. Platform is easy to use!"
-              </Typography>
-              <Typography variant="subtitle2" color="primary">
-                - Sarah A., Electrician
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ p: 3, height: '100%' }}>
-              <Rating value={5} readOnly size="small" sx={{ mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                "Built my carpentry business through connections made on Kelmah!"
-              </Typography>
-              <Typography variant="subtitle2" color="primary">
-                - David K., Carpenter
-              </Typography>
-            </Card>
-          </Grid>
+        <Grid container spacing={4}>
+          {[
+            {
+              rating: 5,
+              text: "Found my dream plumbing job through Kelmah. Great clients and fair pay!",
+              author: "Michael O., Plumber"
+            },
+            {
+              rating: 5,
+              text: "Consistently find quality electrical projects. Platform is easy to use!",
+              author: "Sarah A., Electrician"
+            },
+            {
+              rating: 5,
+              text: "Built my carpentry business through connections made on Kelmah!",
+              author: "David K., Carpenter"
+            }
+          ].map((testimonial, index) => (
+            <Grid item xs={12} md={4} key={index}>
+              <Box 
+                sx={{ 
+                  p: 4, 
+                  height: '100%',
+                  borderRadius: 3,
+                  backgroundColor: theme.palette.background.paper,
+                  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    borderColor: theme.palette.secondary.main,
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
+                  }
+                }}
+              >
+                <Rating 
+                  value={testimonial.rating} 
+                  readOnly 
+                  size="medium" 
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiRating-iconFilled': {
+                      color: theme.palette.secondary.main,
+                    }
+                  }} 
+                />
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 3, 
+                    fontStyle: 'italic',
+                    color: theme.palette.text.primary,
+                    fontSize: '1.1rem',
+                    lineHeight: 1.6
+                  }}
+                >
+                  "{testimonial.text}"
+                </Typography>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{
+                    color: theme.palette.secondary.main,
+                    fontWeight: 'bold'
+                  }}
+                >
+                  - {testimonial.author}
+                </Typography>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
-      </Paper>
+      </Box>
 
       {/* Call to Action */}
       <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="h5" gutterBottom>
+        <Typography 
+          variant="h4" 
+          gutterBottom
+          sx={{
+            color: theme.palette.secondary.main,
+            fontWeight: 'bold',
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}
+        >
           Ready to find your next opportunity?
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 4,
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.1rem' },
+            fontWeight: 500
+          }}
+        >
           Use the filters above to find jobs that match your skills and preferences
         </Typography>
         <Button
@@ -475,10 +659,18 @@ const EmptyState = () => {
           startIcon={<SearchIcon />}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           sx={{
-            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-            px: 4,
-            py: 1.5,
-            fontWeight: 'bold'
+            px: 5,
+            py: 2.5,
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            borderRadius: 3,
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+              transform: 'translateY(-3px)',
+              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`
+            }
           }}
         >
           Start Your Search
@@ -550,35 +742,91 @@ const JobsPage = () => {
   };
 
   const renderFilterSection = () => (
-    <Paper sx={{ p: 3, backgroundColor: '#1a1a1a', color: '#fff', borderRadius: 3 }}>
+    <Paper sx={{ 
+      p: 4, 
+      backgroundColor: theme.palette.background.paper, 
+      border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+      borderRadius: 3,
+      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+      '&:hover': {
+        borderColor: theme.palette.secondary.main,
+        boxShadow: `0 12px 40px ${alpha(theme.palette.secondary.main, 0.2)}`
+      }
+    }}>
       <Typography
-        variant="h6"
+        variant="h5"
         gutterBottom
-        sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+        sx={{ 
+          color: theme.palette.secondary.main, 
+          fontWeight: 'bold',
+          textAlign: 'center',
+          mb: 3,
+          fontSize: { xs: '1.25rem', sm: '1.5rem' }
+        }}
       >
         🔍 Find Your Perfect Job
       </Typography>
+      <Typography
+        variant="body1"
+        sx={{ 
+          color: theme.palette.text.primary,
+          textAlign: 'center',
+          mb: 4,
+          fontSize: '1rem',
+          fontWeight: 500
+        }}
+      >
+        Use filters to discover opportunities that match your skills
+      </Typography>
 
-      <Box component="form" onSubmit={handleSearch} sx={{ mb: 3 }}>
+      <Box component="form" onSubmit={handleSearch} sx={{ mb: 4 }}>
         <TextField
           fullWidth
-          size="small"
+          size="medium"
           placeholder="Search jobs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.common.white, 0.1),
-              '& fieldset': { borderColor: alpha(theme.palette.common.white, 0.3) },
-              '&:hover fieldset': { borderColor: alpha(theme.palette.common.white, 0.5) },
+              borderRadius: 3,
+              backgroundColor: alpha(theme.palette.background.default, 0.3),
+              fontSize: '1rem',
+              '& fieldset': { 
+                borderColor: theme.palette.secondary.main,
+                borderWidth: 2
+              },
+              '&:hover fieldset': { 
+                borderColor: theme.palette.secondary.light,
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: theme.palette.secondary.main,
+              }
             },
-            '& .MuiInputBase-input': { color: 'white' },
-            '& .MuiInputLabel-root': { color: alpha(theme.palette.common.white, 0.7) }
+            '& .MuiInputBase-input': { 
+              color: theme.palette.text.primary,
+              fontSize: '1rem',
+              fontWeight: 500,
+              '&::placeholder': {
+                color: theme.palette.text.secondary,
+                opacity: 0.8
+              }
+            }
           }}
           InputProps={{
             endAdornment: (
-              <Button type="submit" sx={{ minWidth: 'auto', color: 'white' }}>
+              <Button 
+                type="submit" 
+                sx={{ 
+                  minWidth: 'auto',
+                  p: 1.5,
+                  backgroundColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.contrastText,
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: theme.palette.secondary.dark
+                  }
+                }}
+              >
                 <SearchIcon />
               </Button>
             ),
@@ -586,96 +834,155 @@ const JobsPage = () => {
         />
       </Box>
 
-      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-        <InputLabel sx={{ color: alpha(theme.palette.common.white, 0.7) }}>Job Type</InputLabel>
-        <Select
-          value={filters.job_type || ''}
-          label="Job Type"
-          onChange={(e) => handleFilterChange('job_type', e.target.value)}
-          sx={{
-            borderRadius: 2,
-            backgroundColor: alpha(theme.palette.common.white, 0.1),
-            color: 'white',
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha(theme.palette.common.white, 0.3)
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha(theme.palette.common.white, 0.5)
-            },
-            '& .MuiSvgIcon-root': { color: 'white' }
-          }}
-        >
-          <MenuItem value="">All Types</MenuItem>
-          <MenuItem value="full-time">Full Time</MenuItem>
-          <MenuItem value="part-time">Part Time</MenuItem>
-          <MenuItem value="contract">Contract</MenuItem>
-          <MenuItem value="freelance">Freelance</MenuItem>
-        </Select>
-      </FormControl>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <FormControl fullWidth size="medium">
+            <InputLabel sx={{ 
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              '&.Mui-focused': { color: theme.palette.secondary.main }
+            }}>
+              Job Type
+            </InputLabel>
+            <Select
+              value={filters.job_type || ''}
+              label="Job Type"
+              onChange={(e) => handleFilterChange('job_type', e.target.value)}
+              sx={{
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.background.default, 0.3),
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  borderWidth: 2
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.light
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main
+                },
+                '& .MuiSelect-select': {
+                  color: theme.palette.text.primary,
+                  fontWeight: 500
+                },
+                '& .MuiSvgIcon-root': { 
+                  color: theme.palette.secondary.main 
+                }
+              }}
+            >
+              <MenuItem value="">All Types</MenuItem>
+              <MenuItem value="full-time">Full Time</MenuItem>
+              <MenuItem value="part-time">Part Time</MenuItem>
+              <MenuItem value="contract">Contract</MenuItem>
+              <MenuItem value="freelance">Freelance</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
 
-      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-        <InputLabel sx={{ color: alpha(theme.palette.common.white, 0.7) }}>Experience Level</InputLabel>
-        <Select
-          value={filters.experience || ''}
-          label="Experience Level"
-          onChange={(e) => handleFilterChange('experience', e.target.value)}
-          sx={{
-            borderRadius: 2,
-            backgroundColor: alpha(theme.palette.common.white, 0.1),
-            color: 'white',
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha(theme.palette.common.white, 0.3)
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: alpha(theme.palette.common.white, 0.5)
-            },
-            '& .MuiSvgIcon-root': { color: 'white' }
-          }}
-        >
-          <MenuItem value="">All Levels</MenuItem>
-          <MenuItem value="entry">Entry Level</MenuItem>
-          <MenuItem value="mid">Mid Level</MenuItem>
-          <MenuItem value="senior">Senior Level</MenuItem>
-        </Select>
-      </FormControl>
+        <Grid item xs={12}>
+          <FormControl fullWidth size="medium">
+            <InputLabel sx={{ 
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              '&.Mui-focused': { color: theme.palette.secondary.main }
+            }}>
+              Experience Level
+            </InputLabel>
+            <Select
+              value={filters.experience || ''}
+              label="Experience Level"
+              onChange={(e) => handleFilterChange('experience', e.target.value)}
+              sx={{
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.background.default, 0.3),
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main,
+                  borderWidth: 2
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.light
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.secondary.main
+                },
+                '& .MuiSelect-select': {
+                  color: theme.palette.text.primary,
+                  fontWeight: 500
+                },
+                '& .MuiSvgIcon-root': { 
+                  color: theme.palette.secondary.main 
+                }
+              }}
+            >
+              <MenuItem value="">All Levels</MenuItem>
+              <MenuItem value="entry">Entry Level</MenuItem>
+              <MenuItem value="mid">Mid Level</MenuItem>
+              <MenuItem value="senior">Senior Level</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
 
       {user && (
-        <Box sx={{ mt: 3 }}>
-          <Button
-            fullWidth
-            variant="contained"
+        <Box sx={{ mt: 4 }}>
+          <Typography
+            variant="h6"
             sx={{
-              background: `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.primary.main} 90%)`,
-              color: 'white',
-              mb: 1,
-              py: 1.2,
+              color: theme.palette.secondary.main,
               fontWeight: 'bold',
-              borderRadius: 2,
-              '&:hover': {
-                background: `linear-gradient(45deg, ${theme.palette.secondary.dark} 30%, ${theme.palette.primary.dark} 90%)`,
-              },
+              mb: 2,
+              textAlign: 'center'
             }}
-            onClick={handleLoadSavedJobs}
           >
-            💾 Saved Jobs
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{
-              background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-              color: 'white',
-              py: 1.2,
-              fontWeight: 'bold',
-              borderRadius: 2,
-              '&:hover': {
-                background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.secondary.dark} 90%)`,
-              },
-            }}
-            onClick={handleLoadRecommendedJobs}
-          >
-            ⭐ Recommended Jobs
-          </Button>
+            Quick Access
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Button
+                fullWidth
+                variant="contained"
+                sx={{
+                  backgroundColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.contrastText,
+                  py: 1.5,
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: theme.palette.secondary.dark,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.4)}`
+                  },
+                }}
+                onClick={handleLoadSavedJobs}
+              >
+                💾 Saved Jobs
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                fullWidth
+                variant="outlined"
+                sx={{
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.main,
+                  py: 1.5,
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  borderWidth: 2,
+                  borderRadius: 2,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.light,
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+                onClick={handleLoadRecommendedJobs}
+              >
+                ⭐ Recommended Jobs
+              </Button>
+            </Grid>
+          </Grid>
         </Box>
       )}
     </Paper>
@@ -684,11 +991,31 @@ const JobsPage = () => {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+        <Box sx={{ mb: 6, textAlign: 'center' }}>
+          <Typography 
+            variant="h2" 
+            component="h1" 
+            gutterBottom 
+            fontWeight="bold"
+            sx={{
+              color: theme.palette.secondary.main,
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
+              mb: 2
+            }}
+          >
             🚀 Find Your Next Opportunity
           </Typography>
-          <Typography variant="h6" color="text.secondary">
+          <Typography 
+            variant="h5" 
+            sx={{
+              color: theme.palette.text.primary,
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+              fontWeight: 500,
+              maxWidth: 800,
+              mx: 'auto'
+            }}
+          >
             Discover jobs that match your skills and grow your career
           </Typography>
         </Box>
