@@ -43,14 +43,28 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // VERCEL FIX: Consolidate React to prevent duplicate declarations
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor_react';
+            // React and related packages - keep together to prevent "Y already declared"
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('react-router') ||
+                id.includes('use-sync-external-store') ||
+                id.includes('scheduler')) {
+              return 'react-vendor';
             }
-            if (id.includes('@mui')) {
-              return 'vendor_mui';
+            // Material-UI
+            if (id.includes('@mui') || id.includes('@emotion')) {
+              return 'mui-vendor';
             }
-            return 'vendor'; // all other vendors
+            // Redux and state management
+            if (id.includes('redux') || 
+                id.includes('@reduxjs') ||
+                id.includes('reselect')) {
+              return 'state-vendor';
+            }
+            // All other vendors (this prevents React from leaking into main vendor)
+            return 'core-vendor';
           }
         },
       },
