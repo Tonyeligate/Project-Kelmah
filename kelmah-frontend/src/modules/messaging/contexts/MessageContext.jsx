@@ -5,7 +5,7 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
-import messagingService from '../services/messagingService';
+import { messagingService } from '../services/messagingService';
 import { useAuth } from '../../auth/contexts/AuthContext';
 
 const MessageContext = createContext(null);

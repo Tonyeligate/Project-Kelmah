@@ -41,7 +41,7 @@ import { useSelector } from 'react-redux';
 import { selectHirerJobs } from '../services/hirerSlice';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../auth/hooks/useAuth';
-import messagingService from '../../messaging/services/messagingService';
+import { messagingService } from '../../messaging/services/messagingService';
 
 const ApplicationCard = ({ application, isSelected, onSelect }) => {
   const theme = useTheme();

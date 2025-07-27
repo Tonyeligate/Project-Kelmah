@@ -191,6 +191,37 @@ const authService = {
       console.error('Change password error:', error);
       throw error;
     }
+  },
+
+  // Get user role
+  getUserRole: () => {
+    try {
+      const userData = localStorage.getItem(AUTH_CONFIG.userKey);
+      if (userData) {
+        const user = JSON.parse(userData);
+        return user.role || user.userType || user.userRole || null;
+      }
+    } catch (error) {
+      console.error('Error getting user role:', error);
+    }
+    return null;
+  },
+
+  // Check if user has specific role
+  hasRole: (role) => {
+    const userRole = authService.getUserRole();
+    return userRole === role;
+  },
+
+  // Get stored user data
+  getStoredUser: () => {
+    try {
+      const userData = localStorage.getItem(AUTH_CONFIG.userKey);
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Error getting stored user:', error);
+      return null;
+    }
   }
 };
 
