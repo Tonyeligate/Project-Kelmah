@@ -8,11 +8,11 @@ export default defineConfig({
   plugins: [
     react(),
     visualizer({
-      template: 'treemap', // or 'sunburst'
+      template: 'treemap',
       open: true,
       gzipSize: true,
       brotliSize: true,
-      filename: 'analyse.html', // Output file name
+      filename: 'analyse.html',
     }),
   ],
   define: {
@@ -42,31 +42,36 @@ export default defineConfig({
     outDir: 'build',
     rollupOptions: {
       output: {
+        // VERCEL FIX: Explicit chunk loading order
+        chunkFileNames: (chunkInfo) => {
+          // Add priority prefixes to control load order
+          if (chunkInfo.name === 'react-core') {
+            return 'assets/0-react-core-[hash].js';  // Load FIRST
+          }
+          if (chunkInfo.name === 'utilities') {
+            return 'assets/1-utilities-[hash].js';   // Load SECOND  
+          }
+          if (chunkInfo.name === 'state-management') {
+            return 'assets/2-state-management-[hash].js'; // Load THIRD
+          }
+          if (chunkInfo.name === 'ui-framework') {
+            return 'assets/3-ui-framework-[hash].js'; // Load FOURTH
+          }
+          if (chunkInfo.name === 'ui-libs') {
+            return 'assets/4-ui-libs-[hash].js';     // Load FIFTH
+          }
+          return 'assets/5-[name]-[hash].js';       // Everything else LAST
+        },
         manualChunks(id) {
           // VERCEL FIX: Prevent module initialization order issues
           if (id.includes('node_modules')) {
-            // React ecosystem - must load first
+            // React ecosystem - must load FIRST with highest priority
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router') ||
                 id.includes('use-sync-external-store') ||
                 id.includes('scheduler')) {
               return 'react-core';
-            }
-            
-            // Redux and state management - depends on React
-            if (id.includes('redux') || 
-                id.includes('@reduxjs') ||
-                id.includes('reselect') ||
-                id.includes('immer')) {
-              return 'state-management';
-            }
-            
-            // Material-UI - can load independently
-            if (id.includes('@mui') || 
-                id.includes('@emotion') ||
-                id.includes('emotion')) {
-              return 'ui-framework';
             }
             
             // Low-level utilities (these need to load early)
@@ -80,7 +85,22 @@ export default defineConfig({
               return 'utilities';
             }
             
-            // Notification and UI libraries
+            // Redux and state management - depends on React
+            if (id.includes('redux') || 
+                id.includes('@reduxjs') ||
+                id.includes('reselect') ||
+                id.includes('immer')) {
+              return 'state-management';
+            }
+            
+            // Material-UI - depends on React
+            if (id.includes('@mui') || 
+                id.includes('@emotion') ||
+                id.includes('emotion')) {
+              return 'ui-framework';
+            }
+            
+            // Notification and UI libraries - depend on React
             if (id.includes('notistack') ||
                 id.includes('react-helmet') ||
                 id.includes('recharts') ||
@@ -88,7 +108,7 @@ export default defineConfig({
               return 'ui-libs';
             }
             
-            // Everything else - load last
+            // Everything else - load LAST to prevent accessing React before it's ready
             return 'vendor';
           }
         },
