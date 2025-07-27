@@ -46,10 +46,22 @@ const workerService = {
     return axiosInstance.post(`${API_URL}/${workerId}/reviews`, reviewData);
   },
 
+  /**
+   * Update worker profile information
+   * @param {string} workerId - Worker ID
+   * @param {Object} profileData - Profile data to update
+   * @returns {Promise<Object>} - Updated worker profile
+   */
   updateWorkerProfile: (workerId, profileData) => {
     return axiosInstance.put(`${API_URL}/${workerId}`, profileData);
   },
 
+  /**
+   * Upload profile image for worker
+   * @param {string} workerId - Worker ID
+   * @param {FormData} formData - Form data with image file
+   * @returns {Promise<Object>} - Upload response
+   */
   uploadProfileImage: (workerId, formData) => {
     return axiosInstance.post(`${API_URL}/${workerId}/image`, formData, {
       headers: {
@@ -58,68 +70,256 @@ const workerService = {
     });
   },
 
+  /**
+   * Get skills for a specific worker
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Array>} - Array of skill objects
+   */
   getWorkerSkills: (workerId) => {
     return axiosInstance.get(`${API_URL}/${workerId}/skills`);
   },
 
+  /**
+   * Add skill to worker
+   * @param {string} workerId - Worker ID
+   * @param {Object} skillData - Skill data to add
+   * @returns {Promise<Object>} - Added skill object
+   */
   addWorkerSkill: (workerId, skillData) => {
     return axiosInstance.post(`${API_URL}/${workerId}/skills`, skillData);
   },
 
+  /**
+   * Update worker skill
+   * @param {string} workerId - Worker ID
+   * @param {string} skillId - Skill ID
+   * @param {Object} skillData - Updated skill data
+   * @returns {Promise<Object>} - Updated skill object
+   */
   updateWorkerSkill: (workerId, skillId, skillData) => {
-    return axiosInstance.put(
-      `${API_URL}/${workerId}/skills/${skillId}`,
-      skillData,
-    );
+    return axiosInstance.put(`${API_URL}/${workerId}/skills/${skillId}`, skillData);
   },
 
+  /**
+   * Delete worker skill
+   * @param {string} workerId - Worker ID
+   * @param {string} skillId - Skill ID
+   * @returns {Promise<void>}
+   */
   deleteWorkerSkill: (workerId, skillId) => {
     return axiosInstance.delete(`${API_URL}/${workerId}/skills/${skillId}`);
   },
 
+  /**
+   * Get portfolio items for a worker
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Array>} - Array of portfolio items
+   */
   getWorkerPortfolio: (workerId) => {
     return axiosInstance.get(`${API_URL}/${workerId}/portfolio`);
   },
 
-  addPortfolioItem: (workerId, itemData) => {
-    return axiosInstance.post(`${API_URL}/${workerId}/portfolio`, itemData);
+  /**
+   * Add portfolio item to worker
+   * @param {string} workerId - Worker ID
+   * @param {Object} portfolioData - Portfolio item data
+   * @returns {Promise<Object>} - Added portfolio item
+   */
+  addPortfolioItem: (workerId, portfolioData) => {
+    return axiosInstance.post(`${API_URL}/${workerId}/portfolio`, portfolioData);
   },
 
-  updatePortfolioItem: (workerId, itemId, itemData) => {
-    return axiosInstance.put(
-      `${API_URL}/${workerId}/portfolio/${itemId}`,
-      itemData,
-    );
+  /**
+   * Update portfolio item
+   * @param {string} workerId - Worker ID
+   * @param {string} portfolioId - Portfolio item ID
+   * @param {Object} portfolioData - Updated portfolio data
+   * @returns {Promise<Object>} - Updated portfolio item
+   */
+  updatePortfolioItem: (workerId, portfolioId, portfolioData) => {
+    return axiosInstance.put(`${API_URL}/${workerId}/portfolio/${portfolioId}`, portfolioData);
   },
 
-  deletePortfolioItem: (workerId, itemId) => {
-    return axiosInstance.delete(`${API_URL}/${workerId}/portfolio/${itemId}`);
+  /**
+   * Delete portfolio item
+   * @param {string} workerId - Worker ID
+   * @param {string} portfolioId - Portfolio item ID
+   * @returns {Promise<void>}
+   */
+  deletePortfolioItem: (workerId, portfolioId) => {
+    return axiosInstance.delete(`${API_URL}/${workerId}/portfolio/${portfolioId}`);
   },
 
+  /**
+   * Get certificates for a worker
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Array>} - Array of certificate objects
+   */
   getWorkerCertificates: (workerId) => {
     return axiosInstance.get(`${API_URL}/${workerId}/certificates`);
   },
 
-  addCertificate: (workerId, certData) => {
-    return axiosInstance.post(`${API_URL}/${workerId}/certificates`, certData);
+  /**
+   * Add certificate to worker
+   * @param {string} workerId - Worker ID
+   * @param {Object} certificateData - Certificate data
+   * @returns {Promise<Object>} - Added certificate
+   */
+  addCertificate: (workerId, certificateData) => {
+    return axiosInstance.post(`${API_URL}/${workerId}/certificates`, certificateData);
   },
 
-  updateCertificate: (workerId, certId, certData) => {
-    return axiosInstance.put(
-      `${API_URL}/${workerId}/certificates/${certId}`,
-      certData,
-    );
+  /**
+   * Update certificate
+   * @param {string} workerId - Worker ID
+   * @param {string} certificateId - Certificate ID
+   * @param {Object} certificateData - Updated certificate data
+   * @returns {Promise<Object>} - Updated certificate
+   */
+  updateCertificate: (workerId, certificateId, certificateData) => {
+    return axiosInstance.put(`${API_URL}/${workerId}/certificates/${certificateId}`, certificateData);
   },
 
-  deleteCertificate: (workerId, certId) => {
-    return axiosInstance.delete(
-      `${API_URL}/${workerId}/certificates/${certId}`,
-    );
+  /**
+   * Delete certificate
+   * @param {string} workerId - Worker ID
+   * @param {string} certificateId - Certificate ID
+   * @returns {Promise<void>}
+   */
+  deleteCertificate: (workerId, certificateId) => {
+    return axiosInstance.delete(`${API_URL}/${workerId}/certificates/${certificateId}`);
   },
 
+  /**
+   * Get work history for a worker
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Array>} - Array of work history items
+   */
   getWorkHistory: (workerId) => {
-    return axiosInstance.get(`${API_URL}/${workerId}/history`);
+    return axiosInstance.get(`${API_URL}/${workerId}/work-history`);
   },
+
+  /**
+   * Add work history item
+   * @param {string} workerId - Worker ID
+   * @param {Object} workHistoryData - Work history data
+   * @returns {Promise<Object>} - Added work history item
+   */
+  addWorkHistory: (workerId, workHistoryData) => {
+    return axiosInstance.post(`${API_URL}/${workerId}/work-history`, workHistoryData);
+  },
+
+  /**
+   * Get worker availability information
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Object>} - Availability information
+   */
+  getWorkerAvailability: (workerId) => {
+    return axiosInstance.get(`${API_URL}/${workerId}/availability`);
+  },
+
+  /**
+   * Update worker availability
+   * @param {string} workerId - Worker ID
+   * @param {Object} availabilityData - Availability data
+   * @returns {Promise<Object>} - Updated availability
+   */
+  updateWorkerAvailability: (workerId, availabilityData) => {
+    return axiosInstance.put(`${API_URL}/${workerId}/availability`, availabilityData);
+  },
+
+  /**
+   * Get worker statistics (jobs completed, success rate, etc.)
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Object>} - Worker statistics
+   */
+  getWorkerStats: (workerId) => {
+    return axiosInstance.get(`${API_URL}/${workerId}/stats`);
+  },
+
+  /**
+   * Get worker earnings information
+   * @param {string} workerId - Worker ID
+   * @param {Object} filters - Date filters for earnings
+   * @returns {Promise<Object>} - Earnings information
+   */
+  getWorkerEarnings: (workerId, filters = {}) => {
+    return axiosInstance.get(`${API_URL}/${workerId}/earnings`, { params: filters });
+  },
+
+  /**
+   * Get nearby workers based on location
+   * @param {Object} locationData - Location coordinates and filters
+   * @returns {Promise<Array>} - Array of nearby workers
+   */
+  getNearbyWorkers: (locationData) => {
+    return axiosInstance.post(`${API_URL}/nearby`, locationData);
+  },
+
+  /**
+   * Search workers with various filters
+   * @param {Object} searchParams - Search parameters
+   * @returns {Promise<Object>} - Search results with pagination
+   */
+  searchWorkers: (searchParams) => {
+    return axiosInstance.get(`${API_URL}/search`, { params: searchParams });
+  },
+
+  /**
+   * Bookmark a worker profile
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<void>}
+   */
+  bookmarkWorker: (workerId) => {
+    return axiosInstance.post(`${API_URL}/${workerId}/bookmark`);
+  },
+
+  /**
+   * Remove bookmark from worker profile
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<void>}
+   */
+  removeBookmark: (workerId) => {
+    return axiosInstance.delete(`${API_URL}/${workerId}/bookmark`);
+  },
+
+  /**
+   * Report a worker profile
+   * @param {string} workerId - Worker ID
+   * @param {Object} reportData - Report data
+   * @returns {Promise<void>}
+   */
+  reportWorker: (workerId, reportData) => {
+    return axiosInstance.post(`${API_URL}/${workerId}/report`, reportData);
+  },
+
+  /**
+   * Get worker verification status
+   * @param {string} workerId - Worker ID
+   * @returns {Promise<Object>} - Verification status
+   */
+  getVerificationStatus: (workerId) => {
+    return axiosInstance.get(`${API_URL}/${workerId}/verification`);
+  },
+
+  /**
+   * Request worker verification
+   * @param {string} workerId - Worker ID
+   * @param {Object} verificationData - Verification documents and data
+   * @returns {Promise<Object>} - Verification request response
+   */
+  requestVerification: (workerId, verificationData) => {
+    return axiosInstance.post(`${API_URL}/${workerId}/verification`, verificationData);
+  },
+
+  /**
+   * Get recommended workers based on user preferences
+   * @param {Object} preferences - User preferences and filters
+   * @returns {Promise<Array>} - Array of recommended workers
+   */
+  getRecommendedWorkers: (preferences = {}) => {
+    return axiosInstance.get(`${API_URL}/recommended`, { params: preferences });
+  }
 };
 
 export default workerService;

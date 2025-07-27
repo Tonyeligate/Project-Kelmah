@@ -30,6 +30,10 @@ import {
   IconButton,
   Stack,
   Divider,
+  Collapse,
+  Fab,
+  Badge,
+  Tooltip,
 } from '@mui/material';
 import { 
   Search, 
@@ -40,7 +44,17 @@ import {
   WorkspacePremium,
   LocationOn,
   Schedule,
-  MonetizationOn 
+  MonetizationOn,
+  ExpandMore,
+  ExpandLess,
+  Tune,
+  Clear,
+  FilterList,
+  Verified,
+  Phone,
+  Email,
+  Portfolio,
+  EmojiEvents,
 } from '@mui/icons-material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -59,13 +73,18 @@ const sampleWorkers = [
     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
     rating: 4.9,
     reviewCount: 127,
-    skills: ['Plumbing', 'Pipe Repair', 'Water Heater Installation'],
+    skills: ['Plumbing', 'Pipe Repair', 'Water Heater Installation', 'Emergency Repairs'],
     location: 'San Francisco, CA',
     hourlyRate: 85,
     completedJobs: 156,
     responseTime: '< 2 hours',
     verified: true,
-    description: 'Licensed plumber with 8+ years experience. Specialized in emergency repairs and kitchen/bathroom renovations.'
+    description: 'Licensed plumber with 8+ years experience. Specialized in emergency repairs and kitchen/bathroom renovations.',
+    availability: 'Available',
+    specialties: ['Emergency Repairs', 'Bathroom Renovation'],
+    certifications: ['Licensed Plumber', 'EPA Certified'],
+    portfolioImages: 3,
+    languages: ['English', 'Spanish']
   },
   {
     id: 'sample-2',
@@ -74,13 +93,18 @@ const sampleWorkers = [
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
     rating: 4.8,
     reviewCount: 93,
-    skills: ['Electrical Wiring', 'Home Automation', 'Circuit Breakers'],
+    skills: ['Electrical Wiring', 'Home Automation', 'Circuit Breakers', 'Smart Systems'],
     location: 'Austin, TX',
     hourlyRate: 90,
     completedJobs: 89,
     responseTime: '< 1 hour',
     verified: true,
-    description: 'Master electrician specializing in residential and commercial electrical systems. Tesla Powerwall certified installer.'
+    description: 'Master electrician specializing in residential and commercial electrical systems. Tesla Powerwall certified installer.',
+    availability: 'Available',
+    specialties: ['Smart Home Integration', 'Solar Installation'],
+    certifications: ['Master Electrician', 'Tesla Certified'],
+    portfolioImages: 8,
+    languages: ['English']
   },
   {
     id: 'sample-3',
@@ -89,13 +113,18 @@ const sampleWorkers = [
     avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
     rating: 4.9,
     reviewCount: 201,
-    skills: ['Carpentry', 'Custom Furniture', 'Kitchen Cabinets'],
+    skills: ['Carpentry', 'Custom Furniture', 'Kitchen Cabinets', 'Woodworking'],
     location: 'Denver, CO',
     hourlyRate: 75,
     completedJobs: 234,
     responseTime: '< 30 min',
     verified: true,
-    description: 'Award-winning carpenter with expertise in custom woodwork and furniture design. Featured in Home & Garden Magazine.'
+    description: 'Award-winning carpenter with expertise in custom woodwork and furniture design. Featured in Home & Garden Magazine.',
+    availability: 'Busy until Feb 15',
+    specialties: ['Custom Cabinetry', 'Hardwood Flooring'],
+    certifications: ['Master Carpenter', 'OSHA Certified'],
+    portfolioImages: 15,
+    languages: ['English', 'Spanish']
   },
   {
     id: 'sample-4',
@@ -104,13 +133,18 @@ const sampleWorkers = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
     rating: 4.7,
     reviewCount: 78,
-    skills: ['Interior Design', 'Painting', 'Color Consultation'],
+    skills: ['Interior Design', 'Painting', 'Color Consultation', 'Space Planning'],
     location: 'Seattle, WA',
     hourlyRate: 65,
     completedJobs: 145,
     responseTime: '< 3 hours',
     verified: true,
-    description: 'Creative interior designer with a focus on modern and sustainable design solutions. Color theory expert.'
+    description: 'Creative interior designer with a focus on modern and sustainable design solutions. Color theory expert.',
+    availability: 'Available',
+    specialties: ['Modern Design', 'Eco-Friendly Solutions'],
+    certifications: ['Interior Design Degree', 'LEED Certified'],
+    portfolioImages: 12,
+    languages: ['English', 'Mandarin']
   }
 ];
 
@@ -125,11 +159,15 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   
+  const getAvailabilityColor = (availability) => {
+    if (availability === 'Available') return 'success';
+    if (availability.includes('Busy')) return 'warning';
+    return 'default';
+  };
+  
   return (
     <Card
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
         height: '100%',
         position: 'relative',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -146,7 +184,7 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
     >
       {worker.verified && (
         <Chip
-          icon={<CheckCircle />}
+          icon={<Verified />}
           label="VERIFIED PRO"
           size="small"
           sx={{ 
@@ -157,10 +195,7 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.secondary.contrastText,
             fontWeight: 'bold',
-            fontSize: '0.75rem',
-            '& .MuiChip-icon': {
-              color: theme.palette.secondary.contrastText
-            }
+            fontSize: '0.75rem'
           }}
         />
       )}
@@ -172,7 +207,7 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
           top: 12, 
           right: 12, 
           zIndex: 2,
-          backgroundColor: alpha(theme.palette.background.default, 0.8),
+          backgroundColor: alpha(theme.palette.background.default, 0.9),
           color: isSaved ? theme.palette.secondary.main : theme.palette.text.secondary,
           '&:hover': {
             backgroundColor: alpha(theme.palette.secondary.main, 0.1),
@@ -184,7 +219,7 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
         {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
       </IconButton>
       
-      <CardContent sx={{ flexGrow: 1, pt: 6, px: 3, pb: 2 }}>
+      <CardContent sx={{ p: 3 }}>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Avatar
             src={worker.avatar}
@@ -199,7 +234,6 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
           />
           <Typography 
             variant="h6" 
-            align="center" 
             fontWeight="bold"
             sx={{ 
               color: theme.palette.text.primary,
@@ -212,168 +246,141 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
           </Typography>
           <Typography
             variant="body2"
-            color="text.secondary"
-            align="center"
             sx={{ 
-              minHeight: 44,
+              color: theme.palette.text.secondary,
               fontSize: '0.95rem',
               lineHeight: 1.4,
               fontWeight: 500,
-              color: theme.palette.text.secondary
+              mb: 2
             }}
           >
             {worker.title}
           </Typography>
-        </Box>
-        
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
-          <Rating 
-            value={worker.rating} 
-            precision={0.1} 
-            readOnly 
+
+          <Chip
+            label={worker.availability}
+            color={getAvailabilityColor(worker.availability)}
             size="small"
-            sx={{
-              '& .MuiRating-iconFilled': {
-                color: theme.palette.secondary.main,
-              }
-            }}
+            sx={{ mb: 2, fontWeight: 'bold' }}
           />
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              ml: 1,
-              color: theme.palette.text.primary,
-              fontWeight: 'bold'
-            }}
-          >
-            ({worker.reviewCount || 0})
-          </Typography>
         </Box>
-
-        <Stack direction="row" spacing={1} sx={{ mb: 3 }} alignItems="center" justifyContent="center">
-          <LocationOn fontSize="small" sx={{ color: theme.palette.secondary.main }} />
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: theme.palette.text.primary,
-              fontWeight: 500
-            }}
-          >
-            {worker.location}
-          </Typography>
-        </Stack>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6}>
-            <Box sx={{ 
-              textAlign: 'center',
-              p: 2,
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
-            }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  color: theme.palette.secondary.main,
-                  fontWeight: 'bold',
-                  fontSize: '1.1rem'
-                }}
-              >
-                ${worker.hourlyRate}/hr
-              </Typography>
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  color: theme.palette.text.secondary,
-                  fontSize: '0.8rem',
-                  fontWeight: 600
-                }}
-              >
-                HOURLY RATE
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box sx={{ 
-              textAlign: 'center',
-              p: 2,
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
-            }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  color: theme.palette.secondary.main,
-                  fontWeight: 'bold',
-                  fontSize: '1.1rem'
-                }}
-              >
-                {worker.completedJobs}
-              </Typography>
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  color: theme.palette.text.secondary,
-                  fontSize: '0.8rem',
-                  fontWeight: 600
-                }}
-              >
-                JOBS DONE
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
         
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 1,
-            mb: 3,
-          }}
-        >
-          {(worker.skills || []).slice(0, 3).map((skill) => (
-            <Chip 
-              key={skill} 
-              label={skill} 
-              size="small" 
-              sx={{ 
-                fontSize: '0.75rem',
-                fontWeight: 'bold',
-                backgroundColor: alpha(theme.palette.secondary.main, 0.2),
-                color: theme.palette.text.primary,
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.secondary.main, 0.3),
-                }
-              }}
+        <Box sx={{ mb: 3 }}>
+          <Stack direction="row" justifyContent="center" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+            <Rating 
+              value={worker.rating} 
+              precision={0.1} 
+              readOnly 
+              size="small"
+              sx={{ '& .MuiRating-iconFilled': { color: theme.palette.secondary.main } }}
             />
-          ))}
+            <Typography 
+              variant="body2" 
+              sx={{ color: theme.palette.text.primary, fontWeight: 'bold' }}
+            >
+              {worker.rating} ({worker.reviewCount})
+            </Typography>
+          </Stack>
+
+          <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
+            <LocationOn fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+            <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 500 }}>
+              {worker.location}
+            </Typography>
+          </Stack>
+
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={6}>
+              <Box sx={{ 
+                textAlign: 'center',
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+              }}>
+                <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+                  ${worker.hourlyRate}
+                </Typography>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+                  per hour
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6}>
+              <Box sx={{ 
+                textAlign: 'center',
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+              }}>
+                <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+                  {worker.completedJobs}
+                </Typography>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+                  jobs done
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+        
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 'bold', mb: 1 }}>
+            Top Skills
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {(worker.skills || []).slice(0, 4).map((skill) => (
+              <Chip 
+                key={skill} 
+                label={skill} 
+                size="small" 
+                sx={{ 
+                  fontSize: '0.7rem',
+                  fontWeight: 'bold',
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.2),
+                  color: theme.palette.text.primary,
+                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.5)}`
+                }}
+              />
+            ))}
+          </Box>
         </Box>
 
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          p: 2,
-          borderRadius: 2,
-          backgroundColor: alpha(theme.palette.secondary.main, 0.05),
-          border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
-        }}>
-          <Schedule fontSize="small" sx={{ color: theme.palette.secondary.main, mr: 1 }} />
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: theme.palette.text.primary,
-              fontWeight: 'bold'
-            }}
-          >
-            Responds {worker.responseTime}
-          </Typography>
-        </Box>
+        <Stack spacing={2}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: alpha(theme.palette.secondary.main, 0.05),
+            border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+          }}>
+            <Schedule fontSize="small" sx={{ color: theme.palette.secondary.main, mr: 1 }} />
+            <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 'bold' }}>
+              Responds {worker.responseTime}
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1} justifyContent="center">
+            <Tooltip title="Portfolio Items">
+              <Chip 
+                icon={<Portfolio />} 
+                label={worker.portfolioImages} 
+                size="small"
+                variant="outlined"
+              />
+            </Tooltip>
+            <Tooltip title="Certifications">
+              <Chip 
+                icon={<EmojiEvents />} 
+                label={worker.certifications?.length || 0} 
+                size="small"
+                variant="outlined"
+              />
+            </Tooltip>
+          </Stack>
+        </Stack>
       </CardContent>
       
       <CardActions sx={{ p: 3, pt: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -393,10 +400,6 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
               backgroundColor: theme.palette.secondary.dark,
               transform: 'translateY(-2px)',
               boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.4)}`
-            },
-            '&:disabled': {
-              backgroundColor: alpha(theme.palette.secondary.main, 0.5),
-              color: alpha(theme.palette.secondary.contrastText, 0.7)
             }
           }}
         >
@@ -420,17 +423,207 @@ const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
               borderColor: theme.palette.secondary.light,
               backgroundColor: alpha(theme.palette.secondary.main, 0.1),
               transform: 'translateY(-2px)',
-            },
-            '&:disabled': {
-              borderColor: alpha(theme.palette.secondary.main, 0.5),
-              color: alpha(theme.palette.secondary.main, 0.5)
             }
           }}
         >
-          {isDemo ? 'Message (Demo)' : 'Message'}
+          {isDemo ? 'Message (Demo)' : 'Contact'}
         </Button>
       </CardActions>
     </Card>
+  );
+};
+
+const CompactSearchFilters = ({ searchParams, setSearchParams, skillOptions, onSearch, onClearFilters }) => {
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Paper
+      sx={{
+        p: 3,
+        mb: 3,
+        borderRadius: 3,
+        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <TextField
+            fullWidth
+            placeholder="Search by name, skills, or specialization..."
+            value={searchParams.searchTerm}
+            onChange={(e) =>
+              setSearchParams((prev) => ({
+                ...prev,
+                searchTerm: e.target.value,
+              }))
+            }
+            onKeyPress={(e) => e.key === 'Enter' && onSearch()}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.background.default, 0.3),
+                '& fieldset': { 
+                  borderColor: theme.palette.secondary.main,
+                  borderWidth: 1
+                },
+                '&:hover fieldset': { 
+                  borderColor: theme.palette.secondary.light,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.secondary.main,
+                  borderWidth: 2
+                }
+              }
+            }}
+            InputProps={{
+              startAdornment: <Search sx={{ color: theme.palette.secondary.main, mr: 1 }} />,
+              endAdornment: (
+                <Button
+                  variant="contained"
+                  onClick={onSearch}
+                  sx={{
+                    backgroundColor: theme.palette.secondary.main,
+                    color: theme.palette.secondary.contrastText,
+                    minWidth: 'auto',
+                    px: 2
+                  }}
+                >
+                  Search
+                </Button>
+              )
+            }}
+          />
+        </Box>
+        <Button
+          variant="outlined"
+          startIcon={<Tune />}
+          endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
+          onClick={() => setExpanded(!expanded)}
+          sx={{
+            borderColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.main,
+            borderWidth: 2,
+            minWidth: 120
+          }}
+        >
+          Filters
+        </Button>
+      </Stack>
+
+      <Collapse in={expanded}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              fullWidth
+              label="Location"
+              value={searchParams.location}
+              onChange={(e) =>
+                setSearchParams((prev) => ({
+                  ...prev,
+                  location: e.target.value,
+                }))
+              }
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={4}>
+            <Box>
+              <Typography gutterBottom fontWeight="medium" sx={{ color: theme.palette.text.primary }}>
+                Minimum Rating: {searchParams.minRating}⭐
+              </Typography>
+              <Slider
+                value={searchParams.minRating}
+                onChange={(e, newValue) =>
+                  setSearchParams((prev) => ({ ...prev, minRating: newValue }))
+                }
+                step={0.5}
+                marks
+                min={0}
+                max={5}
+                valueLabelDisplay="auto"
+                sx={{
+                  '& .MuiSlider-thumb': {
+                    backgroundColor: theme.palette.secondary.main,
+                  },
+                  '& .MuiSlider-track': {
+                    backgroundColor: theme.palette.secondary.main,
+                  }
+                }}
+              />
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Work Mode</InputLabel>
+              <Select
+                value={searchParams.workMode}
+                label="Work Mode"
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    workMode: e.target.value,
+                  }))
+                }
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="remote">Remote</MenuItem>
+                <MenuItem value="onsite">On-site</MenuItem>
+                <MenuItem value="hybrid">Hybrid</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Autocomplete
+              multiple
+              options={skillOptions}
+              value={searchParams.skills}
+              onChange={(event, newSkills) =>
+                setSearchParams((prev) => ({ ...prev, skills: newSkills }))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Required Skills"
+                  placeholder="Select skills"
+                  fullWidth
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button
+                variant="text"
+                startIcon={<Clear />}
+                onClick={onClearFilters}
+                sx={{ color: theme.palette.text.secondary }}
+              >
+                Clear All Filters
+              </Button>
+              <Button
+                variant="contained"
+                onClick={onSearch}
+                sx={{
+                  backgroundColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.contrastText
+                }}
+              >
+                Apply Filters
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Collapse>
+    </Paper>
   );
 };
 
@@ -450,16 +643,6 @@ const EmptyState = () => {
           border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
           position: 'relative',
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 70%)`,
-            pointerEvents: 'none'
-          }
         }}
       >
         <Typography 
@@ -471,8 +654,6 @@ const EmptyState = () => {
             fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
             color: theme.palette.secondary.main,
             textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-            position: 'relative',
-            zIndex: 1
           }}
         >
           🔍 Discover Amazing Talent
@@ -487,8 +668,6 @@ const EmptyState = () => {
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
             lineHeight: 1.6,
             fontWeight: 500,
-            position: 'relative',
-            zIndex: 1
           }}
         >
           Connect with thousands of verified professionals ready to bring your projects to life. 
@@ -546,12 +725,7 @@ const EmptyState = () => {
           ))}
         </Grid>
 
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          spacing={3} 
-          justifyContent="center"
-          sx={{ position: 'relative', zIndex: 1 }}
-        >
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
           <Button
             variant="contained"
             size="large"
@@ -785,6 +959,9 @@ const EmptyState = () => {
 };
 
 const WorkerSearchPage = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  
   // Available skill options (mock)
   const skillOptions = [
     'Pipe Repair',
@@ -805,13 +982,15 @@ const WorkerSearchPage = () => {
     'Heating Systems',
     'Ventilation',
   ];
+  
   const [searchParams, setSearchParams] = useState({
     searchTerm: '',
     skills: [],
     minRating: 0,
     location: '',
-    workMode: '', // 'remote', 'onsite', 'hybrid'
+    workMode: '',
   });
+  
   const [savedWorkers, setSavedWorkers] = useState([]);
   const [results, setResults] = useState({ workers: [], pagination: {} });
   const [loading, setLoading] = useState(false);
@@ -856,8 +1035,7 @@ const WorkerSearchPage = () => {
     }
   };
 
-  // Reset all filters to defaults and reload worker list
-  const handleClearFilters = async () => {
+  const handleClearFilters = () => {
     const defaultParams = {
       searchTerm: '',
       skills: [],
@@ -881,7 +1059,7 @@ const WorkerSearchPage = () => {
   }, []);
 
   return (
-    <Grow in timeout={500}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: theme.palette.background.default }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
           <Link
@@ -900,267 +1078,50 @@ const WorkerSearchPage = () => {
           </Typography>
         </Breadcrumbs>
         
-        <Paper
-          sx={{
-            p: 4,
-            mb: 4,
-            position: 'sticky',
-            top: (theme) => theme.spacing(2),
-            zIndex: 10,
-            borderRadius: 3,
-            backgroundColor: theme.palette.background.paper,
-            border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.3)}`,
-            backdropFilter: 'blur(20px)',
-          }}
-        >
+        {/* Header Section */}
+        <Box sx={{ mb: 4, textAlign: 'center' }}>
           <Typography 
-            variant="h3" 
+            variant="h2" 
+            component="h1" 
             gutterBottom 
             fontWeight="bold"
             sx={{
               color: theme.palette.secondary.main,
-              fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
-              textAlign: 'center',
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
               mb: 2
             }}
           >
             🎯 Find Your Perfect Professional
           </Typography>
           <Typography 
-            variant="h6" 
-            sx={{ 
-              mb: 4,
+            variant="h5" 
+            sx={{
               color: theme.palette.text.primary,
-              textAlign: 'center',
-              fontSize: { xs: '1rem', sm: '1.1rem' },
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
               fontWeight: 500,
-              maxWidth: 800,
+              maxWidth: 900,
               mx: 'auto'
             }}
           >
             Search through thousands of verified professionals and find the perfect match for your project
           </Typography>
-          
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                fullWidth
-                label="Search by name or keyword"
-                value={searchParams.searchTerm}
-                onChange={(e) =>
-                  setSearchParams((prev) => ({
-                    ...prev,
-                    searchTerm: e.target.value,
-                  }))
-                }
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.background.default, 0.5),
-                    '& fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                      borderWidth: 2
-                    },
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.secondary.light,
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: theme.palette.text.secondary,
-                    fontWeight: 600,
-                    '&.Mui-focused': {
-                      color: theme.palette.secondary.main
-                    }
-                  },
-                  '& .MuiInputBase-input': {
-                    color: theme.palette.text.primary,
-                    fontSize: '1rem',
-                    fontWeight: 500
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                label="Location"
-                value={searchParams.location}
-                onChange={(e) =>
-                  setSearchParams((prev) => ({
-                    ...prev,
-                    location: e.target.value,
-                  }))
-                }
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.background.default, 0.5),
-                    '& fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                      borderWidth: 2
-                    },
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.secondary.light,
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: theme.palette.text.secondary,
-                    fontWeight: 600,
-                    '&.Mui-focused': {
-                      color: theme.palette.secondary.main
-                    }
-                  },
-                  '& .MuiInputBase-input': {
-                    color: theme.palette.text.primary,
-                    fontSize: '1rem',
-                    fontWeight: 500
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Typography gutterBottom fontWeight="medium">Minimum Rating</Typography>
-              <Slider
-                value={searchParams.minRating}
-                onChange={(e, newValue) =>
-                  setSearchParams((prev) => ({ ...prev, minRating: newValue }))
-                }
-                step={0.5}
-                marks
-                min={0}
-                max={5}
-                valueLabelDisplay="auto"
-                sx={{
-                  '& .MuiSlider-thumb': {
-                    background: 'linear-gradient(45deg, #FFD700 30%, #FFA500 90%)',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Autocomplete
-                multiple
-                options={skillOptions}
-                value={searchParams.skills}
-                onChange={(event, newSkills) =>
-                  setSearchParams((prev) => ({ ...prev, skills: newSkills }))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Skills"
-                    placeholder="Select skills"
-                    fullWidth
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        backgroundColor: alpha(theme.palette.background.default, 0.5),
-                        '& fieldset': {
-                          borderColor: theme.palette.secondary.main,
-                          borderWidth: 2
-                        },
-                        '&:hover fieldset': {
-                          borderColor: theme.palette.secondary.light,
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: theme.palette.secondary.main,
-                        }
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: theme.palette.text.secondary,
-                        fontWeight: 600,
-                        '&.Mui-focused': {
-                          color: theme.palette.secondary.main
-                        }
-                      },
-                      '& .MuiInputBase-input': {
-                        color: theme.palette.text.primary,
-                        fontSize: '1rem',
-                        fontWeight: 500
-                      }
-                    }}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <FormControl fullWidth>
-                <InputLabel>Work Mode</InputLabel>
-                <Select
-                  value={searchParams.workMode}
-                  label="Work Mode"
-                  onChange={(e) =>
-                    setSearchParams((prev) => ({
-                      ...prev,
-                      workMode: e.target.value,
-                    }))
-                  }
-                  sx={{
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.background.default, 0.5),
-                    '& fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                      borderWidth: 2
-                    },
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.secondary.light,
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    }
-                  }}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="remote">Remote</MenuItem>
-                  <MenuItem value="onsite">On-site</MenuItem>
-                  <MenuItem value="hybrid">Hybrid</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={<Search />}
-                onClick={() => handleSearch()}
-                sx={{
-                  py: 1.5,
-                  borderRadius: 2,
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  fontWeight: 'bold'
-                }}
-              >
-                Search
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => handleClearFilters()}
-                sx={{
-                  py: 1.5,
-                  borderRadius: 2,
-                  fontWeight: 'bold'
-                }}
-              >
-                Clear Filters
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
+        </Box>
 
+        {/* Compact Search Filters */}
+        <CompactSearchFilters
+          searchParams={searchParams}
+          setSearchParams={setSearchParams}
+          skillOptions={skillOptions}
+          onSearch={handleSearch}
+          onClearFilters={handleClearFilters}
+        />
+
+        {/* Content Area */}
         {loading ? (
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {Array.from(new Array(8)).map((_, idx) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={idx}>
+              <Grid item xs={12} sm={6} lg={3} key={idx}>
                 <Card sx={{ borderRadius: 3 }}>
                   <CardContent>
                     <Skeleton
@@ -1169,16 +1130,8 @@ const WorkerSearchPage = () => {
                       height={80}
                       sx={{ mx: 'auto', mb: 1 }}
                     />
-                    <Skeleton
-                      width="60%"
-                      height={24}
-                      sx={{ mx: 'auto', mb: 1 }}
-                    />
-                    <Skeleton
-                      width="40%"
-                      height={20}
-                      sx={{ mx: 'auto', mb: 2 }}
-                    />
+                    <Skeleton width="60%" height={24} sx={{ mx: 'auto', mb: 1 }} />
+                    <Skeleton width="40%" height={20} sx={{ mx: 'auto', mb: 2 }} />
                     <Skeleton variant="rectangular" height={118} sx={{ borderRadius: 1 }} />
                   </CardContent>
                   <CardActions>
@@ -1196,38 +1149,91 @@ const WorkerSearchPage = () => {
         ) : showSampleData || results.workers.length === 0 ? (
           <EmptyState />
         ) : (
-          <Grid container spacing={3}>
-            {results.workers.map((worker, idx) => (
-              <Grow in timeout={300 + idx * 100} key={worker.id || worker._id}>
-                <Grid item xs={12} sm={6} md={4} lg={3}>
-                  <WorkerCard
-                    worker={worker}
-                    isSaved={savedWorkers.includes(worker.id || worker._id)}
-                    onToggleSave={handleToggleSaveWorker}
-                  />
+          <>
+            {/* Results Summary */}
+            <Box
+              sx={{
+                mb: 4,
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" sx={{ color: theme.palette.text.primary }}>
+                👥 Found {results.workers.length} professional{results.workers.length !== 1 ? 's' : ''}
+              </Typography>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                Page {results.pagination.currentPage || 1} of {results.pagination.totalPages || 1}
+              </Typography>
+            </Box>
+
+            {/* Workers Grid */}
+            <Grid container spacing={4}>
+              {results.workers.map((worker, idx) => (
+                <Grid item xs={12} sm={6} lg={3} key={worker.id || worker._id}>
+                  <Grow in timeout={300 + idx * 100}>
+                    <div>
+                      <WorkerCard
+                        worker={worker}
+                        isSaved={savedWorkers.includes(worker.id || worker._id)}
+                        onToggleSave={handleToggleSaveWorker}
+                      />
+                    </div>
+                  </Grow>
                 </Grid>
-              </Grow>
-            ))}
-          </Grid>
+              ))}
+            </Grid>
+          </>
         )}
         
+        {/* Pagination */}
         {!loading && !showSampleData && results.workers.length > 0 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
             <Pagination
               count={Math.max(results.pagination.totalPages || 1, 1)}
               page={Math.max(results.pagination.currentPage || 1, 1)}
               onChange={(e, page) => handleSearch(page)}
               color="primary"
+              size="large"
               sx={{
                 '& .MuiPaginationItem-root': {
                   borderRadius: 2,
+                  fontWeight: 'bold'
+                },
+                '& .MuiPaginationItem-page.Mui-selected': {
+                  backgroundColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.contrastText
                 }
               }}
             />
           </Box>
         )}
+
+        {/* Floating Action Button for Mobile */}
+        <Fab
+          color="primary"
+          aria-label="post job"
+          onClick={() => navigate('/jobs/post')}
+          sx={{
+            position: 'fixed',
+            bottom: 90,
+            right: 20,
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            display: { xs: 'flex', md: 'none' },
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
+            }
+          }}
+        >
+          <Star />
+        </Fab>
       </Container>
-    </Grow>
+    </Box>
   );
 };
 

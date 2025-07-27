@@ -35,6 +35,9 @@ import {
   Stack,
   alpha,
   Grow,
+  Collapse,
+  Fab,
+  Badge,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -51,6 +54,12 @@ import {
   Place,
   CheckCircle,
   Schedule,
+  ExpandMore,
+  ExpandLess,
+  Tune,
+  Navigation,
+  Room,
+  Public,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
@@ -91,24 +100,12 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
         borderRadius: 3,
         position: 'relative',
         overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.05)} 0%, transparent 70%)`,
-          pointerEvents: 'none'
-        }
       }}
     >
       <Place sx={{ 
         fontSize: 80, 
         color: theme.palette.secondary.main, 
         mb: 3,
-        position: 'relative',
-        zIndex: 1
       }} />
       <Typography 
         variant="h4" 
@@ -117,8 +114,6 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
         sx={{
           color: theme.palette.secondary.main,
           fontSize: { xs: '1.5rem', sm: '2rem' },
-          position: 'relative',
-          zIndex: 1
         }}
       >
         🌍 Let's Find Your Location!
@@ -133,8 +128,6 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
           fontSize: { xs: '1rem', sm: '1.1rem' },
           lineHeight: 1.6,
           fontWeight: 500,
-          position: 'relative',
-          zIndex: 1
         }}
       >
         To show you the most relevant jobs and professionals in your area, we need to know your location. 
@@ -145,7 +138,7 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
         direction={{ xs: 'column', sm: 'row' }} 
         spacing={3} 
         justifyContent="center"
-        sx={{ mb: 4, position: 'relative', zIndex: 1 }}
+        sx={{ mb: 4 }}
       >
         <Button
           variant="contained"
@@ -199,8 +192,6 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
         backgroundColor: alpha(theme.palette.secondary.main, 0.1), 
         borderRadius: 3,
         border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-        position: 'relative',
-        zIndex: 1
       }}>
         <Typography 
           variant="body1" 
@@ -217,6 +208,348 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
           calculate travel distances, and connect you with local professionals and clients.
         </Typography>
       </Box>
+    </Paper>
+  );
+};
+
+const CompactLocationSearch = ({ 
+  searchType, 
+  location, 
+  setLocation, 
+  keywords, 
+  setKeywords, 
+  distance, 
+  setDistance, 
+  category, 
+  setCategory, 
+  sortBy, 
+  setSortBy, 
+  categories, 
+  skills, 
+  loading, 
+  onSearch, 
+  onClearFilters, 
+  suggestedLocations, 
+  getCurrentLocation 
+}) => {
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Paper sx={{ 
+      p: 3, 
+      mb: 4, 
+      borderRadius: 3,
+      border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+      backgroundColor: theme.palette.background.paper,
+      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+    }}>
+      <Typography 
+        variant="h5" 
+        gutterBottom 
+        fontWeight="bold" 
+        sx={{
+          color: theme.palette.secondary.main,
+          textAlign: 'center',
+          mb: 3,
+          fontSize: { xs: '1.25rem', sm: '1.5rem' }
+        }}
+      >
+        🎯 Local Search - Find {searchType === 0 ? 'Jobs' : 'Professionals'} Near You
+      </Typography>
+      
+      <Grid container spacing={3} alignItems="center">
+        <Grid item xs={12} md={5}>
+          <Box sx={{ position: 'relative' }}>
+            <TextField
+              fullWidth
+              label="Your Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="City, State, Country"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  backgroundColor: alpha(theme.palette.background.default, 0.3),
+                  '& fieldset': { 
+                    borderColor: theme.palette.secondary.main,
+                    borderWidth: 2
+                  },
+                  '&:hover fieldset': { 
+                    borderColor: theme.palette.secondary.light,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.palette.secondary.main,
+                  }
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LocationIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title="Use your current location">
+                      <IconButton 
+                        onClick={getCurrentLocation} 
+                        edge="end"
+                        disabled={loading}
+                        sx={{
+                          color: theme.palette.secondary.main,
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.secondary.main, 0.1)
+                          }
+                        }}
+                      >
+                        {loading ? (
+                          <CircularProgress size={24} sx={{ color: theme.palette.secondary.main }} />
+                        ) : (
+                          <MyLocationIcon sx={{ fontSize: 28 }} />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {suggestedLocations.length > 0 && (
+              <Paper
+                elevation={12}
+                sx={{
+                  mt: 1,
+                  position: 'absolute',
+                  zIndex: 100,
+                  width: '100%',
+                  maxHeight: 250,
+                  overflow: 'auto',
+                  borderRadius: 3,
+                  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  backgroundColor: theme.palette.background.paper,
+                }}
+              >
+                <List dense>
+                  {suggestedLocations.map((item) => (
+                    <ListItem
+                      button
+                      key={item.id}
+                      onClick={() => {
+                        setLocation(item.description);
+                      }}
+                      sx={{
+                        py: 1.5,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.secondary.main, 0.1)
+                        }
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <LocationIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={item.description}
+                        sx={{
+                          '& .MuiTypography-root': {
+                            color: theme.palette.text.primary,
+                            fontWeight: 500
+                          }
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            )}
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <TextField
+            fullWidth
+            label={`Search for ${searchType === 0 ? 'jobs' : 'workers'}`}
+            value={keywords}
+            onChange={(e) => setKeywords(e.target.value)}
+            placeholder={searchType === 0 ? 'Job title, keywords' : 'Skills, name, title'}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3,
+                backgroundColor: alpha(theme.palette.background.default, 0.3),
+                '& fieldset': { 
+                  borderColor: theme.palette.secondary.main,
+                  borderWidth: 2
+                },
+                '&:hover fieldset': { 
+                  borderColor: theme.palette.secondary.light,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.secondary.main,
+                }
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+
+        <Grid item xs={8} md={2}>
+          <Box>
+            <Typography 
+              variant="body2" 
+              gutterBottom 
+              fontWeight="bold" 
+              sx={{
+                color: theme.palette.secondary.main,
+                textAlign: 'center'
+              }}
+            >
+              Radius: {distance} miles
+            </Typography>
+            <Slider
+              value={distance}
+              onChange={(e, newValue) => setDistance(newValue)}
+              min={5}
+              max={100}
+              step={5}
+              sx={{
+                '& .MuiSlider-thumb': {
+                  backgroundColor: theme.palette.secondary.main,
+                  border: `3px solid ${theme.palette.secondary.main}`,
+                  width: 24,
+                  height: 24,
+                },
+                '& .MuiSlider-track': {
+                  backgroundColor: theme.palette.secondary.main,
+                  height: 6
+                },
+                '& .MuiSlider-rail': {
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.3),
+                  height: 6
+                }
+              }}
+            />
+          </Box>
+        </Grid>
+
+        <Grid item xs={4} md={1}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => onSearch(1)}
+            disabled={loading}
+            sx={{
+              py: 2.5,
+              borderRadius: 3,
+              backgroundColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.contrastText,
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: theme.palette.secondary.dark,
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.4)}`
+              }
+            }}
+            startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+          >
+            Search
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+        <Button
+          variant="text"
+          startIcon={<Tune />}
+          endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
+          onClick={() => setExpanded(!expanded)}
+          sx={{
+            color: theme.palette.secondary.main,
+            fontWeight: 'bold'
+          }}
+        >
+          Advanced Filters
+        </Button>
+      </Box>
+
+      <Collapse in={expanded}>
+        <Divider sx={{ my: 3 }} />
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>
+                {searchType === 0 ? 'Job Category' : 'Skill Category'}
+              </InputLabel>
+              <Select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                label={searchType === 0 ? 'Job Category' : 'Skill Category'}
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value="">
+                  <em>All Categories</em>
+                </MenuItem>
+                {(searchType === 0 ? categories : skills).map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                label="Sort By"
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value="relevance">Relevance</MenuItem>
+                <MenuItem value="distance">Distance</MenuItem>
+                <MenuItem value="newest">Date (Newest First)</MenuItem>
+                {searchType === 0 ? (
+                  <MenuItem value="salary">Salary (Highest First)</MenuItem>
+                ) : (
+                  <MenuItem value="rating">Rating (Highest First)</MenuItem>
+                )}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Stack direction="row" spacing={2} sx={{ height: '100%', alignItems: 'center' }}>
+              <Button
+                variant="text"
+                startIcon={<ClearIcon />}
+                onClick={onClearFilters}
+                sx={{ fontWeight: 'bold', color: theme.palette.text.secondary }}
+              >
+                Clear
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => onSearch(1)}
+                disabled={loading}
+                sx={{
+                  backgroundColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.contrastText,
+                  fontWeight: 'bold'
+                }}
+                startIcon={loading ? <CircularProgress size={20} /> : <SortIcon />}
+              >
+                Apply
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Collapse>
     </Paper>
   );
 };
@@ -249,16 +582,6 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
           border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
           position: 'relative',
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 70%)`,
-            pointerEvents: 'none'
-          }
         }}
       >
         {searchType === 0 ? (
@@ -266,16 +589,12 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             fontSize: 100, 
             color: theme.palette.secondary.main, 
             mb: 3,
-            position: 'relative',
-            zIndex: 1
           }} />
         ) : (
           <PersonIcon sx={{ 
             fontSize: 100, 
             color: theme.palette.secondary.main, 
             mb: 3,
-            position: 'relative',
-            zIndex: 1
           }} />
         )}
         
@@ -287,8 +606,6 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
             color: theme.palette.secondary.main,
             textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-            position: 'relative',
-            zIndex: 1
           }}
         >
           {searchType === 0 ? '🔍 No Jobs Found' : '🔍 No Professionals Found'}
@@ -304,8 +621,6 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
             lineHeight: 1.6,
             fontWeight: 500,
-            position: 'relative',
-            zIndex: 1
           }}
         >
           {searchType === 0 
@@ -321,8 +636,6 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             color: theme.palette.secondary.main,
             fontWeight: 'bold',
             mb: 4,
-            position: 'relative',
-            zIndex: 1
           }}
         >
           💡 Try These Suggestions:
@@ -380,8 +693,6 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             backgroundColor: theme.palette.secondary.main,
             color: theme.palette.secondary.contrastText,
             borderRadius: 3,
-            position: 'relative',
-            zIndex: 1,
             '&:hover': {
               backgroundColor: theme.palette.secondary.dark,
               transform: 'translateY(-3px)',
@@ -413,7 +724,6 @@ const GeoLocationSearch = () => {
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
   const [currentPage, setCurrentPage] = useState(1);
-  const [filtersVisible, setFiltersVisible] = useState(!isMobile);
 
   // Results state
   const [searchResults, setSearchResults] = useState([]);
@@ -432,7 +742,6 @@ const GeoLocationSearch = () => {
     const fetchData = async () => {
       try {
         if (searchType === 0) {
-          // Mock job categories for demo
           setCategories([
             { id: 'plumbing', name: 'Plumbing & Water Systems' },
             { id: 'electrical', name: 'Electrical & Wiring' },
@@ -444,7 +753,6 @@ const GeoLocationSearch = () => {
             { id: 'landscaping', name: 'Landscaping & Gardening' }
           ]);
         } else {
-          // Mock skill categories for demo
           setSkills([
             { id: 'construction', name: 'Construction & Building' },
             { id: 'maintenance', name: 'Maintenance & Repair' },
@@ -472,13 +780,9 @@ const GeoLocationSearch = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            const { latitude, longitude } = position.coords;
-
-            // For demo purposes, we'll set a default location
-            // In production, you would use a real geocoding service
             const mockLocations = [
               'Accra, Ghana',
-              'Kumasi, Ghana',
+              'Kumasi, Ghana', 
               'Tema, Ghana',
               'Cape Coast, Ghana',
               'Tamale, Ghana'
@@ -518,7 +822,6 @@ const GeoLocationSearch = () => {
         return;
       }
 
-      // Mock suggestions for demo
       const mockSuggestions = [
         'Accra, Ghana',
         'Kumasi, Ghana',
@@ -553,10 +856,7 @@ const GeoLocationSearch = () => {
     setSearched(true);
 
     try {
-      // Mock search results for demo
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      // For demo, we'll return empty results to show the enhanced empty state
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setSearchResults([]);
       setTotalResults(0);
     } catch (err) {
@@ -591,14 +891,8 @@ const GeoLocationSearch = () => {
     setSearched(false);
   };
 
-  // Toggle filters visibility (for mobile)
-  const toggleFilters = () => {
-    setFiltersVisible(!filtersVisible);
-  };
-
   const handleManualLocationEntry = () => {
     setLocationError(false);
-    // Focus on location input
     const locationInput = document.querySelector('input[placeholder*="City"]');
     if (locationInput) {
       locationInput.focus();
@@ -606,658 +900,301 @@ const GeoLocationSearch = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Helmet>
-        <title>Location-based Search | Kelmah</title>
-      </Helmet>
+    <Box sx={{ minHeight: '100vh', backgroundColor: theme.palette.background.default }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Helmet>
+          <title>Location-based Search | Kelmah</title>
+        </Helmet>
 
-      <Box sx={{ mb: 6, textAlign: 'center' }}>
-        <Typography 
-          variant="h2" 
-          component="h1" 
-          gutterBottom 
-          fontWeight="bold"
-          sx={{
-            color: theme.palette.secondary.main,
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-            mb: 2
-          }}
-        >
-          🌍 Find {searchType === 0 ? 'Jobs' : 'Talent'} Near You
-        </Typography>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            maxWidth: 800, 
-            mx: 'auto',
-            color: theme.palette.text.primary,
-            fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
-            fontWeight: 500,
-            lineHeight: 1.6
-          }}
-        >
-          Connect with local opportunities and professionals in your area. 
-          Distance matters - find work and talent that's convenient for everyone.
-        </Typography>
-      </Box>
+        {/* Header Section */}
+        <Box sx={{ mb: 4, textAlign: 'center' }}>
+          <Typography 
+            variant="h2" 
+            component="h1" 
+            gutterBottom 
+            fontWeight="bold"
+            sx={{
+              color: theme.palette.secondary.main,
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
+              mb: 2
+            }}
+          >
+            🌍 Find {searchType === 0 ? 'Jobs' : 'Talent'} Near You
+          </Typography>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              maxWidth: 800, 
+              mx: 'auto',
+              color: theme.palette.text.primary,
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
+              fontWeight: 500,
+              lineHeight: 1.6
+            }}
+          >
+            Connect with local opportunities and professionals in your area. 
+            Distance matters - find work and talent that's convenient for everyone.
+          </Typography>
+        </Box>
 
-      <Paper sx={{ 
-        mb: 4, 
-        borderRadius: 3, 
-        overflow: 'hidden',
-        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-        backgroundColor: theme.palette.background.paper,
-        '&:hover': {
-          borderColor: theme.palette.secondary.main,
-          boxShadow: `0 8px 32px ${alpha(theme.palette.secondary.main, 0.2)}`
-        }
-      }}>
-        <Tabs
-          value={searchType}
-          onChange={handleTabChange}
-          variant={isMobile ? 'fullWidth' : 'standard'}
-          aria-label="search type tabs"
-          sx={{
-            backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-            '& .MuiTab-root': {
-              fontWeight: 'bold',
-              textTransform: 'none',
-              fontSize: { xs: '1rem', sm: '1.2rem' },
-              py: 2,
-              color: theme.palette.text.secondary,
-              '&.Mui-selected': {
-                color: theme.palette.secondary.main
+        {/* Search Type Tabs */}
+        <Paper sx={{ 
+          mb: 4, 
+          borderRadius: 3, 
+          overflow: 'hidden',
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+          backgroundColor: theme.palette.background.paper,
+        }}>
+          <Tabs
+            value={searchType}
+            onChange={handleTabChange}
+            variant={isMobile ? 'fullWidth' : 'standard'}
+            aria-label="search type tabs"
+            sx={{
+              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+              '& .MuiTab-root': {
+                fontWeight: 'bold',
+                textTransform: 'none',
+                fontSize: { xs: '1rem', sm: '1.2rem' },
+                py: 2,
+                color: theme.palette.text.secondary,
+                '&.Mui-selected': {
+                  color: theme.palette.secondary.main
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: theme.palette.secondary.main,
+                height: 4
               }
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: theme.palette.secondary.main,
-              height: 4
+            }}
+          >
+            <Tab 
+              icon={<WorkIcon sx={{ fontSize: 28 }} />} 
+              label="Find Jobs" 
+              iconPosition="start"
+            />
+            <Tab 
+              icon={<PersonIcon sx={{ fontSize: 28 }} />} 
+              label="Find Talent" 
+              iconPosition="start"
+            />
+          </Tabs>
+        </Paper>
+
+        {/* Location Error Fallback */}
+        {locationError && (
+          <LocationErrorFallback
+            onRetry={getCurrentLocation}
+            onManualEntry={handleManualLocationEntry}
+          />
+        )}
+
+        {/* Compact Location Search */}
+        <CompactLocationSearch
+          searchType={searchType}
+          location={location}
+          setLocation={setLocation}
+          keywords={keywords}
+          setKeywords={setKeywords}
+          distance={distance}
+          setDistance={setDistance}
+          category={category}
+          setCategory={setCategory}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          categories={categories}
+          skills={skills}
+          loading={loading}
+          onSearch={handleSearch}
+          onClearFilters={clearFilters}
+          suggestedLocations={suggestedLocations}
+          getCurrentLocation={getCurrentLocation}
+        />
+
+        {/* Error Display */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3, borderRadius: 2 }} 
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {/* Content Tabs */}
+        <TabPanel value={searchType} index={0}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={60} />
+            </Box>
+          ) : searched && searchResults.length === 0 ? (
+            <EmptySearchState 
+              searchType={0} 
+              location={location}
+              onGetStarted={() => navigate('/jobs')}
+            />
+          ) : (
+            <>
+              {totalResults > 0 && (
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                    borderRadius: 3,
+                    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+                  }}
+                >
+                  <Typography variant="h6" fontWeight="bold">
+                    📍 {totalResults} job{totalResults !== 1 ? 's' : ''} found within{' '}
+                    {distance} miles of {location}
+                  </Typography>
+                  <Chip 
+                    label={`Page ${currentPage}`} 
+                    variant="outlined" 
+                    color="primary"
+                  />
+                </Box>
+              )}
+
+              <Grid container spacing={3}>
+                {searchResults.map((job) => (
+                  <Grid item xs={12} key={job.id}>
+                    <JobCard job={job} showLocation={true} />
+                  </Grid>
+                ))}
+              </Grid>
+
+              {totalResults > 10 && (
+                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      disabled={currentPage === 1 || loading}
+                      onClick={() => handleSearch(currentPage - 1)}
+                      variant="outlined"
+                      sx={{ borderRadius: 2 }}
+                    >
+                      Previous Page
+                    </Button>
+                    <Button
+                      disabled={currentPage * 10 >= totalResults || loading}
+                      onClick={() => handleSearch(currentPage + 1)}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: theme.palette.secondary.main,
+                        borderRadius: 2
+                      }}
+                    >
+                      Next Page
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
+            </>
+          )}
+        </TabPanel>
+
+        <TabPanel value={searchType} index={1}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={60} />
+            </Box>
+          ) : searched && searchResults.length === 0 ? (
+            <EmptySearchState 
+              searchType={1} 
+              location={location}
+              onGetStarted={() => navigate('/find-talents')}
+            />
+          ) : (
+            <>
+              {totalResults > 0 && (
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                    borderRadius: 3,
+                    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+                  }}
+                >
+                  <Typography variant="h6" fontWeight="bold">
+                    👥 {totalResults} worker{totalResults !== 1 ? 's' : ''} found
+                    within {distance} miles of {location}
+                  </Typography>
+                  <Chip 
+                    label={`Page ${currentPage}`} 
+                    variant="outlined" 
+                    color="primary"
+                  />
+                </Box>
+              )}
+
+              <Grid container spacing={3}>
+                {searchResults.map((worker) => (
+                  <Grid item xs={12} sm={6} md={4} key={worker.id}>
+                    <WorkerCard worker={worker} showLocation={true} />
+                  </Grid>
+                ))}
+              </Grid>
+
+              {totalResults > 10 && (
+                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      disabled={currentPage === 1 || loading}
+                      onClick={() => handleSearch(currentPage - 1)}
+                      variant="outlined"
+                      sx={{ borderRadius: 2 }}
+                    >
+                      Previous Page
+                    </Button>
+                    <Button
+                      disabled={currentPage * 10 >= totalResults || loading}
+                      onClick={() => handleSearch(currentPage + 1)}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: theme.palette.secondary.main,
+                        borderRadius: 2
+                      }}
+                    >
+                      Next Page
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
+            </>
+          )}
+        </TabPanel>
+
+        {/* Floating Action Button for Mobile */}
+        <Fab
+          color="primary"
+          aria-label="quick search"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          sx={{
+            position: 'fixed',
+            bottom: 90,
+            right: 20,
+            backgroundColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
+            display: { xs: 'flex', md: 'none' },
+            '&:hover': {
+              backgroundColor: theme.palette.secondary.dark,
             }
           }}
         >
-          <Tab 
-            icon={<WorkIcon sx={{ fontSize: 28 }} />} 
-            label="Find Jobs" 
-            iconPosition="start"
-          />
-          <Tab 
-            icon={<PersonIcon sx={{ fontSize: 28 }} />} 
-            label="Find Talent" 
-            iconPosition="start"
-          />
-        </Tabs>
-      </Paper>
-
-      {locationError && (
-        <LocationErrorFallback
-          onRetry={getCurrentLocation}
-          onManualEntry={handleManualLocationEntry}
-        />
-      )}
-
-      <Paper sx={{ 
-        p: { xs: 3, sm: 4, md: 5 }, 
-        mb: 4, 
-        borderRadius: 3,
-        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-        backgroundColor: theme.palette.background.paper,
-        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
-        '&:hover': {
-          borderColor: theme.palette.secondary.main,
-          boxShadow: `0 12px 40px ${alpha(theme.palette.secondary.main, 0.2)}`
-        }
-      }}>
-        <Typography 
-          variant="h4" 
-          gutterBottom 
-          fontWeight="bold" 
-          sx={{
-            color: theme.palette.secondary.main,
-            textAlign: 'center',
-            mb: 4,
-            fontSize: { xs: '1.5rem', sm: '2rem' }
-          }}
-        >
-          🎯 Search Parameters
-        </Typography>
-        
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={5}>
-            <Box sx={{ position: 'relative' }}>
-              <TextField
-                fullWidth
-                label="Location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="City, State, Country"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    backgroundColor: alpha(theme.palette.background.default, 0.3),
-                    fontSize: '1rem',
-                    '& fieldset': { 
-                      borderColor: theme.palette.secondary.main,
-                      borderWidth: 2
-                    },
-                    '&:hover fieldset': { 
-                      borderColor: theme.palette.secondary.light,
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: theme.palette.text.secondary,
-                    fontWeight: 600,
-                    '&.Mui-focused': {
-                      color: theme.palette.secondary.main
-                    }
-                  },
-                  '& .MuiInputBase-input': {
-                    color: theme.palette.text.primary,
-                    fontSize: '1rem',
-                    fontWeight: 500,
-                    '&::placeholder': {
-                      color: theme.palette.text.secondary,
-                      opacity: 0.8
-                    }
-                  }
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip title="Use your current location">
-                        <IconButton 
-                          onClick={getCurrentLocation} 
-                          edge="end"
-                          disabled={loading}
-                          sx={{
-                            color: theme.palette.secondary.main,
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.secondary.main, 0.1)
-                            }
-                          }}
-                        >
-                          {loading ? (
-                            <CircularProgress 
-                              size={24} 
-                              sx={{ color: theme.palette.secondary.main }} 
-                            />
-                          ) : (
-                            <MyLocationIcon sx={{ fontSize: 28 }} />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {suggestedLocations.length > 0 && (
-                <Paper
-                  elevation={12}
-                  sx={{
-                    mt: 1,
-                    position: 'absolute',
-                    zIndex: 100,
-                    width: '100%',
-                    maxHeight: 250,
-                    overflow: 'auto',
-                    borderRadius: 3,
-                    border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                    backgroundColor: theme.palette.background.paper,
-                  }}
-                >
-                  <List dense>
-                    {suggestedLocations.map((item) => (
-                      <ListItem
-                        button
-                        key={item.id}
-                        onClick={() => {
-                          setLocation(item.description);
-                          setSuggestedLocations([]);
-                        }}
-                        sx={{
-                          py: 1.5,
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.secondary.main, 0.1)
-                          }
-                        }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 36 }}>
-                          <LocationIcon 
-                            fontSize="small" 
-                            sx={{ color: theme.palette.secondary.main }} 
-                          />
-                        </ListItemIcon>
-                        <ListItemText 
-                          primary={item.description}
-                          sx={{
-                            '& .MuiTypography-root': {
-                              color: theme.palette.text.primary,
-                              fontWeight: 500
-                            }
-                          }}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Paper>
-              )}
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label={`Search for ${searchType === 0 ? 'jobs' : 'workers'}`}
-              value={keywords}
-              onChange={(e) => setKeywords(e.target.value)}
-              placeholder={
-                searchType === 0 ? 'Job title, keywords' : 'Skills, name, title'
-              }
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 3,
-                  backgroundColor: alpha(theme.palette.background.default, 0.3),
-                  fontSize: '1rem',
-                  '& fieldset': { 
-                    borderColor: theme.palette.secondary.main,
-                    borderWidth: 2
-                  },
-                  '&:hover fieldset': { 
-                    borderColor: theme.palette.secondary.light,
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: theme.palette.secondary.main,
-                  }
-                },
-                '& .MuiInputLabel-root': {
-                  color: theme.palette.text.secondary,
-                  fontWeight: 600,
-                  '&.Mui-focused': {
-                    color: theme.palette.secondary.main
-                  }
-                },
-                '& .MuiInputBase-input': {
-                  color: theme.palette.text.primary,
-                  fontSize: '1rem',
-                  fontWeight: 500,
-                  '&::placeholder': {
-                    color: theme.palette.text.secondary,
-                    opacity: 0.8
-                  }
-                }
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={8} md={2}>
-            <Box>
-              <Typography 
-                variant="h6" 
-                gutterBottom 
-                fontWeight="bold" 
-                sx={{
-                  color: theme.palette.secondary.main,
-                  fontSize: { xs: '1rem', sm: '1.1rem' },
-                  textAlign: 'center'
-                }}
-              >
-                Search Radius: {distance} miles
-              </Typography>
-              <Slider
-                value={distance}
-                onChange={(e, newValue) => setDistance(newValue)}
-                aria-labelledby="distance-slider"
-                min={5}
-                max={100}
-                step={5}
-                sx={{
-                  '& .MuiSlider-thumb': {
-                    backgroundColor: theme.palette.secondary.main,
-                    border: `3px solid ${theme.palette.secondary.main}`,
-                    width: 24,
-                    height: 24,
-                    '&:hover': {
-                      boxShadow: `0 0 0 8px ${alpha(theme.palette.secondary.main, 0.16)}`
-                    }
-                  },
-                  '& .MuiSlider-track': {
-                    backgroundColor: theme.palette.secondary.main,
-                    height: 6
-                  },
-                  '& .MuiSlider-rail': {
-                    backgroundColor: alpha(theme.palette.secondary.main, 0.3),
-                    height: 6
-                  },
-                  '& .MuiSlider-mark': {
-                    backgroundColor: theme.palette.secondary.main
-                  }
-                }}
-              />
-            </Box>
-          </Grid>
-
-          <Grid item xs={4} md={1}>
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={() => handleSearch(1)}
-              disabled={loading}
-              sx={{
-                py: 2.5,
-                borderRadius: 3,
-                backgroundColor: theme.palette.secondary.main,
-                color: theme.palette.secondary.contrastText,
-                fontWeight: 'bold',
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-                '&:hover': {
-                  backgroundColor: theme.palette.secondary.dark,
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.4)}`
-                },
-                '&:disabled': {
-                  backgroundColor: alpha(theme.palette.secondary.main, 0.5)
-                }
-              }}
-              startIcon={
-                loading ? (
-                  <CircularProgress size={20} sx={{ color: 'currentColor' }} />
-                ) : (
-                  <SearchIcon />
-                )
-              }
-            >
-              {isMobile ? '' : 'Search'}
-            </Button>
-          </Grid>
-
-          {isMobile && (
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<FilterIcon />}
-                onClick={toggleFilters}
-                sx={{ 
-                  borderRadius: 3, 
-                  fontWeight: 'bold',
-                  py: 1.5,
-                  borderColor: theme.palette.secondary.main,
-                  color: theme.palette.secondary.main,
-                  borderWidth: 2,
-                  '&:hover': {
-                    borderColor: theme.palette.secondary.light,
-                    backgroundColor: alpha(theme.palette.secondary.main, 0.1)
-                  }
-                }}
-              >
-                {filtersVisible ? 'Hide Filters' : 'Show Filters'}
-              </Button>
-            </Grid>
-          )}
-        </Grid>
-
-        {filtersVisible && (
-          <Grow in>
-            <Box sx={{ mt: 3 }}>
-              <Divider sx={{ my: 3 }} />
-
-              <Grid container spacing={3} alignItems="center">
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>
-                      {searchType === 0 ? 'Job Category' : 'Skill Category'}
-                    </InputLabel>
-                    <Select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      label={searchType === 0 ? 'Job Category' : 'Skill Category'}
-                      sx={{ borderRadius: 2 }}
-                    >
-                      <MenuItem value="">
-                        <em>All Categories</em>
-                      </MenuItem>
-                      {(searchType === 0 ? categories : skills).map((item) => (
-                        <MenuItem key={item.id} value={item.id}>
-                          {item.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Sort By</InputLabel>
-                    <Select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      label="Sort By"
-                      sx={{ borderRadius: 2 }}
-                    >
-                      <MenuItem value="relevance">Relevance</MenuItem>
-                      <MenuItem value="distance">Distance</MenuItem>
-                      <MenuItem value="newest">Date (Newest First)</MenuItem>
-                      {searchType === 0 ? (
-                        <MenuItem value="salary">Salary (Highest First)</MenuItem>
-                      ) : (
-                        <MenuItem value="rating">Rating (Highest First)</MenuItem>
-                      )}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      variant="text"
-                      startIcon={<ClearIcon />}
-                      onClick={clearFilters}
-                      sx={{ fontWeight: 'bold' }}
-                    >
-                      Clear Filters
-                    </Button>
-
-                    <Button
-                      variant="contained"
-                      onClick={() => handleSearch(1)}
-                      disabled={loading}
-                      sx={{
-                        background: `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.primary.main} 90%)`,
-                        fontWeight: 'bold'
-                      }}
-                      startIcon={
-                        loading ? <CircularProgress size={20} /> : <SortIcon />
-                      }
-                    >
-                      Apply Filters
-                    </Button>
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Box>
-          </Grow>
-        )}
-      </Paper>
-
-      {error && (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 3, borderRadius: 2 }} 
-          onClose={() => setError(null)}
-        >
-          {error}
-        </Alert>
-      )}
-
-      <TabPanel value={searchType} index={0}>
-        {/* Jobs search results */}
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={60} />
-          </Box>
-        ) : searched && searchResults.length === 0 ? (
-          <EmptySearchState 
-            searchType={0} 
-            location={location}
-            onGetStarted={() => navigate('/jobs')}
-          />
-        ) : (
-          <>
-            {totalResults > 0 && (
-              <Box
-                sx={{
-                  mb: 3,
-                  p: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
-                  borderRadius: 3,
-                }}
-              >
-                <Typography variant="h6" fontWeight="bold">
-                  📍 {totalResults} job{totalResults !== 1 ? 's' : ''} found within{' '}
-                  {distance} miles of {location}
-                </Typography>
-
-                <Chip 
-                  label={`Page ${currentPage}`} 
-                  variant="outlined" 
-                  color="primary"
-                />
-              </Box>
-            )}
-
-            <Grid container spacing={3}>
-              {searchResults.map((job) => (
-                <Grid item xs={12} key={job.id}>
-                  <JobCard job={job} showLocation={true} />
-                </Grid>
-              ))}
-            </Grid>
-
-            {totalResults > 10 && (
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    disabled={currentPage === 1 || loading}
-                    onClick={() => handleSearch(currentPage - 1)}
-                    variant="outlined"
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Previous Page
-                  </Button>
-
-                  <Button
-                    disabled={currentPage * 10 >= totalResults || loading}
-                    onClick={() => handleSearch(currentPage + 1)}
-                    variant="contained"
-                    sx={{
-                      background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                      borderRadius: 2
-                    }}
-                  >
-                    Next Page
-                  </Button>
-                </Stack>
-              </Box>
-            )}
-          </>
-        )}
-      </TabPanel>
-
-      <TabPanel value={searchType} index={1}>
-        {/* Workers search results */}
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={60} />
-          </Box>
-        ) : searched && searchResults.length === 0 ? (
-          <EmptySearchState 
-            searchType={1} 
-            location={location}
-            onGetStarted={() => navigate('/find-talents')}
-          />
-        ) : (
-          <>
-            {totalResults > 0 && (
-              <Box
-                sx={{
-                  mb: 3,
-                  p: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
-                  borderRadius: 3,
-                }}
-              >
-                <Typography variant="h6" fontWeight="bold">
-                  👥 {totalResults} worker{totalResults !== 1 ? 's' : ''} found
-                  within {distance} miles of {location}
-                </Typography>
-
-                <Chip 
-                  label={`Page ${currentPage}`} 
-                  variant="outlined" 
-                  color="primary"
-                />
-              </Box>
-            )}
-
-            <Grid container spacing={3}>
-              {searchResults.map((worker) => (
-                <Grid item xs={12} sm={6} md={4} key={worker.id}>
-                  <WorkerCard worker={worker} showLocation={true} />
-                </Grid>
-              ))}
-            </Grid>
-
-            {totalResults > 10 && (
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    disabled={currentPage === 1 || loading}
-                    onClick={() => handleSearch(currentPage - 1)}
-                    variant="outlined"
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Previous Page
-                  </Button>
-
-                  <Button
-                    disabled={currentPage * 10 >= totalResults || loading}
-                    onClick={() => handleSearch(currentPage + 1)}
-                    variant="contained"
-                    sx={{
-                      background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                      borderRadius: 2
-                    }}
-                  >
-                    Next Page
-                  </Button>
-                </Stack>
-              </Box>
-            )}
-          </>
-        )}
-      </TabPanel>
-    </Container>
+          <Navigation />
+        </Fab>
+      </Container>
+    </Box>
   );
 };
 
