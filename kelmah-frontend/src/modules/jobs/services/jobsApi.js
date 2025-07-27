@@ -5,7 +5,7 @@ import { SERVICES } from '../../../config/environment';
 const jobServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE, // Will be SERVICES.JOB_SERVICE when deployed
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Add auth tokens to requests
@@ -17,7 +17,7 @@ jobServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Comprehensive mock jobs data
@@ -26,7 +26,8 @@ const mockJobsData = {
     {
       id: 'job-1',
       title: 'Kitchen Renovation - Custom Cabinets',
-      description: 'We need a skilled carpenter to design and install custom kitchen cabinets for a modern home renovation project. The work includes measuring, designing, building, and installing high-quality wooden cabinets.',
+      description:
+        'We need a skilled carpenter to design and install custom kitchen cabinets for a modern home renovation project. The work includes measuring, designing, building, and installing high-quality wooden cabinets.',
       category: 'Carpentry',
       subcategory: 'Cabinet Making',
       type: 'fixed',
@@ -37,7 +38,7 @@ const mockJobsData = {
         city: 'Accra',
         region: 'Greater Accra',
         address: 'East Legon',
-        coordinates: { lat: 5.6037, lng: -0.1870 }
+        coordinates: { lat: 5.6037, lng: -0.187 },
       },
       skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing', 'Design'],
       urgency: 'medium',
@@ -46,13 +47,13 @@ const mockJobsData = {
         'Minimum 3 years carpentry experience',
         'Portfolio of kitchen cabinet work',
         'Own tools and transportation',
-        'Available for 3-week project timeline'
+        'Available for 3-week project timeline',
       ],
       benefits: [
         'Competitive fixed rate payment',
         'Potential for future projects',
         'Professional reference provided',
-        'Material costs covered separately'
+        'Material costs covered separately',
       ],
       postedBy: {
         id: 'hirer-001',
@@ -60,7 +61,7 @@ const mockJobsData = {
         company: 'Mitchell Construction Ltd',
         avatar: '/api/placeholder/50/50',
         rating: 4.8,
-        verificationStatus: 'verified'
+        verificationStatus: 'verified',
       },
       applicationsCount: 8,
       viewsCount: 24,
@@ -68,12 +69,13 @@ const mockJobsData = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
       updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
-      featured: true
+      featured: true,
     },
     {
       id: 'job-2',
       title: 'Office Interior Design & Setup',
-      description: 'Looking for an experienced interior designer to completely redesign and set up our new office space. The project includes space planning, furniture selection, lighting design, and complete installation.',
+      description:
+        'Looking for an experienced interior designer to completely redesign and set up our new office space. The project includes space planning, furniture selection, lighting design, and complete installation.',
       category: 'Interior Design',
       subcategory: 'Office Design',
       type: 'fixed',
@@ -84,22 +86,27 @@ const mockJobsData = {
         city: 'Accra',
         region: 'Greater Accra',
         address: 'Airport City',
-        coordinates: { lat: 5.6100, lng: -0.1767 }
+        coordinates: { lat: 5.61, lng: -0.1767 },
       },
-      skills: ['Interior Design', 'Space Planning', 'Project Management', 'Furniture Selection'],
+      skills: [
+        'Interior Design',
+        'Space Planning',
+        'Project Management',
+        'Furniture Selection',
+      ],
       urgency: 'high',
       duration: '4 weeks',
       requirements: [
         'Interior design certification or equivalent experience',
         'Proven track record with office designs',
         'Ability to manage full project lifecycle',
-        'Experience with modern office layouts'
+        'Experience with modern office layouts',
       ],
       benefits: [
         'High-value project with room for creativity',
         'Milestone-based payments',
         'Portfolio piece for future marketing',
-        'Long-term client relationship potential'
+        'Long-term client relationship potential',
       ],
       postedBy: {
         id: 'hirer-002',
@@ -107,7 +114,7 @@ const mockJobsData = {
         company: 'TechFlow Solutions',
         avatar: '/api/placeholder/50/50',
         rating: 4.9,
-        verificationStatus: 'verified'
+        verificationStatus: 'verified',
       },
       applicationsCount: 12,
       viewsCount: 45,
@@ -115,12 +122,13 @@ const mockJobsData = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
       updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21),
-      featured: true
+      featured: true,
     },
     {
       id: 'job-3',
       title: 'Residential Electrical System Upgrade',
-      description: 'Complete electrical system upgrade for a 4-bedroom house including new wiring, outlets, modern electrical panel, and safety inspections.',
+      description:
+        'Complete electrical system upgrade for a 4-bedroom house including new wiring, outlets, modern electrical panel, and safety inspections.',
       category: 'Electrical',
       subcategory: 'Residential Wiring',
       type: 'fixed',
@@ -131,22 +139,27 @@ const mockJobsData = {
         city: 'Tema',
         region: 'Greater Accra',
         address: 'Community 25',
-        coordinates: { lat: 5.6698, lng: -0.0167 }
+        coordinates: { lat: 5.6698, lng: -0.0167 },
       },
-      skills: ['Electrical Installation', 'Wiring', 'Safety Certification', 'Electrical Panel'],
+      skills: [
+        'Electrical Installation',
+        'Wiring',
+        'Safety Certification',
+        'Electrical Panel',
+      ],
       urgency: 'medium',
       duration: '2 weeks',
       requirements: [
         'Licensed electrician certification',
         'Experience with residential electrical systems',
         'Safety protocol compliance',
-        'Insurance coverage required'
+        'Insurance coverage required',
       ],
       benefits: [
         'Fair market rate compensation',
         'Materials provided by client',
         'Flexible working hours',
-        'Safety equipment provided'
+        'Safety equipment provided',
       ],
       postedBy: {
         id: 'hirer-003',
@@ -154,7 +167,7 @@ const mockJobsData = {
         company: 'Asante Family',
         avatar: '/api/placeholder/50/50',
         rating: 4.6,
-        verificationStatus: 'verified'
+        verificationStatus: 'verified',
       },
       applicationsCount: 6,
       viewsCount: 18,
@@ -162,12 +175,13 @@ const mockJobsData = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
       updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
-      featured: false
+      featured: false,
     },
     {
       id: 'job-4',
       title: 'Bathroom Renovation - Modern Design',
-      description: 'Complete bathroom renovation with modern fixtures, tiling, plumbing updates, and stylish finishing touches.',
+      description:
+        'Complete bathroom renovation with modern fixtures, tiling, plumbing updates, and stylish finishing touches.',
       category: 'Plumbing',
       subcategory: 'Bathroom Renovation',
       type: 'fixed',
@@ -178,7 +192,7 @@ const mockJobsData = {
         city: 'Kumasi',
         region: 'Ashanti',
         address: 'Adum',
-        coordinates: { lat: 6.6885, lng: -1.6244 }
+        coordinates: { lat: 6.6885, lng: -1.6244 },
       },
       skills: ['Plumbing', 'Tiling', 'Bathroom Design', 'Fixture Installation'],
       urgency: 'low',
@@ -187,13 +201,13 @@ const mockJobsData = {
         'Licensed plumber certification',
         'Experience with bathroom renovations',
         'Tiling and fixture installation skills',
-        'Portfolio of previous bathroom work'
+        'Portfolio of previous bathroom work',
       ],
       benefits: [
         'Creative project with modern design',
         'All materials provided',
         'Competitive compensation',
-        'Potential for additional home projects'
+        'Potential for additional home projects',
       ],
       postedBy: {
         id: 'hirer-004',
@@ -201,7 +215,7 @@ const mockJobsData = {
         company: 'Boateng Residence',
         avatar: '/api/placeholder/50/50',
         rating: 4.7,
-        verificationStatus: 'verified'
+        verificationStatus: 'verified',
       },
       applicationsCount: 9,
       viewsCount: 22,
@@ -209,12 +223,13 @@ const mockJobsData = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
       updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18),
-      featured: false
+      featured: false,
     },
     {
       id: 'job-5',
       title: 'Commercial Painting - Office Building',
-      description: 'Professional painting services for a 3-story office building including interior and exterior work.',
+      description:
+        'Professional painting services for a 3-story office building including interior and exterior work.',
       category: 'Painting',
       subcategory: 'Commercial Painting',
       type: 'fixed',
@@ -225,22 +240,27 @@ const mockJobsData = {
         city: 'Takoradi',
         region: 'Western',
         address: 'Takoradi Market Circle',
-        coordinates: { lat: 4.8845, lng: -1.7554 }
+        coordinates: { lat: 4.8845, lng: -1.7554 },
       },
-      skills: ['Commercial Painting', 'Surface Preparation', 'Color Consultation', 'Safety Protocols'],
+      skills: [
+        'Commercial Painting',
+        'Surface Preparation',
+        'Color Consultation',
+        'Safety Protocols',
+      ],
       urgency: 'medium',
       duration: '3 weeks',
       requirements: [
         'Commercial painting experience',
         'Safety certification required',
         'Own equipment and supplies',
-        'Insurance coverage necessary'
+        'Insurance coverage necessary',
       ],
       benefits: [
         'Large scale project',
         'Professional reference',
         'Competitive market rate',
-        'Potential for ongoing maintenance work'
+        'Potential for ongoing maintenance work',
       ],
       postedBy: {
         id: 'hirer-005',
@@ -248,7 +268,7 @@ const mockJobsData = {
         company: 'Coastal Properties Ltd',
         avatar: '/api/placeholder/50/50',
         rating: 4.5,
-        verificationStatus: 'verified'
+        verificationStatus: 'verified',
       },
       applicationsCount: 11,
       viewsCount: 33,
@@ -256,17 +276,17 @@ const mockJobsData = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
       updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 25),
-      featured: false
-    }
+      featured: false,
+    },
   ],
   totalPages: 2,
-  totalJobs: 8
+  totalJobs: 8,
 };
 
 // Data transformation helpers
 const transformJobListItem = (job) => {
   if (!job) return null;
-  
+
   return {
     id: job.id,
     title: job.title,
@@ -288,21 +308,21 @@ const transformJobListItem = (job) => {
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
     deadline: job.deadline,
-    featured: job.featured || false
+    featured: job.featured || false,
   };
 };
 
 const transformJobDetail = (job) => {
   if (!job) return null;
-  
+
   return {
     ...job,
     requirements: job.requirements || [],
     benefits: job.benefits || [],
     location: {
       ...job.location,
-      coordinates: job.location?.coordinates || { lat: 5.6037, lng: -0.1870 }
-    }
+      coordinates: job.location?.coordinates || { lat: 5.6037, lng: -0.187 },
+    },
   };
 };
 
@@ -324,44 +344,61 @@ const jobsApi = {
       const jobs = (raw.data || []).map(transformJobListItem);
       return { jobs, totalPages };
     } catch (error) {
-      console.warn('Job service unavailable, using comprehensive mock data:', error.message);
-      
+      console.warn(
+        'Job service unavailable, using comprehensive mock data:',
+        error.message,
+      );
+
       // Apply filters to mock data
       let filteredJobs = mockJobsData.jobs;
-      
+
       if (params.search) {
         const searchTerm = params.search.toLowerCase();
-        filteredJobs = filteredJobs.filter(job =>
-          job.title.toLowerCase().includes(searchTerm) ||
-          job.description.toLowerCase().includes(searchTerm) ||
-          job.skills.some(skill => skill.toLowerCase().includes(searchTerm))
+        filteredJobs = filteredJobs.filter(
+          (job) =>
+            job.title.toLowerCase().includes(searchTerm) ||
+            job.description.toLowerCase().includes(searchTerm) ||
+            job.skills.some((skill) =>
+              skill.toLowerCase().includes(searchTerm),
+            ),
         );
       }
-      
+
       if (params.category) {
-        filteredJobs = filteredJobs.filter(job => job.category === params.category);
-      }
-      
-      if (params.location) {
-        filteredJobs = filteredJobs.filter(job => 
-          job.location.city.toLowerCase().includes(params.location.toLowerCase()) ||
-          job.location.region.toLowerCase().includes(params.location.toLowerCase())
+        filteredJobs = filteredJobs.filter(
+          (job) => job.category === params.category,
         );
       }
-      
+
+      if (params.location) {
+        filteredJobs = filteredJobs.filter(
+          (job) =>
+            job.location.city
+              .toLowerCase()
+              .includes(params.location.toLowerCase()) ||
+            job.location.region
+              .toLowerCase()
+              .includes(params.location.toLowerCase()),
+        );
+      }
+
       if (params.minBudget) {
-        filteredJobs = filteredJobs.filter(job => job.budget >= parseInt(params.minBudget));
+        filteredJobs = filteredJobs.filter(
+          (job) => job.budget >= parseInt(params.minBudget),
+        );
       }
-      
+
       if (params.maxBudget) {
-        filteredJobs = filteredJobs.filter(job => job.budget <= parseInt(params.maxBudget));
+        filteredJobs = filteredJobs.filter(
+          (job) => job.budget <= parseInt(params.maxBudget),
+        );
       }
-      
+
       const jobs = filteredJobs.map(transformJobListItem);
-      return { 
-        jobs, 
+      return {
+        jobs,
         totalPages: Math.ceil(jobs.length / 10),
-        totalJobs: jobs.length
+        totalJobs: jobs.length,
       };
     }
   },
@@ -379,10 +416,13 @@ const jobsApi = {
       const job = transformJobDetail(raw.data);
       return job;
     } catch (error) {
-      console.warn(`Job service unavailable for job ${id}, using mock data:`, error.message);
-      
+      console.warn(
+        `Job service unavailable for job ${id}, using mock data:`,
+        error.message,
+      );
+
       // Return mock job data
-      const job = mockJobsData.jobs.find(j => j.id === id);
+      const job = mockJobsData.jobs.find((j) => j.id === id);
       if (job) {
         return transformJobDetail(job);
       } else {
@@ -403,8 +443,11 @@ const jobsApi = {
       const raw = response.data;
       return transformJobDetail(raw.data);
     } catch (error) {
-      console.warn('Job service unavailable for job creation, simulating success:', error.message);
-      
+      console.warn(
+        'Job service unavailable for job creation, simulating success:',
+        error.message,
+      );
+
       const newJob = {
         id: `job-${Date.now()}`,
         ...jobData,
@@ -420,10 +463,10 @@ const jobsApi = {
           company: 'Your Company',
           avatar: '/api/placeholder/50/50',
           rating: 4.8,
-          verificationStatus: 'verified'
-        }
+          verificationStatus: 'verified',
+        },
       };
-      
+
       return transformJobDetail(newJob);
     }
   },
@@ -440,15 +483,19 @@ const jobsApi = {
       const raw = response.data;
       return transformJobDetail(raw.data);
     } catch (error) {
-      console.warn(`Job service unavailable for job ${id} update, simulating success:`, error.message);
-      
-      const existingJob = mockJobsData.jobs.find(j => j.id === id) || mockJobsData.jobs[0];
+      console.warn(
+        `Job service unavailable for job ${id} update, simulating success:`,
+        error.message,
+      );
+
+      const existingJob =
+        mockJobsData.jobs.find((j) => j.id === id) || mockJobsData.jobs[0];
       const updatedJob = {
         ...existingJob,
         ...jobData,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
-      
+
       return transformJobDetail(updatedJob);
     }
   },
@@ -462,7 +509,10 @@ const jobsApi = {
     try {
       await jobServiceClient.delete(`/api/jobs/${id}`);
     } catch (error) {
-      console.warn(`Job service unavailable for job ${id} deletion, simulating success:`, error.message);
+      console.warn(
+        `Job service unavailable for job ${id} deletion, simulating success:`,
+        error.message,
+      );
       // Simulate successful deletion
     }
   },
@@ -475,11 +525,17 @@ const jobsApi = {
    */
   applyToJob: async (jobId, applicationData) => {
     try {
-      const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+      const response = await jobServiceClient.post(
+        `/api/jobs/${jobId}/apply`,
+        applicationData,
+      );
       return response.data;
     } catch (error) {
-      console.warn(`Job service unavailable for job ${jobId} application, simulating success:`, error.message);
-      
+      console.warn(
+        `Job service unavailable for job ${jobId} application, simulating success:`,
+        error.message,
+      );
+
       return {
         success: true,
         message: 'Application submitted successfully (mock)',
@@ -488,8 +544,8 @@ const jobsApi = {
           jobId,
           status: 'pending',
           submittedAt: new Date(),
-          ...applicationData
-        }
+          ...applicationData,
+        },
       };
     }
   },
@@ -501,11 +557,16 @@ const jobsApi = {
    */
   getJobApplications: async (jobId) => {
     try {
-      const response = await jobServiceClient.get(`/api/jobs/${jobId}/applications`);
+      const response = await jobServiceClient.get(
+        `/api/jobs/${jobId}/applications`,
+      );
       return response.data;
     } catch (error) {
-      console.warn(`Job service unavailable for job ${jobId} applications, using mock data:`, error.message);
-      
+      console.warn(
+        `Job service unavailable for job ${jobId} applications, using mock data:`,
+        error.message,
+      );
+
       return [
         {
           id: `app-${jobId}-1`,
@@ -515,15 +576,16 @@ const jobsApi = {
             name: 'Tony Gate',
             avatar: '/api/placeholder/50/50',
             rating: 4.8,
-            completedJobs: 23
+            completedJobs: 23,
           },
           status: 'pending',
           submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-          coverLetter: 'I am very interested in this position and have relevant experience.'
-        }
+          coverLetter:
+            'I am very interested in this position and have relevant experience.',
+        },
       ];
     }
-  }
+  },
 };
 
 export default jobsApi;

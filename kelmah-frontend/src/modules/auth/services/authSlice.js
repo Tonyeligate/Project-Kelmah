@@ -51,7 +51,7 @@ export const login = createAsyncThunk(
         // Store token and user data in localStorage
         localStorage.setItem(TOKEN_KEY, token);
         localStorage.setItem('user', JSON.stringify(user));
-        
+
         if (refreshToken) {
           localStorage.setItem('refreshToken', refreshToken);
         }
@@ -63,7 +63,10 @@ export const login = createAsyncThunk(
           refreshToken,
         };
       } else {
-        console.warn('No token received in login response. Response structure:', response);
+        console.warn(
+          'No token received in login response. Response structure:',
+          response,
+        );
         return rejectWithValue('No authentication token received');
       }
     } catch (error) {

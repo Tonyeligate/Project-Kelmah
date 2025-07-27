@@ -1,6 +1,6 @@
 /**
  * Authentication Service
- * 
+ *
  * Centralized authentication service that handles all auth-related API calls
  * using the new environment configuration system.
  */
@@ -12,35 +12,42 @@ import { SERVICES, AUTH_CONFIG } from '../../../config/environment';
 const authServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE,
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Add auth tokens to requests (except for login/register)
 authServiceClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
-    if (token && !config.url.includes('/login') && !config.url.includes('/register')) {
+    if (
+      token &&
+      !config.url.includes('/login') &&
+      !config.url.includes('/register')
+    ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await authServiceClient.post('/api/auth/login', credentials);
+      const response = await authServiceClient.post(
+        '/api/auth/login',
+        credentials,
+      );
       const { token, user } = response.data.data || response.data;
-      
+
       if (token) {
         localStorage.setItem(AUTH_CONFIG.tokenKey, token);
       }
       if (user) {
         localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
       }
-      
+
       return { token, user, success: true };
     } catch (error) {
       console.error('Login error:', error);
@@ -51,16 +58,19 @@ const authService = {
   // Register user
   register: async (userData) => {
     try {
-      const response = await authServiceClient.post('/api/auth/register', userData);
+      const response = await authServiceClient.post(
+        '/api/auth/register',
+        userData,
+      );
       const { token, user } = response.data.data || response.data;
-      
+
       if (token) {
         localStorage.setItem(AUTH_CONFIG.tokenKey, token);
       }
       if (user) {
         localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
       }
-      
+
       return { token, user, success: true };
     } catch (error) {
       console.error('Registration error:', error);
@@ -73,11 +83,11 @@ const authService = {
     try {
       const response = await authServiceClient.get('/api/auth/verify');
       const { user } = response.data.data || response.data;
-      
+
       if (user) {
         localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
       }
-      
+
       return { user, success: true };
     } catch (error) {
       console.warn('Auth verification failed:', error.message);
@@ -128,11 +138,11 @@ const authService = {
     try {
       const response = await authServiceClient.post('/api/auth/refresh');
       const { token } = response.data.data || response.data;
-      
+
       if (token) {
         localStorage.setItem(AUTH_CONFIG.tokenKey, token);
       }
-      
+
       return { token, success: true };
     } catch (error) {
       console.warn('Token refresh failed:', error.message);
@@ -143,7 +153,10 @@ const authService = {
   // Forgot password
   forgotPassword: async (email) => {
     try {
-      const response = await authServiceClient.post('/api/auth/forgot-password', { email });
+      const response = await authServiceClient.post(
+        '/api/auth/forgot-password',
+        { email },
+      );
       return response.data;
     } catch (error) {
       console.error('Forgot password error:', error);
@@ -154,7 +167,10 @@ const authService = {
   // Reset password
   resetPassword: async (token, password) => {
     try {
-      const response = await authServiceClient.post('/api/auth/reset-password', { token, password });
+      const response = await authServiceClient.post(
+        '/api/auth/reset-password',
+        { token, password },
+      );
       return response.data;
     } catch (error) {
       console.error('Reset password error:', error);
@@ -165,13 +181,16 @@ const authService = {
   // Update profile
   updateProfile: async (profileData) => {
     try {
-      const response = await authServiceClient.put('/api/auth/profile', profileData);
+      const response = await authServiceClient.put(
+        '/api/auth/profile',
+        profileData,
+      );
       const { user } = response.data.data || response.data;
-      
+
       if (user) {
         localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
       }
-      
+
       return { user, success: true };
     } catch (error) {
       console.error('Profile update error:', error);
@@ -182,11 +201,14 @@ const authService = {
   // Change password
   changePassword: async (currentPassword, newPassword) => {
     try {
-      const response = await authServiceClient.put('/api/auth/change-password', {
-        currentPassword,
-        newPassword
-    });
-    return response.data;
+      const response = await authServiceClient.put(
+        '/api/auth/change-password',
+        {
+          currentPassword,
+          newPassword,
+        },
+      );
+      return response.data;
     } catch (error) {
       console.error('Change password error:', error);
       throw error;
@@ -222,7 +244,7 @@ const authService = {
       console.error('Error getting stored user:', error);
       return null;
     }
-  }
+  },
 };
 
 export default authService;

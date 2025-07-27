@@ -24,7 +24,7 @@ userServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Mock worker data
@@ -45,9 +45,9 @@ const mockWorkerData = {
     languages: ['English', 'Twi'],
     verified: true,
     joinedAt: new Date('2022-03-15'),
-    lastActive: new Date()
+    lastActive: new Date(),
   },
-  
+
   skills: [
     {
       id: 'skill-1',
@@ -57,7 +57,7 @@ const mockWorkerData = {
       yearsExperience: 8,
       verified: true,
       verifiedAt: new Date('2023-01-15'),
-      description: 'Custom furniture making, cabinet installation, woodworking'
+      description: 'Custom furniture making, cabinet installation, woodworking',
     },
     {
       id: 'skill-2',
@@ -67,7 +67,7 @@ const mockWorkerData = {
       yearsExperience: 6,
       verified: true,
       verifiedAt: new Date('2023-02-20'),
-      description: 'Custom chairs, tables, beds, and storage solutions'
+      description: 'Custom chairs, tables, beds, and storage solutions',
     },
     {
       id: 'skill-3',
@@ -76,10 +76,11 @@ const mockWorkerData = {
       level: 'Advanced',
       yearsExperience: 4,
       verified: false,
-      description: 'Complete kitchen setup, cabinet mounting, countertop installation'
-    }
+      description:
+        'Complete kitchen setup, cabinet mounting, countertop installation',
+    },
   ],
-  
+
   licenses: [
     {
       id: 'license-1',
@@ -88,7 +89,7 @@ const mockWorkerData = {
       issueDate: new Date('2020-06-15'),
       expiryDate: new Date('2025-06-15'),
       status: 'active',
-      verified: true
+      verified: true,
     },
     {
       id: 'license-2',
@@ -97,10 +98,10 @@ const mockWorkerData = {
       issueDate: new Date('2023-01-10'),
       expiryDate: new Date('2024-01-10'),
       status: 'active',
-      verified: true
-    }
+      verified: true,
+    },
   ],
-  
+
   availability: {
     status: 'available', // available, busy, away
     workSchedule: {
@@ -110,7 +111,7 @@ const mockWorkerData = {
       thursday: { available: true, startTime: '08:00', endTime: '17:00' },
       friday: { available: true, startTime: '08:00', endTime: '17:00' },
       saturday: { available: true, startTime: '09:00', endTime: '15:00' },
-      sunday: { available: false, startTime: null, endTime: null }
+      sunday: { available: false, startTime: null, endTime: null },
     },
     maxConcurrentJobs: 2,
     currentActiveJobs: 1,
@@ -119,11 +120,11 @@ const mockWorkerData = {
     hourlyRate: {
       min: 15,
       max: 45,
-      currency: 'GH₵'
+      currency: 'GH₵',
     },
-    lastUpdated: new Date()
+    lastUpdated: new Date(),
   },
-  
+
   analytics: {
     totalEarnings: 15420,
     monthlyEarnings: 3200,
@@ -134,8 +135,8 @@ const mockWorkerData = {
     averageRating: 4.8,
     totalReviews: 24,
     responseRate: 98,
-    averageResponseTime: '2.3 hours'
-  }
+    averageResponseTime: '2.3 hours',
+  },
 };
 
 class WorkersApi {
@@ -145,12 +146,15 @@ class WorkersApi {
   async getProfile() {
     try {
       const response = await userServiceClient.get('/api/users/me/profile');
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for profile, using mock data:', error.message);
+      console.warn(
+        'User service unavailable for profile, using mock data:',
+        error.message,
+      );
       return {
         success: true,
-        data: { worker: mockWorkerData.profile }
+        data: { worker: mockWorkerData.profile },
       };
     }
   }
@@ -160,14 +164,26 @@ class WorkersApi {
    */
   async updateProfile(profileData) {
     try {
-      const response = await userServiceClient.put('/api/users/me/profile', profileData);
-    return response.data;
+      const response = await userServiceClient.put(
+        '/api/users/me/profile',
+        profileData,
+      );
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for profile update, simulating success:', error.message);
+      console.warn(
+        'User service unavailable for profile update, simulating success:',
+        error.message,
+      );
       return {
         success: true,
-        data: { worker: { ...mockWorkerData.profile, ...profileData, updatedAt: new Date() } },
-        message: 'Profile updated successfully (mock)'
+        data: {
+          worker: {
+            ...mockWorkerData.profile,
+            ...profileData,
+            updatedAt: new Date(),
+          },
+        },
+        message: 'Profile updated successfully (mock)',
       };
     }
   }
@@ -178,15 +194,18 @@ class WorkersApi {
   async getSkillsAndLicenses() {
     try {
       const response = await userServiceClient.get('/api/users/me/credentials');
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for credentials, using mock data:', error.message);
+      console.warn(
+        'User service unavailable for credentials, using mock data:',
+        error.message,
+      );
       return {
         success: true,
         data: {
           skills: mockWorkerData.skills,
-          licenses: mockWorkerData.licenses
-        }
+          licenses: mockWorkerData.licenses,
+        },
       };
     }
   }
@@ -196,10 +215,16 @@ class WorkersApi {
    */
   async updateSkill(skillData) {
     try {
-      const response = await userServiceClient.post('/api/users/me/skills', skillData);
-    return response.data;
+      const response = await userServiceClient.post(
+        '/api/users/me/skills',
+        skillData,
+      );
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for skill update, simulating success:', error.message);
+      console.warn(
+        'User service unavailable for skill update, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         data: {
@@ -207,10 +232,10 @@ class WorkersApi {
             id: `skill-${Date.now()}`,
             ...skillData,
             verified: false,
-            createdAt: new Date()
-          }
+            createdAt: new Date(),
+          },
         },
-        message: 'Skill added successfully (mock)'
+        message: 'Skill added successfully (mock)',
       };
     }
   }
@@ -220,13 +245,18 @@ class WorkersApi {
    */
   async getAvailabilityStatus() {
     try {
-      const response = await userServiceClient.get('/api/users/me/availability');
-    return response.data;
+      const response = await userServiceClient.get(
+        '/api/users/me/availability',
+      );
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for availability, using mock data:', error.message);
+      console.warn(
+        'User service unavailable for availability, using mock data:',
+        error.message,
+      );
       return {
         success: true,
-        data: { availability: mockWorkerData.availability }
+        data: { availability: mockWorkerData.availability },
       };
     }
   }
@@ -236,20 +266,26 @@ class WorkersApi {
    */
   async updateAvailability(availabilityData) {
     try {
-      const response = await userServiceClient.put('/api/users/me/availability', availabilityData);
-    return response.data;
+      const response = await userServiceClient.put(
+        '/api/users/me/availability',
+        availabilityData,
+      );
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for availability update, simulating success:', error.message);
+      console.warn(
+        'User service unavailable for availability update, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         data: {
           availability: {
             ...mockWorkerData.availability,
             ...availabilityData,
-            lastUpdated: new Date()
-          }
+            lastUpdated: new Date(),
+          },
         },
-        message: 'Availability updated successfully (mock)'
+        message: 'Availability updated successfully (mock)',
       };
     }
   }
@@ -260,12 +296,15 @@ class WorkersApi {
   async getAnalytics() {
     try {
       const response = await userServiceClient.get('/api/users/me/analytics');
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for analytics, using mock data:', error.message);
+      console.warn(
+        'User service unavailable for analytics, using mock data:',
+        error.message,
+      );
       return {
         success: true,
-        data: { analytics: mockWorkerData.analytics }
+        data: { analytics: mockWorkerData.analytics },
       };
     }
   }
@@ -275,17 +314,22 @@ class WorkersApi {
    */
   async searchWorkers(params = {}) {
     try {
-      const response = await userServiceClient.get('/api/users/workers', { params });
-    return response.data;
+      const response = await userServiceClient.get('/api/users/workers', {
+        params,
+      });
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for worker search, using mock data:', error.message);
-      
+      console.warn(
+        'User service unavailable for worker search, using mock data:',
+        error.message,
+      );
+
       // Return mock worker search results
       const mockWorkers = [
         {
           ...mockWorkerData.profile,
-          skills: mockWorkerData.skills.map(s => s.name),
-          distance: 5.2
+          skills: mockWorkerData.skills.map((s) => s.name),
+          distance: 5.2,
         },
         {
           id: 'worker-2',
@@ -296,7 +340,7 @@ class WorkersApi {
           rating: 4.6,
           completedJobs: 32,
           responseTime: '1.5 hours',
-          distance: 15.8
+          distance: 15.8,
         },
         {
           id: 'worker-3',
@@ -307,8 +351,8 @@ class WorkersApi {
           rating: 4.9,
           completedJobs: 28,
           responseTime: '3 hours',
-          distance: 45.3
-        }
+          distance: 45.3,
+        },
       ];
 
       return {
@@ -319,9 +363,9 @@ class WorkersApi {
             currentPage: 1,
             totalPages: 1,
             totalItems: mockWorkers.length,
-            itemsPerPage: 10
-          }
-        }
+            itemsPerPage: 10,
+          },
+        },
       };
     }
   }
@@ -331,18 +375,23 @@ class WorkersApi {
    */
   async getNotificationCounts() {
     try {
-      const response = await userServiceClient.get('/api/users/me/notification-counts');
-    return response.data;
+      const response = await userServiceClient.get(
+        '/api/users/me/notification-counts',
+      );
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for notifications, using mock data:', error.message);
+      console.warn(
+        'User service unavailable for notifications, using mock data:',
+        error.message,
+      );
       return {
         success: true,
         data: {
           unreadMessages: 3,
           pendingApplications: 2,
           newJobMatches: 5,
-          systemNotifications: 1
-        }
+          systemNotifications: 1,
+        },
       };
     }
   }
@@ -354,11 +403,14 @@ class WorkersApi {
     try {
       const response = await userServiceClient.post(
         `/api/users/me/skills/${skillId}/verify`,
-        verificationData
-    );
-    return response.data;
+        verificationData,
+      );
+      return response.data;
     } catch (error) {
-      console.warn('User service unavailable for skill verification, simulating success:', error.message);
+      console.warn(
+        'User service unavailable for skill verification, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         data: {
@@ -367,10 +419,10 @@ class WorkersApi {
             skillId,
             status: 'pending',
             submittedAt: new Date(),
-            estimatedCompletion: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3) // 3 days
-          }
+            estimatedCompletion: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3), // 3 days
+          },
         },
-        message: 'Skill verification request submitted successfully (mock)'
+        message: 'Skill verification request submitted successfully (mock)',
       };
     }
   }

@@ -91,7 +91,11 @@ const HirerDashboard = ({ user: authUser }) => {
     },
     {
       title: 'Total Applications',
-      value: jobs.active?.reduce((sum, job) => sum + (job.applicationsCount || 0), 0) || 0,
+      value:
+        jobs.active?.reduce(
+          (sum, job) => sum + (job.applicationsCount || 0),
+          0,
+        ) || 0,
       change: '+8%',
       trend: 'up',
       icon: <AssignmentIcon />,
@@ -204,7 +208,12 @@ const HirerDashboard = ({ user: authUser }) => {
               <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
                 Welcome back, {user.firstName || 'Hirer'}!
               </Typography>
-              <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                flexWrap="wrap"
+              >
                 <Typography variant="body1" sx={{ opacity: 0.9 }}>
                   {user.company || 'Your Company'}
                 </Typography>
@@ -222,7 +231,12 @@ const HirerDashboard = ({ user: authUser }) => {
                 )}
                 <Rating value={user.rating || 0} readOnly size="small" />
               </Stack>
-              <Stack direction="row" spacing={1} sx={{ mt: 1 }} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ mt: 1 }}
+                alignItems="center"
+              >
                 <LocationOnIcon sx={{ fontSize: 16, opacity: 0.8 }} />
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
                   {user.location || 'Location not set'}
@@ -251,7 +265,8 @@ const HirerDashboard = ({ user: authUser }) => {
       {/* Error Alert */}
       {error && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          Some data may be unavailable. Showing cached information where possible.
+          Some data may be unavailable. Showing cached information where
+          possible.
         </Alert>
       )}
 
@@ -266,7 +281,7 @@ const HirerDashboard = ({ user: authUser }) => {
             <Grid item xs={12} sm={6} md={3} key={index}>
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{ type: 'spring', stiffness: 300 }}
               >
                 <Card
                   elevation={0}
@@ -282,7 +297,12 @@ const HirerDashboard = ({ user: authUser }) => {
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      sx={{ mb: 2 }}
+                    >
                       <Box
                         sx={{
                           p: 1.5,
@@ -302,7 +322,12 @@ const HirerDashboard = ({ user: authUser }) => {
                         />
                       )}
                     </Stack>
-                    <Typography variant="h4" fontWeight="bold" color={stat.color} gutterBottom>
+                    <Typography
+                      variant="h4"
+                      fontWeight="bold"
+                      color={stat.color}
+                      gutterBottom
+                    >
                       {stat.value}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -334,7 +359,7 @@ const HirerDashboard = ({ user: authUser }) => {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{ type: 'spring', stiffness: 300 }}
               >
                 <Card
                   component={RouterLink}
@@ -355,9 +380,7 @@ const HirerDashboard = ({ user: authUser }) => {
                   }}
                 >
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <Box sx={{ mb: 2 }}>
-                      {action.icon}
-                    </Box>
+                    <Box sx={{ mb: 2 }}>{action.icon}</Box>
                     <Typography variant="h6" gutterBottom fontWeight="bold">
                       {action.title}
                     </Typography>
@@ -381,9 +404,20 @@ const HirerDashboard = ({ user: authUser }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
+            <Card
+              elevation={0}
+              sx={{
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+              }}
+            >
               <CardContent sx={{ p: 3 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 3 }}
+                >
                   <Typography variant="h6" fontWeight="600">
                     Active Jobs
                   </Typography>
@@ -396,7 +430,7 @@ const HirerDashboard = ({ user: authUser }) => {
                     View All
                   </Button>
                 </Stack>
-                
+
                 {jobs.active?.length > 0 ? (
                   <Stack spacing={2}>
                     {jobs.active.slice(0, 3).map((job, index) => (
@@ -421,8 +455,16 @@ const HirerDashboard = ({ user: authUser }) => {
                               <Typography variant="subtitle1" fontWeight="500">
                                 {job.title}
                               </Typography>
-                              <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
-                                <Typography variant="body2" color="text.secondary">
+                              <Stack
+                                direction="row"
+                                spacing={2}
+                                alignItems="center"
+                                sx={{ mt: 0.5 }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
                                   {job.location}
                                 </Typography>
                                 <Chip
@@ -434,8 +476,13 @@ const HirerDashboard = ({ user: authUser }) => {
                               </Stack>
                             </Grid>
                             <Grid item>
-                              <Typography variant="h6" color="primary" fontWeight="bold">
-                                {job.currency}{job.budget?.toLocaleString()}
+                              <Typography
+                                variant="h6"
+                                color="primary"
+                                fontWeight="bold"
+                              >
+                                {job.currency}
+                                {job.budget?.toLocaleString()}
                               </Typography>
                             </Grid>
                           </Grid>
@@ -445,11 +492,25 @@ const HirerDashboard = ({ user: authUser }) => {
                   </Stack>
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
-                    <WorkIcon sx={{ fontSize: 64, color: theme.palette.action.disabled, mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                    <WorkIcon
+                      sx={{
+                        fontSize: 64,
+                        color: theme.palette.action.disabled,
+                        mb: 2,
+                      }}
+                    />
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       No active jobs
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 3 }}
+                    >
                       Start by posting your first job to find skilled workers
                     </Typography>
                     <Button
@@ -476,48 +537,74 @@ const HirerDashboard = ({ user: authUser }) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <Card elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
+              <Card
+                elevation={0}
+                sx={{
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                }}
+              >
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" gutterBottom fontWeight="600">
                     Profile Completion
                   </Typography>
-                  
+
                   {/* Calculate completion percentage */}
                   {(() => {
-                    const fields = ['firstName', 'email', 'company', 'location', 'bio'];
-                    const completed = fields.filter(field => user[field]).length;
-                    const percentage = Math.round((completed / fields.length) * 100);
-                    
+                    const fields = [
+                      'firstName',
+                      'email',
+                      'company',
+                      'location',
+                      'bio',
+                    ];
+                    const completed = fields.filter(
+                      (field) => user[field],
+                    ).length;
+                    const percentage = Math.round(
+                      (completed / fields.length) * 100,
+                    );
+
                     return (
                       <>
                         <Box sx={{ mb: 2 }}>
-                          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            sx={{ mb: 1 }}
+                          >
                             <Typography variant="body2" color="text.secondary">
                               {completed}/{fields.length} completed
                             </Typography>
-                            <Typography variant="body2" fontWeight="bold" color="primary">
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="primary"
+                            >
                               {percentage}%
                             </Typography>
                           </Stack>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={percentage} 
-                            sx={{ 
-                              height: 8, 
+                          <LinearProgress
+                            variant="determinate"
+                            value={percentage}
+                            sx={{
+                              height: 8,
                               borderRadius: 4,
                               bgcolor: theme.palette.action.hover,
                             }}
                           />
                         </Box>
-                        
+
                         {percentage < 100 && (
                           <Alert severity="info" variant="outlined">
                             <Typography variant="body2">
-                              Complete your profile to attract more qualified workers
+                              Complete your profile to attract more qualified
+                              workers
                             </Typography>
                           </Alert>
                         )}
-                        
+
                         <Button
                           component={RouterLink}
                           to="/profile/edit"

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -22,6 +22,39 @@ import {
   LinearProgress,
   useTheme,
   useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Avatar,
+  Badge,
+  Tooltip,
+  Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Checkbox,
+  FormGroup,
+  TextField,
+  Slider,
+  Rating,
+  alpha,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  Breadcrumbs,
+  Link,
+  Snackbar,
+  Fade,
+  Grow,
+  Slide,
+  Zoom,
 } from '@mui/material';
 import {
   School as SchoolIcon,
@@ -34,13 +67,149 @@ import {
   Check as CheckIcon,
   Timer as TimerIcon,
   FilterList as FilterListIcon,
+  ExpandMore as ExpandMoreIcon,
+  Psychology as PsychologyIcon,
+  Build as BuildIcon,
+  Quiz as QuizIcon,
+  Analytics as AnalyticsIcon,
+  Star as StarIcon,
+  Verified as VerifiedIcon,
+  Home as HomeIcon,
+  WorkspacePremium as PremiumIcon,
+  Speed as SpeedIcon,
+  Assessment as AssessmentIcon,
+  PlayArrow as PlayIcon,
+  Pause as PauseIcon,
+  Stop as StopIcon,
+  Refresh as RefreshIcon,
+  Close as CloseIcon,
+  Download as DownloadIcon,
+  Share as ShareIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  Info as InfoIcon,
+  Lightbulb as LightbulbIcon,
+  MenuBook as BookIcon,
+  WorkspacePremium as CertificateIcon,
 } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import SkillsAssessment from '../components/SkillsAssessment';
+import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
+import { styled, keyframes } from '@mui/material/styles';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Helmet } from 'react-helmet';
+import {
+  RadialBarChart,
+  RadialBar,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ChartTooltip,
+} from 'recharts';
 import { useAuth } from '../../auth/contexts/AuthContext';
-import axios from '../../common/services/axios';
+import workerService from '../services/workerService';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Animations
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+// Styled Components
+const GlassCard = styled(Card)(({ theme }) => ({
+  background: alpha(theme.palette.background.paper, 0.9),
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: 16,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[20],
+  },
+}));
+
+const TestCard = styled(GlassCard)(({ theme, difficulty }) => {
+  const getDifficultyColor = () => {
+    switch (difficulty) {
+      case 'beginner':
+        return theme.palette.success.main;
+      case 'intermediate':
+        return theme.palette.warning.main;
+      case 'advanced':
+        return theme.palette.error.main;
+      case 'expert':
+        return theme.palette.primary.main;
+      default:
+        return theme.palette.info.main;
+    }
+  };
+
+  return {
+    position: 'relative',
+    cursor: 'pointer',
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 4,
+      background: getDifficultyColor(),
+    },
+  };
+});
+
+const AnimatedButton = styled(Button)(({ theme }) => ({
+  borderRadius: 25,
+  padding: '12px 24px',
+  fontWeight: 600,
+  textTransform: 'none',
+  transition: 'all 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: theme.shadows[12],
+  },
+}));
+
+const ProgressRing = styled(Box)(({ theme, progress }) => ({
+  position: 'relative',
+  display: 'inline-flex',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: '50%',
+    background: `conic-gradient(${theme.palette.primary.main} ${progress * 3.6}deg, ${alpha(theme.palette.primary.main, 0.1)} 0deg)`,
+    mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+  },
+}));
+
+const TimerDisplay = styled(Box)(({ theme, urgent }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+  padding: theme.spacing(1, 2),
+  borderRadius: 20,
+  background: urgent
+    ? alpha(theme.palette.error.main, 0.1)
+    : alpha(theme.palette.primary.main, 0.1),
+  border: `1px solid ${urgent ? theme.palette.error.main : theme.palette.primary.main}`,
+  ...(urgent && {
+    animation: `${pulse} 1s infinite`,
+  }),
+}));
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -62,8 +231,9 @@ const SkillsAssessmentPage = () => {
   const navigate = useNavigate();
   const { testId } = useParams();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+  // State management
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -72,11 +242,209 @@ const SkillsAssessmentPage = () => {
   const [availableTests, setAvailableTests] = useState([]);
   const [mySkills, setMySkills] = useState([]);
   const [completedTests, setCompletedTests] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+
+  // Test state
   const [currentStep, setCurrentStep] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [testStarted, setTestStarted] = useState(false);
+  const [testPaused, setPaused] = useState(false);
+
+  // Dialog states
+  const [startTestDialog, setStartTestDialog] = useState(false);
+  const [confirmExitDialog, setConfirmExitDialog] = useState(false);
+  const [resultsDialog, setResultsDialog] = useState(false);
+  const [testResults, setTestResults] = useState(null);
+
+  // Feedback
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
+  // Mock data for comprehensive skills assessment
+  const mockData = {
+    availableTests: [
+      {
+        id: 1,
+        title: 'Electrical Systems Fundamentals',
+        category: 'Electrical',
+        difficulty: 'beginner',
+        duration: 30,
+        questions: 25,
+        description:
+          'Test your knowledge of basic electrical systems, wiring, and safety protocols.',
+        skills: [
+          'Circuit Analysis',
+          'Wiring',
+          'Safety Protocols',
+          'Electrical Codes',
+        ],
+        certification: true,
+        premium: false,
+        rating: 4.8,
+        completions: 1250,
+        passingScore: 70,
+      },
+      {
+        id: 2,
+        title: 'Advanced Plumbing Techniques',
+        category: 'Plumbing',
+        difficulty: 'advanced',
+        duration: 45,
+        questions: 35,
+        description:
+          'Advanced plumbing systems, pipe fitting, and troubleshooting complex issues.',
+        skills: [
+          'Pipe Fitting',
+          'Drain Systems',
+          'Water Pressure',
+          'Leak Detection',
+        ],
+        certification: true,
+        premium: true,
+        rating: 4.9,
+        completions: 892,
+        passingScore: 80,
+      },
+      {
+        id: 3,
+        title: 'Carpentry and Woodworking',
+        category: 'Carpentry',
+        difficulty: 'intermediate',
+        duration: 40,
+        questions: 30,
+        description:
+          'Comprehensive assessment of carpentry skills, tools, and techniques.',
+        skills: ['Joinery', 'Tool Usage', 'Measurements', 'Wood Types'],
+        certification: true,
+        premium: false,
+        rating: 4.7,
+        completions: 1100,
+        passingScore: 75,
+      },
+      {
+        id: 4,
+        title: 'HVAC Systems Mastery',
+        category: 'HVAC',
+        difficulty: 'expert',
+        duration: 60,
+        questions: 50,
+        description:
+          'Expert-level assessment covering complex HVAC systems and refrigeration.',
+        skills: [
+          'Refrigeration',
+          'Air Conditioning',
+          'Heating Systems',
+          'Ventilation',
+        ],
+        certification: true,
+        premium: true,
+        rating: 4.9,
+        completions: 567,
+        passingScore: 85,
+      },
+    ],
+    completedTests: [
+      {
+        id: 1,
+        title: 'Electrical Systems Fundamentals',
+        score: 85,
+        maxScore: 100,
+        completedAt: '2024-01-10T10:00:00Z',
+        certificate: true,
+        timeSpent: 28,
+        correctAnswers: 21,
+        totalQuestions: 25,
+      },
+      {
+        id: 3,
+        title: 'Carpentry and Woodworking',
+        score: 78,
+        maxScore: 100,
+        completedAt: '2024-01-05T14:30:00Z',
+        certificate: true,
+        timeSpent: 35,
+        correctAnswers: 23,
+        totalQuestions: 30,
+      },
+    ],
+    mySkills: [
+      {
+        name: 'Electrical Wiring',
+        level: 85,
+        verified: true,
+        category: 'Electrical',
+      },
+      { name: 'Carpentry', level: 78, verified: true, category: 'Carpentry' },
+      {
+        name: 'Plumbing Basics',
+        level: 65,
+        verified: false,
+        category: 'Plumbing',
+      },
+      {
+        name: 'Safety Protocols',
+        level: 92,
+        verified: true,
+        category: 'General',
+      },
+      {
+        name: 'Tool Maintenance',
+        level: 73,
+        verified: false,
+        category: 'General',
+      },
+    ],
+    analytics: {
+      totalTests: 12,
+      avgScore: 81.5,
+      totalTimeSpent: 420, // minutes
+      certifications: 3,
+      skillsVerified: 8,
+      rankPercentile: 87,
+      strengths: ['Electrical', 'Safety'],
+      improvementAreas: ['Plumbing', 'HVAC'],
+    },
+  };
+
+  // Sample test questions
+  const sampleQuestions = [
+    {
+      id: 1,
+      type: 'multiple-choice',
+      question:
+        'What is the standard voltage for household electrical outlets in the US?',
+      options: ['110V', '120V', '220V', '240V'],
+      correct: 1,
+      explanation:
+        '120V is the standard voltage for household outlets in the United States.',
+      difficulty: 'easy',
+    },
+    {
+      id: 2,
+      type: 'multiple-choice',
+      question: 'Which tool is primarily used for cutting copper pipes?',
+      options: ['Hacksaw', 'Pipe cutter', 'Angle grinder', 'Reciprocating saw'],
+      correct: 1,
+      explanation:
+        'A pipe cutter provides clean, straight cuts for copper pipes.',
+      difficulty: 'medium',
+    },
+    {
+      id: 3,
+      type: 'true-false',
+      question: 'GFCI outlets are required in all bathroom installations.',
+      correct: true,
+      explanation:
+        'GFCI outlets are required in bathrooms to prevent electrical shock.',
+      difficulty: 'easy',
+    },
+  ];
 
   // Load initial data
   useEffect(() => {
@@ -90,693 +458,1146 @@ const SkillsAssessmentPage = () => {
   // Timer effect
   useEffect(() => {
     let timer;
-    if (timerActive && timeRemaining > 0) {
+    if (timerActive && timeRemaining > 0 && !testPaused) {
       timer = setInterval(() => {
         setTimeRemaining((prev) => prev - 1);
       }, 1000);
     } else if (timeRemaining === 0 && timerActive) {
       submitTest(true); // Auto-submit when time expires
     }
-
     return () => clearInterval(timer);
-  }, [timerActive, timeRemaining]);
+  }, [timerActive, timeRemaining, testPaused]);
 
-  // Fetch skills data (available tests, completed tests, user skills)
-  const fetchSkillsData = async () => {
+  const fetchSkillsData = useCallback(async () => {
     setLoading(true);
-    setError(null);
-
     try {
-      const [availableResponse, skillsResponse, completedResponse] =
-        await Promise.all([
-          axios.get(`${API_URL}/worker/skills/available-tests`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }),
-          axios.get(`${API_URL}/worker/${user.id}/skills`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }),
-          axios.get(`${API_URL}/worker/${user.id}/skills/completed-tests`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }),
-        ]);
-
-      setAvailableTests(availableResponse.data.data);
-      setMySkills(skillsResponse.data.data);
-      setCompletedTests(completedResponse.data.data);
+      // In real app, these would be API calls
+      setTimeout(() => {
+        setAvailableTests(mockData.availableTests);
+        setCompletedTests(mockData.completedTests);
+        setMySkills(mockData.mySkills);
+        setAnalytics(mockData.analytics);
+        setLoading(false);
+      }, 1000);
     } catch (err) {
-      console.error('Error fetching skills data:', err);
-      setError('Failed to load skills data. Please try again.');
-    } finally {
+      setError('Failed to load skills data');
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Fetch test details
-  const fetchTestDetails = async (testId) => {
+  const fetchTestDetails = useCallback(async (id) => {
     setLoading(true);
-    setError(null);
-
     try {
-      const response = await axios.get(
-        `${API_URL}/worker/skills/tests/${testId}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        },
-      );
-
-      setCurrentTest(response.data.data);
-      setTimeRemaining(response.data.data.timeLimit * 60); // Convert minutes to seconds
-      setAssessmentInProgress(true);
+      const test = mockData.availableTests.find((t) => t.id === parseInt(id));
+      if (test) {
+        setCurrentTest({ ...test, questions: sampleQuestions });
+        setAssessmentInProgress(true);
+        setTimeRemaining(test.duration * 60); // Convert to seconds
+      }
+      setLoading(false);
     } catch (err) {
-      console.error('Error fetching test details:', err);
-      setError('Failed to load test. Please try again.');
-    } finally {
+      setError('Failed to load test details');
       setLoading(false);
     }
+  }, []);
+
+  const startTest = (test) => {
+    setCurrentTest({ ...test, questions: sampleQuestions });
+    setStartTestDialog(true);
   };
 
-  // Start a skills test
-  const startTest = async (testId) => {
-    navigate(`/worker/skills/test/${testId}`);
+  const confirmStartTest = () => {
+    setStartTestDialog(false);
+    setAssessmentInProgress(true);
+    setTestStarted(true);
+    setTimerActive(true);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setTimeRemaining(currentTest.duration * 60);
+    navigate(`/worker/skills/test/${currentTest.id}`);
   };
 
-  // Handle question answer
-  const handleAnswer = (questionId, answerId) => {
-    setAnswers({
-      ...answers,
-      [questionId]: answerId,
-    });
+  const handleAnswerChange = (questionId, answer) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: answer,
+    }));
   };
 
-  // Navigate to next question
   const nextQuestion = () => {
     if (currentQuestion < currentTest.questions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
     }
   };
 
-  // Navigate to previous question
   const prevQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1);
     }
   };
 
-  // Begin the test (start timer)
-  const beginTest = () => {
-    setCurrentStep(1);
+  const pauseTest = () => {
+    setPaused(true);
+    setTimerActive(false);
+  };
+
+  const resumeTest = () => {
+    setPaused(false);
     setTimerActive(true);
   };
 
-  // Submit test answers
-  const submitTest = async (isAutoSubmit = false) => {
-    setLoading(true);
-    setError(null);
-    setTimerActive(false);
-
-    try {
-      const response = await axios.post(
-        `${API_URL}/worker/skills/tests/${currentTest.id}/submit`,
-        { answers },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        },
-      );
-
-      setCurrentStep(2);
-      setCurrentTest({
-        ...currentTest,
-        result: response.data.data,
-      });
-    } catch (err) {
-      console.error('Error submitting test:', err);
-      setError('Failed to submit test. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const exitTest = () => {
+    setConfirmExitDialog(true);
   };
 
-  // Format time
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-  };
-
-  // Handle tab change
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  // Return to skills dashboard
-  const returnToDashboard = () => {
-    navigate('/worker/skills');
+  const confirmExit = () => {
+    setConfirmExitDialog(false);
     setAssessmentInProgress(false);
+    setTestStarted(false);
+    setTimerActive(false);
     setCurrentTest(null);
+    navigate('/worker/skills');
   };
 
-  // Render the test taking interface
-  const renderTestInterface = () => {
-    if (!currentTest) return null;
+  const submitTest = useCallback(
+    async (autoSubmit = false) => {
+      setTimerActive(false);
 
-    if (currentStep === 0) {
-      // Test introduction
-      return (
-        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-          <Paper sx={{ p: 4 }}>
-            <Typography variant="h4" gutterBottom>
-              {currentTest.title}
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              {currentTest.skillCategory}
-            </Typography>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography variant="body1" paragraph>
-              {currentTest.description}
-            </Typography>
-
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                my: 2,
-                p: 2,
-                bgcolor: 'action.hover',
-                borderRadius: 1,
-              }}
-            >
-              <TimerIcon color="primary" sx={{ mr: 1 }} />
-              <Typography>
-                Time Limit: <strong>{currentTest.timeLimit} minutes</strong>
-              </Typography>
-            </Box>
-
-            <Typography variant="body2" paragraph>
-              This assessment contains {currentTest.questions.length} questions.
-              You must answer at least {currentTest.passingScore}% correctly to
-              earn this skill certification.
-            </Typography>
-
-            <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}
-            >
-              <Button
-                variant="outlined"
-                onClick={returnToDashboard}
-                startIcon={<ArrowBackIcon />}
-              >
-                Return to Dashboard
-              </Button>
-
-              <Button
-                variant="contained"
-                onClick={beginTest}
-                endIcon={<ArrowForwardIcon />}
-              >
-                Begin Test
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
+      // Calculate results
+      const correctAnswers = Object.entries(answers).reduce(
+        (count, [questionId, answer]) => {
+          const question = currentTest.questions.find(
+            (q) => q.id === parseInt(questionId),
+          );
+          if (question && question.correct === answer) {
+            return count + 1;
+          }
+          return count;
+        },
+        0,
       );
-    } else if (currentStep === 1) {
-      // Test questions
-      const question = currentTest.questions[currentQuestion];
 
-      return (
-        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-          <Paper sx={{ p: 4 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2,
-              }}
-            >
-              <Typography variant="h6">
-                Question {currentQuestion + 1} of {currentTest.questions.length}
-              </Typography>
-
-              <Chip
-                icon={<TimerIcon />}
-                label={`Time Remaining: ${formatTime(timeRemaining)}`}
-                color={timeRemaining < 60 ? 'error' : 'default'}
-                variant="outlined"
-              />
-            </Box>
-
-            <LinearProgress
-              variant="determinate"
-              value={
-                ((currentQuestion + 1) / currentTest.questions.length) * 100
-              }
-              sx={{ mb: 3 }}
-            />
-
-            <Typography variant="h6" gutterBottom>
-              {question.text}
-            </Typography>
-
-            {question.image && (
-              <Box sx={{ my: 2, textAlign: 'center' }}>
-                <img
-                  src={question.image}
-                  alt={`Question ${currentQuestion + 1}`}
-                  style={{ maxWidth: '100%', maxHeight: 300 }}
-                />
-              </Box>
-            )}
-
-            <Box sx={{ mt: 3 }}>
-              {question.options.map((option) => (
-                <Box
-                  key={option.id}
-                  sx={{
-                    p: 2,
-                    mb: 2,
-                    border: '1px solid',
-                    borderColor:
-                      answers[question.id] === option.id
-                        ? 'primary.main'
-                        : 'divider',
-                    borderRadius: 1,
-                    bgcolor:
-                      answers[question.id] === option.id
-                        ? 'primary.light'
-                        : 'background.paper',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      bgcolor:
-                        answers[question.id] === option.id
-                          ? 'primary.light'
-                          : 'action.hover',
-                    },
-                  }}
-                  onClick={() => handleAnswer(question.id, option.id)}
-                >
-                  <Typography>{option.text}</Typography>
-                </Box>
-              ))}
-            </Box>
-
-            <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}
-            >
-              <Button
-                variant="outlined"
-                onClick={prevQuestion}
-                startIcon={<ArrowBackIcon />}
-                disabled={currentQuestion === 0}
-              >
-                Previous
-              </Button>
-
-              {currentQuestion < currentTest.questions.length - 1 ? (
-                <Button
-                  variant="contained"
-                  onClick={nextQuestion}
-                  endIcon={<ArrowForwardIcon />}
-                  disabled={!answers[question.id]}
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => submitTest()}
-                  endIcon={<CheckIcon />}
-                  disabled={!answers[question.id]}
-                >
-                  Submit Test
-                </Button>
-              )}
-            </Box>
-          </Paper>
-        </Box>
+      const score = Math.round(
+        (correctAnswers / currentTest.questions.length) * 100,
       );
-    } else if (currentStep === 2) {
-      // Test results
-      const { result } = currentTest;
-      const passed = result.score >= currentTest.passingScore;
+      const timeSpent = currentTest.duration * 60 - timeRemaining;
 
-      return (
-        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-          <Paper sx={{ p: 4 }}>
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                {passed ? 'Congratulations!' : 'Assessment Completed'}
-              </Typography>
+      const results = {
+        score,
+        maxScore: 100,
+        correctAnswers,
+        totalQuestions: currentTest.questions.length,
+        timeSpent: Math.round(timeSpent / 60), // Convert to minutes
+        passed: score >= currentTest.passingScore,
+        certificate:
+          score >= currentTest.passingScore && currentTest.certification,
+        autoSubmitted: autoSubmit,
+      };
 
-              <Typography
-                variant="h5"
-                color={passed ? 'success.main' : 'text.secondary'}
-              >
-                {passed ? 'You Passed!' : 'Not Passed'}
-              </Typography>
-            </Box>
+      setTestResults(results);
+      setResultsDialog(true);
+      setAssessmentInProgress(false);
+      setTestStarted(false);
 
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  display: 'inline-flex',
-                  width: 160,
-                  height: 160,
-                }}
-              >
-                <CircularProgress
-                  variant="determinate"
-                  value={result.score}
-                  size={160}
-                  thickness={4}
-                  color={passed ? 'success' : 'error'}
-                />
-                <Box
-                  sx={{
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    right: 0,
-                    position: 'absolute',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Typography variant="h4">{result.score}%</Typography>
-                </Box>
-              </Box>
-            </Box>
+      // Update completed tests
+      setCompletedTests((prev) => [
+        ...prev,
+        {
+          ...currentTest,
+          ...results,
+          completedAt: new Date().toISOString(),
+        },
+      ]);
+    },
+    [answers, currentTest, timeRemaining],
+  );
 
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
-              <Typography variant="body1">
-                You answered {result.correctAnswers} out of{' '}
-                {currentTest.questions.length} questions correctly.
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Passing score: {currentTest.passingScore}%
-              </Typography>
-            </Box>
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
-            {passed && (
-              <Alert severity="success" sx={{ mb: 3 }}>
-                <Typography variant="body1">
-                  You've earned the {currentTest.skillCategory} certification!
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  This skill will now appear on your profile, and you can apply
-                  for jobs requiring this skill.
-                </Typography>
-              </Alert>
-            )}
-
-            {!passed && (
-              <Alert severity="info" sx={{ mb: 3 }}>
-                <Typography variant="body1">
-                  You can retake this assessment in 14 days.
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Review the skill materials and try again later.
-                </Typography>
-              </Alert>
-            )}
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Button
-                variant="contained"
-                onClick={returnToDashboard}
-                endIcon={<ArrowForwardIcon />}
-              >
-                Return to Skills Dashboard
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
-      );
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'success';
+      case 'intermediate':
+        return 'warning';
+      case 'advanced':
+        return 'error';
+      case 'expert':
+        return 'primary';
+      default:
+        return 'info';
     }
   };
 
-  // Render available tests
-  const renderAvailableTests = () => {
-    if (availableTests.length === 0) {
-      return (
-        <Alert severity="info">
-          No skills tests are currently available for your profile. Check back
-          later or update your skills interests.
-        </Alert>
-      );
+  const getDifficultyIcon = (difficulty) => {
+    switch (difficulty) {
+      case 'beginner':
+        return <StarIcon />;
+      case 'intermediate':
+        return <TrendingUpIcon />;
+      case 'advanced':
+        return <EmojiEventsIcon />;
+      case 'expert':
+        return <PremiumIcon />;
+      default:
+        return <AssignmentIcon />;
     }
+  };
 
-    return (
-      <Grid container spacing={3}>
-        {availableTests.map((test) => (
-          <Grid item xs={12} sm={6} md={4} key={test.id}>
-            <Card elevation={2}>
-              <CardMedia
-                component="img"
-                height="140"
-                image={
-                  test.imageUrl ||
-                  'https://via.placeholder.com/300x140?text=Skill+Test'
-                }
-                alt={test.title}
-              />
+  const renderAvailableTests = () => (
+    <Grid container spacing={3}>
+      {availableTests.map((test) => (
+        <Grid item xs={12} sm={6} lg={4} key={test.id}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <TestCard
+              difficulty={test.difficulty}
+              onClick={() => startTest(test)}
+            >
               <CardContent>
-                <Typography gutterBottom variant="h6" component="div">
-                  {test.title}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: `${getDifficultyColor(test.difficulty)}.main`,
+                      mr: 2,
+                    }}
+                  >
+                    {getDifficultyIcon(test.difficulty)}
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Typography variant="h6" fontWeight={700} noWrap>
+                      {test.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {test.category}
+                    </Typography>
+                  </Box>
+                  {test.premium && <PremiumIcon color="warning" />}
+                </Box>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2, minHeight: 40 }}
+                >
+                  {test.description}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {test.skillCategory}
+
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                  <Chip
+                    label={
+                      test.difficulty.charAt(0).toUpperCase() +
+                      test.difficulty.slice(1)
+                    }
+                    color={getDifficultyColor(test.difficulty)}
+                    size="small"
+                  />
+                  <Chip
+                    icon={<TimerIcon />}
+                    label={`${test.duration} min`}
+                    size="small"
+                    variant="outlined"
+                  />
+                  <Chip
+                    icon={<QuizIcon />}
+                    label={`${test.questions} questions`}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Rating value={test.rating} size="small" readOnly />
+                    <Typography variant="caption" sx={{ ml: 0.5 }}>
+                      ({test.completions})
+                    </Typography>
+                  </Box>
+                  {test.certification && (
+                    <Chip
+                      icon={<CertificateIcon />}
+                      label="Certificate"
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
+
+                <Typography variant="caption" color="text.secondary">
+                  Passing Score: {test.passingScore}%
                 </Typography>
-                <Typography variant="body2" paragraph>
-                  {test.description.substring(0, 120)}...
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                  <TimerIcon fontSize="small" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    {test.timeLimit} minutes
+              </CardContent>
+
+              <CardActions sx={{ px: 2, pb: 2 }}>
+                <AnimatedButton
+                  variant="contained"
+                  fullWidth
+                  startIcon={<PlayIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startTest(test);
+                  }}
+                >
+                  Start Assessment
+                </AnimatedButton>
+              </CardActions>
+            </TestCard>
+          </motion.div>
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  const renderMySkills = () => (
+    <Box>
+      <Typography variant="h5" fontWeight={700} gutterBottom>
+        My Skills & Competencies
+      </Typography>
+
+      <Grid container spacing={3}>
+        {mySkills.map((skill, index) => (
+          <Grid item xs={12} sm={6} md={4} key={index}>
+            <GlassCard>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    sx={{ flexGrow: 1 }}
+                  >
+                    {skill.name}
                   </Typography>
+                  {skill.verified && (
+                    <Tooltip title="Verified Skill">
+                      <VerifiedIcon color="primary" />
+                    </Tooltip>
+                  )}
+                </Box>
+
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {skill.category}
+                </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Box sx={{ width: '100%', mr: 1 }}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={skill.level}
+                      sx={{ height: 8, borderRadius: 4 }}
+                    />
+                  </Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    {skill.level}%
+                  </Typography>
+                </Box>
+
+                <Typography variant="caption" color="text.secondary">
+                  Proficiency Level
+                </Typography>
+              </CardContent>
+            </GlassCard>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
+  const renderCompletedTests = () => (
+    <Box>
+      <Typography variant="h5" fontWeight={700} gutterBottom>
+        Completed Assessments
+      </Typography>
+
+      <Grid container spacing={3}>
+        {completedTests.map((test, index) => (
+          <Grid item xs={12} sm={6} lg={4} key={index}>
+            <GlassCard>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    sx={{ flexGrow: 1 }}
+                  >
+                    {test.title}
+                  </Typography>
+                  {test.certificate && <CertificateIcon color="primary" />}
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <ProgressRing progress={test.score}>
+                    <CircularProgress
+                      variant="determinate"
+                      value={test.score}
+                      size={60}
+                      thickness={6}
+                      sx={{
+                        color:
+                          test.score >= 80
+                            ? 'success.main'
+                            : test.score >= 60
+                              ? 'warning.main'
+                              : 'error.main',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      <Typography variant="h6" fontWeight={700}>
+                        {test.score}%
+                      </Typography>
+                    </Box>
+                  </ProgressRing>
+
+                  <Box sx={{ ml: 2, flexGrow: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Score: {test.correctAnswers}/{test.totalQuestions}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Time: {test.timeSpent} minutes
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {formatDistanceToNow(new Date(test.completedAt), {
+                        addSuffix: true,
+                      })}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Chip
+                    label={
+                      test.score >= 80
+                        ? 'Excellent'
+                        : test.score >= 60
+                          ? 'Good'
+                          : 'Needs Improvement'
+                    }
+                    color={
+                      test.score >= 80
+                        ? 'success'
+                        : test.score >= 60
+                          ? 'warning'
+                          : 'error'
+                    }
+                    size="small"
+                  />
+                  {test.certificate && (
+                    <Chip
+                      label="Certified"
+                      color="primary"
+                      size="small"
+                      icon={<CheckCircleIcon />}
+                    />
+                  )}
                 </Box>
               </CardContent>
+
               <CardActions>
-                <Button size="small" onClick={() => startTest(test.id)}>
-                  Start Assessment
+                <Button size="small" startIcon={<DownloadIcon />}>
+                  Certificate
+                </Button>
+                <Button size="small" startIcon={<ShareIcon />}>
+                  Share
                 </Button>
               </CardActions>
-            </Card>
+            </GlassCard>
           </Grid>
         ))}
       </Grid>
-    );
-  };
+    </Box>
+  );
 
-  // Render my skills
-  const renderMySkills = () => {
-    if (mySkills.length === 0) {
-      return (
-        <Alert severity="info">
-          You haven't earned any skill certifications yet. Take an assessment to
-          add skills to your profile.
-        </Alert>
-      );
-    }
+  const renderAnalytics = () => {
+    if (!analytics) return null;
+
+    const skillsData = mySkills.map((skill) => ({
+      name: skill.name,
+      level: skill.level,
+      verified: skill.verified,
+    }));
 
     return (
-      <Grid container spacing={3}>
-        {mySkills.map((skill) => (
-          <Grid item xs={12} sm={6} md={4} key={skill.id}>
-            <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SchoolIcon color="primary" sx={{ mr: 2 }} />
-                <Typography variant="h6" component="div">
-                  {skill.name}
+      <Box>
+        <Typography variant="h5" fontWeight={700} gutterBottom>
+          Skills Analytics
+        </Typography>
+
+        <Grid container spacing={3}>
+          {/* Summary Stats */}
+          <Grid item xs={12} md={8}>
+            <GlassCard sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Performance Overview
                 </Typography>
-              </Box>
 
-              <Chip
-                label={`Level: ${skill.level}`}
-                size="small"
-                color="primary"
-                variant="outlined"
-                sx={{ mb: 2 }}
-              />
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary" fontWeight={700}>
+                        {analytics.totalTests}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Tests Taken
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="h4"
+                        color="success.main"
+                        fontWeight={700}
+                      >
+                        {analytics.avgScore}%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Avg Score
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="h4"
+                        color="warning.main"
+                        fontWeight={700}
+                      >
+                        {analytics.certifications}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Certificates
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="h4"
+                        color="info.main"
+                        fontWeight={700}
+                      >
+                        {analytics.rankPercentile}%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Top Percentile
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </GlassCard>
 
-              <Typography variant="body2" paragraph>
-                {skill.description}
-              </Typography>
-
-              <Box sx={{ mt: 'auto' }}>
-                <Typography
-                  variant="caption"
-                  display="block"
-                  color="text.secondary"
-                >
-                  Verified: {new Date(skill.verifiedAt).toLocaleDateString()}
+            {/* Skills Chart */}
+            <GlassCard>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Skills Breakdown
                 </Typography>
-                <Typography
-                  variant="caption"
-                  display="block"
-                  color="text.secondary"
-                >
-                  Expires: {new Date(skill.expiresAt).toLocaleDateString()}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
-    );
-  };
-
-  // Render completed tests
-  const renderCompletedTests = () => {
-    if (completedTests.length === 0) {
-      return (
-        <Alert severity="info">
-          You haven't completed any assessments yet.
-        </Alert>
-      );
-    }
-
-    return (
-      <Grid container spacing={3}>
-        {completedTests.map((test) => (
-          <Grid item xs={12} key={test.id}>
-            <Paper elevation={2} sx={{ p: 2 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Box>
-                  <Typography variant="h6">{test.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {test.skillCategory}
-                  </Typography>
+                <Box sx={{ height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={skillsData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="name"
+                        angle={-45}
+                        textAnchor="end"
+                        height={100}
+                      />
+                      <YAxis />
+                      <ChartTooltip />
+                      <Bar dataKey="level" fill={theme.palette.primary.main} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </Box>
-
-                <Chip
-                  label={`${test.score}%`}
-                  color={test.passed ? 'success' : 'error'}
-                  sx={{ fontSize: '1rem', height: 36, width: 70 }}
-                />
-              </Box>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Completed: {new Date(test.completedAt).toLocaleDateString()}
-                </Typography>
-
-                {test.passed && (
-                  <Chip
-                    label="Passed"
-                    size="small"
-                    color="success"
-                    sx={{ ml: 2 }}
-                  />
-                )}
-
-                {!test.passed && (
-                  <Chip
-                    label="Failed"
-                    size="small"
-                    color="error"
-                    sx={{ ml: 2 }}
-                  />
-                )}
-              </Box>
-            </Paper>
+              </CardContent>
+            </GlassCard>
           </Grid>
-        ))}
-      </Grid>
+
+          {/* Improvement Areas */}
+          <Grid item xs={12} md={4}>
+            <GlassCard sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  gutterBottom
+                  sx={{ color: 'success.main' }}
+                >
+                  <TrendingUpIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  Strengths
+                </Typography>
+                <List dense>
+                  {analytics.strengths.map((strength, index) => (
+                    <ListItem key={index}>
+                      <ListItemIcon>
+                        <CheckCircleIcon color="success" />
+                      </ListItemIcon>
+                      <ListItemText primary={strength} />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </GlassCard>
+
+            <GlassCard>
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  gutterBottom
+                  sx={{ color: 'warning.main' }}
+                >
+                  <LightbulbIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  Growth Areas
+                </Typography>
+                <List dense>
+                  {analytics.improvementAreas.map((area, index) => (
+                    <ListItem key={index}>
+                      <ListItemIcon>
+                        <WarningIcon color="warning" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={area}
+                        secondary="Consider taking assessment"
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </GlassCard>
+          </Grid>
+        </Grid>
+      </Box>
     );
   };
 
-  if (loading && !currentTest) {
+  const renderTestInterface = () => {
+    if (!currentTest || !testStarted) return null;
+
+    const question = currentTest.questions[currentQuestion];
+    const progress =
+      ((currentQuestion + 1) / currentTest.questions.length) * 100;
+    const timeUrgent = timeRemaining < 300; // Less than 5 minutes
+
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-        <CircularProgress />
+      <Box>
+        {/* Test Header */}
+        <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="h5" fontWeight={700}>
+              {currentTest.title}
+            </Typography>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <TimerDisplay urgent={timeUrgent}>
+                <TimerIcon />
+                <Typography variant="h6" fontWeight={600}>
+                  {formatTime(timeRemaining)}
+                </Typography>
+              </TimerDisplay>
+
+              <Button
+                variant="outlined"
+                onClick={testPaused ? resumeTest : pauseTest}
+                startIcon={testPaused ? <PlayIcon /> : <PauseIcon />}
+              >
+                {testPaused ? 'Resume' : 'Pause'}
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={exitTest}
+                startIcon={<StopIcon />}
+              >
+                Exit
+              </Button>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Question {currentQuestion + 1} of {currentTest.questions.length}
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {Math.round(progress)}%
+            </Typography>
+          </Box>
+        </Paper>
+
+        {/* Question Content */}
+        {!testPaused && (
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <GlassCard sx={{ mb: 3 }}>
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                  {question.question}
+                </Typography>
+
+                {question.type === 'multiple-choice' && (
+                  <RadioGroup
+                    value={answers[question.id] || ''}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, parseInt(e.target.value))
+                    }
+                  >
+                    {question.options.map((option, index) => (
+                      <FormControlLabel
+                        key={index}
+                        value={index}
+                        control={<Radio />}
+                        label={option}
+                        sx={{ mb: 1 }}
+                      />
+                    ))}
+                  </RadioGroup>
+                )}
+
+                {question.type === 'true-false' && (
+                  <RadioGroup
+                    value={
+                      answers[question.id] !== undefined
+                        ? answers[question.id].toString()
+                        : ''
+                    }
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, e.target.value === 'true')
+                    }
+                  >
+                    <FormControlLabel
+                      value="true"
+                      control={<Radio />}
+                      label="True"
+                    />
+                    <FormControlLabel
+                      value="false"
+                      control={<Radio />}
+                      label="False"
+                    />
+                  </RadioGroup>
+                )}
+              </CardContent>
+            </GlassCard>
+          </motion.div>
+        )}
+
+        {/* Pause Overlay */}
+        {testPaused && (
+          <GlassCard sx={{ textAlign: 'center', py: 8 }}>
+            <PauseIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h4" gutterBottom>
+              Test Paused
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Click Resume to continue your assessment
+            </Typography>
+            <AnimatedButton
+              variant="contained"
+              size="large"
+              startIcon={<PlayIcon />}
+              onClick={resumeTest}
+            >
+              Resume Test
+            </AnimatedButton>
+          </GlassCard>
+        )}
+
+        {/* Navigation */}
+        {!testPaused && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={prevQuestion}
+              disabled={currentQuestion === 0}
+              startIcon={<ArrowBackIcon />}
+            >
+              Previous
+            </Button>
+
+            <Typography variant="body2" color="text.secondary">
+              {Object.keys(answers).length} of {currentTest.questions.length}{' '}
+              answered
+            </Typography>
+
+            {currentQuestion === currentTest.questions.length - 1 ? (
+              <AnimatedButton
+                variant="contained"
+                onClick={() => submitTest()}
+                startIcon={<CheckIcon />}
+                disabled={
+                  Object.keys(answers).length < currentTest.questions.length
+                }
+              >
+                Submit Test
+              </AnimatedButton>
+            ) : (
+              <Button
+                variant="contained"
+                onClick={nextQuestion}
+                endIcon={<ArrowForwardIcon />}
+              >
+                Next
+              </Button>
+            )}
+          </Box>
+        )}
       </Box>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: 400,
+          }}
+        >
+          <CircularProgress size={60} thickness={4} />
+        </Box>
+      </Container>
     );
   }
 
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 4 }}>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
           {error}
         </Alert>
-        <Button
-          variant="contained"
-          onClick={() => navigate('/worker/dashboard')}
-        >
-          Return to Dashboard
-        </Button>
       </Container>
     );
   }
 
-  if (assessmentInProgress) {
+  if (assessmentInProgress && testStarted) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {renderTestInterface()}
+
+        {/* Confirm Exit Dialog */}
+        <Dialog
+          open={confirmExitDialog}
+          onClose={() => setConfirmExitDialog(false)}
+        >
+          <DialogTitle>Exit Assessment?</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to exit this assessment? Your progress will
+              be lost.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmExitDialog(false)}>Cancel</Button>
+            <Button onClick={confirmExit} color="error">
+              Exit
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Skills Assessment Center
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Take assessments to verify your skills and stand out to hirers.
-        </Typography>
-      </Box>
+    <>
+      <Helmet>
+        <title>Skills Assessment - Professional Certification | Kelmah</title>
+        <meta
+          name="description"
+          content="Take professional skills assessments to validate your expertise and earn certifications in electrical, plumbing, carpentry, HVAC and more."
+        />
+      </Helmet>
 
-      <Paper sx={{ mb: 4 }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant={isMobile ? 'scrollable' : 'fullWidth'}
-          scrollButtons="auto"
-          aria-label="skills assessment tabs"
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Breadcrumbs sx={{ mb: 3 }}>
+          <Link color="inherit" component={RouterLink} to="/">
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Home
+          </Link>
+          <Link color="inherit" component={RouterLink} to="/worker/dashboard">
+            Dashboard
+          </Link>
+          <Typography color="text.primary">Skills Assessment</Typography>
+        </Breadcrumbs>
+
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h3" fontWeight={700} gutterBottom>
+            Skills Assessment Center
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Validate your expertise and earn professional certifications
+          </Typography>
+        </Box>
+
+        {/* Tabs */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+          <Tabs
+            value={tabValue}
+            onChange={(e, newValue) => setTabValue(newValue)}
+            variant={isMobile ? 'scrollable' : 'fullWidth'}
+            scrollButtons="auto"
+          >
+            <Tab icon={<QuizIcon />} label="Available Tests" />
+            <Tab icon={<BuildIcon />} label="My Skills" />
+            <Tab icon={<EmojiEventsIcon />} label="Completed" />
+            <Tab icon={<AnalyticsIcon />} label="Analytics" />
+          </Tabs>
+        </Box>
+
+        {/* Tab Panels */}
+        <TabPanel value={tabValue} index={0}>
+          {renderAvailableTests()}
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={1}>
+          {renderMySkills()}
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
+          {renderCompletedTests()}
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={3}>
+          {renderAnalytics()}
+        </TabPanel>
+
+        {/* Start Test Dialog */}
+        <Dialog
+          open={startTestDialog}
+          onClose={() => setStartTestDialog(false)}
+          maxWidth="md"
+          fullWidth
         >
-          <Tab icon={<AssignmentIcon />} label="Available Tests" />
-          <Tab icon={<SchoolIcon />} label="My Skills" />
-          <Tab icon={<EmojiEventsIcon />} label="Completed Tests" />
-        </Tabs>
-      </Paper>
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                <QuizIcon />
+              </Avatar>
+              Start Assessment
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {currentTest && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  {currentTest.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {currentTest.description}
+                </Typography>
 
-      <TabPanel value={tabValue} index={0}>
-        {renderAvailableTests()}
-      </TabPanel>
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  <Grid item xs={6}>
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        p: 2,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 2,
+                      }}
+                    >
+                      <TimerIcon color="primary" />
+                      <Typography variant="h6">
+                        {currentTest.duration} min
+                      </Typography>
+                      <Typography variant="caption">Duration</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        p: 2,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 2,
+                      }}
+                    >
+                      <QuizIcon color="primary" />
+                      <Typography variant="h6">
+                        {currentTest.questions?.length || currentTest.questions}{' '}
+                        questions
+                      </Typography>
+                      <Typography variant="caption">Questions</Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
 
-      <TabPanel value={tabValue} index={1}>
-        {renderMySkills()}
-      </TabPanel>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Once you start, you cannot pause or restart the assessment.
+                  Make sure you have enough time to complete it.
+                </Alert>
 
-      <TabPanel value={tabValue} index={2}>
-        {renderCompletedTests()}
-      </TabPanel>
+                <Typography variant="body2" color="text.secondary">
+                  Passing score: {currentTest.passingScore}%
+                </Typography>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setStartTestDialog(false)}>Cancel</Button>
+            <AnimatedButton
+              variant="contained"
+              onClick={confirmStartTest}
+              startIcon={<PlayIcon />}
+            >
+              Start Assessment
+            </AnimatedButton>
+          </DialogActions>
+        </Dialog>
 
-      <Box sx={{ mt: 4 }}>
-        <SkillsAssessment />
-      </Box>
-    </Container>
+        {/* Results Dialog */}
+        <Dialog
+          open={resultsDialog}
+          onClose={() => setResultsDialog(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ textAlign: 'center' }}>
+              {testResults?.passed ? (
+                <CheckCircleIcon
+                  sx={{ fontSize: 60, color: 'success.main', mb: 1 }}
+                />
+              ) : (
+                <CancelIcon sx={{ fontSize: 60, color: 'error.main', mb: 1 }} />
+              )}
+              <Typography variant="h4" fontWeight={700}>
+                {testResults?.passed
+                  ? 'Congratulations!'
+                  : 'Assessment Complete'}
+              </Typography>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            {testResults && (
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography
+                  variant="h2"
+                  fontWeight={700}
+                  color="primary"
+                  gutterBottom
+                >
+                  {testResults.score}%
+                </Typography>
+
+                <Typography variant="h6" gutterBottom>
+                  {testResults.correctAnswers} out of{' '}
+                  {testResults.totalQuestions} correct
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ mb: 3 }}
+                >
+                  Completed in {testResults.timeSpent} minutes
+                </Typography>
+
+                {testResults.passed ? (
+                  <Alert severity="success" sx={{ mb: 2 }}>
+                    You have successfully passed this assessment!
+                    {testResults.certificate &&
+                      ' Your certificate is ready for download.'}
+                  </Alert>
+                ) : (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    You can retake this assessment after 24 hours to improve
+                    your score.
+                  </Alert>
+                )}
+
+                {testResults.autoSubmitted && (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    This assessment was automatically submitted due to time
+                    expiration.
+                  </Alert>
+                )}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', p: 3 }}>
+            {testResults?.certificate && (
+              <Button startIcon={<DownloadIcon />} variant="outlined">
+                Download Certificate
+              </Button>
+            )}
+            <Button onClick={() => setResultsDialog(false)}>Close</Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setResultsDialog(false);
+                navigate('/worker/skills');
+              }}
+            >
+              View All Assessments
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert
+            severity={snackbar.severity}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </>
   );
 };
 

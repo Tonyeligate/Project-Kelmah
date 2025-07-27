@@ -28,7 +28,7 @@ import {
   Paper,
   Skeleton,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   AttachMoney as MoneyIcon,
@@ -38,12 +38,9 @@ import {
   Receipt as ReceiptIcon,
   TrendingUp as TrendingUpIcon,
   AccountBalance as BankIcon,
-  Visibility as ViewIcon
+  Visibility as ViewIcon,
 } from '@mui/icons-material';
-import { 
-  selectHirerJobs,
-  selectHirerLoading
-} from '../services/hirerSlice';
+import { selectHirerJobs, selectHirerLoading } from '../services/hirerSlice';
 
 // Mock payment data with comprehensive financial information
 const mockPaymentData = {
@@ -56,10 +53,10 @@ const mockPaymentData = {
     paymentMethods: [
       { method: 'Mobile Money', percentage: 65 },
       { method: 'Bank Transfer', percentage: 30 },
-      { method: 'Card Payment', percentage: 5 }
-    ]
+      { method: 'Card Payment', percentage: 5 },
+    ],
   },
-  
+
   pendingPayments: [
     {
       id: 'payment-1',
@@ -69,14 +66,14 @@ const mockPaymentData = {
         id: 'worker-1',
         name: 'Tony Gate',
         avatar: '/api/placeholder/40/40',
-        rating: 4.8
+        rating: 4.8,
       },
       milestone: 'Cabinet Construction',
       amount: 1650,
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2),
       status: 'ready_for_release',
       completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24),
-      escrowId: 'escrow-001'
+      escrowId: 'escrow-001',
     },
     {
       id: 'payment-2',
@@ -86,15 +83,15 @@ const mockPaymentData = {
         id: 'worker-2',
         name: 'Sarah Williams',
         avatar: '/api/placeholder/40/40',
-        rating: 4.9
+        rating: 4.9,
       },
       milestone: 'Furniture Selection & Ordering',
       amount: 5250,
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5),
       status: 'pending_approval',
       submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 12),
-      escrowId: 'escrow-002'
-    }
+      escrowId: 'escrow-002',
+    },
   ],
 
   paymentHistory: [
@@ -105,14 +102,14 @@ const mockPaymentData = {
       worker: {
         id: 'worker-1',
         name: 'Tony Gate',
-        avatar: '/api/placeholder/40/40'
+        avatar: '/api/placeholder/40/40',
       },
       milestone: 'Material Purchase & Preparation',
       amount: 1100,
       paidDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
       status: 'completed',
       paymentMethod: 'Mobile Money',
-      transactionId: 'TXN-001234'
+      transactionId: 'TXN-001234',
     },
     {
       id: 'payment-h2',
@@ -121,14 +118,14 @@ const mockPaymentData = {
       worker: {
         id: 'worker-1',
         name: 'Tony Gate',
-        avatar: '/api/placeholder/40/40'
+        avatar: '/api/placeholder/40/40',
       },
       milestone: 'Initial Measurements & Design',
       amount: 1100,
       paidDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
       status: 'completed',
       paymentMethod: 'Bank Transfer',
-      transactionId: 'TXN-001233'
+      transactionId: 'TXN-001233',
     },
     {
       id: 'payment-h3',
@@ -137,16 +134,16 @@ const mockPaymentData = {
       worker: {
         id: 'worker-2',
         name: 'Sarah Williams',
-        avatar: '/api/placeholder/40/40'
+        avatar: '/api/placeholder/40/40',
       },
       milestone: 'Space Planning & Design',
       amount: 4500,
       paidDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
       status: 'completed',
       paymentMethod: 'Mobile Money',
-      transactionId: 'TXN-001235'
-    }
-  ]
+      transactionId: 'TXN-001235',
+    },
+  ],
 };
 
 const PaymentRelease = () => {
@@ -169,7 +166,7 @@ const PaymentRelease = () => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -177,27 +174,37 @@ const PaymentRelease = () => {
     return new Date(date).toLocaleDateString('en-GH', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ready_for_release': return 'success';
-      case 'pending_approval': return 'warning';
-      case 'completed': return 'primary';
-      case 'overdue': return 'error';
-      default: return 'default';
+      case 'ready_for_release':
+        return 'success';
+      case 'pending_approval':
+        return 'warning';
+      case 'completed':
+        return 'primary';
+      case 'overdue':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'ready_for_release': return 'Ready to Release';
-      case 'pending_approval': return 'Pending Approval';
-      case 'completed': return 'Completed';
-      case 'overdue': return 'Overdue';
-      default: return status;
+      case 'ready_for_release':
+        return 'Ready to Release';
+      case 'pending_approval':
+        return 'Pending Approval';
+      case 'completed':
+        return 'Completed';
+      case 'overdue':
+        return 'Overdue';
+      default:
+        return status;
     }
   };
 
@@ -219,11 +226,13 @@ const PaymentRelease = () => {
     setLoading(true);
     try {
       // Mock payment release
-      console.log(`Releasing payment of ${selectedPayment.amount} via ${paymentMethod}`);
-      
+      console.log(
+        `Releasing payment of ${selectedPayment.amount} via ${paymentMethod}`,
+      );
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       handleDialogClose();
     } catch (error) {
       console.error('Error releasing payment:', error);
@@ -236,13 +245,19 @@ const PaymentRelease = () => {
   const PaymentSummaryCards = () => (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
                   {formatCurrency(mockPaymentData.summary.totalPaid)}
@@ -258,13 +273,19 @@ const PaymentRelease = () => {
       </Grid>
 
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
                   {formatCurrency(mockPaymentData.summary.pendingPayments)}
@@ -280,13 +301,19 @@ const PaymentRelease = () => {
       </Grid>
 
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
                   {formatCurrency(mockPaymentData.summary.escrowBalance)}
@@ -302,13 +329,19 @@ const PaymentRelease = () => {
       </Grid>
 
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
                   {mockPaymentData.summary.averagePaymentTime}
@@ -358,10 +391,12 @@ const PaymentRelease = () => {
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             Pending Payments ({mockPaymentData.pendingPayments.length})
           </Typography>
-          
+
           {mockPaymentData.pendingPayments.length === 0 ? (
             <Box textAlign="center" py={4}>
-              <MoneyIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <MoneyIcon
+                sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+              />
               <Typography variant="h6" color="text.secondary">
                 No pending payments
               </Typography>
@@ -371,28 +406,40 @@ const PaymentRelease = () => {
             </Box>
           ) : (
             <TableContainer>
-      <Table>
-        <TableHead>
-          <TableRow>
-                    <TableCell><strong>Job & Worker</strong></TableCell>
-                    <TableCell><strong>Milestone</strong></TableCell>
-                    <TableCell><strong>Amount</strong></TableCell>
-                    <TableCell><strong>Status</strong></TableCell>
-                    <TableCell><strong>Due Date</strong></TableCell>
-                    <TableCell align="center"><strong>Actions</strong></TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Job & Worker</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Milestone</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Amount</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Status</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Due Date</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Actions</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {mockPaymentData.pendingPayments.map((payment) => (
                     <TableRow key={payment.id} hover>
-                <TableCell>
+                      <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar
-                            src={payment.worker.avatar} 
+                          <Avatar
+                            src={payment.worker.avatar}
                             sx={{ width: 40, height: 40 }}
-                    >
+                          >
                             {payment.worker.name.charAt(0)}
-                    </Avatar>
+                          </Avatar>
                           <Box>
                             <Typography variant="subtitle2" fontWeight="bold">
                               {payment.jobTitle}
@@ -401,34 +448,38 @@ const PaymentRelease = () => {
                               {payment.worker.name}
                             </Typography>
                           </Box>
-                  </Box>
-                </TableCell>
+                        </Box>
+                      </TableCell>
                       <TableCell>
                         <Typography variant="body2">
                           {payment.milestone}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2" fontWeight="bold" color="primary.main">
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="bold"
+                          color="primary.main"
+                        >
                           {formatCurrency(payment.amount)}
                         </Typography>
                       </TableCell>
-                <TableCell>
-                  <Chip
+                      <TableCell>
+                        <Chip
                           label={getStatusLabel(payment.status)}
-                    color={getStatusColor(payment.status)}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
+                          color={getStatusColor(payment.status)}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
                         <Typography variant="body2">
                           {formatDate(payment.dueDate)}
                         </Typography>
-                </TableCell>
+                      </TableCell>
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
                           <Tooltip title="View Details">
-                            <IconButton 
+                            <IconButton
                               size="small"
                               onClick={() => handleDialogOpen('view', payment)}
                             >
@@ -436,23 +487,25 @@ const PaymentRelease = () => {
                             </IconButton>
                           </Tooltip>
                           {payment.status === 'ready_for_release' && (
-                      <Button
-                        size="small"
+                            <Button
+                              size="small"
                               variant="contained"
-                        color="primary"
+                              color="primary"
                               startIcon={<MoneyIcon />}
-                              onClick={() => handleDialogOpen('release', payment)}
-                      >
-                        Release
-                      </Button>
-                    )}
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                              onClick={() =>
+                                handleDialogOpen('release', payment)
+                              }
+                            >
+                              Release
+                            </Button>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </CardContent>
       </Card>
@@ -462,18 +515,30 @@ const PaymentRelease = () => {
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             Recent Payment History
-      </Typography>
+          </Typography>
 
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell><strong>Job & Worker</strong></TableCell>
-                  <TableCell><strong>Milestone</strong></TableCell>
-                  <TableCell><strong>Amount</strong></TableCell>
-                  <TableCell><strong>Date Paid</strong></TableCell>
-                  <TableCell><strong>Method</strong></TableCell>
-                  <TableCell><strong>Transaction ID</strong></TableCell>
+                  <TableCell>
+                    <strong>Job & Worker</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Milestone</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Amount</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Date Paid</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Method</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Transaction ID</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -481,8 +546,8 @@ const PaymentRelease = () => {
                   <TableRow key={payment.id} hover>
                     <TableCell>
                       <Box display="flex" alignItems="center" gap={2}>
-                        <Avatar 
-                          src={payment.worker.avatar} 
+                        <Avatar
+                          src={payment.worker.avatar}
                           sx={{ width: 32, height: 32 }}
                         >
                           {payment.worker.name.charAt(0)}
@@ -495,7 +560,7 @@ const PaymentRelease = () => {
                             {payment.worker.name}
                           </Typography>
                         </Box>
-        </Box>
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
@@ -503,7 +568,11 @@ const PaymentRelease = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight="bold" color="success.main">
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color="success.main"
+                      >
                         {formatCurrency(payment.amount)}
                       </Typography>
                     </TableCell>
@@ -513,7 +582,7 @@ const PaymentRelease = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip 
+                      <Chip
                         label={payment.paymentMethod}
                         size="small"
                         variant="outlined"
@@ -534,7 +603,7 @@ const PaymentRelease = () => {
 
       {/* Payment Release Dialog */}
       <Dialog
-        open={dialogOpen && dialogType === 'release'} 
+        open={dialogOpen && dialogType === 'release'}
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
@@ -549,7 +618,8 @@ const PaymentRelease = () => {
           {selectedPayment && (
             <Box>
               <Alert severity="info" sx={{ mb: 3 }}>
-                You are about to release payment for completed work. This action cannot be undone.
+                You are about to release payment for completed work. This action
+                cannot be undone.
               </Alert>
 
               <Box mb={3}>
@@ -587,7 +657,9 @@ const PaymentRelease = () => {
                   {['mobile_money', 'bank_transfer', 'card'].map((method) => (
                     <Button
                       key={method}
-                      variant={paymentMethod === method ? 'contained' : 'outlined'}
+                      variant={
+                        paymentMethod === method ? 'contained' : 'outlined'
+                      }
                       onClick={() => setPaymentMethod(method)}
                       sx={{ textTransform: 'capitalize' }}
                     >
@@ -612,8 +684,8 @@ const PaymentRelease = () => {
           <Button onClick={handleDialogClose} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            onClick={handlePaymentRelease} 
+          <Button
+            onClick={handlePaymentRelease}
             variant="contained"
             disabled={loading}
             startIcon={loading ? <LinearProgress /> : <MoneyIcon />}
@@ -624,8 +696,8 @@ const PaymentRelease = () => {
       </Dialog>
 
       {/* Payment Details Dialog */}
-      <Dialog 
-        open={dialogOpen && dialogType === 'view'} 
+      <Dialog
+        open={dialogOpen && dialogType === 'view'}
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
@@ -668,7 +740,7 @@ const PaymentRelease = () => {
                   <Typography variant="subtitle1" fontWeight="bold">
                     Status
                   </Typography>
-                  <Chip 
+                  <Chip
                     label={getStatusLabel(selectedPayment.status)}
                     color={getStatusColor(selectedPayment.status)}
                     size="small"

@@ -87,7 +87,11 @@ const EnhancedReviewsPage = () => {
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
 
   // Mock review data
   const mockReviews = [
@@ -95,19 +99,20 @@ const EnhancedReviewsPage = () => {
       id: '1',
       rating: 5,
       title: 'Excellent Kitchen Renovation Work',
-      comment: 'John did an absolutely fantastic job on our kitchen renovation. His attention to detail is exceptional, and the quality of workmanship is outstanding. He completed the project on time and within budget. The custom cabinets he built are beautiful and functional. I would definitely hire him again and recommend him to anyone looking for quality carpentry work.',
+      comment:
+        'John did an absolutely fantastic job on our kitchen renovation. His attention to detail is exceptional, and the quality of workmanship is outstanding. He completed the project on time and within budget. The custom cabinets he built are beautiful and functional. I would definitely hire him again and recommend him to anyone looking for quality carpentry work.',
       reviewer: {
         id: '2',
         name: 'Sarah Mitchell',
         avatar: '/api/placeholder/50/50',
         isVerified: true,
-        totalReviews: 23
+        totalReviews: 23,
       },
       job: {
         id: 'job-1',
         title: 'Kitchen Renovation - Custom Cabinets',
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-        budget: 'GH₵5,500'
+        budget: 'GH₵5,500',
       },
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
       isPublic: true,
@@ -115,53 +120,55 @@ const EnhancedReviewsPage = () => {
       unhelpfulVotes: 1,
       hasReply: true,
       reply: {
-        text: 'Thank you so much for the wonderful review, Sarah! It was a pleasure working on your kitchen. I\'m thrilled that you\'re happy with the results. Looking forward to future projects together!',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+        text: "Thank you so much for the wonderful review, Sarah! It was a pleasure working on your kitchen. I'm thrilled that you're happy with the results. Looking forward to future projects together!",
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
       },
-      categories: ['Quality', 'Timeliness', 'Communication', 'Value']
+      categories: ['Quality', 'Timeliness', 'Communication', 'Value'],
     },
     {
       id: '2',
       rating: 4,
       title: 'Good Plumbing Work with Minor Issues',
-      comment: 'Mike completed the bathroom plumbing repair efficiently. The work quality was good overall, though there was a small leak that needed to be fixed later. He was responsive and came back to fix it at no extra charge. Professional attitude and fair pricing.',
+      comment:
+        'Mike completed the bathroom plumbing repair efficiently. The work quality was good overall, though there was a small leak that needed to be fixed later. He was responsive and came back to fix it at no extra charge. Professional attitude and fair pricing.',
       reviewer: {
         id: '3',
         name: 'David Chen',
         avatar: '/api/placeholder/50/50',
         isVerified: false,
-        totalReviews: 8
+        totalReviews: 8,
       },
       job: {
         id: 'job-2',
         title: 'Bathroom Plumbing Repair',
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
-        budget: 'GH₵800'
+        budget: 'GH₵800',
       },
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
       isPublic: true,
       helpfulVotes: 7,
       unhelpfulVotes: 0,
       hasReply: false,
-      categories: ['Quality', 'Responsiveness', 'Value']
+      categories: ['Quality', 'Responsiveness', 'Value'],
     },
     {
       id: '3',
       rating: 5,
       title: 'Outstanding Electrical Installation',
-      comment: 'Exceptional electrical work! John rewired our entire house with precision and care. He explained everything clearly, followed all safety protocols, and left the workspace clean. The project was completed ahead of schedule. Highly recommend for any electrical needs.',
+      comment:
+        'Exceptional electrical work! John rewired our entire house with precision and care. He explained everything clearly, followed all safety protocols, and left the workspace clean. The project was completed ahead of schedule. Highly recommend for any electrical needs.',
       reviewer: {
         id: '4',
         name: 'Lisa Thompson',
         avatar: '/api/placeholder/50/50',
         isVerified: true,
-        totalReviews: 15
+        totalReviews: 15,
       },
       job: {
         id: 'job-3',
         title: 'Complete House Rewiring',
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21),
-        budget: 'GH₵3,200'
+        budget: 'GH₵3,200',
       },
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18),
       isPublic: true,
@@ -169,28 +176,29 @@ const EnhancedReviewsPage = () => {
       unhelpfulVotes: 0,
       hasReply: true,
       reply: {
-        text: 'Thank you for the amazing review, Lisa! Safety and quality are my top priorities in electrical work. I\'m glad you\'re satisfied with the results.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 17)
+        text: "Thank you for the amazing review, Lisa! Safety and quality are my top priorities in electrical work. I'm glad you're satisfied with the results.",
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 17),
       },
-      categories: ['Quality', 'Safety', 'Professionalism', 'Timeliness']
+      categories: ['Quality', 'Safety', 'Professionalism', 'Timeliness'],
     },
     {
       id: '4',
       rating: 3,
       title: 'Average Experience with Room Painting',
-      comment: 'The painting job was okay but not exceptional. Some areas needed touch-ups, and the cleanup could have been better. John was professional and the price was fair, but I expected higher quality given the reviews.',
+      comment:
+        'The painting job was okay but not exceptional. Some areas needed touch-ups, and the cleanup could have been better. John was professional and the price was fair, but I expected higher quality given the reviews.',
       reviewer: {
         id: '5',
         name: 'Robert Johnson',
         avatar: '/api/placeholder/50/50',
         isVerified: true,
-        totalReviews: 31
+        totalReviews: 31,
       },
       job: {
         id: 'job-4',
         title: 'Living Room and Bedroom Painting',
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 35),
-        budget: 'GH₵1,200'
+        budget: 'GH₵1,200',
       },
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
       isPublic: true,
@@ -198,11 +206,11 @@ const EnhancedReviewsPage = () => {
       unhelpfulVotes: 2,
       hasReply: true,
       reply: {
-        text: 'Thank you for the feedback, Robert. I apologize for not meeting your expectations. I\'ve taken note of your concerns and will ensure better attention to detail and cleanup in future projects.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 29)
+        text: "Thank you for the feedback, Robert. I apologize for not meeting your expectations. I've taken note of your concerns and will ensure better attention to detail and cleanup in future projects.",
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 29),
       },
-      categories: ['Quality', 'Value']
-    }
+      categories: ['Quality', 'Value'],
+    },
   ];
 
   // Mock review statistics
@@ -215,21 +223,21 @@ const EnhancedReviewsPage = () => {
         4: 12,
         3: 5,
         2: 1,
-        1: 1
-      }
+        1: 1,
+      },
     },
     recent: {
       thisMonth: 8,
       lastMonth: 12,
-      trend: 'up'
+      trend: 'up',
     },
     categories: {
-      'Quality': 4.6,
-      'Timeliness': 4.3,
-      'Communication': 4.5,
-      'Value': 4.2,
-      'Professionalism': 4.7
-    }
+      Quality: 4.6,
+      Timeliness: 4.3,
+      Communication: 4.5,
+      Value: 4.2,
+      Professionalism: 4.7,
+    },
   };
 
   // Initialize data
@@ -238,7 +246,7 @@ const EnhancedReviewsPage = () => {
       setIsLoading(true);
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         setReviews(mockReviews);
         setReviewStats(mockStats);
       } catch (error) {
@@ -259,34 +267,39 @@ const EnhancedReviewsPage = () => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(review =>
-        review.title.toLowerCase().includes(query) ||
-        review.comment.toLowerCase().includes(query) ||
-        review.reviewer.name.toLowerCase().includes(query) ||
-        review.job.title.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (review) =>
+          review.title.toLowerCase().includes(query) ||
+          review.comment.toLowerCase().includes(query) ||
+          review.reviewer.name.toLowerCase().includes(query) ||
+          review.job.title.toLowerCase().includes(query),
       );
     }
 
     // Apply category filter
     switch (selectedFilter) {
       case '5-star':
-        filtered = filtered.filter(review => review.rating === 5);
+        filtered = filtered.filter((review) => review.rating === 5);
         break;
       case '4-star':
-        filtered = filtered.filter(review => review.rating === 4);
+        filtered = filtered.filter((review) => review.rating === 4);
         break;
       case 'recent':
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        filtered = filtered.filter(review => new Date(review.createdAt) > weekAgo);
+        filtered = filtered.filter(
+          (review) => new Date(review.createdAt) > weekAgo,
+        );
         break;
       case 'verified':
-        filtered = filtered.filter(review => review.reviewer.isVerified);
+        filtered = filtered.filter((review) => review.reviewer.isVerified);
         break;
       case 'with-reply':
-        filtered = filtered.filter(review => review.hasReply);
+        filtered = filtered.filter((review) => review.hasReply);
         break;
       case 'needs-reply':
-        filtered = filtered.filter(review => !review.hasReply && review.rating <= 3);
+        filtered = filtered.filter(
+          (review) => !review.hasReply && review.rating <= 3,
+        );
         break;
       default:
         break;
@@ -324,21 +337,23 @@ const EnhancedReviewsPage = () => {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Update review with reply
-      setReviews(prev => prev.map(review =>
-        review.id === selectedReview.id
-          ? {
-              ...review,
-              hasReply: true,
-              reply: {
-                text: replyText.trim(),
-                createdAt: new Date()
+      setReviews((prev) =>
+        prev.map((review) =>
+          review.id === selectedReview.id
+            ? {
+                ...review,
+                hasReply: true,
+                reply: {
+                  text: replyText.trim(),
+                  createdAt: new Date(),
+                },
               }
-            }
-          : review
-      ));
+            : review,
+        ),
+      );
 
       setReplyDialog(false);
       setReplyText('');
@@ -352,16 +367,22 @@ const EnhancedReviewsPage = () => {
 
   const handleHelpfulVote = async (reviewId, isHelpful) => {
     try {
-      setReviews(prev => prev.map(review =>
-        review.id === reviewId
-          ? {
-              ...review,
-              helpfulVotes: isHelpful ? review.helpfulVotes + 1 : review.helpfulVotes,
-              unhelpfulVotes: !isHelpful ? review.unhelpfulVotes + 1 : review.unhelpfulVotes
-            }
-          : review
-      ));
-      
+      setReviews((prev) =>
+        prev.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                helpfulVotes: isHelpful
+                  ? review.helpfulVotes + 1
+                  : review.helpfulVotes,
+                unhelpfulVotes: !isHelpful
+                  ? review.unhelpfulVotes + 1
+                  : review.unhelpfulVotes,
+              }
+            : review,
+        ),
+      );
+
       showFeedback('Thank you for your feedback!', 'success');
     } catch (error) {
       console.error('Failed to vote:', error);
@@ -374,7 +395,8 @@ const EnhancedReviewsPage = () => {
     <Paper
       sx={{
         p: 3,
-        background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
         border: '1px solid rgba(255,215,0,0.2)',
         borderRadius: 3,
       }}
@@ -421,10 +443,7 @@ const EnhancedReviewsPage = () => {
                 },
               }}
             />
-            <Typography
-              variant="body1"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
+            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
               Based on {reviewStats.overall?.totalReviews} reviews
             </Typography>
           </Box>
@@ -434,7 +453,12 @@ const EnhancedReviewsPage = () => {
         <Grid item xs={12} md={4}>
           <Stack spacing={1}>
             {[5, 4, 3, 2, 1].map((rating) => (
-              <Stack key={rating} direction="row" alignItems="center" spacing={2}>
+              <Stack
+                key={rating}
+                direction="row"
+                alignItems="center"
+                spacing={2}
+              >
                 <Typography
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.7)', minWidth: '20px' }}
@@ -444,7 +468,11 @@ const EnhancedReviewsPage = () => {
                 <StarIcon sx={{ color: '#FFD700', fontSize: 16 }} />
                 <LinearProgress
                   variant="determinate"
-                  value={(reviewStats.overall?.ratingDistribution[rating] / reviewStats.overall?.totalReviews) * 100}
+                  value={
+                    (reviewStats.overall?.ratingDistribution[rating] /
+                      reviewStats.overall?.totalReviews) *
+                    100
+                  }
                   sx={{
                     flex: 1,
                     height: 8,
@@ -476,35 +504,46 @@ const EnhancedReviewsPage = () => {
             >
               Category Breakdown
             </Typography>
-            {Object.entries(reviewStats.categories || {}).map(([category, rating]) => (
-              <Stack key={category} direction="row" alignItems="center" justifyContent="space-between">
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'rgba(255,255,255,0.8)' }}
+            {Object.entries(reviewStats.categories || {}).map(
+              ([category, rating]) => (
+                <Stack
+                  key={category}
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
                 >
-                  {category}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Rating
-                    value={rating}
-                    precision={0.1}
-                    readOnly
-                    size="small"
-                    sx={{
-                      '& .MuiRating-iconFilled': {
-                        color: '#FFD700',
-                      },
-                    }}
-                  />
                   <Typography
                     variant="body2"
-                    sx={{ color: '#FFD700', fontWeight: 600, minWidth: '30px' }}
+                    sx={{ color: 'rgba(255,255,255,0.8)' }}
                   >
-                    {rating.toFixed(1)}
+                    {category}
                   </Typography>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Rating
+                      value={rating}
+                      precision={0.1}
+                      readOnly
+                      size="small"
+                      sx={{
+                        '& .MuiRating-iconFilled': {
+                          color: '#FFD700',
+                        },
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#FFD700',
+                        fontWeight: 600,
+                        minWidth: '30px',
+                      }}
+                    >
+                      {rating.toFixed(1)}
+                    </Typography>
+                  </Stack>
                 </Stack>
-              </Stack>
-            ))}
+              ),
+            )}
           </Stack>
         </Grid>
       </Grid>
@@ -513,10 +552,7 @@ const EnhancedReviewsPage = () => {
       <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <Stack direction="row" alignItems="center" spacing={3}>
           <Box>
-            <Typography
-              variant="body2"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
               This Month
             </Typography>
             <Stack direction="row" alignItems="center" spacing={1}>
@@ -530,10 +566,7 @@ const EnhancedReviewsPage = () => {
             </Stack>
           </Box>
           <Box>
-            <Typography
-              variant="body2"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
               Last Month
             </Typography>
             <Typography
@@ -544,16 +577,10 @@ const EnhancedReviewsPage = () => {
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="body2"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
               Response Rate
             </Typography>
-            <Typography
-              variant="h6"
-              sx={{ color: '#FFD700', fontWeight: 700 }}
-            >
+            <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
               87%
             </Typography>
           </Box>
@@ -571,7 +598,8 @@ const EnhancedReviewsPage = () => {
     >
       <Card
         sx={{
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           borderRadius: 3,
           overflow: 'hidden',
@@ -584,17 +612,30 @@ const EnhancedReviewsPage = () => {
             right: 0,
             height: '3px',
             background: `linear-gradient(90deg, ${
-              review.rating >= 4 ? '#4CAF50' : review.rating >= 3 ? '#FFD700' : '#FF5722'
+              review.rating >= 4
+                ? '#4CAF50'
+                : review.rating >= 3
+                  ? '#FFD700'
+                  : '#FF5722'
             } 0%, ${alpha(
-              review.rating >= 4 ? '#4CAF50' : review.rating >= 3 ? '#FFD700' : '#FF5722',
-              0.8
+              review.rating >= 4
+                ? '#4CAF50'
+                : review.rating >= 3
+                  ? '#FFD700'
+                  : '#FF5722',
+              0.8,
             )} 100%)`,
           },
         }}
       >
         <CardContent sx={{ p: 3 }}>
           {/* Header */}
-          <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            sx={{ mb: 2 }}
+          >
             <Stack direction="row" spacing={2} sx={{ flex: 1 }}>
               <Avatar
                 src={review.reviewer.avatar}
@@ -608,7 +649,12 @@ const EnhancedReviewsPage = () => {
                 {review.reviewer.name.charAt(0)}
               </Avatar>
               <Box sx={{ flex: 1 }}>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ mb: 0.5 }}
+                >
                   <Typography
                     variant="h6"
                     sx={{
@@ -640,7 +686,9 @@ const EnhancedReviewsPage = () => {
                     variant="caption"
                     sx={{ color: 'rgba(255,255,255,0.5)' }}
                   >
-                    {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(review.createdAt), {
+                      addSuffix: true,
+                    })}
                   </Typography>
                 </Stack>
               </Box>
@@ -681,12 +729,18 @@ const EnhancedReviewsPage = () => {
                 >
                   {review.job.title}
                 </Typography>
-                <Stack direction="row" alignItems="center" spacing={2} sx={{ mt: 0.5 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={2}
+                  sx={{ mt: 0.5 }}
+                >
                   <Typography
                     variant="caption"
                     sx={{ color: 'rgba(255,255,255,0.7)' }}
                   >
-                    Completed: {format(new Date(review.job.completedDate), 'MMM dd, yyyy')}
+                    Completed:{' '}
+                    {format(new Date(review.job.completedDate), 'MMM dd, yyyy')}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -724,7 +778,11 @@ const EnhancedReviewsPage = () => {
           </Typography>
 
           {/* Categories */}
-          <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}
+          >
             {review.categories.map((category) => (
               <Chip
                 key={category}
@@ -751,7 +809,12 @@ const EnhancedReviewsPage = () => {
                 borderLeft: '3px solid #FFD700',
               }}
             >
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mb: 1 }}
+              >
                 <Avatar
                   src={user?.profileImage}
                   sx={{
@@ -773,7 +836,9 @@ const EnhancedReviewsPage = () => {
                   variant="caption"
                   sx={{ color: 'rgba(255,255,255,0.5)' }}
                 >
-                  {formatDistanceToNow(new Date(review.reply.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(review.reply.createdAt), {
+                    addSuffix: true,
+                  })}
                 </Typography>
               </Stack>
               <Typography
@@ -787,7 +852,12 @@ const EnhancedReviewsPage = () => {
         </CardContent>
 
         <CardActions sx={{ px: 3, pb: 2 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ width: '100%' }}
+          >
             <Stack direction="row" spacing={1}>
               <Button
                 size="small"
@@ -927,7 +997,8 @@ const EnhancedReviewsPage = () => {
       {/* Tabs */}
       <Paper
         sx={{
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           borderRadius: 3,
           mb: 3,
@@ -965,12 +1036,18 @@ const EnhancedReviewsPage = () => {
             sx={{
               p: 3,
               mb: 3,
-              background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+              background:
+                'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
               border: '1px solid rgba(255,215,0,0.2)',
               borderRadius: 3,
             }}
           >
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ mb: 2 }}
+            >
               <TextField
                 placeholder="Search reviews..."
                 value={searchQuery}
@@ -1000,7 +1077,9 @@ const EnhancedReviewsPage = () => {
                 }}
                 InputProps={{
                   startAdornment: (
-                    <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }} />
+                    <SearchIcon
+                      sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }}
+                    />
                   ),
                 }}
               />
@@ -1038,11 +1117,9 @@ const EnhancedReviewsPage = () => {
               </Button>
             </Stack>
 
-            <Typography
-              variant="body2"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
-              {filteredReviews.length} review{filteredReviews.length !== 1 ? 's' : ''} found
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              {filteredReviews.length} review
+              {filteredReviews.length !== 1 ? 's' : ''} found
             </Typography>
           </Paper>
 
@@ -1052,16 +1129,25 @@ const EnhancedReviewsPage = () => {
               sx={{
                 p: 6,
                 textAlign: 'center',
-                background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
                 border: '1px solid rgba(255,215,0,0.2)',
                 borderRadius: 3,
               }}
             >
-              <StarIcon sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
-              <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+              <StarIcon
+                sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }}
+              />
+              <Typography
+                variant="h6"
+                sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
+              >
                 No reviews found
               </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255,255,255,0.5)' }}
+              >
                 Try adjusting your search or filters
               </Typography>
             </Paper>
@@ -1155,7 +1241,10 @@ const EnhancedReviewsPage = () => {
           <ListItemText>Share</ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setMoreMenuAnchor(null)} sx={{ color: '#F44336' }}>
+        <MenuItem
+          onClick={() => setMoreMenuAnchor(null)}
+          sx={{ color: '#F44336' }}
+        >
           <ListItemIcon>
             <ReportIcon sx={{ color: '#F44336' }} />
           </ListItemIcon>
@@ -1175,7 +1264,8 @@ const EnhancedReviewsPage = () => {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
           },
         }}
@@ -1194,7 +1284,12 @@ const EnhancedReviewsPage = () => {
                 borderRadius: 2,
               }}
             >
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mb: 1 }}
+              >
                 <Rating
                   value={selectedReview.rating}
                   readOnly
@@ -1205,7 +1300,10 @@ const EnhancedReviewsPage = () => {
                     },
                   }}
                 />
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
                   {selectedReview.title}
                 </Typography>
               </Stack>
@@ -1287,11 +1385,11 @@ const EnhancedReviewsPage = () => {
       <Snackbar
         open={feedback.open}
         autoHideDuration={4000}
-        onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
           severity={feedback.severity}
           sx={{ width: '100%' }}
         >
@@ -1302,4 +1400,4 @@ const EnhancedReviewsPage = () => {
   );
 };
 
-export default EnhancedReviewsPage; 
+export default EnhancedReviewsPage;

@@ -99,7 +99,11 @@ const EnhancedAnalyticsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState({});
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
 
   // Mock analytics data
   const mockAnalyticsData = {
@@ -117,7 +121,7 @@ const EnhancedAnalyticsPage = () => {
         jobs: 8.7,
         rating: 2.1,
         views: -5.3,
-      }
+      },
     },
     earnings: {
       thisMonth: 3200,
@@ -171,7 +175,7 @@ const EnhancedAnalyticsPage = () => {
         onTimeDelivery: 96,
         clientSatisfaction: 4.7,
         repeatBookings: 35,
-      }
+      },
     },
     clients: {
       total: 18,
@@ -189,7 +193,7 @@ const EnhancedAnalyticsPage = () => {
         { rating: 3, count: 2, percentage: 8.7 },
         { rating: 2, count: 0, percentage: 0 },
         { rating: 1, count: 0, percentage: 0 },
-      ]
+      ],
     },
     performance: {
       profileViews: {
@@ -212,8 +216,8 @@ const EnhancedAnalyticsPage = () => {
         { name: 'Plumbing', level: 88, jobs: 7, rating: 4.6 },
         { name: 'Electrical', level: 82, jobs: 4, rating: 4.7 },
         { name: 'Painting', level: 75, jobs: 3, rating: 4.5 },
-      ]
-    }
+      ],
+    },
   };
 
   // Initialize data
@@ -222,7 +226,7 @@ const EnhancedAnalyticsPage = () => {
       setIsLoading(true);
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         setAnalyticsData(mockAnalyticsData);
       } catch (error) {
         console.error('Failed to load analytics:', error);
@@ -243,8 +247,10 @@ const EnhancedAnalyticsPage = () => {
   const formatCurrency = (amount) => `GH₵${amount.toLocaleString()}`;
 
   const getTrendIcon = (trend) => {
-    if (trend > 0) return <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 20 }} />;
-    if (trend < 0) return <TrendingDownIcon sx={{ color: '#F44336', fontSize: 20 }} />;
+    if (trend > 0)
+      return <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 20 }} />;
+    if (trend < 0)
+      return <TrendingDownIcon sx={{ color: '#F44336', fontSize: 20 }} />;
     return <TrendingFlatIcon sx={{ color: '#9E9E9E', fontSize: 20 }} />;
   };
 
@@ -336,7 +342,12 @@ const EnhancedAnalyticsPage = () => {
                 }}
               >
                 <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
-                  <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
+                  <Stack
+                    direction="row"
+                    alignItems="flex-start"
+                    justifyContent="space-between"
+                    spacing={2}
+                  >
                     <Box sx={{ flex: 1 }}>
                       <Typography
                         variant="caption"
@@ -374,7 +385,12 @@ const EnhancedAnalyticsPage = () => {
                         {stat.subtitle}
                       </Typography>
                       {stat.trend !== 0 && (
-                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 1 }}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={0.5}
+                          sx={{ mt: 1 }}
+                        >
                           {getTrendIcon(stat.trend)}
                           <Typography
                             variant="caption"
@@ -384,7 +400,8 @@ const EnhancedAnalyticsPage = () => {
                               fontSize: '0.7rem',
                             }}
                           >
-                            {stat.trend > 0 ? '+' : ''}{stat.trend.toFixed(1)}%
+                            {stat.trend > 0 ? '+' : ''}
+                            {stat.trend.toFixed(1)}%
                           </Typography>
                         </Stack>
                       )}
@@ -419,12 +436,18 @@ const EnhancedAnalyticsPage = () => {
     <Paper
       sx={{
         p: 3,
-        background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
         border: '1px solid rgba(255,215,0,0.2)',
         borderRadius: 3,
       }}
     >
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 3 }}
+      >
         <Typography
           variant="h6"
           sx={{
@@ -469,13 +492,16 @@ const EnhancedAnalyticsPage = () => {
                 <stop offset="95%" stopColor="#FFD700" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis 
-              dataKey="month" 
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.1)"
+            />
+            <XAxis
+              dataKey="month"
               stroke="rgba(255,255,255,0.7)"
               fontSize={12}
             />
-            <YAxis 
+            <YAxis
               stroke="rgba(255,255,255,0.7)"
               fontSize={12}
               tickFormatter={(value) => `GH₵${value}`}
@@ -489,7 +515,7 @@ const EnhancedAnalyticsPage = () => {
               }}
               formatter={(value, name) => [
                 name === 'earnings' ? formatCurrency(value) : value,
-                name === 'earnings' ? 'Earnings' : 'Jobs'
+                name === 'earnings' ? 'Earnings' : 'Jobs',
               ]}
             />
             <Area
@@ -510,7 +536,8 @@ const EnhancedAnalyticsPage = () => {
     <Paper
       sx={{
         p: 3,
-        background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
         border: '1px solid rgba(255,215,0,0.2)',
         borderRadius: 3,
       }}
@@ -543,12 +570,18 @@ const EnhancedAnalyticsPage = () => {
                   dataKey="jobs"
                   label={({ name, jobs }) => `${name}: ${jobs}`}
                 >
-                  {(analyticsData.jobs?.byCategory || []).map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={['#FFD700', '#4CAF50', '#2196F3', '#FF9800'][index % 4]}
-                    />
-                  ))}
+                  {(analyticsData.jobs?.byCategory || []).map(
+                    (entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          ['#FFD700', '#4CAF50', '#2196F3', '#FF9800'][
+                            index % 4
+                          ]
+                        }
+                      />
+                    ),
+                  )}
                 </Pie>
                 <ChartTooltip
                   contentStyle={{
@@ -583,7 +616,12 @@ const EnhancedAnalyticsPage = () => {
                       width: 12,
                       height: 12,
                       borderRadius: '50%',
-                      backgroundColor: ['#FFD700', '#4CAF50', '#2196F3', '#FF9800'][index % 4],
+                      backgroundColor: [
+                        '#FFD700',
+                        '#4CAF50',
+                        '#2196F3',
+                        '#FF9800',
+                      ][index % 4],
                     }}
                   />
                   <Typography
@@ -620,7 +658,8 @@ const EnhancedAnalyticsPage = () => {
     <Paper
       sx={{
         p: 3,
-        background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
         border: '1px solid rgba(255,215,0,0.2)',
         borderRadius: 3,
       }}
@@ -649,7 +688,12 @@ const EnhancedAnalyticsPage = () => {
             transition={{ duration: 0.3, delay: index * 0.1 }}
           >
             <Box>
-              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 1 }}
+              >
                 <Typography
                   variant="body1"
                   sx={{ color: '#fff', fontWeight: 600 }}
@@ -690,10 +734,18 @@ const EnhancedAnalyticsPage = () => {
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 4,
                     background: `linear-gradient(90deg, ${
-                      skill.level >= 90 ? '#4CAF50' : skill.level >= 70 ? '#FFD700' : '#FF9800'
+                      skill.level >= 90
+                        ? '#4CAF50'
+                        : skill.level >= 70
+                          ? '#FFD700'
+                          : '#FF9800'
                     } 0%, ${alpha(
-                      skill.level >= 90 ? '#4CAF50' : skill.level >= 70 ? '#FFD700' : '#FF9800',
-                      0.8
+                      skill.level >= 90
+                        ? '#4CAF50'
+                        : skill.level >= 70
+                          ? '#FFD700'
+                          : '#FF9800',
+                      0.8,
                     )} 100%)`,
                   },
                 }}
@@ -710,7 +762,8 @@ const EnhancedAnalyticsPage = () => {
     <Paper
       sx={{
         p: 3,
-        background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
         border: '1px solid rgba(255,215,0,0.2)',
         borderRadius: 3,
       }}
@@ -750,7 +803,10 @@ const EnhancedAnalyticsPage = () => {
                   <RatingIcon
                     key={star}
                     sx={{
-                      color: star <= (analyticsData.overview?.averageRating || 0) ? '#FFD700' : 'rgba(255,255,255,0.3)',
+                      color:
+                        star <= (analyticsData.overview?.averageRating || 0)
+                          ? '#FFD700'
+                          : 'rgba(255,255,255,0.3)',
                       fontSize: 32,
                     }}
                   />
@@ -768,7 +824,12 @@ const EnhancedAnalyticsPage = () => {
         <Grid item xs={12} md={6}>
           <Stack spacing={1}>
             {(analyticsData.clients?.satisfaction || []).map((rating) => (
-              <Stack key={rating.rating} direction="row" alignItems="center" spacing={2}>
+              <Stack
+                key={rating.rating}
+                direction="row"
+                alignItems="center"
+                spacing={2}
+              >
                 <Typography
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.7)', minWidth: '20px' }}
@@ -911,7 +972,8 @@ const EnhancedAnalyticsPage = () => {
       {/* Tabs */}
       <Paper
         sx={{
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           borderRadius: 3,
           mb: 3,
@@ -997,17 +1059,24 @@ const EnhancedAnalyticsPage = () => {
               sx={{
                 p: 6,
                 textAlign: 'center',
-                background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
                 border: '1px solid rgba(255,215,0,0.2)',
                 borderRadius: 3,
               }}
             >
-              <ReportIcon sx={{ fontSize: 64, color: 'rgba(255,215,0,0.5)', mb: 2 }} />
+              <ReportIcon
+                sx={{ fontSize: 64, color: 'rgba(255,215,0,0.5)', mb: 2 }}
+              />
               <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
                 Advanced Reports
               </Typography>
-              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
-                Detailed reporting features with export capabilities coming soon!
+              <Typography
+                variant="body1"
+                sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+              >
+                Detailed reporting features with export capabilities coming
+                soon!
               </Typography>
               <Stack direction="row" spacing={2} justifyContent="center">
                 <Button
@@ -1048,11 +1117,11 @@ const EnhancedAnalyticsPage = () => {
       <Snackbar
         open={feedback.open}
         autoHideDuration={4000}
-        onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
           severity={feedback.severity}
           sx={{ width: '100%' }}
         >
@@ -1063,4 +1132,4 @@ const EnhancedAnalyticsPage = () => {
   );
 };
 
-export default EnhancedAnalyticsPage; 
+export default EnhancedAnalyticsPage;

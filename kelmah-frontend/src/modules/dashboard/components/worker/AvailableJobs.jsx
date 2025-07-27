@@ -83,12 +83,23 @@ const getJobIconData = (job) => {
 // Job priority mapping
 const getPriorityChip = (job) => {
   if (job.urgent || job.priority === 'urgent') {
-    return { label: 'Urgent', color: '#FF5722', bgColor: alpha('#FF5722', 0.1) };
+    return {
+      label: 'Urgent',
+      color: '#FF5722',
+      bgColor: alpha('#FF5722', 0.1),
+    };
   }
   if (job.featured || job.priority === 'high') {
-    return { label: 'Featured', color: '#FFD700', bgColor: alpha('#FFD700', 0.1) };
+    return {
+      label: 'Featured',
+      color: '#FFD700',
+      bgColor: alpha('#FFD700', 0.1),
+    };
   }
-  if (job.new || Date.now() - new Date(job.created_at).getTime() < 24 * 60 * 60 * 1000) {
+  if (
+    job.new ||
+    Date.now() - new Date(job.created_at).getTime() < 24 * 60 * 60 * 1000
+  ) {
     return { label: 'New', color: '#4CAF50', bgColor: alpha('#4CAF50', 0.1) };
   }
   return null;
@@ -111,7 +122,7 @@ const EnhancedAvailableJobs = () => {
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
   const [selectedJobForMenu, setSelectedJobForMenu] = useState(null);
-  
+
   const [feedback, setFeedback] = useState({
     open: false,
     message: '',
@@ -144,33 +155,37 @@ const EnhancedAvailableJobs = () => {
       if (refresh) setIsRefreshing(true);
       else setIsLoading(true);
 
-        const response = await jobsApi.getJobs({
-          status: 'open',
-          nearby: true,
+      const response = await jobsApi.getJobs({
+        status: 'open',
+        nearby: true,
         limit: 20,
         userSkills: user?.skills || [],
-        });
+      });
 
-      const mappedJobs = response.jobs?.map((job) => ({
+      const mappedJobs =
+        response.jobs?.map((job) => ({
           ...job,
-        ...getJobIconData(job),
-        status: savedJobs.has(job.id) ? 'saved' : 'idle',
-        distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
-        salary: job.salary || job.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
-        applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
-        matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
-      })) || [];
+          ...getJobIconData(job),
+          status: savedJobs.has(job.id) ? 'saved' : 'idle',
+          distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
+          salary:
+            job.salary ||
+            job.budget ||
+            `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
+          applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
+          matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
+        })) || [];
 
-        setJobs(mappedJobs);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching jobs:', err);
+      setJobs(mappedJobs);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching jobs:', err);
       setError('Failed to load jobs. Please try again.');
-      } finally {
-        setIsLoading(false);
+    } finally {
+      setIsLoading(false);
       setIsRefreshing(false);
-      }
-    };
+    }
+  };
 
   // Initial load
   useEffect(() => {
@@ -184,30 +199,35 @@ const EnhancedAvailableJobs = () => {
     // Apply search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(job =>
-        job.title?.toLowerCase().includes(query) ||
-        job.company?.toLowerCase().includes(query) ||
-        job.location?.toLowerCase().includes(query) ||
-        job.description?.toLowerCase().includes(query) ||
-        job.category?.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (job) =>
+          job.title?.toLowerCase().includes(query) ||
+          job.company?.toLowerCase().includes(query) ||
+          job.location?.toLowerCase().includes(query) ||
+          job.description?.toLowerCase().includes(query) ||
+          job.category?.toLowerCase().includes(query),
       );
     }
 
     // Apply filters
     switch (selectedFilter) {
       case 'nearby':
-        filtered = filtered.filter(job => job.distance <= 10);
+        filtered = filtered.filter((job) => job.distance <= 10);
         break;
       case 'urgent':
-        filtered = filtered.filter(job => job.urgent || job.priority === 'urgent');
+        filtered = filtered.filter(
+          (job) => job.urgent || job.priority === 'urgent',
+        );
         break;
       case 'featured':
-        filtered = filtered.filter(job => job.featured || job.priority === 'high');
+        filtered = filtered.filter(
+          (job) => job.featured || job.priority === 'high',
+        );
         break;
       case 'new':
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        filtered = filtered.filter(job => new Date(job.created_at) >= today);
+        filtered = filtered.filter((job) => new Date(job.created_at) >= today);
         break;
       default:
         break;
@@ -229,7 +249,9 @@ const EnhancedAvailableJobs = () => {
         filtered.sort((a, b) => b.matchScore - a.matchScore);
         break;
       default: // newest
-        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        filtered.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
+        );
         break;
     }
 
@@ -242,25 +264,32 @@ const EnhancedAvailableJobs = () => {
 
   // Handle job application
   const handleApply = async (jobId) => {
-    setJobs(prev => prev.map(job =>
-      job.id === jobId ? { ...job, status: 'loading' } : job
-    ));
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === jobId ? { ...job, status: 'loading' } : job,
+      ),
+    );
 
     try {
       await jobsApi.applyToJob(jobId, {
-        coverMessage: 'I am interested in this position and believe my skills are a perfect match.',
+        coverMessage:
+          'I am interested in this position and believe my skills are a perfect match.',
       });
 
-      setJobs(prev => prev.map(job =>
-        job.id === jobId ? { ...job, status: 'applied' } : job
-      ));
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === jobId ? { ...job, status: 'applied' } : job,
+        ),
+      );
 
       showFeedback('Application submitted successfully!', 'success');
     } catch (err) {
       console.error('Error applying to job:', err);
-      setJobs(prev => prev.map(job =>
-        job.id === jobId ? { ...job, status: 'idle' } : job
-      ));
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === jobId ? { ...job, status: 'idle' } : job,
+        ),
+      );
       showFeedback('Failed to submit application. Please try again.', 'error');
     }
   };
@@ -276,12 +305,14 @@ const EnhancedAvailableJobs = () => {
       showFeedback('Job saved successfully!', 'success');
     }
     setSavedJobs(newSavedJobs);
-    
-    setJobs(prev => prev.map(job =>
-      job.id === jobId 
-        ? { ...job, status: newSavedJobs.has(jobId) ? 'saved' : 'idle' }
-        : job
-    ));
+
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === jobId
+          ? { ...job, status: newSavedJobs.has(jobId) ? 'saved' : 'idle' }
+          : job,
+      ),
+    );
   };
 
   // Helper functions
@@ -290,7 +321,8 @@ const EnhancedAvailableJobs = () => {
   };
 
   const handleCloseDetails = () => setSelectedJob(null);
-  const handleCloseFeedback = () => setFeedback(prev => ({ ...prev, open: false }));
+  const handleCloseFeedback = () =>
+    setFeedback((prev) => ({ ...prev, open: false }));
 
   // Enhanced Job Card Component
   const JobCard = ({ job, index }) => {
@@ -308,7 +340,8 @@ const EnhancedAvailableJobs = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
             border: `1px solid ${alpha(job.color || '#FFD700', 0.2)}`,
             borderRadius: 3,
             overflow: 'hidden',
@@ -334,8 +367,19 @@ const EnhancedAvailableJobs = () => {
         >
           <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
             {/* Header Row */}
-            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ flex: 1, minWidth: 0 }}>
+            <Stack
+              direction="row"
+              alignItems="flex-start"
+              justifyContent="space-between"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={2}
+                sx={{ flex: 1, minWidth: 0 }}
+              >
                 <Box
                   sx={{
                     width: { xs: 40, sm: 48 },
@@ -427,7 +471,12 @@ const EnhancedAvailableJobs = () => {
 
             {/* Job Details */}
             <Stack spacing={1.5}>
-              <Stack direction="row" alignItems="center" spacing={2} flexWrap="wrap">
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={2}
+                flexWrap="wrap"
+              >
                 <Chip
                   icon={<LocationOnIcon />}
                   label={`${job.location} • ${job.distance}km`}
@@ -466,7 +515,12 @@ const EnhancedAvailableJobs = () => {
                 {job.description}
               </Typography>
 
-              <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap">
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                flexWrap="wrap"
+              >
                 <Stack direction="row" alignItems="center" spacing={1}>
                   {priorityChip && (
                     <Chip
@@ -557,10 +611,12 @@ const EnhancedAvailableJobs = () => {
                       },
                     }
                   : {
-                      background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                      background:
+                        'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                       color: '#000',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                        background:
+                          'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
                         transform: 'translateY(-1px)',
                       },
                     }),
@@ -626,7 +682,7 @@ const EnhancedAvailableJobs = () => {
     );
   }
 
-    return (
+  return (
     <>
       <DashboardCard
         title={
@@ -654,7 +710,9 @@ const EnhancedAvailableJobs = () => {
               >
                 <RefreshIcon
                   sx={{
-                    animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
+                    animation: isRefreshing
+                      ? 'spin 1s linear infinite'
+                      : 'none',
                     '@keyframes spin': {
                       '0%': { transform: 'rotate(0deg)' },
                       '100%': { transform: 'rotate(360deg)' },
@@ -732,13 +790,18 @@ const EnhancedAvailableJobs = () => {
                 clickable
                 onClick={() => setSelectedFilter(option.value)}
                 sx={{
-                  backgroundColor: selectedFilter === option.value
-                    ? alpha('#FFD700', 0.2)
-                    : 'rgba(255,255,255,0.05)',
-                  color: selectedFilter === option.value ? '#FFD700' : 'rgba(255,255,255,0.7)',
-                  border: `1px solid ${selectedFilter === option.value
-                    ? 'rgba(255,215,0,0.5)'
-                    : 'rgba(255,255,255,0.1)'
+                  backgroundColor:
+                    selectedFilter === option.value
+                      ? alpha('#FFD700', 0.2)
+                      : 'rgba(255,255,255,0.05)',
+                  color:
+                    selectedFilter === option.value
+                      ? '#FFD700'
+                      : 'rgba(255,255,255,0.7)',
+                  border: `1px solid ${
+                    selectedFilter === option.value
+                      ? 'rgba(255,215,0,0.5)'
+                      : 'rgba(255,255,255,0.1)'
                   }`,
                   '&:hover': {
                     backgroundColor: alpha('#FFD700', 0.1),
@@ -758,11 +821,9 @@ const EnhancedAvailableJobs = () => {
           justifyContent="space-between"
           sx={{ mb: 3 }}
         >
-          <Typography
-            variant="body2"
-            sx={{ color: 'rgba(255,255,255,0.7)' }}
-          >
-            {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}{' '}
+            found
           </Typography>
 
           <TextField
@@ -792,14 +853,19 @@ const EnhancedAvailableJobs = () => {
         {/* Jobs Grid */}
         {filteredJobs.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
-            <WorkIcon sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
-            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+            <WorkIcon
+              sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }}
+            />
+            <Typography
+              variant="h6"
+              sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
+            >
               No jobs found
-                    </Typography>
+            </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
               Try adjusting your search or filters
-                      </Typography>
-                      </Box>
+            </Typography>
+          </Box>
         ) : (
           <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
             <AnimatePresence mode="popLayout">
@@ -809,16 +875,16 @@ const EnhancedAvailableJobs = () => {
                 </Grid>
               ))}
             </AnimatePresence>
-              </Grid>
+          </Grid>
         )}
 
         {/* Load More Button */}
         {filteredJobs.length > 0 && filteredJobs.length < jobs.length && (
           <Box sx={{ textAlign: 'center', mt: 4 }}>
-                <Button
+            <Button
               variant="outlined"
               onClick={() => fetchJobs()}
-                  sx={{
+              sx={{
                 borderColor: 'rgba(255,215,0,0.3)',
                 color: '#FFD700',
                 '&:hover': {
@@ -829,8 +895,8 @@ const EnhancedAvailableJobs = () => {
             >
               Load More Jobs
             </Button>
-                    </Box>
-                  )}
+          </Box>
+        )}
       </DashboardCard>
 
       {/* Filter Menu */}
@@ -882,8 +948,7 @@ const EnhancedAvailableJobs = () => {
           <ListItemText>
             {selectedJobForMenu && savedJobs.has(selectedJobForMenu.id)
               ? 'Remove from Saved'
-              : 'Save Job'
-            }
+              : 'Save Job'}
           </ListItemText>
         </MenuItem>
         <MenuItem
@@ -908,7 +973,8 @@ const EnhancedAvailableJobs = () => {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
           },
         }}
@@ -936,13 +1002,19 @@ const EnhancedAvailableJobs = () => {
                   {selectedJob.icon}
                 </Box>
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700 }}>
-                  {selectedJob.title}
-                </Typography>
-                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <Typography
+                    variant="h5"
+                    sx={{ color: '#fff', fontWeight: 700 }}
+                  >
+                    {selectedJob.title}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: 'rgba(255,255,255,0.7)' }}
+                  >
                     {selectedJob.company}
-                </Typography>
-              </Box>
+                  </Typography>
+                </Box>
                 <IconButton
                   onClick={handleCloseDetails}
                   sx={{ color: 'rgba(255,255,255,0.7)' }}
@@ -964,14 +1036,18 @@ const EnhancedAvailableJobs = () => {
                     </Stack>
 
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <AttachMoneyIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
+                      <AttachMoneyIcon
+                        sx={{ color: 'rgba(255,255,255,0.5)' }}
+                      />
                       <Typography sx={{ color: '#4CAF50', fontWeight: 600 }}>
                         {selectedJob.salary}
                       </Typography>
                     </Stack>
 
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <CalendarTodayIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
+                      <CalendarTodayIcon
+                        sx={{ color: 'rgba(255,255,255,0.5)' }}
+                      />
                       <Typography sx={{ color: '#fff' }}>
                         Duration: {selectedJob.duration || 'Not specified'}
                       </Typography>
@@ -999,31 +1075,35 @@ const EnhancedAvailableJobs = () => {
                       <TimeIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
                       <Typography sx={{ color: '#fff' }}>
                         Posted {selectedJob.timeAgo || '2 hours ago'}
-                    </Typography>
+                      </Typography>
                     </Stack>
                   </Stack>
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
+                  <Divider
+                    sx={{ my: 2, borderColor: 'rgba(255,255,255,0.1)' }}
+                  />
                   <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
                     Job Description
                   </Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>
+                  <Typography
+                    sx={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}
+                  >
                     {selectedJob.description}
-                    </Typography>
-              </Grid>
+                  </Typography>
+                </Grid>
 
                 {selectedJob.requirements && (
                   <Grid item xs={12}>
                     <Typography variant="h6" sx={{ color: '#FFD700', mb: 2 }}>
-                Requirements
+                      Requirements
                     </Typography>
                     <Box component="ul" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                       {selectedJob.requirements.map((req, index) => (
                         <Typography component="li" key={index} sx={{ mb: 0.5 }}>
                           {req}
-                  </Typography>
+                        </Typography>
                       ))}
                     </Box>
                   </Grid>
@@ -1035,7 +1115,11 @@ const EnhancedAvailableJobs = () => {
               <Button
                 onClick={() => handleSaveJob(selectedJob.id)}
                 startIcon={
-                  savedJobs.has(selectedJob.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />
+                  savedJobs.has(selectedJob.id) ? (
+                    <BookmarkIcon />
+                  ) : (
+                    <BookmarkBorderIcon />
+                  )
                 }
                 sx={{
                   color: '#FFD700',
@@ -1058,11 +1142,13 @@ const EnhancedAvailableJobs = () => {
                   }}
                   disabled={selectedJob.status === 'loading'}
                   sx={{
-                    background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    background:
+                      'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                     color: '#000',
                     fontWeight: 700,
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                      background:
+                        'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
                     },
                   }}
                 >

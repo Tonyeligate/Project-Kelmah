@@ -9,20 +9,26 @@ import { SERVICES, API_ENDPOINTS } from './environment';
  * Validates that all required services are configured
  */
 export const validateServiceConfiguration = () => {
-  const requiredServices = ['AUTH_SERVICE', 'USER_SERVICE', 'JOB_SERVICE', 'MESSAGING_SERVICE', 'PAYMENT_SERVICE'];
+  const requiredServices = [
+    'AUTH_SERVICE',
+    'USER_SERVICE',
+    'JOB_SERVICE',
+    'MESSAGING_SERVICE',
+    'PAYMENT_SERVICE',
+  ];
   const missingServices = [];
-  
-  requiredServices.forEach(service => {
+
+  requiredServices.forEach((service) => {
     if (!SERVICES[service]) {
       missingServices.push(service);
     }
   });
-  
+
   if (missingServices.length > 0) {
     console.warn('Missing service configurations:', missingServices);
     return false;
   }
-  
+
   console.log('✅ All services properly configured:', SERVICES);
   return true;
 };
@@ -33,18 +39,18 @@ export const validateServiceConfiguration = () => {
 export const validateApiEndpoints = () => {
   const requiredEndpoints = ['AUTH', 'USER', 'JOB', 'MESSAGING', 'PAYMENT'];
   const missingEndpoints = [];
-  
-  requiredEndpoints.forEach(endpoint => {
+
+  requiredEndpoints.forEach((endpoint) => {
     if (!API_ENDPOINTS[endpoint] || !API_ENDPOINTS[endpoint].BASE) {
       missingEndpoints.push(endpoint);
     }
   });
-  
+
   if (missingEndpoints.length > 0) {
     console.warn('Missing API endpoints:', missingEndpoints);
     return false;
   }
-  
+
   console.log('✅ All API endpoints properly configured');
   return true;
 };
@@ -54,15 +60,17 @@ export const validateApiEndpoints = () => {
  */
 export const runServiceHealthCheck = () => {
   console.group('🔧 Kelmah Service Configuration Check');
-  
+
   const servicesValid = validateServiceConfiguration();
   const endpointsValid = validateApiEndpoints();
-  
+
   const overallHealth = servicesValid && endpointsValid;
-  
-  console.log(`Overall Service Health: ${overallHealth ? '✅ HEALTHY' : '❌ ISSUES DETECTED'}`);
+
+  console.log(
+    `Overall Service Health: ${overallHealth ? '✅ HEALTHY' : '❌ ISSUES DETECTED'}`,
+  );
   console.groupEnd();
-  
+
   return overallHealth;
 };
 
@@ -74,5 +82,5 @@ if (import.meta.env.MODE === 'development') {
 export default {
   validateServiceConfiguration,
   validateApiEndpoints,
-  runServiceHealthCheck
-}; 
+  runServiceHealthCheck,
+};

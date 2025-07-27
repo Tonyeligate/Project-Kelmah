@@ -24,7 +24,7 @@ jobServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Mock data for development/fallback
@@ -32,7 +32,8 @@ const mockJobs = [
   {
     id: 'job-1',
     title: 'Kitchen Renovation - Custom Cabinets',
-    description: 'Looking for an experienced carpenter to build custom kitchen cabinets. The project involves measuring, designing, and installing high-quality wooden cabinets with modern hardware.',
+    description:
+      'Looking for an experienced carpenter to build custom kitchen cabinets. The project involves measuring, designing, and installing high-quality wooden cabinets with modern hardware.',
     company: 'Mitchell Residence',
     location: 'Accra, Greater Accra',
     category: 'Carpentry',
@@ -47,26 +48,27 @@ const mockJobs = [
       'Minimum 5 years carpentry experience',
       'Portfolio of kitchen cabinet work',
       'Own tools and equipment',
-      'Available for 3-4 weeks project duration'
+      'Available for 3-4 weeks project duration',
     ],
     postedBy: {
       id: 'client-1',
       name: 'Sarah Mitchell',
       avatar: '/api/placeholder/50/50',
       rating: 4.8,
-      reviewsCount: 12
+      reviewsCount: 12,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
     applicationsCount: 8,
     viewsCount: 45,
-    distance: 5.2
+    distance: 5.2,
   },
   {
     id: 'job-2',
     title: 'Emergency Bathroom Plumbing Repair',
-    description: 'Urgent plumbing repair needed for bathroom. Issues include leaking pipes, faulty faucet, and drainage problems. Need immediate professional help.',
+    description:
+      'Urgent plumbing repair needed for bathroom. Issues include leaking pipes, faulty faucet, and drainage problems. Need immediate professional help.',
     company: 'Chen Family Home',
     location: 'Kumasi, Ashanti Region',
     category: 'Plumbing',
@@ -81,26 +83,27 @@ const mockJobs = [
       'Licensed plumber',
       'Available within 24 hours',
       'Emergency repair experience',
-      'Own professional tools'
+      'Own professional tools',
     ],
     postedBy: {
       id: 'client-2',
       name: 'David Chen',
       avatar: '/api/placeholder/50/50',
       rating: 4.6,
-      reviewsCount: 8
+      reviewsCount: 8,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 6),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 48),
     applicationsCount: 12,
     viewsCount: 67,
-    distance: 15.8
+    distance: 15.8,
   },
   {
     id: 'job-3',
     title: 'Complete House Rewiring Project',
-    description: 'Full electrical rewiring for a 3-bedroom house. Includes new electrical panel, outlets, switches, and lighting fixtures. Must comply with current electrical codes.',
+    description:
+      'Full electrical rewiring for a 3-bedroom house. Includes new electrical panel, outlets, switches, and lighting fixtures. Must comply with current electrical codes.',
     company: 'Thompson Residence',
     location: 'Takoradi, Western Region',
     category: 'Electrical',
@@ -115,26 +118,27 @@ const mockJobs = [
       'Certified electrician with license',
       'Experience with residential rewiring',
       'Knowledge of current electrical codes',
-      'Ability to work 2-3 weeks on project'
+      'Ability to work 2-3 weeks on project',
     ],
     postedBy: {
       id: 'client-3',
       name: 'Lisa Thompson',
       avatar: '/api/placeholder/50/50',
       rating: 4.9,
-      reviewsCount: 15
+      reviewsCount: 15,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21),
     applicationsCount: 6,
     viewsCount: 32,
-    distance: 45.3
+    distance: 45.3,
   },
   {
     id: 'job-4',
     title: 'Interior House Painting',
-    description: 'Professional painting services needed for interior walls of a 2-bedroom apartment. Includes wall preparation, primer, and two coats of paint.',
+    description:
+      'Professional painting services needed for interior walls of a 2-bedroom apartment. Includes wall preparation, primer, and two coats of paint.',
     company: 'Apartment Complex',
     location: 'Tema, Greater Accra',
     category: 'Painting',
@@ -149,26 +153,27 @@ const mockJobs = [
       'Professional painting experience',
       'Own brushes, rollers, and equipment',
       'Attention to detail and clean work',
-      'Available within 2 weeks'
+      'Available within 2 weeks',
     ],
     postedBy: {
       id: 'client-4',
       name: 'Robert Johnson',
       avatar: '/api/placeholder/50/50',
       rating: 4.4,
-      reviewsCount: 7
+      reviewsCount: 7,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12),
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
     applicationsCount: 4,
     viewsCount: 28,
-    distance: 8.7
+    distance: 8.7,
   },
   {
     id: 'job-5',
     title: 'Roof Repair and Maintenance',
-    description: 'Roof inspection and repair needed. Issues include loose tiles, minor leaks, and gutter cleaning. Looking for experienced roofer.',
+    description:
+      'Roof inspection and repair needed. Issues include loose tiles, minor leaks, and gutter cleaning. Looking for experienced roofer.',
     company: 'Wilson Residence',
     location: 'Cape Coast, Central Region',
     category: 'Roofing',
@@ -183,22 +188,22 @@ const mockJobs = [
       'Roofing experience minimum 3 years',
       'Safety equipment and insurance',
       'Ability to work at heights',
-      'Available for inspection this week'
+      'Available for inspection this week',
     ],
     postedBy: {
       id: 'client-5',
       name: 'Mary Wilson',
       avatar: '/api/placeholder/50/50',
       rating: 4.7,
-      reviewsCount: 9
+      reviewsCount: 9,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
     applicationsCount: 3,
     viewsCount: 19,
-    distance: 78.2
-  }
+    distance: 78.2,
+  },
 ];
 
 class JobsApi {
@@ -209,33 +214,40 @@ class JobsApi {
     try {
       // Try to call the actual job service
       const response = await jobServiceClient.get('/api/jobs', { params });
-    return response.data;
+      return response.data;
     } catch (error) {
       console.warn('Job service unavailable, using mock data:', error.message);
-      
+
       // Return mock data with proper pagination structure
-      const { page = 1, limit = 10, search = '', category = '', location = '' } = params;
+      const {
+        page = 1,
+        limit = 10,
+        search = '',
+        category = '',
+        location = '',
+      } = params;
       let filteredJobs = mockJobs;
 
       // Apply filters
       if (search) {
         const searchLower = search.toLowerCase();
-        filteredJobs = filteredJobs.filter(job =>
-          job.title.toLowerCase().includes(searchLower) ||
-          job.description.toLowerCase().includes(searchLower) ||
-          job.company.toLowerCase().includes(searchLower)
+        filteredJobs = filteredJobs.filter(
+          (job) =>
+            job.title.toLowerCase().includes(searchLower) ||
+            job.description.toLowerCase().includes(searchLower) ||
+            job.company.toLowerCase().includes(searchLower),
         );
       }
 
       if (category) {
-        filteredJobs = filteredJobs.filter(job => 
-          job.category.toLowerCase() === category.toLowerCase()
+        filteredJobs = filteredJobs.filter(
+          (job) => job.category.toLowerCase() === category.toLowerCase(),
         );
       }
 
       if (location) {
-        filteredJobs = filteredJobs.filter(job =>
-          job.location.toLowerCase().includes(location.toLowerCase())
+        filteredJobs = filteredJobs.filter((job) =>
+          job.location.toLowerCase().includes(location.toLowerCase()),
         );
       }
 
@@ -254,9 +266,9 @@ class JobsApi {
             totalItems: filteredJobs.length,
             itemsPerPage: limit,
             hasNextPage: endIndex < filteredJobs.length,
-            hasPrevPage: page > 1
-          }
-        }
+            hasPrevPage: page > 1,
+          },
+        },
       };
     }
   }
@@ -267,19 +279,24 @@ class JobsApi {
   async getFeaturedJobs(limit = 6) {
     try {
       const response = await jobServiceClient.get('/api/jobs/featured', {
-      params: { limit },
-    });
-    return response.data;
+        params: { limit },
+      });
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock featured jobs:', error.message);
-      
-      const featuredJobs = mockJobs.filter(job => job.featured).slice(0, limit);
+      console.warn(
+        'Job service unavailable, using mock featured jobs:',
+        error.message,
+      );
+
+      const featuredJobs = mockJobs
+        .filter((job) => job.featured)
+        .slice(0, limit);
       return {
         success: true,
         data: {
           jobs: featuredJobs,
-          count: featuredJobs.length
-        }
+          count: featuredJobs.length,
+        },
       };
     }
   }
@@ -290,18 +307,21 @@ class JobsApi {
   async getJobById(jobId) {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock job data:', error.message);
-      
-      const job = mockJobs.find(j => j.id === jobId);
+      console.warn(
+        'Job service unavailable, using mock job data:',
+        error.message,
+      );
+
+      const job = mockJobs.find((j) => j.id === jobId);
       if (!job) {
         throw new Error('Job not found');
       }
-      
+
       return {
         success: true,
-        data: { job }
+        data: { job },
       };
     }
   }
@@ -312,10 +332,13 @@ class JobsApi {
   async createJob(jobData) {
     try {
       const response = await jobServiceClient.post('/api/jobs', jobData);
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating job creation:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating job creation:',
+        error.message,
+      );
+
       // Simulate successful job creation
       const newJob = {
         id: `job-${Date.now()}`,
@@ -324,13 +347,13 @@ class JobsApi {
         createdAt: new Date(),
         updatedAt: new Date(),
         applicationsCount: 0,
-        viewsCount: 0
+        viewsCount: 0,
       };
-      
+
       return {
         success: true,
         data: { job: newJob },
-        message: 'Job created successfully (mock)'
+        message: 'Job created successfully (mock)',
       };
     }
   }
@@ -340,15 +363,21 @@ class JobsApi {
    */
   async updateJob(jobId, jobData) {
     try {
-      const response = await jobServiceClient.put(`/api/jobs/${jobId}`, jobData);
-    return response.data;
+      const response = await jobServiceClient.put(
+        `/api/jobs/${jobId}`,
+        jobData,
+      );
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating job update:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating job update:',
+        error.message,
+      );
+
       return {
         success: true,
         data: { job: { id: jobId, ...jobData, updatedAt: new Date() } },
-        message: 'Job updated successfully (mock)'
+        message: 'Job updated successfully (mock)',
       };
     }
   }
@@ -361,11 +390,14 @@ class JobsApi {
       const response = await jobServiceClient.delete(`/api/jobs/${jobId}`);
       return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating job deletion:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating job deletion:',
+        error.message,
+      );
+
       return {
         success: true,
-        message: 'Job deleted successfully (mock)'
+        message: 'Job deleted successfully (mock)',
       };
     }
   }
@@ -375,11 +407,17 @@ class JobsApi {
    */
   async applyToJob(jobId, applicationData) {
     try {
-      const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
-    return response.data;
+      const response = await jobServiceClient.post(
+        `/api/jobs/${jobId}/apply`,
+        applicationData,
+      );
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating job application:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating job application:',
+        error.message,
+      );
+
       return {
         success: true,
         data: {
@@ -388,10 +426,10 @@ class JobsApi {
             jobId,
             ...applicationData,
             status: 'pending',
-            appliedAt: new Date()
-          }
+            appliedAt: new Date(),
+          },
         },
-        message: 'Application submitted successfully (mock)'
+        message: 'Application submitted successfully (mock)',
       };
     }
   }
@@ -401,18 +439,23 @@ class JobsApi {
    */
   async getMyJobs(params = {}) {
     try {
-      const response = await jobServiceClient.get('/api/jobs/my-jobs', { params });
-    return response.data;
+      const response = await jobServiceClient.get('/api/jobs/my-jobs', {
+        params,
+      });
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock my jobs:', error.message);
-      
+      console.warn(
+        'Job service unavailable, using mock my jobs:',
+        error.message,
+      );
+
       // Return subset of mock jobs as if posted by current user
       return {
         success: true,
         data: {
           jobs: mockJobs.slice(0, 2), // Return first 2 as user's jobs
-          count: 2
-        }
+          count: 2,
+        },
       };
     }
   }
@@ -422,17 +465,23 @@ class JobsApi {
    */
   async getJobApplications(jobId, params = {}) {
     try {
-      const response = await jobServiceClient.get(`/api/jobs/${jobId}/applications`, { params });
-    return response.data;
+      const response = await jobServiceClient.get(
+        `/api/jobs/${jobId}/applications`,
+        { params },
+      );
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock applications:', error.message);
-      
+      console.warn(
+        'Job service unavailable, using mock applications:',
+        error.message,
+      );
+
       return {
         success: true,
         data: {
           applications: [],
-          count: 0
-        }
+          count: 0,
+        },
       };
     }
   }
@@ -442,17 +491,22 @@ class JobsApi {
    */
   async getMyApplications(params = {}) {
     try {
-      const response = await jobServiceClient.get('/api/jobs/my-applications', { params });
-    return response.data;
+      const response = await jobServiceClient.get('/api/jobs/my-applications', {
+        params,
+      });
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock applications:', error.message);
-      
+      console.warn(
+        'Job service unavailable, using mock applications:',
+        error.message,
+      );
+
       return {
         success: true,
         data: {
           applications: [],
-          count: 0
-        }
+          count: 0,
+        },
       };
     }
   }
@@ -464,12 +518,15 @@ class JobsApi {
     try {
       const response = await jobServiceClient.put(
         `/api/jobs/${jobId}/applications/${applicationId}`,
-        { status }
-    );
-    return response.data;
+        { status },
+      );
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating status update:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating status update:',
+        error.message,
+      );
+
       return {
         success: true,
         data: {
@@ -477,10 +534,10 @@ class JobsApi {
             id: applicationId,
             jobId,
             status,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         },
-        message: 'Application status updated (mock)'
+        message: 'Application status updated (mock)',
       };
     }
   }
@@ -491,13 +548,16 @@ class JobsApi {
   async saveJob(jobId) {
     try {
       const response = await jobServiceClient.post(`/api/jobs/${jobId}/save`);
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating job save:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating job save:',
+        error.message,
+      );
+
       return {
         success: true,
-        message: 'Job saved successfully (mock)'
+        message: 'Job saved successfully (mock)',
       };
     }
   }
@@ -508,13 +568,16 @@ class JobsApi {
   async unsaveJob(jobId) {
     try {
       const response = await jobServiceClient.delete(`/api/jobs/${jobId}/save`);
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, simulating job unsave:', error.message);
-      
+      console.warn(
+        'Job service unavailable, simulating job unsave:',
+        error.message,
+      );
+
       return {
         success: true,
-        message: 'Job removed from saved list (mock)'
+        message: 'Job removed from saved list (mock)',
       };
     }
   }
@@ -524,17 +587,22 @@ class JobsApi {
    */
   async getSavedJobs(params = {}) {
     try {
-      const response = await jobServiceClient.get('/api/jobs/saved', { params });
-    return response.data;
+      const response = await jobServiceClient.get('/api/jobs/saved', {
+        params,
+      });
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock saved jobs:', error.message);
-      
+      console.warn(
+        'Job service unavailable, using mock saved jobs:',
+        error.message,
+      );
+
       return {
         success: true,
         data: {
           jobs: [],
-          count: 0
-        }
+          count: 0,
+        },
       };
     }
   }
@@ -545,10 +613,13 @@ class JobsApi {
   async getJobCategories() {
     try {
       const response = await jobServiceClient.get('/api/jobs/categories');
-    return response.data;
+      return response.data;
     } catch (error) {
-      console.warn('Job service unavailable, using mock categories:', error.message);
-      
+      console.warn(
+        'Job service unavailable, using mock categories:',
+        error.message,
+      );
+
       return {
         success: true,
         data: {
@@ -559,9 +630,9 @@ class JobsApi {
             { id: 'painting', name: 'Painting', count: 6 },
             { id: 'roofing', name: 'Roofing', count: 4 },
             { id: 'masonry', name: 'Masonry', count: 7 },
-            { id: 'welding', name: 'Welding', count: 3 }
-          ]
-        }
+            { id: 'welding', name: 'Welding', count: 3 },
+          ],
+        },
       };
     }
   }

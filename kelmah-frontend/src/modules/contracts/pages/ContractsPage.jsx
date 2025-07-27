@@ -82,7 +82,12 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatDistanceToNow, format, addDays, differenceInDays } from 'date-fns';
+import {
+  formatDistanceToNow,
+  format,
+  addDays,
+  differenceInDays,
+} from 'date-fns';
 import { useAuth } from '../../auth/contexts/AuthContext';
 
 // Enhanced Contract Management System
@@ -107,7 +112,11 @@ const EnhancedContractsPage = () => {
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
 
   // Contract form state
   const [contractForm, setContractForm] = useState({
@@ -119,7 +128,7 @@ const EnhancedContractsPage = () => {
     endDate: '',
     milestones: [],
     terms: '',
-    type: 'fixed-price'
+    type: 'fixed-price',
   });
 
   // Mock contract data
@@ -132,11 +141,11 @@ const EnhancedContractsPage = () => {
         name: 'Sarah Mitchell',
         email: 'sarah.mitchell@email.com',
         avatar: '/api/placeholder/50/50',
-        company: 'Mitchell Residence'
+        company: 'Mitchell Residence',
       },
       job: {
         id: 'job-1',
-        title: 'Complete Kitchen Renovation'
+        title: 'Complete Kitchen Renovation',
       },
       status: 'active',
       type: 'fixed-price',
@@ -151,20 +160,22 @@ const EnhancedContractsPage = () => {
         {
           id: 'milestone-1',
           title: 'Design and Planning',
-          description: 'Create detailed kitchen design and obtain necessary permits',
+          description:
+            'Create detailed kitchen design and obtain necessary permits',
           amount: 1100,
           dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
           status: 'completed',
-          completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5)
+          completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
         },
         {
           id: 'milestone-2',
           title: 'Demolition and Preparation',
-          description: 'Remove existing fixtures and prepare space for renovation',
+          description:
+            'Remove existing fixtures and prepare space for renovation',
           amount: 800,
           dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
           status: 'in-progress',
-          progress: 60
+          progress: 60,
         },
         {
           id: 'milestone-3',
@@ -172,7 +183,7 @@ const EnhancedContractsPage = () => {
           description: 'Install custom cabinets and hardware',
           amount: 2200,
           dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
-          status: 'pending'
+          status: 'pending',
         },
         {
           id: 'milestone-4',
@@ -180,8 +191,8 @@ const EnhancedContractsPage = () => {
           description: 'Install countertops, appliances, and final touches',
           amount: 1400,
           dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18),
-          status: 'pending'
-        }
+          status: 'pending',
+        },
       ],
       payments: [
         {
@@ -189,8 +200,8 @@ const EnhancedContractsPage = () => {
           amount: 1100,
           status: 'completed',
           paidAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
-          method: 'Bank Transfer'
-        }
+          method: 'Bank Transfer',
+        },
       ],
       totalPaid: 1100,
       nextPaymentDue: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5),
@@ -199,27 +210,27 @@ const EnhancedContractsPage = () => {
           id: 'doc-1',
           name: 'Kitchen_Renovation_Contract.pdf',
           type: 'contract',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9)
+          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9),
         },
         {
           id: 'doc-2',
           name: 'Kitchen_Design_Plans.pdf',
           type: 'design',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6)
-        }
+          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
+        },
       ],
       signatures: {
         worker: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8),
-          ipAddress: '192.168.1.100'
+          ipAddress: '192.168.1.100',
         },
         client: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8),
-          ipAddress: '192.168.1.101'
-        }
-      }
+          ipAddress: '192.168.1.101',
+        },
+      },
     },
     {
       id: 'contract-2',
@@ -229,11 +240,11 @@ const EnhancedContractsPage = () => {
         name: 'David Chen',
         email: 'david.chen@email.com',
         avatar: '/api/placeholder/50/50',
-        company: 'Chen Family Home'
+        company: 'Chen Family Home',
       },
       job: {
         id: 'job-2',
-        title: 'Emergency Bathroom Plumbing Repair'
+        title: 'Emergency Bathroom Plumbing Repair',
       },
       status: 'completed',
       type: 'hourly',
@@ -253,8 +264,8 @@ const EnhancedContractsPage = () => {
           amount: 800,
           dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20),
           status: 'completed',
-          completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 19)
-        }
+          completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 19),
+        },
       ],
       payments: [
         {
@@ -262,8 +273,8 @@ const EnhancedContractsPage = () => {
           amount: 800,
           status: 'completed',
           paidAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18),
-          method: 'Mobile Money'
-        }
+          method: 'Mobile Money',
+        },
       ],
       totalPaid: 800,
       documents: [
@@ -271,21 +282,21 @@ const EnhancedContractsPage = () => {
           id: 'doc-3',
           name: 'Plumbing_Repair_Contract.pdf',
           type: 'contract',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 23)
-        }
+          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 23),
+        },
       ],
       signatures: {
         worker: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22),
-          ipAddress: '192.168.1.100'
+          ipAddress: '192.168.1.100',
         },
         client: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22),
-          ipAddress: '192.168.1.102'
-        }
-      }
+          ipAddress: '192.168.1.102',
+        },
+      },
     },
     {
       id: 'contract-3',
@@ -295,11 +306,11 @@ const EnhancedContractsPage = () => {
         name: 'Lisa Thompson',
         email: 'lisa.thompson@email.com',
         avatar: '/api/placeholder/50/50',
-        company: 'Thompson Residence'
+        company: 'Thompson Residence',
       },
       job: {
         id: 'job-3',
-        title: 'Complete House Rewiring Project'
+        title: 'Complete House Rewiring Project',
       },
       status: 'pending-signature',
       type: 'fixed-price',
@@ -316,7 +327,7 @@ const EnhancedContractsPage = () => {
           description: 'Assess current wiring and create rewiring plan',
           amount: 400,
           dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
-          status: 'pending'
+          status: 'pending',
         },
         {
           id: 'milestone-7',
@@ -324,7 +335,7 @@ const EnhancedContractsPage = () => {
           description: 'Upgrade electrical panel and main connections',
           amount: 1200,
           dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18),
-          status: 'pending'
+          status: 'pending',
         },
         {
           id: 'milestone-8',
@@ -332,8 +343,8 @@ const EnhancedContractsPage = () => {
           description: 'Complete rewiring of all rooms and outlets',
           amount: 1600,
           dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 32),
-          status: 'pending'
-        }
+          status: 'pending',
+        },
       ],
       payments: [],
       totalPaid: 0,
@@ -342,22 +353,22 @@ const EnhancedContractsPage = () => {
           id: 'doc-4',
           name: 'Electrical_Wiring_Contract.pdf',
           type: 'contract',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1)
-        }
+          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
+        },
       ],
       signatures: {
         worker: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
-          ipAddress: '192.168.1.100'
+          ipAddress: '192.168.1.100',
         },
         client: {
           signed: false,
           signedAt: null,
-          ipAddress: null
-        }
-      }
-    }
+          ipAddress: null,
+        },
+      },
+    },
   ];
 
   // Initialize data
@@ -366,7 +377,7 @@ const EnhancedContractsPage = () => {
       setIsLoading(true);
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         setContracts(mockContracts);
       } catch (error) {
         console.error('Failed to load contracts:', error);
@@ -386,34 +397,40 @@ const EnhancedContractsPage = () => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(contract =>
-        contract.title.toLowerCase().includes(query) ||
-        contract.client.name.toLowerCase().includes(query) ||
-        contract.job.title.toLowerCase().includes(query) ||
-        contract.status.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (contract) =>
+          contract.title.toLowerCase().includes(query) ||
+          contract.client.name.toLowerCase().includes(query) ||
+          contract.job.title.toLowerCase().includes(query) ||
+          contract.status.toLowerCase().includes(query),
       );
     }
 
     // Apply status filter
     switch (selectedFilter) {
       case 'active':
-        filtered = filtered.filter(contract => contract.status === 'active');
+        filtered = filtered.filter((contract) => contract.status === 'active');
         break;
       case 'completed':
-        filtered = filtered.filter(contract => contract.status === 'completed');
+        filtered = filtered.filter(
+          (contract) => contract.status === 'completed',
+        );
         break;
       case 'pending':
-        filtered = filtered.filter(contract => contract.status === 'pending-signature');
+        filtered = filtered.filter(
+          (contract) => contract.status === 'pending-signature',
+        );
         break;
       case 'overdue':
-        filtered = filtered.filter(contract => {
+        filtered = filtered.filter((contract) => {
           const now = new Date();
           return contract.status === 'active' && contract.endDate < now;
         });
         break;
       case 'payment-due':
-        filtered = filtered.filter(contract => 
-          contract.nextPaymentDue && contract.nextPaymentDue < new Date()
+        filtered = filtered.filter(
+          (contract) =>
+            contract.nextPaymentDue && contract.nextPaymentDue < new Date(),
         );
         break;
       default:
@@ -496,9 +513,13 @@ const EnhancedContractsPage = () => {
   const ContractStatistics = () => {
     const stats = useMemo(() => {
       const total = contracts.length;
-      const active = contracts.filter(c => c.status === 'active').length;
-      const completed = contracts.filter(c => c.status === 'completed').length;
-      const pending = contracts.filter(c => c.status === 'pending-signature').length;
+      const active = contracts.filter((c) => c.status === 'active').length;
+      const completed = contracts.filter(
+        (c) => c.status === 'completed',
+      ).length;
+      const pending = contracts.filter(
+        (c) => c.status === 'pending-signature',
+      ).length;
       const totalValue = contracts.reduce((sum, c) => sum + c.budget, 0);
       const totalPaid = contracts.reduce((sum, c) => sum + c.totalPaid, 0);
       const avgValue = total > 0 ? totalValue / total : 0;
@@ -511,7 +532,7 @@ const EnhancedContractsPage = () => {
         totalValue,
         totalPaid,
         avgValue,
-        completionRate: total > 0 ? (completed / total) * 100 : 0
+        completionRate: total > 0 ? (completed / total) * 100 : 0,
       };
     }, [contracts]);
 
@@ -581,7 +602,11 @@ const EnhancedContractsPage = () => {
                 }}
               >
                 <CardContent sx={{ p: 2 }}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
                     <Box>
                       <Typography
                         variant="h4"
@@ -633,9 +658,13 @@ const EnhancedContractsPage = () => {
   const ContractCard = ({ contract, index }) => {
     const statusColor = getStatusColor(contract.status);
     const statusIcon = getStatusIcon(contract.status);
-    const daysUntilDeadline = differenceInDays(new Date(contract.endDate), new Date());
+    const daysUntilDeadline = differenceInDays(
+      new Date(contract.endDate),
+      new Date(),
+    );
     const isOverdue = daysUntilDeadline < 0 && contract.status === 'active';
-    const paymentDue = contract.nextPaymentDue && contract.nextPaymentDue < new Date();
+    const paymentDue =
+      contract.nextPaymentDue && contract.nextPaymentDue < new Date();
 
     return (
       <motion.div
@@ -645,7 +674,8 @@ const EnhancedContractsPage = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
             border: `1px solid ${alpha(statusColor, 0.3)}`,
             borderRadius: 3,
             overflow: 'hidden',
@@ -674,7 +704,12 @@ const EnhancedContractsPage = () => {
         >
           <CardContent sx={{ p: 3 }}>
             {/* Header */}
-            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="flex-start"
+              justifyContent="space-between"
+              sx={{ mb: 2 }}
+            >
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
                   variant="h6"
@@ -716,7 +751,9 @@ const EnhancedContractsPage = () => {
 
               <Stack direction="row" alignItems="center" spacing={1}>
                 {(isOverdue || paymentDue) && (
-                  <Tooltip title={isOverdue ? 'Contract overdue' : 'Payment due'}>
+                  <Tooltip
+                    title={isOverdue ? 'Contract overdue' : 'Payment due'}
+                  >
                     <WarningIcon sx={{ color: '#FF5722', fontSize: 20 }} />
                   </Tooltip>
                 )}
@@ -774,7 +811,8 @@ const EnhancedContractsPage = () => {
                       fontSize: '1.1rem',
                     }}
                   >
-                    {contract.currency}{contract.budget.toLocaleString()}
+                    {contract.currency}
+                    {contract.budget.toLocaleString()}
                   </Typography>
                 </Stack>
               </Grid>
@@ -803,11 +841,15 @@ const EnhancedContractsPage = () => {
                         variant="caption"
                         sx={{
                           display: 'block',
-                          color: isOverdue ? '#FF5722' : 'rgba(255,255,255,0.5)',
+                          color: isOverdue
+                            ? '#FF5722'
+                            : 'rgba(255,255,255,0.5)',
                           fontSize: '0.7rem',
                         }}
                       >
-                        {isOverdue ? `${Math.abs(daysUntilDeadline)} days overdue` : `${daysUntilDeadline} days left`}
+                        {isOverdue
+                          ? `${Math.abs(daysUntilDeadline)} days overdue`
+                          : `${daysUntilDeadline} days left`}
                       </Typography>
                     )}
                   </Typography>
@@ -818,7 +860,12 @@ const EnhancedContractsPage = () => {
             {/* Progress Bar */}
             {contract.status === 'active' && (
               <Box sx={{ mb: 2 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 1 }}
+                >
                   <Typography
                     variant="caption"
                     sx={{ color: 'rgba(255,255,255,0.7)' }}
@@ -841,7 +888,8 @@ const EnhancedContractsPage = () => {
                     backgroundColor: 'rgba(255,255,255,0.1)',
                     '& .MuiLinearProgress-bar': {
                       borderRadius: 3,
-                      background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 100%)',
+                      background:
+                        'linear-gradient(90deg, #FFD700 0%, #FFC000 100%)',
                     },
                   }}
                 />
@@ -849,14 +897,20 @@ const EnhancedContractsPage = () => {
             )}
 
             {/* Payment Status */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Stack direction="row" alignItems="center" spacing={1}>
                 <PaymentIcon sx={{ color: '#9C27B0', fontSize: 16 }} />
                 <Typography
                   variant="caption"
                   sx={{ color: 'rgba(255,255,255,0.7)' }}
                 >
-                  Paid: {contract.currency}{contract.totalPaid.toLocaleString()} / {contract.currency}{contract.budget.toLocaleString()}
+                  Paid: {contract.currency}
+                  {contract.totalPaid.toLocaleString()} / {contract.currency}
+                  {contract.budget.toLocaleString()}
                 </Typography>
               </Stack>
               {paymentDue && (
@@ -890,7 +944,8 @@ const EnhancedContractsPage = () => {
       fullWidth
       PaperProps={{
         sx: {
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           maxHeight: '90vh',
         },
@@ -903,21 +958,36 @@ const EnhancedContractsPage = () => {
           transition={{ duration: 0.2 }}
         >
           <DialogTitle sx={{ pb: 1 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
-                <Typography variant="h5" sx={{ color: '#FFD700', fontWeight: 700 }}>
+                <Typography
+                  variant="h5"
+                  sx={{ color: '#FFD700', fontWeight: 700 }}
+                >
                   {selectedContract.title}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
                   Contract ID: {selectedContract.id}
                 </Typography>
               </Box>
               <Stack direction="row" spacing={1}>
                 <Chip
                   icon={getStatusIcon(selectedContract.status)}
-                  label={selectedContract.status.replace('-', ' ').toUpperCase()}
+                  label={selectedContract.status
+                    .replace('-', ' ')
+                    .toUpperCase()}
                   sx={{
-                    backgroundColor: alpha(getStatusColor(selectedContract.status), 0.2),
+                    backgroundColor: alpha(
+                      getStatusColor(selectedContract.status),
+                      0.2,
+                    ),
                     color: getStatusColor(selectedContract.status),
                     fontWeight: 600,
                   }}
@@ -986,39 +1056,58 @@ const EnhancedContractsPage = () => {
                       <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
                       <Stack spacing={1}>
-                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'rgba(255,255,255,0.7)' }}
+                        >
                           Contract Value
                         </Typography>
                         <Typography
                           variant="h5"
                           sx={{ color: '#4CAF50', fontWeight: 700 }}
                         >
-                          {selectedContract.currency}{selectedContract.budget.toLocaleString()}
+                          {selectedContract.currency}
+                          {selectedContract.budget.toLocaleString()}
                         </Typography>
                       </Stack>
 
                       <Stack direction="row" spacing={4}>
                         <Stack spacing={1}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'rgba(255,255,255,0.7)' }}
+                          >
                             Start Date
                           </Typography>
                           <Typography variant="body1" sx={{ color: '#fff' }}>
-                            {format(new Date(selectedContract.startDate), 'MMM dd, yyyy')}
+                            {format(
+                              new Date(selectedContract.startDate),
+                              'MMM dd, yyyy',
+                            )}
                           </Typography>
                         </Stack>
                         <Stack spacing={1}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'rgba(255,255,255,0.7)' }}
+                          >
                             End Date
                           </Typography>
                           <Typography variant="body1" sx={{ color: '#fff' }}>
-                            {format(new Date(selectedContract.endDate), 'MMM dd, yyyy')}
+                            {format(
+                              new Date(selectedContract.endDate),
+                              'MMM dd, yyyy',
+                            )}
                           </Typography>
                         </Stack>
                       </Stack>
 
                       {selectedContract.status === 'active' && (
                         <Stack spacing={1}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'rgba(255,255,255,0.7)' }}
+                          >
                             Progress
                           </Typography>
                           <LinearProgress
@@ -1030,7 +1119,8 @@ const EnhancedContractsPage = () => {
                               backgroundColor: 'rgba(255,255,255,0.1)',
                               '& .MuiLinearProgress-bar': {
                                 borderRadius: 4,
-                                background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 100%)',
+                                background:
+                                  'linear-gradient(90deg, #FFD700 0%, #FFC000 100%)',
                               },
                             }}
                           />
@@ -1070,7 +1160,9 @@ const EnhancedContractsPage = () => {
                           <TimelineSeparator>
                             <TimelineDot
                               sx={{
-                                bgcolor: getMilestoneStatusColor(milestone.status),
+                                bgcolor: getMilestoneStatusColor(
+                                  milestone.status,
+                                ),
                                 border: 'none',
                               }}
                             >
@@ -1110,7 +1202,11 @@ const EnhancedContractsPage = () => {
                             >
                               {milestone.description}
                             </Typography>
-                            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
                               <Typography
                                 variant="body2"
                                 sx={{
@@ -1118,7 +1214,8 @@ const EnhancedContractsPage = () => {
                                   fontWeight: 600,
                                 }}
                               >
-                                {selectedContract.currency}{milestone.amount.toLocaleString()}
+                                {selectedContract.currency}
+                                {milestone.amount.toLocaleString()}
                               </Typography>
                               <Typography
                                 variant="caption"
@@ -1126,25 +1223,27 @@ const EnhancedContractsPage = () => {
                                   color: 'rgba(255,255,255,0.5)',
                                 }}
                               >
-                                Due: {format(new Date(milestone.dueDate), 'MMM dd')}
+                                Due:{' '}
+                                {format(new Date(milestone.dueDate), 'MMM dd')}
                               </Typography>
                             </Stack>
-                            {milestone.status === 'in-progress' && milestone.progress && (
-                              <LinearProgress
-                                variant="determinate"
-                                value={milestone.progress}
-                                sx={{
-                                  mt: 1,
-                                  height: 4,
-                                  borderRadius: 2,
-                                  backgroundColor: 'rgba(255,255,255,0.1)',
-                                  '& .MuiLinearProgress-bar': {
+                            {milestone.status === 'in-progress' &&
+                              milestone.progress && (
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={milestone.progress}
+                                  sx={{
+                                    mt: 1,
+                                    height: 4,
                                     borderRadius: 2,
-                                    backgroundColor: '#FFD700',
-                                  },
-                                }}
-                              />
-                            )}
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    '& .MuiLinearProgress-bar': {
+                                      borderRadius: 2,
+                                      backgroundColor: '#FFD700',
+                                    },
+                                  }}
+                                />
+                              )}
                           </TimelineContent>
                         </TimelineItem>
                       ))}
@@ -1183,20 +1282,30 @@ const EnhancedContractsPage = () => {
                               border: '1px solid rgba(76, 175, 80, 0.2)',
                             }}
                           >
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={2}
+                            >
                               <CheckCircleIcon sx={{ color: '#4CAF50' }} />
                               <Box>
                                 <Typography
                                   variant="body1"
                                   sx={{ color: '#fff', fontWeight: 600 }}
                                 >
-                                  {selectedContract.currency}{payment.amount.toLocaleString()}
+                                  {selectedContract.currency}
+                                  {payment.amount.toLocaleString()}
                                 </Typography>
                                 <Typography
                                   variant="caption"
                                   sx={{ color: 'rgba(255,255,255,0.7)' }}
                                 >
-                                  Paid on {format(new Date(payment.paidAt), 'MMM dd, yyyy')} via {payment.method}
+                                  Paid on{' '}
+                                  {format(
+                                    new Date(payment.paidAt),
+                                    'MMM dd, yyyy',
+                                  )}{' '}
+                                  via {payment.method}
                                 </Typography>
                               </Box>
                             </Stack>
@@ -1277,7 +1386,11 @@ const EnhancedContractsPage = () => {
                                   variant="caption"
                                   sx={{ color: 'rgba(255,255,255,0.7)' }}
                                 >
-                                  Uploaded {formatDistanceToNow(new Date(doc.uploadedAt), { addSuffix: true })}
+                                  Uploaded{' '}
+                                  {formatDistanceToNow(
+                                    new Date(doc.uploadedAt),
+                                    { addSuffix: true },
+                                  )}
                                 </Typography>
                               </Box>
                               <IconButton
@@ -1305,19 +1418,26 @@ const EnhancedContractsPage = () => {
                             sx={{
                               p: 2,
                               borderRadius: 2,
-                              background: selectedContract.signatures.worker.signed
+                              background: selectedContract.signatures.worker
+                                .signed
                                 ? 'rgba(76, 175, 80, 0.1)'
                                 : 'rgba(255, 255, 255, 0.05)',
-                              border: `1px solid ${selectedContract.signatures.worker.signed
-                                ? 'rgba(76, 175, 80, 0.2)'
-                                : 'rgba(255, 255, 255, 0.1)'
+                              border: `1px solid ${
+                                selectedContract.signatures.worker.signed
+                                  ? 'rgba(76, 175, 80, 0.2)'
+                                  : 'rgba(255, 255, 255, 0.1)'
                               }`,
                             }}
                           >
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={2}
+                            >
                               <HandshakeIcon
                                 sx={{
-                                  color: selectedContract.signatures.worker.signed
+                                  color: selectedContract.signatures.worker
+                                    .signed
                                     ? '#4CAF50'
                                     : 'rgba(255,255,255,0.5)',
                                 }}
@@ -1334,20 +1454,34 @@ const EnhancedContractsPage = () => {
                                     variant="caption"
                                     sx={{ color: 'rgba(255,255,255,0.7)' }}
                                   >
-                                    Signed {formatDistanceToNow(new Date(selectedContract.signatures.worker.signedAt), { addSuffix: true })}
+                                    Signed{' '}
+                                    {formatDistanceToNow(
+                                      new Date(
+                                        selectedContract.signatures.worker.signedAt,
+                                      ),
+                                      { addSuffix: true },
+                                    )}
                                   </Typography>
                                 )}
                               </Box>
                             </Stack>
                             <Chip
-                              label={selectedContract.signatures.worker.signed ? 'Signed' : 'Pending'}
+                              label={
+                                selectedContract.signatures.worker.signed
+                                  ? 'Signed'
+                                  : 'Pending'
+                              }
                               size="small"
                               sx={{
                                 backgroundColor: alpha(
-                                  selectedContract.signatures.worker.signed ? '#4CAF50' : '#9E9E9E',
-                                  0.2
+                                  selectedContract.signatures.worker.signed
+                                    ? '#4CAF50'
+                                    : '#9E9E9E',
+                                  0.2,
                                 ),
-                                color: selectedContract.signatures.worker.signed ? '#4CAF50' : '#9E9E9E',
+                                color: selectedContract.signatures.worker.signed
+                                  ? '#4CAF50'
+                                  : '#9E9E9E',
                                 fontWeight: 600,
                               }}
                             />
@@ -1360,19 +1494,26 @@ const EnhancedContractsPage = () => {
                             sx={{
                               p: 2,
                               borderRadius: 2,
-                              background: selectedContract.signatures.client.signed
+                              background: selectedContract.signatures.client
+                                .signed
                                 ? 'rgba(76, 175, 80, 0.1)'
                                 : 'rgba(255, 255, 255, 0.05)',
-                              border: `1px solid ${selectedContract.signatures.client.signed
-                                ? 'rgba(76, 175, 80, 0.2)'
-                                : 'rgba(255, 255, 255, 0.1)'
+                              border: `1px solid ${
+                                selectedContract.signatures.client.signed
+                                  ? 'rgba(76, 175, 80, 0.2)'
+                                  : 'rgba(255, 255, 255, 0.1)'
                               }`,
                             }}
                           >
-                            <Stack direction="row" alignItems="center" spacing={2}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={2}
+                            >
                               <PersonIcon
                                 sx={{
-                                  color: selectedContract.signatures.client.signed
+                                  color: selectedContract.signatures.client
+                                    .signed
                                     ? '#4CAF50'
                                     : 'rgba(255,255,255,0.5)',
                                 }}
@@ -1389,20 +1530,34 @@ const EnhancedContractsPage = () => {
                                     variant="caption"
                                     sx={{ color: 'rgba(255,255,255,0.7)' }}
                                   >
-                                    Signed {formatDistanceToNow(new Date(selectedContract.signatures.client.signedAt), { addSuffix: true })}
+                                    Signed{' '}
+                                    {formatDistanceToNow(
+                                      new Date(
+                                        selectedContract.signatures.client.signedAt,
+                                      ),
+                                      { addSuffix: true },
+                                    )}
                                   </Typography>
                                 )}
                               </Box>
                             </Stack>
                             <Chip
-                              label={selectedContract.signatures.client.signed ? 'Signed' : 'Pending'}
+                              label={
+                                selectedContract.signatures.client.signed
+                                  ? 'Signed'
+                                  : 'Pending'
+                              }
                               size="small"
                               sx={{
                                 backgroundColor: alpha(
-                                  selectedContract.signatures.client.signed ? '#4CAF50' : '#9E9E9E',
-                                  0.2
+                                  selectedContract.signatures.client.signed
+                                    ? '#4CAF50'
+                                    : '#9E9E9E',
+                                  0.2,
                                 ),
-                                color: selectedContract.signatures.client.signed ? '#4CAF50' : '#9E9E9E',
+                                color: selectedContract.signatures.client.signed
+                                  ? '#4CAF50'
+                                  : '#9E9E9E',
                                 fontWeight: 600,
                               }}
                             />
@@ -1459,7 +1614,8 @@ const EnhancedContractsPage = () => {
                 color: '#000',
                 fontWeight: 700,
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                  background:
+                    'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
                 },
               }}
             >
@@ -1561,7 +1717,8 @@ const EnhancedContractsPage = () => {
                 color: '#000',
                 fontWeight: 700,
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                  background:
+                    'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
                 },
               }}
             >
@@ -1579,7 +1736,8 @@ const EnhancedContractsPage = () => {
       {/* Tabs */}
       <Paper
         sx={{
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           borderRadius: 3,
           mb: 3,
@@ -1613,7 +1771,8 @@ const EnhancedContractsPage = () => {
           sx={{
             p: 4,
             textAlign: 'center',
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
             borderRadius: 3,
           }}
@@ -1632,12 +1791,18 @@ const EnhancedContractsPage = () => {
             sx={{
               p: 3,
               mb: 3,
-              background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+              background:
+                'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
               border: '1px solid rgba(255,215,0,0.2)',
               borderRadius: 3,
             }}
           >
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ mb: 2 }}
+            >
               <TextField
                 placeholder="Search contracts..."
                 value={searchQuery}
@@ -1667,7 +1832,9 @@ const EnhancedContractsPage = () => {
                 }}
                 InputProps={{
                   startAdornment: (
-                    <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }} />
+                    <SearchIcon
+                      sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }}
+                    />
                   ),
                 }}
               />
@@ -1705,11 +1872,9 @@ const EnhancedContractsPage = () => {
               </Button>
             </Stack>
 
-            <Typography
-              variant="body2"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
-              {filteredContracts.length} contract{filteredContracts.length !== 1 ? 's' : ''} found
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              {filteredContracts.length} contract
+              {filteredContracts.length !== 1 ? 's' : ''} found
             </Typography>
           </Paper>
 
@@ -1719,16 +1884,25 @@ const EnhancedContractsPage = () => {
               sx={{
                 p: 6,
                 textAlign: 'center',
-                background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
                 border: '1px solid rgba(255,215,0,0.2)',
                 borderRadius: 3,
               }}
             >
-              <ContractIcon sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
-              <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+              <ContractIcon
+                sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }}
+              />
+              <Typography
+                variant="h6"
+                sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
+              >
                 No contracts found
               </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255,255,255,0.5)' }}
+              >
                 Try adjusting your search or filters
               </Typography>
             </Paper>
@@ -1838,7 +2012,10 @@ const EnhancedContractsPage = () => {
           <ListItemText>Share</ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setMoreMenuAnchor(null)} sx={{ color: '#F44336' }}>
+        <MenuItem
+          onClick={() => setMoreMenuAnchor(null)}
+          sx={{ color: '#F44336' }}
+        >
           <ListItemIcon>
             <DeleteIcon sx={{ color: '#F44336' }} />
           </ListItemIcon>
@@ -1850,11 +2027,11 @@ const EnhancedContractsPage = () => {
       <Snackbar
         open={feedback.open}
         autoHideDuration={4000}
-        onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
           severity={feedback.severity}
           sx={{ width: '100%' }}
         >

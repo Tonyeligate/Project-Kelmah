@@ -260,18 +260,21 @@ export const selectJobsPagination = createSelector(
   (currentPage, totalPages) => ({
     currentPage,
     totalPages,
-  })
+  }),
 );
 
 export const selectSavedJobs = (state) => state.jobs.savedJobs;
 export const selectSavedLoading = (state) => state.jobs.savedLoading;
 export const selectSavedError = (state) => state.jobs.savedError;
 export const selectSavedPagination = createSelector(
-  [(state) => state.jobs.savedCurrentPage, (state) => state.jobs.savedTotalPages],
+  [
+    (state) => state.jobs.savedCurrentPage,
+    (state) => state.jobs.savedTotalPages,
+  ],
   (currentPage, totalPages) => ({
     currentPage,
     totalPages,
-  })
+  }),
 );
 
 export const {

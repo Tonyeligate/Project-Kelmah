@@ -58,10 +58,15 @@ export const MessageProvider = ({ children }) => {
       setSelectedConversation(conversation);
       setLoadingMessages(true);
       try {
-        const loadedMessages = await messagingService.getMessages(conversation.id);
+        const loadedMessages = await messagingService.getMessages(
+          conversation.id,
+        );
         setMessages(loadedMessages);
       } catch (error) {
-        console.error(`Error loading messages for conversation ${conversation.id}:`, error);
+        console.error(
+          `Error loading messages for conversation ${conversation.id}:`,
+          error,
+        );
         setMessages([]);
       } finally {
         setLoadingMessages(false);
@@ -77,12 +82,22 @@ export const MessageProvider = ({ children }) => {
       setSendingMessage(true);
       try {
         // Determine the other participant
-        const recipient = selectedConversation.participants.find(p => p.id !== user.id);
-        const newMessage = await messagingService.sendMessage(user.id, recipient.id, content);
-        setMessages(prev => [...prev, newMessage]);
+        const recipient = selectedConversation.participants.find(
+          (p) => p.id !== user.id,
+        );
+        const newMessage = await messagingService.sendMessage(
+          user.id,
+          recipient.id,
+          content,
+        );
+        setMessages((prev) => [...prev, newMessage]);
         // Update conversation list
-        setConversations(prev =>
-          prev.map(c => c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c)
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === selectedConversation.id
+              ? { ...c, lastMessage: newMessage }
+              : c,
+          ),
         );
       } catch (error) {
         console.error('Error sending message:', error);
@@ -96,7 +111,8 @@ export const MessageProvider = ({ children }) => {
   const createConversation = useCallback(
     async (participantId) => {
       try {
-        const convo = await messagingService.createDirectConversation(participantId);
+        const convo =
+          await messagingService.createDirectConversation(participantId);
         await loadConversations();
         await selectConversation(convo);
         return convo;

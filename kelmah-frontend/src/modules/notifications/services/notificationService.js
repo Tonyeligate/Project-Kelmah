@@ -99,28 +99,33 @@ class NotificationService {
       });
       return response.data;
     } catch (error) {
-      console.warn('Notification service unavailable, using mock data:', error.message);
-      
+      console.warn(
+        'Notification service unavailable, using mock data:',
+        error.message,
+      );
+
       // Return mock notifications as fallback
       return {
         notifications: [
           {
             id: 'notif-1',
             title: 'New Job Application',
-            message: 'You have a new application for your Kitchen Renovation job',
+            message:
+              'You have a new application for your Kitchen Renovation job',
             type: 'application',
             read: false,
             createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-            data: { jobId: 'job-h1', applicantId: 'worker-1' }
+            data: { jobId: 'job-h1', applicantId: 'worker-1' },
           },
           {
             id: 'notif-2',
             title: 'Payment Released',
-            message: 'Payment of GH₵7,800 has been released for Bathroom Renovation',
+            message:
+              'Payment of GH₵7,800 has been released for Bathroom Renovation',
             type: 'payment',
             read: true,
             createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-            data: { paymentId: 'pay-1', amount: 7800 }
+            data: { paymentId: 'pay-1', amount: 7800 },
           },
           {
             id: 'notif-3',
@@ -129,12 +134,12 @@ class NotificationService {
             type: 'job_status',
             read: true,
             createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-            data: { jobId: 'job-completed-1' }
-          }
+            data: { jobId: 'job-completed-1' },
+          },
         ],
         totalPages: 1,
         currentPage: 1,
-        totalCount: 3
+        totalCount: 3,
       };
     }
   }
@@ -142,10 +147,15 @@ class NotificationService {
   // Mark notification as read
   async markAsRead(notificationId) {
     try {
-      const response = await this.client.put(`/api/notifications/${notificationId}/read`);
+      const response = await this.client.put(
+        `/api/notifications/${notificationId}/read`,
+      );
       return response.data;
     } catch (error) {
-      console.warn('Notification service unavailable for mark as read, simulating success:', error.message);
+      console.warn(
+        'Notification service unavailable for mark as read, simulating success:',
+        error.message,
+      );
       return { success: true, message: 'Notification marked as read (mock)' };
     }
   }
@@ -153,11 +163,19 @@ class NotificationService {
   // Mark all notifications as read
   async markAllAsRead() {
     try {
-      const response = await this.client.put('/api/notifications/mark-all-read');
+      const response = await this.client.put(
+        '/api/notifications/mark-all-read',
+      );
       return response.data;
     } catch (error) {
-      console.warn('Notification service unavailable for mark all as read, simulating success:', error.message);
-      return { success: true, message: 'All notifications marked as read (mock)' };
+      console.warn(
+        'Notification service unavailable for mark all as read, simulating success:',
+        error.message,
+      );
+      return {
+        success: true,
+        message: 'All notifications marked as read (mock)',
+      };
     }
   }
 

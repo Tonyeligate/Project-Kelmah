@@ -29,7 +29,7 @@ import {
   Skeleton,
   Paper,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -39,7 +39,7 @@ import {
   Star as StarIcon,
   AttachMoney as MoneyIcon,
   Schedule as ScheduleIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { SERVICES } from '../../../config/environment';
@@ -48,7 +48,7 @@ import { SERVICES } from '../../../config/environment';
 const jobServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE, // Will be SERVICES.JOB_SERVICE when deployed
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Add auth tokens to requests
@@ -60,7 +60,7 @@ jobServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Comprehensive mock proposal data
@@ -78,27 +78,28 @@ const mockProposalData = [
       completedJobs: 23,
       skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing'],
       location: 'Accra, Greater Accra',
-      experience: '5+ years'
+      experience: '5+ years',
     },
     proposedRate: 5200,
     estimatedDuration: '3 weeks',
-    proposalText: 'I have extensive experience in custom cabinet making and kitchen renovations. I can deliver high-quality cabinets with modern designs that will transform your kitchen. My approach includes detailed measurements, custom design, quality materials, and professional installation.',
+    proposalText:
+      'I have extensive experience in custom cabinet making and kitchen renovations. I can deliver high-quality cabinets with modern designs that will transform your kitchen. My approach includes detailed measurements, custom design, quality materials, and professional installation.',
     submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
     status: 'pending',
     attachments: [
       { name: 'portfolio.pdf', size: '2.3 MB' },
-      { name: 'previous_work.jpg', size: '1.8 MB' }
+      { name: 'previous_work.jpg', size: '1.8 MB' },
     ],
     timeline: [
       { phase: 'Design & Planning', duration: '3 days' },
       { phase: 'Material Selection', duration: '2 days' },
       { phase: 'Cabinet Construction', duration: '12 days' },
-      { phase: 'Installation & Finishing', duration: '4 days' }
-    ]
+      { phase: 'Installation & Finishing', duration: '4 days' },
+    ],
   },
   {
     id: 'proposal-2',
-    jobId: 'job-h2', 
+    jobId: 'job-h2',
     jobTitle: 'Office Interior Design & Setup',
     jobBudget: 15000,
     worker: {
@@ -109,24 +110,25 @@ const mockProposalData = [
       completedJobs: 31,
       skills: ['Interior Design', 'Space Planning', 'Project Management'],
       location: 'Kumasi, Ashanti',
-      experience: '7+ years'
+      experience: '7+ years',
     },
     proposedRate: 14500,
     estimatedDuration: '4 weeks',
-    proposalText: 'I specialize in modern office interior design that maximizes productivity and creates inspiring work environments. My comprehensive approach includes space planning, furniture selection, lighting design, and complete project management from concept to completion.',
+    proposalText:
+      'I specialize in modern office interior design that maximizes productivity and creates inspiring work environments. My comprehensive approach includes space planning, furniture selection, lighting design, and complete project management from concept to completion.',
     submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
     status: 'pending',
     attachments: [
       { name: 'design_portfolio.pdf', size: '5.2 MB' },
       { name: 'office_mockup.jpg', size: '3.1 MB' },
-      { name: 'references.pdf', size: '1.5 MB' }
+      { name: 'references.pdf', size: '1.5 MB' },
     ],
     timeline: [
       { phase: 'Space Assessment & Planning', duration: '5 days' },
       { phase: 'Design Development', duration: '7 days' },
       { phase: 'Procurement & Ordering', duration: '10 days' },
-      { phase: 'Installation & Setup', duration: '6 days' }
-    ]
+      { phase: 'Installation & Setup', duration: '6 days' },
+    ],
   },
   {
     id: 'proposal-3',
@@ -141,30 +143,31 @@ const mockProposalData = [
       completedJobs: 18,
       skills: ['Plumbing', 'Tiling', 'Bathroom Design'],
       location: 'Tema, Greater Accra',
-      experience: '4+ years'
+      experience: '4+ years',
     },
     proposedRate: 7800,
     estimatedDuration: '2.5 weeks',
-    proposalText: 'I offer complete bathroom renovation services with modern designs and quality fixtures. My expertise includes plumbing, tiling, electrical work, and finishing. I ensure all work meets building codes and delivers a stunning, functional bathroom.',
+    proposalText:
+      'I offer complete bathroom renovation services with modern designs and quality fixtures. My expertise includes plumbing, tiling, electrical work, and finishing. I ensure all work meets building codes and delivers a stunning, functional bathroom.',
     submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
     status: 'pending',
     attachments: [
       { name: 'bathroom_designs.pdf', size: '4.1 MB' },
-      { name: 'certifications.pdf', size: '1.2 MB' }
+      { name: 'certifications.pdf', size: '1.2 MB' },
     ],
     timeline: [
       { phase: 'Demolition & Preparation', duration: '3 days' },
       { phase: 'Plumbing & Electrical', duration: '4 days' },
       { phase: 'Tiling & Fixtures', duration: '6 days' },
-      { phase: 'Finishing & Cleanup', duration: '3 days' }
-    ]
-  }
+      { phase: 'Finishing & Cleanup', duration: '3 days' },
+    ],
+  },
 ];
 
 const ProposalReview = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [proposals, setProposals] = useState(mockProposalData);
@@ -190,7 +193,10 @@ const ProposalReview = () => {
       setProposals(response.data || mockProposalData);
       setError(null);
     } catch (err) {
-      console.warn('Job service unavailable for proposals, using mock data:', err.message);
+      console.warn(
+        'Job service unavailable for proposals, using mock data:',
+        err.message,
+      );
       setProposals(mockProposalData);
       setError(null);
     } finally {
@@ -202,7 +208,7 @@ const ProposalReview = () => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -210,17 +216,22 @@ const ProposalReview = () => {
     return new Date(date).toLocaleDateString('en-GH', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'warning';
-      case 'accepted': return 'success';
-      case 'rejected': return 'error';
-      case 'withdrawn': return 'default';
-      default: return 'default';
+      case 'pending':
+        return 'warning';
+      case 'accepted':
+        return 'success';
+      case 'rejected':
+        return 'error';
+      case 'withdrawn':
+        return 'default';
+      default:
+        return 'default';
     }
   };
 
@@ -256,15 +267,15 @@ const ProposalReview = () => {
       try {
         // Mock proposal action
         console.log(`${action} proposal ${selectedProposal.id}`);
-        
+
         // Update local state
-        setProposals(prev => prev.map(p => 
-          p.id === selectedProposal.id 
-            ? { ...p, status: action }
-            : p
-        ));
-        
-      handleDialogClose();
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === selectedProposal.id ? { ...p, status: action } : p,
+          ),
+        );
+
+        handleDialogClose();
       } catch (error) {
         console.error(`Error ${action} proposal:`, error);
         setError(`Failed to ${action} proposal`);
@@ -275,15 +286,16 @@ const ProposalReview = () => {
   // Summary Statistics
   const proposalStats = {
     total: proposals.length,
-    pending: proposals.filter(p => p.status === 'pending').length,
-    accepted: proposals.filter(p => p.status === 'accepted').length,
-    rejected: proposals.filter(p => p.status === 'rejected').length,
-    averageRate: proposals.reduce((sum, p) => sum + p.proposedRate, 0) / proposals.length
+    pending: proposals.filter((p) => p.status === 'pending').length,
+    accepted: proposals.filter((p) => p.status === 'accepted').length,
+    rejected: proposals.filter((p) => p.status === 'rejected').length,
+    averageRate:
+      proposals.reduce((sum, p) => sum + p.proposedRate, 0) / proposals.length,
   };
 
   if (loading) {
     return (
-          <Box>
+      <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
             <Grid item xs={12} sm={6} md={3} key={i}>
@@ -297,10 +309,10 @@ const ProposalReview = () => {
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
             ))}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
       </Box>
-  );
+    );
   }
 
   return (
@@ -314,13 +326,19 @@ const ProposalReview = () => {
       {/* Proposal Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.total}
@@ -336,13 +354,19 @@ const ProposalReview = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.pending}
@@ -358,13 +382,19 @@ const ProposalReview = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {formatCurrency(proposalStats.averageRate)}
@@ -380,13 +410,19 @@ const ProposalReview = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.accepted}
@@ -411,26 +447,42 @@ const ProposalReview = () => {
 
           {proposals.length === 0 ? (
             <Box textAlign="center" py={4}>
-              <PersonIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <PersonIcon
+                sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+              />
               <Typography variant="h6" color="text.secondary">
                 No proposals received yet
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Proposals from workers will appear here
               </Typography>
-        </Box>
+            </Box>
           ) : (
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>Worker & Job</strong></TableCell>
-                    <TableCell><strong>Proposed Rate</strong></TableCell>
-                    <TableCell><strong>Duration</strong></TableCell>
-                    <TableCell><strong>Rating</strong></TableCell>
-                    <TableCell><strong>Status</strong></TableCell>
-                    <TableCell><strong>Submitted</strong></TableCell>
-                    <TableCell align="center"><strong>Actions</strong></TableCell>
+                    <TableCell>
+                      <strong>Worker & Job</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Proposed Rate</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Duration</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Rating</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Status</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Submitted</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Actions</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -438,8 +490,8 @@ const ProposalReview = () => {
                     <TableRow key={proposal.id} hover>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
-                          <Avatar 
-                            src={proposal.worker.avatar} 
+                          <Avatar
+                            src={proposal.worker.avatar}
                             sx={{ width: 40, height: 40 }}
                           >
                             {proposal.worker.name.charAt(0)}
@@ -448,17 +500,29 @@ const ProposalReview = () => {
                             <Typography variant="subtitle2" fontWeight="bold">
                               {proposal.worker.name}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" noWrap>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              noWrap
+                            >
                               {proposal.jobTitle}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {proposal.worker.location} • {proposal.worker.experience}
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {proposal.worker.location} •{' '}
+                              {proposal.worker.experience}
                             </Typography>
                           </Box>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2" fontWeight="bold" color="primary.main">
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="bold"
+                          color="primary.main"
+                        >
                           {formatCurrency(proposal.proposedRate)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -482,7 +546,7 @@ const ProposalReview = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip 
+                        <Chip
                           label={proposal.status.toUpperCase()}
                           color={getStatusColor(proposal.status)}
                           size="small"
@@ -528,27 +592,25 @@ const ProposalReview = () => {
           <MenuItem key="reject" onClick={() => handleDialogOpen('reject')}>
             <RejectIcon sx={{ mr: 1, color: 'error.main' }} />
             Reject Proposal
-        </MenuItem>
+          </MenuItem>,
         ]}
       </Menu>
 
       {/* Proposal Details Dialog */}
       <Dialog
-        open={dialogOpen && dialogType === 'view'} 
+        open={dialogOpen && dialogType === 'view'}
         onClose={handleDialogClose}
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>
-          Proposal Details
-        </DialogTitle>
+        <DialogTitle>Proposal Details</DialogTitle>
         <DialogContent>
           {selectedProposal && (
             <Box>
               {/* Worker Info */}
               <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <Avatar 
-                  src={selectedProposal.worker.avatar} 
+                <Avatar
+                  src={selectedProposal.worker.avatar}
                   sx={{ width: 64, height: 64 }}
                 >
                   {selectedProposal.worker.name.charAt(0)}
@@ -560,7 +622,8 @@ const ProposalReview = () => {
                   <Box display="flex" alignItems="center" gap={1}>
                     <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
                     <Typography variant="body2">
-                      {selectedProposal.worker.rating} ({selectedProposal.worker.completedJobs} jobs)
+                      {selectedProposal.worker.rating} (
+                      {selectedProposal.worker.completedJobs} jobs)
                     </Typography>
                   </Box>
                   <Typography variant="body2" color="text.secondary">
@@ -574,7 +637,11 @@ const ProposalReview = () => {
               {/* Job & Rate Info */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     Job: {selectedProposal.jobTitle}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -582,8 +649,13 @@ const ProposalReview = () => {
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" fontWeight="bold" color="primary.main">
-                    Proposed Rate: {formatCurrency(selectedProposal.proposedRate)}
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    color="primary.main"
+                  >
+                    Proposed Rate:{' '}
+                    {formatCurrency(selectedProposal.proposedRate)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Duration: {selectedProposal.estimatedDuration}
@@ -607,7 +679,12 @@ const ProposalReview = () => {
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
                 {selectedProposal.worker.skills.map((skill, index) => (
-                  <Chip key={index} label={skill} size="small" variant="outlined" />
+                  <Chip
+                    key={index}
+                    label={skill}
+                    size="small"
+                    variant="outlined"
+                  />
                 ))}
               </Box>
 
@@ -617,7 +694,12 @@ const ProposalReview = () => {
               </Typography>
               <Box mb={2}>
                 {selectedProposal.timeline.map((phase, index) => (
-                  <Box key={index} display="flex" justifyContent="space-between" py={0.5}>
+                  <Box
+                    key={index}
+                    display="flex"
+                    justifyContent="space-between"
+                    py={0.5}
+                  >
                     <Typography variant="body2">{phase.phase}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {phase.duration}
@@ -629,37 +711,48 @@ const ProposalReview = () => {
               {/* Attachments */}
               {selectedProposal.attachments.length > 0 && (
                 <>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     Attachments
                   </Typography>
                   <Box>
                     {selectedProposal.attachments.map((attachment, index) => (
-                      <Box key={index} display="flex" justifyContent="space-between" py={0.5}>
-                        <Typography variant="body2">{attachment.name}</Typography>
+                      <Box
+                        key={index}
+                        display="flex"
+                        justifyContent="space-between"
+                        py={0.5}
+                      >
+                        <Typography variant="body2">
+                          {attachment.name}
+                        </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {attachment.size}
                         </Typography>
                       </Box>
-                          ))}
-                        </Box>
+                    ))}
+                  </Box>
                 </>
-            )}
-          </Box>
+              )}
+            </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Close</Button>
           {selectedProposal?.status === 'pending' && (
             <>
-              <Button 
-                onClick={() => handleProposalAction('rejected')} 
+              <Button
+                onClick={() => handleProposalAction('rejected')}
                 color="error"
                 variant="outlined"
               >
                 Reject
               </Button>
-              <Button 
-                onClick={() => handleProposalAction('accepted')} 
+              <Button
+                onClick={() => handleProposalAction('accepted')}
                 color="success"
                 variant="contained"
               >
@@ -671,13 +764,19 @@ const ProposalReview = () => {
       </Dialog>
 
       {/* Accept/Reject Confirmation Dialogs */}
-      <Dialog open={dialogOpen && (dialogType === 'accept' || dialogType === 'reject')} onClose={handleDialogClose}>
+      <Dialog
+        open={
+          dialogOpen && (dialogType === 'accept' || dialogType === 'reject')
+        }
+        onClose={handleDialogClose}
+      >
         <DialogTitle>
           {dialogType === 'accept' ? 'Accept Proposal' : 'Reject Proposal'}
         </DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
-            Are you sure you want to {dialogType} this proposal from {selectedProposal?.worker?.name}?
+            Are you sure you want to {dialogType} this proposal from{' '}
+            {selectedProposal?.worker?.name}?
           </Typography>
           {dialogType === 'reject' && (
             <TextField
@@ -686,7 +785,9 @@ const ProposalReview = () => {
               rows={3}
               label="Reason for rejection (optional)"
               value={reviewForm.feedback}
-              onChange={(e) => setReviewForm({ ...reviewForm, feedback: e.target.value })}
+              onChange={(e) =>
+                setReviewForm({ ...reviewForm, feedback: e.target.value })
+              }
               sx={{ mt: 2 }}
             />
           )}
@@ -694,7 +795,11 @@ const ProposalReview = () => {
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
           <Button
-            onClick={() => handleProposalAction(dialogType === 'accept' ? 'accepted' : 'rejected')}
+            onClick={() =>
+              handleProposalAction(
+                dialogType === 'accept' ? 'accepted' : 'rejected',
+              )
+            }
             color={dialogType === 'accept' ? 'success' : 'error'}
             variant="contained"
           >

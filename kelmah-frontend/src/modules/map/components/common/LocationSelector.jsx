@@ -11,14 +11,14 @@ import {
   Typography,
   CircularProgress,
   InputAdornment,
-  Divider
+  Divider,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
   MyLocation as MyLocationIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
-  History as HistoryIcon
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import mapService from '../../services/mapService';
 
@@ -35,7 +35,7 @@ const LocationSelector = ({
   size = 'medium',
   disabled = false,
   helperText = '',
-  error = false
+  error = false,
 }) => {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState([]);
@@ -45,7 +45,7 @@ const LocationSelector = ({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  
+
   const inputRef = useRef();
   const searchTimeout = useRef();
 
@@ -66,22 +66,24 @@ const LocationSelector = ({
   // Get current location on mount
   useEffect(() => {
     if (showCurrentLocation) {
-      mapService.getCurrentLocation()
-        .then(location => {
-          mapService.reverseGeocode(location.latitude, location.longitude)
-            .then(address => {
+      mapService
+        .getCurrentLocation()
+        .then((location) => {
+          mapService
+            .reverseGeocode(location.latitude, location.longitude)
+            .then((address) => {
               setCurrentLocation({
                 ...location,
                 address: address.address,
                 city: address.city,
-                state: address.state
+                state: address.state,
               });
             })
-            .catch(error => {
+            .catch((error) => {
               setCurrentLocation(location);
             });
         })
-        .catch(error => {
+        .catch((error) => {
           console.warn('Could not get current location:', error);
         });
     }
@@ -111,11 +113,11 @@ const LocationSelector = ({
     const newValue = event.target.value;
     setInputValue(newValue);
     onChange(newValue);
-    
+
     if (searchTimeout.current) {
       clearTimeout(searchTimeout.current);
     }
-    
+
     if (newValue.length >= 3) {
       setIsLoading(true);
       setIsOpen(true);
@@ -126,7 +128,7 @@ const LocationSelector = ({
       setSuggestions([]);
       setIsOpen(newValue.length > 0 || recentLocations.length > 0);
     }
-    
+
     setSelectedIndex(-1);
   };
 
@@ -135,12 +137,12 @@ const LocationSelector = ({
     setInputValue(location.address);
     setIsOpen(false);
     setSelectedIndex(-1);
-    
+
     // Save to recent locations
     if (type === 'search' || type === 'current') {
       saveToRecent(location);
     }
-    
+
     onLocationSelect(location);
     onChange(location.address);
   };
@@ -148,12 +150,12 @@ const LocationSelector = ({
   // Save location to recent
   const saveToRecent = (location) => {
     if (!showRecentLocations) return;
-    
+
     const newRecent = [
       location,
-      ...recentLocations.filter(item => item.address !== location.address)
+      ...recentLocations.filter((item) => item.address !== location.address),
     ].slice(0, 5);
-    
+
     setRecentLocations(newRecent);
     localStorage.setItem('recentLocations', JSON.stringify(newRecent));
   };
@@ -168,8 +170,11 @@ const LocationSelector = ({
     setIsGettingLocation(true);
     try {
       const location = await mapService.getCurrentLocation();
-      const address = await mapService.reverseGeocode(location.latitude, location.longitude);
-      
+      const address = await mapService.reverseGeocode(
+        location.latitude,
+        location.longitude,
+      );
+
       const locationData = {
         ...location,
         address: address.address,
@@ -177,10 +182,10 @@ const LocationSelector = ({
         state: address.state,
         coordinates: {
           latitude: location.latitude,
-          longitude: location.longitude
-        }
+          longitude: location.longitude,
+        },
       };
-      
+
       setCurrentLocation(locationData);
       handleLocationSelect(locationData, 'current');
     } catch (error) {
@@ -192,7 +197,9 @@ const LocationSelector = ({
 
   // Handle input focus
   const handleFocus = () => {
-    setIsOpen(inputValue.length > 0 || recentLocations.length > 0 || currentLocation);
+    setIsOpen(
+      inputValue.length > 0 || recentLocations.length > 0 || currentLocation,
+    );
   };
 
   // Handle input blur
@@ -243,7 +250,7 @@ const LocationSelector = ({
                 </IconButton>
               )}
             </InputAdornment>
-          )
+          ),
         }}
       />
 
@@ -259,7 +266,7 @@ const LocationSelector = ({
             maxHeight: 300,
             overflow: 'auto',
             mt: 1,
-            boxShadow: 3
+            boxShadow: 3,
           }}
         >
           <List disablePadding>
@@ -304,10 +311,9 @@ const LocationSelector = ({
             ))}
 
             {/* Recent Locations */}
-            {recentLocations.length > 0 && (suggestions.length > 0 || currentLocation) && (
-              <Divider />
-            )}
-            
+            {recentLocations.length > 0 &&
+              (suggestions.length > 0 || currentLocation) && <Divider />}
+
             {recentLocations.map((location, index) => (
               <ListItem
                 key={`recent-${index}`}
@@ -328,15 +334,17 @@ const LocationSelector = ({
             ))}
 
             {/* No results */}
-            {!isLoading && inputValue.length >= 3 && suggestions.length === 0 && (
-              <ListItem>
-                <ListItemText
-                  primary="No locations found"
-                  secondary="Try a different search term"
-                  primaryTypographyProps={{ color: 'text.secondary' }}
-                />
-              </ListItem>
-            )}
+            {!isLoading &&
+              inputValue.length >= 3 &&
+              suggestions.length === 0 && (
+                <ListItem>
+                  <ListItemText
+                    primary="No locations found"
+                    secondary="Try a different search term"
+                    primaryTypographyProps={{ color: 'text.secondary' }}
+                  />
+                </ListItem>
+              )}
           </List>
         </Paper>
       )}
@@ -344,4 +352,4 @@ const LocationSelector = ({
   );
 };
 
-export default LocationSelector; 
+export default LocationSelector;

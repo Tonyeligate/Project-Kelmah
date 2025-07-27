@@ -1,60 +1,85 @@
+/* eslint-env jest */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ContractProvider, useContracts } from '../../../modules/contracts/contexts/ContractContext';
-import { NotificationProvider } from '../../../modules/notifications/contexts/NotificationContext';
 import { AuthProvider } from '../../../modules/auth/contexts/AuthContext';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
 
-// Mock USE_MOCK_DATA to true
-jest.mock('../../../config/env', () => ({
-  USE_MOCK_DATA: true,
-}));
+global.jest = require('jest-mock');
 
-const mockStore = configureStore({
-  reducer: { auth: (state = { isAuthenticated: true, user: { id: 'user1' }, token: null, loading: false, error: null }) => state }
-});
+// Mock child components that use the context
+const MockConsumer = () => {
+  const { contracts, loading, error } = useContracts();
+  if (loading) return <div>
+    Loading...
+  </div>;
+  if (error) return <div>
+    {error}
+  </div>;
+  return (
+    <div>
+      {contracts.map((c) => (
+        <div key={c.id}>
+          {c.title}
+        </div>
+      ))}
+    </div>
+  );
+};
 
-test('ContractProvider supplies mock contracts when USE_MOCK_DATA is true', async () => {
-  // Use fake timers to control setTimeout
-  jest.useFakeTimers();
-
-  const TestComponent = () => {
-    const { contracts, loading } = useContracts();
-    return (
-      <div>
-        {loading && <div>Loading...</div>}
-        {!loading && (
-          <ul>
-            {contracts.map(c => (
-              <li key={c.id}>{c.title}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-    );
+describe('ContractContext', () => {
+  // Mock the API service
+  const mockContractService = {
+    getContracts: jest.fn(),
   };
 
-  render(
-    <Provider store={mockStore}>
-      <NotificationProvider>
-        <ContractProvider>
-          <TestComponent />
+  test('provides contracts to children', async () => {
+    const mockContracts = [{ id: '1', title: 'Test Contract' }];
+    mockContractService.getContracts.mockResolvedValue(mockContracts);
+
+    render(
+      <AuthProvider>
+        <ContractProvider contractService={mockContractService}>
+          <MockConsumer />
         </ContractProvider>
-      </NotificationProvider>
-    </Provider>
-  );
+      </AuthProvider>
+    );
 
-  // Initially loading
-  expect(screen.getByText('Loading...')).toBeInTheDocument();
+    // Check that contracts are displayed
+    await waitFor(() => {
+      expect(screen.getByText('Test Contract')).toBeInTheDocument();
+    });
 
-  // Advance timers to simulate mock data delay
-  jest.advanceTimersByTime(500);
+    expect(mockContractService.getContracts).toHaveBeenCalledTimes(1);
+  });
 
-  // Wait for loading to finish and mock contracts to render
-  await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
-  expect(screen.getByText('Complete Kitchen Remodel')).toBeInTheDocument();
-  expect(screen.getByText('New Website Design')).toBeInTheDocument();
+  test('handles loading state', async () => {
+    mockContractService.getContracts.mockReturnValue(new Promise(() => {})); // Never resolves
 
-  jest.useRealTimers();
+    render(
+      <AuthProvider>
+        <ContractProvider contractService={mockContractService}>
+          <MockConsumer />
+        </ContractProvider>
+      </AuthProvider>
+    );
+
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  test('handles error state', async () => {
+    const errorMessage = 'Failed to fetch contracts';
+    mockContractService.getContracts.mockRejectedValue(new Error(errorMessage));
+
+    render(
+      <AuthProvider>
+        <ContractProvider contractService={mockContractService}>
+          <MockConsumer />
+        </ContractProvider>
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    });
+  });
 });

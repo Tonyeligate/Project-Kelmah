@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   // Attempt to get navigate function; fallback to no-op if outside a Router
   let navigate = () => {};
   try {
@@ -43,9 +43,9 @@ export const AuthProvider = ({ children }) => {
 
             // If API fails but we have stored user data, use it (development mode)
             const storedUser = authService.getStoredUser();
-              if (storedUser) {
+            if (storedUser) {
               console.log('Using stored user data');
-                setUser(storedUser);
+              setUser(storedUser);
             } else {
               // Clear invalid authentication
               authService.clearStorage();
@@ -76,15 +76,16 @@ export const AuthProvider = ({ children }) => {
       const userData = response.data?.user || response.user;
 
       if (userData) {
-      setUser(userData);
-      console.log('Login successful. User:', userData);
-      return userData;
+        setUser(userData);
+        console.log('Login successful. User:', userData);
+        return userData;
       } else {
         throw new Error('No user data received from login');
       }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err.message || 'Login failed. Please check your credentials.';
+      const errorMessage =
+        err.message || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -102,7 +103,8 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (err) {
       console.error('Registration error:', err);
-      const errorMessage = err.message || 'Registration failed. Please try again.';
+      const errorMessage =
+        err.message || 'Registration failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -112,15 +114,15 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
-        try {
-          await authService.logout();
+    try {
+      await authService.logout();
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       // Clear local state
       setUser(null);
       setError(null);
-      
+
       // Redirect to login
       navigate('/login');
     }
@@ -136,7 +138,8 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (err) {
       console.error('Password reset request error:', err);
-      const errorMessage = err.message || 'Failed to request password reset. Please try again.';
+      const errorMessage =
+        err.message || 'Failed to request password reset. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -154,7 +157,8 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (err) {
       console.error('Password reset error:', err);
-      const errorMessage = err.message || 'Failed to reset password. Please try again.';
+      const errorMessage =
+        err.message || 'Failed to reset password. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -173,7 +177,8 @@ export const AuthProvider = ({ children }) => {
       return updatedUser;
     } catch (err) {
       console.error('Profile update error:', err);
-      const errorMessage = err.message || 'Failed to update profile. Please try again.';
+      const errorMessage =
+        err.message || 'Failed to update profile. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

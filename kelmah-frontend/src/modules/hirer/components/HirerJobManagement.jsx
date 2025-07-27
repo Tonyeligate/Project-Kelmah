@@ -30,7 +30,7 @@ import {
   Skeleton,
   Alert,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -41,15 +41,15 @@ import {
   TrendingUp as TrendingUpIcon,
   Work as WorkIcon,
   AttachMoney as MoneyIcon,
-  People as PeopleIcon
+  People as PeopleIcon,
 } from '@mui/icons-material';
 import {
-  fetchHirerJobs, 
-  deleteHirerJob, 
+  fetchHirerJobs,
+  deleteHirerJob,
   updateJobStatus,
   selectHirerJobs,
   selectHirerLoading,
-  selectHirerError
+  selectHirerError,
 } from '../services/hirerSlice';
 
 // Mock analytics data for comprehensive dashboard
@@ -62,7 +62,7 @@ const mockAnalytics = {
     totalSpent: 125000,
     averageJobValue: 3289,
     totalApplications: 284,
-    hireSuccessRate: 84
+    hireSuccessRate: 84,
   },
   monthlyData: [
     { month: 'Jan', jobs: 6, spending: 18500, applications: 45 },
@@ -70,22 +70,22 @@ const mockAnalytics = {
     { month: 'Mar', jobs: 7, spending: 21500, applications: 58 },
     { month: 'Apr', jobs: 5, spending: 15000, applications: 38 },
     { month: 'May', jobs: 8, spending: 23500, applications: 67 },
-    { month: 'Jun', jobs: 6, spending: 18200, applications: 44 }
+    { month: 'Jun', jobs: 6, spending: 18200, applications: 44 },
   ],
   topCategories: [
     { category: 'Carpentry', jobs: 12, spending: 35000, avgRate: 2917 },
     { category: 'Plumbing', jobs: 8, spending: 28000, avgRate: 3500 },
     { category: 'Electrical', jobs: 6, spending: 22000, avgRate: 3667 },
     { category: 'Painting', jobs: 5, spending: 15000, avgRate: 3000 },
-    { category: 'Landscaping', jobs: 4, spending: 12000, avgRate: 3000 }
-  ]
+    { category: 'Landscaping', jobs: 4, spending: 12000, avgRate: 3000 },
+  ],
 };
 
 const HirerJobManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useDispatch();
-  
+
   const [activeTab, setActiveTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -110,19 +110,27 @@ const HirerJobManagement = () => {
 
   const getCurrentJobs = () => {
     switch (activeTab) {
-      case 0: return activeJobs || [];
-      case 1: return completedJobs || [];
-      case 2: return draftJobs || [];
-      default: return [];
+      case 0:
+        return activeJobs || [];
+      case 1:
+        return completedJobs || [];
+      case 2:
+        return draftJobs || [];
+      default:
+        return [];
     }
   };
 
   const getStatusForTab = (tab) => {
     switch (tab) {
-      case 0: return 'active';
-      case 1: return 'completed';
-      case 2: return 'draft';
-      default: return 'active';
+      case 0:
+        return 'active';
+      case 1:
+        return 'completed';
+      case 2:
+        return 'draft';
+      default:
+        return 'active';
     }
   };
 
@@ -167,10 +175,12 @@ const HirerJobManagement = () => {
   const handlePublishJob = async () => {
     if (selectedJob) {
       try {
-        await dispatch(updateJobStatus({ 
-          jobId: selectedJob.id, 
-          status: 'active' 
-        })).unwrap();
+        await dispatch(
+          updateJobStatus({
+            jobId: selectedJob.id,
+            status: 'active',
+          }),
+        ).unwrap();
         handleDialogClose();
       } catch (error) {
         console.error('Error publishing job:', error);
@@ -180,11 +190,16 @@ const HirerJobManagement = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'completed': return 'primary';
-      case 'draft': return 'warning';
-      case 'cancelled': return 'error';
-      default: return 'default';
+      case 'active':
+        return 'success';
+      case 'completed':
+        return 'primary';
+      case 'draft':
+        return 'warning';
+      case 'cancelled':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
@@ -192,7 +207,7 @@ const HirerJobManagement = () => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -200,7 +215,7 @@ const HirerJobManagement = () => {
     return new Date(dateString).toLocaleDateString('en-GH', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -208,13 +223,19 @@ const HirerJobManagement = () => {
   const AnalyticsSummary = () => (
     <Grid container spacing={3} sx={{ mb: 3 }}>
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h4" fontWeight="bold">
                   {mockAnalytics.summary.totalJobs}
@@ -230,13 +251,19 @@ const HirerJobManagement = () => {
       </Grid>
 
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h4" fontWeight="bold">
                   {formatCurrency(mockAnalytics.summary.totalSpent)}
@@ -252,13 +279,19 @@ const HirerJobManagement = () => {
       </Grid>
 
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h4" fontWeight="bold">
                   {mockAnalytics.summary.totalApplications}
@@ -274,13 +307,19 @@ const HirerJobManagement = () => {
       </Grid>
 
       <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-          color: 'white',
-          height: '100%'
-        }}>
+        <Card
+          sx={{
+            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            color: 'white',
+            height: '100%',
+          }}
+        >
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="h4" fontWeight="bold">
                   {mockAnalytics.summary.hireSuccessRate}%
@@ -299,22 +338,22 @@ const HirerJobManagement = () => {
 
   // Loading skeleton
   const LoadingSkeleton = () => (
-          <Box>
+    <Box>
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {[...Array(4)].map((_, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}
-          </Grid>
+      </Grid>
       <Card>
         <CardContent>
           <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
           ))}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </Box>
   );
 
@@ -331,7 +370,10 @@ const HirerJobManagement = () => {
   }
 
   const currentJobs = getCurrentJobs();
-  const paginatedJobs = currentJobs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginatedJobs = currentJobs.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage,
+  );
 
   return (
     <Box>
@@ -342,29 +384,29 @@ const HirerJobManagement = () => {
       <Card>
         <CardContent>
           <Typography variant="h5" gutterBottom fontWeight="bold">
-        Job Management
-      </Typography>
+            Job Management
+          </Typography>
 
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
             sx={{ mb: 3 }}
-            variant={isMobile ? "scrollable" : "standard"}
-          scrollButtons="auto"
+            variant={isMobile ? 'scrollable' : 'standard'}
+            scrollButtons="auto"
           >
-            <Tab 
+            <Tab
               label={`Active (${activeJobs?.length || 0})`}
               sx={{ fontWeight: 'bold' }}
             />
-            <Tab 
+            <Tab
               label={`Completed (${completedJobs?.length || 0})`}
               sx={{ fontWeight: 'bold' }}
             />
-            <Tab 
+            <Tab
               label={`Draft (${draftJobs?.length || 0})`}
               sx={{ fontWeight: 'bold' }}
             />
-        </Tabs>
+          </Tabs>
 
           {currentJobs.length === 0 ? (
             <Box textAlign="center" py={4}>
@@ -373,30 +415,43 @@ const HirerJobManagement = () => {
                 No {getStatusForTab(activeTab)} jobs found
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                {activeTab === 2 
-                  ? "Start by creating a new job posting"
-                  : `You don't have any ${getStatusForTab(activeTab)} jobs yet`
-                }
+                {activeTab === 2
+                  ? 'Start by creating a new job posting'
+                  : `You don't have any ${getStatusForTab(activeTab)} jobs yet`}
               </Typography>
               {activeTab === 2 && (
                 <Button variant="contained" color="primary">
                   Post New Job
                 </Button>
               )}
-        </Box>
+            </Box>
           ) : (
             <>
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell><strong>Job Title</strong></TableCell>
-                      <TableCell><strong>Category</strong></TableCell>
-                      <TableCell><strong>Budget</strong></TableCell>
-                      <TableCell><strong>Applications</strong></TableCell>
-                      <TableCell><strong>Status</strong></TableCell>
-                      <TableCell><strong>Created</strong></TableCell>
-                      <TableCell align="center"><strong>Actions</strong></TableCell>
+                      <TableCell>
+                        <strong>Job Title</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Category</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Budget</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Applications</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Status</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Created</strong>
+                      </TableCell>
+                      <TableCell align="center">
+                        <strong>Actions</strong>
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -406,14 +461,18 @@ const HirerJobManagement = () => {
                           <Typography variant="subtitle2" fontWeight="bold">
                             {job.title}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" noWrap>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            noWrap
+                          >
                             {job.description?.substring(0, 60)}...
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={job.category} 
-                            size="small" 
+                          <Chip
+                            label={job.category}
+                            size="small"
                             variant="outlined"
                             color="primary"
                           />
@@ -428,7 +487,9 @@ const HirerJobManagement = () => {
                         </TableCell>
                         <TableCell>
                           <Box display="flex" alignItems="center" gap={1}>
-                            <Avatar sx={{ width: 24, height: 24, fontSize: 12 }}>
+                            <Avatar
+                              sx={{ width: 24, height: 24, fontSize: 12 }}
+                            >
                               {job.applicationsCount || 0}
                             </Avatar>
                             <Typography variant="body2">
@@ -437,8 +498,8 @@ const HirerJobManagement = () => {
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={job.status?.toUpperCase()} 
+                          <Chip
+                            label={job.status?.toUpperCase()}
                             size="small"
                             color={getStatusColor(job.status)}
                             variant="filled"
@@ -500,7 +561,10 @@ const HirerJobManagement = () => {
             Publish Job
           </MenuItem>
         )}
-        <MenuItem onClick={() => handleAction('delete')} sx={{ color: 'error.main' }}>
+        <MenuItem
+          onClick={() => handleAction('delete')}
+          sx={{ color: 'error.main' }}
+        >
           <DeleteIcon sx={{ mr: 1 }} />
           Delete Job
         </MenuItem>
@@ -514,18 +578,18 @@ const HirerJobManagement = () => {
         </DialogTitle>
         <DialogContent>
           <Typography>
-            {dialogType === 'delete' && 
-              `Are you sure you want to delete "${selectedJob?.title}"? This action cannot be undone.`
-            }
-            {dialogType === 'publish' && 
-              `Are you sure you want to publish "${selectedJob?.title}"? It will become visible to workers.`
-            }
+            {dialogType === 'delete' &&
+              `Are you sure you want to delete "${selectedJob?.title}"? This action cannot be undone.`}
+            {dialogType === 'publish' &&
+              `Are you sure you want to publish "${selectedJob?.title}"? It will become visible to workers.`}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button 
-            onClick={dialogType === 'delete' ? handleDeleteJob : handlePublishJob}
+          <Button
+            onClick={
+              dialogType === 'delete' ? handleDeleteJob : handlePublishJob
+            }
             color={dialogType === 'delete' ? 'error' : 'primary'}
             variant="contained"
           >

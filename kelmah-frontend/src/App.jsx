@@ -90,7 +90,7 @@ function App() {
     const checkAuth = () => {
       // Force disable development mock authentication to use real auth
       const isDevelopment = false; // Disabled to use real authentication
-      
+
       if (isDevelopment) {
         // Skip mock auth after manual logout
         if (sessionStorage.getItem('dev-logout') === 'true') {

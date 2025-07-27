@@ -7,4 +7,4 @@ export { default as MapSearchOverlay } from './components/common/MapSearchOverla
 export { default as ProfessionalMapPage } from './pages/ProfessionalMapPage';
 
 // Map services
-export { default as mapService } from './services/mapService'; 
+export { default as mapService } from './services/mapService';

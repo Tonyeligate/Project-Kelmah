@@ -30,7 +30,7 @@ import {
   Skeleton,
   Paper,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -45,7 +45,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   TrendingUp as TrendingUpIcon,
   Group as GroupIcon,
-  AttachMoney as MoneyIcon
+  AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { SERVICES } from '../../../config/environment';
@@ -68,7 +68,7 @@ userServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Comprehensive mock worker data
@@ -79,7 +79,12 @@ const mockWorkerData = {
       name: 'Tony Gate',
       avatar: '/api/placeholder/100/100',
       title: 'Expert Carpenter & Cabinet Maker',
-      skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing', 'Furniture Repair'],
+      skills: [
+        'Carpentry',
+        'Cabinet Making',
+        'Wood Finishing',
+        'Furniture Repair',
+      ],
       location: 'Accra, Greater Accra',
       rating: 4.8,
       reviewCount: 23,
@@ -91,19 +96,27 @@ const mockWorkerData = {
       portfolio: [
         { image: '/api/placeholder/200/150', title: 'Custom Kitchen Cabinets' },
         { image: '/api/placeholder/200/150', title: 'Bedroom Wardrobe' },
-        { image: '/api/placeholder/200/150', title: 'Living Room Furniture' }
+        { image: '/api/placeholder/200/150', title: 'Living Room Furniture' },
       ],
-      certifications: ['Ghana Carpentry Association', 'Safety Training Certificate'],
+      certifications: [
+        'Ghana Carpentry Association',
+        'Safety Training Certificate',
+      ],
       languages: ['English', 'Twi'],
       responseTime: '2 hours',
-      featured: true
+      featured: true,
     },
     {
       id: 'worker-2',
       name: 'Sarah Williams',
       avatar: '/api/placeholder/100/100',
       title: 'Interior Designer & Space Planner',
-      skills: ['Interior Design', 'Space Planning', 'Color Consultation', 'Project Management'],
+      skills: [
+        'Interior Design',
+        'Space Planning',
+        'Color Consultation',
+        'Project Management',
+      ],
       location: 'Kumasi, Ashanti',
       rating: 4.9,
       reviewCount: 31,
@@ -115,19 +128,27 @@ const mockWorkerData = {
       portfolio: [
         { image: '/api/placeholder/200/150', title: 'Modern Office Design' },
         { image: '/api/placeholder/200/150', title: 'Residential Living Room' },
-        { image: '/api/placeholder/200/150', title: 'Restaurant Interior' }
+        { image: '/api/placeholder/200/150', title: 'Restaurant Interior' },
       ],
-      certifications: ['Interior Design Diploma', 'Project Management Certificate'],
+      certifications: [
+        'Interior Design Diploma',
+        'Project Management Certificate',
+      ],
       languages: ['English', 'Twi', 'French'],
       responseTime: '1 hour',
-      featured: true
+      featured: true,
     },
     {
       id: 'worker-3',
       name: 'Michael Asante',
       avatar: '/api/placeholder/100/100',
       title: 'Licensed Plumber & Bathroom Specialist',
-      skills: ['Plumbing', 'Pipe Installation', 'Bathroom Design', 'Emergency Repairs'],
+      skills: [
+        'Plumbing',
+        'Pipe Installation',
+        'Bathroom Design',
+        'Emergency Repairs',
+      ],
       location: 'Tema, Greater Accra',
       rating: 4.7,
       reviewCount: 18,
@@ -139,19 +160,24 @@ const mockWorkerData = {
       portfolio: [
         { image: '/api/placeholder/200/150', title: 'Bathroom Renovation' },
         { image: '/api/placeholder/200/150', title: 'Pipe Installation' },
-        { image: '/api/placeholder/200/150', title: 'Kitchen Plumbing' }
+        { image: '/api/placeholder/200/150', title: 'Kitchen Plumbing' },
       ],
       certifications: ['Licensed Plumber', 'Safety Certification'],
       languages: ['English', 'Ga'],
       responseTime: '4 hours',
-      featured: false
+      featured: false,
     },
     {
       id: 'worker-4',
       name: 'Jennifer Osei',
       avatar: '/api/placeholder/100/100',
       title: 'Certified Electrician',
-      skills: ['Electrical Installation', 'Wiring', 'Safety Inspection', 'Solar Systems'],
+      skills: [
+        'Electrical Installation',
+        'Wiring',
+        'Safety Inspection',
+        'Solar Systems',
+      ],
       location: 'Takoradi, Western',
       rating: 4.6,
       reviewCount: 15,
@@ -163,19 +189,24 @@ const mockWorkerData = {
       portfolio: [
         { image: '/api/placeholder/200/150', title: 'Home Wiring' },
         { image: '/api/placeholder/200/150', title: 'Solar Installation' },
-        { image: '/api/placeholder/200/150', title: 'Commercial Electrical' }
+        { image: '/api/placeholder/200/150', title: 'Commercial Electrical' },
       ],
       certifications: ['Electrical License', 'Solar Installation Certificate'],
       languages: ['English', 'Twi'],
       responseTime: '3 hours',
-      featured: false
+      featured: false,
     },
     {
       id: 'worker-5',
       name: 'David Mensah',
       avatar: '/api/placeholder/100/100',
       title: 'Professional Painter & Decorator',
-      skills: ['Interior Painting', 'Exterior Painting', 'Decorative Finishes', 'Surface Preparation'],
+      skills: [
+        'Interior Painting',
+        'Exterior Painting',
+        'Decorative Finishes',
+        'Surface Preparation',
+      ],
       location: 'Cape Coast, Central',
       rating: 4.5,
       reviewCount: 12,
@@ -187,22 +218,22 @@ const mockWorkerData = {
       portfolio: [
         { image: '/api/placeholder/200/150', title: 'Residential Exterior' },
         { image: '/api/placeholder/200/150', title: 'Office Interior' },
-        { image: '/api/placeholder/200/150', title: 'Decorative Wall Art' }
+        { image: '/api/placeholder/200/150', title: 'Decorative Wall Art' },
       ],
       certifications: ['Painting Certification'],
       languages: ['English', 'Fanti'],
       responseTime: '6 hours',
-      featured: false
-    }
+      featured: false,
+    },
   ],
   totalPages: 2,
-  totalWorkers: 8
+  totalWorkers: 8,
 };
 
 const WorkerSearch = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [workers, setWorkers] = useState(mockWorkerData.workers);
@@ -211,7 +242,7 @@ const WorkerSearch = () => {
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  
+
   const [filters, setFilters] = useState({
     skills: [],
     minRating: 0,
@@ -225,13 +256,25 @@ const WorkerSearch = () => {
 
   // Available filter options
   const skillOptions = [
-    'Carpentry', 'Plumbing', 'Electrical', 'Interior Design', 'Painting', 
-    'Tiling', 'Landscaping', 'Masonry', 'Roofing', 'HVAC'
+    'Carpentry',
+    'Plumbing',
+    'Electrical',
+    'Interior Design',
+    'Painting',
+    'Tiling',
+    'Landscaping',
+    'Masonry',
+    'Roofing',
+    'HVAC',
   ];
-  
+
   const locationOptions = [
-    'Accra, Greater Accra', 'Kumasi, Ashanti', 'Tema, Greater Accra',
-    'Takoradi, Western', 'Cape Coast, Central', 'Tamale, Northern'
+    'Accra, Greater Accra',
+    'Kumasi, Ashanti',
+    'Tema, Greater Accra',
+    'Takoradi, Western',
+    'Cape Coast, Central',
+    'Tamale, Northern',
   ];
 
   useEffect(() => {
@@ -241,67 +284,76 @@ const WorkerSearch = () => {
   const fetchWorkers = async () => {
     try {
       setLoading(true);
-      
+
       // Try to fetch from user service, fall back to mock data
       const queryParams = new URLSearchParams({
         page: page.toString(),
         search: searchQuery,
         ...filters,
-        skills: filters.skills.join(',')
+        skills: filters.skills.join(','),
       });
 
-      const response = await userServiceClient.get(`/api/workers/search?${queryParams}`);
-      
+      const response = await userServiceClient.get(
+        `/api/workers/search?${queryParams}`,
+      );
+
       if (response.data) {
         setWorkers(response.data.workers || []);
         setTotalPages(response.data.totalPages || 1);
       } else {
         throw new Error('No data received');
       }
-      
+
       setError(null);
     } catch (err) {
-      console.warn('User service unavailable for worker search, using mock data:', err.message);
-      
+      console.warn(
+        'User service unavailable for worker search, using mock data:',
+        err.message,
+      );
+
       // Apply filters to mock data
       let filteredWorkers = mockWorkerData.workers;
-      
+
       if (searchQuery) {
-        filteredWorkers = filteredWorkers.filter(worker =>
-          worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          worker.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          worker.title.toLowerCase().includes(searchQuery.toLowerCase())
+        filteredWorkers = filteredWorkers.filter(
+          (worker) =>
+            worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            worker.skills.some((skill) =>
+              skill.toLowerCase().includes(searchQuery.toLowerCase()),
+            ) ||
+            worker.title.toLowerCase().includes(searchQuery.toLowerCase()),
         );
       }
-      
+
       if (filters.skills.length > 0) {
-        filteredWorkers = filteredWorkers.filter(worker =>
-          filters.skills.some(skill => worker.skills.includes(skill))
+        filteredWorkers = filteredWorkers.filter((worker) =>
+          filters.skills.some((skill) => worker.skills.includes(skill)),
         );
       }
-      
+
       if (filters.location) {
-        filteredWorkers = filteredWorkers.filter(worker =>
-          worker.location.includes(filters.location)
+        filteredWorkers = filteredWorkers.filter((worker) =>
+          worker.location.includes(filters.location),
         );
       }
-      
+
       if (filters.availability !== 'all') {
-        filteredWorkers = filteredWorkers.filter(worker =>
-          worker.availability === filters.availability
+        filteredWorkers = filteredWorkers.filter(
+          (worker) => worker.availability === filters.availability,
         );
       }
-      
+
       if (filters.minRating > 0) {
-        filteredWorkers = filteredWorkers.filter(worker =>
-          worker.rating >= filters.minRating
+        filteredWorkers = filteredWorkers.filter(
+          (worker) => worker.rating >= filters.minRating,
         );
       }
-      
-      filteredWorkers = filteredWorkers.filter(worker =>
-        worker.hourlyRate >= 0 && worker.hourlyRate <= filters.maxRate
+
+      filteredWorkers = filteredWorkers.filter(
+        (worker) =>
+          worker.hourlyRate >= 0 && worker.hourlyRate <= filters.maxRate,
       );
-      
+
       setWorkers(filteredWorkers);
       setTotalPages(Math.ceil(filteredWorkers.length / 6));
       setError(null);
@@ -314,7 +366,7 @@ const WorkerSearch = () => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -327,11 +379,11 @@ const WorkerSearch = () => {
   };
 
   const handleSkillToggle = (skill) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       skills: prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : [...prev.skills, skill]
+        ? prev.skills.filter((s) => s !== skill)
+        : [...prev.skills, skill],
     }));
     setPage(1);
   };
@@ -349,11 +401,11 @@ const WorkerSearch = () => {
     try {
       // Mock save worker
       console.log('Saving worker:', workerId);
-      
+
       if (savedWorkers.includes(workerId)) {
-        setSavedWorkers(prev => prev.filter(id => id !== workerId));
+        setSavedWorkers((prev) => prev.filter((id) => id !== workerId));
       } else {
-        setSavedWorkers(prev => [...prev, workerId]);
+        setSavedWorkers((prev) => [...prev, workerId]);
       }
     } catch (error) {
       console.error('Error saving worker:', error);
@@ -373,32 +425,47 @@ const WorkerSearch = () => {
 
   const getAvailabilityColor = (availability) => {
     switch (availability) {
-      case 'available': return 'success';
-      case 'busy': return 'warning';
-      case 'unavailable': return 'error';
-      default: return 'default';
+      case 'available':
+        return 'success';
+      case 'busy':
+        return 'warning';
+      case 'unavailable':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   const getAvailabilityLabel = (availability) => {
     switch (availability) {
-      case 'available': return 'Available';
-      case 'busy': return 'Busy';
-      case 'unavailable': return 'Unavailable';
-      default: return availability;
+      case 'available':
+        return 'Available';
+      case 'busy':
+        return 'Busy';
+      case 'unavailable':
+        return 'Unavailable';
+      default:
+        return availability;
     }
   };
 
   // Search Statistics
   const searchStats = {
     totalWorkers: workers.length,
-    availableWorkers: workers.filter(w => w.availability === 'available').length,
-    averageRating: workers.length > 0 
-      ? (workers.reduce((sum, w) => sum + w.rating, 0) / workers.length).toFixed(1)
-      : 0,
-    averageRate: workers.length > 0
-      ? Math.round(workers.reduce((sum, w) => sum + w.hourlyRate, 0) / workers.length)
-      : 0
+    availableWorkers: workers.filter((w) => w.availability === 'available')
+      .length,
+    averageRating:
+      workers.length > 0
+        ? (
+            workers.reduce((sum, w) => sum + w.rating, 0) / workers.length
+          ).toFixed(1)
+        : 0,
+    averageRate:
+      workers.length > 0
+        ? Math.round(
+            workers.reduce((sum, w) => sum + w.hourlyRate, 0) / workers.length,
+          )
+        : 0,
   };
 
   return (
@@ -412,21 +479,27 @@ const WorkerSearch = () => {
       {/* Search Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
-      <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Box>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
+            <CardContent>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {searchStats.totalWorkers}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Workers Found
-              </Typography>
-            </Box>
+                  </Typography>
+                </Box>
                 <GroupIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
@@ -434,13 +507,19 @@ const WorkerSearch = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {searchStats.availableWorkers}
@@ -448,29 +527,35 @@ const WorkerSearch = () => {
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Available Now
                   </Typography>
-          </Box>
+                </Box>
                 <WorkIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-        </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {searchStats.averageRating}★
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Average Rating
-              </Typography>
-            </Box>
+                  </Typography>
+                </Box>
                 <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
@@ -478,21 +563,27 @@ const WorkerSearch = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     ₵{searchStats.averageRate}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Average Rate/Hr
-              </Typography>
-            </Box>
+                  </Typography>
+                </Box>
                 <MoneyIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
@@ -511,7 +602,9 @@ const WorkerSearch = () => {
                 value={searchQuery}
                 onChange={handleSearch}
                 InputProps={{
-                  startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  startAdornment: (
+                    <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  ),
                 }}
               />
             </Grid>
@@ -525,27 +618,34 @@ const WorkerSearch = () => {
                 >
                   Filters
                 </Button>
-                {(filters.skills.length > 0 || filters.location || filters.availability !== 'all') && (
+                {(filters.skills.length > 0 ||
+                  filters.location ||
+                  filters.availability !== 'all') && (
                   <Button
                     size="small"
-                    onClick={() => setFilters({
-                      skills: [],
-                      minRating: 0,
-                      maxRate: 100,
-                      location: '',
-                      availability: 'all',
-                      experience: 'all',
-                    })}
+                    onClick={() =>
+                      setFilters({
+                        skills: [],
+                        minRating: 0,
+                        maxRate: 100,
+                        location: '',
+                        availability: 'all',
+                        experience: 'all',
+                      })
+                    }
                   >
                     Clear
                   </Button>
                 )}
-            </Box>
+              </Box>
             </Grid>
           </Grid>
 
           {/* Filters Accordion */}
-          <Accordion expanded={filterOpen} onChange={() => setFilterOpen(!filterOpen)}>
+          <Accordion
+            expanded={filterOpen}
+            onChange={() => setFilterOpen(!filterOpen)}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="subtitle1" fontWeight="bold">
                 Advanced Filters
@@ -555,30 +655,36 @@ const WorkerSearch = () => {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" gutterBottom>
-              Skills
-            </Typography>
+                    Skills
+                  </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
                     {skillOptions.map((skill) => (
-                <Chip
-                  key={skill}
-                  label={skill}
+                      <Chip
+                        key={skill}
+                        label={skill}
                         onClick={() => handleSkillToggle(skill)}
-                        color={filters.skills.includes(skill) ? 'primary' : 'default'}
-                        variant={filters.skills.includes(skill) ? 'filled' : 'outlined'}
-                  size="small"
-                />
-              ))}
-            </Box>
-          </Grid>
+                        color={
+                          filters.skills.includes(skill) ? 'primary' : 'default'
+                        }
+                        variant={
+                          filters.skills.includes(skill) ? 'filled' : 'outlined'
+                        }
+                        size="small"
+                      />
+                    ))}
+                  </Box>
+                </Grid>
 
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" gutterBottom>
                     Location
-      </Typography>
+                  </Typography>
                   <FormControl fullWidth size="small">
-              <Select
+                    <Select
                       value={filters.location}
-                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange('location', e.target.value)
+                      }
                       displayEmpty
                     >
                       <MenuItem value="">All Locations</MenuItem>
@@ -587,55 +693,61 @@ const WorkerSearch = () => {
                           {location}
                         </MenuItem>
                       ))}
-              </Select>
-            </FormControl>
-          </Grid>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
                 <Grid item xs={12} md={4}>
                   <Typography variant="subtitle2" gutterBottom>
                     Availability
                   </Typography>
                   <FormControl fullWidth size="small">
-              <Select
-                value={filters.availability}
-                      onChange={(e) => handleFilterChange('availability', e.target.value)}
-              >
-                <MenuItem value="all">All</MenuItem>
+                    <Select
+                      value={filters.availability}
+                      onChange={(e) =>
+                        handleFilterChange('availability', e.target.value)
+                      }
+                    >
+                      <MenuItem value="all">All</MenuItem>
                       <MenuItem value="available">Available</MenuItem>
                       <MenuItem value="busy">Busy</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
                 <Grid item xs={12} md={4}>
                   <Typography variant="subtitle2" gutterBottom>
                     Minimum Rating
                   </Typography>
                   <Slider
-              value={filters.minRating}
-                    onChange={(e, newValue) => handleFilterChange('minRating', newValue)}
+                    value={filters.minRating}
+                    onChange={(e, newValue) =>
+                      handleFilterChange('minRating', newValue)
+                    }
                     min={0}
                     max={5}
                     step={0.5}
                     marks
                     valueLabelDisplay="auto"
-            />
-          </Grid>
+                  />
+                </Grid>
 
                 <Grid item xs={12} md={4}>
                   <Typography variant="subtitle2" gutterBottom>
                     Max Hourly Rate (₵{filters.maxRate})
                   </Typography>
-            <Slider
-              value={filters.maxRate}
-                    onChange={(e, newValue) => handleFilterChange('maxRate', newValue)}
-              min={0}
+                  <Slider
+                    value={filters.maxRate}
+                    onChange={(e, newValue) =>
+                      handleFilterChange('maxRate', newValue)
+                    }
+                    min={0}
                     max={100}
                     step={5}
                     valueLabelDisplay="auto"
-            />
-          </Grid>
-        </Grid>
+                  />
+                </Grid>
+              </Grid>
             </AccordionDetails>
           </Accordion>
         </CardContent>
@@ -654,7 +766,7 @@ const WorkerSearch = () => {
                       <Skeleton variant="text" height={30} width="80%" />
                       <Skeleton variant="text" height={20} width="60%" />
                     </Box>
-        </Box>
+                  </Box>
                   <Skeleton variant="text" height={60} />
                   <Skeleton variant="rectangular" height={40} sx={{ mt: 2 }} />
                 </CardContent>
@@ -666,13 +778,15 @@ const WorkerSearch = () => {
         <Card>
           <CardContent>
             <Box textAlign="center" py={4}>
-              <SearchIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <SearchIcon
+                sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+              />
               <Typography variant="h6" color="text.secondary">
                 No workers found
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Try adjusting your search criteria or filters
-          </Typography>
+              </Typography>
             </Box>
           </CardContent>
         </Card>
@@ -681,19 +795,19 @@ const WorkerSearch = () => {
           <Grid container spacing={3}>
             {workers.map((worker) => (
               <Grid item xs={12} sm={6} md={4} key={worker.id}>
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',
                     border: worker.featured ? 2 : 1,
                     borderColor: worker.featured ? 'primary.main' : 'grey.200',
-                    '&:hover': { 
+                    '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: 4,
-                      transition: 'all 0.3s ease'
-                    }
+                      transition: 'all 0.3s ease',
+                    },
                   }}
                 >
                   {worker.featured && (
@@ -705,16 +819,16 @@ const WorkerSearch = () => {
                         position: 'absolute',
                         top: 16,
                         right: 16,
-                        zIndex: 1
+                        zIndex: 1,
                       }}
                     />
                   )}
-                  
+
                   <CardContent sx={{ flexGrow: 1 }}>
                     {/* Worker Header */}
                     <Box display="flex" alignItems="center" gap={2} mb={2}>
-                      <Avatar 
-                        src={worker.avatar} 
+                      <Avatar
+                        src={worker.avatar}
                         sx={{ width: 64, height: 64 }}
                       >
                         {worker.name.charAt(0)}
@@ -723,11 +837,22 @@ const WorkerSearch = () => {
                         <Typography variant="h6" fontWeight="bold">
                           {worker.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" noWrap>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                        >
                           {worker.title}
                         </Typography>
-                        <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                          <LocationIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          gap={0.5}
+                          mt={0.5}
+                        >
+                          <LocationIcon
+                            sx={{ fontSize: 16, color: 'text.secondary' }}
+                          />
                           <Typography variant="caption" color="text.secondary">
                             {worker.location}
                           </Typography>
@@ -736,14 +861,19 @@ const WorkerSearch = () => {
                     </Box>
 
                     {/* Rating and Stats */}
-                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      mb={2}
+                    >
                       <Box display="flex" alignItems="center" gap={0.5}>
                         <Rating value={worker.rating} readOnly size="small" />
                         <Typography variant="body2">
                           {worker.rating} ({worker.reviewCount})
                         </Typography>
                       </Box>
-                      <Chip 
+                      <Chip
                         label={getAvailabilityLabel(worker.availability)}
                         color={getAvailabilityColor(worker.availability)}
                         size="small"
@@ -756,17 +886,17 @@ const WorkerSearch = () => {
                     </Typography>
                     <Box display="flex" gap={0.5} flexWrap="wrap" mb={2}>
                       {worker.skills.slice(0, 3).map((skill, index) => (
-                        <Chip 
-                          key={index} 
-                          label={skill} 
-                          size="small" 
+                        <Chip
+                          key={index}
+                          label={skill}
+                          size="small"
                           variant="outlined"
                         />
                       ))}
                       {worker.skills.length > 3 && (
-                        <Chip 
-                          label={`+${worker.skills.length - 3} more`} 
-                          size="small" 
+                        <Chip
+                          label={`+${worker.skills.length - 3} more`}
+                          size="small"
                           variant="outlined"
                           color="primary"
                         />
@@ -779,7 +909,11 @@ const WorkerSearch = () => {
                         <Typography variant="caption" color="text.secondary">
                           Hourly Rate
                         </Typography>
-                        <Typography variant="subtitle1" fontWeight="bold" color="primary.main">
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          color="primary.main"
+                        >
                           {formatCurrency(worker.hourlyRate)}/hr
                         </Typography>
                       </Grid>
@@ -794,7 +928,11 @@ const WorkerSearch = () => {
                     </Grid>
 
                     {/* Bio */}
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
                       {worker.bio.substring(0, 120)}...
                     </Typography>
 
@@ -819,9 +957,17 @@ const WorkerSearch = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleSaveWorker(worker.id)}
-                        color={savedWorkers.includes(worker.id) ? 'primary' : 'default'}
+                        color={
+                          savedWorkers.includes(worker.id)
+                            ? 'primary'
+                            : 'default'
+                        }
                       >
-                        {savedWorkers.includes(worker.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                        {savedWorkers.includes(worker.id) ? (
+                          <BookmarkIcon />
+                        ) : (
+                          <BookmarkBorderIcon />
+                        )}
                       </IconButton>
                     </Box>
                   </CardContent>
@@ -833,14 +979,14 @@ const WorkerSearch = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <Box display="flex" justifyContent="center" mt={4}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-                size={isMobile ? "small" : "medium"}
-            />
-          </Box>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                size={isMobile ? 'small' : 'medium'}
+              />
+            </Box>
           )}
         </>
       )}
@@ -856,16 +1002,14 @@ const WorkerSearch = () => {
           <Box display="flex" alignItems="center" gap={2}>
             {selectedWorker && (
               <>
-                <Avatar 
-                  src={selectedWorker.avatar} 
+                <Avatar
+                  src={selectedWorker.avatar}
                   sx={{ width: 56, height: 56 }}
                 >
                   {selectedWorker.name.charAt(0)}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">
-                    {selectedWorker.name}
-                  </Typography>
+                  <Typography variant="h6">{selectedWorker.name}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {selectedWorker.title}
                   </Typography>
@@ -935,50 +1079,50 @@ const WorkerSearch = () => {
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap" mb={3}>
                 {selectedWorker.skills.map((skill, index) => (
-                      <Chip
-                    key={index} 
-                        label={skill}
-                    color="primary" 
-                        variant="outlined"
-                      />
-                    ))}
-                  </Box>
+                  <Chip
+                    key={index}
+                    label={skill}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
 
               {/* Certifications */}
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Certifications
-                      </Typography>
+              </Typography>
               <Box mb={3}>
                 {selectedWorker.certifications.map((cert, index) => (
                   <Typography key={index} variant="body2" gutterBottom>
                     • {cert}
-                      </Typography>
+                  </Typography>
                 ))}
               </Box>
 
               {/* Languages */}
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Languages
-                      </Typography>
+              </Typography>
               <Typography variant="body2" paragraph>
                 {selectedWorker.languages.join(', ')}
-                      </Typography>
+              </Typography>
 
               {/* Portfolio Preview */}
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Portfolio
-                      </Typography>
+              </Typography>
               <Grid container spacing={2}>
                 {selectedWorker.portfolio.map((item, index) => (
                   <Grid item xs={4} key={index}>
-                    <Paper 
-                      sx={{ 
-                        height: 120, 
+                    <Paper
+                      sx={{
+                        height: 120,
                         backgroundImage: `url(${item.image})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         position: 'relative',
-                        borderRadius: 2
+                        borderRadius: 2,
                       }}
                     >
                       <Box
@@ -987,15 +1131,14 @@ const WorkerSearch = () => {
                           bottom: 0,
                           left: 0,
                           right: 0,
-                          background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                          background:
+                            'linear-gradient(transparent, rgba(0,0,0,0.7))',
                           color: 'white',
                           p: 1,
-                          borderRadius: '0 0 8px 8px'
+                          borderRadius: '0 0 8px 8px',
                         }}
                       >
-                        <Typography variant="caption">
-                          {item.title}
-                        </Typography>
+                        <Typography variant="caption">{item.title}</Typography>
                       </Box>
                     </Paper>
                   </Grid>
@@ -1008,10 +1151,20 @@ const WorkerSearch = () => {
           <Button onClick={handleDialogClose}>Close</Button>
           <Button
             variant="outlined"
-            startIcon={selectedWorker && savedWorkers.includes(selectedWorker.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-            onClick={() => selectedWorker && handleSaveWorker(selectedWorker.id)}
+            startIcon={
+              selectedWorker && savedWorkers.includes(selectedWorker.id) ? (
+                <BookmarkIcon />
+              ) : (
+                <BookmarkBorderIcon />
+              )
+            }
+            onClick={() =>
+              selectedWorker && handleSaveWorker(selectedWorker.id)
+            }
           >
-            {selectedWorker && savedWorkers.includes(selectedWorker.id) ? 'Saved' : 'Save Worker'}
+            {selectedWorker && savedWorkers.includes(selectedWorker.id)
+              ? 'Saved'
+              : 'Save Worker'}
           </Button>
           <Button variant="contained" startIcon={<MessageIcon />}>
             Send Message

@@ -1,30 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: 'Roboto', Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-kelmah-background text-gray-900 font-sans;
   margin: 0;
   padding: 0;
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: #1a1a1a;
+  color: #f5f5f5;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 #root {
@@ -33,121 +28,167 @@ body {
   flex-direction: column;
 }
 
-.app {
-  min-height: 100vh;
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0 0 1rem 0;
+}
+
+/* Links */
+a {
+  color: #FFD700;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+/* Form elements */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Layout utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Flexbox utilities */
+.flex {
   display: flex;
+}
+
+.flex-col {
   flex-direction: column;
 }
 
-main {
-  flex: 1;
-  padding: 24px 0;
+.items-center {
+  align-items: center;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
+.justify-center {
+  justify-content: center;
 }
 
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
+.justify-between {
+  justify-content: space-between;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Spacing utilities */
+.mt-4 {
+  margin-top: 1rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.mb-4 {
+  margin-bottom: 1rem;
 }
 
-/* Add animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.slide-up {
-  animation: slideUp 0.5s ease-in-out;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-  transition: background-color 0.3s ease, color 0.3s ease;
+.p-4 {
+  padding: 1rem;
 }
 
 /* Dark mode specific styles */
 html.dark {
-  @apply bg-dark-50 text-gray-100;
+  background-color: #0f0f0f;
+  color: #e5e5e5;
+}
+
+html.dark body {
+  background-color: #0f0f0f;
+  color: #e5e5e5;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  @apply w-2 bg-transparent;
+  width: 8px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1C1C1C;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-kelmah-primary rounded-full;
+  background: #FFD700;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C7A900;
+  background: #D4AF37;
 }
 
-/* Global button styles */
-.btn-primary {
-  @apply bg-kelmah-primary text-white hover:bg-blue-600 transition-colors duration-300 rounded-md px-4 py-2;
+/* Material-UI overrides */
+.MuiPaper-root {
+  background-color: rgba(42, 42, 42, 0.9) !important;
 }
 
-.btn-secondary {
-  @apply bg-kelmah-secondary text-white hover:bg-green-600 transition-colors duration-300 rounded-md px-4 py-2;
+.MuiAppBar-root {
+  background-color: #1a1a1a !important;
 }
 
-/* Form input styles */
-.form-input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kelmah-primary;
+/* Loading animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Fade animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 /* Card styles */
-.card {
-  @apply bg-white shadow-kelmah-card rounded-lg p-6;
+.kelmah-card {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 42, 42, 0.8) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* Dark mode card styles */
-.dark .card {
-  @apply bg-dark-100 shadow-kelmah-card-dark text-gray-100;
+/* Gold accent utilities */
+.text-kelmah-gold {
+  color: #FFD700;
 }
 
-/* Accessibility and focus states */
-*:focus {
-  @apply outline-none ring-2 ring-kelmah-primary ring-opacity-50;
+.bg-kelmah-gold {
+  background-color: #FFD700;
+}
+
+.border-kelmah-gold {
+  border-color: #FFD700;
 }

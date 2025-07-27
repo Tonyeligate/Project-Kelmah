@@ -300,17 +300,19 @@ const SchedulingPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Extract dates with appointments for calendar badges
-  const appointmentDays = appointments.map((a) => {
-    const appointmentDate = a.startTime || a.date;
-    if (!appointmentDate) return null;
-    
-    try {
-      return format(new Date(appointmentDate), 'yyyy-MM-dd');
-    } catch (error) {
-      console.warn('Invalid appointment date:', appointmentDate);
-      return null;
-    }
-  }).filter(date => date !== null);
+  const appointmentDays = appointments
+    .map((a) => {
+      const appointmentDate = a.startTime || a.date;
+      if (!appointmentDate) return null;
+
+      try {
+        return format(new Date(appointmentDate), 'yyyy-MM-dd');
+      } catch (error) {
+        console.warn('Invalid appointment date:', appointmentDate);
+        return null;
+      }
+    })
+    .filter((date) => date !== null);
 
   // Load appointments helper
   const loadAppointments = async () => {

@@ -217,7 +217,7 @@ const JobManagementPage = () => {
 
   const handleDeleteConfirm = () => {
     if (selectedJob) {
-              dispatch(deleteHirerJob(selectedJob.id));
+      dispatch(deleteHirerJob(selectedJob.id));
       setDeleteDialogOpen(false);
     }
     handleMenuClose();

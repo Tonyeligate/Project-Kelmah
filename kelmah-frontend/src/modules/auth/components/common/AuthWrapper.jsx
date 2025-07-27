@@ -39,23 +39,36 @@ const AuthWrapper = ({ children }) => {
 
   const features = [
     {
-      icon: <VerifiedIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />,
+      icon: (
+        <VerifiedIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />
+      ),
       title: 'Verified Professionals',
-      description: 'All workers are vetted and verified'
+      description: 'All workers are vetted and verified',
     },
     {
-      icon: <BuildIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />,
+      icon: (
+        <BuildIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />
+      ),
       title: 'Skilled Trades',
-      description: 'Plumbing, electrical, carpentry & more'
+      description: 'Plumbing, electrical, carpentry & more',
     },
     {
-      icon: <HandymanIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />,
+      icon: (
+        <HandymanIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: '#FFD700' }} />
+      ),
       title: 'Quality Work',
-      description: 'Guaranteed professional results'
+      description: 'Guaranteed professional results',
     },
   ];
 
-  const trades = ['Plumber', 'Electrician', 'Carpenter', 'Mason', 'Welder', 'Painter'];
+  const trades = [
+    'Plumber',
+    'Electrician',
+    'Carpenter',
+    'Mason',
+    'Welder',
+    'Painter',
+  ];
 
   return (
     <Box
@@ -123,7 +136,8 @@ const AuthWrapper = ({ children }) => {
             width: '300px',
             height: '300px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%)',
+            background:
+              'radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%)',
             animation: 'float 6s ease-in-out infinite',
           },
           '&::after': {
@@ -134,7 +148,8 @@ const AuthWrapper = ({ children }) => {
             width: '200px',
             height: '200px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%)',
+            background:
+              'radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%)',
             animation: 'float 4s ease-in-out infinite reverse',
           },
           '@keyframes float': {
@@ -144,10 +159,10 @@ const AuthWrapper = ({ children }) => {
         }}
       />
 
-      <Container 
-        maxWidth="lg" 
-        sx={{ 
-          position: 'relative', 
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: 'relative',
           zIndex: 2,
           width: '100%',
           px: { xs: 1, sm: 2, md: 3 },
@@ -156,26 +171,30 @@ const AuthWrapper = ({ children }) => {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-        <Paper
+          <Paper
             elevation={12}
-          sx={{
-            display: 'flex',
+            sx={{
+              display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
               width: '100%',
               maxWidth: { xs: '100%', sm: '90%', md: 'none' },
-            mx: 'auto',
+              mx: 'auto',
               overflow: 'hidden',
               borderRadius: { xs: 4, sm: 5, md: 6 },
-              background: 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.98) 100%)',
+              background:
+                'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.98) 100%)',
               boxShadow: {
                 xs: '0 12px 40px rgba(0,0,0,0.3)',
                 sm: '0 16px 50px rgba(0,0,0,0.35)',
                 md: '0 20px 60px rgba(0,0,0,0.4)',
               },
               backdropFilter: 'blur(20px)',
-              border: { xs: '1px solid rgba(255,215,0,0.15)', sm: '1px solid rgba(255,215,0,0.2)' },
+              border: {
+                xs: '1px solid rgba(255,215,0,0.15)',
+                sm: '1px solid rgba(255,215,0,0.2)',
+              },
               minHeight: { xs: 'auto', md: 650 },
               position: 'relative',
               '&::before': {
@@ -185,27 +204,30 @@ const AuthWrapper = ({ children }) => {
                 left: 0,
                 right: 0,
                 height: { xs: '3px', sm: '4px' },
-                background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
+                background:
+                  'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
                 zIndex: 3,
               },
-          }}
-        >
+            }}
+          >
             {/* Left Panel - Branding & Features - Mobile Optimized */}
             {!isMobile && (
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
+              <Box
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                   p: { xs: 2, sm: 3, md: 4 },
                   background: `linear-gradient(135deg, 
                     rgba(40,40,40,0.9) 0%, 
                     rgba(30,30,30,0.95) 50%, 
                     rgba(25,25,25,0.98) 100%)`,
-                  borderRight: isTablet ? 'none' : '1px solid rgba(255,215,0,0.15)',
-              color: theme.palette.primary.contrastText,
-              position: 'relative',
+                  borderRight: isTablet
+                    ? 'none'
+                    : '1px solid rgba(255,215,0,0.15)',
+                  color: theme.palette.primary.contrastText,
+                  position: 'relative',
                   minWidth: { xs: 'auto', md: 380, lg: 420 },
                   minHeight: { xs: 'auto', md: 650 },
                   overflow: 'hidden',
@@ -217,22 +239,32 @@ const AuthWrapper = ({ children }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                  <Stack spacing={{ xs: 2, sm: 3 }} alignItems="center" sx={{ textAlign: 'center' }}>
+                  <Stack
+                    spacing={{ xs: 2, sm: 3 }}
+                    alignItems="center"
+                    sx={{ textAlign: 'center' }}
+                  >
                     <Box
                       sx={{
                         width: { xs: 60, sm: 70, md: 80 },
                         height: { xs: 60, sm: 70, md: 80 },
                         borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        background:
+                          'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         boxShadow: '0 8px 25px rgba(255,215,0,0.3)',
                       }}
                     >
-                      <EngineeringIcon sx={{ fontSize: { xs: 28, sm: 32, md: 40 }, color: '#000' }} />
+                      <EngineeringIcon
+                        sx={{
+                          fontSize: { xs: 28, sm: 32, md: 40 },
+                          color: '#000',
+                        }}
+                      />
                     </Box>
-                    
+
                     <Stack spacing={1} alignItems="center">
                       <Typography
                         variant="h3"
@@ -241,14 +273,19 @@ const AuthWrapper = ({ children }) => {
                           fontWeight: 800,
                           letterSpacing: 1,
                           color: theme.palette.secondary.main,
-                          fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.2rem' },
+                          fontSize: {
+                            xs: '1.5rem',
+                            sm: '1.75rem',
+                            md: '2rem',
+                            lg: '2.2rem',
+                          },
                           textShadow: '0 2px 15px rgba(255,215,0,0.3)',
                           lineHeight: 1.2,
                         }}
                       >
                         Welcome to Kelmah
                       </Typography>
-                      
+
                       <Typography
                         variant="h6"
                         sx={{
@@ -259,7 +296,7 @@ const AuthWrapper = ({ children }) => {
                       >
                         Ghana's Premier Skilled Trades Platform
                       </Typography>
-                      
+
                       <Typography
                         variant="body1"
                         sx={{
@@ -269,7 +306,8 @@ const AuthWrapper = ({ children }) => {
                           fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
                         }}
                       >
-                        Connect with verified skilled workers and find quality trade services across Ghana
+                        Connect with verified skilled workers and find quality
+                        trade services across Ghana
                       </Typography>
                     </Stack>
                   </Stack>
@@ -280,62 +318,76 @@ const AuthWrapper = ({ children }) => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <Box
-              sx={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                >
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       position: 'relative',
                       my: { xs: 2, sm: 3 },
-              }}
-            >
-              <Box
-                sx={{
-                        width: { xs: '160px', sm: '200px', md: '240px', lg: '280px' },
-                        height: { xs: '160px', sm: '200px', md: '240px', lg: '280px' },
-                  position: 'relative',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: {
+                          xs: '160px',
+                          sm: '200px',
+                          md: '240px',
+                          lg: '280px',
+                        },
+                        height: {
+                          xs: '160px',
+                          sm: '200px',
+                          md: '240px',
+                          lg: '280px',
+                        },
+                        position: 'relative',
                         borderRadius: '50%',
                         overflow: 'hidden',
                         boxShadow: '0 15px 40px rgba(0,0,0,0.3)',
-                        border: { xs: '2px solid rgba(255,215,0,0.3)', md: '3px solid rgba(255,215,0,0.3)' },
-                }}
-              >
+                        border: {
+                          xs: '2px solid rgba(255,215,0,0.3)',
+                          md: '3px solid rgba(255,215,0,0.3)',
+                        },
+                      }}
+                    >
                       {/* Golden glow effect */}
-                <Box
-                  sx={{
-                    position: 'absolute',
+                      <Box
+                        sx={{
+                          position: 'absolute',
                           inset: { xs: '-15px', md: '-20px' },
-                    borderRadius: '50%',
-                          background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
+                          borderRadius: '50%',
+                          background:
+                            'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
                           animation: 'pulse 3s ease-in-out infinite',
                           '@keyframes pulse': {
                             '0%, 100%': { opacity: 0.7, transform: 'scale(1)' },
                             '50%': { opacity: 1, transform: 'scale(1.05)' },
-                    },
-                  }}
-                />
-                      
-                {cartoonImages.map((img, idx) => (
+                          },
+                        }}
+                      />
+
+                      {cartoonImages.map((img, idx) => (
                         <motion.img
-                    key={img}
-                    src={img}
+                          key={img}
+                          src={img}
                           alt="Professional worker"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: currentImage === idx ? 1 : 0 }}
                           transition={{ duration: 1 }}
                           style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
                             objectFit: 'cover',
                             borderRadius: '50%',
-                    }}
-                  />
-                ))}
-              </Box>
-            </Box>
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
                 </motion.div>
 
                 {/* Features Section */}
@@ -368,31 +420,41 @@ const AuthWrapper = ({ children }) => {
                             },
                           }}
                         >
-                          <Box sx={{ mr: { xs: 1.5, sm: 2 }, flexShrink: 0 }}>{feature.icon}</Box>
+                          <Box sx={{ mr: { xs: 1.5, sm: 2 }, flexShrink: 0 }}>
+                            {feature.icon}
+                          </Box>
                           <Box sx={{ minWidth: 0 }}>
-              <Typography
+                            <Typography
                               variant="subtitle2"
-                sx={{
-                                color: '#FFD700', 
-                  fontWeight: 700,
+                              sx={{
+                                color: '#FFD700',
+                                fontWeight: 700,
                                 mb: 0.5,
-                                fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
-                }}
-              >
+                                fontSize: {
+                                  xs: '0.8rem',
+                                  sm: '0.85rem',
+                                  md: '0.9rem',
+                                },
+                              }}
+                            >
                               {feature.title}
-              </Typography>
-              <Typography
+                            </Typography>
+                            <Typography
                               variant="caption"
-                sx={{
+                              sx={{
                                 color: 'rgba(255,255,255,0.8)',
-                                fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                                fontSize: {
+                                  xs: '0.7rem',
+                                  sm: '0.75rem',
+                                  md: '0.8rem',
+                                },
                                 lineHeight: 1.3,
-                }}
-              >
+                              }}
+                            >
                               {feature.description}
-              </Typography>
-            </Box>
-          </Box>
+                            </Typography>
+                          </Box>
+                        </Box>
                       </motion.div>
                     ))}
                   </Stack>
@@ -404,30 +466,39 @@ const AuthWrapper = ({ children }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1 }}
                 >
-                  <Stack spacing={2} alignItems="center" sx={{ textAlign: 'center' }}>
+                  <Stack
+                    spacing={2}
+                    alignItems="center"
+                    sx={{ textAlign: 'center' }}
+                  >
                     <Typography
                       variant="body2"
-                      sx={{ 
-                        color: 'rgba(255,255,255,0.7)', 
+                      sx={{
+                        color: 'rgba(255,255,255,0.7)',
                         fontWeight: 600,
                         fontSize: { xs: '0.8rem', sm: '0.85rem' },
                       }}
                     >
                       Popular Trades
                     </Typography>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: { xs: 0.5, sm: 1 }, 
-                      justifyContent: 'center',
-                      maxWidth: '100%',
-                    }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: { xs: 0.5, sm: 1 },
+                        justifyContent: 'center',
+                        maxWidth: '100%',
+                      }}
+                    >
                       {trades.map((trade, index) => (
                         <motion.div
                           key={trade}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: 1.2 + index * 0.1 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: 1.2 + index * 0.1,
+                          }}
                         >
                           <Chip
                             label={trade}
@@ -435,7 +506,11 @@ const AuthWrapper = ({ children }) => {
                             sx={{
                               backgroundColor: 'rgba(255,215,0,0.15)',
                               color: '#FFD700',
-                              fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                              fontSize: {
+                                xs: '0.65rem',
+                                sm: '0.7rem',
+                                md: '0.75rem',
+                              },
                               fontWeight: 600,
                               border: '1px solid rgba(255,215,0,0.3)',
                               height: { xs: '24px', sm: '28px' },
@@ -461,13 +536,14 @@ const AuthWrapper = ({ children }) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <Stack 
-                  spacing={1} 
-                  alignItems="center" 
-                  sx={{ 
+                <Stack
+                  spacing={1}
+                  alignItems="center"
+                  sx={{
                     textAlign: 'center',
                     p: 1.5,
-                    background: 'linear-gradient(135deg, rgba(40,40,40,0.8) 0%, rgba(30,30,30,0.9) 100%)',
+                    background:
+                      'linear-gradient(135deg, rgba(40,40,40,0.8) 0%, rgba(30,30,30,0.9) 100%)',
                     borderBottom: '1px solid rgba(255,215,0,0.1)',
                   }}
                 >
@@ -476,7 +552,8 @@ const AuthWrapper = ({ children }) => {
                       width: 35,
                       height: 35,
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                      background:
+                        'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -485,7 +562,7 @@ const AuthWrapper = ({ children }) => {
                   >
                     <EngineeringIcon sx={{ fontSize: 18, color: '#000' }} />
                   </Box>
-                  
+
                   <Stack spacing={0.5} alignItems="center">
                     <Typography
                       variant="h5"
@@ -508,8 +585,15 @@ const AuthWrapper = ({ children }) => {
                       Ghana's Skilled Trades Platform
                     </Typography>
                   </Stack>
-                  
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center' }}>
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.5,
+                      justifyContent: 'center',
+                    }}
+                  >
                     {['Verified', 'Skilled', 'Quality'].map((tag) => (
                       <Chip
                         key={tag}
@@ -530,16 +614,16 @@ const AuthWrapper = ({ children }) => {
             )}
 
             {/* Right Panel - Auth Forms - Better Mobile Layout */}
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
                 p: { xs: 2, sm: 3, md: 4 },
                 minWidth: { xs: 'auto', md: 450, lg: 500 },
-              backgroundColor: 'transparent',
+                backgroundColor: 'transparent',
                 minHeight: { xs: 'auto', md: 650 },
               }}
             >
@@ -548,11 +632,11 @@ const AuthWrapper = ({ children }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
                 style={{ width: '100%', maxWidth: isMobile ? '100%' : '480px' }}
-          >
-            {children}
+              >
+                {children}
               </motion.div>
-          </Box>
-        </Paper>
+            </Box>
+          </Paper>
         </motion.div>
       </Container>
     </Box>

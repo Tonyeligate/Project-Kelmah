@@ -26,7 +26,7 @@ import {
   Skeleton,
   Alert,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   PlayArrow as StartIcon,
@@ -36,12 +36,12 @@ import {
   AttachMoney as PaymentIcon,
   Message as MessageIcon,
   Star as StarIcon,
-  Visibility as ViewIcon
+  Visibility as ViewIcon,
 } from '@mui/icons-material';
-import { 
+import {
   fetchHirerJobs,
   selectHirerJobs,
-  selectHirerLoading
+  selectHirerLoading,
 } from '../services/hirerSlice';
 
 // Mock active jobs with detailed progress tracking
@@ -54,7 +54,7 @@ const mockActiveJobsProgress = [
       name: 'Tony Gate',
       avatar: '/api/placeholder/40/40',
       rating: 4.8,
-      completedJobs: 23
+      completedJobs: 23,
     },
     progress: 65,
     status: 'in_progress',
@@ -71,7 +71,7 @@ const mockActiveJobsProgress = [
         status: 'completed',
         amount: 1100,
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-        paid: true
+        paid: true,
       },
       {
         id: 'milestone-2',
@@ -80,7 +80,7 @@ const mockActiveJobsProgress = [
         status: 'completed',
         amount: 1100,
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-        paid: true
+        paid: true,
       },
       {
         id: 'milestone-3',
@@ -89,7 +89,7 @@ const mockActiveJobsProgress = [
         status: 'in_progress',
         amount: 1650,
         expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
-        paid: false
+        paid: false,
       },
       {
         id: 'milestone-4',
@@ -98,23 +98,25 @@ const mockActiveJobsProgress = [
         status: 'pending',
         amount: 1650,
         expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8),
-        paid: false
-      }
+        paid: false,
+      },
     ],
     recentUpdates: [
       {
         id: 'update-1',
-        message: 'Cabinet frames are taking shape nicely. Should be ready for door installation by tomorrow.',
+        message:
+          'Cabinet frames are taking shape nicely. Should be ready for door installation by tomorrow.',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-        type: 'progress'
+        type: 'progress',
       },
       {
         id: 'update-2',
-        message: 'Milestone 2 completed - all materials ready for construction phase.',
+        message:
+          'Milestone 2 completed - all materials ready for construction phase.',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-        type: 'milestone'
-      }
-    ]
+        type: 'milestone',
+      },
+    ],
   },
   {
     id: 'job-h2',
@@ -124,7 +126,7 @@ const mockActiveJobsProgress = [
       name: 'Sarah Williams',
       avatar: '/api/placeholder/40/40',
       rating: 4.9,
-      completedJobs: 31
+      completedJobs: 31,
     },
     progress: 30,
     status: 'in_progress',
@@ -141,7 +143,7 @@ const mockActiveJobsProgress = [
         status: 'completed',
         amount: 4500,
         completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        paid: true
+        paid: true,
       },
       {
         id: 'milestone-2',
@@ -150,7 +152,7 @@ const mockActiveJobsProgress = [
         status: 'in_progress',
         amount: 5250,
         expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        paid: false
+        paid: false,
       },
       {
         id: 'milestone-3',
@@ -159,18 +161,19 @@ const mockActiveJobsProgress = [
         status: 'pending',
         amount: 5250,
         expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 16),
-        paid: false
-      }
+        paid: false,
+      },
     ],
     recentUpdates: [
       {
         id: 'update-1',
-        message: 'Furniture selections approved. Placing orders with suppliers today.',
+        message:
+          'Furniture selections approved. Placing orders with suppliers today.',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-        type: 'progress'
-      }
-    ]
-  }
+        type: 'progress',
+      },
+    ],
+  },
 ];
 
 const JobProgressTracker = () => {
@@ -197,7 +200,7 @@ const JobProgressTracker = () => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -205,17 +208,22 @@ const JobProgressTracker = () => {
     return new Date(date).toLocaleDateString('en-GH', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'success';
-      case 'in_progress': return 'primary';
-      case 'pending': return 'warning';
-      case 'overdue': return 'error';
-      default: return 'default';
+      case 'completed':
+        return 'success';
+      case 'in_progress':
+        return 'primary';
+      case 'pending':
+        return 'warning';
+      case 'overdue':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
@@ -236,15 +244,17 @@ const JobProgressTracker = () => {
 
   const handlePaymentRelease = () => {
     // Mock payment release
-    console.log(`Releasing payment of ${paymentAmount} for job ${selectedJob.id}`);
-      handleDialogClose();
+    console.log(
+      `Releasing payment of ${paymentAmount} for job ${selectedJob.id}`,
+    );
+    handleDialogClose();
   };
 
   const handleReviewSubmit = () => {
     // Mock review submission
     console.log(`Submitting review for worker ${selectedJob.worker.id}:`, {
       rating: reviewRating,
-      comment: reviewComment
+      comment: reviewComment,
     });
     handleDialogClose();
   };
@@ -271,36 +281,43 @@ const JobProgressTracker = () => {
   if (jobsWithProgress.length === 0) {
     return (
       <Card>
-      <CardContent>
+        <CardContent>
           <Box textAlign="center" py={4}>
-            <ScheduleIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+            <ScheduleIcon
+              sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+            />
             <Typography variant="h6" color="text.secondary">
               No active jobs in progress
-              </Typography>
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Your active job progress will appear here
             </Typography>
           </Box>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-              <Box>
+    <Box>
       {jobsWithProgress.map((job) => (
         <Card key={job.id} sx={{ mb: 3, overflow: 'visible' }}>
           <CardContent>
             {/* Job Header */}
-            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="flex-start"
+              mb={3}
+            >
               <Box flex={1}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
                   {job.title}
                 </Typography>
                 <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
                   <Box display="flex" alignItems="center" gap={1}>
-                    <Avatar 
-                      src={job.worker.avatar} 
+                    <Avatar
+                      src={job.worker.avatar}
                       sx={{ width: 32, height: 32 }}
                     >
                       {job.worker.name.charAt(0)}
@@ -313,20 +330,20 @@ const JobProgressTracker = () => {
                         <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
                         <Typography variant="caption">
                           {job.worker.rating} ({job.worker.completedJobs} jobs)
-                </Typography>
-              </Box>
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
-                  <Chip 
-                    label={job.status.replace('_', ' ').toUpperCase()} 
+                  <Chip
+                    label={job.status.replace('_', ' ').toUpperCase()}
                     color={getStatusColor(job.status)}
                     size="small"
                   />
                 </Box>
               </Box>
               <Box display="flex" gap={1}>
-                <IconButton 
-                  size="small" 
+                <IconButton
+                  size="small"
                   onClick={() => handleDialogOpen('view', job)}
                 >
                   <ViewIcon />
@@ -335,35 +352,41 @@ const JobProgressTracker = () => {
                   <MessageIcon />
                 </IconButton>
               </Box>
-        </Box>
+            </Box>
 
             {/* Progress Overview */}
             <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={8}>
+              <Grid item xs={12} md={8}>
                 <Box mb={2}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={1}
+                  >
                     <Typography variant="body2" fontWeight="bold">
                       Overall Progress
-              </Typography>
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {job.progress}% Complete
-                </Typography>
+                    </Typography>
                   </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={job.progress} 
-                    sx={{ 
-                      height: 8, 
+                  <LinearProgress
+                    variant="determinate"
+                    value={job.progress}
+                    sx={{
+                      height: 8,
                       borderRadius: 4,
                       backgroundColor: 'grey.200',
                       '& .MuiLinearProgress-bar': {
                         borderRadius: 4,
-                        background: job.progress >= 75 
-                          ? 'linear-gradient(90deg, #4caf50, #66bb6a)'
-                          : job.progress >= 50
-                          ? 'linear-gradient(90deg, #2196f3, #42a5f5)'
-                          : 'linear-gradient(90deg, #ff9800, #ffb74d)'
-                      }
+                        background:
+                          job.progress >= 75
+                            ? 'linear-gradient(90deg, #4caf50, #66bb6a)'
+                            : job.progress >= 50
+                              ? 'linear-gradient(90deg, #2196f3, #42a5f5)'
+                              : 'linear-gradient(90deg, #ff9800, #ffb74d)',
+                      },
                     }}
                   />
                 </Box>
@@ -377,21 +400,29 @@ const JobProgressTracker = () => {
                     <Typography variant="body2" color="text.secondary">
                       Expected: {formatDate(job.expectedCompletion)}
                     </Typography>
-                </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
               <Grid item xs={12} md={4}>
-                <Box 
-                  p={2} 
-                  bgcolor="primary.50" 
+                <Box
+                  p={2}
+                  bgcolor="primary.50"
                   borderRadius={2}
                   border={1}
                   borderColor="primary.200"
                 >
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
                     Budget Overview
                   </Typography>
-                  <Typography variant="h6" fontWeight="bold" color="primary.main">
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="primary.main"
+                  >
                     {formatCurrency(job.budget)}
                   </Typography>
                   <Box display="flex" justifyContent="space-between" mt={1}>
@@ -416,15 +447,16 @@ const JobProgressTracker = () => {
               {job.milestones.map((milestone, index) => (
                 <ListItem key={milestone.id} sx={{ px: 0 }}>
                   <ListItemAvatar>
-                    <Avatar 
-                      sx={{ 
-                        width: 32, 
+                    <Avatar
+                      sx={{
+                        width: 32,
                         height: 32,
-                        bgcolor: milestone.status === 'completed' 
-                          ? 'success.main' 
-                          : milestone.status === 'in_progress'
-                          ? 'primary.main'
-                          : 'grey.400'
+                        bgcolor:
+                          milestone.status === 'completed'
+                            ? 'success.main'
+                            : milestone.status === 'in_progress'
+                              ? 'primary.main'
+                              : 'grey.400',
                       }}
                     >
                       {milestone.status === 'completed' ? (
@@ -449,10 +481,9 @@ const JobProgressTracker = () => {
                         </Typography>
                         <br />
                         <Typography variant="caption" color="text.secondary">
-                          {milestone.status === 'completed' 
+                          {milestone.status === 'completed'
                             ? `Completed: ${formatDate(milestone.completedDate)}`
-                            : `Expected: ${formatDate(milestone.expectedDate)}`
-                          }
+                            : `Expected: ${formatDate(milestone.expectedDate)}`}
                         </Typography>
                       </Box>
                     }
@@ -463,12 +494,17 @@ const JobProgressTracker = () => {
                         {formatCurrency(milestone.amount)}
                       </Typography>
                       {milestone.status === 'completed' && !milestone.paid && (
-                        <Button 
-                          size="small" 
-                          variant="contained" 
+                        <Button
+                          size="small"
+                          variant="contained"
                           color="primary"
                           startIcon={<PaymentIcon />}
-                          onClick={() => handleDialogOpen('payment', { ...job, selectedMilestone: milestone })}
+                          onClick={() =>
+                            handleDialogOpen('payment', {
+                              ...job,
+                              selectedMilestone: milestone,
+                            })
+                          }
                         >
                           Release Payment
                         </Button>
@@ -480,7 +516,7 @@ const JobProgressTracker = () => {
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
-              </List>
+            </List>
 
             {/* Recent Updates */}
             {job.recentUpdates.length > 0 && (
@@ -491,9 +527,7 @@ const JobProgressTracker = () => {
                 </Typography>
                 {job.recentUpdates.slice(0, 2).map((update) => (
                   <Box key={update.id} mb={1}>
-                    <Typography variant="body2">
-                      {update.message}
-                    </Typography>
+                    <Typography variant="body2">{update.message}</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {new Date(update.timestamp).toLocaleString('en-GH')}
                     </Typography>
@@ -506,7 +540,10 @@ const JobProgressTracker = () => {
       ))}
 
       {/* Payment Dialog */}
-      <Dialog open={dialogOpen && dialogType === 'payment'} onClose={handleDialogClose}>
+      <Dialog
+        open={dialogOpen && dialogType === 'payment'}
+        onClose={handleDialogClose}
+      >
         <DialogTitle>Release Milestone Payment</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
@@ -520,7 +557,7 @@ const JobProgressTracker = () => {
             onChange={(e) => setPaymentAmount(e.target.value)}
             sx={{ mt: 2 }}
             InputProps={{
-              startAdornment: <Typography sx={{ mr: 1 }}>GH₵</Typography>
+              startAdornment: <Typography sx={{ mr: 1 }}>GH₵</Typography>,
             }}
           />
         </DialogContent>
@@ -533,19 +570,20 @@ const JobProgressTracker = () => {
       </Dialog>
 
       {/* Review Dialog */}
-      <Dialog open={dialogOpen && dialogType === 'review'} onClose={handleDialogClose}>
+      <Dialog
+        open={dialogOpen && dialogType === 'review'}
+        onClose={handleDialogClose}
+      >
         <DialogTitle>Review Worker</DialogTitle>
         <DialogContent>
           <Box textAlign="center" mb={2}>
-            <Avatar 
-              src={selectedJob?.worker?.avatar} 
+            <Avatar
+              src={selectedJob?.worker?.avatar}
               sx={{ width: 64, height: 64, mx: 'auto', mb: 1 }}
             >
               {selectedJob?.worker?.name?.charAt(0)}
             </Avatar>
-            <Typography variant="h6">
-              {selectedJob?.worker?.name}
-            </Typography>
+            <Typography variant="h6">{selectedJob?.worker?.name}</Typography>
           </Box>
           <Box textAlign="center" mb={2}>
             <Typography gutterBottom>Rate this worker:</Typography>

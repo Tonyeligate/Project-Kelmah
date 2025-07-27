@@ -31,18 +31,6 @@ import {
   Skeleton,
   CircularProgress,
   Container,
-  CardMedia,
-  CardActionArea,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Fade,
-  Grow,
-  Slide,
-  Zoom,
-  useTheme,
   useMediaQuery,
   alpha,
   Accordion,
@@ -199,16 +187,23 @@ function WorkerProfile() {
       const profileRes = await workerService.getWorkerById(workerId);
       setProfile(profileRes.data);
 
-      const [skillsRes, portfolioRes, certsRes, reviewsRes, historyRes, availabilityRes, statsRes] =
-        await Promise.all([
-          workerService.getWorkerSkills(workerId),
-          workerService.getWorkerPortfolio(workerId),
-          workerService.getWorkerCertificates(workerId),
-          workerService.getWorkerReviews(workerId),
-          workerService.getWorkHistory(workerId),
-          workerService.getWorkerAvailability(workerId),
-          workerService.getWorkerStats(workerId),
-        ]);
+      const [
+        skillsRes,
+        portfolioRes,
+        certsRes,
+        reviewsRes,
+        historyRes,
+        availabilityRes,
+        statsRes,
+      ] = await Promise.all([
+        workerService.getWorkerSkills(workerId),
+        workerService.getWorkerPortfolio(workerId),
+        workerService.getWorkerCertificates(workerId),
+        workerService.getWorkerReviews(workerId),
+        workerService.getWorkHistory(workerId),
+        workerService.getWorkerAvailability(workerId),
+        workerService.getWorkerStats(workerId),
+      ]);
 
       setSkills(skillsRes.data || []);
       setPortfolio(portfolioRes.data || []);
@@ -271,19 +266,46 @@ function WorkerProfile() {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Skeleton variant="circular" width={200} height={200} sx={{ mx: 'auto', mb: 2 }} />
-          <Skeleton variant="text" width={300} height={40} sx={{ mx: 'auto', mb: 1 }} />
-          <Skeleton variant="text" width={200} height={30} sx={{ mx: 'auto', mb: 2 }} />
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}>
+          <Skeleton
+            variant="circular"
+            width={200}
+            height={200}
+            sx={{ mx: 'auto', mb: 2 }}
+          />
+          <Skeleton
+            variant="text"
+            width={300}
+            height={40}
+            sx={{ mx: 'auto', mb: 1 }}
+          />
+          <Skeleton
+            variant="text"
+            width={200}
+            height={30}
+            sx={{ mx: 'auto', mb: 2 }}
+          />
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}
+          >
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} variant="rectangular" width={100} height={32} sx={{ borderRadius: 2 }} />
+              <Skeleton
+                key={i}
+                variant="rectangular"
+                width={100}
+                height={32}
+                sx={{ borderRadius: 2 }}
+              />
             ))}
           </Box>
         </Box>
         <Grid container spacing={3}>
           {[...Array(6)].map((_, i) => (
             <Grid item xs={12} md={4} key={i}>
-              <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+              <Skeleton
+                variant="rectangular"
+                height={200}
+                sx={{ borderRadius: 2 }}
+              />
             </Grid>
           ))}
         </Grid>
@@ -337,18 +359,22 @@ function WorkerProfile() {
           >
             <IconButton
               onClick={handleBookmarkToggle}
-              sx={{ 
+              sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
-                '&:hover': { bgcolor: theme.palette.background.paper }
+                '&:hover': { bgcolor: theme.palette.background.paper },
               }}
             >
-              {isBookmarked ? <BookmarkIcon color="primary" /> : <BookmarkBorderIcon />}
+              {isBookmarked ? (
+                <BookmarkIcon color="primary" />
+              ) : (
+                <BookmarkBorderIcon />
+              )}
             </IconButton>
             <IconButton
               onClick={handleShare}
-              sx={{ 
+              sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
-                '&:hover': { bgcolor: theme.palette.background.paper }
+                '&:hover': { bgcolor: theme.palette.background.paper },
               }}
             >
               <ShareIcon />
@@ -356,9 +382,9 @@ function WorkerProfile() {
             {isOwner && (
               <IconButton
                 onClick={() => navigate('/worker/profile/edit')}
-                sx={{ 
+                sx={{
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
-                  '&:hover': { bgcolor: theme.palette.background.paper }
+                  '&:hover': { bgcolor: theme.palette.background.paper },
                 }}
               >
                 <EditIcon />
@@ -450,15 +476,16 @@ function WorkerProfile() {
             <Typography
               variant="body1"
               color="text.secondary"
-              sx={{ 
-                maxWidth: 600, 
-                mx: 'auto', 
-                mb: 4, 
+              sx={{
+                maxWidth: 600,
+                mx: 'auto',
+                mb: 4,
                 lineHeight: 1.8,
-                fontSize: '1.1rem'
+                fontSize: '1.1rem',
               }}
             >
-              {profile.bio || 'Professional craftsperson dedicated to delivering quality work.'}
+              {profile.bio ||
+                'Professional craftsperson dedicated to delivering quality work.'}
             </Typography>
 
             <Stack
@@ -476,13 +503,15 @@ function WorkerProfile() {
               >
                 Message Worker
               </AnimatedButton>
-              
+
               {!isOwner && (
                 <AnimatedButton
                   variant="outlined"
                   size="large"
                   startIcon={<BusinessCenterIcon />}
-                  onClick={() => navigate(`/contracts/create?workerId=${workerId}`)}
+                  onClick={() =>
+                    navigate(`/contracts/create?workerId=${workerId}`)
+                  }
                 >
                   Hire Now
                 </AnimatedButton>
@@ -512,7 +541,7 @@ function WorkerProfile() {
             </Typography>
           </MetricCard>
         </Grid>
-        
+
         <Grid item xs={6} md={3}>
           <MetricCard>
             <AssessmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
@@ -524,7 +553,7 @@ function WorkerProfile() {
             </Typography>
           </MetricCard>
         </Grid>
-        
+
         <Grid item xs={6} md={3}>
           <MetricCard>
             <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
@@ -536,12 +565,20 @@ function WorkerProfile() {
             </Typography>
           </MetricCard>
         </Grid>
-        
+
         <Grid item xs={6} md={3}>
           <MetricCard>
             <TrendingIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
             <Typography variant="h4" fontWeight={700} color="primary">
-              {((stats.jobs_completed || 0) / Math.max((stats.jobs_completed || 0) + (stats.jobs_cancelled || 0), 1) * 100).toFixed(0)}%
+              {(
+                ((stats.jobs_completed || 0) /
+                  Math.max(
+                    (stats.jobs_completed || 0) + (stats.jobs_cancelled || 0),
+                    1,
+                  )) *
+                100
+              ).toFixed(0)}
+              %
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Success Rate
@@ -555,25 +592,30 @@ function WorkerProfile() {
   const renderSkillsAndExpertise = () => (
     <GlassCard sx={{ mb: 4 }}>
       <CardContent>
-        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <BuildIcon color="primary" />
           Skills & Expertise
         </Typography>
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
-            <Typography variant="h6" gutterBottom>Primary Skills</Typography>
+            <Typography variant="h6" gutterBottom>
+              Primary Skills
+            </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
               {skills.slice(0, 8).map((skill, index) => (
-                <SkillChip
-                  key={index}
-                  label={skill.name}
-                  size="medium"
-                />
+                <SkillChip key={index} label={skill.name} size="medium" />
               ))}
             </Box>
-            
-            <Typography variant="h6" gutterBottom>Specializations</Typography>
+
+            <Typography variant="h6" gutterBottom>
+              Specializations
+            </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {profile.specializations?.map((spec, index) => (
                 <Chip
@@ -583,21 +625,35 @@ function WorkerProfile() {
                   color="primary"
                 />
               )) || [
-                <Chip key="general" label="General Construction" variant="outlined" color="primary" />,
-                <Chip key="residential" label="Residential Work" variant="outlined" color="primary" />
+                <Chip
+                  key="general"
+                  label="General Construction"
+                  variant="outlined"
+                  color="primary"
+                />,
+                <Chip
+                  key="residential"
+                  label="Residential Work"
+                  variant="outlined"
+                  color="primary"
+                />,
               ]}
             </Box>
           </Grid>
-          
+
           <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom>Tools & Equipment</Typography>
+            <Typography variant="h6" gutterBottom>
+              Tools & Equipment
+            </Typography>
             <List dense>
-              {(profile.tools || [
-                'Power Tools',
-                'Hand Tools', 
-                'Safety Equipment',
-                'Measuring Tools'
-              ]).map((tool, index) => (
+              {(
+                profile.tools || [
+                  'Power Tools',
+                  'Hand Tools',
+                  'Safety Equipment',
+                  'Measuring Tools',
+                ]
+              ).map((tool, index) => (
                 <ListItem key={index}>
                   <ListItemText primary={tool} />
                 </ListItem>
@@ -612,11 +668,16 @@ function WorkerProfile() {
   const renderPortfolio = () => (
     <GlassCard sx={{ mb: 4 }}>
       <CardContent>
-        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <ViewIcon color="primary" />
           Portfolio & Previous Work
         </Typography>
-        
+
         {portfolio.length > 0 ? (
           <Grid container spacing={2}>
             {portfolio.map((item, index) => (
@@ -625,7 +686,10 @@ function WorkerProfile() {
                   sx={{
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    '&:hover': { transform: 'translateY(-4px)', boxShadow: theme.shadows[12] }
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: theme.shadows[12],
+                    },
                   }}
                   onClick={() => {
                     setSelectedPortfolioItem(item);
@@ -668,24 +732,34 @@ function WorkerProfile() {
   const renderReviews = () => (
     <GlassCard sx={{ mb: 4 }}>
       <CardContent>
-        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <StarIcon color="primary" />
           Client Reviews
         </Typography>
-        
+
         {reviews.length > 0 ? (
           <List>
             {reviews.slice(0, 5).map((review, index) => (
               <React.Fragment key={index}>
                 <ListItem alignItems="flex-start">
                   <ListItemAvatar>
-                    <Avatar>
-                      {review.client_name?.charAt(0) || 'C'}
-                    </Avatar>
+                    <Avatar>{review.client_name?.charAt(0) || 'C'}</Avatar>
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 1,
+                        }}
+                      >
                         <Typography variant="subtitle1" fontWeight={600}>
                           {review.client_name || 'Anonymous Client'}
                         </Typography>
@@ -704,7 +778,9 @@ function WorkerProfile() {
                     }
                   />
                 </ListItem>
-                {index < reviews.length - 1 && <Divider variant="inset" component="li" />}
+                {index < reviews.length - 1 && (
+                  <Divider variant="inset" component="li" />
+                )}
               </React.Fragment>
             ))}
           </List>
@@ -726,40 +802,55 @@ function WorkerProfile() {
   const renderAvailability = () => (
     <GlassCard sx={{ mb: 4 }}>
       <CardContent>
-        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <ScheduleIcon color="primary" />
           Availability
         </Typography>
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>Current Status</Typography>
+            <Typography variant="h6" gutterBottom>
+              Current Status
+            </Typography>
             <Chip
               label={availability?.status || 'Available'}
-              color={availability?.status === 'Available' ? 'success' : 'warning'}
+              color={
+                availability?.status === 'Available' ? 'success' : 'warning'
+              }
               size="large"
               sx={{ mb: 2 }}
             />
-            
+
             <Typography variant="body1" gutterBottom>
-              <strong>Response Time:</strong> {availability?.response_time || 'Within 2 hours'}
+              <strong>Response Time:</strong>{' '}
+              {availability?.response_time || 'Within 2 hours'}
             </Typography>
             <Typography variant="body1">
-              <strong>Next Available:</strong> {availability?.next_available || 'Immediately'}
+              <strong>Next Available:</strong>{' '}
+              {availability?.next_available || 'Immediately'}
             </Typography>
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>Working Hours</Typography>
+            <Typography variant="h6" gutterBottom>
+              Working Hours
+            </Typography>
             <List dense>
-              {(availability?.working_hours || [
-                'Monday: 8:00 AM - 6:00 PM',
-                'Tuesday: 8:00 AM - 6:00 PM',
-                'Wednesday: 8:00 AM - 6:00 PM',
-                'Thursday: 8:00 AM - 6:00 PM',
-                'Friday: 8:00 AM - 6:00 PM',
-                'Weekend: By appointment'
-              ]).map((hours, index) => (
+              {(
+                availability?.working_hours || [
+                  'Monday: 8:00 AM - 6:00 PM',
+                  'Tuesday: 8:00 AM - 6:00 PM',
+                  'Wednesday: 8:00 AM - 6:00 PM',
+                  'Thursday: 8:00 AM - 6:00 PM',
+                  'Friday: 8:00 AM - 6:00 PM',
+                  'Weekend: By appointment',
+                ]
+              ).map((hours, index) => (
                 <ListItem key={index}>
                   <ListItemText primary={hours} />
                 </ListItem>
@@ -774,11 +865,16 @@ function WorkerProfile() {
   const renderCertifications = () => (
     <GlassCard sx={{ mb: 4 }}>
       <CardContent>
-        <Typography variant="h5" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <SchoolIcon color="primary" />
           Certifications & Credentials
         </Typography>
-        
+
         {certificates.length > 0 ? (
           <Grid container spacing={2}>
             {certificates.map((cert, index) => (
@@ -799,9 +895,7 @@ function WorkerProfile() {
                         Issued: {new Date(cert.issue_date).toLocaleDateString()}
                       </Typography>
                     </Box>
-                    {cert.is_verified && (
-                      <VerifiedIcon color="success" />
-                    )}
+                    {cert.is_verified && <VerifiedIcon color="success" />}
                   </Box>
                 </Card>
               </Grid>
@@ -826,7 +920,10 @@ function WorkerProfile() {
     <>
       <Helmet>
         <title>{`${profile.user?.firstName} ${profile.user?.lastName} - ${profile.profession} | Kelmah`}</title>
-        <meta name="description" content={`Professional ${profile.profession} available for hire. View portfolio, reviews, and contact ${profile.user?.firstName} for your next project.`} />
+        <meta
+          name="description"
+          content={`Professional ${profile.profession} available for hire. View portfolio, reviews, and contact ${profile.user?.firstName} for your next project.`}
+        />
       </Helmet>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -835,7 +932,11 @@ function WorkerProfile() {
             <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
             Home
           </Link>
-          <Link color="inherit" href="/find-talents" onClick={() => navigate('/find-talents')}>
+          <Link
+            color="inherit"
+            href="/find-talents"
+            onClick={() => navigate('/find-talents')}
+          >
             Find Talents
           </Link>
           <Typography color="text.primary">
@@ -892,7 +993,13 @@ function WorkerProfile() {
           {selectedPortfolioItem && (
             <>
               <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
                   <Typography variant="h5" fontWeight={600}>
                     {selectedPortfolioItem.title}
                   </Typography>
@@ -904,7 +1011,9 @@ function WorkerProfile() {
               <DialogContent>
                 <Box sx={{ mb: 2 }}>
                   <img
-                    src={selectedPortfolioItem.image || '/api/placeholder/600/400'}
+                    src={
+                      selectedPortfolioItem.image || '/api/placeholder/600/400'
+                    }
                     alt={selectedPortfolioItem.title}
                     style={{ width: '100%', height: 'auto', borderRadius: 8 }}
                   />

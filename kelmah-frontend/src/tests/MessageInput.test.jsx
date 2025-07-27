@@ -5,7 +5,13 @@ import MessageInput from '../modules/messaging/components/common/MessageInput';
 describe('MessageInput', () => {
   it('calls onSendMessage with trimmed message when Enter is pressed', () => {
     const onSendMessage = jest.fn();
-    render(<MessageInput onSendMessage={onSendMessage} disabled={false} loading={false} />);
+    render(
+      <MessageInput
+        onSendMessage={onSendMessage}
+        disabled={false}
+        loading={false}
+      />,
+    );
     const input = screen.getByPlaceholderText(/Type a message.../i);
     fireEvent.change(input, { target: { value: ' Hello world ' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 });
@@ -14,9 +20,15 @@ describe('MessageInput', () => {
 
   it('does not call onSendMessage when message is empty and Enter is pressed', () => {
     const onSendMessage = jest.fn();
-    render(<MessageInput onSendMessage={onSendMessage} disabled={false} loading={false} />);
+    render(
+      <MessageInput
+        onSendMessage={onSendMessage}
+        disabled={false}
+        loading={false}
+      />,
+    );
     const input = screen.getByPlaceholderText(/Type a message.../i);
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 });
     expect(onSendMessage).not.toHaveBeenCalled();
   });
-}); 
+});

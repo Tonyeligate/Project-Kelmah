@@ -24,16 +24,20 @@ class NotificationsApi {
       const response = await this.client.get('/api/notifications', { params });
       return response.data;
     } catch (error) {
-      console.warn('Notification service unavailable, using mock data:', error.message);
+      console.warn(
+        'Notification service unavailable, using mock data:',
+        error.message,
+      );
       return {
         notifications: [
           {
             id: 'notif-1',
             title: 'New Job Application',
-            message: 'You have a new application for your Kitchen Renovation job',
+            message:
+              'You have a new application for your Kitchen Renovation job',
             type: 'application',
             read: false,
-            createdAt: new Date(Date.now() - 1000 * 60 * 30)
+            createdAt: new Date(Date.now() - 1000 * 60 * 30),
           },
           {
             id: 'notif-2',
@@ -41,11 +45,11 @@ class NotificationsApi {
             message: 'Payment of GH₵7,800 has been released',
             type: 'payment',
             read: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24)
-          }
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
+          },
         ],
         total: 2,
-        unread: 1
+        unread: 1,
       };
     }
   }

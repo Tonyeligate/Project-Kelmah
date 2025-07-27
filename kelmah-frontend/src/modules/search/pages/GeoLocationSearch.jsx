@@ -38,6 +38,7 @@ import {
   Collapse,
   Fab,
   Badge,
+  Pagination,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -88,7 +89,7 @@ function TabPanel(props) {
 
 const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
   const theme = useTheme();
-  
+
   return (
     <Paper
       sx={{
@@ -102,14 +103,16 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
         overflow: 'hidden',
       }}
     >
-      <Place sx={{ 
-        fontSize: 80, 
-        color: theme.palette.secondary.main, 
-        mb: 3,
-      }} />
-      <Typography 
-        variant="h4" 
-        gutterBottom 
+      <Place
+        sx={{
+          fontSize: 80,
+          color: theme.palette.secondary.main,
+          mb: 3,
+        }}
+      />
+      <Typography
+        variant="h4"
+        gutterBottom
         fontWeight="bold"
         sx={{
           color: theme.palette.secondary.main,
@@ -118,11 +121,11 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
       >
         🌍 Let's Find Your Location!
       </Typography>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          mb: 4, 
-          maxWidth: 600, 
+      <Typography
+        variant="h6"
+        sx={{
+          mb: 4,
+          maxWidth: 600,
           mx: 'auto',
           color: theme.palette.text.primary,
           fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -130,13 +133,14 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
           fontWeight: 500,
         }}
       >
-        To show you the most relevant jobs and professionals in your area, we need to know your location. 
-        You can either allow location access or enter your city manually.
+        To show you the most relevant jobs and professionals in your area, we
+        need to know your location. You can either allow location access or
+        enter your city manually.
       </Typography>
-      
-      <Stack 
-        direction={{ xs: 'column', sm: 'row' }} 
-        spacing={3} 
+
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={3}
         justifyContent="center"
         sx={{ mb: 4 }}
       >
@@ -156,8 +160,8 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
             '&:hover': {
               backgroundColor: theme.palette.secondary.dark,
               transform: 'translateY(-3px)',
-              boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`
-            }
+              boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`,
+            },
           }}
         >
           Allow Location Access
@@ -167,8 +171,8 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
           size="large"
           startIcon={<TravelExplore />}
           onClick={onManualEntry}
-          sx={{ 
-            px: 4, 
+          sx={{
+            px: 4,
             py: 2,
             fontSize: '1.1rem',
             fontWeight: 'bold',
@@ -180,84 +184,94 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
               borderColor: theme.palette.secondary.light,
               backgroundColor: alpha(theme.palette.secondary.main, 0.1),
               transform: 'translateY(-3px)',
-            }
+            },
           }}
         >
           Enter Location Manually
         </Button>
       </Stack>
-      
-      <Box sx={{ 
-        p: 3, 
-        backgroundColor: alpha(theme.palette.secondary.main, 0.1), 
-        borderRadius: 3,
-        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-      }}>
-        <Typography 
-          variant="body1" 
+
+      <Box
+        sx={{
+          p: 3,
+          backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+          borderRadius: 3,
+          border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        }}
+      >
+        <Typography
+          variant="body1"
           sx={{
             color: theme.palette.text.primary,
             fontSize: '1rem',
             fontWeight: 500,
-            lineHeight: 1.6
+            lineHeight: 1.6,
           }}
         >
-          💡 <Typography component="span" sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}>
+          💡{' '}
+          <Typography
+            component="span"
+            sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}
+          >
             Why location matters:
-          </Typography> We use your location to show nearby opportunities, 
-          calculate travel distances, and connect you with local professionals and clients.
+          </Typography>{' '}
+          We use your location to show nearby opportunities, calculate travel
+          distances, and connect you with local professionals and clients.
         </Typography>
       </Box>
     </Paper>
   );
 };
 
-const CompactLocationSearch = ({ 
-  searchType, 
-  location, 
-  setLocation, 
-  keywords, 
-  setKeywords, 
-  distance, 
-  setDistance, 
-  category, 
-  setCategory, 
-  sortBy, 
-  setSortBy, 
-  categories, 
-  skills, 
-  loading, 
-  onSearch, 
-  onClearFilters, 
-  suggestedLocations, 
-  getCurrentLocation 
+const CompactLocationSearch = ({
+  searchType,
+  location,
+  setLocation,
+  keywords,
+  setKeywords,
+  distance,
+  setDistance,
+  category,
+  setCategory,
+  sortBy,
+  setSortBy,
+  categories,
+  skills,
+  loading,
+  onSearch,
+  onClearFilters,
+  suggestedLocations,
+  getCurrentLocation,
 }) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Paper sx={{ 
-      p: 3, 
-      mb: 4, 
-      borderRadius: 3,
-      border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-      backgroundColor: theme.palette.background.paper,
-      boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
-    }}>
-      <Typography 
-        variant="h5" 
-        gutterBottom 
-        fontWeight="bold" 
+    <Paper
+      sx={{
+        p: 3,
+        mb: 4,
+        borderRadius: 3,
+        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+      }}
+    >
+      <Typography
+        variant="h5"
+        gutterBottom
+        fontWeight="bold"
         sx={{
           color: theme.palette.secondary.main,
           textAlign: 'center',
           mb: 3,
-          fontSize: { xs: '1.25rem', sm: '1.5rem' }
+          fontSize: { xs: '1.25rem', sm: '1.5rem' },
         }}
       >
-        🎯 Local Search - Find {searchType === 0 ? 'Jobs' : 'Professionals'} Near You
+        🎯 Local Search - Find {searchType === 0 ? 'Jobs' : 'Professionals'}{' '}
+        Near You
       </Typography>
-      
+
       <Grid container spacing={3} alignItems="center">
         <Grid item xs={12} md={5}>
           <Box sx={{ position: 'relative' }}>
@@ -271,40 +285,48 @@ const CompactLocationSearch = ({
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 3,
                   backgroundColor: alpha(theme.palette.background.default, 0.3),
-                  '& fieldset': { 
+                  '& fieldset': {
                     borderColor: theme.palette.secondary.main,
-                    borderWidth: 2
+                    borderWidth: 2,
                   },
-                  '&:hover fieldset': { 
+                  '&:hover fieldset': {
                     borderColor: theme.palette.secondary.light,
                   },
                   '&.Mui-focused fieldset': {
                     borderColor: theme.palette.secondary.main,
-                  }
-                }
+                  },
+                },
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LocationIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
+                    <LocationIcon
+                      sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+                    />
                   </InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <Tooltip title="Use your current location">
-                      <IconButton 
-                        onClick={getCurrentLocation} 
+                      <IconButton
+                        onClick={getCurrentLocation}
                         edge="end"
                         disabled={loading}
                         sx={{
                           color: theme.palette.secondary.main,
                           '&:hover': {
-                            backgroundColor: alpha(theme.palette.secondary.main, 0.1)
-                          }
+                            backgroundColor: alpha(
+                              theme.palette.secondary.main,
+                              0.1,
+                            ),
+                          },
                         }}
                       >
                         {loading ? (
-                          <CircularProgress size={24} sx={{ color: theme.palette.secondary.main }} />
+                          <CircularProgress
+                            size={24}
+                            sx={{ color: theme.palette.secondary.main }}
+                          />
                         ) : (
                           <MyLocationIcon sx={{ fontSize: 28 }} />
                         )}
@@ -340,20 +362,26 @@ const CompactLocationSearch = ({
                       sx={{
                         py: 1.5,
                         '&:hover': {
-                          backgroundColor: alpha(theme.palette.secondary.main, 0.1)
-                        }
+                          backgroundColor: alpha(
+                            theme.palette.secondary.main,
+                            0.1,
+                          ),
+                        },
                       }}
                     >
                       <ListItemIcon sx={{ minWidth: 36 }}>
-                        <LocationIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+                        <LocationIcon
+                          fontSize="small"
+                          sx={{ color: theme.palette.secondary.main }}
+                        />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={item.description}
                         sx={{
                           '& .MuiTypography-root': {
                             color: theme.palette.text.primary,
-                            fontWeight: 500
-                          }
+                            fontWeight: 500,
+                          },
                         }}
                       />
                     </ListItem>
@@ -370,27 +398,31 @@ const CompactLocationSearch = ({
             label={`Search for ${searchType === 0 ? 'jobs' : 'workers'}`}
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
-            placeholder={searchType === 0 ? 'Job title, keywords' : 'Skills, name, title'}
+            placeholder={
+              searchType === 0 ? 'Job title, keywords' : 'Skills, name, title'
+            }
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 3,
                 backgroundColor: alpha(theme.palette.background.default, 0.3),
-                '& fieldset': { 
+                '& fieldset': {
                   borderColor: theme.palette.secondary.main,
-                  borderWidth: 2
+                  borderWidth: 2,
                 },
-                '&:hover fieldset': { 
+                '&:hover fieldset': {
                   borderColor: theme.palette.secondary.light,
                 },
                 '&.Mui-focused fieldset': {
                   borderColor: theme.palette.secondary.main,
-                }
-              }
+                },
+              },
             }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
+                  <SearchIcon
+                    sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+                  />
                 </InputAdornment>
               ),
             }}
@@ -399,13 +431,13 @@ const CompactLocationSearch = ({
 
         <Grid item xs={8} md={2}>
           <Box>
-            <Typography 
-              variant="body2" 
-              gutterBottom 
-              fontWeight="bold" 
+            <Typography
+              variant="body2"
+              gutterBottom
+              fontWeight="bold"
               sx={{
                 color: theme.palette.secondary.main,
-                textAlign: 'center'
+                textAlign: 'center',
               }}
             >
               Radius: {distance} miles
@@ -425,12 +457,12 @@ const CompactLocationSearch = ({
                 },
                 '& .MuiSlider-track': {
                   backgroundColor: theme.palette.secondary.main,
-                  height: 6
+                  height: 6,
                 },
                 '& .MuiSlider-rail': {
                   backgroundColor: alpha(theme.palette.secondary.main, 0.3),
-                  height: 6
-                }
+                  height: 6,
+                },
               }}
             />
           </Box>
@@ -451,10 +483,12 @@ const CompactLocationSearch = ({
               '&:hover': {
                 backgroundColor: theme.palette.secondary.dark,
                 transform: 'translateY(-2px)',
-                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.4)}`
-              }
+                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.4)}`,
+              },
             }}
-            startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+            startIcon={
+              loading ? <CircularProgress size={20} /> : <SearchIcon />
+            }
           >
             Search
           </Button>
@@ -469,7 +503,7 @@ const CompactLocationSearch = ({
           onClick={() => setExpanded(!expanded)}
           sx={{
             color: theme.palette.secondary.main,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           Advanced Filters
@@ -524,7 +558,11 @@ const CompactLocationSearch = ({
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Stack direction="row" spacing={2} sx={{ height: '100%', alignItems: 'center' }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ height: '100%', alignItems: 'center' }}
+            >
               <Button
                 variant="text"
                 startIcon={<ClearIcon />}
@@ -540,9 +578,11 @@ const CompactLocationSearch = ({
                 sx={{
                   backgroundColor: theme.palette.secondary.main,
                   color: theme.palette.secondary.contrastText,
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 }}
-                startIcon={loading ? <CircularProgress size={20} /> : <SortIcon />}
+                startIcon={
+                  loading ? <CircularProgress size={20} /> : <SortIcon />
+                }
               >
                 Apply
               </Button>
@@ -556,20 +596,21 @@ const CompactLocationSearch = ({
 
 const EmptySearchState = ({ searchType, location, onGetStarted }) => {
   const theme = useTheme();
-  
-  const suggestions = searchType === 0 
-    ? [
-        'Try searching for "plumbing" or "electrical"',
-        'Browse by job category using the filters',
-        'Expand your search radius',
-        'Check out featured opportunities below'
-      ]
-    : [
-        'Try searching for specific skills like "carpenter" or "painter"',
-        'Browse by skill category using the filters',
-        'Expand your search radius',
-        'Check out top professionals below'
-      ];
+
+  const suggestions =
+    searchType === 0
+      ? [
+          'Try searching for "plumbing" or "electrical"',
+          'Browse by job category using the filters',
+          'Expand your search radius',
+          'Check out featured opportunities below',
+        ]
+      : [
+          'Try searching for specific skills like "carpenter" or "painter"',
+          'Browse by skill category using the filters',
+          'Expand your search radius',
+          'Check out top professionals below',
+        ];
 
   return (
     <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -585,22 +626,26 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
         }}
       >
         {searchType === 0 ? (
-          <WorkIcon sx={{ 
-            fontSize: 100, 
-            color: theme.palette.secondary.main, 
-            mb: 3,
-          }} />
+          <WorkIcon
+            sx={{
+              fontSize: 100,
+              color: theme.palette.secondary.main,
+              mb: 3,
+            }}
+          />
         ) : (
-          <PersonIcon sx={{ 
-            fontSize: 100, 
-            color: theme.palette.secondary.main, 
-            mb: 3,
-          }} />
+          <PersonIcon
+            sx={{
+              fontSize: 100,
+              color: theme.palette.secondary.main,
+              mb: 3,
+            }}
+          />
         )}
-        
-        <Typography 
-          variant="h3" 
-          gutterBottom 
+
+        <Typography
+          variant="h3"
+          gutterBottom
           fontWeight="bold"
           sx={{
             fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
@@ -610,12 +655,12 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
         >
           {searchType === 0 ? '🔍 No Jobs Found' : '🔍 No Professionals Found'}
         </Typography>
-        
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            mb: 4, 
-            maxWidth: 700, 
+
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 4,
+            maxWidth: 700,
             mx: 'auto',
             color: theme.palette.text.primary,
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
@@ -623,15 +668,14 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             fontWeight: 500,
           }}
         >
-          {searchType === 0 
+          {searchType === 0
             ? `We couldn't find any jobs matching your criteria in ${location || 'your area'}. But don't worry - new opportunities are posted daily!`
-            : `We couldn't find any professionals matching your criteria in ${location || 'your area'}. Try adjusting your search parameters.`
-          }
+            : `We couldn't find any professionals matching your criteria in ${location || 'your area'}. Try adjusting your search parameters.`}
         </Typography>
 
-        <Typography 
-          variant="h5" 
-          gutterBottom 
+        <Typography
+          variant="h5"
+          gutterBottom
           sx={{
             color: theme.palette.secondary.main,
             fontWeight: 'bold',
@@ -640,38 +684,40 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
         >
           💡 Try These Suggestions:
         </Typography>
-        
+
         <Grid container spacing={3} sx={{ mb: 6 }}>
           {suggestions.map((suggestion, index) => (
             <Grid item xs={12} sm={6} key={index}>
-              <Box sx={{ 
-                p: 3, 
-                height: '100%',
-                borderRadius: 3,
-                backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  borderColor: theme.palette.secondary.main,
-                  backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                  boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
-                }
-              }}>
-                <CheckCircle 
-                  sx={{ 
-                    color: theme.palette.secondary.main, 
+              <Box
+                sx={{
+                  p: 3,
+                  height: '100%',
+                  borderRadius: 3,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    borderColor: theme.palette.secondary.main,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  },
+                }}
+              >
+                <CheckCircle
+                  sx={{
+                    color: theme.palette.secondary.main,
                     mb: 2,
-                    fontSize: 32
-                  }} 
+                    fontSize: 32,
+                  }}
                 />
-                <Typography 
+                <Typography
                   variant="body1"
                   sx={{
                     color: theme.palette.text.primary,
                     fontWeight: 500,
                     fontSize: '1rem',
-                    lineHeight: 1.5
+                    lineHeight: 1.5,
                   }}
                 >
                   {suggestion}
@@ -696,8 +742,8 @@ const EmptySearchState = ({ searchType, location, onGetStarted }) => {
             '&:hover': {
               backgroundColor: theme.palette.secondary.dark,
               transform: 'translateY(-3px)',
-              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`
-            }
+              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`,
+            },
           }}
         >
           {searchType === 0 ? 'Browse All Jobs' : 'Browse All Professionals'}
@@ -727,7 +773,7 @@ const GeoLocationSearch = () => {
 
   // Results state
   const [searchResults, setSearchResults] = useState([]);
-  const [totalResults, setTotalResults] = useState(0);
+  const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searched, setSearched] = useState(false);
@@ -739,37 +785,22 @@ const GeoLocationSearch = () => {
 
   // Load categories and skills
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (searchType === 0) {
-          setCategories([
-            { id: 'plumbing', name: 'Plumbing & Water Systems' },
-            { id: 'electrical', name: 'Electrical & Wiring' },
-            { id: 'carpentry', name: 'Carpentry & Woodwork' },
-            { id: 'painting', name: 'Painting & Decoration' },
-            { id: 'hvac', name: 'HVAC & Climate Control' },
-            { id: 'roofing', name: 'Roofing & Exterior' },
-            { id: 'flooring', name: 'Flooring & Tiling' },
-            { id: 'landscaping', name: 'Landscaping & Gardening' }
-          ]);
-        } else {
-          setSkills([
-            { id: 'construction', name: 'Construction & Building' },
-            { id: 'maintenance', name: 'Maintenance & Repair' },
-            { id: 'design', name: 'Design & Creative' },
-            { id: 'technology', name: 'Technology & Smart Home' },
-            { id: 'cleaning', name: 'Cleaning & Janitorial' },
-            { id: 'security', name: 'Security & Safety' },
-            { id: 'automotive', name: 'Automotive & Mechanical' },
-            { id: 'wellness', name: 'Health & Wellness' }
-          ]);
-        }
-      } catch (err) {
-        console.error('Error loading categories/skills:', err);
-      }
-    };
-
-    fetchData();
+    // Mock data for categories and skills
+    if (searchType === 0) {
+      setCategories([
+        { id: 'plumbing', name: 'Plumbing & Water Systems' },
+        { id: 'electrical', name: 'Electrical & Wiring' },
+        { id: 'carpentry', name: 'Carpentry & Woodwork' },
+        { id: 'painting', name: 'Painting & Decoration' },
+      ]);
+    } else {
+      setSkills([
+        { id: 'construction', name: 'Construction & Building' },
+        { id: 'maintenance', name: 'Maintenance & Repair' },
+        { id: 'design', name: 'Design & Creative' },
+        { id: 'technology', name: 'Technology & Smart Home' },
+      ]);
+    }
   }, [searchType]);
 
   // Get user's current location
@@ -778,36 +809,25 @@ const GeoLocationSearch = () => {
       setLoading(true);
       setLocationError(false);
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const mockLocations = [
-              'Accra, Ghana',
-              'Kumasi, Ghana', 
-              'Tema, Ghana',
-              'Cape Coast, Ghana',
-              'Tamale, Ghana'
-            ];
-            
-            const randomLocation = mockLocations[Math.floor(Math.random() * mockLocations.length)];
-            setLocation(randomLocation);
-            setLocationError(false);
-          } catch (err) {
-            console.error('Error getting location name:', err);
-            setLocationError(true);
-          } finally {
-            setLoading(false);
-          }
+        (position) => {
+          // In a real app, you would use position.coords.latitude and position.coords.longitude
+          // to get the location name from a geocoding service.
+          // For this example, we'll use a mock location.
+          const mockLocations = [
+            'Accra, Ghana',
+            'Kumasi, Ghana',
+            'Tema, Ghana',
+          ];
+          const randomLocation =
+            mockLocations[Math.floor(Math.random() * mockLocations.length)];
+          setLocation(randomLocation);
+          setLoading(false);
         },
         (error) => {
           console.error('Error getting current location:', error);
           setLoading(false);
           setLocationError(true);
         },
-        {
-          timeout: 10000,
-          enableHighAccuracy: true,
-          maximumAge: 600000
-        }
       );
     } else {
       setLocationError(true);
@@ -816,24 +836,19 @@ const GeoLocationSearch = () => {
 
   // Handle location suggestions
   const fetchLocationSuggestions = useCallback(
-    debounce(async (query) => {
+    debounce((query) => {
       if (!query || query.length < 2) {
         setSuggestedLocations([]);
         return;
       }
-
       const mockSuggestions = [
         'Accra, Ghana',
         'Kumasi, Ghana',
         'Tema, Ghana',
         'Cape Coast, Ghana',
-        'Tamale, Ghana',
-        'Takoradi, Ghana',
-        'Koforidua, Ghana',
-        'Sunyani, Ghana'
-      ].filter(loc => loc.toLowerCase().includes(query.toLowerCase()))
-       .map(loc => ({ id: loc, description: loc }));
-
+      ]
+        .filter((loc) => loc.toLowerCase().includes(query.toLowerCase()))
+        .map((loc) => ({ id: loc, description: loc }));
       setSuggestedLocations(mockSuggestions);
     }, 300),
     [],
@@ -849,16 +864,17 @@ const GeoLocationSearch = () => {
       setError('Please enter a location to search.');
       return;
     }
-
     setCurrentPage(page);
     setLoading(true);
     setError(null);
     setSearched(true);
-
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mocking API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // In a real app, this would be an API call to the backend with all the search parameters
+      // For now, we return an empty array to show the empty state.
       setSearchResults([]);
-      setTotalResults(0);
+      setPagination({ currentPage: 1, totalPages: 1, totalItems: 0 });
     } catch (err) {
       console.error('Error searching:', err);
       setError('Something went wrong. Please try again.');
@@ -877,7 +893,7 @@ const GeoLocationSearch = () => {
     setSearchType(newValue);
     setCategory('');
     setSearchResults([]);
-    setTotalResults(0);
+    setPagination({});
     setSearched(false);
   };
 
@@ -886,21 +902,21 @@ const GeoLocationSearch = () => {
     setKeywords('');
     setCategory('');
     setSortBy('relevance');
-    setSearchResults([]);
-    setTotalResults(0);
-    setSearched(false);
+    setDistance(50);
   };
 
   const handleManualLocationEntry = () => {
     setLocationError(false);
-    const locationInput = document.querySelector('input[placeholder*="City"]');
-    if (locationInput) {
-      locationInput.focus();
-    }
+    // Logic to focus the location input
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: theme.palette.background.default }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Helmet>
           <title>Location-based Search | Kelmah</title>
@@ -908,82 +924,77 @@ const GeoLocationSearch = () => {
 
         {/* Header Section */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            gutterBottom 
+          <Typography
+            variant="h2"
+            component="h1"
+            gutterBottom
             fontWeight="bold"
             sx={{
               color: theme.palette.secondary.main,
               fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
               textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-              mb: 2
+              mb: 2,
             }}
           >
             🌍 Find {searchType === 0 ? 'Jobs' : 'Talent'} Near You
           </Typography>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              maxWidth: 800, 
+          <Typography
+            variant="h5"
+            sx={{
+              maxWidth: 800,
               mx: 'auto',
               color: theme.palette.text.primary,
               fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
               fontWeight: 500,
-              lineHeight: 1.6
+              lineHeight: 1.6,
             }}
           >
-            Connect with local opportunities and professionals in your area. 
-            Distance matters - find work and talent that's convenient for everyone.
+            Connect with local opportunities and professionals. Distance matters
+            - find work and talent that's convenient for everyone.
           </Typography>
         </Box>
 
         {/* Search Type Tabs */}
-        <Paper sx={{ 
-          mb: 4, 
-          borderRadius: 3, 
-          overflow: 'hidden',
-          border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-          backgroundColor: theme.palette.background.paper,
-        }}>
+        <Paper
+          sx={{
+            mb: 4,
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+            backgroundColor: theme.palette.background.paper,
+          }}
+        >
           <Tabs
             value={searchType}
             onChange={handleTabChange}
             variant={isMobile ? 'fullWidth' : 'standard'}
+            centered={!isMobile}
             aria-label="search type tabs"
             sx={{
               backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-              '& .MuiTab-root': {
-                fontWeight: 'bold',
-                textTransform: 'none',
-                fontSize: { xs: '1rem', sm: '1.2rem' },
-                py: 2,
-                color: theme.palette.text.secondary,
-                '&.Mui-selected': {
-                  color: theme.palette.secondary.main
-                }
-              },
               '& .MuiTabs-indicator': {
                 backgroundColor: theme.palette.secondary.main,
-                height: 4
-              }
+                height: 4,
+              },
             }}
           >
-            <Tab 
-              icon={<WorkIcon sx={{ fontSize: 28 }} />} 
-              label="Find Jobs" 
+            <Tab
+              icon={<WorkIcon />}
+              label="Find Jobs"
               iconPosition="start"
+              sx={{ fontWeight: 'bold', fontSize: '1.1rem', py: 2 }}
             />
-            <Tab 
-              icon={<PersonIcon sx={{ fontSize: 28 }} />} 
-              label="Find Talent" 
+            <Tab
+              icon={<PersonIcon />}
+              label="Find Talent"
               iconPosition="start"
+              sx={{ fontWeight: 'bold', fontSize: '1.1rem', py: 2 }}
             />
           </Tabs>
         </Paper>
 
         {/* Location Error Fallback */}
-        {locationError && (
+        {locationError && !location && (
           <LocationErrorFallback
             onRetry={getCurrentLocation}
             onManualEntry={handleManualLocationEntry}
@@ -1014,185 +1025,81 @@ const GeoLocationSearch = () => {
 
         {/* Error Display */}
         {error && (
-          <Alert 
-            severity="error" 
-            sx={{ mb: 3, borderRadius: 2 }} 
+          <Alert
+            severity="error"
+            sx={{ mb: 3, borderRadius: 2 }}
             onClose={() => setError(null)}
           >
             {error}
           </Alert>
         )}
 
-        {/* Content Tabs */}
-        <TabPanel value={searchType} index={0}>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={60} />
-            </Box>
-          ) : searched && searchResults.length === 0 ? (
-            <EmptySearchState 
-              searchType={0} 
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress size={60} />
+          </Box>
+        ) : searched && searchResults.length === 0 ? (
+          <TabPanel value={searchType} index={searchType}>
+            <EmptySearchState
+              searchType={searchType}
               location={location}
-              onGetStarted={() => navigate('/jobs')}
+              onGetStarted={() =>
+                navigate(searchType === 0 ? '/jobs' : '/find-talents')
+              }
             />
-          ) : (
-            <>
-              {totalResults > 0 && (
-                <Box
-                  sx={{
-                    mb: 3,
-                    p: 3,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                    borderRadius: 3,
-                    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
-                  }}
-                >
-                  <Typography variant="h6" fontWeight="bold">
-                    📍 {totalResults} job{totalResults !== 1 ? 's' : ''} found within{' '}
-                    {distance} miles of {location}
-                  </Typography>
-                  <Chip 
-                    label={`Page ${currentPage}`} 
-                    variant="outlined" 
-                    color="primary"
-                  />
-                </Box>
-              )}
-
-              <Grid container spacing={3}>
-                {searchResults.map((job) => (
-                  <Grid item xs={12} key={job.id}>
-                    <JobCard job={job} showLocation={true} />
-                  </Grid>
-                ))}
-              </Grid>
-
-              {totalResults > 10 && (
-                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      disabled={currentPage === 1 || loading}
-                      onClick={() => handleSearch(currentPage - 1)}
-                      variant="outlined"
-                      sx={{ borderRadius: 2 }}
-                    >
-                      Previous Page
-                    </Button>
-                    <Button
-                      disabled={currentPage * 10 >= totalResults || loading}
-                      onClick={() => handleSearch(currentPage + 1)}
-                      variant="contained"
-                      sx={{
-                        backgroundColor: theme.palette.secondary.main,
-                        borderRadius: 2
-                      }}
-                    >
-                      Next Page
-                    </Button>
-                  </Stack>
-                </Box>
-              )}
-            </>
-          )}
-        </TabPanel>
-
-        <TabPanel value={searchType} index={1}>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={60} />
+          </TabPanel>
+        ) : searchResults.length > 0 ? (
+          <TabPanel value={searchType} index={searchType}>
+            <Box
+              sx={{
+                mb: 3,
+                p: 3,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold">
+                {searchType === 0 ? '📍' : '👥'} {pagination.totalItems || 0}{' '}
+                result{pagination.totalItems !== 1 ? 's' : ''} found
+              </Typography>
+              <Chip
+                label={`Page ${pagination.currentPage || 1}`}
+                variant="outlined"
+              />
             </Box>
-          ) : searched && searchResults.length === 0 ? (
-            <EmptySearchState 
-              searchType={1} 
-              location={location}
-              onGetStarted={() => navigate('/find-talents')}
-            />
-          ) : (
-            <>
-              {totalResults > 0 && (
-                <Box
-                  sx={{
-                    mb: 3,
-                    p: 3,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                    borderRadius: 3,
-                    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
-                  }}
+            <Grid container spacing={3}>
+              {searchResults.map((item) => (
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={searchType === 0 ? 12 : 4}
+                  key={item.id}
                 >
-                  <Typography variant="h6" fontWeight="bold">
-                    👥 {totalResults} worker{totalResults !== 1 ? 's' : ''} found
-                    within {distance} miles of {location}
-                  </Typography>
-                  <Chip 
-                    label={`Page ${currentPage}`} 
-                    variant="outlined" 
-                    color="primary"
-                  />
-                </Box>
-              )}
-
-              <Grid container spacing={3}>
-                {searchResults.map((worker) => (
-                  <Grid item xs={12} sm={6} md={4} key={worker.id}>
-                    <WorkerCard worker={worker} showLocation={true} />
-                  </Grid>
-                ))}
-              </Grid>
-
-              {totalResults > 10 && (
-                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      disabled={currentPage === 1 || loading}
-                      onClick={() => handleSearch(currentPage - 1)}
-                      variant="outlined"
-                      sx={{ borderRadius: 2 }}
-                    >
-                      Previous Page
-                    </Button>
-                    <Button
-                      disabled={currentPage * 10 >= totalResults || loading}
-                      onClick={() => handleSearch(currentPage + 1)}
-                      variant="contained"
-                      sx={{
-                        backgroundColor: theme.palette.secondary.main,
-                        borderRadius: 2
-                      }}
-                    >
-                      Next Page
-                    </Button>
-                  </Stack>
-                </Box>
-              )}
-            </>
-          )}
-        </TabPanel>
-
-        {/* Floating Action Button for Mobile */}
-        <Fab
-          color="primary"
-          aria-label="quick search"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          sx={{
-            position: 'fixed',
-            bottom: 90,
-            right: 20,
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-            display: { xs: 'flex', md: 'none' },
-            '&:hover': {
-              backgroundColor: theme.palette.secondary.dark,
-            }
-          }}
-        >
-          <Navigation />
-        </Fab>
+                  {searchType === 0 ? (
+                    <JobCard job={item} showLocation={true} />
+                  ) : (
+                    <WorkerCard worker={item} showLocation={true} />
+                  )}
+                </Grid>
+              ))}
+            </Grid>
+            {pagination.totalPages > 1 && (
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                <Pagination
+                  count={pagination.totalPages}
+                  page={pagination.currentPage}
+                  onChange={(e, page) => handleSearch(page)}
+                  color="primary"
+                />
+              </Box>
+            )}
+          </TabPanel>
+        ) : null}
       </Container>
     </Box>
   );

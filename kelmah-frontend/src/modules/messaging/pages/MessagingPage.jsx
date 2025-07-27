@@ -88,18 +88,22 @@ const EnhancedMessagingPage = () => {
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
   const [newChatDialog, setNewChatDialog] = useState(false);
   const [archiveMode, setArchiveMode] = useState(false);
-  
+
   // Message input state
   const [messageText, setMessageText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  
+
   // UI state
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  
+
   // Refs
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -112,78 +116,105 @@ const EnhancedMessagingPage = () => {
       id: '1',
       type: 'direct',
       participants: [
-        { id: user?.id, name: user?.firstName || 'You', avatar: user?.profileImage },
-        { id: '2', name: 'John Carpenter', avatar: '/api/placeholder/40/40', status: 'online' }
+        {
+          id: user?.id,
+          name: user?.firstName || 'You',
+          avatar: user?.profileImage,
+        },
+        {
+          id: '2',
+          name: 'John Carpenter',
+          avatar: '/api/placeholder/40/40',
+          status: 'online',
+        },
       ],
       lastMessage: {
         id: '1',
         text: 'Hey, I saw your carpentry work. Are you available for a kitchen renovation project?',
         sender: '2',
         timestamp: new Date(Date.now() - 1000 * 60 * 15),
-        status: 'delivered'
+        status: 'delivered',
       },
       unreadCount: 2,
       isArchived: false,
       isPinned: true,
-      jobRelated: { id: 'job-1', title: 'Kitchen Renovation' }
+      jobRelated: { id: 'job-1', title: 'Kitchen Renovation' },
     },
     {
       id: '2',
       type: 'direct',
       participants: [
-        { id: user?.id, name: user?.firstName || 'You', avatar: user?.profileImage },
-        { id: '3', name: 'Sarah Wilson', avatar: '/api/placeholder/40/40', status: 'offline' }
+        {
+          id: user?.id,
+          name: user?.firstName || 'You',
+          avatar: user?.profileImage,
+        },
+        {
+          id: '3',
+          name: 'Sarah Wilson',
+          avatar: '/api/placeholder/40/40',
+          status: 'offline',
+        },
       ],
       lastMessage: {
         id: '2',
-        text: 'Thank you for the excellent plumbing work! I\'ve left a 5-star review.',
+        text: "Thank you for the excellent plumbing work! I've left a 5-star review.",
         sender: '3',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-        status: 'read'
+        status: 'read',
       },
       unreadCount: 0,
       isArchived: false,
       isPinned: false,
-      jobRelated: { id: 'job-2', title: 'Bathroom Plumbing Repair' }
+      jobRelated: { id: 'job-2', title: 'Bathroom Plumbing Repair' },
     },
     {
       id: '3',
       type: 'direct',
       participants: [
-        { id: user?.id, name: user?.firstName || 'You', avatar: user?.profileImage },
-        { id: '4', name: 'Mike Johnson', avatar: '/api/placeholder/40/40', status: 'online' }
+        {
+          id: user?.id,
+          name: user?.firstName || 'You',
+          avatar: user?.profileImage,
+        },
+        {
+          id: '4',
+          name: 'Mike Johnson',
+          avatar: '/api/placeholder/40/40',
+          status: 'online',
+        },
       ],
       lastMessage: {
         id: '3',
         text: 'When can you start the electrical work?',
         sender: user?.id,
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        status: 'read'
+        status: 'read',
       },
       unreadCount: 0,
       isArchived: false,
       isPinned: false,
-      jobRelated: { id: 'job-3', title: 'House Rewiring Project' }
-    }
+      jobRelated: { id: 'job-3', title: 'House Rewiring Project' },
+    },
   ];
 
   const mockMessages = {
-    '1': [
+    1: [
       {
         id: '1',
-        text: 'Hi there! I saw your profile and I\'m impressed with your carpentry skills.',
+        text: "Hi there! I saw your profile and I'm impressed with your carpentry skills.",
         sender: '2',
         timestamp: new Date(Date.now() - 1000 * 60 * 60),
         status: 'read',
-        type: 'text'
+        type: 'text',
       },
       {
         id: '2',
-        text: 'Thank you! I\'d be happy to help with your project. What kind of work are you looking for?',
+        text: "Thank you! I'd be happy to help with your project. What kind of work are you looking for?",
         sender: user?.id,
         timestamp: new Date(Date.now() - 1000 * 60 * 45),
         status: 'read',
-        type: 'text'
+        type: 'text',
       },
       {
         id: '3',
@@ -191,7 +222,7 @@ const EnhancedMessagingPage = () => {
         sender: '2',
         timestamp: new Date(Date.now() - 1000 * 60 * 30),
         status: 'read',
-        type: 'text'
+        type: 'text',
       },
       {
         id: '4',
@@ -201,19 +232,27 @@ const EnhancedMessagingPage = () => {
         status: 'read',
         type: 'text',
         attachments: [
-          { type: 'image', url: '/api/placeholder/300/200', name: 'kitchen1.jpg' },
-          { type: 'image', url: '/api/placeholder/300/200', name: 'kitchen2.jpg' }
-        ]
+          {
+            type: 'image',
+            url: '/api/placeholder/300/200',
+            name: 'kitchen1.jpg',
+          },
+          {
+            type: 'image',
+            url: '/api/placeholder/300/200',
+            name: 'kitchen2.jpg',
+          },
+        ],
       },
       {
         id: '5',
-        text: 'Wow, these look amazing! Exactly what I had in mind. What\'s your availability?',
+        text: "Wow, these look amazing! Exactly what I had in mind. What's your availability?",
         sender: '2',
         timestamp: new Date(Date.now() - 1000 * 60 * 15),
         status: 'delivered',
-        type: 'text'
-      }
-    ]
+        type: 'text',
+      },
+    ],
   };
 
   // Initialize messaging system
@@ -224,11 +263,14 @@ const EnhancedMessagingPage = () => {
         // Mock WebSocket connection
         setIsConnected(true);
         setConversations(mockConversations);
-        
+
         // Calculate total unread count
-        const totalUnread = mockConversations.reduce((sum, conv) => sum + conv.unreadCount, 0);
+        const totalUnread = mockConversations.reduce(
+          (sum, conv) => sum + conv.unreadCount,
+          0,
+        );
         setUnreadCount(totalUnread);
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to initialize messaging:', error);
@@ -245,7 +287,9 @@ const EnhancedMessagingPage = () => {
     const params = new URLSearchParams(search);
     const conversationId = params.get('conversation');
     if (conversationId) {
-      const conversation = mockConversations.find(c => c.id === conversationId);
+      const conversation = mockConversations.find(
+        (c) => c.id === conversationId,
+      );
       if (conversation) {
         setSelectedConversation(conversation);
         setMessages(mockMessages[conversationId] || []);
@@ -260,30 +304,34 @@ const EnhancedMessagingPage = () => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(conv => {
-        const otherParticipant = conv.participants.find(p => p.id !== user?.id);
-        return otherParticipant?.name.toLowerCase().includes(query) ||
-               conv.lastMessage?.text.toLowerCase().includes(query) ||
-               conv.jobRelated?.title.toLowerCase().includes(query);
+      filtered = filtered.filter((conv) => {
+        const otherParticipant = conv.participants.find(
+          (p) => p.id !== user?.id,
+        );
+        return (
+          otherParticipant?.name.toLowerCase().includes(query) ||
+          conv.lastMessage?.text.toLowerCase().includes(query) ||
+          conv.jobRelated?.title.toLowerCase().includes(query)
+        );
       });
     }
 
     // Apply category filter
     switch (selectedFilter) {
       case 'unread':
-        filtered = filtered.filter(conv => conv.unreadCount > 0);
+        filtered = filtered.filter((conv) => conv.unreadCount > 0);
         break;
       case 'archived':
-        filtered = filtered.filter(conv => conv.isArchived);
+        filtered = filtered.filter((conv) => conv.isArchived);
         break;
       case 'pinned':
-        filtered = filtered.filter(conv => conv.isPinned);
+        filtered = filtered.filter((conv) => conv.isPinned);
         break;
       case 'job-related':
-        filtered = filtered.filter(conv => conv.jobRelated);
+        filtered = filtered.filter((conv) => conv.jobRelated);
         break;
       default:
-        filtered = filtered.filter(conv => !conv.isArchived);
+        filtered = filtered.filter((conv) => !conv.isArchived);
         break;
     }
 
@@ -291,7 +339,9 @@ const EnhancedMessagingPage = () => {
     filtered.sort((a, b) => {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
-      return new Date(b.lastMessage?.timestamp) - new Date(a.lastMessage?.timestamp);
+      return (
+        new Date(b.lastMessage?.timestamp) - new Date(a.lastMessage?.timestamp)
+      );
     });
 
     setFilteredConversations(filtered);
@@ -303,23 +353,26 @@ const EnhancedMessagingPage = () => {
   }, [messages]);
 
   // Handle conversation selection
-  const handleConversationSelect = useCallback((conversation) => {
-    setSelectedConversation(conversation);
-    setMessages(mockMessages[conversation.id] || []);
-    
-    // Mark as read
-    if (conversation.unreadCount > 0) {
-      setConversations(prev => prev.map(conv => 
-        conv.id === conversation.id 
-          ? { ...conv, unreadCount: 0 }
-          : conv
-      ));
-      setUnreadCount(prev => prev - conversation.unreadCount);
-    }
+  const handleConversationSelect = useCallback(
+    (conversation) => {
+      setSelectedConversation(conversation);
+      setMessages(mockMessages[conversation.id] || []);
 
-    // Update URL
-    navigate(`/messages?conversation=${conversation.id}`, { replace: true });
-  }, [navigate]);
+      // Mark as read
+      if (conversation.unreadCount > 0) {
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv,
+          ),
+        );
+        setUnreadCount((prev) => prev - conversation.unreadCount);
+      }
+
+      // Update URL
+      navigate(`/messages?conversation=${conversation.id}`, { replace: true });
+    },
+    [navigate],
+  );
 
   // Handle sending messages
   const handleSendMessage = useCallback(async () => {
@@ -333,49 +386,53 @@ const EnhancedMessagingPage = () => {
       timestamp: new Date(),
       status: 'sending',
       type: selectedFiles.length > 0 ? 'mixed' : 'text',
-      attachments: selectedFiles.map(file => ({
+      attachments: selectedFiles.map((file) => ({
         type: file.type.startsWith('image/') ? 'image' : 'file',
         url: URL.createObjectURL(file),
         name: file.name,
-        size: file.size
-      }))
+        size: file.size,
+      })),
     };
 
     // Add message optimistically
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setMessageText('');
     setSelectedFiles([]);
 
     // Update conversation last message
-    setConversations(prev => prev.map(conv => 
-      conv.id === selectedConversation.id
-        ? {
-            ...conv,
-            lastMessage: {
-              ...newMessage,
-              text: newMessage.text || `Sent ${newMessage.attachments?.length} file(s)`
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === selectedConversation.id
+          ? {
+              ...conv,
+              lastMessage: {
+                ...newMessage,
+                text:
+                  newMessage.text ||
+                  `Sent ${newMessage.attachments?.length} file(s)`,
+              },
             }
-          }
-        : conv
-    ));
+          : conv,
+      ),
+    );
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Update message status
-      setMessages(prev => prev.map(msg => 
-        msg.id === newMessage.id 
-          ? { ...msg, status: 'delivered' }
-          : msg
-      ));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg,
+        ),
+      );
     } catch (error) {
       console.error('Failed to send message:', error);
-      setMessages(prev => prev.map(msg => 
-        msg.id === newMessage.id 
-          ? { ...msg, status: 'failed' }
-          : msg
-      ));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === newMessage.id ? { ...msg, status: 'failed' } : msg,
+        ),
+      );
       showFeedback('Failed to send message', 'error');
     }
   }, [messageText, selectedFiles, selectedConversation, user]);
@@ -402,13 +459,13 @@ const EnhancedMessagingPage = () => {
   // Handle file selection
   const handleFileSelect = useCallback((event) => {
     const files = Array.from(event.target.files);
-    const validFiles = files.filter(file => file.size <= 10 * 1024 * 1024); // 10MB limit
-    
+    const validFiles = files.filter((file) => file.size <= 10 * 1024 * 1024); // 10MB limit
+
     if (validFiles.length !== files.length) {
       showFeedback('Some files were too large (max 10MB)', 'warning');
     }
-    
-    setSelectedFiles(prev => [...prev, ...validFiles]);
+
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
   }, []);
 
   // Utility functions
@@ -417,7 +474,7 @@ const EnhancedMessagingPage = () => {
   };
 
   const getOtherParticipant = (conversation) => {
-    return conversation?.participants.find(p => p.id !== user?.id);
+    return conversation?.participants.find((p) => p.id !== user?.id);
   };
 
   const formatMessageTime = (timestamp) => {
@@ -434,9 +491,13 @@ const EnhancedMessagingPage = () => {
   const getMessageStatus = (message) => {
     switch (message.status) {
       case 'sending':
-        return <ScheduleIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }} />;
+        return (
+          <ScheduleIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }} />
+        );
       case 'delivered':
-        return <CheckIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }} />;
+        return (
+          <CheckIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }} />
+        );
       case 'read':
         return <DoneAllIcon sx={{ fontSize: 16, color: '#4CAF50' }} />;
       case 'failed':
@@ -451,7 +512,8 @@ const EnhancedMessagingPage = () => {
     <Paper
       sx={{
         height: '100%',
-        background: 'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
         border: '1px solid rgba(255,215,0,0.2)',
         borderRadius: 3,
         overflow: 'hidden',
@@ -464,10 +526,16 @@ const EnhancedMessagingPage = () => {
         sx={{
           p: 2,
           borderBottom: '1px solid rgba(255,215,0,0.1)',
-          background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ mb: 2 }}
+        >
           <Typography
             variant="h6"
             sx={{
@@ -548,7 +616,11 @@ const EnhancedMessagingPage = () => {
         />
 
         {/* Filter Chips */}
-        <Stack direction="row" spacing={1} sx={{ mt: 2, overflowX: 'auto', pb: 1 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mt: 2, overflowX: 'auto', pb: 1 }}
+        >
           {[
             { value: 'all', label: 'All' },
             { value: 'unread', label: 'Unread' },
@@ -563,13 +635,18 @@ const EnhancedMessagingPage = () => {
               size="small"
               onClick={() => setSelectedFilter(filter.value)}
               sx={{
-                backgroundColor: selectedFilter === filter.value
-                  ? alpha('#FFD700', 0.2)
-                  : 'rgba(255,255,255,0.05)',
-                color: selectedFilter === filter.value ? '#FFD700' : 'rgba(255,255,255,0.7)',
-                border: `1px solid ${selectedFilter === filter.value
-                  ? 'rgba(255,215,0,0.5)'
-                  : 'rgba(255,255,255,0.1)'
+                backgroundColor:
+                  selectedFilter === filter.value
+                    ? alpha('#FFD700', 0.2)
+                    : 'rgba(255,255,255,0.05)',
+                color:
+                  selectedFilter === filter.value
+                    ? '#FFD700'
+                    : 'rgba(255,255,255,0.7)',
+                border: `1px solid ${
+                  selectedFilter === filter.value
+                    ? 'rgba(255,215,0,0.5)'
+                    : 'rgba(255,255,255,0.1)'
                 }`,
                 '&:hover': {
                   backgroundColor: alpha('#FFD700', 0.1),
@@ -588,7 +665,7 @@ const EnhancedMessagingPage = () => {
           {filteredConversations.map((conversation, index) => {
             const otherParticipant = getOtherParticipant(conversation);
             const isSelected = selectedConversation?.id === conversation.id;
-            
+
             return (
               <motion.div
                 key={conversation.id}
@@ -606,7 +683,9 @@ const EnhancedMessagingPage = () => {
                     background: isSelected
                       ? 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)'
                       : 'transparent',
-                    borderLeft: isSelected ? '3px solid #FFD700' : '3px solid transparent',
+                    borderLeft: isSelected
+                      ? '3px solid #FFD700'
+                      : '3px solid transparent',
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       background: 'rgba(255,255,255,0.03)',
@@ -647,7 +726,12 @@ const EnhancedMessagingPage = () => {
                     </Badge>
 
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        sx={{ mb: 0.5 }}
+                      >
                         <Typography
                           variant="subtitle1"
                           sx={{
@@ -662,7 +746,9 @@ const EnhancedMessagingPage = () => {
                         >
                           {otherParticipant?.name}
                           {conversation.isPinned && (
-                            <StarIcon sx={{ fontSize: 16, color: '#FFD700', ml: 0.5 }} />
+                            <StarIcon
+                              sx={{ fontSize: 16, color: '#FFD700', ml: 0.5 }}
+                            />
                           )}
                         </Typography>
                         <Typography
@@ -674,7 +760,9 @@ const EnhancedMessagingPage = () => {
                             ml: 1,
                           }}
                         >
-                          {formatMessageTime(conversation.lastMessage?.timestamp)}
+                          {formatMessageTime(
+                            conversation.lastMessage?.timestamp,
+                          )}
                         </Typography>
                       </Stack>
 
@@ -692,7 +780,11 @@ const EnhancedMessagingPage = () => {
                         />
                       )}
 
-                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
                         <Typography
                           variant="body2"
                           sx={{
@@ -704,14 +796,18 @@ const EnhancedMessagingPage = () => {
                             flex: 1,
                           }}
                         >
-                          {conversation.lastMessage?.sender === user?.id && 'You: '}
+                          {conversation.lastMessage?.sender === user?.id &&
+                            'You: '}
                           {conversation.lastMessage?.text || 'No messages yet'}
                         </Typography>
-                        
-                        <Stack direction="row" alignItems="center" spacing={0.5}>
-                          {conversation.lastMessage?.sender === user?.id && 
-                            getMessageStatus(conversation.lastMessage)
-                          }
+
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={0.5}
+                        >
+                          {conversation.lastMessage?.sender === user?.id &&
+                            getMessageStatus(conversation.lastMessage)}
                           {conversation.unreadCount > 0 && (
                             <Badge
                               badgeContent={conversation.unreadCount}
@@ -737,11 +833,16 @@ const EnhancedMessagingPage = () => {
 
         {filteredConversations.length === 0 && (
           <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.5)', mb: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: 'rgba(255,255,255,0.5)', mb: 1 }}
+            >
               No conversations found
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.3)' }}>
-              {searchQuery ? 'Try adjusting your search' : 'Start a new conversation'}
+              {searchQuery
+                ? 'Try adjusting your search'
+                : 'Start a new conversation'}
             </Typography>
           </Box>
         )}
@@ -753,24 +854,26 @@ const EnhancedMessagingPage = () => {
   const EnhancedChatArea = () => {
     if (!selectedConversation) {
       return (
-      <Paper
+        <Paper
           sx={{
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-            background: 'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background:
+              'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
             borderRadius: 3,
           }}
-      >
-        <Box textAlign="center">
+        >
+          <Box textAlign="center">
             <Box
               sx={{
                 width: 120,
                 height: 120,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -780,25 +883,26 @@ const EnhancedMessagingPage = () => {
             >
               <SendIcon sx={{ fontSize: 48, color: 'rgba(255,215,0,0.5)' }} />
             </Box>
-          <Typography
-            variant="h6"
+            <Typography
+              variant="h6"
               sx={{
                 color: '#FFD700',
                 fontWeight: 600,
                 mb: 1,
               }}
-          >
-            Select a conversation
-          </Typography>
-          <Typography
-            variant="body1"
+            >
+              Select a conversation
+            </Typography>
+            <Typography
+              variant="body1"
               sx={{
                 color: 'rgba(255,255,255,0.5)',
                 maxWidth: '300px',
                 mx: 'auto',
               }}
             >
-              Choose a conversation from the list to start chatting with clients and colleagues.
+              Choose a conversation from the list to start chatting with clients
+              and colleagues.
             </Typography>
           </Box>
         </Paper>
@@ -813,7 +917,8 @@ const EnhancedMessagingPage = () => {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          background: 'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           borderRadius: 3,
           overflow: 'hidden',
@@ -824,7 +929,8 @@ const EnhancedMessagingPage = () => {
           position="static"
           elevation={0}
           sx={{
-            background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
             borderBottom: '1px solid rgba(255,215,0,0.2)',
           }}
         >
@@ -961,14 +1067,17 @@ const EnhancedMessagingPage = () => {
             flex: 1,
             overflow: 'auto',
             p: 2,
-            background: 'linear-gradient(135deg, rgba(10,10,10,0.5) 0%, rgba(20,20,20,0.5) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(10,10,10,0.5) 0%, rgba(20,20,20,0.5) 100%)',
           }}
         >
           <AnimatePresence>
             {messages.map((message, index) => {
               const isOwn = message.sender === user?.id;
-              const showAvatar = !isOwn && (index === 0 || messages[index - 1].sender !== message.sender);
-              
+              const showAvatar =
+                !isOwn &&
+                (index === 0 || messages[index - 1].sender !== message.sender);
+
               return (
                 <motion.div
                   key={message.id}
@@ -1000,9 +1109,7 @@ const EnhancedMessagingPage = () => {
                         {otherParticipant?.name?.charAt(0)}
                       </Avatar>
                     )}
-                    {!isOwn && !showAvatar && (
-                      <Box sx={{ width: 32, mr: 1 }} />
-                    )}
+                    {!isOwn && !showAvatar && <Box sx={{ width: 32, mr: 1 }} />}
 
                     <Box
                       sx={{
@@ -1020,27 +1127,29 @@ const EnhancedMessagingPage = () => {
                           color: isOwn ? '#000' : '#fff',
                           border: `1px solid ${isOwn ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
                           position: 'relative',
-                          '&::before': isOwn ? {
-                            content: '""',
-                            position: 'absolute',
-                            bottom: 0,
-                            right: -8,
-                            width: 0,
-                            height: 0,
-                            borderLeft: '8px solid #FFD700',
-                            borderTop: '8px solid transparent',
-                            borderBottom: '8px solid transparent',
-                          } : {
-                            content: '""',
-                            position: 'absolute',
-                            bottom: 0,
-                            left: -8,
-                            width: 0,
-                            height: 0,
-                            borderRight: '8px solid rgba(60,60,60,0.8)',
-                            borderTop: '8px solid transparent',
-                            borderBottom: '8px solid transparent',
-                          },
+                          '&::before': isOwn
+                            ? {
+                                content: '""',
+                                position: 'absolute',
+                                bottom: 0,
+                                right: -8,
+                                width: 0,
+                                height: 0,
+                                borderLeft: '8px solid #FFD700',
+                                borderTop: '8px solid transparent',
+                                borderBottom: '8px solid transparent',
+                              }
+                            : {
+                                content: '""',
+                                position: 'absolute',
+                                bottom: 0,
+                                left: -8,
+                                width: 0,
+                                height: 0,
+                                borderRight: '8px solid rgba(60,60,60,0.8)',
+                                borderTop: '8px solid transparent',
+                                borderBottom: '8px solid transparent',
+                              },
                         }}
                       >
                         {message.text && (
@@ -1056,55 +1165,68 @@ const EnhancedMessagingPage = () => {
                           </Typography>
                         )}
 
-                        {message.attachments && message.attachments.length > 0 && (
-                          <Box sx={{ mt: message.text ? 1 : 0 }}>
-                            {message.attachments.map((attachment, idx) => (
-                              <Box key={idx} sx={{ mb: 1 }}>
-                                {attachment.type === 'image' ? (
-                                  <img
-                                    src={attachment.url}
-                                    alt={attachment.name}
-                                    style={{
-                                      maxWidth: '100%',
-                                      maxHeight: '200px',
-                                      borderRadius: '8px',
-                                      cursor: 'pointer',
-                                    }}
-                                  />
-                                ) : (
-                                  <Paper
-                                    sx={{
-                                      p: 1,
-                                      background: 'rgba(0,0,0,0.2)',
-                                      borderRadius: 2,
-                                      cursor: 'pointer',
-                                    }}
-                                  >
-                                    <Stack direction="row" alignItems="center" spacing={1}>
-                                      <FileIcon />
-                                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <Typography
-                                          variant="caption"
-                                          sx={{
-                                            display: 'block',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap',
-                                          }}
-                                        >
-                                          {attachment.name}
-                                        </Typography>
-                                        <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                                          {(attachment.size / 1024 / 1024).toFixed(2)} MB
-                                        </Typography>
-                                      </Box>
-                                    </Stack>
-                                  </Paper>
-                                )}
-                              </Box>
-                            ))}
-                          </Box>
-                        )}
+                        {message.attachments &&
+                          message.attachments.length > 0 && (
+                            <Box sx={{ mt: message.text ? 1 : 0 }}>
+                              {message.attachments.map((attachment, idx) => (
+                                <Box key={idx} sx={{ mb: 1 }}>
+                                  {attachment.type === 'image' ? (
+                                    <img
+                                      src={attachment.url}
+                                      alt={attachment.name}
+                                      style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '200px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                      }}
+                                    />
+                                  ) : (
+                                    <Paper
+                                      sx={{
+                                        p: 1,
+                                        background: 'rgba(0,0,0,0.2)',
+                                        borderRadius: 2,
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      <Stack
+                                        direction="row"
+                                        alignItems="center"
+                                        spacing={1}
+                                      >
+                                        <FileIcon />
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                          <Typography
+                                            variant="caption"
+                                            sx={{
+                                              display: 'block',
+                                              overflow: 'hidden',
+                                              textOverflow: 'ellipsis',
+                                              whiteSpace: 'nowrap',
+                                            }}
+                                          >
+                                            {attachment.name}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            sx={{ opacity: 0.7 }}
+                                          >
+                                            {(
+                                              attachment.size /
+                                              1024 /
+                                              1024
+                                            ).toFixed(2)}{' '}
+                                            MB
+                                          </Typography>
+                                        </Box>
+                                      </Stack>
+                                    </Paper>
+                                  )}
+                                </Box>
+                              ))}
+                            </Box>
+                          )}
 
                         <Stack
                           direction="row"
@@ -1142,13 +1264,18 @@ const EnhancedMessagingPage = () => {
           sx={{
             p: 2,
             borderTop: '1px solid rgba(255,215,0,0.2)',
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.95) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.95) 100%)',
           }}
         >
           {/* File Preview */}
           {selectedFiles.length > 0 && (
             <Box sx={{ mb: 2 }}>
-              <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 1 }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ overflowX: 'auto', pb: 1 }}
+              >
                 {selectedFiles.map((file, index) => (
                   <Paper
                     key={index}
@@ -1163,7 +1290,11 @@ const EnhancedMessagingPage = () => {
                   >
                     <IconButton
                       size="small"
-                      onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
+                      onClick={() =>
+                        setSelectedFiles((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
                       sx={{
                         position: 'absolute',
                         top: -8,
@@ -1179,7 +1310,7 @@ const EnhancedMessagingPage = () => {
                     >
                       <CloseIcon sx={{ fontSize: 12 }} />
                     </IconButton>
-                    
+
                     {file.type.startsWith('image/') ? (
                       <img
                         src={URL.createObjectURL(file)}
@@ -1205,7 +1336,7 @@ const EnhancedMessagingPage = () => {
                           }}
                         >
                           {file.name}
-          </Typography>
+                        </Typography>
                       </Stack>
                     )}
                   </Paper>
@@ -1224,7 +1355,7 @@ const EnhancedMessagingPage = () => {
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
-            
+
             <Tooltip title="Attach files">
               <IconButton
                 onClick={() => fileInputRef.current?.click()}
@@ -1284,10 +1415,12 @@ const EnhancedMessagingPage = () => {
                 onClick={handleSendMessage}
                 disabled={!messageText.trim() && selectedFiles.length === 0}
                 sx={{
-                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                  background:
+                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                   color: '#000',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                    background:
+                      'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
                   },
                   '&:disabled': {
                     background: 'rgba(255,255,255,0.1)',
@@ -1377,7 +1510,10 @@ const EnhancedMessagingPage = () => {
           <ListItemText>Block User</ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setMoreMenuAnchor(null)} sx={{ color: '#F44336' }}>
+        <MenuItem
+          onClick={() => setMoreMenuAnchor(null)}
+          sx={{ color: '#F44336' }}
+        >
           <ListItemIcon>
             <DeleteIcon sx={{ color: '#F44336' }} />
           </ListItemIcon>
@@ -1393,12 +1529,15 @@ const EnhancedMessagingPage = () => {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
           },
         }}
       >
-        <DialogTitle sx={{ color: '#FFD700' }}>Start New Conversation</DialogTitle>
+        <DialogTitle sx={{ color: '#FFD700' }}>
+          Start New Conversation
+        </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -1429,7 +1568,10 @@ const EnhancedMessagingPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNewChatDialog(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          <Button
+            onClick={() => setNewChatDialog(false)}
+            sx={{ color: 'rgba(255,255,255,0.7)' }}
+          >
             Cancel
           </Button>
           <Button
@@ -1451,11 +1593,11 @@ const EnhancedMessagingPage = () => {
       <Snackbar
         open={feedback.open}
         autoHideDuration={4000}
-        onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setFeedback(prev => ({ ...prev, open: false }))}
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
           severity={feedback.severity}
           sx={{ width: '100%' }}
         >

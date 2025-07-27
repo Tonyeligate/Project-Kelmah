@@ -23,7 +23,7 @@ import {
   Select,
   MenuItem,
   Autocomplete,
-  Skeleton
+  Skeleton,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,7 +38,7 @@ import {
   Schedule as ScheduleIcon,
   Verified as VerifiedIcon,
   KeyboardArrowUp as ArrowUpIcon,
-  KeyboardArrowDown as ArrowDownIcon
+  KeyboardArrowDown as ArrowDownIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import LocationSelector from './LocationSelector';
@@ -53,11 +53,11 @@ const MapSearchOverlay = ({
   searchType = 'jobs',
   userLocation = null,
   isVisible = true,
-  onClose = () => {}
+  onClose = () => {},
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
   const [radius, setRadius] = useState(25);
@@ -67,7 +67,7 @@ const MapSearchOverlay = ({
     experience: '',
     availability: '',
     urgent: false,
-    verified: false
+    verified: false,
   });
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -77,23 +77,83 @@ const MapSearchOverlay = ({
   // Vocational categories and skills
   const vocationalCategories = mapService.getVocationalCategories();
   const vocationalSkills = {
-    'Carpentry': ['Cabinet Making', 'Furniture Building', 'Framing', 'Finish Carpentry', 'Wood Restoration'],
-    'Masonry': ['Bricklaying', 'Stone Work', 'Concrete Work', 'Block Work', 'Tile Installation'],
-    'Plumbing': ['Pipe Installation', 'Drain Cleaning', 'Water Systems', 'Gas Lines', 'Bathroom Renovation'],
-    'Electrical': ['House Wiring', 'Circuit Installation', 'Lighting Systems', 'Generator Installation', 'Security Systems'],
-    'Painting': ['Interior Painting', 'Exterior Painting', 'Spray Painting', 'Wall Preparation', 'Decorative Finishes'],
-    'Welding': ['Arc Welding', 'Gas Welding', 'Metal Fabrication', 'Repair Welding', 'Structural Welding'],
-    'HVAC': ['Air Conditioning', 'Heating Systems', 'Ventilation', 'Refrigeration', 'Duct Installation'],
-    'Roofing': ['Roof Installation', 'Roof Repair', 'Gutter Installation', 'Waterproofing', 'Insulation'],
-    'Landscaping': ['Garden Design', 'Tree Maintenance', 'Irrigation Systems', 'Lawn Care', 'Hardscaping'],
-    'Security': ['CCTV Installation', 'Alarm Systems', 'Access Control', 'Security Consultation', 'Guard Services']
+    Carpentry: [
+      'Cabinet Making',
+      'Furniture Building',
+      'Framing',
+      'Finish Carpentry',
+      'Wood Restoration',
+    ],
+    Masonry: [
+      'Bricklaying',
+      'Stone Work',
+      'Concrete Work',
+      'Block Work',
+      'Tile Installation',
+    ],
+    Plumbing: [
+      'Pipe Installation',
+      'Drain Cleaning',
+      'Water Systems',
+      'Gas Lines',
+      'Bathroom Renovation',
+    ],
+    Electrical: [
+      'House Wiring',
+      'Circuit Installation',
+      'Lighting Systems',
+      'Generator Installation',
+      'Security Systems',
+    ],
+    Painting: [
+      'Interior Painting',
+      'Exterior Painting',
+      'Spray Painting',
+      'Wall Preparation',
+      'Decorative Finishes',
+    ],
+    Welding: [
+      'Arc Welding',
+      'Gas Welding',
+      'Metal Fabrication',
+      'Repair Welding',
+      'Structural Welding',
+    ],
+    HVAC: [
+      'Air Conditioning',
+      'Heating Systems',
+      'Ventilation',
+      'Refrigeration',
+      'Duct Installation',
+    ],
+    Roofing: [
+      'Roof Installation',
+      'Roof Repair',
+      'Gutter Installation',
+      'Waterproofing',
+      'Insulation',
+    ],
+    Landscaping: [
+      'Garden Design',
+      'Tree Maintenance',
+      'Irrigation Systems',
+      'Lawn Care',
+      'Hardscaping',
+    ],
+    Security: [
+      'CCTV Installation',
+      'Alarm Systems',
+      'Access Control',
+      'Security Consultation',
+      'Guard Services',
+    ],
   };
 
   const sortOptions = [
     { value: 'distance', label: 'Distance' },
     { value: 'rating', label: 'Rating' },
     { value: 'price', label: 'Price' },
-    { value: 'recent', label: 'Most Recent' }
+    { value: 'recent', label: 'Most Recent' },
   ];
 
   // Handle search
@@ -107,11 +167,21 @@ const MapSearchOverlay = ({
         ...filters,
         categories: selectedCategories,
         skills: selectedSkills,
-        sortBy
-      }
+        sortBy,
+      },
     };
     onSearch(searchParams);
-  }, [searchQuery, location, radius, searchType, filters, selectedCategories, selectedSkills, sortBy, onSearch]);
+  }, [
+    searchQuery,
+    location,
+    radius,
+    searchType,
+    filters,
+    selectedCategories,
+    selectedSkills,
+    sortBy,
+    onSearch,
+  ]);
 
   // Handle filter changes
   useEffect(() => {
@@ -120,9 +190,16 @@ const MapSearchOverlay = ({
       categories: selectedCategories,
       skills: selectedSkills,
       radius,
-      sortBy
+      sortBy,
     });
-  }, [filters, selectedCategories, selectedSkills, radius, sortBy, onFilterChange]);
+  }, [
+    filters,
+    selectedCategories,
+    selectedSkills,
+    radius,
+    sortBy,
+    onFilterChange,
+  ]);
 
   // Handle location selection
   const handleLocationSelect = (locationData) => {
@@ -132,22 +209,22 @@ const MapSearchOverlay = ({
 
   // Handle category toggle
   const handleCategoryToggle = (category) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       const newCategories = prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category];
-      
+
       // Update available skills based on selected categories
       if (newCategories.length === 0) {
         setSelectedSkills([]);
       } else {
-        setSelectedSkills(prev => 
-          prev.filter(skill => 
-            newCategories.some(cat => vocationalSkills[cat]?.includes(skill))
-          )
+        setSelectedSkills((prev) =>
+          prev.filter((skill) =>
+            newCategories.some((cat) => vocationalSkills[cat]?.includes(skill)),
+          ),
         );
       }
-      
+
       return newCategories;
     });
   };
@@ -155,14 +232,14 @@ const MapSearchOverlay = ({
   // Get available skills based on selected categories
   const getAvailableSkills = () => {
     if (selectedCategories.length === 0) return [];
-    
+
     const skills = new Set();
-    selectedCategories.forEach(category => {
+    selectedCategories.forEach((category) => {
       if (vocationalSkills[category]) {
-        vocationalSkills[category].forEach(skill => skills.add(skill));
+        vocationalSkills[category].forEach((skill) => skills.add(skill));
       }
     });
-    
+
     return Array.from(skills);
   };
 
@@ -173,18 +250,18 @@ const MapSearchOverlay = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card 
-        sx={{ 
-          mb: 1.5, 
+      <Card
+        sx={{
+          mb: 1.5,
           cursor: 'pointer',
           bgcolor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.secondary.main}22`,
-          '&:hover': { 
+          '&:hover': {
             boxShadow: `0 4px 20px rgba(255, 215, 0, 0.3)`,
             borderColor: theme.palette.secondary.main,
-            transform: 'translateY(-2px)'
+            transform: 'translateY(-2px)',
           },
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         onClick={() => onClick(item)}
       >
@@ -192,76 +269,119 @@ const MapSearchOverlay = ({
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <Avatar
               src={item.profileImage}
-              sx={{ 
-                bgcolor: item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main,
-                color: item.type === 'job' ? theme.palette.secondary.contrastText : theme.palette.primary.contrastText,
+              sx={{
+                bgcolor:
+                  item.type === 'job'
+                    ? theme.palette.secondary.main
+                    : theme.palette.primary.main,
+                color:
+                  item.type === 'job'
+                    ? theme.palette.secondary.contrastText
+                    : theme.palette.primary.contrastText,
                 width: 48,
                 height: 48,
-                border: `2px solid ${theme.palette.secondary.main}33`
+                border: `2px solid ${theme.palette.secondary.main}33`,
               }}
             >
               {item.type === 'job' ? <JobIcon /> : <WorkerIcon />}
             </Avatar>
-            
+
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="subtitle2" sx={{ 
-                  fontWeight: 'bold',
-                  color: theme.palette.secondary.main,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontWeight: 'bold',
+                    color: theme.palette.secondary.main,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   {item.title || item.name}
                 </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    ml: 1,
+                  }}
+                >
                   {item.verified && (
                     <VerifiedIcon sx={{ color: '#4CAF50', fontSize: 16 }} />
                   )}
                   {item.urgent && (
-                    <Chip 
-                      label="URGENT" 
-                      size="small" 
-                      sx={{ 
-                        bgcolor: '#FF5722', 
+                    <Chip
+                      label="URGENT"
+                      size="small"
+                      sx={{
+                        bgcolor: '#FF5722',
                         color: 'white',
                         fontSize: '0.6rem',
-                        height: 20
-                      }} 
+                        height: 20,
+                      }}
                     />
                   )}
                   {item.online && (
-                    <Box sx={{ 
-                      width: 8, 
-                      height: 8, 
-                      borderRadius: '50%', 
-                      bgcolor: '#4CAF50'
-                    }} />
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: '#4CAF50',
+                      }}
+                    />
                   )}
                 </Box>
               </Box>
-              
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.3 }}>
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1.5, lineHeight: 1.3 }}
+              >
                 {(item.description || item.bio)?.substring(0, 100)}...
               </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, flexWrap: 'wrap' }}>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 1,
+                  flexWrap: 'wrap',
+                }}
+              >
                 {item.rating > 0 && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Rating value={item.rating} readOnly size="small" />
-                    <Typography variant="caption">({item.reviewCount || 0})</Typography>
-                  </Box>
-                )}
-                
-                {(item.budget || item.hourlyRate) && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <MoneyIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />
-                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                      GHS {item.budget?.toLocaleString() || `${item.hourlyRate}/hr`}
+                    <Typography variant="caption">
+                      ({item.reviewCount || 0})
                     </Typography>
                   </Box>
                 )}
-                
+
+                {(item.budget || item.hourlyRate) && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <MoneyIcon
+                      fontSize="small"
+                      sx={{ color: theme.palette.secondary.main }}
+                    />
+                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                      GHS{' '}
+                      {item.budget?.toLocaleString() || `${item.hourlyRate}/hr`}
+                    </Typography>
+                  </Box>
+                )}
+
                 {item.distance && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <LocationIcon fontSize="small" color="action" />
@@ -271,37 +391,37 @@ const MapSearchOverlay = ({
                   </Box>
                 )}
               </Box>
-              
+
               {item.skills && item.skills.length > 0 && (
                 <Box>
                   {item.skills.slice(0, 3).map((skill, index) => (
-                    <Chip 
+                    <Chip
                       key={index}
                       label={skill}
                       size="small"
                       variant="outlined"
-                      sx={{ 
-                        mr: 0.5, 
+                      sx={{
+                        mr: 0.5,
                         mb: 0.5,
                         borderColor: theme.palette.secondary.main + '66',
                         color: theme.palette.secondary.main,
                         fontSize: '0.7rem',
-                        height: 24
+                        height: 24,
                       }}
                     />
                   ))}
                   {item.skills.length > 3 && (
-                    <Chip 
+                    <Chip
                       label={`+${item.skills.length - 3}`}
                       size="small"
                       variant="outlined"
-                      sx={{ 
-                        mr: 0.5, 
+                      sx={{
+                        mr: 0.5,
                         mb: 0.5,
                         borderColor: theme.palette.secondary.main + '66',
                         color: theme.palette.secondary.main,
                         fontSize: '0.7rem',
-                        height: 24
+                        height: 24,
                       }}
                     />
                   )}
@@ -332,32 +452,32 @@ const MapSearchOverlay = ({
           ),
           endAdornment: (
             <InputAdornment position="end">
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 size="small"
                 onClick={handleSearch}
                 disabled={loading}
-                sx={{ 
+                sx={{
                   bgcolor: theme.palette.secondary.main,
                   color: theme.palette.secondary.contrastText,
                   '&:hover': {
-                    bgcolor: theme.palette.secondary.dark
-                  }
+                    bgcolor: theme.palette.secondary.dark,
+                  },
                 }}
               >
                 {loading ? 'Searching...' : 'Search'}
               </Button>
             </InputAdornment>
-          )
+          ),
         }}
-        sx={{ 
+        sx={{
           mb: 2,
           '& .MuiOutlinedInput-root': {
             borderRadius: 2,
             '& fieldset': {
-              borderColor: theme.palette.secondary.main + '44'
-            }
-          }
+              borderColor: theme.palette.secondary.main + '44',
+            },
+          },
         }}
       />
 
@@ -372,7 +492,14 @@ const MapSearchOverlay = ({
 
       {/* Search radius */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" sx={{ mb: 1, color: theme.palette.secondary.main, fontWeight: 'medium' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            mb: 1,
+            color: theme.palette.secondary.main,
+            fontWeight: 'medium',
+          }}
+        >
           Search Radius: {radius} km
         </Typography>
         <Slider
@@ -385,34 +512,36 @@ const MapSearchOverlay = ({
             { value: 5, label: '5km' },
             { value: 25, label: '25km' },
             { value: 50, label: '50km' },
-            { value: 100, label: '100km' }
+            { value: 100, label: '100km' },
           ]}
           sx={{
             color: theme.palette.secondary.main,
             '& .MuiSlider-thumb': {
-              backgroundColor: theme.palette.secondary.main
+              backgroundColor: theme.palette.secondary.main,
             },
             '& .MuiSlider-track': {
-              backgroundColor: theme.palette.secondary.main
+              backgroundColor: theme.palette.secondary.main,
             },
             '& .MuiSlider-rail': {
-              backgroundColor: theme.palette.secondary.main + '33'
-            }
+              backgroundColor: theme.palette.secondary.main + '33',
+            },
           }}
         />
       </Box>
 
       {/* Sort by */}
       <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel sx={{ color: theme.palette.secondary.main }}>Sort by</InputLabel>
+        <InputLabel sx={{ color: theme.palette.secondary.main }}>
+          Sort by
+        </InputLabel>
         <Select
           value={sortBy}
           label="Sort by"
           onChange={(e) => setSortBy(e.target.value)}
           sx={{
             '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: theme.palette.secondary.main + '44'
-            }
+              borderColor: theme.palette.secondary.main + '44',
+            },
           }}
         >
           {sortOptions.map((option) => (
@@ -429,14 +558,14 @@ const MapSearchOverlay = ({
         variant="outlined"
         startIcon={showFilters ? <ArrowUpIcon /> : <ArrowDownIcon />}
         onClick={() => setShowFilters(!showFilters)}
-        sx={{ 
+        sx={{
           mb: 2,
           borderColor: theme.palette.secondary.main,
           color: theme.palette.secondary.main,
           '&:hover': {
             borderColor: theme.palette.secondary.dark,
-            bgcolor: theme.palette.secondary.main + '11'
-          }
+            bgcolor: theme.palette.secondary.main + '11',
+          },
         }}
       >
         {showFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
@@ -446,7 +575,14 @@ const MapSearchOverlay = ({
       <Collapse in={showFilters}>
         <Box sx={{ mt: 2 }}>
           {/* Vocational Categories */}
-          <Typography variant="subtitle2" sx={{ mb: 1.5, color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              mb: 1.5,
+              color: theme.palette.secondary.main,
+              fontWeight: 'bold',
+            }}
+          >
             Vocational Categories
           </Typography>
           <Box sx={{ mb: 3 }}>
@@ -455,16 +591,22 @@ const MapSearchOverlay = ({
                 key={category}
                 label={category}
                 onClick={() => handleCategoryToggle(category)}
-                color={selectedCategories.includes(category) ? 'secondary' : 'default'}
-                variant={selectedCategories.includes(category) ? 'filled' : 'outlined'}
+                color={
+                  selectedCategories.includes(category)
+                    ? 'secondary'
+                    : 'default'
+                }
+                variant={
+                  selectedCategories.includes(category) ? 'filled' : 'outlined'
+                }
                 size="small"
-                sx={{ 
-                  mr: 1, 
+                sx={{
+                  mr: 1,
                   mb: 1,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    transform: 'scale(1.05)'
-                  }
+                    transform: 'scale(1.05)',
+                  },
                 }}
               />
             ))}
@@ -473,7 +615,14 @@ const MapSearchOverlay = ({
           {/* Skills */}
           {selectedCategories.length > 0 && (
             <>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1.5,
+                  color: theme.palette.secondary.main,
+                  fontWeight: 'bold',
+                }}
+              >
                 Specific Skills
               </Typography>
               <Autocomplete
@@ -506,29 +655,48 @@ const MapSearchOverlay = ({
           )}
 
           {/* Budget/Rate range */}
-          <Typography variant="subtitle2" sx={{ mb: 1, color: theme.palette.secondary.main, fontWeight: 'bold' }}>
-            {searchType === 'jobs' ? 'Budget' : 'Hourly Rate'} Range: GHS {filters.budget[0]} - GHS {filters.budget[1]}
+          <Typography
+            variant="subtitle2"
+            sx={{
+              mb: 1,
+              color: theme.palette.secondary.main,
+              fontWeight: 'bold',
+            }}
+          >
+            {searchType === 'jobs' ? 'Budget' : 'Hourly Rate'} Range: GHS{' '}
+            {filters.budget[0]} - GHS {filters.budget[1]}
           </Typography>
           <Slider
             value={filters.budget}
-            onChange={(e, newValue) => setFilters({...filters, budget: newValue})}
+            onChange={(e, newValue) =>
+              setFilters({ ...filters, budget: newValue })
+            }
             min={0}
             max={20000}
             step={100}
             valueLabelDisplay="auto"
-            sx={{ 
+            sx={{
               mb: 3,
-              color: theme.palette.secondary.main 
+              color: theme.palette.secondary.main,
             }}
           />
 
           {/* Minimum rating */}
-          <Typography variant="subtitle2" sx={{ mb: 1, color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              mb: 1,
+              color: theme.palette.secondary.main,
+              fontWeight: 'bold',
+            }}
+          >
             Minimum Rating
           </Typography>
           <Rating
             value={filters.rating}
-            onChange={(e, newValue) => setFilters({...filters, rating: newValue})}
+            onChange={(e, newValue) =>
+              setFilters({ ...filters, rating: newValue })
+            }
             sx={{ mb: 3 }}
           />
 
@@ -536,17 +704,21 @@ const MapSearchOverlay = ({
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Chip
               label="Verified Only"
-              onClick={() => setFilters({...filters, verified: !filters.verified})}
+              onClick={() =>
+                setFilters({ ...filters, verified: !filters.verified })
+              }
               color={filters.verified ? 'secondary' : 'default'}
               variant={filters.verified ? 'filled' : 'outlined'}
               icon={<VerifiedIcon />}
               size="small"
             />
-            
+
             {searchType === 'jobs' && (
               <Chip
                 label="Urgent Jobs"
-                onClick={() => setFilters({...filters, urgent: !filters.urgent})}
+                onClick={() =>
+                  setFilters({ ...filters, urgent: !filters.urgent })
+                }
                 color={filters.urgent ? 'error' : 'default'}
                 variant={filters.urgent ? 'filled' : 'outlined'}
                 icon={<ScheduleIcon />}
@@ -562,18 +734,28 @@ const MapSearchOverlay = ({
   // Results section
   const ResultsSection = () => (
     <Box sx={{ p: 2.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+        >
           Results ({searchResults.length})
         </Typography>
-        
+
         {searchResults.length > 0 && (
           <Typography variant="caption" color="text.secondary">
-            Sorted by {sortOptions.find(opt => opt.value === sortBy)?.label}
+            Sorted by {sortOptions.find((opt) => opt.value === sortBy)?.label}
           </Typography>
         )}
       </Box>
-      
+
       {loading ? (
         <Box sx={{ py: 4 }}>
           {[...Array(3)].map((_, index) => (
@@ -593,11 +775,13 @@ const MapSearchOverlay = ({
         </Box>
       ) : searchResults.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Box sx={{ 
-            fontSize: 48, 
-            mb: 2,
-            opacity: 0.3
-          }}>
+          <Box
+            sx={{
+              fontSize: 48,
+              mb: 2,
+              opacity: 0.3,
+            }}
+          >
             {searchType === 'jobs' ? '💼' : '👷'}
           </Box>
           <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
@@ -611,8 +795,8 @@ const MapSearchOverlay = ({
         <Box sx={{ maxHeight: isMobile ? 400 : 500, overflow: 'auto' }}>
           <AnimatePresence>
             {searchResults.map((item, index) => (
-              <ResultItem 
-                key={item.id || index} 
+              <ResultItem
+                key={item.id || index}
                 item={item}
                 onClick={() => console.log('Selected:', item)}
               />
@@ -637,32 +821,43 @@ const MapSearchOverlay = ({
             height: '85vh',
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
-            bgcolor: theme.palette.background.default
-          }
+            bgcolor: theme.palette.background.default,
+          },
         }}
       >
         <Box sx={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
           {/* Header */}
-          <Paper sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            p: 2,
-            borderBottom: `1px solid ${theme.palette.secondary.main}33`,
-            bgcolor: theme.palette.background.paper
-          }}>
-            <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
-              Find {searchType === 'jobs' ? 'Vocational Jobs' : 'Skilled Workers'}
+          <Paper
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              borderBottom: `1px solid ${theme.palette.secondary.main}33`,
+              bgcolor: theme.palette.background.paper,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+            >
+              Find{' '}
+              {searchType === 'jobs' ? 'Vocational Jobs' : 'Skilled Workers'}
             </Typography>
-            <IconButton onClick={onClose} sx={{ color: theme.palette.secondary.main }}>
+            <IconButton
+              onClick={onClose}
+              sx={{ color: theme.palette.secondary.main }}
+            >
               <CloseIcon />
             </IconButton>
           </Paper>
-          
+
           {/* Content */}
           <Box sx={{ height: 'calc(100% - 64px)', overflow: 'auto' }}>
             <SearchControls />
-            <Divider sx={{ borderColor: theme.palette.secondary.main + '33' }} />
+            <Divider
+              sx={{ borderColor: theme.palette.secondary.main + '33' }}
+            />
             <ResultsSection />
           </Box>
         </Box>
@@ -676,7 +871,7 @@ const MapSearchOverlay = ({
       initial={{ x: -400, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: -400, opacity: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
     >
       <Paper
         sx={{
@@ -692,27 +887,35 @@ const MapSearchOverlay = ({
           bgcolor: theme.palette.background.default,
           border: `2px solid ${theme.palette.secondary.main}33`,
           borderRadius: 3,
-          boxShadow: `0 8px 32px rgba(255, 215, 0, 0.2)`
+          boxShadow: `0 8px 32px rgba(255, 215, 0, 0.2)`,
         }}
         elevation={8}
       >
         {/* Header */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          p: 2.5,
-          borderBottom: `1px solid ${theme.palette.secondary.main}33`,
-          bgcolor: theme.palette.background.paper
-        }}>
-          <Typography variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 2.5,
+            borderBottom: `1px solid ${theme.palette.secondary.main}33`,
+            bgcolor: theme.palette.background.paper,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+          >
             Find {searchType === 'jobs' ? 'Vocational Jobs' : 'Skilled Workers'}
           </Typography>
-          <IconButton onClick={onClose} sx={{ color: theme.palette.secondary.main }}>
+          <IconButton
+            onClick={onClose}
+            sx={{ color: theme.palette.secondary.main }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
-        
+
         {/* Content */}
         <Box sx={{ flex: 1, overflow: 'auto' }}>
           <SearchControls />
@@ -724,4 +927,4 @@ const MapSearchOverlay = ({
   );
 };
 
-export default MapSearchOverlay; 
+export default MapSearchOverlay;

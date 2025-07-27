@@ -33,10 +33,10 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ProfileCompletion = ({ 
+const ProfileCompletion = ({
   completion = 75,
   profileData = {},
-  onComplete = () => {}
+  onComplete = () => {},
 }) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
@@ -47,7 +47,12 @@ const ProfileCompletion = ({
       id: 'basic-info',
       title: 'Basic Information',
       description: 'Name, email, phone, location',
-      completed: !!(profileData.firstName && profileData.lastName && profileData.email && profileData.phone),
+      completed: !!(
+        profileData.firstName &&
+        profileData.lastName &&
+        profileData.email &&
+        profileData.phone
+      ),
       icon: <PersonIcon />,
       weight: 15,
     },
@@ -101,7 +106,7 @@ const ProfileCompletion = ({
     },
   ];
 
-  const completedItems = profileItems.filter(item => item.completed);
+  const completedItems = profileItems.filter((item) => item.completed);
   const actualCompletion = profileItems.reduce((acc, item) => {
     return acc + (item.completed ? item.weight : 0);
   }, 0);
@@ -123,7 +128,8 @@ const ProfileCompletion = ({
     >
       <Card
         sx={{
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
           border: '1px solid rgba(255,215,0,0.2)',
           borderRadius: 3,
           overflow: 'hidden',
@@ -141,7 +147,12 @@ const ProfileCompletion = ({
       >
         <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
           {/* Header */}
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 2 }}
+          >
             <Typography
               variant="h6"
               sx={{
@@ -171,7 +182,12 @@ const ProfileCompletion = ({
 
           {/* Progress Section */}
           <Box sx={{ mb: 2 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mb: 1 }}
+            >
               <Typography
                 variant="h4"
                 sx={{
@@ -181,7 +197,7 @@ const ProfileCompletion = ({
                 }}
               >
                 {Math.round(actualCompletion)}%
-        </Typography>
+              </Typography>
               <Chip
                 label={`${completedItems.length}/${profileItems.length} Complete`}
                 size="small"
@@ -208,7 +224,7 @@ const ProfileCompletion = ({
                   },
                 }}
               />
-          </Box>
+            </Box>
 
             <Typography
               variant="body2"
@@ -218,14 +234,13 @@ const ProfileCompletion = ({
                 lineHeight: 1.4,
               }}
             >
-              {actualCompletion >= 90 
+              {actualCompletion >= 90
                 ? 'Excellent! Your profile is complete and attractive to clients.'
                 : actualCompletion >= 70
-                ? 'Good progress! Complete a few more sections to boost visibility.'
-                : actualCompletion >= 50
-                ? 'Keep going! More details will help you get better job matches.'
-                : 'Let\'s build your profile to attract quality job opportunities.'
-              }
+                  ? 'Good progress! Complete a few more sections to boost visibility.'
+                  : actualCompletion >= 50
+                    ? 'Keep going! More details will help you get better job matches.'
+                    : "Let's build your profile to attract quality job opportunities."}
             </Typography>
           </Box>
 
@@ -259,9 +274,16 @@ const ProfileCompletion = ({
                       >
                         <ListItemIcon sx={{ minWidth: 36 }}>
                           {item.completed ? (
-                            <CheckIcon sx={{ color: '#4CAF50', fontSize: 20 }} />
+                            <CheckIcon
+                              sx={{ color: '#4CAF50', fontSize: 20 }}
+                            />
                           ) : (
-                            <UncheckedIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 20 }} />
+                            <UncheckedIcon
+                              sx={{
+                                color: 'rgba(255,255,255,0.3)',
+                                fontSize: 20,
+                              }}
+                            />
                           )}
                         </ListItemIcon>
                         <ListItemText
@@ -269,7 +291,9 @@ const ProfileCompletion = ({
                             <Typography
                               variant="body2"
                               sx={{
-                                color: item.completed ? '#fff' : 'rgba(255,255,255,0.7)',
+                                color: item.completed
+                                  ? '#fff'
+                                  : 'rgba(255,255,255,0.7)',
                                 fontWeight: 500,
                                 fontSize: '0.85rem',
                               }}
@@ -292,13 +316,15 @@ const ProfileCompletion = ({
                         <Typography
                           variant="caption"
                           sx={{
-                            color: item.completed ? '#4CAF50' : 'rgba(255,255,255,0.4)',
+                            color: item.completed
+                              ? '#4CAF50'
+                              : 'rgba(255,255,255,0.4)',
                             fontWeight: 600,
                             fontSize: '0.7rem',
                           }}
                         >
                           {item.weight}%
-        </Typography>
+                        </Typography>
                       </ListItem>
                     </motion.div>
                   ))}
@@ -308,11 +334,11 @@ const ProfileCompletion = ({
           </AnimatePresence>
 
           {/* Action Button */}
-        <Button
-          component={RouterLink}
-          to="/worker/profile/edit"
+          <Button
+            component={RouterLink}
+            to="/worker/profile/edit"
             fullWidth
-          variant="contained"
+            variant="contained"
             onClick={onComplete}
             sx={{
               mt: 2,
@@ -333,7 +359,7 @@ const ProfileCompletion = ({
             }}
           >
             {actualCompletion >= 90 ? 'View Profile' : 'Complete Profile'}
-        </Button>
+          </Button>
 
           {/* Quick Tips */}
           {actualCompletion < 70 && (
@@ -370,8 +396,8 @@ const ProfileCompletion = ({
               </Typography>
             </Box>
           )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

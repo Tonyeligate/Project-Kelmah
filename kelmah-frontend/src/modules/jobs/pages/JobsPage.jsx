@@ -33,7 +33,7 @@ import {
   Fab,
   Badge,
 } from '@mui/material';
-import { 
+import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
   TrendingUp,
@@ -75,7 +75,8 @@ const sampleJobs = [
   {
     id: 'sample-job-1',
     title: 'Complete Bathroom Renovation',
-    description: 'Need a full bathroom renovation including new tiles, toilet, sink, and shower installation. Looking for experienced professionals with plumbing and electrical skills.',
+    description:
+      'Need a full bathroom renovation including new tiles, toilet, sink, and shower installation. Looking for experienced professionals with plumbing and electrical skills.',
     budget: { min: 3500, max: 5000, currency: 'USD' },
     location: 'Accra, Ghana',
     jobType: 'contract',
@@ -86,20 +87,22 @@ const sampleJobs = [
     applicants: 12,
     client: {
       name: 'Johnson Family',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
       rating: 4.8,
       jobsPosted: 8,
-      verified: true
+      verified: true,
     },
     featured: true,
     estimatedDuration: '2-3 weeks',
     saved: false,
-    views: 245
+    views: 245,
   },
   {
     id: 'sample-job-2',
     title: 'Kitchen Cabinet Installation',
-    description: 'Install new kitchen cabinets and countertops. All materials provided. Need skilled carpenter with experience in kitchen installations.',
+    description:
+      'Install new kitchen cabinets and countertops. All materials provided. Need skilled carpenter with experience in kitchen installations.',
     budget: { min: 2000, max: 3000, currency: 'USD' },
     location: 'Kumasi, Ghana',
     jobType: 'freelance',
@@ -110,20 +113,22 @@ const sampleJobs = [
     applicants: 8,
     client: {
       name: 'Sarah Mitchell',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
       rating: 4.9,
       jobsPosted: 15,
-      verified: true
+      verified: true,
     },
     featured: false,
     estimatedDuration: '1-2 weeks',
     saved: true,
-    views: 189
+    views: 189,
   },
   {
     id: 'sample-job-3',
     title: 'Office Interior Painting',
-    description: 'Paint interior walls of a modern office space. 2000 sq ft area. Premium paint will be provided. Looking for professional painters.',
+    description:
+      'Paint interior walls of a modern office space. 2000 sq ft area. Premium paint will be provided. Looking for professional painters.',
     budget: { min: 1500, max: 2500, currency: 'USD' },
     location: 'Tema, Ghana',
     jobType: 'contract',
@@ -137,17 +142,18 @@ const sampleJobs = [
       avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400',
       rating: 4.7,
       jobsPosted: 25,
-      verified: true
+      verified: true,
     },
     featured: false,
     estimatedDuration: '1 week',
     saved: false,
-    views: 324
+    views: 324,
   },
   {
     id: 'sample-job-4',
     title: 'Smart Home Electrical Setup',
-    description: 'Install smart home electrical systems including automated lighting, security cameras, and smart switches throughout the house.',
+    description:
+      'Install smart home electrical systems including automated lighting, security cameras, and smart switches throughout the house.',
     budget: { min: 4000, max: 6000, currency: 'USD' },
     location: 'Cape Coast, Ghana',
     jobType: 'full-time',
@@ -158,43 +164,57 @@ const sampleJobs = [
     applicants: 6,
     client: {
       name: 'Dr. Kwame Asante',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
       rating: 5.0,
       jobsPosted: 3,
-      verified: true
+      verified: true,
     },
     featured: true,
     estimatedDuration: '3-4 weeks',
     saved: false,
-    views: 412
-  }
+    views: 412,
+  },
 ];
 
 const platformStats = [
   { icon: <Business />, value: '10,000+', label: 'Active Jobs' },
   { icon: <CheckCircle />, value: '95%', label: 'Completion Rate' },
   { icon: <Group />, value: '25,000+', label: 'Happy Clients' },
-  { icon: <Star />, value: '4.8/5', label: 'Average Rating' }
+  { icon: <Star />, value: '4.8/5', label: 'Average Rating' },
 ];
 
-const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) => {
+const EnhancedJobCard = ({
+  job,
+  onViewDetails,
+  onToggleSave,
+  isDemo = false,
+}) => {
   const theme = useTheme();
-  
+
   const getUrgencyColor = (urgency) => {
     switch (urgency) {
-      case 'high': return 'error';
-      case 'medium': return 'warning';
-      case 'low': return 'success';
-      default: return 'default';
+      case 'high':
+        return 'error';
+      case 'medium':
+        return 'warning';
+      case 'low':
+        return 'success';
+      default:
+        return 'default';
     }
   };
 
   const getUrgencyLabel = (urgency) => {
     switch (urgency) {
-      case 'high': return 'Urgent';
-      case 'medium': return 'Normal';
-      case 'low': return 'Flexible';
-      default: return 'Normal';
+      case 'high':
+        return 'Urgent';
+      case 'medium':
+        return 'Normal';
+      case 'low':
+        return 'Flexible';
+      default:
+        return 'Normal';
     }
   };
 
@@ -203,10 +223,10 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
       sx={{
         mb: 3,
         transition: 'all 0.3s ease',
-        background: job.featured 
+        background: job.featured
           ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`
           : theme.palette.background.paper,
-        border: job.featured 
+        border: job.featured
           ? `2px solid ${alpha(theme.palette.secondary.main, 0.4)}`
           : `1px solid ${alpha(theme.palette.divider, 0.12)}`,
         borderRadius: 3,
@@ -227,32 +247,48 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
             py: 0.5,
             fontSize: '0.75rem',
             fontWeight: 'bold',
-            textAlign: 'center'
+            textAlign: 'center',
           }}
         >
           ✨ FEATURED OPPORTUNITY
         </Box>
       )}
-      
+
       <CardContent sx={{ p: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
-            <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="flex-start"
+              sx={{ mb: 2 }}
+            >
               <Avatar
                 src={job.client?.avatar}
-                sx={{ 
-                  width: 50, 
-                  height: 50, 
-                  border: `2px solid ${theme.palette.secondary.main}`
+                sx={{
+                  width: 50,
+                  height: 50,
+                  border: `2px solid ${theme.palette.secondary.main}`,
                 }}
               />
               <Box sx={{ flexGrow: 1 }}>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                  <Typography variant="h6" fontWeight="bold" sx={{ color: theme.palette.text.primary }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ mb: 1 }}
+                >
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    sx={{ color: theme.palette.text.primary }}
+                  >
                     {job.title}
                   </Typography>
                   {job.client?.verified && (
-                    <Verified sx={{ color: theme.palette.secondary.main, fontSize: 20 }} />
+                    <Verified
+                      sx={{ color: theme.palette.secondary.main, fontSize: 20 }}
+                    />
                   )}
                   <Chip
                     label={getUrgencyLabel(job.urgency)}
@@ -260,33 +296,53 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
                     size="small"
                   />
                 </Stack>
-                
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{ mb: 2 }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ color: theme.palette.text.secondary }}
+                  >
                     by {job.client?.name}
                   </Typography>
-                  <Rating value={job.client?.rating || 5} precision={0.1} size="small" readOnly />
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                  <Rating
+                    value={job.client?.rating || 5}
+                    precision={0.1}
+                    size="small"
+                    readOnly
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{ color: theme.palette.text.secondary }}
+                  >
                     ({job.client?.jobsPosted} jobs posted)
                   </Typography>
                 </Stack>
 
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
+                <Typography
+                  variant="body2"
+                  sx={{
                     color: theme.palette.text.primary,
                     lineHeight: 1.6,
                     mb: 2,
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
                   }}
                 >
                   {job.description}
                 </Typography>
 
-                <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}
+                >
                   {job.skills?.map((skill, index) => (
                     <Chip
                       key={index}
@@ -294,10 +350,13 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
                       size="small"
                       variant="outlined"
                       sx={{
-                        backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                        backgroundColor: alpha(
+                          theme.palette.secondary.main,
+                          0.1,
+                        ),
                         borderColor: alpha(theme.palette.secondary.main, 0.3),
                         color: theme.palette.text.primary,
-                        fontSize: '0.75rem'
+                        fontSize: '0.75rem',
                       }}
                     />
                   ))}
@@ -308,52 +367,94 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
 
           <Grid item xs={12} md={4}>
             <Stack spacing={2}>
-              <Box sx={{ 
-                p: 2,
-                borderRadius: 2,
-                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
-              }}>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                  <MonetizationOn sx={{ color: theme.palette.secondary.main, fontSize: 20 }} />
-                  <Typography variant="h6" fontWeight="bold" sx={{ color: theme.palette.secondary.main }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ mb: 1 }}
+                >
+                  <MonetizationOn
+                    sx={{ color: theme.palette.secondary.main, fontSize: 20 }}
+                  />
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    sx={{ color: theme.palette.secondary.main }}
+                  >
                     ${job.budget?.min} - ${job.budget?.max}
                   </Typography>
                 </Stack>
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: theme.palette.text.secondary }}
+                >
                   Project Budget
                 </Typography>
               </Box>
 
               <Stack direction="row" spacing={2}>
                 <Box sx={{ textAlign: 'center', flex: 1 }}>
-                  <Typography variant="body2" fontWeight="bold" sx={{ color: theme.palette.text.primary }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    sx={{ color: theme.palette.text.primary }}
+                  >
                     {job.applicants}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.text.secondary }}
+                  >
                     Applicants
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center', flex: 1 }}>
-                  <Typography variant="body2" fontWeight="bold" sx={{ color: theme.palette.text.primary }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    sx={{ color: theme.palette.text.primary }}
+                  >
                     {job.views}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.text.secondary }}
+                  >
                     Views
                   </Typography>
                 </Box>
               </Stack>
 
               <Stack direction="row" spacing={1} alignItems="center">
-                <LocationOn fontSize="small" sx={{ color: theme.palette.secondary.main }} />
-                <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
+                <LocationOn
+                  fontSize="small"
+                  sx={{ color: theme.palette.secondary.main }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ color: theme.palette.text.primary }}
+                >
                   {job.location}
                 </Typography>
               </Stack>
 
               <Stack direction="row" spacing={1} alignItems="center">
-                <Schedule fontSize="small" sx={{ color: theme.palette.secondary.main }} />
-                <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
+                <Schedule
+                  fontSize="small"
+                  sx={{ color: theme.palette.secondary.main }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ color: theme.palette.text.primary }}
+                >
                   {job.estimatedDuration}
                 </Typography>
               </Stack>
@@ -363,29 +464,45 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
 
         <Divider sx={{ my: 2 }} />
 
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary }}
+            >
               Posted {new Date(job.postedDate).toLocaleDateString()}
             </Typography>
             <Chip
-              label={job.jobType?.charAt(0).toUpperCase() + job.jobType?.slice(1)}
+              label={
+                job.jobType?.charAt(0).toUpperCase() + job.jobType?.slice(1)
+              }
               size="small"
               variant="outlined"
               sx={{ fontSize: '0.7rem' }}
             />
           </Stack>
-          
+
           <Stack direction="row" spacing={1}>
             <IconButton
               size="small"
               onClick={() => !isDemo && onToggleSave(job.id)}
               disabled={isDemo}
-              sx={{ color: job.saved ? theme.palette.secondary.main : theme.palette.text.secondary }}
+              sx={{
+                color: job.saved
+                  ? theme.palette.secondary.main
+                  : theme.palette.text.secondary,
+              }}
             >
               {job.saved ? <Bookmark /> : <BookmarkBorder />}
             </IconButton>
-            <IconButton size="small" sx={{ color: theme.palette.text.secondary }}>
+            <IconButton
+              size="small"
+              sx={{ color: theme.palette.text.secondary }}
+            >
               <Share />
             </IconButton>
             <Button
@@ -393,7 +510,7 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
               onClick={() => !isDemo && onViewDetails(job.id)}
               disabled={isDemo}
               sx={{
-                background: job.featured 
+                background: job.featured
                   ? `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.secondary.light} 90%)`
                   : theme.palette.secondary.main,
                 color: theme.palette.secondary.contrastText,
@@ -401,7 +518,7 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
                 px: 3,
                 '&:hover': {
                   backgroundColor: theme.palette.secondary.dark,
-                }
+                },
               }}
             >
               {isDemo ? 'View (Demo)' : 'View Details'}
@@ -413,84 +530,122 @@ const EnhancedJobCard = ({ job, onViewDetails, onToggleSave, isDemo = false }) =
   );
 };
 
-const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSearchQuery, user, onLoadSaved, onLoadRecommended }) => {
+const CompactFilters = ({
+  filters,
+  onFilterChange,
+  onSearch,
+  searchQuery,
+  setSearchQuery,
+  user,
+  onLoadSaved,
+  onLoadRecommended,
+}) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
+
+  const handleClearFilters = () => {
+    onFilterChange('job_type', '');
+    onFilterChange('experience', '');
+    onFilterChange('sort', '');
+    setSearchQuery('');
+    onSearch(
+      { preventDefault: () => {} },
+      { search: '', job_type: '', experience: '', sort: '' },
+    );
+  };
+
+  const search = (e) => {
+    e.preventDefault();
+    onSearch();
+  };
 
   return (
     <Paper
       sx={{
         p: 3,
-        mb: 3,
+        mb: 4,
         borderRadius: 3,
         border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
         backgroundColor: theme.palette.background.paper,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
+        position: 'sticky',
+        top: theme.spacing(2),
+        zIndex: 1100,
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <Box sx={{ flexGrow: 1 }}>
-          <TextField
-            fullWidth
-            placeholder="Search jobs by title, skills, or keywords..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && onSearch(e)}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                backgroundColor: alpha(theme.palette.background.default, 0.3),
-                '& fieldset': { 
-                  borderColor: theme.palette.secondary.main,
-                  borderWidth: 1
-                },
-                '&:hover fieldset': { 
-                  borderColor: theme.palette.secondary.light,
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: theme.palette.secondary.main,
-                  borderWidth: 2
-                }
-              }
-            }}
-            InputProps={{
-              startAdornment: <SearchIcon sx={{ color: theme.palette.secondary.main, mr: 1 }} />,
-              endAdornment: (
-                <Button
-                  variant="contained"
-                  onClick={onSearch}
-                  sx={{
-                    backgroundColor: theme.palette.secondary.main,
-                    color: theme.palette.secondary.contrastText,
-                    minWidth: 'auto',
-                    px: 2
-                  }}
-                >
-                  Search
-                </Button>
-              )
-            }}
-          />
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<Tune />}
-          endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
-          onClick={() => setExpanded(!expanded)}
-          sx={{
-            borderColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.main,
-            borderWidth: 2,
-            minWidth: 120
-          }}
+      <form onSubmit={search}>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          alignItems="center"
         >
-          Filters
-        </Button>
-      </Stack>
+          <Box sx={{ flexGrow: 1, width: '100%' }}>
+            <TextField
+              fullWidth
+              placeholder="Search jobs by title, skills, or keywords..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.background.default, 0.3),
+                  '& fieldset': {
+                    borderColor: theme.palette.secondary.main,
+                    borderWidth: 1,
+                  },
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <SearchIcon
+                    sx={{ color: theme.palette.secondary.main, mr: 1 }}
+                  />
+                ),
+              }}
+            />
+          </Box>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ width: { xs: '100%', md: 'auto' } }}
+          >
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                backgroundColor: theme.palette.secondary.main,
+                color: theme.palette.secondary.contrastText,
+                height: '56px',
+                px: 3,
+                flexShrink: 0,
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Tune />}
+              endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
+              onClick={() => setExpanded(!expanded)}
+              sx={{
+                borderColor: theme.palette.secondary.main,
+                color: theme.palette.secondary.main,
+                borderWidth: 2,
+                height: '56px',
+                flexShrink: 0,
+              }}
+            >
+              Filters
+            </Button>
+          </Stack>
+        </Stack>
+      </form>
 
-      <Collapse in={expanded}>
+      <Collapse in={expanded} sx={{ mt: 2 }}>
+        <Divider sx={{ my: 2 }} />
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth>
               <InputLabel>Job Type</InputLabel>
               <Select
                 value={filters.job_type || ''}
@@ -506,9 +661,9 @@ const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSea
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth>
               <InputLabel>Experience Level</InputLabel>
               <Select
                 value={filters.experience || ''}
@@ -525,7 +680,7 @@ const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSea
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth>
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={filters.sort || ''}
@@ -547,14 +702,10 @@ const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSea
               fullWidth
               variant="text"
               startIcon={<Clear />}
-              onClick={() => {
-                onFilterChange('job_type', '');
-                onFilterChange('experience', '');
-                onFilterChange('sort', '');
-              }}
-              sx={{ 
-                height: '40px',
-                color: theme.palette.text.secondary
+              onClick={handleClearFilters}
+              sx={{
+                height: '56px',
+                color: theme.palette.text.secondary,
               }}
             >
               Clear Filters
@@ -563,7 +714,7 @@ const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSea
 
           {user && (
             <>
-              <Grid item xs={12} sm={6} md={6}>
+              <Grid item xs={12} md={6}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -572,13 +723,14 @@ const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSea
                   sx={{
                     borderColor: theme.palette.secondary.main,
                     color: theme.palette.secondary.main,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    py: 1.5,
                   }}
                 >
                   My Saved Jobs
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={6} md={6}>
+              <Grid item xs={12} md={6}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -587,7 +739,8 @@ const CompactFilters = ({ filters, onFilterChange, onSearch, searchQuery, setSea
                   sx={{
                     borderColor: theme.palette.secondary.main,
                     color: theme.palette.secondary.main,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    py: 1.5,
                   }}
                 >
                   Recommended for You
@@ -625,51 +778,52 @@ const EmptyState = () => {
             right: 0,
             bottom: 0,
             background: `radial-gradient(circle at 50% 50%, ${alpha(theme.palette.secondary.main, 0.1)} 0%, transparent 70%)`,
-            pointerEvents: 'none'
-          }
+            pointerEvents: 'none',
+          },
         }}
       >
-        <Typography 
-          variant="h2" 
-          component="h2" 
-          gutterBottom 
+        <Typography
+          variant="h2"
+          component="h2"
+          gutterBottom
           fontWeight="bold"
           sx={{
             fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
             color: theme.palette.secondary.main,
             textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
           }}
         >
           💼 Discover Amazing Opportunities
         </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            mb: 4, 
-            maxWidth: 700, 
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 4,
+            maxWidth: 700,
             mx: 'auto',
             color: theme.palette.text.primary,
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
             lineHeight: 1.6,
             fontWeight: 500,
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
           }}
         >
-          Connect with clients who need your skills. From quick tasks to long-term projects, 
-          find work that matches your expertise and schedule.
+          Connect with clients who need your skills. From quick tasks to
+          long-term projects, find work that matches your expertise and
+          schedule.
         </Typography>
-        
+
         {/* Platform Stats */}
         <Grid container spacing={3} sx={{ mb: 6 }}>
           {platformStats.map((stat, index) => (
             <Grid item xs={6} md={3} key={index}>
-              <Box 
-                sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   p: 3,
                   borderRadius: 3,
@@ -680,30 +834,36 @@ const EmptyState = () => {
                     transform: 'translateY(-4px)',
                     backgroundColor: alpha(theme.palette.background.paper, 0.9),
                     borderColor: theme.palette.secondary.main,
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
-                  }
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  },
                 }}
               >
-                <Box sx={{ color: theme.palette.secondary.main, mb: 2, fontSize: 48 }}>
+                <Box
+                  sx={{
+                    color: theme.palette.secondary.main,
+                    mb: 2,
+                    fontSize: 48,
+                  }}
+                >
                   {stat.icon}
                 </Box>
-                <Typography 
-                  variant="h4" 
-                  fontWeight="bold" 
-                  sx={{ 
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
                     color: theme.palette.secondary.main,
-                    fontSize: { xs: '1.5rem', sm: '2rem' }
+                    fontSize: { xs: '1.5rem', sm: '2rem' },
                   }}
                 >
                   {stat.value}
                 </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
+                <Typography
+                  variant="body1"
+                  sx={{
                     color: theme.palette.text.primary,
                     fontWeight: 600,
                     textAlign: 'center',
-                    fontSize: { xs: '0.9rem', sm: '1rem' }
+                    fontSize: { xs: '0.9rem', sm: '1rem' },
                   }}
                 >
                   {stat.label}
@@ -713,9 +873,9 @@ const EmptyState = () => {
           ))}
         </Grid>
 
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          spacing={3} 
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={3}
           justifyContent="center"
           sx={{ position: 'relative', zIndex: 1 }}
         >
@@ -734,8 +894,8 @@ const EmptyState = () => {
               '&:hover': {
                 backgroundColor: theme.palette.secondary.dark,
                 transform: 'translateY(-3px)',
-                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`
-              }
+                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`,
+              },
             }}
           >
             Join as Professional
@@ -744,9 +904,9 @@ const EmptyState = () => {
             variant="outlined"
             size="large"
             onClick={() => navigate('/register')}
-            sx={{ 
-              px: 4, 
-              py: 2, 
+            sx={{
+              px: 4,
+              py: 2,
               fontSize: '1.1rem',
               fontWeight: 'bold',
               borderColor: theme.palette.secondary.main,
@@ -757,7 +917,7 @@ const EmptyState = () => {
                 borderColor: theme.palette.secondary.light,
                 backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                 transform: 'translateY(-3px)',
-              }
+              },
             }}
           >
             Post a Job
@@ -767,32 +927,33 @@ const EmptyState = () => {
 
       {/* Sample Jobs Section */}
       <Box sx={{ mb: 8 }}>
-        <Typography 
-          variant="h3" 
-          gutterBottom 
+        <Typography
+          variant="h3"
+          gutterBottom
           fontWeight="bold"
           sx={{
             color: theme.palette.secondary.main,
             fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
-            mb: 2
+            mb: 2,
           }}
         >
           Featured Opportunities
         </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
+        <Typography
+          variant="h6"
+          sx={{
             mb: 6,
             color: theme.palette.text.primary,
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
             fontWeight: 500,
             maxWidth: 600,
-            mx: 'auto'
+            mx: 'auto',
           }}
         >
-          Here are some of the exciting projects waiting for skilled professionals
+          Here are some of the exciting projects waiting for skilled
+          professionals
         </Typography>
-        
+
         <Grid container spacing={3}>
           {sampleJobs.map((job, index) => (
             <Grid item xs={12} key={job.id}>
@@ -807,23 +968,23 @@ const EmptyState = () => {
       </Box>
 
       {/* Success Stories */}
-      <Box 
-        sx={{ 
-          p: { xs: 4, sm: 6 }, 
+      <Box
+        sx={{
+          p: { xs: 4, sm: 6 },
           mb: 6,
           borderRadius: 4,
           background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-          border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`
+          border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
         }}
       >
-        <Typography 
-          variant="h4" 
-          gutterBottom 
+        <Typography
+          variant="h4"
+          gutterBottom
           fontWeight="bold"
           sx={{
             color: theme.palette.secondary.main,
             mb: 4,
-            fontSize: { xs: '1.5rem', sm: '2rem' }
+            fontSize: { xs: '1.5rem', sm: '2rem' },
           }}
         >
           💬 Success Stories
@@ -832,24 +993,24 @@ const EmptyState = () => {
           {[
             {
               rating: 5,
-              text: "Found my dream plumbing job through Kelmah. Great clients and fair pay!",
-              author: "Michael O., Plumber"
+              text: 'Found my dream plumbing job through Kelmah. Great clients and fair pay!',
+              author: 'Michael O., Plumber',
             },
             {
               rating: 5,
-              text: "Consistently find quality electrical projects. Platform is easy to use!",
-              author: "Sarah A., Electrician"
+              text: 'Consistently find quality electrical projects. Platform is easy to use!',
+              author: 'Sarah A., Electrician',
             },
             {
               rating: 5,
-              text: "Built my carpentry business through connections made on Kelmah!",
-              author: "David K., Carpenter"
-            }
+              text: 'Built my carpentry business through connections made on Kelmah!',
+              author: 'David K., Carpenter',
+            },
           ].map((testimonial, index) => (
             <Grid item xs={12} md={4} key={index}>
-              <Box 
-                sx={{ 
-                  p: 4, 
+              <Box
+                sx={{
+                  p: 4,
                   height: '100%',
                   borderRadius: 3,
                   backgroundColor: theme.palette.background.paper,
@@ -858,38 +1019,38 @@ const EmptyState = () => {
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     borderColor: theme.palette.secondary.main,
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`
-                  }
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  },
                 }}
               >
-                <Rating 
-                  value={testimonial.rating} 
-                  readOnly 
-                  size="medium" 
-                  sx={{ 
+                <Rating
+                  value={testimonial.rating}
+                  readOnly
+                  size="medium"
+                  sx={{
                     mb: 3,
                     '& .MuiRating-iconFilled': {
                       color: theme.palette.secondary.main,
-                    }
-                  }} 
+                    },
+                  }}
                 />
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    mb: 3, 
+                <Typography
+                  variant="body1"
+                  sx={{
+                    mb: 3,
                     fontStyle: 'italic',
                     color: theme.palette.text.primary,
                     fontSize: '1.1rem',
-                    lineHeight: 1.6
+                    lineHeight: 1.6,
                   }}
                 >
                   "{testimonial.text}"
                 </Typography>
-                <Typography 
-                  variant="subtitle1" 
+                <Typography
+                  variant="subtitle1"
                   sx={{
                     color: theme.palette.secondary.main,
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
                   }}
                 >
                   - {testimonial.author}
@@ -902,27 +1063,28 @@ const EmptyState = () => {
 
       {/* Call to Action */}
       <Box sx={{ textAlign: 'center' }}>
-        <Typography 
-          variant="h4" 
+        <Typography
+          variant="h4"
           gutterBottom
           sx={{
             color: theme.palette.secondary.main,
             fontWeight: 'bold',
-            fontSize: { xs: '1.5rem', sm: '2rem' }
+            fontSize: { xs: '1.5rem', sm: '2rem' },
           }}
         >
           Ready to find your next opportunity?
         </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
+        <Typography
+          variant="h6"
+          sx={{
             mb: 4,
             color: theme.palette.text.primary,
             fontSize: { xs: '1rem', sm: '1.1rem' },
-            fontWeight: 500
+            fontWeight: 500,
           }}
         >
-          Use the filters above to find jobs that match your skills and preferences
+          Use the filters above to find jobs that match your skills and
+          preferences
         </Typography>
         <Button
           variant="contained"
@@ -940,8 +1102,8 @@ const EmptyState = () => {
             '&:hover': {
               backgroundColor: theme.palette.secondary.dark,
               transform: 'translateY(-3px)',
-              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`
-            }
+              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`,
+            },
           }}
         >
           Start Your Search
@@ -958,89 +1120,101 @@ const JobsPage = () => {
   const filters = useSelector(selectJobFilters);
   const { currentPage, totalPages } = useSelector(selectJobsPagination);
 
-  // Ensure jobs is always an array
   const jobs = useSelector(selectJobs) || [];
   const loading = useSelector(selectJobsLoading);
   const error = useSelector(selectJobsError);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(filters.search || '');
   const [showSampleData, setShowSampleData] = useState(true);
   const [savedJobs, setSavedJobs] = useState([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Handle pagination change
   const handlePageChange = (event, value) => {
-    const newFilters = { ...filters, page: value };
+    const newFilters = { ...filters, page: value, search: searchQuery.trim() };
+    dispatch(setFilters(newFilters));
+    dispatch(fetchJobs(newFilters));
+    setShowSampleData(false);
+    window.scrollTo(0, 0);
+  };
+
+  const executeSearch = (overrideFilters = {}) => {
+    const newFilters = {
+      ...filters,
+      page: 1,
+      search: searchQuery.trim(),
+      ...overrideFilters,
+    };
     dispatch(setFilters(newFilters));
     dispatch(fetchJobs(newFilters));
     setShowSampleData(false);
   };
 
-  const handleSearch = (e) => {
-    if (e) e.preventDefault();
-    const newFilters = { ...filters, search: searchQuery.trim() };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchJobs(newFilters));
-    setShowSampleData(false);
+  const handleSearch = () => {
+    executeSearch();
   };
 
   const handleFilterChange = (field, value) => {
-    const newFilters = { ...filters, [field]: value };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchJobs(newFilters));
-    setShowSampleData(false);
+    executeSearch({ [field]: value });
   };
 
   const handleLoadSavedJobs = () => {
-    const newFilters = { ...filters, saved: true };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchJobs(newFilters));
-    setShowSampleData(false);
+    executeSearch({ saved: true });
   };
 
   const handleLoadRecommendedJobs = () => {
-    const newFilters = { ...filters, recommended: true };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchJobs(newFilters));
-    setShowSampleData(false);
+    executeSearch({ recommended: true });
   };
 
   const handleToggleSaveJob = (jobId) => {
     if (savedJobs.includes(jobId)) {
-      setSavedJobs(prev => prev.filter(id => id !== jobId));
+      setSavedJobs((prev) => prev.filter((id) => id !== jobId));
     } else {
-      setSavedJobs(prev => [...prev, jobId]);
+      setSavedJobs((prev) => [...prev, jobId]);
     }
   };
 
+  useEffect(() => {
+    // Only fetch on initial mount if there are no jobs and not loading
+    // This prevents re-fetching when navigating back to the page
+    if (jobs.length === 0 && !loading) {
+      // We start with sample data, so no initial fetch is needed.
+      // A search or filter action will trigger the first fetch.
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: theme.palette.background.default }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header Section */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            gutterBottom 
+          <Typography
+            variant="h2"
+            component="h1"
+            gutterBottom
             fontWeight="bold"
             sx={{
               color: theme.palette.secondary.main,
               fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
               textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-              mb: 2
+              mb: 2,
             }}
           >
             🚀 Find Your Next Opportunity
           </Typography>
-          <Typography 
-            variant="h5" 
+          <Typography
+            variant="h5"
             sx={{
               color: theme.palette.text.primary,
               fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
               fontWeight: 500,
               maxWidth: 800,
-              mx: 'auto'
+              mx: 'auto',
             }}
           >
             Discover jobs that match your skills and grow your career
@@ -1081,12 +1255,16 @@ const JobsPage = () => {
                   </Stack>
                   <Skeleton variant="text" width="100%" />
                   <Skeleton variant="text" width="80%" />
-                  <Skeleton variant="rectangular" height={60} sx={{ mt: 2, borderRadius: 1 }} />
+                  <Skeleton
+                    variant="rectangular"
+                    height={60}
+                    sx={{ mt: 2, borderRadius: 1 }}
+                  />
                 </Paper>
               </Grid>
             ))}
           </Grid>
-        ) : showSampleData || jobs.length === 0 ? (
+        ) : showSampleData || (jobs.length === 0 && !loading) ? (
           <EmptyState />
         ) : (
           <>
@@ -1096,23 +1274,31 @@ const JobsPage = () => {
                 mb: 3,
                 p: 3,
                 display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
                 borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
               }}
             >
-              <Typography variant="h6" fontWeight="bold" sx={{ color: theme.palette.text.primary }}>
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                sx={{ color: theme.palette.text.primary, mb: { xs: 1, sm: 0 } }}
+              >
                 📊 Showing {jobs.length} job{jobs.length !== 1 ? 's' : ''}
               </Typography>
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                Page {filters.page || 1} of {totalPages || 1}
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.text.secondary }}
+              >
+                Page {currentPage || 1} of {totalPages || 1}
               </Typography>
             </Box>
 
             {/* Jobs List */}
-            <Grid container spacing={3}>
+            <Grid container spacing={0}>
               {jobs.map((job) => (
                 <Grid item xs={12} key={job.id}>
                   <EnhancedJobCard
@@ -1125,49 +1311,28 @@ const JobsPage = () => {
             </Grid>
           </>
         )}
-        
+
         {/* Pagination Controls */}
         {!loading && !showSampleData && totalPages > 1 && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
             <Pagination
               count={totalPages}
-              page={filters.page || 1}
+              page={currentPage || 1}
               onChange={handlePageChange}
               color="primary"
-              size="large"
+              size={isMobile ? 'small' : 'large'}
               sx={{
                 '& .MuiPaginationItem-root': {
                   borderRadius: 2,
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 },
                 '& .MuiPaginationItem-page.Mui-selected': {
                   backgroundColor: theme.palette.secondary.main,
-                  color: theme.palette.secondary.contrastText
-                }
+                  color: theme.palette.secondary.contrastText,
+                },
               }}
             />
           </Box>
-        )}
-
-        {/* Floating Action Button for Mobile */}
-        {isMobile && (
-          <Fab
-            color="primary"
-            aria-label="post job"
-            onClick={() => navigate('/jobs/post')}
-            sx={{
-              position: 'fixed',
-              bottom: 90,
-              right: 20,
-              backgroundColor: theme.palette.secondary.main,
-              color: theme.palette.secondary.contrastText,
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.dark,
-              }
-            }}
-          >
-            <Star />
-          </Fab>
         )}
       </Container>
     </Box>

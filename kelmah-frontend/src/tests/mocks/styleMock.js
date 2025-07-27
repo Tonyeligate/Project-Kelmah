@@ -1,2 +1,2 @@
-// Style mock file
-module.exports = {}; 
+/* eslint-env node */
+module.exports = {};

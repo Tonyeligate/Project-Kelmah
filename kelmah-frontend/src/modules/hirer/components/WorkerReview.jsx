@@ -29,7 +29,7 @@ import {
   Skeleton,
   LinearProgress,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -39,7 +39,7 @@ import {
   ThumbUp as ThumbUpIcon,
   Work as WorkIcon,
   Schedule as ScheduleIcon,
-  AttachMoney as MoneyIcon
+  AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { SERVICES } from '../../../config/environment';
@@ -62,7 +62,7 @@ userServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Comprehensive mock worker data with completed jobs
@@ -89,10 +89,11 @@ const mockWorkerData = [
           quality: 5,
           deadline: 4,
           professionalism: 5,
-          comment: 'Outstanding work! Tony exceeded our expectations with the custom cabinets. Very professional and delivered on time.',
+          comment:
+            'Outstanding work! Tony exceeded our expectations with the custom cabinets. Very professional and delivered on time.',
           recommend: 'yes',
-          reviewDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25)
-        }
+          reviewDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25),
+        },
       },
       {
         id: 'job-completed-2',
@@ -101,9 +102,9 @@ const mockWorkerData = [
         duration: '1 week',
         amount: 2800,
         status: 'completed',
-        review: null // Pending review
-      }
-    ]
+        review: null, // Pending review
+      },
+    ],
   },
   {
     id: 'worker-2',
@@ -127,12 +128,13 @@ const mockWorkerData = [
           quality: 5,
           deadline: 5,
           professionalism: 5,
-          comment: 'Sarah transformed our office space beautifully. Her attention to detail and professional approach was impressive.',
+          comment:
+            'Sarah transformed our office space beautifully. Her attention to detail and professional approach was impressive.',
           recommend: 'yes',
-          reviewDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40)
-        }
-      }
-    ]
+          reviewDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40),
+        },
+      },
+    ],
   },
   {
     id: 'worker-3',
@@ -150,16 +152,16 @@ const mockWorkerData = [
         duration: '2.5 weeks',
         amount: 7800,
         status: 'completed',
-        review: null // Pending review
-      }
-    ]
-  }
+        review: null, // Pending review
+      },
+    ],
+  },
 ];
 
 const WorkerReview = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [workers, setWorkers] = useState(mockWorkerData);
@@ -186,11 +188,16 @@ const WorkerReview = () => {
     try {
       setLoading(true);
       // Try to fetch from user service, fall back to mock data
-      const response = await userServiceClient.get('/api/users/workers/completed-jobs');
+      const response = await userServiceClient.get(
+        '/api/users/workers/completed-jobs',
+      );
       setWorkers(response.data || mockWorkerData);
       setError(null);
     } catch (err) {
-      console.warn('User service unavailable for worker reviews, using mock data:', err.message);
+      console.warn(
+        'User service unavailable for worker reviews, using mock data:',
+        err.message,
+      );
       setWorkers(mockWorkerData);
       setError(null);
     } finally {
@@ -202,7 +209,7 @@ const WorkerReview = () => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
       currency: 'GHS',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -210,7 +217,7 @@ const WorkerReview = () => {
     return new Date(date).toLocaleDateString('en-GH', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -252,32 +259,40 @@ const WorkerReview = () => {
     if (selectedWorker && selectedJob) {
       try {
         // Mock review submission
-        console.log('Submitting review for worker:', selectedWorker.id, 'job:', selectedJob.id, reviewForm);
-        
+        console.log(
+          'Submitting review for worker:',
+          selectedWorker.id,
+          'job:',
+          selectedJob.id,
+          reviewForm,
+        );
+
         // Update local state
-        setWorkers(prev => prev.map(worker => 
-          worker.id === selectedWorker.id 
-            ? {
-                ...worker,
-                completedJobs: worker.completedJobs.map(job =>
-                  job.id === selectedJob.id
-                    ? { 
-                        ...job, 
-                        review: { 
-                          ...reviewForm, 
-                          reviewDate: new Date() 
-                        } 
-                      }
-                    : job
-                )
-              }
-            : worker
-        ));
-        
-      handleDialogClose();
+        setWorkers((prev) =>
+          prev.map((worker) =>
+            worker.id === selectedWorker.id
+              ? {
+                  ...worker,
+                  completedJobs: worker.completedJobs.map((job) =>
+                    job.id === selectedJob.id
+                      ? {
+                          ...job,
+                          review: {
+                            ...reviewForm,
+                            reviewDate: new Date(),
+                          },
+                        }
+                      : job,
+                  ),
+                }
+              : worker,
+          ),
+        );
+
+        handleDialogClose();
       } catch (error) {
         console.error('Error submitting review:', error);
-      setError('Failed to submit review');
+        setError('Failed to submit review');
       }
     }
   };
@@ -285,8 +300,8 @@ const WorkerReview = () => {
   // Get all completed jobs for table display
   const getAllCompletedJobs = () => {
     const allJobs = [];
-    workers.forEach(worker => {
-      worker.completedJobs.forEach(job => {
+    workers.forEach((worker) => {
+      worker.completedJobs.forEach((job) => {
         allJobs.push({
           ...job,
           worker: {
@@ -295,32 +310,38 @@ const WorkerReview = () => {
             avatar: worker.avatar,
             rating: worker.overallRating,
             skills: worker.skills,
-            location: worker.location
-          }
+            location: worker.location,
+          },
         });
       });
     });
-    return allJobs.sort((a, b) => new Date(b.completedDate) - new Date(a.completedDate));
+    return allJobs.sort(
+      (a, b) => new Date(b.completedDate) - new Date(a.completedDate),
+    );
   };
 
   const allJobs = getAllCompletedJobs();
-  const pendingReviews = allJobs.filter(job => !job.review);
-  const completedReviews = allJobs.filter(job => job.review);
+  const pendingReviews = allJobs.filter((job) => !job.review);
+  const completedReviews = allJobs.filter((job) => job.review);
 
   // Statistics
   const reviewStats = {
     totalJobs: allJobs.length,
     pendingReviews: pendingReviews.length,
     completedReviews: completedReviews.length,
-    averageRating: completedReviews.length > 0 
-      ? (completedReviews.reduce((sum, job) => sum + job.review.rating, 0) / completedReviews.length).toFixed(1)
-      : 0,
-    totalSpent: allJobs.reduce((sum, job) => sum + job.amount, 0)
+    averageRating:
+      completedReviews.length > 0
+        ? (
+            completedReviews.reduce((sum, job) => sum + job.review.rating, 0) /
+            completedReviews.length
+          ).toFixed(1)
+        : 0,
+    totalSpent: allJobs.reduce((sum, job) => sum + job.amount, 0),
   };
 
   if (loading) {
     return (
-            <Box>
+      <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
             <Grid item xs={12} sm={6} md={3} key={i}>
@@ -334,10 +355,10 @@ const WorkerReview = () => {
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
             ))}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
       </Box>
-  );
+    );
   }
 
   return (
@@ -351,13 +372,19 @@ const WorkerReview = () => {
       {/* Review Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {reviewStats.totalJobs}
@@ -373,13 +400,19 @@ const WorkerReview = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {reviewStats.pendingReviews}
@@ -395,13 +428,19 @@ const WorkerReview = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {formatCurrency(reviewStats.totalSpent)}
@@ -417,13 +456,19 @@ const WorkerReview = () => {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-            color: 'white',
-            height: '100%'
-          }}>
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+              color: 'white',
+              height: '100%',
+            }}
+          >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {reviewStats.averageRating}
@@ -434,7 +479,7 @@ const WorkerReview = () => {
                   </Typography>
                 </Box>
                 <ThumbUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-        </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -462,13 +507,27 @@ const WorkerReview = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>Worker & Job</strong></TableCell>
-                    <TableCell><strong>Amount</strong></TableCell>
-                    <TableCell><strong>Duration</strong></TableCell>
-                    <TableCell><strong>Completed</strong></TableCell>
-                    <TableCell><strong>Review Status</strong></TableCell>
-                    <TableCell><strong>Rating</strong></TableCell>
-                    <TableCell align="center"><strong>Actions</strong></TableCell>
+                    <TableCell>
+                      <strong>Worker & Job</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Amount</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Duration</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Completed</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Review Status</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Rating</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Actions</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -476,8 +535,8 @@ const WorkerReview = () => {
                     <TableRow key={job.id} hover>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
-                          <Avatar 
-                            src={job.worker.avatar} 
+                          <Avatar
+                            src={job.worker.avatar}
                             sx={{ width: 40, height: 40 }}
                           >
                             {job.worker.name.charAt(0)}
@@ -486,24 +545,33 @@ const WorkerReview = () => {
                             <Typography variant="subtitle2" fontWeight="bold">
                               {job.worker.name}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" noWrap>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              noWrap
+                            >
                               {job.title}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {job.worker.location}
                             </Typography>
                           </Box>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2" fontWeight="bold" color="primary.main">
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="bold"
+                          color="primary.main"
+                        >
                           {formatCurrency(job.amount)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
-                          {job.duration}
-                        </Typography>
+                        <Typography variant="body2">{job.duration}</Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
@@ -512,13 +580,9 @@ const WorkerReview = () => {
                       </TableCell>
                       <TableCell>
                         {job.review ? (
-                          <Chip 
-                            label="Reviewed"
-                            color="success"
-                            size="small"
-                          />
+                          <Chip label="Reviewed" color="success" size="small" />
                         ) : (
-                          <Chip 
+                          <Chip
                             label="Pending Review"
                             color="warning"
                             size="small"
@@ -567,22 +631,22 @@ const WorkerReview = () => {
           View Details
         </MenuItem>
         {selectedJob && !selectedJob.review && (
-        <MenuItem onClick={() => handleDialogOpen('review')}>
+          <MenuItem onClick={() => handleDialogOpen('review')}>
             <EditIcon sx={{ mr: 1 }} />
             Write Review
-        </MenuItem>
+          </MenuItem>
         )}
         {selectedJob && selectedJob.review && (
           <MenuItem onClick={() => handleDialogOpen('edit_review')}>
             <EditIcon sx={{ mr: 1 }} />
             Edit Review
-        </MenuItem>
+          </MenuItem>
         )}
       </Menu>
 
       {/* Job Details Dialog */}
-      <Dialog 
-        open={dialogOpen && dialogType === 'view'} 
+      <Dialog
+        open={dialogOpen && dialogType === 'view'}
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
@@ -592,16 +656,14 @@ const WorkerReview = () => {
           {selectedJob && selectedWorker && (
             <Box>
               <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <Avatar 
-                  src={selectedWorker.avatar} 
+                <Avatar
+                  src={selectedWorker.avatar}
                   sx={{ width: 64, height: 64 }}
                 >
                   {selectedWorker.name.charAt(0)}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">
-                    {selectedWorker.name}
-                  </Typography>
+                  <Typography variant="h6">{selectedWorker.name}</Typography>
                   <Box display="flex" alignItems="center" gap={1}>
                     <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
                     <Typography variant="body2">
@@ -642,11 +704,19 @@ const WorkerReview = () => {
               {selectedJob.review && (
                 <>
                   <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     Your Review
                   </Typography>
                   <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <Rating value={selectedJob.review.rating} readOnly size="small" />
+                    <Rating
+                      value={selectedJob.review.rating}
+                      readOnly
+                      size="small"
+                    />
                     <Typography variant="body2">
                       ({selectedJob.review.rating}/5)
                     </Typography>
@@ -665,8 +735,8 @@ const WorkerReview = () => {
         <DialogActions>
           <Button onClick={handleDialogClose}>Close</Button>
           {selectedJob && !selectedJob.review && (
-            <Button 
-              onClick={() => handleDialogOpen('review')} 
+            <Button
+              onClick={() => handleDialogOpen('review')}
               variant="contained"
             >
               Write Review
@@ -677,7 +747,10 @@ const WorkerReview = () => {
 
       {/* Review Dialog */}
       <Dialog
-        open={dialogOpen && (dialogType === 'review' || dialogType === 'edit_review')} 
+        open={
+          dialogOpen &&
+          (dialogType === 'review' || dialogType === 'edit_review')
+        }
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
@@ -693,9 +766,7 @@ const WorkerReview = () => {
                   {selectedWorker.name.charAt(0)}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6">
-                    {selectedWorker.name}
-                  </Typography>
+                  <Typography variant="h6">{selectedWorker.name}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {selectedJob.title}
                   </Typography>
@@ -706,12 +777,18 @@ const WorkerReview = () => {
 
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     Overall Rating
                   </Typography>
                   <Rating
                     value={reviewForm.rating}
-                    onChange={(e, newValue) => setReviewForm({ ...reviewForm, rating: newValue })}
+                    onChange={(e, newValue) =>
+                      setReviewForm({ ...reviewForm, rating: newValue })
+                    }
                     size="large"
                   />
                 </Grid>
@@ -722,7 +799,9 @@ const WorkerReview = () => {
                   </Typography>
                   <Rating
                     value={reviewForm.communication}
-                    onChange={(e, newValue) => setReviewForm({ ...reviewForm, communication: newValue })}
+                    onChange={(e, newValue) =>
+                      setReviewForm({ ...reviewForm, communication: newValue })
+                    }
                     size="small"
                   />
                 </Grid>
@@ -733,7 +812,9 @@ const WorkerReview = () => {
                   </Typography>
                   <Rating
                     value={reviewForm.quality}
-                    onChange={(e, newValue) => setReviewForm({ ...reviewForm, quality: newValue })}
+                    onChange={(e, newValue) =>
+                      setReviewForm({ ...reviewForm, quality: newValue })
+                    }
                     size="small"
                   />
                 </Grid>
@@ -744,7 +825,9 @@ const WorkerReview = () => {
                   </Typography>
                   <Rating
                     value={reviewForm.deadline}
-                    onChange={(e, newValue) => setReviewForm({ ...reviewForm, deadline: newValue })}
+                    onChange={(e, newValue) =>
+                      setReviewForm({ ...reviewForm, deadline: newValue })
+                    }
                     size="small"
                   />
                 </Grid>
@@ -755,7 +838,12 @@ const WorkerReview = () => {
                   </Typography>
                   <Rating
                     value={reviewForm.professionalism}
-                    onChange={(e, newValue) => setReviewForm({ ...reviewForm, professionalism: newValue })}
+                    onChange={(e, newValue) =>
+                      setReviewForm({
+                        ...reviewForm,
+                        professionalism: newValue,
+                      })
+                    }
                     size="small"
                   />
                 </Grid>
@@ -767,7 +855,9 @@ const WorkerReview = () => {
                     rows={4}
                     label="Review Comments"
                     value={reviewForm.comment}
-                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    onChange={(e) =>
+                      setReviewForm({ ...reviewForm, comment: e.target.value })
+                    }
                     placeholder="Share your experience working with this professional..."
                   />
                 </Grid>
@@ -778,15 +868,25 @@ const WorkerReview = () => {
                   </Typography>
                   <Box display="flex" gap={2}>
                     <Button
-                      variant={reviewForm.recommend === 'yes' ? 'contained' : 'outlined'}
-                      onClick={() => setReviewForm({ ...reviewForm, recommend: 'yes' })}
+                      variant={
+                        reviewForm.recommend === 'yes'
+                          ? 'contained'
+                          : 'outlined'
+                      }
+                      onClick={() =>
+                        setReviewForm({ ...reviewForm, recommend: 'yes' })
+                      }
                       color="success"
                     >
                       Yes
                     </Button>
                     <Button
-                      variant={reviewForm.recommend === 'no' ? 'contained' : 'outlined'}
-                      onClick={() => setReviewForm({ ...reviewForm, recommend: 'no' })}
+                      variant={
+                        reviewForm.recommend === 'no' ? 'contained' : 'outlined'
+                      }
+                      onClick={() =>
+                        setReviewForm({ ...reviewForm, recommend: 'no' })
+                      }
                       color="error"
                     >
                       No
@@ -794,8 +894,8 @@ const WorkerReview = () => {
                   </Box>
                 </Grid>
               </Grid>
-                      </Box>
-            )}
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>

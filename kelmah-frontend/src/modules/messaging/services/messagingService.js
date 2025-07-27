@@ -12,38 +12,57 @@ export const messagingService = {
       const response = await authServiceClient.get('/api/conversations');
       return response.data;
     } catch (error) {
-      console.warn('Messaging service unavailable for conversations, using mock data:', error.message);
+      console.warn(
+        'Messaging service unavailable for conversations, using mock data:',
+        error.message,
+      );
       return {
         conversations: [
           {
             id: 'conv-1',
             participants: [
-              { id: 'user-1', name: 'John Contractor', avatar: '/api/placeholder/40/40' },
-              { id: 'user-2', name: 'Sarah Client', avatar: '/api/placeholder/40/40' }
+              {
+                id: 'user-1',
+                name: 'John Contractor',
+                avatar: '/api/placeholder/40/40',
+              },
+              {
+                id: 'user-2',
+                name: 'Sarah Client',
+                avatar: '/api/placeholder/40/40',
+              },
             ],
             lastMessage: {
               content: 'Thanks for the update on the project!',
               timestamp: new Date(Date.now() - 1000 * 60 * 30),
-              senderId: 'user-2'
+              senderId: 'user-2',
             },
             unreadCount: 2,
-            jobTitle: 'Kitchen Renovation'
+            jobTitle: 'Kitchen Renovation',
           },
           {
             id: 'conv-2',
             participants: [
-              { id: 'user-1', name: 'Mike Builder', avatar: '/api/placeholder/40/40' },
-              { id: 'user-3', name: 'Tech Support', avatar: '/api/placeholder/40/40' }
+              {
+                id: 'user-1',
+                name: 'Mike Builder',
+                avatar: '/api/placeholder/40/40',
+              },
+              {
+                id: 'user-3',
+                name: 'Tech Support',
+                avatar: '/api/placeholder/40/40',
+              },
             ],
             lastMessage: {
               content: 'When can we schedule the next phase?',
               timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-              senderId: 'user-1'
+              senderId: 'user-1',
             },
             unreadCount: 0,
-            jobTitle: 'Office Setup'
-          }
-        ]
+            jobTitle: 'Office Setup',
+          },
+        ],
       };
     }
   },
@@ -53,19 +72,22 @@ export const messagingService = {
     try {
       const response = await authServiceClient.post('/api/conversations', {
         participantId,
-        jobId
+        jobId,
       });
       return response.data;
     } catch (error) {
-      console.warn('Messaging service unavailable for creating conversation, simulating success:', error.message);
+      console.warn(
+        'Messaging service unavailable for creating conversation, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         conversation: {
           id: `conv-${Date.now()}`,
           participants: [{ id: participantId }],
           jobId,
-          createdAt: new Date()
-        }
+          createdAt: new Date(),
+        },
       };
     }
   },
@@ -74,19 +96,22 @@ export const messagingService = {
   async createConversationFromApplication(applicationId) {
     try {
       const response = await authServiceClient.post('/api/conversations', {
-        applicationId
+        applicationId,
       });
       return response.data;
     } catch (error) {
-      console.warn('Messaging service unavailable for conversation from application, simulating success:', error.message);
+      console.warn(
+        'Messaging service unavailable for conversation from application, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         conversation: {
           id: `conv-${Date.now()}`,
           applicationId,
-          createdAt: new Date()
-        }
+          createdAt: new Date(),
+        },
       };
     }
-  }
+  },
 };

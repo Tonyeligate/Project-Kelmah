@@ -7,7 +7,7 @@ import { SERVICES } from '../../../config/environment';
 const authServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE,
   timeout: 5000, // Reduced timeout for better UX
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // For now, use auth service for both user and job operations
@@ -23,7 +23,7 @@ authServiceClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Get real user data from localStorage
@@ -40,7 +40,7 @@ const getRealUserData = () => {
 // Create hirer profile from real user data or fallback to mock
 const createHirerProfile = () => {
   const realUser = getRealUserData();
-  
+
   if (realUser) {
     return {
       id: realUser.id || realUser._id,
@@ -51,7 +51,10 @@ const createHirerProfile = () => {
       company: realUser.company || realUser.companyName || '',
       location: realUser.location || realUser.address || '',
       bio: realUser.bio || realUser.description || '',
-      avatar: realUser.avatar || realUser.profilePicture || '/api/placeholder/150/150',
+      avatar:
+        realUser.avatar ||
+        realUser.profilePicture ||
+        '/api/placeholder/150/150',
       role: realUser.role || realUser.userType || 'hirer',
       rating: realUser.rating || 0,
       reviewsCount: realUser.reviewsCount || 0,
@@ -66,14 +69,14 @@ const createHirerProfile = () => {
         communicationMethod: 'email',
         jobNotifications: true,
         marketingEmails: false,
-        currency: 'GHS'
+        currency: 'GHS',
       },
       businessDetails: realUser.businessDetails || {
         registrationNumber: '',
         industry: '',
         employees: '',
-        website: ''
-      }
+        website: '',
+      },
     };
   }
 
@@ -101,14 +104,14 @@ const createHirerProfile = () => {
       communicationMethod: 'email',
       jobNotifications: true,
       marketingEmails: false,
-      currency: 'GHS'
+      currency: 'GHS',
     },
     businessDetails: {
       registrationNumber: 'BN/2021/08/12345',
       industry: 'Construction & Real Estate',
       employees: '10-50',
-      website: 'https://mitchellconstruction.com.gh'
-    }
+      website: 'https://mitchellconstruction.com.gh',
+    },
   };
 };
 
@@ -137,14 +140,14 @@ const mockHirerData = {
       communicationMethod: 'email',
       jobNotifications: true,
       marketingEmails: false,
-      currency: 'GHS'
+      currency: 'GHS',
     },
     businessDetails: {
       registrationNumber: 'BN/2021/08/12345',
       industry: 'Construction & Real Estate',
       employees: '10-50',
-      website: 'https://mitchellconstruction.com.gh'
-    }
+      website: 'https://mitchellconstruction.com.gh',
+    },
   },
 
   jobs: {
@@ -152,7 +155,8 @@ const mockHirerData = {
       {
         id: 'job-h1',
         title: 'Kitchen Renovation - Custom Cabinets',
-        description: 'We need a skilled carpenter to design and install custom kitchen cabinets for a modern home renovation project.',
+        description:
+          'We need a skilled carpenter to design and install custom kitchen cabinets for a modern home renovation project.',
         category: 'Carpentry',
         type: 'fixed',
         budget: 5500,
@@ -170,19 +174,20 @@ const mockHirerData = {
           'Minimum 3 years carpentry experience',
           'Portfolio of kitchen cabinet work',
           'Own tools and transportation',
-          'Available for 3-week project timeline'
+          'Available for 3-week project timeline',
         ],
         benefits: [
           'Competitive fixed rate payment',
           'Potential for future projects',
           'Professional reference provided',
-          'Material costs covered separately'
-        ]
+          'Material costs covered separately',
+        ],
       },
       {
         id: 'job-h2',
         title: 'Office Interior Design & Setup',
-        description: 'Looking for an experienced interior designer to completely redesign and set up our new office space.',
+        description:
+          'Looking for an experienced interior designer to completely redesign and set up our new office space.',
         category: 'Interior Design',
         type: 'fixed',
         budget: 15000,
@@ -200,19 +205,20 @@ const mockHirerData = {
           'Interior design certification or equivalent experience',
           'Proven track record with office designs',
           'Ability to manage full project lifecycle',
-          'Experience with modern office layouts'
+          'Experience with modern office layouts',
         ],
         benefits: [
           'High-value project with room for creativity',
           'Milestone-based payments',
           'Portfolio piece for future marketing',
-          'Long-term client relationship potential'
-        ]
+          'Long-term client relationship potential',
+        ],
       },
       {
         id: 'job-h3',
         title: 'Residential Electrical System Upgrade',
-        description: 'Complete electrical system upgrade for a 4-bedroom house including new wiring, outlets, and modern electrical panel.',
+        description:
+          'Complete electrical system upgrade for a 4-bedroom house including new wiring, outlets, and modern electrical panel.',
         category: 'Electrical',
         type: 'fixed',
         budget: 8500,
@@ -230,22 +236,23 @@ const mockHirerData = {
           'Licensed electrician certification',
           'Experience with residential electrical systems',
           'Safety protocol compliance',
-          'Insurance coverage required'
+          'Insurance coverage required',
         ],
         benefits: [
           'Fair market rate compensation',
           'Materials provided by client',
           'Flexible working hours',
-          'Safety equipment provided'
-        ]
-      }
+          'Safety equipment provided',
+        ],
+      },
     ],
 
     completed: [
       {
         id: 'job-c1',
         title: 'Bathroom Renovation - Modern Design',
-        description: 'Complete bathroom renovation with modern fixtures and tiling.',
+        description:
+          'Complete bathroom renovation with modern fixtures and tiling.',
         category: 'Plumbing',
         type: 'fixed',
         budget: 7800,
@@ -261,19 +268,25 @@ const mockHirerData = {
         workerRating: 4.7,
         finalAmount: 7800,
         clientRating: 5,
-        clientReview: 'Excellent work! The bathroom looks amazing and everything was completed on schedule.'
+        clientReview:
+          'Excellent work! The bathroom looks amazing and everything was completed on schedule.',
       },
       {
         id: 'job-c2',
         title: 'Living Room Painting & Decoration',
-        description: 'Professional painting and decorative finishing for large living room.',
+        description:
+          'Professional painting and decorative finishing for large living room.',
         category: 'Painting',
         type: 'fixed',
         budget: 3200,
         currency: 'GHS',
         status: 'completed',
         location: 'Achimota, Accra',
-        skills: ['Interior Painting', 'Color Consultation', 'Surface Preparation'],
+        skills: [
+          'Interior Painting',
+          'Color Consultation',
+          'Surface Preparation',
+        ],
         duration: '1 week',
         applicationsCount: 15,
         completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
@@ -282,15 +295,17 @@ const mockHirerData = {
         workerRating: 4.5,
         finalAmount: 3200,
         clientRating: 4,
-        clientReview: 'Good quality work. David was professional and completed the job as agreed.'
-      }
+        clientReview:
+          'Good quality work. David was professional and completed the job as agreed.',
+      },
     ],
 
     draft: [
       {
         id: 'job-d1',
         title: 'Garden Landscaping Project',
-        description: 'Design and implement landscaping for front and back garden areas.',
+        description:
+          'Design and implement landscaping for front and back garden areas.',
         category: 'Landscaping',
         type: 'fixed',
         budget: 12000,
@@ -305,19 +320,20 @@ const mockHirerData = {
           'Landscaping certification preferred',
           'Knowledge of local plants and climate',
           'Creative design portfolio',
-          'Equipment and tools included'
+          'Equipment and tools included',
         ],
         benefits: [
           'Creative freedom in design',
           'Long-term maintenance contract potential',
           'High-visibility project',
-          'Premium rate for quality work'
-        ]
+          'Premium rate for quality work',
+        ],
       },
       {
         id: 'job-d2',
         title: 'Commercial Kitchen Equipment Installation',
-        description: 'Installation of professional kitchen equipment for new restaurant.',
+        description:
+          'Installation of professional kitchen equipment for new restaurant.',
         category: 'Installation',
         type: 'fixed',
         budget: 18000,
@@ -332,16 +348,16 @@ const mockHirerData = {
           'Commercial kitchen experience',
           'Multi-trade capabilities (plumbing/electrical)',
           'Equipment manufacturer certifications',
-          'Health and safety compliance'
+          'Health and safety compliance',
         ],
         benefits: [
           'High-value commercial project',
           'Opportunity for ongoing maintenance contracts',
           'Professional kitchen environment',
-          'Potential restaurant chain expansion work'
-        ]
-      }
-    ]
+          'Potential restaurant chain expansion work',
+        ],
+      },
+    ],
   },
 
   analytics: {
@@ -354,7 +370,7 @@ const mockHirerData = {
       totalSpent: 125000,
       averageJobValue: 3289,
       successRate: 84,
-      averageCompletionTime: 18 // days
+      averageCompletionTime: 18, // days
     },
 
     monthlyStats: [
@@ -363,15 +379,40 @@ const mockHirerData = {
       { month: 'Mar', jobsPosted: 7, totalSpent: 21500, avgRating: 4.6 },
       { month: 'Apr', jobsPosted: 5, totalSpent: 15000, avgRating: 4.9 },
       { month: 'May', jobsPosted: 8, totalSpent: 23500, avgRating: 4.8 },
-      { month: 'Jun', jobsPosted: 6, totalSpent: 18200, avgRating: 4.7 }
+      { month: 'Jun', jobsPosted: 6, totalSpent: 18200, avgRating: 4.7 },
     ],
 
     topCategories: [
-      { category: 'Carpentry', jobsPosted: 12, totalSpent: 35000, avgRating: 4.8 },
-      { category: 'Plumbing', jobsPosted: 8, totalSpent: 28000, avgRating: 4.7 },
-      { category: 'Electrical', jobsPosted: 6, totalSpent: 22000, avgRating: 4.9 },
-      { category: 'Painting', jobsPosted: 5, totalSpent: 15000, avgRating: 4.6 },
-      { category: 'Interior Design', jobsPosted: 4, totalSpent: 25000, avgRating: 4.8 }
+      {
+        category: 'Carpentry',
+        jobsPosted: 12,
+        totalSpent: 35000,
+        avgRating: 4.8,
+      },
+      {
+        category: 'Plumbing',
+        jobsPosted: 8,
+        totalSpent: 28000,
+        avgRating: 4.7,
+      },
+      {
+        category: 'Electrical',
+        jobsPosted: 6,
+        totalSpent: 22000,
+        avgRating: 4.9,
+      },
+      {
+        category: 'Painting',
+        jobsPosted: 5,
+        totalSpent: 15000,
+        avgRating: 4.6,
+      },
+      {
+        category: 'Interior Design',
+        jobsPosted: 4,
+        totalSpent: 25000,
+        avgRating: 4.8,
+      },
     ],
 
     workerInteractions: {
@@ -379,11 +420,26 @@ const mockHirerData = {
       uniqueWorkersInteracted: 67,
       averageApplicationsPerJob: 8.4,
       topWorkers: [
-        { name: 'Tony Gate', jobsCompleted: 5, rating: 4.8, totalEarned: 18500 },
-        { name: 'Sarah Williams', jobsCompleted: 3, rating: 4.9, totalEarned: 22000 },
-        { name: 'Michael Asante', jobsCompleted: 4, rating: 4.7, totalEarned: 15800 }
-      ]
-    }
+        {
+          name: 'Tony Gate',
+          jobsCompleted: 5,
+          rating: 4.8,
+          totalEarned: 18500,
+        },
+        {
+          name: 'Sarah Williams',
+          jobsCompleted: 3,
+          rating: 4.9,
+          totalEarned: 22000,
+        },
+        {
+          name: 'Michael Asante',
+          jobsCompleted: 4,
+          rating: 4.7,
+          totalEarned: 15800,
+        },
+      ],
+    },
   },
 
   applications: [
@@ -397,14 +453,15 @@ const mockHirerData = {
         avatar: '/api/placeholder/50/50',
         rating: 4.8,
         completedJobs: 23,
-        skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing']
+        skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing'],
       },
       appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
       status: 'pending',
       proposedRate: 5200,
       estimatedDuration: '3 weeks',
-      coverLetter: 'I have extensive experience in custom cabinet making and would love to work on your kitchen renovation project.',
-      portfolio: ['cabinet1.jpg', 'cabinet2.jpg', 'kitchen_work.jpg']
+      coverLetter:
+        'I have extensive experience in custom cabinet making and would love to work on your kitchen renovation project.',
+      portfolio: ['cabinet1.jpg', 'cabinet2.jpg', 'kitchen_work.jpg'],
     },
     {
       id: 'app-2',
@@ -416,15 +473,16 @@ const mockHirerData = {
         avatar: '/api/placeholder/50/50',
         rating: 4.9,
         completedJobs: 31,
-        skills: ['Interior Design', 'Space Planning', 'Project Management']
+        skills: ['Interior Design', 'Space Planning', 'Project Management'],
       },
       appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
       status: 'pending',
       proposedRate: 14500,
       estimatedDuration: '4 weeks',
-      coverLetter: 'I specialize in modern office design and can transform your space into a productive and inspiring environment.',
-      portfolio: ['office1.jpg', 'office2.jpg', 'design_portfolio.pdf']
-    }
+      coverLetter:
+        'I specialize in modern office design and can transform your space into a productive and inspiring environment.',
+      portfolio: ['office1.jpg', 'office2.jpg', 'design_portfolio.pdf'],
+    },
   ],
 
   payments: {
@@ -437,8 +495,8 @@ const mockHirerData = {
       paymentMethods: {
         mobileMoney: 65,
         bankTransfer: 30,
-        cardPayment: 5
-      }
+        cardPayment: 5,
+      },
     },
     recentTransactions: [
       {
@@ -449,7 +507,7 @@ const mockHirerData = {
         amount: 7800,
         date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
         status: 'completed',
-        method: 'Mobile Money'
+        method: 'Mobile Money',
       },
       {
         id: 'pay-2',
@@ -458,10 +516,10 @@ const mockHirerData = {
         amount: 5500,
         date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
         status: 'active',
-        method: 'Bank Transfer'
-      }
-    ]
-  }
+        method: 'Bank Transfer',
+      },
+    ],
+  },
 };
 
 // Async thunks for hirer operations with real user data fallbacks
@@ -473,13 +531,16 @@ export const fetchHirerProfile = createAsyncThunk(
       const response = await userServiceClient.get('/api/users/me/profile');
       return response.data;
     } catch (error) {
-      console.warn('User service unavailable for hirer profile, using real user data:', error.message);
-      
+      console.warn(
+        'User service unavailable for hirer profile, using real user data:',
+        error.message,
+      );
+
       // Return real user data from localStorage
       const profile = createHirerProfile();
       return {
         success: true,
-        data: profile
+        data: profile,
       };
     }
   },
@@ -489,14 +550,24 @@ export const updateHirerProfile = createAsyncThunk(
   'hirer/updateProfile',
   async (profileData, { rejectWithValue }) => {
     try {
-      const response = await userServiceClient.put('/api/users/me/profile', profileData);
+      const response = await userServiceClient.put(
+        '/api/users/me/profile',
+        profileData,
+      );
       return response.data;
     } catch (error) {
-      console.warn('User service unavailable for profile update, simulating success:', error.message);
+      console.warn(
+        'User service unavailable for profile update, simulating success:',
+        error.message,
+      );
       return {
         success: true,
-        data: { ...mockHirerData.profile, ...profileData, updatedAt: new Date() },
-        message: 'Profile updated successfully (mock)'
+        data: {
+          ...mockHirerData.profile,
+          ...profileData,
+          updatedAt: new Date(),
+        },
+        message: 'Profile updated successfully (mock)',
       };
     }
   },
@@ -507,13 +578,16 @@ export const fetchHirerJobs = createAsyncThunk(
   async (status = 'active', { rejectWithValue }) => {
     try {
       // Try the dedicated job service endpoint first, but it will likely fail
-      const response = await jobServiceClient.get('/api/jobs/my-jobs', { 
-        params: { status, role: 'hirer' } 
+      const response = await jobServiceClient.get('/api/jobs/my-jobs', {
+        params: { status, role: 'hirer' },
       });
       return { status, jobs: response.data };
     } catch (error) {
-      console.warn(`Job service unavailable for hirer jobs (${status}), using comprehensive mock data:`, error.message);
-      
+      console.warn(
+        `Job service unavailable for hirer jobs (${status}), using comprehensive mock data:`,
+        error.message,
+      );
+
       // Return comprehensive mock data
       const jobs = mockHirerData.jobs[status] || [];
       return { status, jobs };
@@ -528,8 +602,11 @@ export const createHirerJob = createAsyncThunk(
       const response = await jobServiceClient.post('/api/jobs', jobData);
       return response.data;
     } catch (error) {
-      console.warn('Job service unavailable for job creation, simulating success:', error.message);
-      
+      console.warn(
+        'Job service unavailable for job creation, simulating success:',
+        error.message,
+      );
+
       const newJob = {
         id: `job-${Date.now()}`,
         ...jobData,
@@ -537,13 +614,13 @@ export const createHirerJob = createAsyncThunk(
         applicationsCount: 0,
         viewsCount: 0,
         createdAt: new Date(),
-        currency: 'GHS'
+        currency: 'GHS',
       };
-      
+
       return {
         success: true,
         data: newJob,
-        message: 'Job created successfully (mock)'
+        message: 'Job created successfully (mock)',
       };
     }
   },
@@ -553,14 +630,19 @@ export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.put(`/api/jobs/${jobId}/status`, { status });
+      const response = await jobServiceClient.put(`/api/jobs/${jobId}/status`, {
+        status,
+      });
       return response.data;
     } catch (error) {
-      console.warn('Job service unavailable for status update, simulating success:', error.message);
+      console.warn(
+        'Job service unavailable for status update, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         data: { jobId, status, updatedAt: new Date() },
-        message: `Job status updated to ${status} (mock)`
+        message: `Job status updated to ${status} (mock)`,
       };
     }
   },
@@ -573,11 +655,14 @@ export const deleteHirerJob = createAsyncThunk(
       const response = await jobServiceClient.delete(`/api/jobs/${jobId}`);
       return { jobId };
     } catch (error) {
-      console.warn('Job service unavailable for job deletion, simulating success:', error.message);
+      console.warn(
+        'Job service unavailable for job deletion, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         data: { jobId },
-        message: 'Job deleted successfully (mock)'
+        message: 'Job deleted successfully (mock)',
       };
     }
   },
@@ -587,15 +672,23 @@ export const fetchJobApplications = createAsyncThunk(
   'hirer/fetchJobApplications',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.get(`/api/jobs/${jobId}/applications`, {
-        params: { status }
-      });
+      const response = await jobServiceClient.get(
+        `/api/jobs/${jobId}/applications`,
+        {
+          params: { status },
+        },
+      );
       return { jobId, applications: response.data };
     } catch (error) {
-      console.warn('Job service unavailable for applications, using mock data:', error.message);
-      
+      console.warn(
+        'Job service unavailable for applications, using mock data:',
+        error.message,
+      );
+
       // Return mock applications for the specific job
-      const jobApplications = mockHirerData.applications.filter(app => app.jobId === jobId);
+      const jobApplications = mockHirerData.applications.filter(
+        (app) => app.jobId === jobId,
+      );
       return { jobId, applications: jobApplications };
     }
   },
@@ -608,10 +701,13 @@ export const fetchHirerAnalytics = createAsyncThunk(
       const response = await userServiceClient.get('/api/users/me/analytics');
       return response.data;
     } catch (error) {
-      console.warn('User service unavailable for analytics, using comprehensive mock data:', error.message);
+      console.warn(
+        'User service unavailable for analytics, using comprehensive mock data:',
+        error.message,
+      );
       return {
         success: true,
-        data: mockHirerData.analytics
+        data: mockHirerData.analytics,
       };
     }
   },
@@ -624,10 +720,13 @@ export const fetchPaymentSummary = createAsyncThunk(
       const response = await userServiceClient.get('/api/payments/summary');
       return response.data;
     } catch (error) {
-      console.warn('Payment service unavailable, using mock payment data:', error.message);
+      console.warn(
+        'Payment service unavailable, using mock payment data:',
+        error.message,
+      );
       return {
         success: true,
-        data: mockHirerData.payments
+        data: mockHirerData.payments,
       };
     }
   },
@@ -635,29 +734,29 @@ export const fetchPaymentSummary = createAsyncThunk(
 
 // Initial state
 const initialState = {
-    profile: null,
-    jobs: {
-      active: [],
-      completed: [],
-    draft: []
+  profile: null,
+  jobs: {
+    active: [],
+    completed: [],
+    draft: [],
   },
   applications: [],
   analytics: null,
   payments: null,
-    loading: {
-      profile: false,
-      jobs: false,
-      applications: false,
+  loading: {
+    profile: false,
+    jobs: false,
+    applications: false,
     analytics: false,
-    payments: false
-    },
-    error: {
-      profile: null,
-      jobs: null,
-      applications: null,
+    payments: false,
+  },
+  error: {
+    profile: null,
+    jobs: null,
+    applications: null,
     analytics: null,
-    payments: null
-  }
+    payments: null,
+  },
 };
 
 // Create slice
@@ -669,25 +768,32 @@ const hirerSlice = createSlice({
       return initialState;
     },
     clearHirerErrors: (state) => {
-      Object.keys(state.error).forEach(key => {
+      Object.keys(state.error).forEach((key) => {
         state.error[key] = null;
       });
     },
     updateJobInList: (state, action) => {
       const { jobId, updates } = action.payload;
-      Object.keys(state.jobs).forEach(status => {
-        const jobIndex = state.jobs[status].findIndex(job => job.id === jobId);
+      Object.keys(state.jobs).forEach((status) => {
+        const jobIndex = state.jobs[status].findIndex(
+          (job) => job.id === jobId,
+        );
         if (jobIndex !== -1) {
-          state.jobs[status][jobIndex] = { ...state.jobs[status][jobIndex], ...updates };
+          state.jobs[status][jobIndex] = {
+            ...state.jobs[status][jobIndex],
+            ...updates,
+          };
         }
       });
     },
     removeJobFromList: (state, action) => {
       const jobId = action.payload;
-      Object.keys(state.jobs).forEach(status => {
-        state.jobs[status] = state.jobs[status].filter(job => job.id !== jobId);
+      Object.keys(state.jobs).forEach((status) => {
+        state.jobs[status] = state.jobs[status].filter(
+          (job) => job.id !== jobId,
+        );
       });
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -758,8 +864,10 @@ const hirerSlice = createSlice({
         const { jobId, status } = action.payload.data || action.payload;
         // Move job between status lists
         let movedJob = null;
-        Object.keys(state.jobs).forEach(currentStatus => {
-          const jobIndex = state.jobs[currentStatus].findIndex(job => job.id === jobId);
+        Object.keys(state.jobs).forEach((currentStatus) => {
+          const jobIndex = state.jobs[currentStatus].findIndex(
+            (job) => job.id === jobId,
+          );
           if (jobIndex !== -1) {
             movedJob = { ...state.jobs[currentStatus][jobIndex], status };
             state.jobs[currentStatus].splice(jobIndex, 1);
@@ -773,8 +881,10 @@ const hirerSlice = createSlice({
       // Delete Hirer Job
       .addCase(deleteHirerJob.fulfilled, (state, action) => {
         const jobId = action.payload.data?.jobId || action.payload.jobId;
-        Object.keys(state.jobs).forEach(status => {
-          state.jobs[status] = state.jobs[status].filter(job => job.id !== jobId);
+        Object.keys(state.jobs).forEach((status) => {
+          state.jobs[status] = state.jobs[status].filter(
+            (job) => job.id !== jobId,
+          );
         });
       })
 
@@ -790,7 +900,8 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchJobApplications.rejected, (state, action) => {
         state.loading.applications = false;
-        state.error.applications = action.payload || 'Failed to fetch applications';
+        state.error.applications =
+          action.payload || 'Failed to fetch applications';
         // Fallback to mock data
         state.applications = mockHirerData.applications;
       })
@@ -826,7 +937,7 @@ const hirerSlice = createSlice({
         // Fallback to mock data
         state.payments = mockHirerData.payments;
       });
-  }
+  },
 });
 
 // Selectors
@@ -839,7 +950,12 @@ export const selectHirerLoading = (key) => (state) => state.hirer.loading[key];
 export const selectHirerError = (key) => (state) => state.hirer.error[key];
 
 // Actions
-export const { clearHirerData, clearHirerErrors, updateJobInList, removeJobFromList } = hirerSlice.actions;
+export const {
+  clearHirerData,
+  clearHirerErrors,
+  updateJobInList,
+  removeJobFromList,
+} = hirerSlice.actions;
 
 // Export reducer
 export default hirerSlice.reducer;

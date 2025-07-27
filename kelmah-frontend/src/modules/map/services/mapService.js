@@ -7,15 +7,27 @@ import { API_URL } from '../../../config/constants';
  */
 class MapService {
   constructor() {
-    this.defaultCenter = [5.6037, -0.1870]; // Accra, Ghana default for West Africa
+    this.defaultCenter = [5.6037, -0.187]; // Accra, Ghana default for West Africa
     this.watchId = null;
     this.locationCache = new Map();
-    
+
     // Vocational job categories specific to the platform
     this.vocationalCategories = [
-      'Carpentry', 'Masonry', 'Plumbing', 'Electrical', 'Painting',
-      'Roofing', 'Tiling', 'Welding', 'HVAC', 'Landscaping',
-      'Security', 'Cleaning', 'Catering', 'Tailoring', 'Mechanics'
+      'Carpentry',
+      'Masonry',
+      'Plumbing',
+      'Electrical',
+      'Painting',
+      'Roofing',
+      'Tiling',
+      'Welding',
+      'HVAC',
+      'Landscaping',
+      'Security',
+      'Cleaning',
+      'Catering',
+      'Tailoring',
+      'Mechanics',
     ];
   }
 
@@ -27,7 +39,7 @@ class MapService {
       enableHighAccuracy: true,
       timeout: 15000,
       maximumAge: 60000,
-      ...options
+      ...options,
     };
 
     return new Promise((resolve, reject) => {
@@ -42,7 +54,7 @@ class MapService {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             accuracy: position.coords.accuracy,
-            timestamp: position.timestamp
+            timestamp: position.timestamp,
           };
           resolve(location);
         },
@@ -50,10 +62,12 @@ class MapService {
           let message = 'Unknown location error';
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              message = 'Location access denied. Please enable location services.';
+              message =
+                'Location access denied. Please enable location services.';
               break;
             case error.POSITION_UNAVAILABLE:
-              message = 'Location information unavailable. Check your internet connection.';
+              message =
+                'Location information unavailable. Check your internet connection.';
               break;
             case error.TIMEOUT:
               message = 'Location request timed out. Please try again.';
@@ -61,7 +75,7 @@ class MapService {
           }
           reject(new Error(message));
         },
-        defaultOptions
+        defaultOptions,
       );
     });
   }
@@ -79,7 +93,7 @@ class MapService {
         skills,
         budget,
         page = 1,
-        limit = 20
+        limit = 20,
       } = params;
 
       const searchParams = {
@@ -89,7 +103,7 @@ class MapService {
         longitude,
         radius,
         status: 'open',
-        visibility: 'public'
+        visibility: 'public',
       };
 
       if (category) searchParams.category = category;
@@ -101,12 +115,15 @@ class MapService {
 
       const response = await axios.get(`${API_URL}/jobs/search/location`, {
         params: searchParams,
-        headers: this.getAuthHeaders()
+        headers: this.getAuthHeaders(),
       });
 
       return this.transformJobsForMap(response.data.data || []);
     } catch (error) {
-      console.warn('Jobs API unavailable, using enhanced mock data:', error.message);
+      console.warn(
+        'Jobs API unavailable, using enhanced mock data:',
+        error.message,
+      );
       return this.generateEnhancedJobMockData(params);
     }
   }
@@ -124,7 +141,7 @@ class MapService {
         skills,
         rating,
         page = 1,
-        limit = 20
+        limit = 20,
       } = params;
 
       const searchParams = {
@@ -133,7 +150,7 @@ class MapService {
         latitude,
         longitude,
         radius,
-        available: true
+        available: true,
       };
 
       if (category) searchParams.category = category;
@@ -142,12 +159,15 @@ class MapService {
 
       const response = await axios.get(`${API_URL}/workers/search/location`, {
         params: searchParams,
-        headers: this.getAuthHeaders()
+        headers: this.getAuthHeaders(),
       });
 
       return this.transformWorkersForMap(response.data.data || []);
     } catch (error) {
-      console.warn('Workers API unavailable, using enhanced mock data:', error.message);
+      console.warn(
+        'Workers API unavailable, using enhanced mock data:',
+        error.message,
+      );
       return this.generateEnhancedWorkerMockData(params);
     }
   }
@@ -156,7 +176,7 @@ class MapService {
    * Transform job data for map display
    */
   transformJobsForMap(jobs) {
-    return jobs.map(job => ({
+    return jobs.map((job) => ({
       id: job._id || job.id,
       title: job.title,
       description: job.description,
@@ -171,7 +191,7 @@ class MapService {
       urgent: job.urgent || false,
       verified: job.hirer?.verified || false,
       createdAt: job.createdAt,
-      distance: job.distance
+      distance: job.distance,
     }));
   }
 
@@ -179,12 +199,13 @@ class MapService {
    * Transform worker data for map display
    */
   transformWorkersForMap(workers) {
-    return workers.map(worker => ({
+    return workers.map((worker) => ({
       id: worker._id || worker.id,
       name: `${worker.firstName} ${worker.lastName}`,
       title: worker.profile?.title || worker.skills?.[0] || 'Skilled Worker',
       bio: worker.profile?.bio || worker.description,
-      category: worker.profile?.category || this.getCategoryFromSkills(worker.skills),
+      category:
+        worker.profile?.category || this.getCategoryFromSkills(worker.skills),
       skills: worker.skills || [],
       hourlyRate: worker.profile?.hourlyRate,
       rating: worker.rating || 0,
@@ -196,7 +217,7 @@ class MapService {
       verified: worker.verified || false,
       online: worker.isOnline || false,
       distance: worker.distance,
-      availability: worker.availability
+      availability: worker.availability,
     }));
   }
 
@@ -207,15 +228,23 @@ class MapService {
     // Handle different coordinate formats
     if (item.coordinates) {
       return {
-        latitude: item.coordinates.latitude || item.coordinates.lat || item.coordinates[1],
-        longitude: item.coordinates.longitude || item.coordinates.lng || item.coordinates[0]
+        latitude:
+          item.coordinates.latitude ||
+          item.coordinates.lat ||
+          item.coordinates[1],
+        longitude:
+          item.coordinates.longitude ||
+          item.coordinates.lng ||
+          item.coordinates[0],
       };
     }
-    
+
     if (item.location?.coordinates) {
       return {
-        latitude: item.location.coordinates.latitude || item.location.coordinates[1],
-        longitude: item.location.coordinates.longitude || item.location.coordinates[0]
+        latitude:
+          item.location.coordinates.latitude || item.location.coordinates[1],
+        longitude:
+          item.location.coordinates.longitude || item.location.coordinates[0],
       };
     }
 
@@ -228,24 +257,53 @@ class MapService {
    */
   generateEnhancedJobMockData(params) {
     const { latitude, longitude, radius = 25 } = params;
-    const center = { latitude: latitude || 5.6037, longitude: longitude || -0.1870 };
-    
+    const center = {
+      latitude: latitude || 5.6037,
+      longitude: longitude || -0.187,
+    };
+
     const jobs = [];
     const jobTitles = {
-      'Carpentry': ['Custom Cabinet Installation', 'Wooden Deck Construction', 'Kitchen Renovation', 'Furniture Repair'],
-      'Masonry': ['Brick Wall Construction', 'Stone Patio Installation', 'Chimney Repair', 'Retaining Wall Building'],
-      'Plumbing': ['Bathroom Plumbing Installation', 'Pipe Leak Repair', 'Drain Cleaning Service', 'Water Heater Installation'],
-      'Electrical': ['House Rewiring', 'Security System Installation', 'LED Lighting Setup', 'Generator Installation'],
-      'Painting': ['Interior House Painting', 'Commercial Building Painting', 'Texture Wall Finishing', 'Exterior Home Painting']
+      Carpentry: [
+        'Custom Cabinet Installation',
+        'Wooden Deck Construction',
+        'Kitchen Renovation',
+        'Furniture Repair',
+      ],
+      Masonry: [
+        'Brick Wall Construction',
+        'Stone Patio Installation',
+        'Chimney Repair',
+        'Retaining Wall Building',
+      ],
+      Plumbing: [
+        'Bathroom Plumbing Installation',
+        'Pipe Leak Repair',
+        'Drain Cleaning Service',
+        'Water Heater Installation',
+      ],
+      Electrical: [
+        'House Rewiring',
+        'Security System Installation',
+        'LED Lighting Setup',
+        'Generator Installation',
+      ],
+      Painting: [
+        'Interior House Painting',
+        'Commercial Building Painting',
+        'Texture Wall Finishing',
+        'Exterior Home Painting',
+      ],
     };
 
     for (let i = 0; i < 50; i++) {
-      const category = this.vocationalCategories[i % this.vocationalCategories.length];
+      const category =
+        this.vocationalCategories[i % this.vocationalCategories.length];
       const titles = jobTitles[category] || [`${category} Service`];
       const title = titles[i % titles.length];
-      
+
       const coords = this.generateNearbyCoordinates(center, radius);
-      
+
       jobs.push({
         id: `job-${i + 1}`,
         title,
@@ -258,14 +316,21 @@ class MapService {
         hirer: {
           firstName: 'John',
           lastName: `Hirer${i + 1}`,
-          verified: Math.random() > 0.3
+          verified: Math.random() > 0.3,
         },
         type: 'job',
         color: '#FFD700',
         urgent: Math.random() > 0.8,
         verified: Math.random() > 0.3,
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-        distance: this.calculateDistance(center.latitude, center.longitude, coords.latitude, coords.longitude)
+        createdAt: new Date(
+          Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+        ),
+        distance: this.calculateDistance(
+          center.latitude,
+          center.longitude,
+          coords.latitude,
+          coords.longitude,
+        ),
       });
     }
 
@@ -277,19 +342,31 @@ class MapService {
    */
   generateEnhancedWorkerMockData(params) {
     const { latitude, longitude, radius = 25 } = params;
-    const center = { latitude: latitude || 5.6037, longitude: longitude || -0.1870 };
-    
+    const center = {
+      latitude: latitude || 5.6037,
+      longitude: longitude || -0.187,
+    };
+
     const workers = [];
     const workerNames = [
-      'Kwame Asante', 'Ama Osei', 'Kofi Mensah', 'Akosua Yeboah', 'Yaw Boateng',
-      'Efua Darko', 'Kweku Adjei', 'Abena Owusu', 'Nana Frimpong', 'Afia Sarpong'
+      'Kwame Asante',
+      'Ama Osei',
+      'Kofi Mensah',
+      'Akosua Yeboah',
+      'Yaw Boateng',
+      'Efua Darko',
+      'Kweku Adjei',
+      'Abena Owusu',
+      'Nana Frimpong',
+      'Afia Sarpong',
     ];
 
     for (let i = 0; i < 40; i++) {
-      const category = this.vocationalCategories[i % this.vocationalCategories.length];
+      const category =
+        this.vocationalCategories[i % this.vocationalCategories.length];
       const name = workerNames[i % workerNames.length];
       const coords = this.generateNearbyCoordinates(center, radius);
-      
+
       workers.push({
         id: `worker-${i + 1}`,
         name,
@@ -306,8 +383,13 @@ class MapService {
         color: '#1a1a1a',
         verified: Math.random() > 0.4,
         online: Math.random() > 0.6,
-        distance: this.calculateDistance(center.latitude, center.longitude, coords.latitude, coords.longitude),
-        availability: Math.random() > 0.3 ? 'available' : 'busy'
+        distance: this.calculateDistance(
+          center.latitude,
+          center.longitude,
+          coords.latitude,
+          coords.longitude,
+        ),
+        availability: Math.random() > 0.3 ? 'available' : 'busy',
       });
     }
 
@@ -319,13 +401,33 @@ class MapService {
    */
   getSkillsForCategory(category) {
     const skillMap = {
-      'Carpentry': ['Cabinet Making', 'Furniture Building', 'Framing', 'Finish Carpentry'],
-      'Masonry': ['Bricklaying', 'Stone Work', 'Concrete', 'Block Work'],
-      'Plumbing': ['Pipe Installation', 'Drain Cleaning', 'Water Systems', 'Gas Lines'],
-      'Electrical': ['Wiring', 'Circuit Installation', 'Lighting', 'Safety Systems'],
-      'Painting': ['Interior Painting', 'Exterior Painting', 'Spray Painting', 'Wall Prep']
+      Carpentry: [
+        'Cabinet Making',
+        'Furniture Building',
+        'Framing',
+        'Finish Carpentry',
+      ],
+      Masonry: ['Bricklaying', 'Stone Work', 'Concrete', 'Block Work'],
+      Plumbing: [
+        'Pipe Installation',
+        'Drain Cleaning',
+        'Water Systems',
+        'Gas Lines',
+      ],
+      Electrical: [
+        'Wiring',
+        'Circuit Installation',
+        'Lighting',
+        'Safety Systems',
+      ],
+      Painting: [
+        'Interior Painting',
+        'Exterior Painting',
+        'Spray Painting',
+        'Wall Prep',
+      ],
     };
-    
+
     return skillMap[category] || [category];
   }
 
@@ -340,10 +442,10 @@ class MapService {
     const t = 2 * Math.PI * v;
     const x = w * Math.cos(t);
     const y = w * Math.sin(t);
-    
+
     return {
       latitude: center.latitude + x,
-      longitude: center.longitude + y
+      longitude: center.longitude + y,
     };
   }
 
@@ -360,31 +462,35 @@ class MapService {
    */
   async reverseGeocode(latitude, longitude) {
     const cacheKey = `reverse_${latitude}_${longitude}`;
-    
+
     if (this.locationCache.has(cacheKey)) {
       return this.locationCache.get(cacheKey);
     }
 
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse`, {
+        `https://nominatim.openstreetmap.org/reverse`,
+        {
           params: {
             lat: latitude,
             lon: longitude,
             format: 'json',
             addressdetails: 1,
-            zoom: 18
-          }
-        }
+            zoom: 18,
+          },
+        },
       );
 
       const result = {
         address: response.data.display_name,
-        city: response.data.address?.city || response.data.address?.town || response.data.address?.village,
+        city:
+          response.data.address?.city ||
+          response.data.address?.town ||
+          response.data.address?.village,
         state: response.data.address?.state || response.data.address?.region,
         country: response.data.address?.country,
         postcode: response.data.address?.postcode,
-        coordinates: { latitude, longitude }
+        coordinates: { latitude, longitude },
       };
 
       this.locationCache.set(cacheKey, result);
@@ -400,35 +506,36 @@ class MapService {
    */
   async geocodeAddress(address) {
     const cacheKey = `forward_${address}`;
-    
+
     if (this.locationCache.has(cacheKey)) {
       return this.locationCache.get(cacheKey);
     }
 
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search`, {
+        `https://nominatim.openstreetmap.org/search`,
+        {
           params: {
             q: address,
             format: 'json',
             addressdetails: 1,
             limit: 5,
-            countrycodes: 'gh' // Prioritize Ghana
-          }
-        }
+            countrycodes: 'gh', // Prioritize Ghana
+          },
+        },
       );
 
-      const results = response.data.map(item => ({
+      const results = response.data.map((item) => ({
         address: item.display_name,
         coordinates: {
           latitude: parseFloat(item.lat),
-          longitude: parseFloat(item.lon)
+          longitude: parseFloat(item.lon),
         },
         city: item.address?.city || item.address?.town,
         state: item.address?.state,
         country: item.address?.country,
         postcode: item.address?.postcode,
-        boundingBox: item.boundingbox
+        boundingBox: item.boundingbox,
       }));
 
       if (results.length > 0) {
@@ -449,11 +556,14 @@ class MapService {
     const R = unit === 'km' ? 6371 : 3959;
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
-    
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
@@ -469,26 +579,29 @@ class MapService {
    * Filter locations by radius
    */
   filterLocationsByRadius(userLocation, locations, radiusKm) {
-    return locations.filter(location => {
-      if (!location.coordinates) return false;
-      
-      const distance = this.calculateDistance(
-        userLocation.latitude,
-        userLocation.longitude,
-        location.coordinates.latitude,
-        location.coordinates.longitude
-      );
-      
-      return distance <= radiusKm;
-    }).map(location => ({
-      ...location,
-      distance: this.calculateDistance(
-        userLocation.latitude,
-        userLocation.longitude,
-        location.coordinates.latitude,
-        location.coordinates.longitude
-      )
-    })).sort((a, b) => a.distance - b.distance);
+    return locations
+      .filter((location) => {
+        if (!location.coordinates) return false;
+
+        const distance = this.calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          location.coordinates.latitude,
+          location.coordinates.longitude,
+        );
+
+        return distance <= radiusKm;
+      })
+      .map((location) => ({
+        ...location,
+        distance: this.calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          location.coordinates.latitude,
+          location.coordinates.longitude,
+        ),
+      }))
+      .sort((a, b) => a.distance - b.distance);
   }
 
   /**
@@ -496,7 +609,7 @@ class MapService {
    */
   formatDistance(distance, unit = 'km') {
     if (distance < 1) {
-      return unit === 'km' 
+      return unit === 'km'
         ? `${Math.round(distance * 1000)}m`
         : `${Math.round(distance * 5280)}ft`;
     }
@@ -508,7 +621,7 @@ class MapService {
    */
   getCategoryFromSkills(skills) {
     if (!skills || skills.length === 0) return 'General';
-    
+
     const skill = skills[0].toLowerCase();
     for (const category of this.vocationalCategories) {
       if (skill.includes(category.toLowerCase())) {
@@ -524,11 +637,11 @@ class MapService {
   generateCoordinatesFromLocation(location) {
     // Default coordinates for major Ghanaian cities
     const cityCoordinates = {
-      'accra': { latitude: 5.6037, longitude: -0.1870 },
-      'kumasi': { latitude: 6.6885, longitude: -1.6244 },
-      'tamale': { latitude: 9.4034, longitude: -0.8424 },
+      accra: { latitude: 5.6037, longitude: -0.187 },
+      kumasi: { latitude: 6.6885, longitude: -1.6244 },
+      tamale: { latitude: 9.4034, longitude: -0.8424 },
       'cape coast': { latitude: 5.1053, longitude: -1.2466 },
-      'sekondi': { latitude: 4.9344, longitude: -1.7167 }
+      sekondi: { latitude: 4.9344, longitude: -1.7167 },
     };
 
     if (location?.city) {
@@ -557,4 +670,4 @@ class MapService {
   }
 }
 
-export default new MapService(); 
+export default new MapService();

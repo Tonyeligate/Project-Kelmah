@@ -1,17 +1,17 @@
 /**
  * Axios Configuration
- * 
+ *
  * Centralized axios instance with interceptors for authentication,
  * error handling, and request/response processing.
  */
 
 import axios from 'axios';
-import { 
-  API_BASE_URL, 
-  AUTH_CONFIG, 
+import {
+  API_BASE_URL,
+  AUTH_CONFIG,
   PERFORMANCE_CONFIG,
   LOG_CONFIG,
-  SERVICES 
+  SERVICES,
 } from '../../../config/environment';
 
 // Create axios instance with default configuration
@@ -20,9 +20,9 @@ const axiosInstance = axios.create({
   timeout: PERFORMANCE_CONFIG.apiTimeout,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    Accept: 'application/json',
   },
-  withCredentials: true
+  withCredentials: true,
 });
 
 // Request interceptor
@@ -39,13 +39,15 @@ axiosInstance.interceptors.request.use(
 
     // Log request in development
     if (LOG_CONFIG.enableConsole) {
-      console.group(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+      console.group(
+        `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+      );
       console.log('Config:', {
         baseURL: config.baseURL,
         url: config.url,
         method: config.method,
         headers: config.headers,
-        data: config.data
+        data: config.data,
       });
       console.groupEnd();
     }
@@ -55,7 +57,7 @@ axiosInstance.interceptors.request.use(
   (error) => {
     console.error('❌ Request Error:', error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor
@@ -63,7 +65,7 @@ axiosInstance.interceptors.response.use(
   (response) => {
     // Calculate request duration
     const duration = new Date() - response.config.metadata.startTime;
-    
+
     // Log response in development
     if (LOG_CONFIG.enableConsole) {
       console.group(`✅ API Response: ${response.status} (${duration}ms)`);
@@ -71,7 +73,7 @@ axiosInstance.interceptors.response.use(
         status: response.status,
         statusText: response.statusText,
         headers: response.headers,
-        data: response.data
+        data: response.data,
       });
       console.groupEnd();
     }
@@ -80,22 +82,24 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Calculate request duration if available
-    const duration = originalRequest?.metadata?.startTime 
-      ? new Date() - originalRequest.metadata.startTime 
+    const duration = originalRequest?.metadata?.startTime
+      ? new Date() - originalRequest.metadata.startTime
       : 'unknown';
 
     // Enhanced error logging
     if (LOG_CONFIG.enableConsole) {
-      console.group(`❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`);
+      console.group(
+        `❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`,
+      );
       console.error('Error details:', {
         url: originalRequest?.url,
         method: originalRequest?.method,
         status: error.response?.status,
         statusText: error.response?.statusText,
         message: error.message,
-        data: error.response?.data
+        data: error.response?.data,
       });
       console.groupEnd();
     }
@@ -103,47 +107,47 @@ axiosInstance.interceptors.response.use(
     // Handle 401 Unauthorized - attempt token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       const refreshToken = localStorage.getItem(AUTH_CONFIG.refreshTokenKey);
-      
+
       if (refreshToken) {
         try {
           // Use a new axios instance to avoid interceptor loops
           const refreshResponse = await axios.post(
             `${API_BASE_URL}/api/auth/refresh-token`,
             { refreshToken },
-            { 
+            {
               headers: { 'Content-Type': 'application/json' },
-              timeout: PERFORMANCE_CONFIG.apiTimeout
-            }
+              timeout: PERFORMANCE_CONFIG.apiTimeout,
+            },
           );
-          
-          const newToken = refreshResponse.data.data?.token || 
-                          refreshResponse.data.token;
-          
+
+          const newToken =
+            refreshResponse.data.data?.token || refreshResponse.data.token;
+
           if (newToken) {
             // Update stored token
             localStorage.setItem(AUTH_CONFIG.tokenKey, newToken);
-            
+
             // Update the failed request with new token
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
             // Retry the original request
-          return axiosInstance(originalRequest);
+            return axiosInstance(originalRequest);
           }
         } catch (refreshError) {
           console.error('Token refresh failed:', refreshError);
-          
+
           // Clear auth data and redirect to login
           localStorage.removeItem(AUTH_CONFIG.tokenKey);
           localStorage.removeItem(AUTH_CONFIG.refreshTokenKey);
           localStorage.removeItem(AUTH_CONFIG.userKey);
-          
+
           // Redirect to login page
           if (typeof window !== 'undefined') {
             window.location.href = '/login?reason=session_expired';
           }
-          
+
           return Promise.reject(refreshError);
         }
       } else {
@@ -157,9 +161,12 @@ axiosInstance.interceptors.response.use(
     // Handle 403 Forbidden
     if (error.response?.status === 403) {
       console.warn('Access forbidden - insufficient permissions');
-      
+
       // You might want to redirect to an unauthorized page
-      if (typeof window !== 'undefined' && window.location.pathname !== '/unauthorized') {
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname !== '/unauthorized'
+      ) {
         window.location.href = '/unauthorized';
       }
     }
@@ -172,7 +179,7 @@ axiosInstance.interceptors.response.use(
     // Handle 500 Server Error
     if (error.response?.status >= 500) {
       console.error('Server error occurred');
-      
+
       // You might want to show a global error notification here
     }
 
@@ -182,7 +189,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Helper function to create API calls with consistent error handling
@@ -190,7 +197,7 @@ export const createApiCall = (method, url, data = null, config = {}) => {
   const requestConfig = {
     method,
     url,
-    ...config
+    ...config,
   };
 
   if (data && ['post', 'put', 'patch'].includes(method.toLowerCase())) {
@@ -203,19 +210,19 @@ export const createApiCall = (method, url, data = null, config = {}) => {
 };
 
 // Helper functions for common HTTP methods
-export const apiGet = (url, params = null, config = {}) => 
+export const apiGet = (url, params = null, config = {}) =>
   createApiCall('GET', url, params, config);
 
-export const apiPost = (url, data = null, config = {}) => 
+export const apiPost = (url, data = null, config = {}) =>
   createApiCall('POST', url, data, config);
 
-export const apiPut = (url, data = null, config = {}) => 
+export const apiPut = (url, data = null, config = {}) =>
   createApiCall('PUT', url, data, config);
 
-export const apiPatch = (url, data = null, config = {}) => 
+export const apiPatch = (url, data = null, config = {}) =>
   createApiCall('PATCH', url, data, config);
 
-export const apiDelete = (url, config = {}) => 
+export const apiDelete = (url, config = {}) =>
   createApiCall('DELETE', url, null, config);
 
 // File upload helper
@@ -225,14 +232,14 @@ export const uploadFile = (url, file, onProgress = null) => {
 
   const config = {
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+      'Content-Type': 'multipart/form-data',
+    },
   };
 
   if (onProgress) {
     config.onUploadProgress = (progressEvent) => {
       const percentCompleted = Math.round(
-        (progressEvent.loaded * 100) / progressEvent.total
+        (progressEvent.loaded * 100) / progressEvent.total,
       );
       onProgress(percentCompleted);
     };

@@ -20,7 +20,10 @@ class PaymentsApi {
       const response = await this.client.get('/api/payments/methods');
       return response.data;
     } catch (error) {
-      console.warn('Payment service unavailable for methods, using mock data:', error.message);
+      console.warn(
+        'Payment service unavailable for methods, using mock data:',
+        error.message,
+      );
       return {
         methods: [
           {
@@ -29,7 +32,7 @@ class PaymentsApi {
             provider: 'MTN',
             number: '+233*****678',
             isDefault: true,
-            status: 'active'
+            status: 'active',
           },
           {
             id: 'pm-2',
@@ -37,9 +40,9 @@ class PaymentsApi {
             provider: 'GCB Bank',
             accountNumber: '****4567',
             isDefault: false,
-            status: 'active'
-          }
-        ]
+            status: 'active',
+          },
+        ],
       };
     }
   }
@@ -51,10 +54,16 @@ class PaymentsApi {
    */
   async addPaymentMethod(paymentMethodData) {
     try {
-      const response = await this.client.post('/api/payments/methods', paymentMethodData);
+      const response = await this.client.post(
+        '/api/payments/methods',
+        paymentMethodData,
+      );
       return response.data;
     } catch (error) {
-      console.warn('Payment service unavailable for adding method, simulating success:', error.message);
+      console.warn(
+        'Payment service unavailable for adding method, simulating success:',
+        error.message,
+      );
       return {
         success: true,
         method: {
@@ -62,8 +71,8 @@ class PaymentsApi {
           ...paymentMethodData,
           isDefault: false,
           status: 'active',
-          createdAt: new Date()
-        }
+          createdAt: new Date(),
+        },
       };
     }
   }
@@ -142,7 +151,10 @@ class PaymentsApi {
    * @returns {Promise<Object>} Refund request result
    */
   async requestRefund(refundData) {
-    const response = await this.client.post('/api/payments/refunds', refundData);
+    const response = await this.client.post(
+      '/api/payments/refunds',
+      refundData,
+    );
     return response.data;
   }
 
@@ -227,7 +239,10 @@ class PaymentsApi {
    * @returns {Promise<Object>} Payout request result
    */
   async requestPayout(payoutData) {
-    const response = await this.client.post('/api/payments/payouts', payoutData);
+    const response = await this.client.post(
+      '/api/payments/payouts',
+      payoutData,
+    );
     return response.data;
   }
 
@@ -301,7 +316,9 @@ class PaymentsApi {
    * @returns {Promise<Object>} Payment result
    */
   async payBill(billId) {
-    const response = await this.client.post(`/api/payments/bills/${billId}/pay`);
+    const response = await this.client.post(
+      `/api/payments/bills/${billId}/pay`,
+    );
     return response.data;
   }
 }

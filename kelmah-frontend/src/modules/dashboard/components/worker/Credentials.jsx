@@ -63,9 +63,7 @@ const Credentials = () => {
 
         setSkills(skills);
         setLicenses(licenses);
-        setVerifiedSkillIds(
-          skills.filter((s) => s.verified).map((s) => s.id),
-        );
+        setVerifiedSkillIds(skills.filter((s) => s.verified).map((s) => s.id));
         setError(null);
       } catch (err) {
         console.error('Error fetching credentials:', err);

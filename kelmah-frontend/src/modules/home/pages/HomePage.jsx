@@ -195,28 +195,32 @@ const HomePage = () => {
   const services = [
     {
       title: 'Plumbing Services',
-      description: 'Professional plumbing installations, repairs, and maintenance for homes and businesses',
+      description:
+        'Professional plumbing installations, repairs, and maintenance for homes and businesses',
       image: plumbingImg,
       icon: <PlumbingIcon sx={{ color: '#000', fontSize: 24 }} />,
       skills: ['Pipe Installation', 'Leak Repairs', 'Drain Cleaning'],
     },
     {
       title: 'Electrical Work',
-      description: 'Licensed electricians for wiring, installations, and electrical system maintenance',
+      description:
+        'Licensed electricians for wiring, installations, and electrical system maintenance',
       image: electricalImg,
       icon: <ElectricalServicesIcon sx={{ color: '#000', fontSize: 24 }} />,
       skills: ['Wiring', 'Panel Upgrades', 'Lighting Installation'],
     },
     {
       title: 'Carpentry & Woodwork',
-      description: 'Custom carpentry, furniture making, and wooden structure construction',
+      description:
+        'Custom carpentry, furniture making, and wooden structure construction',
       image: carpentryImg,
       icon: <CarpenterIcon sx={{ color: '#000', fontSize: 24 }} />,
       skills: ['Custom Furniture', 'Framing', 'Cabinet Making'],
     },
     {
       title: 'Construction & Masonry',
-      description: 'Building construction, masonry work, and renovation projects',
+      description:
+        'Building construction, masonry work, and renovation projects',
       image: constructionImg,
       icon: <ConstructionIcon sx={{ color: '#000', fontSize: 24 }} />,
       skills: ['Foundation Work', 'Bricklaying', 'Concrete Work'],
@@ -227,17 +231,18 @@ const HomePage = () => {
     {
       icon: <VerifiedIcon sx={{ fontSize: 28, color: '#000' }} />,
       title: 'Verified Skilled Workers',
-      description: 'All tradespeople are vetted and verified for quality assurance'
+      description:
+        'All tradespeople are vetted and verified for quality assurance',
     },
     {
       icon: <SecurityIcon sx={{ fontSize: 28, color: '#000' }} />,
       title: 'Secure Escrow Payments',
-      description: 'Safe payment system protecting both workers and hirers'
+      description: 'Safe payment system protecting both workers and hirers',
     },
     {
       icon: <StarIcon sx={{ fontSize: 28, color: '#000' }} />,
       title: 'Quality Guarantee',
-      description: 'Rating system ensuring high-quality workmanship'
+      description: 'Rating system ensuring high-quality workmanship',
     },
   ];
 
@@ -286,16 +291,16 @@ const HomePage = () => {
             label={`Platform ${apiStatus.isReachable ? 'Online' : 'Offline'}`}
             color={apiStatus.isReachable ? 'success' : 'error'}
             size="small"
-            sx={{ 
-              position: 'absolute', 
-              top: 16, 
-              right: 16, 
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
               zIndex: 2,
               fontWeight: 'bold',
               boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
             }}
           />
-          
+
           <Section>
             <HeroBackgroundImage
               sx={{ backgroundImage: `url(${services[bgIndex].image})` }}
@@ -306,7 +311,7 @@ const HomePage = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
                   >
                     {user && (
                       <motion.div
@@ -314,16 +319,16 @@ const HomePage = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8, delay: 0.3 }}
                       >
-                      <Typography
-                        variant="h4"
-                          sx={{ 
-                            color: theme.palette.secondary.main, 
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            color: theme.palette.secondary.main,
                             mb: 2,
                             fontWeight: 600,
                           }}
-                      >
-                        Welcome back, {user.firstName || user.username}!
-                      </Typography>
+                        >
+                          Welcome back, {user.firstName || user.username}!
+                        </Typography>
                       </motion.div>
                     )}
                     <Typography
@@ -344,15 +349,16 @@ const HomePage = () => {
                         sx={{
                           fontSize: 'inherit',
                           fontWeight: 'inherit',
-                          background: 'linear-gradient(45deg, #FFD700 30%, #FFC000 90%)',
+                          background:
+                            'linear-gradient(45deg, #FFD700 30%, #FFC000 90%)',
                           backgroundClip: 'text',
                           WebkitBackgroundClip: 'text',
                           WebkitTextFillColor: 'transparent',
                         }}
                       >
                         Skilled Trades
-                      </Typography>
-                      {' '}Network
+                      </Typography>{' '}
+                      Network
                     </Typography>
                     <Typography
                       variant="h5"
@@ -365,107 +371,116 @@ const HomePage = () => {
                         fontSize: { xs: '1.1rem', md: '1.3rem' },
                       }}
                     >
-                      Connect with verified skilled workers across Ghana. 
-                      From plumbing and electrical work to carpentry and construction - 
-                      find the right professional for every job.
+                      Connect with verified skilled workers across Ghana. From
+                      plumbing and electrical work to carpentry and construction
+                      - find the right professional for every job.
                     </Typography>
                     <motion.div
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: isSm ? 'column' : 'row',
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: isSm ? 'column' : 'row',
                           gap: isSm ? 2 : 3,
                           mt: 5,
-                      }}
-                    >
-                      {!user ? (
-                        <>
-                          <StyledButton
-                            variant="contained"
+                        }}
+                      >
+                        {!user ? (
+                          <>
+                            <StyledButton
+                              variant="contained"
                               size="large"
-                            sx={{
-                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                              sx={{
+                                background:
+                                  'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                 color: '#000',
                                 fontWeight: 800,
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
-                              '&:hover': {
-                                  background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                              },
-                            }}
-                            fullWidth={isSm}
-                            onClick={() => navigate('/register')}
-                          >
+                                '&:hover': {
+                                  background:
+                                    'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                                },
+                              }}
+                              fullWidth={isSm}
+                              onClick={() => navigate('/register')}
+                            >
                               {isSm ? 'Join Kelmah' : 'Join the Network'}
-                          </StyledButton>
-                          <StyledButton
-                            variant="outlined"
+                            </StyledButton>
+                            <StyledButton
+                              variant="outlined"
                               size="large"
-                            sx={{
-                              borderColor: theme.palette.secondary.main,
-                              color: theme.palette.secondary.main,
+                              sx={{
+                                borderColor: theme.palette.secondary.main,
+                                color: theme.palette.secondary.main,
                                 borderWidth: 3,
                                 fontWeight: 700,
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
-                              '&:hover': {
-                                borderColor: theme.palette.secondary.dark,
-                                  background: alpha(theme.palette.secondary.main, 0.15),
+                                '&:hover': {
+                                  borderColor: theme.palette.secondary.dark,
+                                  background: alpha(
+                                    theme.palette.secondary.main,
+                                    0.15,
+                                  ),
                                   borderWidth: 3,
+                                },
+                              }}
+                              fullWidth={isSm}
+                              onClick={() => navigate('/search')}
+                            >
+                              Find Workers
+                            </StyledButton>
+                          </>
+                        ) : user.role === 'worker' ? (
+                          <StyledButton
+                            variant="contained"
+                            size="large"
+                            sx={{
+                              background:
+                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                              color: '#000',
+                              fontWeight: 800,
+                              fontSize: '1.2rem',
+                              px: 5,
+                              py: 2,
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                               },
                             }}
-                            fullWidth={isSm}
-                            onClick={() => navigate('/search')}
+                            onClick={() => navigate('/jobs')}
                           >
-                              Find Workers
-                          </StyledButton>
-                        </>
-                      ) : user.role === 'worker' ? (
-                        <StyledButton
-                          variant="contained"
-                            size="large"
-                          sx={{
-                              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                              color: '#000',
-                              fontWeight: 800,
-                              fontSize: '1.2rem',
-                              px: 5,
-                              py: 2,
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                            },
-                          }}
-                          onClick={() => navigate('/jobs')}
-                        >
                             Browse Available Jobs
-                        </StyledButton>
-                      ) : (
-                        <StyledButton
-                          variant="contained"
+                          </StyledButton>
+                        ) : (
+                          <StyledButton
+                            variant="contained"
                             size="large"
-                          sx={{
-                              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                            sx={{
+                              background:
+                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                               color: '#000',
                               fontWeight: 800,
                               fontSize: '1.2rem',
                               px: 5,
                               py: 2,
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                            },
-                          }}
-                          onClick={() => navigate('/hirer/jobs/post')}
-                        >
-                          Post a Job
-                        </StyledButton>
-                      )}
-                    </Box>
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                              },
+                            }}
+                            onClick={() => navigate('/hirer/jobs/post')}
+                          >
+                            Post a Job
+                          </StyledButton>
+                        )}
+                      </Box>
                     </motion.div>
                   </motion.div>
                 </Grid>
@@ -487,20 +502,20 @@ const HomePage = () => {
                           <FeatureBox>
                             <FeatureCircle>{feature.icon}</FeatureCircle>
                             <Box>
-                              <Typography 
-                                color="white" 
-                                variant="h6" 
+                              <Typography
+                                color="white"
+                                variant="h6"
                                 sx={{ fontWeight: 700, mb: 0.5 }}
                               >
                                 {feature.title}
                               </Typography>
-                              <Typography 
-                                color="rgba(255,255,255,0.8)" 
+                              <Typography
+                                color="rgba(255,255,255,0.8)"
                                 variant="body2"
                                 sx={{ fontSize: '0.95rem' }}
                               >
                                 {feature.description}
-                            </Typography>
+                              </Typography>
                             </Box>
                           </FeatureBox>
                         </motion.div>
@@ -510,7 +525,7 @@ const HomePage = () => {
                 </Grid>
               </Grid>
             </Container>
-            
+
             {/* Enhanced scroll indicator */}
             <Box
               sx={{
@@ -532,8 +547,8 @@ const HomePage = () => {
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: 1,
-              }}
-            >
+                }}
+              >
                 Explore Services
               </Typography>
               <motion.div
@@ -559,7 +574,11 @@ const HomePage = () => {
           {/* Enhanced Services Section */}
           <Section
             id="services"
-            sx={{ minHeight: 'auto', py: 16, background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)' }}
+            sx={{
+              minHeight: 'auto',
+              py: 16,
+              background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)',
+            }}
           >
             <Container maxWidth="lg">
               <motion.div
@@ -568,16 +587,16 @@ const HomePage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
               >
-              <Typography
-                variant="h2"
-                sx={{
-                  textAlign: 'center',
+                <Typography
+                  variant="h2"
+                  sx={{
+                    textAlign: 'center',
                     mb: 3,
-                  color: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
                     fontWeight: 800,
                     fontSize: { xs: '2.5rem', md: '3.5rem' },
-                }}
-              >
+                  }}
+                >
                   Trade Services Available
                 </Typography>
                 <Typography
@@ -591,8 +610,9 @@ const HomePage = () => {
                     fontWeight: 400,
                   }}
                 >
-                  Professional skilled workers ready to tackle your projects with expertise and dedication
-              </Typography>
+                  Professional skilled workers ready to tackle your projects
+                  with expertise and dedication
+                </Typography>
               </motion.div>
 
               <Grid container spacing={4}>
@@ -606,10 +626,10 @@ const HomePage = () => {
                     >
                       <ServiceCard>
                         <Box sx={{ position: 'relative' }}>
-                        <ServiceCardMedia
-                          image={service.image}
-                          title={service.title}
-                        />
+                          <ServiceCardMedia
+                            image={service.image}
+                            title={service.title}
+                          />
                           <TradeIcon className="service-icon">
                             {service.icon}
                           </TradeIcon>
@@ -631,7 +651,9 @@ const HomePage = () => {
                           >
                             {service.description}
                           </Typography>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          <Box
+                            sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
+                          >
                             {service.skills.map((skill) => (
                               <Chip
                                 key={skill}
@@ -680,21 +702,31 @@ const HomePage = () => {
                       mx: 'auto',
                     }}
                   >
-                    Join thousands of skilled workers and satisfied customers on Ghana's leading trade platform
+                    Join thousands of skilled workers and satisfied customers on
+                    Ghana's leading trade platform
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 3,
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     <StyledButton
                       variant="contained"
                       size="large"
                       sx={{
-                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        background:
+                          'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         color: '#000',
                         fontWeight: 800,
                         fontSize: '1.1rem',
                         px: 4,
                         py: 1.5,
                         '&:hover': {
-                          background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                          background:
+                            'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                         },
                       }}
                       onClick={() => navigate('/register')}

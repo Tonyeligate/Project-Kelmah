@@ -6,17 +6,17 @@ import { SERVICES } from '../../../config/environment';
 const userServiceClient = axios.create({
   baseURL: SERVICES.USER_SERVICE,
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 const jobServiceClient = axios.create({
   baseURL: SERVICES.JOB_SERVICE,
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Add auth tokens to requests
-[userServiceClient, jobServiceClient].forEach(client => {
+[userServiceClient, jobServiceClient].forEach((client) => {
   client.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('kelmah_auth_token');
@@ -25,7 +25,7 @@ const jobServiceClient = axios.create({
       }
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   );
 });
 
@@ -41,7 +41,7 @@ const mockDashboardData = {
     totalEarnings: 15420,
     monthlyEarnings: 3200,
     averageRating: 4.7,
-    profileCompletion: 85
+    profileCompletion: 85,
   },
   recentJobs: [
     {
@@ -54,7 +54,7 @@ const mockDashboardData = {
       status: 'active',
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
       applicationsCount: 8,
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
     },
     {
       id: 'job-recent-2',
@@ -66,7 +66,7 @@ const mockDashboardData = {
       status: 'pending',
       deadline: new Date(Date.now() + 1000 * 60 * 60 * 48),
       applicationsCount: 12,
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 6)
+      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 6),
     },
     {
       id: 'job-recent-3',
@@ -78,8 +78,8 @@ const mockDashboardData = {
       status: 'completed',
       deadline: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
       applicationsCount: 6,
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10)
-    }
+      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
+    },
   ],
   activeWorkers: [
     {
@@ -90,7 +90,7 @@ const mockDashboardData = {
       completedJobs: 15,
       location: 'Accra, Greater Accra',
       status: 'available',
-      lastActive: new Date(Date.now() - 1000 * 60 * 30)
+      lastActive: new Date(Date.now() - 1000 * 60 * 30),
     },
     {
       id: 'worker-2',
@@ -100,7 +100,7 @@ const mockDashboardData = {
       completedJobs: 12,
       location: 'Kumasi, Ashanti Region',
       status: 'busy',
-      lastActive: new Date(Date.now() - 1000 * 60 * 60 * 2)
+      lastActive: new Date(Date.now() - 1000 * 60 * 60 * 2),
     },
     {
       id: 'worker-3',
@@ -110,8 +110,8 @@ const mockDashboardData = {
       completedJobs: 20,
       location: 'Takoradi, Western Region',
       status: 'available',
-      lastActive: new Date(Date.now() - 1000 * 60 * 15)
-    }
+      lastActive: new Date(Date.now() - 1000 * 60 * 15),
+    },
   ],
   analytics: {
     jobsThisMonth: 8,
@@ -123,15 +123,15 @@ const mockDashboardData = {
     monthlyGrowth: {
       jobs: 15,
       earnings: 12,
-      applications: 8
+      applications: 8,
     },
     topSkills: [
       { skill: 'Carpentry', demand: 85, jobs: 12 },
       { skill: 'Plumbing', demand: 78, jobs: 9 },
       { skill: 'Electrical', demand: 72, jobs: 8 },
-      { skill: 'Painting', demand: 65, jobs: 6 }
-    ]
-  }
+      { skill: 'Painting', demand: 65, jobs: 6 },
+    ],
+  },
 };
 
 // Enhanced async thunks with proper service routing and mock fallback
@@ -153,31 +153,39 @@ export const fetchDashboardData = createAsyncThunk(
       ]);
 
       // Extract successful responses or use mock data
-      const metrics = metricsResponse.status === 'fulfilled' 
-        ? metricsResponse.value.data 
-        : mockDashboardData.metrics;
-        
-      const recentJobs = jobsResponse.status === 'fulfilled'
-        ? jobsResponse.value.data
-        : mockDashboardData.recentJobs;
-        
-      const activeWorkers = workersResponse.status === 'fulfilled'
-        ? workersResponse.value.data
-        : mockDashboardData.activeWorkers;
-        
-      const analytics = analyticsResponse.status === 'fulfilled'
-        ? analyticsResponse.value.data
-        : mockDashboardData.analytics;
+      const metrics =
+        metricsResponse.status === 'fulfilled'
+          ? metricsResponse.value.data
+          : mockDashboardData.metrics;
+
+      const recentJobs =
+        jobsResponse.status === 'fulfilled'
+          ? jobsResponse.value.data
+          : mockDashboardData.recentJobs;
+
+      const activeWorkers =
+        workersResponse.status === 'fulfilled'
+          ? workersResponse.value.data
+          : mockDashboardData.activeWorkers;
+
+      const analytics =
+        analyticsResponse.status === 'fulfilled'
+          ? analyticsResponse.value.data
+          : mockDashboardData.analytics;
 
       // Log which services are using mock data
       if (metricsResponse.status === 'rejected') {
         console.warn('User service unavailable for metrics, using mock data');
       }
       if (jobsResponse.status === 'rejected') {
-        console.warn('Job service unavailable for dashboard jobs, using mock data');
+        console.warn(
+          'Job service unavailable for dashboard jobs, using mock data',
+        );
       }
       if (workersResponse.status === 'rejected') {
-        console.warn('User service unavailable for workers data, using mock data');
+        console.warn(
+          'User service unavailable for workers data, using mock data',
+        );
       }
       if (analyticsResponse.status === 'rejected') {
         console.warn('User service unavailable for analytics, using mock data');
@@ -190,7 +198,9 @@ export const fetchDashboardData = createAsyncThunk(
         analytics,
       };
     } catch (error) {
-      console.warn('All dashboard services unavailable, using complete mock data');
+      console.warn(
+        'All dashboard services unavailable, using complete mock data',
+      );
       return mockDashboardData;
     }
   },
@@ -200,15 +210,20 @@ export const updateJobStatus = createAsyncThunk(
   'dashboard/updateJobStatus',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.patch(`/api/jobs/${jobId}/status`, { status });
+      const response = await jobServiceClient.patch(
+        `/api/jobs/${jobId}/status`,
+        { status },
+      );
       return { jobId, ...response.data };
     } catch (error) {
-      console.warn('Job service unavailable for status update, simulating success');
-      return { 
-        jobId, 
-        status, 
+      console.warn(
+        'Job service unavailable for status update, simulating success',
+      );
+      return {
+        jobId,
+        status,
         updatedAt: new Date(),
-        message: 'Job status updated (mock)'
+        message: 'Job status updated (mock)',
       };
     }
   },
