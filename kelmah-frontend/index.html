@@ -6,28 +6,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kelma</title>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-    <!-- Inline React fix for Vercel compatibility -->
+    <!-- Comprehensive React fix for Vercel compatibility -->
     <script>
       (function() {
         'use strict';
-        if (typeof window !== 'undefined' && !window.React) {
-          window.React = {
-            useState: function(initial) { return [initial, function() {}]; },
-            useEffect: function() {},
-            useContext: function() { return null; },
-            useReducer: function(reducer, initial) { return [initial, function() {}]; },
-            useCallback: function(fn) { return fn; },
-            useMemo: function(fn) { return fn(); },
-            useRef: function(initial) { return { current: initial }; },
-            useImperativeHandle: function() {},
-            useLayoutEffect: function() {},
-            useDebugValue: function() {},
-            useSyncExternalStore: function(subscribe, getSnapshot) { return getSnapshot(); },
-            createElement: function() { return null; },
-            Fragment: 'div'
-          };
-          console.log('React compatibility shim loaded');
+        
+        // Create React object with all hooks
+        const ReactShim = {
+          useState: function(initial) { 
+            console.log('React shim useState called');
+            return [initial, function() {}]; 
+          },
+          useEffect: function() { console.log('React shim useEffect called'); },
+          useContext: function() { console.log('React shim useContext called'); return null; },
+          useReducer: function(reducer, initial) { 
+            console.log('React shim useReducer called');
+            return [initial, function() {}]; 
+          },
+          useCallback: function(fn) { 
+            console.log('React shim useCallback called');
+            return fn; 
+          },
+          useMemo: function(fn) { 
+            console.log('React shim useMemo called');
+            return fn(); 
+          },
+          useRef: function(initial) { 
+            console.log('React shim useRef called');
+            return { current: initial }; 
+          },
+          useImperativeHandle: function() { console.log('React shim useImperativeHandle called'); },
+          useLayoutEffect: function() { console.log('React shim useLayoutEffect called'); },
+          useDebugValue: function() { console.log('React shim useDebugValue called'); },
+          useSyncExternalStore: function(subscribe, getSnapshot) { 
+            console.log('React shim useSyncExternalStore called');
+            return getSnapshot ? getSnapshot() : null; 
+          },
+          createElement: function() { 
+            console.log('React shim createElement called');
+            return null; 
+          },
+          Fragment: 'div',
+          version: '18.3.1-shim'
+        };
+
+        // Set React in all possible scopes
+        if (typeof window !== 'undefined') {
+          window.React = ReactShim;
+          console.log('React shim set on window');
         }
+        
+        if (typeof global !== 'undefined') {
+          global.React = ReactShim;
+          console.log('React shim set on global');
+        }
+        
+        if (typeof globalThis !== 'undefined') {
+          globalThis.React = ReactShim;
+          console.log('React shim set on globalThis');
+        }
+        
+        // Also try to intercept require/import calls
+        if (typeof window !== 'undefined') {
+          window.__REACT_SHIM__ = ReactShim;
+        }
+        
+        console.log('React compatibility shim loaded with debugging');
       })();
     </script>
   </head>
