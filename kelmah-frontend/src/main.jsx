@@ -1,6 +1,3 @@
-// Import polyfill first to ensure useSyncExternalStore is available
-import './polyfills.js';
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -17,11 +14,11 @@ import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-// Modern Ant Design (v5+) doesn't require explicit CSS import
 
-// Add debugging
-console.log('React version:', React.version);
-console.log('Store initialized:', !!store);
+// Add debugging for module loading
+console.log('🔧 Main.jsx loading - React version:', React.version);
+console.log('🔧 Store initialized:', !!store);
+console.log('🔧 All imports successful');
 
 const ErrorFallback = ({ error }) => (
   <div

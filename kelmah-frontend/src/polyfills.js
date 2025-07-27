@@ -1,24 +1,14 @@
-// Ensure React is properly loaded and all hooks are available
-import React from 'react';
+// Simple polyfill without React modification to prevent initialization issues
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
-// Ensure React and all its hooks are available globally
-if (typeof window !== 'undefined') {
-  window.React = React;
-}
-
-// Ensure the hook is available on React object
-if (!React.useSyncExternalStore) {
-  React.useSyncExternalStore = useSyncExternalStore;
-}
-
-// Ensure all hooks are available
-const hooks = ['useState', 'useEffect', 'useContext', 'useReducer', 'useCallback', 'useMemo', 'useRef', 'useImperativeHandle', 'useLayoutEffect', 'useDebugValue', 'useSyncExternalStore'];
-
-hooks.forEach(hook => {
-  if (!React[hook]) {
-    console.error(`React hook ${hook} is not available`);
+// Just ensure the hook is available - don't modify React object
+if (typeof window !== 'undefined' && window.React) {
+  if (!window.React.useSyncExternalStore) {
+    window.React.useSyncExternalStore = useSyncExternalStore;
   }
-});
+}
 
-export default React; 
+// Debug module loading order
+console.log('🔧 Polyfills loaded'); 
+
+export { useSyncExternalStore }; 

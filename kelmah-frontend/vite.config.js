@@ -43,35 +43,66 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // VERCEL FIX: Consolidate React to prevent duplicate declarations
+          // VERCEL FIX: Prevent module initialization order issues
           if (id.includes('node_modules')) {
-            // React and related packages - keep together to prevent "Y already declared"
+            // React ecosystem - must load first
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router') ||
                 id.includes('use-sync-external-store') ||
                 id.includes('scheduler')) {
-              return 'react-vendor';
+              return 'react-core';
             }
-            // Material-UI
-            if (id.includes('@mui') || id.includes('@emotion')) {
-              return 'mui-vendor';
-            }
-            // Redux and state management
+            
+            // Redux and state management - depends on React
             if (id.includes('redux') || 
                 id.includes('@reduxjs') ||
-                id.includes('reselect')) {
-              return 'state-vendor';
+                id.includes('reselect') ||
+                id.includes('immer')) {
+              return 'state-management';
             }
-            // All other vendors (this prevents React from leaking into main vendor)
-            return 'core-vendor';
+            
+            // Material-UI - can load independently
+            if (id.includes('@mui') || 
+                id.includes('@emotion') ||
+                id.includes('emotion')) {
+              return 'ui-framework';
+            }
+            
+            // Low-level utilities (these need to load early)
+            if (id.includes('lodash') ||
+                id.includes('date-fns') ||
+                id.includes('dayjs') ||
+                id.includes('moment') ||
+                id.includes('axios') ||
+                id.includes('crypto') ||
+                id.includes('buffer')) {
+              return 'utilities';
+            }
+            
+            // Notification and UI libraries
+            if (id.includes('notistack') ||
+                id.includes('react-helmet') ||
+                id.includes('recharts') ||
+                id.includes('react-error-boundary')) {
+              return 'ui-libs';
+            }
+            
+            // Everything else - load last
+            return 'vendor';
           }
         },
       },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'use-sync-external-store/shim'],
+    include: [
+      'react', 
+      'react-dom', 
+      'use-sync-external-store/shim',
+      '@reduxjs/toolkit',
+      'react-redux'
+    ],
     force: true,
   },
   test: {
