@@ -17,6 +17,7 @@ export default defineConfig({
   ],
   define: {
     'process.env': process.env,
+    global: 'globalThis',
   },
   server: {
     port: 3000,
@@ -52,6 +53,9 @@ export default defineConfig({
         },
       },
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'use-sync-external-store/shim'],
   },
   test: {
     globals: true,
