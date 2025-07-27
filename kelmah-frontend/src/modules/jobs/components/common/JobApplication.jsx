@@ -19,7 +19,6 @@ import {
   Stepper,
   Step,
   StepLabel,
-  styled,
   useTheme,
   Accordion,
   AccordionSummary,
@@ -29,6 +28,7 @@ import {
   ListItemText,
   FormHelperText,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import {
   Send as SendIcon,
   Add as AddIcon,
