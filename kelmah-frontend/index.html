@@ -6,11 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kelma</title>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <!-- Inline React fix for Vercel compatibility -->
+    <script>
+      (function() {
+        'use strict';
+        if (typeof window !== 'undefined' && !window.React) {
+          window.React = {
+            useState: function(initial) { return [initial, function() {}]; },
+            useEffect: function() {},
+            useContext: function() { return null; },
+            useReducer: function(reducer, initial) { return [initial, function() {}]; },
+            useCallback: function(fn) { return fn; },
+            useMemo: function(fn) { return fn(); },
+            useRef: function(initial) { return { current: initial }; },
+            useImperativeHandle: function() {},
+            useLayoutEffect: function() {},
+            useDebugValue: function() {},
+            useSyncExternalStore: function(subscribe, getSnapshot) { return getSnapshot(); },
+            createElement: function() { return null; },
+            Fragment: 'div'
+          };
+          console.log('React compatibility shim loaded');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <!-- Runtime fix for Vercel React compatibility -->
-    <script src="/react-fix.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
