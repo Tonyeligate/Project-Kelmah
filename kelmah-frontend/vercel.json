@@ -7,11 +7,6 @@
     "NODE_ENV": "production",
     "VITE_NODE_ENV": "production"
   },
-  "functions": {
-    "build/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "routes": [
     {
       "src": "/assets/(.*)",
