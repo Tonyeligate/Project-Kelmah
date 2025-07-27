@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kelma</title>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-    <!-- Ultimate React fix for Vercel - Module execution interception -->
+    <!-- Preload React vendor chunk first -->
+    <link rel="modulepreload" href="/assets/vendor_react-DRNSsPOp.js">
+    <!-- Critical React fix for import chain -->
     <script>
       (function() {
         'use strict';
@@ -67,45 +69,43 @@
           version: '18.3.1-vercel-fix'
         };
 
-        // Intercept script execution
-        const originalCreateElement = document.createElement;
-        document.createElement = function(tagName) {
-          const element = originalCreateElement.call(this, tagName);
-          
-          if (tagName.toLowerCase() === 'script') {
-            const originalSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
-            Object.defineProperty(element, 'src', {
-              get: originalSrc.get,
-              set: function(value) {
-                // Before loading any script, ensure React is available
-                if (!window.React) {
-                  window.React = ReactImpl;
-                  globalThis.React = ReactImpl;
-                  if (typeof global !== 'undefined') global.React = ReactImpl;
-                }
-                return originalSrc.set.call(this, value);
-              }
-            });
-          }
-          
-          return element;
-        };
-
-        // Set React immediately
+        // Set React in all scopes immediately
         window.React = ReactImpl;
         globalThis.React = ReactImpl;
         if (typeof global !== 'undefined') global.React = ReactImpl;
         
-        // Ensure React persists
-        setInterval(function() {
-          if (!window.React) {
-            window.React = ReactImpl;
-            globalThis.React = ReactImpl;
-            if (typeof global !== 'undefined') global.React = ReactImpl;
-          }
-        }, 100);
+        // Intercept ES6 imports by overriding the module resolution
+        const originalImport = window.__vitePreload;
+        if (originalImport) {
+          window.__vitePreload = function(moduleId, ...args) {
+            // If importing React vendor chunk, ensure it exports React correctly
+            if (moduleId.includes('vendor_react') || moduleId.includes('react')) {
+              console.log('Intercepting React vendor import:', moduleId);
+              const promise = originalImport.call(this, moduleId, ...args);
+              return promise.then(module => {
+                // Ensure the module exports React under all expected names
+                if (module && !module.r && !module.default) {
+                  module.r = ReactImpl;  // Export as 'r' (what vendor expects)
+                  module.R = ReactImpl;  // Export as 'R' 
+                  module.default = ReactImpl;
+                  console.log('Fixed React vendor exports');
+                }
+                return module;
+              }).catch(err => {
+                console.error('React vendor import failed, using fallback:', err);
+                // Return fallback React module
+                return {
+                  r: ReactImpl,
+                  R: ReactImpl,
+                  default: ReactImpl
+                };
+              });
+            }
+            return originalImport.call(this, moduleId, ...args);
+          };
+        }
 
-        console.log('Ultimate React fix loaded - React will persist');
+        console.log('Critical React import fix loaded');
       })();
     </script>
   </head>

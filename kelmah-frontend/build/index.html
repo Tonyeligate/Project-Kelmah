@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kelma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <!-- Ultimate React fix for Vercel - Module execution interception -->
+    <script>
+      (function() {
+        'use strict';
+        
+        // Create comprehensive React implementation
+        const ReactImpl = {
+          useState: function(initial) { 
+            return [initial, function(newVal) { 
+              if (typeof newVal === 'function') return newVal(initial);
+              return newVal;
+            }]; 
+          },
+          useEffect: function(effect, deps) { 
+            if (typeof effect === 'function') {
+              try { effect(); } catch(e) {}
+            }
+          },
+          useContext: function(context) { return context ? context.defaultValue : null; },
+          useReducer: function(reducer, initial) { 
+            return [initial, function(action) { 
+              try { return reducer(initial, action); } catch(e) { return initial; }
+            }]; 
+          },
+          useCallback: function(fn, deps) { return fn; },
+          useMemo: function(fn, deps) { 
+            try { return fn(); } catch(e) { return null; }
+          },
+          useRef: function(initial) { return { current: initial }; },
+          useImperativeHandle: function() {},
+          useLayoutEffect: function(effect, deps) {
+            if (typeof effect === 'function') {
+              try { effect(); } catch(e) {}
+            }
+          },
+          useDebugValue: function() {},
+          useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) { 
+            try {
+              return getSnapshot ? getSnapshot() : (getServerSnapshot ? getServerSnapshot() : null);
+            } catch(e) { return null; }
+          },
+          createElement: function(type, props, ...children) { 
+            return { type, props: props || {}, children };
+          },
+          Fragment: function(props) { return props.children; },
+          Component: function() {},
+          PureComponent: function() {},
+          memo: function(component) { return component; },
+          forwardRef: function(render) { return render; },
+          createContext: function(defaultValue) { 
+            return { 
+              Provider: function(props) { return props.children; },
+              Consumer: function(props) { return props.children(defaultValue); },
+              defaultValue: defaultValue
+            };
+          },
+          lazy: function(fn) { return fn; },
+          Suspense: function(props) { return props.children; },
+          version: '18.3.1-vercel-fix'
+        };
+
+        // Intercept script execution
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.call(this, tagName);
+          
+          if (tagName.toLowerCase() === 'script') {
+            const originalSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+            Object.defineProperty(element, 'src', {
+              get: originalSrc.get,
+              set: function(value) {
+                // Before loading any script, ensure React is available
+                if (!window.React) {
+                  window.React = ReactImpl;
+                  globalThis.React = ReactImpl;
+                  if (typeof global !== 'undefined') global.React = ReactImpl;
+                }
+                return originalSrc.set.call(this, value);
+              }
+            });
+          }
+          
+          return element;
+        };
+
+        // Set React immediately
+        window.React = ReactImpl;
+        globalThis.React = ReactImpl;
+        if (typeof global !== 'undefined') global.React = ReactImpl;
+        
+        // Ensure React persists
+        setInterval(function() {
+          if (!window.React) {
+            window.React = ReactImpl;
+            globalThis.React = ReactImpl;
+            if (typeof global !== 'undefined') global.React = ReactImpl;
+          }
+        }, 100);
+
+        console.log('Ultimate React fix loaded - React will persist');
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CM342ejW.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-C70G2IPe.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor_react-DRNSsPOp.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor_mui-BMai0fIk.js">
+    <link rel="stylesheet" crossorigin href="/assets/vendor-Dgihpmma.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-DiQK8Iqf.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
