@@ -371,28 +371,28 @@ const PaymentRelease = () => {
             </Box>
           ) : (
             <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
+      <Table>
+        <TableHead>
+          <TableRow>
                     <TableCell><strong>Job & Worker</strong></TableCell>
                     <TableCell><strong>Milestone</strong></TableCell>
                     <TableCell><strong>Amount</strong></TableCell>
                     <TableCell><strong>Status</strong></TableCell>
                     <TableCell><strong>Due Date</strong></TableCell>
                     <TableCell align="center"><strong>Actions</strong></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+          </TableRow>
+        </TableHead>
+        <TableBody>
                   {mockPaymentData.pendingPayments.map((payment) => (
                     <TableRow key={payment.id} hover>
-                      <TableCell>
+                <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
-                          <Avatar 
+                    <Avatar
                             src={payment.worker.avatar} 
                             sx={{ width: 40, height: 40 }}
-                          >
+                    >
                             {payment.worker.name.charAt(0)}
-                          </Avatar>
+                    </Avatar>
                           <Box>
                             <Typography variant="subtitle2" fontWeight="bold">
                               {payment.jobTitle}
@@ -401,8 +401,8 @@ const PaymentRelease = () => {
                               {payment.worker.name}
                             </Typography>
                           </Box>
-                        </Box>
-                      </TableCell>
+                  </Box>
+                </TableCell>
                       <TableCell>
                         <Typography variant="body2">
                           {payment.milestone}
@@ -413,18 +413,18 @@ const PaymentRelease = () => {
                           {formatCurrency(payment.amount)}
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Chip 
+                <TableCell>
+                  <Chip
                           label={getStatusLabel(payment.status)}
-                          color={getStatusColor(payment.status)}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
+                    color={getStatusColor(payment.status)}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell>
                         <Typography variant="body2">
                           {formatDate(payment.dueDate)}
                         </Typography>
-                      </TableCell>
+                </TableCell>
                       <TableCell align="center">
                         <Box display="flex" gap={1} justifyContent="center">
                           <Tooltip title="View Details">
@@ -436,23 +436,23 @@ const PaymentRelease = () => {
                             </IconButton>
                           </Tooltip>
                           {payment.status === 'ready_for_release' && (
-                            <Button
-                              size="small"
+                      <Button
+                        size="small"
                               variant="contained"
-                              color="primary"
+                        color="primary"
                               startIcon={<MoneyIcon />}
                               onClick={() => handleDialogOpen('release', payment)}
-                            >
-                              Release
-                            </Button>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                      >
+                        Release
+                      </Button>
+                    )}
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
           )}
         </CardContent>
       </Card>
@@ -462,8 +462,8 @@ const PaymentRelease = () => {
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             Recent Payment History
-          </Typography>
-          
+      </Typography>
+
           <TableContainer>
             <Table>
               <TableHead>
@@ -495,7 +495,7 @@ const PaymentRelease = () => {
                             {payment.worker.name}
                           </Typography>
                         </Box>
-                      </Box>
+        </Box>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
@@ -533,7 +533,7 @@ const PaymentRelease = () => {
       </Card>
 
       {/* Payment Release Dialog */}
-      <Dialog 
+      <Dialog
         open={dialogOpen && dialogType === 'release'} 
         onClose={handleDialogClose}
         maxWidth="sm"

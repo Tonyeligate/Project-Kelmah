@@ -264,7 +264,7 @@ const ProposalReview = () => {
             : p
         ));
         
-        handleDialogClose();
+      handleDialogClose();
       } catch (error) {
         console.error(`Error ${action} proposal:`, error);
         setError(`Failed to ${action} proposal`);
@@ -283,7 +283,7 @@ const ProposalReview = () => {
 
   if (loading) {
     return (
-      <Box>
+          <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
             <Grid item xs={12} sm={6} md={3} key={i}>
@@ -297,10 +297,10 @@ const ProposalReview = () => {
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
             ))}
-          </CardContent>
-        </Card>
+      </CardContent>
+    </Card>
       </Box>
-    );
+  );
   }
 
   return (
@@ -418,7 +418,7 @@ const ProposalReview = () => {
               <Typography variant="body2" color="text.secondary">
                 Proposals from workers will appear here
               </Typography>
-            </Box>
+        </Box>
           ) : (
             <TableContainer>
               <Table>
@@ -528,12 +528,12 @@ const ProposalReview = () => {
           <MenuItem key="reject" onClick={() => handleDialogOpen('reject')}>
             <RejectIcon sx={{ mr: 1, color: 'error.main' }} />
             Reject Proposal
-          </MenuItem>
+        </MenuItem>
         ]}
       </Menu>
 
       {/* Proposal Details Dialog */}
-      <Dialog 
+      <Dialog
         open={dialogOpen && dialogType === 'view'} 
         onClose={handleDialogClose}
         maxWidth="md"
@@ -640,11 +640,11 @@ const ProposalReview = () => {
                           {attachment.size}
                         </Typography>
                       </Box>
-                    ))}
-                  </Box>
+                          ))}
+                        </Box>
                 </>
-              )}
-            </Box>
+            )}
+          </Box>
           )}
         </DialogContent>
         <DialogActions>
@@ -693,7 +693,7 @@ const ProposalReview = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button 
+          <Button
             onClick={() => handleProposalAction(dialogType === 'accept' ? 'accepted' : 'rejected')}
             color={dialogType === 'accept' ? 'success' : 'error'}
             variant="contained"

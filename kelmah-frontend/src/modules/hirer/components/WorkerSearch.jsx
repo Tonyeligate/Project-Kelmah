@@ -417,16 +417,16 @@ const WorkerSearch = () => {
             color: 'white',
             height: '100%'
           }}>
-            <CardContent>
+      <CardContent>
               <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
+            <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {searchStats.totalWorkers}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Workers Found
-                  </Typography>
-                </Box>
+              </Typography>
+            </Box>
                 <GroupIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
@@ -448,9 +448,9 @@ const WorkerSearch = () => {
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Available Now
                   </Typography>
-                </Box>
+          </Box>
                 <WorkIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-              </Box>
+        </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -469,8 +469,8 @@ const WorkerSearch = () => {
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Average Rating
-                  </Typography>
-                </Box>
+              </Typography>
+            </Box>
                 <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
@@ -491,8 +491,8 @@ const WorkerSearch = () => {
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
                     Average Rate/Hr
-                  </Typography>
-                </Box>
+              </Typography>
+            </Box>
                 <MoneyIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
@@ -540,7 +540,7 @@ const WorkerSearch = () => {
                     Clear
                   </Button>
                 )}
-              </Box>
+            </Box>
             </Grid>
           </Grid>
 
@@ -555,28 +555,28 @@ const WorkerSearch = () => {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" gutterBottom>
-                    Skills
-                  </Typography>
+              Skills
+            </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
                     {skillOptions.map((skill) => (
-                      <Chip
-                        key={skill}
-                        label={skill}
+                <Chip
+                  key={skill}
+                  label={skill}
                         onClick={() => handleSkillToggle(skill)}
                         color={filters.skills.includes(skill) ? 'primary' : 'default'}
                         variant={filters.skills.includes(skill) ? 'filled' : 'outlined'}
-                        size="small"
-                      />
-                    ))}
-                  </Box>
-                </Grid>
+                  size="small"
+                />
+              ))}
+            </Box>
+          </Grid>
 
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" gutterBottom>
                     Location
-                  </Typography>
+      </Typography>
                   <FormControl fullWidth size="small">
-                    <Select
+              <Select
                       value={filters.location}
                       onChange={(e) => handleFilterChange('location', e.target.value)}
                       displayEmpty
@@ -587,55 +587,55 @@ const WorkerSearch = () => {
                           {location}
                         </MenuItem>
                       ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+              </Select>
+            </FormControl>
+          </Grid>
 
                 <Grid item xs={12} md={4}>
                   <Typography variant="subtitle2" gutterBottom>
                     Availability
                   </Typography>
                   <FormControl fullWidth size="small">
-                    <Select
-                      value={filters.availability}
+              <Select
+                value={filters.availability}
                       onChange={(e) => handleFilterChange('availability', e.target.value)}
-                    >
-                      <MenuItem value="all">All</MenuItem>
+              >
+                <MenuItem value="all">All</MenuItem>
                       <MenuItem value="available">Available</MenuItem>
                       <MenuItem value="busy">Busy</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
+              </Select>
+            </FormControl>
+          </Grid>
 
                 <Grid item xs={12} md={4}>
                   <Typography variant="subtitle2" gutterBottom>
                     Minimum Rating
                   </Typography>
                   <Slider
-                    value={filters.minRating}
+              value={filters.minRating}
                     onChange={(e, newValue) => handleFilterChange('minRating', newValue)}
                     min={0}
                     max={5}
                     step={0.5}
                     marks
                     valueLabelDisplay="auto"
-                  />
-                </Grid>
+            />
+          </Grid>
 
                 <Grid item xs={12} md={4}>
                   <Typography variant="subtitle2" gutterBottom>
                     Max Hourly Rate (₵{filters.maxRate})
                   </Typography>
-                  <Slider
-                    value={filters.maxRate}
+            <Slider
+              value={filters.maxRate}
                     onChange={(e, newValue) => handleFilterChange('maxRate', newValue)}
-                    min={0}
+              min={0}
                     max={100}
                     step={5}
                     valueLabelDisplay="auto"
-                  />
-                </Grid>
-              </Grid>
+            />
+          </Grid>
+        </Grid>
             </AccordionDetails>
           </Accordion>
         </CardContent>
@@ -654,7 +654,7 @@ const WorkerSearch = () => {
                       <Skeleton variant="text" height={30} width="80%" />
                       <Skeleton variant="text" height={20} width="60%" />
                     </Box>
-                  </Box>
+        </Box>
                   <Skeleton variant="text" height={60} />
                   <Skeleton variant="rectangular" height={40} sx={{ mt: 2 }} />
                 </CardContent>
@@ -672,7 +672,7 @@ const WorkerSearch = () => {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Try adjusting your search criteria or filters
-              </Typography>
+          </Typography>
             </Box>
           </CardContent>
         </Card>
@@ -833,21 +833,21 @@ const WorkerSearch = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <Box display="flex" justifyContent="center" mt={4}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
                 size={isMobile ? "small" : "medium"}
-              />
-            </Box>
+            />
+          </Box>
           )}
         </>
       )}
 
       {/* Worker Details Dialog */}
-      <Dialog 
-        open={dialogOpen} 
+      <Dialog
+        open={dialogOpen}
         onClose={handleDialogClose}
         maxWidth="md"
         fullWidth
@@ -935,39 +935,39 @@ const WorkerSearch = () => {
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap" mb={3}>
                 {selectedWorker.skills.map((skill, index) => (
-                  <Chip 
+                      <Chip
                     key={index} 
-                    label={skill} 
+                        label={skill}
                     color="primary" 
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
 
               {/* Certifications */}
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Certifications
-              </Typography>
+                      </Typography>
               <Box mb={3}>
                 {selectedWorker.certifications.map((cert, index) => (
                   <Typography key={index} variant="body2" gutterBottom>
                     • {cert}
-                  </Typography>
+                      </Typography>
                 ))}
               </Box>
 
               {/* Languages */}
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Languages
-              </Typography>
+                      </Typography>
               <Typography variant="body2" paragraph>
                 {selectedWorker.languages.join(', ')}
-              </Typography>
+                      </Typography>
 
               {/* Portfolio Preview */}
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Portfolio
-              </Typography>
+                      </Typography>
               <Grid container spacing={2}>
                 {selectedWorker.portfolio.map((item, index) => (
                   <Grid item xs={4} key={index}>

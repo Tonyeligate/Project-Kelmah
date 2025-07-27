@@ -237,7 +237,7 @@ const JobProgressTracker = () => {
   const handlePaymentRelease = () => {
     // Mock payment release
     console.log(`Releasing payment of ${paymentAmount} for job ${selectedJob.id}`);
-    handleDialogClose();
+      handleDialogClose();
   };
 
   const handleReviewSubmit = () => {
@@ -271,23 +271,23 @@ const JobProgressTracker = () => {
   if (jobsWithProgress.length === 0) {
     return (
       <Card>
-        <CardContent>
+      <CardContent>
           <Box textAlign="center" py={4}>
             <ScheduleIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
               No active jobs in progress
-            </Typography>
+              </Typography>
             <Typography variant="body2" color="text.secondary">
               Your active job progress will appear here
             </Typography>
           </Box>
-        </CardContent>
-      </Card>
-    );
+      </CardContent>
+    </Card>
+  );
   }
 
   return (
-    <Box>
+              <Box>
       {jobsWithProgress.map((job) => (
         <Card key={job.id} sx={{ mb: 3, overflow: 'visible' }}>
           <CardContent>
@@ -313,8 +313,8 @@ const JobProgressTracker = () => {
                         <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
                         <Typography variant="caption">
                           {job.worker.rating} ({job.worker.completedJobs} jobs)
-                        </Typography>
-                      </Box>
+                </Typography>
+              </Box>
                     </Box>
                   </Box>
                   <Chip 
@@ -335,19 +335,19 @@ const JobProgressTracker = () => {
                   <MessageIcon />
                 </IconButton>
               </Box>
-            </Box>
+        </Box>
 
             {/* Progress Overview */}
             <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8}>
                 <Box mb={2}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <Typography variant="body2" fontWeight="bold">
                       Overall Progress
-                    </Typography>
+              </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {job.progress}% Complete
-                    </Typography>
+                </Typography>
                   </Box>
                   <LinearProgress 
                     variant="determinate" 
@@ -377,7 +377,7 @@ const JobProgressTracker = () => {
                     <Typography variant="body2" color="text.secondary">
                       Expected: {formatDate(job.expectedCompletion)}
                     </Typography>
-                  </Grid>
+                </Grid>
                 </Grid>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -480,7 +480,7 @@ const JobProgressTracker = () => {
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
-            </List>
+              </List>
 
             {/* Recent Updates */}
             {job.recentUpdates.length > 0 && (

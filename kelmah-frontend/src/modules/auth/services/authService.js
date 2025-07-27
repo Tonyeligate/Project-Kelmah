@@ -185,8 +185,8 @@ const authService = {
       const response = await authServiceClient.put('/api/auth/change-password', {
         currentPassword,
         newPassword
-      });
-      return response.data;
+    });
+    return response.data;
     } catch (error) {
       console.error('Change password error:', error);
       throw error;

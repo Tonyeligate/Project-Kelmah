@@ -274,10 +274,10 @@ const WorkerReview = () => {
             : worker
         ));
         
-        handleDialogClose();
+      handleDialogClose();
       } catch (error) {
         console.error('Error submitting review:', error);
-        setError('Failed to submit review');
+      setError('Failed to submit review');
       }
     }
   };
@@ -320,7 +320,7 @@ const WorkerReview = () => {
 
   if (loading) {
     return (
-      <Box>
+            <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
             <Grid item xs={12} sm={6} md={3} key={i}>
@@ -334,10 +334,10 @@ const WorkerReview = () => {
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
             ))}
-          </CardContent>
-        </Card>
+      </CardContent>
+    </Card>
       </Box>
-    );
+  );
   }
 
   return (
@@ -434,7 +434,7 @@ const WorkerReview = () => {
                   </Typography>
                 </Box>
                 <ThumbUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
-              </Box>
+        </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -567,16 +567,16 @@ const WorkerReview = () => {
           View Details
         </MenuItem>
         {selectedJob && !selectedJob.review && (
-          <MenuItem onClick={() => handleDialogOpen('review')}>
+        <MenuItem onClick={() => handleDialogOpen('review')}>
             <EditIcon sx={{ mr: 1 }} />
             Write Review
-          </MenuItem>
+        </MenuItem>
         )}
         {selectedJob && selectedJob.review && (
           <MenuItem onClick={() => handleDialogOpen('edit_review')}>
             <EditIcon sx={{ mr: 1 }} />
             Edit Review
-          </MenuItem>
+        </MenuItem>
         )}
       </Menu>
 
@@ -676,7 +676,7 @@ const WorkerReview = () => {
       </Dialog>
 
       {/* Review Dialog */}
-      <Dialog 
+      <Dialog
         open={dialogOpen && (dialogType === 'review' || dialogType === 'edit_review')} 
         onClose={handleDialogClose}
         maxWidth="sm"
@@ -794,8 +794,8 @@ const WorkerReview = () => {
                   </Box>
                 </Grid>
               </Grid>
-            </Box>
-          )}
+                      </Box>
+            )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose}>Cancel</Button>

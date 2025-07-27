@@ -10,7 +10,8 @@ import {
   API_BASE_URL, 
   AUTH_CONFIG, 
   PERFORMANCE_CONFIG,
-  LOG_CONFIG 
+  LOG_CONFIG,
+  SERVICES 
 } from '../../../config/environment';
 
 // Create axios instance with default configuration
@@ -239,5 +240,38 @@ export const uploadFile = (url, file, onProgress = null) => {
 
   return apiPost(url, formData, config);
 };
+
+// Create service-specific clients with optimized configurations
+export const authServiceClient = axios.create({
+  baseURL: SERVICES.AUTH_SERVICE,
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export const userServiceClient = axios.create({
+  baseURL: SERVICES.USER_SERVICE,
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export const jobServiceClient = axios.create({
+  baseURL: SERVICES.JOB_SERVICE,
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export const schedulingClient = axios.create({
+  baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export default axiosInstance;

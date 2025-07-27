@@ -6,7 +6,7 @@ import { SERVICES } from '../../../config/environment';
 // until USER_SERVICE and JOB_SERVICE are deployed
 const authServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE,
-  timeout: 30000,
+  timeout: 5000, // Reduced timeout for better UX
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -25,6 +25,92 @@ authServiceClient.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// Get real user data from localStorage
+const getRealUserData = () => {
+  try {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error('Error parsing stored user data:', error);
+    return null;
+  }
+};
+
+// Create hirer profile from real user data or fallback to mock
+const createHirerProfile = () => {
+  const realUser = getRealUserData();
+  
+  if (realUser) {
+    return {
+      id: realUser.id || realUser._id,
+      firstName: realUser.firstName || realUser.first_name || 'User',
+      lastName: realUser.lastName || realUser.last_name || '',
+      email: realUser.email || 'user@example.com',
+      phone: realUser.phone || realUser.phoneNumber || '',
+      company: realUser.company || realUser.companyName || '',
+      location: realUser.location || realUser.address || '',
+      bio: realUser.bio || realUser.description || '',
+      avatar: realUser.avatar || realUser.profilePicture || '/api/placeholder/150/150',
+      role: realUser.role || realUser.userType || 'hirer',
+      rating: realUser.rating || 0,
+      reviewsCount: realUser.reviewsCount || 0,
+      totalJobsPosted: realUser.totalJobsPosted || 0,
+      totalAmountSpent: realUser.totalAmountSpent || 0,
+      currency: realUser.currency || 'GH₵',
+      verified: realUser.verified || false,
+      joinedAt: realUser.createdAt ? new Date(realUser.createdAt) : new Date(),
+      completionRate: realUser.completionRate || 0,
+      responseTime: realUser.responseTime || 'N/A',
+      preferences: realUser.preferences || {
+        communicationMethod: 'email',
+        jobNotifications: true,
+        marketingEmails: false,
+        currency: 'GHS'
+      },
+      businessDetails: realUser.businessDetails || {
+        registrationNumber: '',
+        industry: '',
+        employees: '',
+        website: ''
+      }
+    };
+  }
+
+  // Fallback mock data if no real user data
+  return {
+    id: 'hirer-001',
+    firstName: 'Sarah',
+    lastName: 'Mitchell',
+    email: 'sarah.mitchell@example.com',
+    phone: '+233 24 567 8901',
+    company: 'Mitchell Construction Ltd',
+    location: 'Accra, Greater Accra',
+    bio: 'We are a leading construction company specializing in residential and commercial projects. We value quality workmanship and reliable partnerships with skilled professionals.',
+    avatar: '/api/placeholder/150/150',
+    rating: 4.8,
+    reviewsCount: 28,
+    totalJobsPosted: 45,
+    totalAmountSpent: 125000,
+    currency: 'GH₵',
+    verified: true,
+    joinedAt: new Date('2021-08-15'),
+    completionRate: 95,
+    responseTime: '2 hours',
+    preferences: {
+      communicationMethod: 'email',
+      jobNotifications: true,
+      marketingEmails: false,
+      currency: 'GHS'
+    },
+    businessDetails: {
+      registrationNumber: 'BN/2021/08/12345',
+      industry: 'Construction & Real Estate',
+      employees: '10-50',
+      website: 'https://mitchellconstruction.com.gh'
+    }
+  };
+};
 
 // Comprehensive mock hirer data
 const mockHirerData = {
@@ -378,7 +464,7 @@ const mockHirerData = {
   }
 };
 
-// Async thunks for hirer operations with comprehensive mock fallbacks
+// Async thunks for hirer operations with real user data fallbacks
 export const fetchHirerProfile = createAsyncThunk(
   'hirer/fetchProfile',
   async (_, { rejectWithValue }) => {
@@ -387,12 +473,13 @@ export const fetchHirerProfile = createAsyncThunk(
       const response = await userServiceClient.get('/api/users/me/profile');
       return response.data;
     } catch (error) {
-      console.warn('User service unavailable for hirer profile, using comprehensive mock data:', error.message);
+      console.warn('User service unavailable for hirer profile, using real user data:', error.message);
       
-      // Return comprehensive mock data
+      // Return real user data from localStorage
+      const profile = createHirerProfile();
       return {
         success: true,
-        data: mockHirerData.profile
+        data: profile
       };
     }
   },
@@ -548,26 +635,26 @@ export const fetchPaymentSummary = createAsyncThunk(
 
 // Initial state
 const initialState = {
-  profile: null,
-  jobs: {
-    active: [],
-    completed: [],
+    profile: null,
+    jobs: {
+      active: [],
+      completed: [],
     draft: []
   },
   applications: [],
   analytics: null,
   payments: null,
-  loading: {
-    profile: false,
-    jobs: false,
-    applications: false,
+    loading: {
+      profile: false,
+      jobs: false,
+      applications: false,
     analytics: false,
     payments: false
-  },
-  error: {
-    profile: null,
-    jobs: null,
-    applications: null,
+    },
+    error: {
+      profile: null,
+      jobs: null,
+      applications: null,
     analytics: null,
     payments: null
   }

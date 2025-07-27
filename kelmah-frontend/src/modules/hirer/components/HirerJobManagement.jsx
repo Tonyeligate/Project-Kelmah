@@ -43,7 +43,7 @@ import {
   AttachMoney as MoneyIcon,
   People as PeopleIcon
 } from '@mui/icons-material';
-import { 
+import {
   fetchHirerJobs, 
   deleteHirerJob, 
   updateJobStatus,
@@ -299,22 +299,22 @@ const HirerJobManagement = () => {
 
   // Loading skeleton
   const LoadingSkeleton = () => (
-    <Box>
+          <Box>
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {[...Array(4)].map((_, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}
-      </Grid>
+          </Grid>
       <Card>
         <CardContent>
           <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
           ))}
-        </CardContent>
-      </Card>
+      </CardContent>
+    </Card>
     </Box>
   );
 
@@ -342,15 +342,15 @@ const HirerJobManagement = () => {
       <Card>
         <CardContent>
           <Typography variant="h5" gutterBottom fontWeight="bold">
-            Job Management
-          </Typography>
+        Job Management
+      </Typography>
 
-          <Tabs 
-            value={activeTab} 
-            onChange={handleTabChange} 
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
             sx={{ mb: 3 }}
             variant={isMobile ? "scrollable" : "standard"}
-            scrollButtons="auto"
+          scrollButtons="auto"
           >
             <Tab 
               label={`Active (${activeJobs?.length || 0})`}
@@ -364,7 +364,7 @@ const HirerJobManagement = () => {
               label={`Draft (${draftJobs?.length || 0})`}
               sx={{ fontWeight: 'bold' }}
             />
-          </Tabs>
+        </Tabs>
 
           {currentJobs.length === 0 ? (
             <Box textAlign="center" py={4}>
@@ -383,7 +383,7 @@ const HirerJobManagement = () => {
                   Post New Job
                 </Button>
               )}
-            </Box>
+        </Box>
           ) : (
             <>
               <TableContainer>
