@@ -2,14 +2,30 @@
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "framework": "vite",
+  "installCommand": "npm install --legacy-peer-deps",
+  "env": {
+    "NODE_ENV": "production",
+    "VITE_NODE_ENV": "production"
+  },
+  "functions": {
+    "build/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
     {
       "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "dest": "/assets/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
     },
     {
       "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "dest": "/$1"
+      "dest": "/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000"
+      }
     },
     {
       "src": "/(.*)",
