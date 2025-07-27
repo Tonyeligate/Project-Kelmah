@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 console.log('🚀 Starting Vercel-specific build...');
 
@@ -27,16 +31,16 @@ execSync('npm run build', { stdio: 'inherit' });
 
 // Post-build fix for React imports
 console.log('🔧 Post-build React fixes...');
-const buildDir = path.join(__dirname, 'build');
-const assetsDir = path.join(buildDir, 'assets');
+const buildDir = join(__dirname, 'build');
+const assetsDir = join(buildDir, 'assets');
 
-if (fs.existsSync(assetsDir)) {
-  const files = fs.readdirSync(assetsDir);
+if (existsSync(assetsDir)) {
+  const files = readdirSync(assetsDir);
   
   files.forEach(file => {
     if (file.includes('vendor-') && file.endsWith('.js')) {
-      const filePath = path.join(assetsDir, file);
-      let content = fs.readFileSync(filePath, 'utf8');
+      const filePath = join(assetsDir, file);
+      let content = readFileSync(filePath, 'utf8');
       
       // Fix the React import issue at the source
       if (content.includes('import{r as Y,')) {
@@ -68,7 +72,7 @@ var Y = (function() {
         
         // Insert the fix at the beginning
         content = reactFix + content;
-        fs.writeFileSync(filePath, content, 'utf8');
+        writeFileSync(filePath, content, 'utf8');
         console.log(`✅ Fixed ${file}`);
       }
     }
