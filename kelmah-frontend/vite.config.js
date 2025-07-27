@@ -26,7 +26,32 @@ export default defineConfig({
     }
   },
   build: {
-    sourcemap: true
+    // Add production optimizations for Vercel
+    rollupOptions: {
+      output: {
+        // Optimize chunk splitting for better caching
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-mui': ['@mui/material', '@mui/icons-material'],
+          'vendor-utils': ['axios', 'date-fns', 'framer-motion']
+        }
+      }
+    },
+
+    // Optimize build for production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true
+      }
+    },
+
+    // Chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+
+    // Source maps for debugging (optional)
+    sourcemap: false
   },
   server: {
     host: '127.0.0.1',
@@ -47,7 +72,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/users/, '/api')
       },
       '/api/jobs': {
-        target: 'https://kelmah-auth-service.onrender.com', 
+        target: 'https://kelmah-auth-service.onrender.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/jobs/, '/api/jobs')
       },
