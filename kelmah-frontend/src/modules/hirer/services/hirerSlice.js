@@ -734,28 +734,28 @@ export const fetchPaymentSummary = createAsyncThunk(
 
 // Initial state
 const initialState = {
-  profile: null,
-  jobs: {
-    active: [],
+    profile: null,
+    jobs: {
+      active: [],
     completed: [],
-    draft: [],
+      draft: [],
   },
   applications: [],
   analytics: null,
   payments: null,
-  loading: {
-    profile: false,
-    jobs: false,
-    applications: false,
+    loading: {
+      profile: false,
+      jobs: false,
+      applications: false,
     analytics: false,
-    payments: false,
-  },
-  error: {
-    profile: null,
-    jobs: null,
-    applications: null,
+      payments: false,
+    },
+    error: {
+      profile: null,
+      jobs: null,
+      applications: null,
     analytics: null,
-    payments: null,
+      payments: null,
   },
 };
 
