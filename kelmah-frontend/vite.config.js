@@ -36,6 +36,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     outDir: 'build',
@@ -43,10 +44,11 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor_react';
+            }
             if (id.includes('@mui')) {
               return 'vendor_mui';
-            } else if (id.includes('react')) {
-              return 'vendor_react';
             }
             return 'vendor'; // all other vendors
           }
@@ -56,6 +58,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'use-sync-external-store/shim'],
+    force: true,
   },
   test: {
     globals: true,
