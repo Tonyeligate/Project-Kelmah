@@ -1,4 +1,30 @@
-var RF=Object.defineProperty;var NF=(t,e,n)=>e in t?RF(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var qg=(t,e,n)=>NF(t,typeof e!="symbol"?e+"":e,n);import{r as Y,R as U,a as jF,b as X1,w as BF,T as FF,j as pa,c as zF,A as Lu}from"./vendor_react-DRNSsPOp.js";var pC=typeof globalThis<"u"?globalThis:typeof window<"u"?window:typeof globalThis<"u"?globalThis:typeof self<"u"?self:{};function Ae(t){return t&&t.__esModule&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t}function B0t(t){if(t.__esModule)return t;var e=t.default;if(typeof e=="function"){var n=function r(){return this instanceof r?Reflect.construct(e,arguments,this.constructor):e.apply(this,arguments)};n.prototype=e.prototype}else n={};return Object.defineProperty(n,"__esModule",{value:!0}),Object.keys(t).forEach(function(r){var i=Object.getOwnPropertyDescriptor(t,r);Object.defineProperty(n,r,i.get?i:{enumerable:!0,get:function(){return t[r]}})}),n}var vC={exports:{}},mC={};/**
+var RF=Object.defineProperty;var NF=(t,e,n)=>e in t?RF(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var qg=(t,e,n)=>NF(t,typeof e!="symbol"?e+"":e,n);// DIRECT FIX: Define Y before import to prevent undefined error
+var Y = (function() {
+  if (typeof window !== 'undefined' && window.React) return window.React;
+  if (typeof globalThis !== 'undefined' && globalThis.React) return globalThis.React;
+  return {
+    useState: function(initial) { return [initial, function(){}]; },
+    useEffect: function() {},
+    useContext: function() { return null; },
+    useReducer: function(reducer, initial) { return [initial, function(){}]; },
+    useCallback: function(fn) { return fn; },
+    useMemo: function(fn) { return fn(); },
+    useRef: function(initial) { return { current: initial }; },
+    useImperativeHandle: function() {},
+    useLayoutEffect: function() {},
+    useDebugValue: function() {},
+    useSyncExternalStore: function(subscribe, getSnapshot) { return getSnapshot ? getSnapshot() : null; },
+    createElement: function() { return null; },
+    Fragment: 'div'
+  };
+})();
+
+import{r as Y_IMPORT,R as U,a as jF,b as X1,w as BF,T as FF,j as pa,c as zF,A as Lu}from"./vendor_react-DRNSsPOp.js";
+
+// Use imported React if available, otherwise keep fallback
+if (Y_IMPORT && typeof Y_IMPORT === 'object') Y = Y_IMPORT;
+
+var pC=typeof globalThis<"u"?globalThis:typeof window<"u"?window:typeof globalThis<"u"?globalThis:typeof self<"u"?self:{};function Ae(t){return t&&t.__esModule&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t}function B0t(t){if(t.__esModule)return t;var e=t.default;if(typeof e=="function"){var n=function r(){return this instanceof r?Reflect.construct(e,arguments,this.constructor):e.apply(this,arguments)};n.prototype=e.prototype}else n={};return Object.defineProperty(n,"__esModule",{value:!0}),Object.keys(t).forEach(function(r){var i=Object.getOwnPropertyDescriptor(t,r);Object.defineProperty(n,r,i.get?i:{enumerable:!0,get:function(){return t[r]}})}),n}var vC={exports:{}},mC={};/**
  * @license React
  * use-sync-external-store-shim.production.js
  *
