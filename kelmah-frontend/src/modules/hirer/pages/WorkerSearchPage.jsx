@@ -56,12 +56,6 @@ import {
   Step,
   StepLabel,
   StepContent,
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
   Tabs,
   Tab,
   List,
@@ -70,6 +64,14 @@ import {
   ListItemText,
   ListItemAvatar,
 } from '@mui/material';
+import {
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+} from '@mui/lab';
 import {
   Search,
   Star,
@@ -104,18 +106,18 @@ import {
   Build as BuildIcon,
   Engineering as EngineeringIcon,
   Construction as ConstructionIcon,
-  Electrical as ElectricalIcon,
+  ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
   Home as HomeIcon,
   Speed as SpeedIcon,
   Security as SecurityIcon,
-  Timeline as TimelineIcon,
+  ShowChart as TimelineIcon,
   Analytics as AnalyticsIcon,
   AutoAwesome as AutoAwesomeIcon,
   Whatshot as WhatshotIcon,
   TrendingDown as TrendingDownIcon,
   School as SchoolIcon,
-  Certificate as CertificateIcon,
+  CardMembership as CertificateIcon,
   Language as LanguageIcon,
   Public as PublicIcon,
   AccessTime as AccessTimeIcon,
@@ -723,7 +725,7 @@ const WorkerSearchPage = () => {
                     color: 'white',
                     '&:hover': {
                       borderColor: theme.palette.secondary.main,
-                      backgroundColor: alpha('white', 0.1),
+                      backgroundColor: alpha('#ffffff', 0.1),
                     },
                   }}
                   onClick={() => navigate('/post-job')}
@@ -778,7 +780,7 @@ const WorkerSearchPage = () => {
                         label={stat.trend}
                         size="small"
                         sx={{
-                          bgcolor: alpha('white', 0.2),
+                          bgcolor: alpha('#ffffff', 0.2),
                           color: 'white',
                           fontWeight: 600,
                         }}

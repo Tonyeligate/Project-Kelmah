@@ -93,7 +93,7 @@ const DesktopNav = () => {
     handleMenuClose();
     try {
       await logout();
-      dispatch(logoutUser());
+    dispatch(logoutUser());
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);

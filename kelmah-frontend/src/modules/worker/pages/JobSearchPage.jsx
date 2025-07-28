@@ -53,18 +53,20 @@ import {
   Collapse,
   Fab,
   AvatarGroup,
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
   Stepper,
   Step,
   StepLabel,
   Breadcrumbs,
   Link,
 } from '@mui/material';
+import {
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+} from '@mui/lab';
 import {
   Search as SearchIcon,
   LocationOn as LocationOnIcon,
@@ -88,7 +90,7 @@ import {
   Visibility as VisibilityIcon,
   Work as WorkIcon,
   Business as BusinessIcon,
-  FlashOn as FlashOnIcon,
+  FlashOn as ElectricalIcon,
   Whatshot as WhatshotIcon,
   AutoAwesome as AutoAwesomeIcon,
   TrendingDown as TrendingDownIcon,
@@ -110,35 +112,12 @@ import {
   Psychology as PsychologyIcon,
   Engineering as EngineeringIcon,
   Construction as ConstructionIcon,
-  Electrical as ElectricalIcon,
+  ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
   Build as BuildIcon,
   Home as HomeIcon,
-  Carpenter as CarpenterIcon,
-  Hvac as HvacIcon,
-  EmojiEvents as EmojiEventsIcon,
-  School as SchoolIcon,
-  Certificate as CertificateIcon,
-  Language as LanguageIcon,
-  Public as PublicIcon,
-  AttachMoney as AttachMoneyIcon,
-  Close as CloseIcon,
-  Add as AddIcon,
-  Remove as RemoveIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
-  Chat as ChatIcon,
-  VideoCall as VideoCallIcon,
-  Handshake as HandshakeIcon,
-  ThumbUp as ThumbUpIcon,
-  GetApp as GetAppIcon,
-  CloudDownload as CloudDownloadIcon,
-  Print as PrintIcon,
-  PictureAsPdf as PictureAsPdfIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  CenterFocusStrong as CenterFocusStrongIcon,
-  Layers as LayersIcon,
+  Handyman as CarpenterIcon,
+  Thermostat as HvacIcon,
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -726,7 +705,7 @@ const JobSearchPage = () => {
                     color: 'white',
                     '&:hover': {
                       borderColor: theme.palette.secondary.main,
-                      backgroundColor: alpha('white', 0.1),
+                      backgroundColor: alpha('#ffffff', 0.1),
                     },
                   }}
                   onClick={() => navigate('/worker/profile')}
@@ -776,12 +755,12 @@ const JobSearchPage = () => {
                       </Typography>
                       <Typography variant="body2" color="rgba(255,255,255,0.8)" sx={{ mb: 1 }}>
                         {stat.subtitle}
-                      </Typography>
+                    </Typography>
                       <Chip
                         label={stat.trend}
                         size="small"
                         sx={{
-                          bgcolor: alpha('white', 0.2),
+                          bgcolor: alpha('#ffffff', 0.2),
                           color: 'white',
                           fontWeight: 600,
                         }}
@@ -1347,26 +1326,26 @@ const JobSearchPage = () => {
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           
-          {/* User Location Marker */}
-          {userPosition && (
-            <Marker position={userPosition}>
+              {/* User Location Marker */}
+              {userPosition && (
+                <Marker position={userPosition}>
               <Popup>📍 You are here</Popup>
-            </Marker>
-          )}
+                </Marker>
+              )}
           
           {/* Job Markers */}
           {(showSampleData ? creativeJobOpportunities : jobs)
             .filter(job => job.coordinates)
-            .map((job) => (
-              <Marker
-                key={job.id}
+                .map((job) => (
+                  <Marker
+                    key={job.id}
                 position={[job.coordinates?.lat || 37.7749, job.coordinates?.lng || -122.4194]}
-              >
-                <Popup>
+                  >
+                    <Popup>
                   <Box sx={{ minWidth: 200 }}>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {job.title}
-                    </Typography>
+                        {job.title}
+                      </Typography>
                     <Typography variant="body2" gutterBottom>
                       {job.company?.name || 'Company Name'}
                     </Typography>
@@ -1382,11 +1361,11 @@ const JobSearchPage = () => {
                       View Details
                     </Button>
                   </Box>
-                </Popup>
-              </Marker>
-            ))}
-        </MapContainer>
-      </Box>
+                    </Popup>
+                  </Marker>
+                ))}
+            </MapContainer>
+          </Box>
     </Container>
   );
 
@@ -1455,7 +1434,7 @@ const JobSearchPage = () => {
             onClick={() => navigate('/worker/dashboard')}
           />
         </SpeedDial>
-      </Box>
+    </Box>
     </>
   );
 };

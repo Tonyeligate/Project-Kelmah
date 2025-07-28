@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Layout from './modules/layout/components/Layout';
-import theme, { lightTheme } from './theme';
+import darkTheme, { lightTheme } from './theme';
 import Home from './modules/home/pages/HomePage';
 import Dashboard from './modules/dashboard/pages/DashboardPage';
 import WorkerDashboardPage from './modules/worker/pages/WorkerDashboardPage';
@@ -66,16 +66,21 @@ import MfaSetupPage from './modules/auth/pages/MfaSetupPage';
 const TempSchedulingPage = () => <SchedulingPage />;
 
 function App() {
-  // Set up light/dark theme toggle
-  const [mode, setMode] = useState(
-    () => localStorage.getItem('themeMode') || 'dark',
-  );
+  // Set up light/dark theme toggle with proper persistence
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem('themeMode');
+    return savedMode || 'dark'; // Default to dark theme for Kelmah brand
+  });
+
   const toggleTheme = useCallback(() => {
     const newMode = mode === 'dark' ? 'light' : 'dark';
     setMode(newMode);
     localStorage.setItem('themeMode', newMode);
   }, [mode]);
-  const appliedTheme = mode === 'dark' ? theme : lightTheme;
+
+  // Apply the correct theme based on mode
+  const appliedTheme = mode === 'dark' ? darkTheme : lightTheme;
+
   const dispatch = useDispatch();
   const location = useLocation();
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);

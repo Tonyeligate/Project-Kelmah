@@ -171,7 +171,7 @@ const authService = {
         '/api/auth/reset-password',
         { token, password },
       );
-      return response.data;
+    return response.data;
     } catch (error) {
       console.error('Reset password error:', error);
       throw error;

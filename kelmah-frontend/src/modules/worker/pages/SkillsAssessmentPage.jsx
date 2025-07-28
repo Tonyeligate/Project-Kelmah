@@ -491,7 +491,7 @@ const SkillsAssessmentPage = () => {
       const test = mockData.availableTests.find((t) => t.id === parseInt(id));
       if (test) {
         setCurrentTest({ ...test, questions: sampleQuestions });
-        setAssessmentInProgress(true);
+      setAssessmentInProgress(true);
         setTimeRemaining(test.duration * 60); // Convert to seconds
       }
       setLoading(false);
@@ -664,7 +664,7 @@ const SkillsAssessmentPage = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
                   <Avatar
-                    sx={{
+              sx={{
                       bgcolor: `${getDifficultyColor(test.difficulty)}.main`,
                       mr: 2,
                     }}
@@ -677,10 +677,10 @@ const SkillsAssessmentPage = () => {
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {test.category}
-                    </Typography>
+              </Typography>
                   </Box>
                   {test.premium && <PremiumIcon color="warning" />}
-                </Box>
+            </Box>
 
                 <Typography
                   variant="body2"
@@ -688,7 +688,7 @@ const SkillsAssessmentPage = () => {
                   sx={{ mb: 2, minHeight: 40 }}
                 >
                   {test.description}
-                </Typography>
+            </Typography>
 
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                   <Chip
@@ -703,7 +703,7 @@ const SkillsAssessmentPage = () => {
                     icon={<TimerIcon />}
                     label={`${test.duration} min`}
                     size="small"
-                    variant="outlined"
+                variant="outlined"
                   />
                   <Chip
                     icon={<QuizIcon />}
@@ -711,36 +711,36 @@ const SkillsAssessmentPage = () => {
                     size="small"
                     variant="outlined"
                   />
-                </Box>
+            </Box>
 
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
-                  }}
-                >
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Rating value={test.rating} size="small" readOnly />
                     <Typography variant="caption" sx={{ ml: 0.5 }}>
                       ({test.completions})
-                    </Typography>
+              </Typography>
                   </Box>
                   {test.certification && (
-                    <Chip
+              <Chip
                       icon={<CertificateIcon />}
                       label="Certificate"
                       size="small"
                       color="primary"
-                      variant="outlined"
-                    />
+                variant="outlined"
+              />
                   )}
-                </Box>
+            </Box>
 
                 <Typography variant="caption" color="text.secondary">
                   Passing Score: {test.passingScore}%
-                </Typography>
+            </Typography>
               </CardContent>
 
               <CardActions sx={{ px: 2, pb: 2 }}>
@@ -786,8 +786,8 @@ const SkillsAssessmentPage = () => {
                     <Tooltip title="Verified Skill">
                       <VerifiedIcon color="primary" />
                     </Tooltip>
-                  )}
-                </Box>
+              )}
+            </Box>
 
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   {skill.category}
@@ -814,14 +814,14 @@ const SkillsAssessmentPage = () => {
           </Grid>
         ))}
       </Grid>
-    </Box>
-  );
+        </Box>
+      );
 
   const renderCompletedTests = () => (
     <Box>
       <Typography variant="h5" fontWeight={700} gutterBottom>
         Completed Assessments
-      </Typography>
+              </Typography>
 
       <Grid container spacing={3}>
         {completedTests.map((test, index) => (
@@ -829,20 +829,20 @@ const SkillsAssessmentPage = () => {
             <GlassCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography
+              <Typography
                     variant="h6"
                     fontWeight={600}
                     sx={{ flexGrow: 1 }}
-                  >
+              >
                     {test.title}
-                  </Typography>
+              </Typography>
                   {test.certificate && <CertificateIcon color="primary" />}
-                </Box>
+            </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <ProgressRing progress={test.score}>
-                    <CircularProgress
-                      variant="determinate"
+                <CircularProgress
+                  variant="determinate"
                       value={test.score}
                       size={60}
                       thickness={6}
@@ -854,10 +854,10 @@ const SkillsAssessmentPage = () => {
                               ? 'warning.main'
                               : 'error.main',
                       }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
+                />
+                <Box
+                  sx={{
+                    position: 'absolute',
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
@@ -865,24 +865,24 @@ const SkillsAssessmentPage = () => {
                     >
                       <Typography variant="h6" fontWeight={700}>
                         {test.score}%
-                      </Typography>
-                    </Box>
+              </Typography>
+            </Box>
                   </ProgressRing>
 
                   <Box sx={{ ml: 2, flexGrow: 1 }}>
                     <Typography variant="body2" color="text.secondary">
                       Score: {test.correctAnswers}/{test.totalQuestions}
-                    </Typography>
+                </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Time: {test.timeSpent} minutes
-                    </Typography>
+                </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {formatDistanceToNow(new Date(test.completedAt), {
                         addSuffix: true,
                       })}
-                    </Typography>
-                  </Box>
-                </Box>
+                </Typography>
+            </Box>
+        </Box>
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Chip
@@ -941,7 +941,7 @@ const SkillsAssessmentPage = () => {
       <Box>
         <Typography variant="h5" fontWeight={700} gutterBottom>
           Skills Analytics
-        </Typography>
+                </Typography>
 
         <Grid container spacing={3}>
           {/* Summary Stats */}
@@ -950,7 +950,7 @@ const SkillsAssessmentPage = () => {
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Performance Overview
-                </Typography>
+              </Typography>
 
                 <Grid container spacing={2}>
                   <Grid item xs={6} sm={3}>
@@ -965,13 +965,13 @@ const SkillsAssessmentPage = () => {
                   </Grid>
                   <Grid item xs={6} sm={3}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography
+                <Typography
                         variant="h4"
                         color="success.main"
                         fontWeight={700}
                       >
                         {analytics.avgScore}%
-                      </Typography>
+                </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Avg Score
                       </Typography>
@@ -979,7 +979,7 @@ const SkillsAssessmentPage = () => {
                   </Grid>
                   <Grid item xs={6} sm={3}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography
+                <Typography
                         variant="h4"
                         color="warning.main"
                         fontWeight={700}
@@ -988,9 +988,9 @@ const SkillsAssessmentPage = () => {
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Certificates
-                      </Typography>
-                    </Box>
-                  </Grid>
+                </Typography>
+              </Box>
+          </Grid>
                   <Grid item xs={6} sm={3}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography
@@ -1087,7 +1087,7 @@ const SkillsAssessmentPage = () => {
                 </List>
               </CardContent>
             </GlassCard>
-          </Grid>
+      </Grid>
         </Grid>
       </Box>
     );
@@ -1105,17 +1105,17 @@ const SkillsAssessmentPage = () => {
       <Box>
         {/* Test Header */}
         <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
               mb: 2,
             }}
           >
             <Typography variant="h5" fontWeight={700}>
               {currentTest.title}
-            </Typography>
+                  </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <TimerDisplay urgent={timeUrgent}>
@@ -1142,7 +1142,7 @@ const SkillsAssessmentPage = () => {
                 Exit
               </Button>
             </Box>
-          </Box>
+                </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2" color="text.secondary">
@@ -1156,7 +1156,7 @@ const SkillsAssessmentPage = () => {
             <Typography variant="body2" color="text.secondary">
               {Math.round(progress)}%
             </Typography>
-          </Box>
+              </Box>
         </Paper>
 
         {/* Question Content */}
@@ -1283,8 +1283,8 @@ const SkillsAssessmentPage = () => {
               >
                 Next
               </Button>
-            )}
-          </Box>
+                )}
+              </Box>
         )}
       </Box>
     );
@@ -1302,7 +1302,7 @@ const SkillsAssessmentPage = () => {
           }}
         >
           <CircularProgress size={60} thickness={4} />
-        </Box>
+      </Box>
       </Container>
     );
   }
@@ -1367,42 +1367,42 @@ const SkillsAssessmentPage = () => {
           <Typography color="text.primary">Skills Assessment</Typography>
         </Breadcrumbs>
 
-        <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
           <Typography variant="h3" fontWeight={700} gutterBottom>
-            Skills Assessment Center
-          </Typography>
+          Skills Assessment Center
+        </Typography>
           <Typography variant="h6" color="text.secondary">
             Validate your expertise and earn professional certifications
-          </Typography>
-        </Box>
+        </Typography>
+      </Box>
 
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs
-            value={tabValue}
+        <Tabs
+          value={tabValue}
             onChange={(e, newValue) => setTabValue(newValue)}
-            variant={isMobile ? 'scrollable' : 'fullWidth'}
-            scrollButtons="auto"
+          variant={isMobile ? 'scrollable' : 'fullWidth'}
+          scrollButtons="auto"
           >
             <Tab icon={<QuizIcon />} label="Available Tests" />
             <Tab icon={<BuildIcon />} label="My Skills" />
             <Tab icon={<EmojiEventsIcon />} label="Completed" />
             <Tab icon={<AnalyticsIcon />} label="Analytics" />
-          </Tabs>
+        </Tabs>
         </Box>
 
         {/* Tab Panels */}
-        <TabPanel value={tabValue} index={0}>
-          {renderAvailableTests()}
-        </TabPanel>
+      <TabPanel value={tabValue} index={0}>
+        {renderAvailableTests()}
+      </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
-          {renderMySkills()}
-        </TabPanel>
+      <TabPanel value={tabValue} index={1}>
+        {renderMySkills()}
+      </TabPanel>
 
-        <TabPanel value={tabValue} index={2}>
-          {renderCompletedTests()}
-        </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+        {renderCompletedTests()}
+      </TabPanel>
 
         <TabPanel value={tabValue} index={3}>
           {renderAnalytics()}
@@ -1421,7 +1421,7 @@ const SkillsAssessmentPage = () => {
                 <QuizIcon />
               </Avatar>
               Start Assessment
-            </Box>
+      </Box>
           </DialogTitle>
           <DialogContent>
             {currentTest && (
@@ -1596,7 +1596,7 @@ const SkillsAssessmentPage = () => {
             {snackbar.message}
           </Alert>
         </Snackbar>
-      </Container>
+    </Container>
     </>
   );
 };

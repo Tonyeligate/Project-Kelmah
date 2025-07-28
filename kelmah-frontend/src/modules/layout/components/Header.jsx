@@ -17,6 +17,8 @@ import {
   Divider,
   ListItemIcon,
   ListItemText,
+  Chip,
+  Stack,
 } from '@mui/material';
 import {
   Brightness4 as Brightness4Icon,
@@ -30,59 +32,245 @@ import {
   Work as WorkIcon,
   Business as BusinessIcon,
   Menu as MenuIcon,
+  Engineering as EngineeringIcon,
+  Person as PersonIcon,
+  Wallet as WalletIcon,
+  Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import DesktopNav from './DesktopNav';
 import MobileNav from './MobileNav';
 import { useAuth } from '../../auth/contexts/AuthContext';
+import { BRAND_COLORS } from '../../../theme';
 
-// Styled components
+// Enhanced Styled Components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${alpha(theme.palette.secondary.main, 0.9)})`,
+  background: theme.palette.mode === 'dark' 
+    ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`
+    : `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
   backdropFilter: 'blur(20px)',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+  borderBottom: theme.palette.mode === 'dark'
+    ? `2px solid rgba(255, 215, 0, 0.3)`
+    : `2px solid rgba(0, 0, 0, 0.2)`,
+  boxShadow: theme.palette.mode === 'dark'
+    ? '0 8px 32px rgba(0, 0, 0, 0.8)'
+    : '0 4px 20px rgba(0, 0, 0, 0.15)',
+  position: 'sticky',
+  top: 0,
+  zIndex: 1100,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 }));
 
-const LogoBox = styled(Box)(({ theme }) => ({
+const BrandLogo = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   textDecoration: 'none',
-  color: theme.palette.primary.main,
-  fontWeight: 800,
-  fontSize: '1.75rem',
-  fontFamily: 'Montserrat, sans-serif',
-  letterSpacing: '0.02em',
-  transition: 'all 0.3s ease-in-out',
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    transform: 'scale(1.05)',
+    transform: 'scale(1.02)',
   },
 }));
 
-const NotificationBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-    color: theme.palette.primary.contrastText,
-    fontWeight: 600,
+const LogoIcon = styled(Box)(({ theme }) => ({
+  width: 48,
+  height: 48,
+  borderRadius: '50%',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: theme.spacing(1.5),
+  color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+  fontWeight: 800,
+  fontSize: '1.5rem',
+  fontFamily: 'Montserrat, sans-serif',
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+    : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: theme.palette.mode === 'dark'
+      ? `linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)`
+      : `linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%)`,
+    transform: 'translateX(-100%)',
+    transition: 'transform 0.6s ease',
   },
+  '&:hover::before': {
+    transform: 'translateX(100%)',
+  },
+}));
+
+const BrandText = styled(Typography)(({ theme }) => ({
+  fontWeight: 800,
+  fontFamily: 'Montserrat, sans-serif',
+  fontSize: '1.75rem',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  textShadow: theme.palette.mode === 'dark'
+    ? '0 2px 10px rgba(255, 215, 0, 0.3)'
+    : '0 2px 10px rgba(0, 0, 0, 0.2)',
+  letterSpacing: '-0.02em',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.5rem',
+  },
+}));
+
+const TaglineText = styled(Typography)(({ theme }) => ({
+  fontSize: '0.75rem',
+  color: theme.palette.mode === 'dark' 
+    ? 'rgba(255, 255, 255, 0.7)' 
+    : 'rgba(0, 0, 0, 0.8)',
+  fontWeight: 500,
+  marginTop: '-2px',
+  letterSpacing: '0.5px',
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
+}));
+
+const ActionButton = styled(IconButton)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark'
+    ? 'rgba(255, 215, 0, 0.1)'
+    : 'rgba(0, 0, 0, 0.1)',
+  color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+  border: theme.palette.mode === 'dark'
+    ? `1px solid rgba(255, 215, 0, 0.2)`
+    : `1px solid rgba(0, 0, 0, 0.2)`,
+  margin: theme.spacing(0, 0.5),
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    backgroundColor: theme.palette.mode === 'dark'
+      ? 'rgba(255, 215, 0, 0.2)'
+      : 'rgba(0, 0, 0, 0.15)',
+    transform: 'translateY(-1px) scale(1.05)',
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 4px 15px rgba(255, 215, 0, 0.3)'
+      : '0 4px 15px rgba(0, 0, 0, 0.2)',
+  },
+  '&:active': {
+    transform: 'translateY(0) scale(1)',
+  },
+}));
+
+const UserAvatar = styled(Avatar)(({ theme }) => ({
+  width: 40,
+  height: 40,
+  backgroundColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+  color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+  fontWeight: 700,
+  fontSize: '1rem',
+  border: theme.palette.mode === 'dark'
+    ? `2px solid rgba(255, 215, 0, 0.3)`
+    : `2px solid rgba(0, 0, 0, 0.3)`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  cursor: 'pointer',
+  '&:hover': {
+    transform: 'scale(1.1)',
+    border: theme.palette.mode === 'dark'
+      ? `2px solid ${BRAND_COLORS.gold}`
+      : `2px solid ${BRAND_COLORS.black}`,
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+      : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+  },
+}));
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    minWidth: '18px',
+    height: '18px',
+    border: `2px solid ${theme.palette.background.paper}`,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+  },
+}));
+
+const AuthButton = styled(Button)(({ theme, variant }) => ({
+  borderRadius: 8,
+  textTransform: 'none',
+  fontWeight: 600,
+  padding: '8px 20px',
+  fontSize: '0.9rem',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  ...(variant === 'outlined' && {
+    borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    borderWidth: '2px',
+    '&:hover': {
+      borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.goldLight : BRAND_COLORS.blackLight,
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(255, 215, 0, 0.1)' 
+        : 'rgba(0, 0, 0, 0.08)',
+      transform: 'translateY(-1px)',
+      borderWidth: '2px',
+    },
+  }),
+  ...(variant === 'contained' && {
+    background: theme.palette.mode === 'dark'
+      ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+      : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+    color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 4px 15px rgba(255, 215, 0, 0.3)'
+      : '0 4px 15px rgba(0, 0, 0, 0.3)',
+    '&:hover': {
+      background: theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`
+        : `linear-gradient(135deg, ${BRAND_COLORS.blackLight} 0%, ${BRAND_COLORS.black} 100%)`,
+      boxShadow: theme.palette.mode === 'dark'
+        ? '0 6px 20px rgba(255, 215, 0, 0.4)'
+        : '0 6px 20px rgba(0, 0, 0, 0.4)',
+      transform: 'translateY(-2px)',
+    },
+  }),
+}));
+
+const StatusIndicator = styled(Box)(({ theme, online }) => ({
+  position: 'absolute',
+  bottom: 2,
+  right: 2,
+  width: 10,
+  height: 10,
+  borderRadius: '50%',
+  backgroundColor: online ? '#4caf50' : '#f44336',
+  border: `2px solid ${theme.palette.background.paper}`,
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
 }));
 
 const Header = ({ toggleTheme, mode }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, loading } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Mock notification data
+  // Mock data - replace with real data from API
   const unreadNotifications = 3;
   const unreadMessages = 2;
+  const isUserOnline = true;
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -102,8 +290,14 @@ const Header = ({ toggleTheme, mode }) => {
 
   const handleLogout = async () => {
     handleMenuClose();
-    await logout();
-    navigate('/');
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force navigation even if logout fails
+      navigate('/');
+    }
   };
 
   const navigateToDashboard = () => {
@@ -117,20 +311,36 @@ const Header = ({ toggleTheme, mode }) => {
     }
   };
 
+  const getUserInitials = () => {
+    if (!user) return 'U';
+    const firstName = user.firstName || user.name?.split(' ')[0] || '';
+    const lastName = user.lastName || user.name?.split(' ')[1] || '';
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U';
+  };
+
+  const getUserRole = () => {
+    return user?.role || user?.userType || user?.userRole || 'user';
+  };
+
   const renderUserMenu = () => (
     <Menu
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={handleMenuClose}
-      onClick={handleMenuClose}
       PaperProps={{
-        elevation: 8,
+        elevation: 12,
         sx: {
           overflow: 'visible',
-          filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+          filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
           mt: 1.5,
-          borderRadius: 2,
-          minWidth: 200,
+          borderRadius: 3,
+          minWidth: 280,
+          border: theme.palette.mode === 'dark'
+            ? `1px solid rgba(255, 215, 0, 0.3)`
+            : `1px solid rgba(0, 0, 0, 0.2)`,
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? BRAND_COLORS.blackMedium 
+            : BRAND_COLORS.goldLight,
           '&:before': {
             content: '""',
             display: 'block',
@@ -139,61 +349,110 @@ const Header = ({ toggleTheme, mode }) => {
             right: 14,
             width: 10,
             height: 10,
-            bgcolor: 'background.paper',
+            bgcolor: theme.palette.mode === 'dark' 
+              ? BRAND_COLORS.blackMedium 
+              : BRAND_COLORS.goldLight,
             transform: 'translateY(-50%) rotate(45deg)',
             zIndex: 0,
+            border: theme.palette.mode === 'dark'
+              ? `1px solid rgba(255, 215, 0, 0.3)`
+              : `1px solid rgba(0, 0, 0, 0.2)`,
+            borderBottom: 'none',
+            borderRight: 'none',
           },
         },
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <Box
-        sx={{
-          px: 2,
-          py: 1,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Typography variant="subtitle1" fontWeight={600}>
-          {user?.firstName} {user?.lastName}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {user?.email}
-        </Typography>
-        <Typography variant="caption" color="primary">
-          {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
-        </Typography>
+      {/* User Info Header */}
+      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Box sx={{ position: 'relative' }}>
+            <UserAvatar>
+              {getUserInitials()}
+            </UserAvatar>
+            <StatusIndicator online={isUserOnline} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="subtitle1" fontWeight={700} noWrap>
+              {user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}`
+                : user?.name || user?.email || 'User'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {user?.email}
+            </Typography>
+            <Chip
+              label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
+              size="small"
+              sx={{
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 215, 0, 0.15)' 
+                  : 'rgba(0, 0, 0, 0.1)',
+                color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                mt: 0.5,
+              }}
+            />
+          </Box>
+        </Stack>
       </Box>
 
-      <MenuItem onClick={navigateToDashboard}>
+      {/* Menu Items */}
+      <MenuItem onClick={navigateToDashboard} sx={{ py: 1.5 }}>
         <ListItemIcon>
-          <DashboardIcon fontSize="small" />
+          <DashboardIcon color="primary" />
         </ListItemIcon>
-        <ListItemText>Dashboard</ListItemText>
+        <ListItemText 
+          primary="Dashboard" 
+          primaryTypographyProps={{ fontWeight: 500 }}
+        />
       </MenuItem>
 
-      <MenuItem onClick={() => navigate('/profile')}>
+      <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }} sx={{ py: 1.5 }}>
         <ListItemIcon>
-          <AccountCircleIcon fontSize="small" />
+          <PersonIcon color="primary" />
         </ListItemIcon>
-        <ListItemText>Profile</ListItemText>
+        <ListItemText 
+          primary="Profile" 
+          primaryTypographyProps={{ fontWeight: 500 }}
+        />
       </MenuItem>
 
-      <MenuItem onClick={() => navigate('/settings')}>
+      {user?.role === 'worker' && (
+        <MenuItem onClick={() => { handleMenuClose(); navigate('/worker/wallet'); }} sx={{ py: 1.5 }}>
+          <ListItemIcon>
+            <WalletIcon color="primary" />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Wallet" 
+            primaryTypographyProps={{ fontWeight: 500 }}
+          />
+        </MenuItem>
+      )}
+
+      <MenuItem onClick={() => { handleMenuClose(); navigate('/settings'); }} sx={{ py: 1.5 }}>
         <ListItemIcon>
-          <SettingsIcon fontSize="small" />
+          <SettingsIcon color="primary" />
         </ListItemIcon>
-        <ListItemText>Settings</ListItemText>
+        <ListItemText 
+          primary="Settings" 
+          primaryTypographyProps={{ fontWeight: 500 }}
+        />
       </MenuItem>
 
-      <Divider />
+      <Divider sx={{ my: 1 }} />
 
-      <MenuItem onClick={handleLogout}>
+      <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: 'error.main' }}>
         <ListItemIcon>
-          <LogoutIcon fontSize="small" />
+          <LogoutIcon color="error" />
         </ListItemIcon>
-        <ListItemText>Logout</ListItemText>
+        <ListItemText 
+          primary="Sign Out" 
+          primaryTypographyProps={{ fontWeight: 500, color: 'error.main' }}
+        />
       </MenuItem>
     </Menu>
   );
@@ -204,49 +463,58 @@ const Header = ({ toggleTheme, mode }) => {
       open={Boolean(notificationsAnchor)}
       onClose={handleNotificationsClose}
       PaperProps={{
-        elevation: 8,
+        elevation: 12,
         sx: {
           overflow: 'visible',
-          filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+          filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
           mt: 1.5,
-          borderRadius: 2,
-          minWidth: 300,
+          borderRadius: 3,
+          minWidth: 320,
           maxHeight: 400,
+          border: theme.palette.mode === 'dark'
+            ? `1px solid rgba(255, 215, 0, 0.3)`
+            : `1px solid rgba(0, 0, 0, 0.2)`,
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? BRAND_COLORS.blackMedium 
+            : BRAND_COLORS.goldLight,
         },
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <Box
-        sx={{
-          px: 2,
-          py: 1,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-      }}
-    >
-        <Typography variant="subtitle1" fontWeight={600}>
+      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Typography variant="h6" fontWeight={700}>
           Notifications
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          You have {unreadNotifications} unread notifications
         </Typography>
       </Box>
 
-      <MenuItem onClick={handleNotificationsClose}>
+      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
         <ListItemText
           primary="New job application received"
           secondary="2 minutes ago"
+          primaryTypographyProps={{ fontWeight: 500 }}
+          secondaryTypographyProps={{ fontSize: '0.75rem' }}
         />
       </MenuItem>
 
-      <MenuItem onClick={handleNotificationsClose}>
+      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
         <ListItemText
           primary="Payment processed successfully"
           secondary="1 hour ago"
+          primaryTypographyProps={{ fontWeight: 500 }}
+          secondaryTypographyProps={{ fontSize: '0.75rem' }}
         />
       </MenuItem>
 
-      <MenuItem onClick={handleNotificationsClose}>
+      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
         <ListItemText
           primary="Profile verification approved"
           secondary="3 hours ago"
+          primaryTypographyProps={{ fontWeight: 500 }}
+          secondaryTypographyProps={{ fontSize: '0.75rem' }}
         />
       </MenuItem>
 
@@ -257,66 +525,72 @@ const Header = ({ toggleTheme, mode }) => {
           handleNotificationsClose();
           navigate('/notifications');
         }}
+        sx={{ 
+          py: 1.5, 
+          justifyContent: 'center',
+          color: 'primary.main',
+          fontWeight: 600,
+        }}
       >
-        <ListItemText
-          primary="View all notifications"
-          sx={{ textAlign: 'center', color: 'primary.main' }}
-        />
+        View All Notifications
       </MenuItem>
     </Menu>
   );
 
+  if (loading) {
+    return (
+      <StyledAppBar position="static" elevation={0}>
+        <Toolbar sx={{ minHeight: { xs: 70, sm: 80 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <BrandLogo component={RouterLink} to="/">
+              <LogoIcon>K</LogoIcon>
+              <Box>
+                <BrandText variant="h6">elmah</BrandText>
+                <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
+              </Box>
+            </BrandLogo>
+            <Box sx={{ flexGrow: 1 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ActionButton onClick={toggleTheme}>
+                {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              </ActionButton>
+            </Box>
+          </Box>
+        </Toolbar>
+      </StyledAppBar>
+    );
+  }
+
   return (
     <StyledAppBar position="static" elevation={0}>
-      <Toolbar sx={{ minHeight: { xs: 64, sm: 70 } }}>
+      <Toolbar sx={{ minHeight: { xs: 70, sm: 80 }, px: { xs: 2, sm: 3 } }}>
         {/* Mobile Menu Button */}
-        {isMobile && (
-          <IconButton
+        {isMobile && isAuthenticated && (
+          <ActionButton
             edge="start"
-            color="inherit"
             aria-label="menu"
             onClick={() => setMobileMenuOpen(true)}
-            sx={{ mr: 2 }}
+            sx={{ mr: 1 }}
           >
             <MenuIcon />
-          </IconButton>
+          </ActionButton>
         )}
 
-        {/* Logo */}
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <LogoBox component={RouterLink} to="/">
-        <Box
-          sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-            display: 'flex',
-            alignItems: 'center',
-                justifyContent: 'center',
-                mr: 1,
-                color: 'white',
-                fontWeight: 800,
-                fontSize: '1.2rem',
-          }}
+        {/* Brand Logo */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          style={{ display: 'flex', alignItems: 'center' }}
         >
-              K
+          <BrandLogo component={RouterLink} to="/">
+            <LogoIcon>
+              <EngineeringIcon sx={{ fontSize: '1.2rem' }} />
+            </LogoIcon>
+            <Box>
+              <BrandText variant="h6">elmah</BrandText>
+              <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
             </Box>
-          <Typography
-            variant="h6"
-            sx={{
-                fontWeight: 800,
-              fontFamily: 'Montserrat, sans-serif',
-                fontSize: { xs: '1.3rem', sm: '1.5rem' },
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.text.primary})`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-            }}
-          >
-              elmah
-          </Typography>
-          </LogoBox>
+          </BrandLogo>
         </motion.div>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -324,168 +598,76 @@ const Header = ({ toggleTheme, mode }) => {
         {/* Desktop Navigation */}
         {!isMobile && <DesktopNav />}
 
-        {/* User Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* Action Buttons */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
           {/* Theme Toggle */}
-          <Tooltip
-            title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            <IconButton
-              color="inherit"
-              onClick={toggleTheme}
-              sx={{
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                '&:hover': {
-                  bgcolor: alpha(theme.palette.primary.main, 0.2),
-                  transform: 'scale(1.05)',
-                },
-                transition: 'all 0.3s ease-in-out',
-              }}
-            >
-          {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-        </IconButton>
+          <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} arrow>
+            <ActionButton onClick={toggleTheme}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mode}
+                  initial={{ rotate: -180, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 180, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                </motion.div>
+              </AnimatePresence>
+            </ActionButton>
           </Tooltip>
 
           {isAuthenticated ? (
             <>
               {/* Messages */}
-              <Tooltip title="Messages">
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate('/messages')}
-                  sx={{
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.2),
-                      transform: 'scale(1.05)',
-                    },
-                    transition: 'all 0.3s ease-in-out',
-                  }}
-                >
-                  <NotificationBadge
-                    badgeContent={unreadMessages}
-                    color="primary"
-                  >
+              <Tooltip title="Messages" arrow>
+                <ActionButton onClick={() => navigate('/messages')}>
+                  <StyledBadge badgeContent={unreadMessages} color="primary">
                     <MessageIcon />
-                  </NotificationBadge>
-                </IconButton>
+                  </StyledBadge>
+                </ActionButton>
               </Tooltip>
 
               {/* Notifications */}
-              <Tooltip title="Notifications">
-                <IconButton
-                  color="inherit"
-                  onClick={handleNotificationsOpen}
-                  sx={{
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.2),
-                      transform: 'scale(1.05)',
-                    },
-                    transition: 'all 0.3s ease-in-out',
-                  }}
-                >
-                  <NotificationBadge
-                    badgeContent={unreadNotifications}
-                    color="primary"
-                  >
+              <Tooltip title="Notifications" arrow>
+                <ActionButton onClick={handleNotificationsOpen}>
+                  <StyledBadge badgeContent={unreadNotifications} color="primary">
                     <NotificationsIcon />
-                  </NotificationBadge>
-                </IconButton>
+                  </StyledBadge>
+                </ActionButton>
               </Tooltip>
 
               {/* User Avatar */}
-              <Tooltip title="Account menu">
-                <IconButton
-                  onClick={handleProfileMenuOpen}
-                  sx={{
-                    p: 0,
-                    ml: 1,
-                    border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                    transition: 'all 0.3s ease-in-out',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      border: `2px solid ${theme.palette.primary.main}`,
-                    },
-                  }}
-                >
-                  <Avatar
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      bgcolor: 'primary.main',
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {user?.firstName?.charAt(0)}
-                    {user?.lastName?.charAt(0)}
-                  </Avatar>
-                </IconButton>
+              <Tooltip title="Account menu" arrow>
+                <Box sx={{ position: 'relative', ml: 1 }}>
+                  <UserAvatar onClick={handleProfileMenuOpen}>
+                    {getUserInitials()}
+                  </UserAvatar>
+                  <StatusIndicator online={isUserOnline} />
+                </Box>
               </Tooltip>
             </>
           ) : (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
+            <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
+              <AuthButton
                 component={RouterLink}
                 to="/login"
                 variant="outlined"
                 size="small"
-                sx={{
-                  borderRadius: 3,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  borderColor: theme.palette.primary.main,
-                  color: theme.palette.primary.main,
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    transform: 'translateY(-1px)',
-                  },
-                }}
               >
-                Login
-              </Button>
-              <Button
+                Sign In
+              </AuthButton>
+              <AuthButton
                 component={RouterLink}
                 to="/register"
                 variant="contained"
                 size="small"
-                sx={{
-                  borderRadius: 3,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: theme.shadows[8],
-                  },
-                }}
               >
-                Sign Up
-              </Button>
-            </Box>
+                Get Started
+              </AuthButton>
+            </Stack>
           )}
         </Box>
-
-        {/* Dev Mode Indicator */}
-        {import.meta.env.DEV && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 4,
-              right: 4,
-              fontSize: '9px',
-              padding: '2px 6px',
-              background: theme.palette.error.main,
-              color: 'white',
-              borderRadius: 1,
-              fontWeight: 600,
-              zIndex: 1000,
-            }}
-          >
-            DEV
-          </Box>
-        )}
       </Toolbar>
 
       {/* Mobile Navigation */}

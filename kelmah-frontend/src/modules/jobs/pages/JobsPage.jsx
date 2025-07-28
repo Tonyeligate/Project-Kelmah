@@ -59,7 +59,6 @@ import {
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
-  TrendingUp,
   CheckCircle,
   Group,
   WorkspacePremium,
@@ -81,7 +80,7 @@ import {
   Work as WorkIcon,
   Apartment as ApartmentIcon,
   FlashOn as FlashOnIcon,
-  Trending as TrendingIcon,
+  TrendingUp as TrendingIcon,
   LocalOffer as LocalOfferIcon,
   FilterAlt as FilterAltIcon,
   Sort as SortIcon,
@@ -111,14 +110,14 @@ import {
   Psychology as PsychologyIcon,
   Engineering as EngineeringIcon,
   Construction as ConstructionIcon,
-  Electrical as ElectricalIcon,
+  ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
   Build as BuildIcon,
   Home as HomeIcon,
-  Carpenter as CarpenterIcon,
-  Hvac as HvacIcon,
-  RoofingIcon,
-  PaintIcon,
+  Handyman as CarpenterIcon,
+  Thermostat as HvacIcon,
+  RoofingSharp as RoofingIcon,
+  FormatPaint as PaintIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
@@ -451,10 +450,10 @@ const JobsPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   
   // Redux state
-  const filters = useSelector(selectJobFilters);
-  const { currentPage, totalPages } = useSelector(selectJobsPagination);
+  const filters = useSelector(selectJobFilters) || {};
+  const { currentPage = 1, totalPages = 0 } = useSelector(selectJobsPagination) || {};
   const jobs = useSelector(selectJobs) || [];
-  const loading = useSelector(selectJobsLoading);
+  const loading = useSelector(selectJobsLoading) || false;
   const error = useSelector(selectJobsError);
 
   // Local state
@@ -580,7 +579,7 @@ const JobsPage = () => {
                     color: 'white',
                     '&:hover': {
                       borderColor: theme.palette.secondary.main,
-                      backgroundColor: alpha('white', 0.1),
+                      backgroundColor: alpha('#ffffff', 0.1),
                     },
                   }}
                   onClick={() => navigate('/register?type=worker')}
@@ -623,7 +622,7 @@ const JobsPage = () => {
                         size="small"
                         sx={{
                           mt: 1,
-                          bgcolor: alpha('white', 0.2),
+                          bgcolor: alpha('#ffffff', 0.2),
                           color: 'white',
                           fontWeight: 600,
                         }}
