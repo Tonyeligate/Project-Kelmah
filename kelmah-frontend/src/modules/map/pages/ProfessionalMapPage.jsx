@@ -50,7 +50,7 @@ import {
   BusinessCenter as BusinessIcon,
   Assessment as AssessmentIcon,
   FlashOn as FlashOnIcon,
-  Eco as EcoIcon,
+  EmojiNature as EcoIcon,
   Security as SecurityIcon,
   Build as BuildIcon,
   Home as HomeIcon,
