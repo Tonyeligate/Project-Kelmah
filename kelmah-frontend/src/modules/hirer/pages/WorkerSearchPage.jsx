@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Grow from '@mui/material/Grow';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Breadcrumbs,
@@ -35,6 +34,41 @@ import {
   Badge,
   Tooltip,
   useMediaQuery,
+  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  SpeedDial,
+  SpeedDialAction,
+  SpeedDialIcon,
+  ToggleButton,
+  ToggleButtonGroup,
+  Switch,
+  FormControlLabel,
+  LinearProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  AvatarGroup,
+  ButtonGroup,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  Tabs,
+  Tab,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemAvatar,
 } from '@mui/material';
 import {
   Search,
@@ -56,1357 +90,1338 @@ import {
   Email,
   Work as Portfolio,
   EmojiEvents,
+  SearchOff as SearchOffIcon,
+  Message as MessageIcon,
+  Bookmark as BookmarkIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  ViewModule as ViewModuleIcon,
+  ViewList as ViewListIcon,
+  Map as MapIcon,
+  Sort as SortIcon,
+  FilterAlt as FilterAltIcon,
+  MyLocation as MyLocationIcon,
+  Psychology as PsychologyIcon,
+  Build as BuildIcon,
+  Engineering as EngineeringIcon,
+  Construction as ConstructionIcon,
+  Electrical as ElectricalIcon,
+  Plumbing as PlumbingIcon,
+  Home as HomeIcon,
+  Speed as SpeedIcon,
+  Security as SecurityIcon,
+  Timeline as TimelineIcon,
+  Analytics as AnalyticsIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  Whatshot as WhatshotIcon,
+  TrendingDown as TrendingDownIcon,
+  School as SchoolIcon,
+  Certificate as CertificateIcon,
+  Language as LanguageIcon,
+  Public as PublicIcon,
+  AccessTime as AccessTimeIcon,
+  MoneyOff as MoneyOffIcon,
+  AttachMoney as AttachMoneyIcon,
+  Close as CloseIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  Visibility as VisibilityIcon,
+  Share as ShareIcon,
+  ContactPhone as ContactPhoneIcon,
+  VideoCall as VideoCallIcon,
+  Chat as ChatIcon,
+  Handshake as HandshakeIcon,
+  ThumbUp as ThumbUpIcon,
+  Refresh as RefreshIcon,
+  SaveAlt as SaveAltIcon,
+  GetApp as GetAppIcon,
+  CloudDownload as CloudDownloadIcon,
+  Print as PrintIcon,
+  PictureAsPdf as PictureAsPdfIcon,
+  Dashboard as DashboardIcon,
+  Settings as SettingsIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
-import SearchOffIcon from '@mui/icons-material/SearchOff';
+import { motion, AnimatePresence } from 'framer-motion';
+import { styled, keyframes } from '@mui/material/styles';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Helmet } from 'react-helmet';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import searchService from '../../search/services/searchService';
 import { hirerService } from '../services/hirerService';
-import MessageIcon from '@mui/icons-material/Message';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
-import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 
-// Sample data to showcase the platform
-const sampleWorkers = [
+// Animations
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+`;
+
+const shimmer = keyframes`
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const slideInUp = keyframes`
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+`;
+
+// Styled Components
+const HeroGradientSection = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, 
+    ${theme.palette.primary.main} 0%, 
+    ${theme.palette.secondary.main} 50%, 
+    ${theme.palette.primary.dark} 100%)`,
+  color: 'white',
+  padding: theme.spacing(10, 0),
+  position: 'relative',
+  overflow: 'hidden',
+  minHeight: '80vh',
+  display: 'flex',
+  alignItems: 'center',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'4\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+    animation: `${float} 8s ease-in-out infinite`,
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '-50%',
+    right: '-20%',
+    width: '100%',
+    height: '200%',
+    background: `radial-gradient(circle, ${alpha('#FFD700', 0.1)} 0%, transparent 70%)`,
+    animation: `${float} 12s ease-in-out infinite reverse`,
+  },
+}));
+
+const GlassCard = styled(Card)(({ theme, variant = 'default' }) => ({
+  background: variant === 'glass' 
+    ? alpha(theme.palette.background.paper, 0.9)
+    : theme.palette.background.paper,
+  backdropFilter: variant === 'glass' ? 'blur(20px)' : 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: 20,
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&:hover': {
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: `0 25px 50px ${alpha(theme.palette.secondary.main, 0.3)}`,
+    borderColor: theme.palette.secondary.main,
+  },
+}));
+
+const ProfessionalCard = styled(GlassCard)(({ theme, featured, premium }) => ({
+  height: '100%',
+  position: 'relative',
+  background: featured 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)}, ${alpha(theme.palette.primary.main, 0.1)})`
+    : theme.palette.background.paper,
+  border: featured 
+    ? `2px solid ${theme.palette.secondary.main}`
+    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  '&::before': premium ? {
+    content: '"✨ PREMIUM"',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '0.7rem',
+    fontWeight: 700,
+    padding: '4px 0',
+    letterSpacing: '1px',
+  } : {},
+}));
+
+const SearchInterface = styled(Paper)(({ theme }) => ({
+  position: 'sticky',
+  top: theme.spacing(2),
+  zIndex: 1000,
+  background: alpha(theme.palette.background.paper, 0.95),
+  backdropFilter: 'blur(20px)',
+  borderRadius: 25,
+  padding: theme.spacing(3),
+  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+  boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`,
+}));
+
+const SkillChip = styled(Chip)(({ theme, level }) => {
+  const getSkillColor = () => {
+    switch (level) {
+      case 'expert': return theme.palette.error.main;
+      case 'advanced': return theme.palette.warning.main;
+      case 'intermediate': return theme.palette.info.main;
+      default: return theme.palette.success.main;
+    }
+  };
+
+  return {
+    borderRadius: 20,
+    fontWeight: 600,
+    fontSize: '0.8rem',
+    background: alpha(getSkillColor(), 0.1),
+    color: getSkillColor(),
+    border: `1px solid ${alpha(getSkillColor(), 0.3)}`,
+    '&:hover': {
+      background: alpha(getSkillColor(), 0.2),
+      transform: 'translateY(-1px)',
+    },
+  };
+});
+
+const AnimatedButton = styled(Button)(({ theme, variant = 'contained' }) => ({
+  borderRadius: 25,
+  padding: theme.spacing(1.5, 4),
+  fontWeight: 700,
+  fontSize: '1rem',
+  textTransform: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s ease-in-out',
+  background: variant === 'contained' 
+    ? `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`
+    : 'transparent',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: `0 12px 25px ${alpha(theme.palette.secondary.main, 0.5)}`,
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.3)}, transparent)`,
+    transition: 'left 0.5s',
+  },
+  '&:hover::before': {
+    left: '100%',
+  },
+}));
+
+const StatCard = styled(motion.div)(({ theme }) => ({
+  background: alpha(theme.palette.background.paper, 0.9),
+  backdropFilter: 'blur(20px)',
+  borderRadius: 20,
+  padding: theme.spacing(3),
+  textAlign: 'center',
+  border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+  transition: 'all 0.3s ease-in-out',
+  cursor: 'pointer',
+  '&:hover': {
+    transform: 'translateY(-5px) scale(1.02)',
+    boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.4)}`,
+    borderColor: theme.palette.secondary.main,
+  },
+}));
+
+const FilterAccordion = styled(Accordion)(({ theme }) => ({
+  background: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(10px)',
+  borderRadius: '15px !important',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: 'none',
+  '&:before': { display: 'none' },
+  '&.Mui-expanded': {
+    margin: '8px 0',
+  },
+}));
+
+// Enhanced sample data with more creative professional profiles
+const creativeProfessionals = [
   {
-    id: 'sample-1',
-    name: 'Sarah Johnson',
-    title: 'Expert Plumber & Home Renovation Specialist',
-    avatar:
-      'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
-    rating: 4.9,
-    reviewCount: 127,
+    id: 'pro-1',
+    name: 'Marcus Rodriguez',
+    title: '⚡ Master Electrician & Smart Home Architect',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
+    rating: 4.98,
+    reviewCount: 347,
     skills: [
-      'Plumbing',
-      'Pipe Repair',
-      'Water Heater Installation',
-      'Emergency Repairs',
+      { name: 'Smart Home Integration', level: 'expert' },
+      { name: 'Solar Installation', level: 'expert' },
+      { name: 'Industrial Wiring', level: 'advanced' },
+      { name: 'Home Automation', level: 'expert' },
     ],
-    location: 'San Francisco, CA',
-    hourlyRate: 85,
-    completedJobs: 156,
-    responseTime: '< 2 hours',
+    location: 'San Francisco Bay Area, CA',
+    hourlyRate: 125,
+    completedJobs: 892,
+    responseTime: '< 15 min',
     verified: true,
-    description:
-      'Licensed plumber with 8+ years experience. Specialized in emergency repairs and kitchen/bathroom renovations.',
+    premium: true,
+    description: 'Award-winning master electrician specializing in cutting-edge smart home technologies and sustainable energy solutions. Tesla Powerwall certified installer with 15+ years of experience.',
     availability: 'Available',
-    specialties: ['Emergency Repairs', 'Bathroom Renovation'],
-    certifications: ['Licensed Plumber', 'EPA Certified'],
-    portfolioImages: 3,
+    specialties: ['Smart Home Tech', 'Solar Energy', 'Industrial Systems'],
+    certifications: ['Master Electrician License', 'Tesla Certified', 'NABCEP Solar Installer'],
+    portfolioImages: 24,
     languages: ['English', 'Spanish'],
+    successRate: 99.2,
+    repeatClients: 78,
+    featured: true,
+    badges: ['Top Rated', 'Rising Talent', 'Expert Verified'],
+    achievements: ['2023 Smart Home Excellence Award', '1000+ Projects Completed'],
+    workHistory: [
+      { company: 'Tesla Energy', role: 'Senior Installer', years: '2020-Present' },
+      { company: 'SunPower Corp', role: 'Lead Electrician', years: '2018-2020' },
+    ],
   },
   {
-    id: 'sample-2',
-    name: 'Marcus Thompson',
-    title: 'Licensed Electrician & Smart Home Expert',
-    avatar:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-    rating: 4.8,
-    reviewCount: 93,
+    id: 'pro-2',
+    name: 'Sarah Chen',
+    title: '🔧 Master Plumber & Water Systems Engineer',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
+    rating: 4.95,
+    reviewCount: 289,
     skills: [
-      'Electrical Wiring',
-      'Home Automation',
-      'Circuit Breakers',
-      'Smart Systems',
+      { name: 'Hydronic Systems', level: 'expert' },
+      { name: 'Emergency Repairs', level: 'expert' },
+      { name: 'Green Plumbing', level: 'advanced' },
+      { name: 'Water Treatment', level: 'expert' },
     ],
     location: 'Austin, TX',
-    hourlyRate: 90,
-    completedJobs: 89,
-    responseTime: '< 1 hour',
-    verified: true,
-    description:
-      'Master electrician specializing in residential and commercial electrical systems. Tesla Powerwall certified installer.',
-    availability: 'Available',
-    specialties: ['Smart Home Integration', 'Solar Installation'],
-    certifications: ['Master Electrician', 'Tesla Certified'],
-    portfolioImages: 8,
-    languages: ['English'],
-  },
-  {
-    id: 'sample-3',
-    name: 'Elena Rodriguez',
-    title: 'Professional Carpenter & Custom Furniture Maker',
-    avatar:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-    rating: 4.9,
-    reviewCount: 201,
-    skills: [
-      'Carpentry',
-      'Custom Furniture',
-      'Kitchen Cabinets',
-      'Woodworking',
-    ],
-    location: 'Denver, CO',
-    hourlyRate: 75,
-    completedJobs: 234,
+    hourlyRate: 95,
+    completedJobs: 654,
     responseTime: '< 30 min',
     verified: true,
-    description:
-      'Award-winning carpenter with expertise in custom woodwork and furniture design. Featured in Home & Garden Magazine.',
-    availability: 'Busy until Feb 15',
-    specialties: ['Custom Cabinetry', 'Hardwood Flooring'],
-    certifications: ['Master Carpenter', 'OSHA Certified'],
-    portfolioImages: 15,
-    languages: ['English', 'Spanish'],
+    premium: false,
+    description: 'Licensed master plumber with expertise in eco-friendly water systems and emergency response. Specializes in complex commercial and residential projects.',
+    availability: 'Available',
+    specialties: ['Eco-Friendly Solutions', 'Commercial Plumbing', 'Emergency Response'],
+    certifications: ['Master Plumber License', 'Green Plumber Certified', 'Backflow Prevention'],
+    portfolioImages: 18,
+    languages: ['English', 'Mandarin'],
+    successRate: 98.7,
+    repeatClients: 65,
+    featured: false,
+    badges: ['Eco-Friendly', 'Emergency Specialist'],
+    achievements: ['500+ Emergency Calls', 'Green Building Certified'],
   },
   {
-    id: 'sample-4',
-    name: 'David Chen',
-    title: 'Interior Designer & Paint Specialist',
-    avatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    rating: 4.7,
-    reviewCount: 78,
+    id: 'pro-3',
+    name: 'David Thompson',
+    title: '🏗️ Construction Project Manager & Architect',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    rating: 4.92,
+    reviewCount: 156,
     skills: [
-      'Interior Design',
-      'Painting',
-      'Color Consultation',
-      'Space Planning',
+      { name: 'Project Management', level: 'expert' },
+      { name: 'Sustainable Building', level: 'expert' },
+      { name: 'Team Leadership', level: 'expert' },
+      { name: 'Cost Estimation', level: 'advanced' },
     ],
-    location: 'Seattle, WA',
-    hourlyRate: 65,
-    completedJobs: 145,
-    responseTime: '< 3 hours',
+    location: 'Denver, CO',
+    hourlyRate: 110,
+    completedJobs: 234,
+    responseTime: '< 1 hour',
     verified: true,
-    description:
-      'Creative interior designer with a focus on modern and sustainable design solutions. Color theory expert.',
+    premium: true,
+    description: 'LEED-certified architect and construction manager with 20+ years experience in sustainable building projects. Specializes in complex commercial developments.',
+    availability: 'Busy until March 2024',
+    specialties: ['Sustainable Construction', 'Large Projects', 'Team Management'],
+    certifications: ['LEED AP BD+C', 'PMP Certified', 'Architecture License'],
+    portfolioImages: 32,
+    languages: ['English'],
+    successRate: 96.8,
+    repeatClients: 89,
+    featured: true,
+    badges: ['Project Leader', 'Sustainability Expert'],
+    achievements: ['LEED Platinum Projects', '$50M+ Projects Managed'],
+  },
+  {
+    id: 'pro-4',
+    name: 'Elena Vasquez',
+    title: '🎨 Interior Design Specialist & Custom Craftsperson',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
+    rating: 4.97,
+    reviewCount: 412,
+    skills: [
+      { name: 'Custom Furniture', level: 'expert' },
+      { name: 'Interior Design', level: 'expert' },
+      { name: 'Woodworking', level: 'expert' },
+      { name: '3D Visualization', level: 'advanced' },
+    ],
+    location: 'Miami, FL',
+    hourlyRate: 85,
+    completedJobs: 445,
+    responseTime: '< 2 hours',
+    verified: true,
+    premium: false,
+    description: 'Award-winning interior designer and master craftsperson. Creates bespoke furniture and stunning interior spaces with a focus on luxury and functionality.',
     availability: 'Available',
-    specialties: ['Modern Design', 'Eco-Friendly Solutions'],
-    certifications: ['Interior Design Degree', 'LEED Certified'],
-    portfolioImages: 12,
-    languages: ['English', 'Mandarin'],
+    specialties: ['Luxury Interiors', 'Custom Furniture', 'Space Planning'],
+    certifications: ['NCIDQ Certified', 'Fine Woodworking Certificate'],
+    portfolioImages: 28,
+    languages: ['English', 'Spanish', 'Portuguese'],
+    successRate: 99.5,
+    repeatClients: 92,
+    featured: false,
+    badges: ['Design Excellence', 'Luxury Specialist'],
+    achievements: ['Interior Design Awards 2023', 'Featured in Architectural Digest'],
+  },
+];
+
+const talentCategories = [
+  { 
+    name: 'Electrical', 
+    icon: <ElectricalIcon />, 
+    count: 12450, 
+    color: '#FFD700', 
+    trending: true,
+    description: 'Smart home experts & licensed electricians'
+  },
+  { 
+    name: 'Plumbing', 
+    icon: <PlumbingIcon />, 
+    count: 8920, 
+    color: '#4A90E2', 
+    hot: true,
+    description: 'Emergency response & water systems'
+  },
+  { 
+    name: 'Construction', 
+    icon: <ConstructionIcon />, 
+    count: 15640, 
+    color: '#E74C3C',
+    description: 'Project managers & skilled builders'
+  },
+  { 
+    name: 'HVAC', 
+    icon: <SpeedIcon />, 
+    count: 6780, 
+    color: '#2ECC71',
+    description: 'Climate control & energy efficiency'
+  },
+  { 
+    name: 'Design', 
+    icon: <PsychologyIcon />, 
+    count: 9340, 
+    color: '#9B59B6', 
+    premium: true,
+    description: 'Interior design & space planning'
+  },
+  { 
+    name: 'Smart Tech', 
+    icon: <HomeIcon />, 
+    count: 3450, 
+    color: '#F39C12', 
+    newest: true,
+    description: 'IoT integration & automation'
   },
 ];
 
 const platformStats = [
-  { icon: <Group />, value: '50,000+', label: 'Verified Professionals' },
-  { icon: <CheckCircle />, value: '98%', label: 'Project Success Rate' },
-  { icon: <TrendingUp />, value: '24/7', label: 'Customer Support' },
-  { icon: <WorkspacePremium />, value: '4.9/5', label: 'Average Rating' },
+  { 
+    icon: <Group sx={{ fontSize: 48 }} />, 
+    value: '125,000+', 
+    label: 'Verified Professionals',
+    subtitle: 'Background checked',
+    color: '#FFD700',
+    trend: '+15% this month'
+  },
+  { 
+    icon: <CheckCircle sx={{ fontSize: 48 }} />, 
+    value: '99.2%', 
+    label: 'Project Success Rate',
+    subtitle: 'Client satisfaction',
+    color: '#2ECC71',
+    trend: '+0.8% improvement'
+  },
+  { 
+    icon: <TrendingUp sx={{ fontSize: 48 }} />, 
+    value: '24/7', 
+    label: 'Support Available',
+    subtitle: 'Expert assistance',
+    color: '#3498DB',
+    trend: 'Always here'
+  },
+  { 
+    icon: <WorkspacePremium sx={{ fontSize: 48 }} />, 
+    value: '4.97/5', 
+    label: 'Average Rating',
+    subtitle: 'Professional quality',
+    color: '#E74C3C',
+    trend: '+0.05 this quarter'
+  },
 ];
-
-const WorkerCard = ({ worker, isSaved, onToggleSave, isDemo = false }) => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-
-  const getAvailabilityColor = (availability) => {
-    if (availability === 'Available') return 'success';
-    if (availability.includes('Busy')) return 'warning';
-    return 'default';
-  };
-
-  return (
-    <Card
-      sx={{
-        height: '100%',
-        position: 'relative',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        background: theme.palette.background.paper,
-        border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-        borderRadius: 3,
-        overflow: 'hidden',
-        '&:hover': {
-          transform: 'translateY(-8px) scale(1.02)',
-          boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.4)}`,
-          borderColor: theme.palette.secondary.main,
-        },
-      }}
-    >
-      {worker.verified && (
-        <Chip
-          icon={<Verified />}
-          label="VERIFIED PRO"
-          size="small"
-          sx={{
-            position: 'absolute',
-            top: 12,
-            left: 12,
-            zIndex: 2,
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-            fontWeight: 'bold',
-            fontSize: '0.75rem',
-          }}
-        />
-      )}
-
-      <IconButton
-        onClick={() => !isDemo && onToggleSave(worker.id || worker._id)}
-        sx={{
-          position: 'absolute',
-          top: 12,
-          right: 12,
-          zIndex: 2,
-          backgroundColor: alpha(theme.palette.background.default, 0.9),
-          color: isSaved
-            ? theme.palette.secondary.main
-            : theme.palette.text.secondary,
-          '&:hover': {
-            backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-            color: theme.palette.secondary.main,
-          },
-        }}
-        disabled={isDemo}
-      >
-        {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-      </IconButton>
-
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Avatar
-            src={worker.avatar}
-            sx={{
-              width: 100,
-              height: 100,
-              mb: 2,
-              mx: 'auto',
-              border: `4px solid ${theme.palette.secondary.main}`,
-              boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.3)}`,
-            }}
-          />
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{
-              color: theme.palette.text.primary,
-              fontSize: '1.25rem',
-              lineHeight: 1.3,
-              mb: 1,
-            }}
-          >
-            {worker.name}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: '0.95rem',
-              lineHeight: 1.4,
-              fontWeight: 500,
-              mb: 2,
-            }}
-          >
-            {worker.title}
-          </Typography>
-
-          <Chip
-            label={worker.availability}
-            color={getAvailabilityColor(worker.availability)}
-            size="small"
-            sx={{ mb: 2, fontWeight: 'bold' }}
-          />
-        </Box>
-
-        <Box sx={{ mb: 3 }}>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            spacing={1}
-            sx={{ mb: 1 }}
-          >
-            <Rating
-              value={worker.rating}
-              precision={0.1}
-              readOnly
-              size="small"
-              sx={{
-                '& .MuiRating-iconFilled': {
-                  color: theme.palette.secondary.main,
-                },
-              }}
-            />
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.primary, fontWeight: 'bold' }}
-            >
-              {worker.rating} ({worker.reviewCount})
-            </Typography>
-          </Stack>
-
-          <Stack
-            direction="row"
-            spacing={1}
-            alignItems="center"
-            justifyContent="center"
-            sx={{ mb: 2 }}
-          >
-            <LocationOn
-              fontSize="small"
-              sx={{ color: theme.palette.secondary.main }}
-            />
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.primary, fontWeight: 500 }}
-            >
-              {worker.location}
-            </Typography>
-          </Stack>
-
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={6}>
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  p: 2,
-                  borderRadius: 2,
-                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: theme.palette.secondary.main,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  ${worker.hourlyRate}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}
-                >
-                  per hour
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6}>
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  p: 2,
-                  borderRadius: 2,
-                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: theme.palette.secondary.main,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {worker.completedJobs}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}
-                >
-                  jobs done
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              color: theme.palette.text.primary,
-              fontWeight: 'bold',
-              mb: 1,
-            }}
-          >
-            Top Skills
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {(worker.skills || []).slice(0, 4).map((skill) => (
-              <Chip
-                key={skill}
-                label={skill}
-                size="small"
-                sx={{
-                  fontSize: '0.7rem',
-                  fontWeight: 'bold',
-                  backgroundColor: alpha(theme.palette.secondary.main, 0.2),
-                  color: theme.palette.text.primary,
-                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
-                }}
-              />
-            ))}
-          </Box>
-        </Box>
-
-        <Stack spacing={2}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              p: 1.5,
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.secondary.main, 0.05),
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-            }}
-          >
-            <Schedule
-              fontSize="small"
-              sx={{ color: theme.palette.secondary.main, mr: 1 }}
-            />
-            <Typography
-              variant="body2"
-              sx={{ color: theme.palette.text.primary, fontWeight: 'bold' }}
-            >
-              Responds {worker.responseTime}
-            </Typography>
-          </Box>
-
-          <Stack direction="row" spacing={1} justifyContent="center">
-            <Tooltip title="Portfolio Items">
-              <Chip
-                icon={<Portfolio />}
-                label={worker.portfolioImages}
-                size="small"
-                variant="outlined"
-              />
-            </Tooltip>
-            <Tooltip title="Certifications">
-              <Chip
-                icon={<EmojiEvents />}
-                label={worker.certifications?.length || 0}
-                size="small"
-                variant="outlined"
-              />
-            </Tooltip>
-          </Stack>
-        </Stack>
-      </CardContent>
-
-      <CardActions
-        sx={{ p: 3, pt: 0, display: 'flex', flexDirection: 'column', gap: 2 }}
-      >
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={() =>
-            !isDemo && navigate(`/profiles/user/${worker.id || worker._id}`)
-          }
-          disabled={isDemo}
-          sx={{
-            py: 1.5,
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-            borderRadius: 2,
-            '&:hover': {
-              backgroundColor: theme.palette.secondary.dark,
-              transform: 'translateY(-2px)',
-              boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
-            },
-          }}
-        >
-          {isDemo ? 'View Profile (Demo)' : 'View Profile'}
-        </Button>
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={<MessageIcon />}
-          onClick={() =>
-            !isDemo &&
-            navigate('/messages?participantId=' + (worker.id || worker._id))
-          }
-          disabled={isDemo}
-          sx={{
-            py: 1.5,
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            borderColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.main,
-            borderWidth: 2,
-            borderRadius: 2,
-            '&:hover': {
-              borderColor: theme.palette.secondary.light,
-              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-              transform: 'translateY(-2px)',
-            },
-          }}
-        >
-          {isDemo ? 'Message (Demo)' : 'Contact'}
-        </Button>
-      </CardActions>
-    </Card>
-  );
-};
-
-const CompactSearchFilters = ({
-  searchParams,
-  setSearchParams,
-  skillOptions,
-  onSearch,
-  onClearFilters,
-}) => {
-  const theme = useTheme();
-  const [expanded, setExpanded] = useState(false);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    onSearch();
-  };
-
-  return (
-    <Paper
-      sx={{
-        p: 3,
-        mb: 4,
-        borderRadius: 3,
-        border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-        backgroundColor: theme.palette.background.paper,
-        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.2)}`,
-        position: 'sticky',
-        top: theme.spacing(2),
-        zIndex: 1100,
-      }}
-    >
-      <form onSubmit={handleSearch}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
-          alignItems="center"
-        >
-          <Box sx={{ flexGrow: 1, width: '100%' }}>
-            <TextField
-              fullWidth
-              placeholder="Search by name, skills, or specialization..."
-              value={searchParams.searchTerm}
-              onChange={(e) =>
-                setSearchParams((prev) => ({
-                  ...prev,
-                  searchTerm: e.target.value,
-                }))
-              }
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  backgroundColor: alpha(theme.palette.background.default, 0.3),
-                  '& fieldset': {
-                    borderColor: theme.palette.secondary.main,
-                    borderWidth: 1,
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <Search sx={{ color: theme.palette.secondary.main, mr: 1 }} />
-                ),
-              }}
-            />
-          </Box>
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ width: { xs: '100%', md: 'auto' } }}
-          >
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: theme.palette.secondary.main,
-                color: theme.palette.secondary.contrastText,
-                height: '56px',
-                px: 3,
-                flexShrink: 0,
-              }}
-            >
-              Search
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<Tune />}
-              endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
-              onClick={() => setExpanded(!expanded)}
-              sx={{
-                borderColor: theme.palette.secondary.main,
-                color: theme.palette.secondary.main,
-                borderWidth: 2,
-                height: '56px',
-                flexShrink: 0,
-              }}
-            >
-              Filters
-            </Button>
-          </Stack>
-        </Stack>
-      </form>
-
-      <Collapse in={expanded} sx={{ mt: 2 }}>
-        <Divider sx={{ my: 2 }} />
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={4}>
-            <TextField
-              fullWidth
-              label="Location"
-              value={searchParams.location}
-              onChange={(e) =>
-                setSearchParams((prev) => ({
-                  ...prev,
-                  location: e.target.value,
-                }))
-              }
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={4}>
-            <Box>
-              <Typography
-                gutterBottom
-                fontWeight="medium"
-                sx={{ color: theme.palette.text.primary }}
-              >
-                Minimum Rating: {searchParams.minRating}⭐
-              </Typography>
-              <Slider
-                value={searchParams.minRating}
-                onChange={(e, newValue) =>
-                  setSearchParams((prev) => ({ ...prev, minRating: newValue }))
-                }
-                step={0.5}
-                marks
-                min={0}
-                max={5}
-                valueLabelDisplay="auto"
-                sx={{
-                  '& .MuiSlider-thumb': {
-                    backgroundColor: theme.palette.secondary.main,
-                  },
-                  '& .MuiSlider-track': {
-                    backgroundColor: theme.palette.secondary.main,
-                  },
-                }}
-              />
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Work Mode</InputLabel>
-              <Select
-                value={searchParams.workMode}
-                label="Work Mode"
-                onChange={(e) =>
-                  setSearchParams((prev) => ({
-                    ...prev,
-                    workMode: e.target.value,
-                  }))
-                }
-                sx={{ borderRadius: 2 }}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="remote">Remote</MenuItem>
-                <MenuItem value="onsite">On-site</MenuItem>
-                <MenuItem value="hybrid">Hybrid</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Autocomplete
-              multiple
-              options={skillOptions}
-              value={searchParams.skills}
-              onChange={(event, newSkills) =>
-                setSearchParams((prev) => ({ ...prev, skills: newSkills }))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Required Skills"
-                  placeholder="Select skills"
-                  fullWidth
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                />
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button
-                variant="text"
-                startIcon={<Clear />}
-                onClick={onClearFilters}
-                sx={{ color: theme.palette.text.secondary }}
-              >
-                Clear All Filters
-              </Button>
-              <Button
-                variant="contained"
-                onClick={onSearch}
-                sx={{
-                  backgroundColor: theme.palette.secondary.main,
-                  color: theme.palette.secondary.contrastText,
-                }}
-              >
-                Apply Filters
-              </Button>
-            </Stack>
-          </Grid>
-        </Grid>
-      </Collapse>
-    </Paper>
-  );
-};
-
-const EmptyState = () => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-
-  return (
-    <Box sx={{ textAlign: 'center', py: 8 }}>
-      {/* Hero Section */}
-      <Box
-        sx={{
-          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.15)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-          borderRadius: 4,
-          p: { xs: 4, sm: 6, md: 8 },
-          mb: 6,
-          border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <Typography
-          variant="h2"
-          component="h2"
-          gutterBottom
-          fontWeight="bold"
-          sx={{
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-            color: theme.palette.secondary.main,
-            textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-          }}
-        >
-          🔍 Discover Amazing Talent
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 4,
-            maxWidth: 700,
-            mx: 'auto',
-            color: theme.palette.text.primary,
-            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
-            lineHeight: 1.6,
-            fontWeight: 500,
-          }}
-        >
-          Connect with thousands of verified professionals ready to bring your
-          projects to life. From home repairs to custom installations, find the
-          perfect match for any job.
-        </Typography>
-
-        {/* Platform Stats */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
-          {platformStats.map((stat, index) => (
-            <Grid item xs={6} md={3} key={index}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  p: 3,
-                  borderRadius: 3,
-                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                    borderColor: theme.palette.secondary.main,
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`,
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    color: theme.palette.secondary.main,
-                    mb: 2,
-                    fontSize: 48,
-                  }}
-                >
-                  {stat.icon}
-                </Box>
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  sx={{
-                    color: theme.palette.secondary.main,
-                    fontSize: { xs: '1.5rem', sm: '2rem' },
-                  }}
-                >
-                  {stat.value}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 600,
-                    textAlign: 'center',
-                    fontSize: { xs: '0.9rem', sm: '1rem' },
-                  }}
-                >
-                  {stat.label}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={3}
-          justifyContent="center"
-        >
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => navigate('/register')}
-            sx={{
-              px: 4,
-              py: 2,
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              backgroundColor: theme.palette.secondary.main,
-              color: theme.palette.secondary.contrastText,
-              borderRadius: 3,
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.dark,
-                transform: 'translateY(-3px)',
-                boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.5)}`,
-              },
-            }}
-          >
-            Join as Client
-          </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={() => navigate('/register?type=worker')}
-            sx={{
-              px: 4,
-              py: 2,
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              borderColor: theme.palette.secondary.main,
-              color: theme.palette.secondary.main,
-              borderWidth: 2,
-              borderRadius: 3,
-              '&:hover': {
-                borderColor: theme.palette.secondary.light,
-                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                transform: 'translateY(-3px)',
-              },
-            }}
-          >
-            Join as Professional
-          </Button>
-        </Stack>
-      </Box>
-
-      {/* Sample Workers Section */}
-      <Box sx={{ mb: 8 }}>
-        <Typography
-          variant="h3"
-          gutterBottom
-          fontWeight="bold"
-          sx={{
-            color: theme.palette.secondary.main,
-            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
-            mb: 2,
-          }}
-        >
-          Meet Our Top Professionals
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 6,
-            color: theme.palette.text.primary,
-            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
-            fontWeight: 500,
-            maxWidth: 600,
-            mx: 'auto',
-          }}
-        >
-          Here's a preview of the quality talent you'll find on our platform
-        </Typography>
-
-        <Grid container spacing={4}>
-          {sampleWorkers.map((worker, index) => (
-            <Grid item xs={12} sm={6} lg={3} key={worker.id}>
-              <Grow in timeout={500 + index * 200}>
-                <div>
-                  <WorkerCard worker={worker} isDemo={true} />
-                </div>
-              </Grow>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Success Stories */}
-      <Box
-        sx={{
-          p: { xs: 4, sm: 6 },
-          mb: 6,
-          borderRadius: 4,
-          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-          border: `2px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-        }}
-      >
-        <Typography
-          variant="h4"
-          gutterBottom
-          fontWeight="bold"
-          sx={{
-            color: theme.palette.secondary.main,
-            mb: 4,
-            fontSize: { xs: '1.5rem', sm: '2rem' },
-          }}
-        >
-          💬 What Our Clients Say
-        </Typography>
-        <Grid container spacing={4}>
-          {[
-            {
-              rating: 5,
-              text: 'Found the perfect electrician for my smart home project. Professional, fast, and great quality work!',
-              author: 'Jennifer M., Homeowner',
-            },
-            {
-              rating: 5,
-              text: 'Kelmah made it so easy to find qualified contractors. Saved me weeks of searching!',
-              author: 'Robert K., Business Owner',
-            },
-            {
-              rating: 5,
-              text: 'The verification process gives me confidence. All workers are truly skilled professionals.',
-              author: 'Maria S., Property Manager',
-            },
-          ].map((testimonial, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <Box
-                sx={{
-                  p: 4,
-                  height: '100%',
-                  borderRadius: 3,
-                  backgroundColor: theme.palette.background.paper,
-                  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    borderColor: theme.palette.secondary.main,
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.secondary.main, 0.3)}`,
-                  },
-                }}
-              >
-                <Rating
-                  value={testimonial.rating}
-                  readOnly
-                  size="medium"
-                  sx={{
-                    mb: 3,
-                    '& .MuiRating-iconFilled': {
-                      color: theme.palette.secondary.main,
-                    },
-                  }}
-                />
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 3,
-                    fontStyle: 'italic',
-                    color: theme.palette.text.primary,
-                    fontSize: '1.1rem',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  "{testimonial.text}"
-                </Typography>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    color: theme.palette.secondary.main,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  - {testimonial.author}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Call to Action */}
-      <Box sx={{ textAlign: 'center' }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{
-            color: theme.palette.secondary.main,
-            fontWeight: 'bold',
-            fontSize: { xs: '1.5rem', sm: '2rem' },
-          }}
-        >
-          Ready to find your perfect professional?
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 4,
-            color: theme.palette.text.primary,
-            fontSize: { xs: '1rem', sm: '1.1rem' },
-            fontWeight: 500,
-          }}
-        >
-          Start by adjusting your search filters above or browse our categories
-        </Typography>
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<Search />}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          sx={{
-            px: 5,
-            py: 2.5,
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-            borderRadius: 3,
-            '&:hover': {
-              backgroundColor: theme.palette.secondary.dark,
-              transform: 'translateY(-3px)',
-              boxShadow: `0 12px 30px ${alpha(theme.palette.secondary.main, 0.5)}`,
-            },
-          }}
-        >
-          Start Your Search
-        </Button>
-      </Box>
-    </Box>
-  );
-};
 
 const WorkerSearchPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const heroRef = useRef(null);
 
-  // Available skill options (mock)
-  const skillOptions = [
-    'Pipe Repair',
-    'Water Heater Installation',
-    'Drainage Systems',
-    'Wiring',
-    'Circuit Breakers',
-    'Lighting',
-    'Home Automation',
-    'Audio Systems',
-    'Cabinetry',
-    'Furniture Making',
-    'Framing',
-    'Interior Painting',
-    'Exterior Painting',
-    'Wallpaper',
-    'AC Installation',
-    'Heating Systems',
-    'Ventilation',
-  ];
-
+  // State management
   const [searchParams, setSearchParams] = useState({
     searchTerm: '',
     skills: [],
     minRating: 0,
     location: '',
     workMode: '',
+    priceRange: [0, 200],
+    availability: '',
+    experience: '',
+    certifications: false,
+    verified: false,
   });
 
   const [savedWorkers, setSavedWorkers] = useState([]);
   const [results, setResults] = useState({ workers: [], pagination: {} });
   const [loading, setLoading] = useState(false);
   const [showSampleData, setShowSampleData] = useState(true);
+  const [viewMode, setViewMode] = useState('grid');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [filterDialog, setFilterDialog] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
-  // Toggle save/favorite worker
-  const handleToggleSaveWorker = async (workerId) => {
-    if (savedWorkers.includes(workerId)) {
-      try {
-        await hirerService.unsaveWorker(workerId);
-        setSavedWorkers((prev) => prev.filter((id) => id !== workerId));
-      } catch (error) {
-        console.error('Error unsaving worker:', error);
-      }
-    } else {
-      try {
-        await hirerService.saveWorker(workerId);
-        setSavedWorkers((prev) => [...prev, workerId]);
-      } catch (error) {
-        console.error('Error saving worker:', error);
-      }
-    }
-  };
+  const skillOptions = [
+    'Electrical Wiring', 'Smart Home Integration', 'Solar Installation',
+    'Plumbing Repair', 'Water Systems', 'Emergency Response',
+    'Project Management', 'Construction', 'Renovation',
+    'HVAC Systems', 'Climate Control', 'Energy Efficiency',
+    'Interior Design', 'Custom Furniture', 'Space Planning',
+    'Carpentry', 'Woodworking', 'Cabinet Making',
+  ];
 
+  // Handle search
   const handleSearch = async (page = 1) => {
     setLoading(true);
     setShowSampleData(false);
     try {
-      const params = { page, ...searchParams };
+      const params = { 
+        page, 
+        category: selectedCategory,
+        sortBy,
+        ...searchParams 
+      };
       const response = await searchService.searchWorkers(params);
       const workers = response.results || response.workers || response;
-      const pagination =
-        (response.meta && response.meta.pagination) ||
-        response.pagination ||
-        {};
+      const pagination = response.meta?.pagination || response.pagination || {};
       setResults({ workers, pagination });
     } catch (error) {
       console.error('Error searching workers:', error);
       setResults({ workers: [], pagination: {} });
     } finally {
       setLoading(false);
-      window.scrollTo(0, 0);
     }
   };
 
-  const handleClearFilters = () => {
-    const defaultParams = {
+  // Toggle save worker
+  const handleToggleSaveWorker = async (workerId) => {
+    if (savedWorkers.includes(workerId)) {
+      try {
+        await hirerService.unsaveWorker(workerId);
+        setSavedWorkers(prev => prev.filter(id => id !== workerId));
+      } catch (error) {
+        console.error('Error unsaving worker:', error);
+      }
+    } else {
+      try {
+        await hirerService.saveWorker(workerId);
+        setSavedWorkers(prev => [...prev, workerId]);
+      } catch (error) {
+        console.error('Error saving worker:', error);
+      }
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchParams({
       searchTerm: '',
       skills: [],
       minRating: 0,
       location: '',
       workMode: '',
-    };
-    setSearchParams(defaultParams);
+      priceRange: [0, 200],
+      availability: '',
+      experience: '',
+      certifications: false,
+      verified: false,
+    });
+    setSelectedCategory('');
+    setSortBy('relevance');
     setShowSampleData(true);
     setResults({ workers: [], pagination: {} });
   };
 
-  useEffect(() => {
-    // Load saved favorites
-    (async () => {
-      try {
-        const favs = await hirerService.getSavedWorkers();
-        setSavedWorkers(favs.map((w) => w.id || w._id));
-      } catch {}
-    })();
-  }, []);
-
-  return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        backgroundColor: theme.palette.background.default,
-      }}
-    >
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-          <Link
-            component={RouterLink}
-            to="/hirer/dashboard"
-            underline="hover"
-            sx={{
-              color: theme.palette.text.secondary,
-              '&:hover': { color: theme.palette.secondary.main },
-            }}
-          >
-            Dashboard
-          </Link>
-          <Typography
-            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
-          >
-            Find Talent
-          </Typography>
-        </Breadcrumbs>
-
-        {/* Header Section */}
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography
-            variant="h2"
-            component="h1"
-            gutterBottom
-            fontWeight="bold"
-            sx={{
-              color: theme.palette.secondary.main,
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-              textShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.3)}`,
-              mb: 2,
-            }}
-          >
-            🎯 Find Your Perfect Professional
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              color: theme.palette.text.primary,
-              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' },
-              fontWeight: 500,
-              maxWidth: 900,
-              mx: 'auto',
-            }}
-          >
-            Search through thousands of verified professionals and find the
-            perfect match for your project
-          </Typography>
-        </Box>
-
-        {/* Compact Search Filters */}
-        <CompactSearchFilters
-          searchParams={searchParams}
-          setSearchParams={setSearchParams}
-          skillOptions={skillOptions}
-          onSearch={handleSearch}
-          onClearFilters={handleClearFilters}
-        />
-
-        {/* Content Area */}
-        {loading ? (
-          <Grid container spacing={4}>
-            {Array.from(new Array(8)).map((_, idx) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={idx}>
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Skeleton
-                      variant="circular"
-                      width={80}
-                      height={80}
-                      sx={{ mx: 'auto', mb: 1 }}
-                    />
-                    <Skeleton
-                      width="60%"
-                      height={24}
-                      sx={{ mx: 'auto', mb: 1 }}
-                    />
-                    <Skeleton
-                      width="40%"
-                      height={20}
-                      sx={{ mx: 'auto', mb: 2 }}
-                    />
-                    <Skeleton
-                      variant="rectangular"
-                      height={118}
-                      sx={{ borderRadius: 1 }}
-                    />
-                  </CardContent>
-                  <CardActions>
-                    <Skeleton
-                      variant="rectangular"
-                      width="80%"
-                      height={36}
-                      sx={{ mx: 'auto', mb: 1, borderRadius: 1 }}
-                    />
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        ) : showSampleData || results.workers.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <>
-            {/* Results Summary */}
-            <Box
-              sx={{
-                mb: 4,
-                p: 3,
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-              }}
+  const renderHeroSection = () => (
+    <HeroGradientSection ref={heroRef}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2 }}>
+        <Grid container spacing={6} alignItems="center">
+          <Grid item xs={12} lg={6}>
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
             >
               <Typography
-                variant="h6"
-                fontWeight="bold"
-                sx={{ color: theme.palette.text.primary, mb: { xs: 1, sm: 0 } }}
+                variant="h1"
+                sx={{
+                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                  fontWeight: 900,
+                  mb: 3,
+                  background: 'linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                }}
               >
-                👥 Found{' '}
-                {results.pagination.totalItems || results.workers.length}{' '}
-                professional{results.workers.length !== 1 ? 's' : ''}
+                Find Elite Talent
               </Typography>
               <Typography
-                variant="body2"
-                sx={{ color: theme.palette.text.secondary }}
+                variant="h4"
+                sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem' },
+                  fontWeight: 400,
+                  mb: 4,
+                  opacity: 0.9,
+                  lineHeight: 1.4,
+                }}
               >
-                Page {results.pagination.currentPage || 1} of{' '}
-                {results.pagination.totalPages || 1}
+                🎯 Connect with verified professionals
+                <br />
+                💎 Discover exceptional skilled craftspeople
+                <br />
+                ⚡ Build your dream team today
               </Typography>
-            </Box>
-
-            {/* Workers Grid */}
-            <Grid container spacing={4}>
-              {results.workers.map((worker, idx) => (
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  key={worker.id || worker._id}
+              
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 6 }}>
+                <AnimatedButton
+                  size="large"
+                  startIcon={<Search />}
+                  onClick={() => window.scrollTo({ 
+                    top: heroRef.current?.offsetHeight || 600, 
+                    behavior: 'smooth' 
+                  })}
                 >
-                  <Grow in timeout={300 + idx * 100}>
-                    <div>
-                      <WorkerCard
-                        worker={worker}
-                        isSaved={savedWorkers.includes(worker.id || worker._id)}
-                        onToggleSave={handleToggleSaveWorker}
-                      />
-                    </div>
-                  </Grow>
-                </Grid>
-              ))}
-            </Grid>
-          </>
-        )}
+                  Explore Talent
+                </AnimatedButton>
+                <AnimatedButton
+                  variant="outlined"
+                  size="large"
+                  startIcon={<HandshakeIcon />}
+                  sx={{
+                    borderColor: 'white',
+                    color: 'white',
+                    '&:hover': {
+                      borderColor: theme.palette.secondary.main,
+                      backgroundColor: alpha('white', 0.1),
+                    },
+                  }}
+                  onClick={() => navigate('/post-job')}
+                >
+                  Post a Project
+                </AnimatedButton>
+              </Stack>
 
-        {/* Pagination */}
-        {!loading && !showSampleData && results.pagination.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
-            <Pagination
-              count={results.pagination.totalPages || 1}
-              page={results.pagination.currentPage || 1}
-              onChange={(e, page) => handleSearch(page)}
-              color="primary"
-              size={isMobile ? 'small' : 'large'}
-              sx={{
-                '& .MuiPaginationItem-root': {
-                  borderRadius: 2,
-                  fontWeight: 'bold',
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" sx={{ mb: 2, opacity: 0.8 }}>
+                  🏆 Trusted by leading companies:
+                </Typography>
+                <Stack direction="row" spacing={3} sx={{ opacity: 0.7 }}>
+                  {['Tesla', 'Apple', 'Google', 'Microsoft'].map((company) => (
+                    <Typography key={company} variant="h6" fontWeight={300}>
+                      {company}
+                    </Typography>
+                  ))}
+                </Stack>
+              </Box>
+            </motion.div>
+          </Grid>
+          
+          <Grid item xs={12} lg={6}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Grid container spacing={3}>
+                {platformStats.map((stat, index) => (
+                  <Grid item xs={6} key={index}>
+                    <StatCard
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                      whileHover={{ scale: 1.05, rotateY: 5 }}
+                    >
+                      <Box sx={{ color: stat.color, mb: 2 }}>
+                        {stat.icon}
+                      </Box>
+                      <Typography variant="h3" fontWeight={900} sx={{ color: stat.color, mb: 1 }}>
+                        {stat.value}
+                      </Typography>
+                      <Typography variant="h6" fontWeight={600} color="white" sx={{ mb: 0.5 }}>
+                        {stat.label}
+                      </Typography>
+                      <Typography variant="body2" color="rgba(255,255,255,0.8)" sx={{ mb: 1 }}>
+                        {stat.subtitle}
+                      </Typography>
+                      <Chip
+                        label={stat.trend}
+                        size="small"
+                        sx={{
+                          bgcolor: alpha('white', 0.2),
+                          color: 'white',
+                          fontWeight: 600,
+                        }}
+                      />
+                    </StatCard>
+                  </Grid>
+                ))}
+              </Grid>
+            </motion.div>
+          </Grid>
+        </Grid>
+      </Container>
+    </HeroGradientSection>
+  );
+
+  const renderSearchInterface = () => (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <SearchInterface elevation={12}>
+        <Typography variant="h4" fontWeight={700} textAlign="center" sx={{ mb: 4, color: theme.palette.secondary.main }}>
+          🔍 Advanced Talent Discovery
+        </Typography>
+        
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              placeholder="Search professionals by name, skills, or expertise..."
+              value={searchParams.searchTerm}
+              onChange={(e) => setSearchParams(prev => ({ ...prev, searchTerm: e.target.value }))}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: theme.palette.secondary.main }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 3,
+                  '& fieldset': { borderColor: alpha(theme.palette.secondary.main, 0.3) },
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
                 },
-                '& .MuiPaginationItem-page.Mui-selected': {
-                  backgroundColor: theme.palette.secondary.main,
-                  color: theme.palette.secondary.contrastText,
+              }}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            />
+          </Grid>
+          
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              placeholder="Location (City, State, Remote)"
+              value={searchParams.location}
+              onChange={(e) => setSearchParams(prev => ({ ...prev, location: e.target.value }))}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LocationOn sx={{ color: theme.palette.secondary.main }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title="Use my location">
+                      <IconButton size="small">
+                        <MyLocationIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 3,
+                  '& fieldset': { borderColor: alpha(theme.palette.secondary.main, 0.3) },
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
                 },
               }}
             />
-          </Box>
-        )}
+          </Grid>
+          
+          <Grid item xs={12} md={2}>
+            <FormControl fullWidth>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                displayEmpty
+                sx={{
+                  borderRadius: 3,
+                  '& fieldset': { borderColor: alpha(theme.palette.secondary.main, 0.3) },
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
+                }}
+              >
+                <MenuItem value="relevance">Most Relevant</MenuItem>
+                <MenuItem value="rating">Highest Rated</MenuItem>
+                <MenuItem value="experience">Most Experienced</MenuItem>
+                <MenuItem value="price_low">Lowest Rate</MenuItem>
+                <MenuItem value="price_high">Highest Rate</MenuItem>
+                <MenuItem value="response_time">Fastest Response</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid item xs={12} md={3}>
+            <Stack direction="row" spacing={1}>
+              <AnimatedButton
+                variant="contained"
+                onClick={handleSearch}
+                fullWidth
+                startIcon={<Search />}
+              >
+                Find Talent
+              </AnimatedButton>
+              
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(e, newView) => newView && setViewMode(newView)}
+                size="small"
+              >
+                <ToggleButton value="grid">
+                  <ViewModuleIcon />
+                </ToggleButton>
+                <ToggleButton value="list">
+                  <ViewListIcon />
+                </ToggleButton>
+                <ToggleButton value="map">
+                  <MapIcon />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
+          </Grid>
+        </Grid>
 
-        {/* Floating Action Button for Mobile */}
-        <Fab
-          color="primary"
-          aria-label="post job"
-          onClick={() => navigate('/jobs/post')}
+        {/* Advanced Filters */}
+        <Collapse in={showAdvancedFilters}>
+          <Divider sx={{ my: 3 }} />
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Autocomplete
+                multiple
+                options={skillOptions}
+                value={searchParams.skills}
+                onChange={(event, newSkills) => 
+                  setSearchParams(prev => ({ ...prev, skills: newSkills }))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Required Skills" placeholder="Select skills" />
+                )}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Typography gutterBottom>Hourly Rate Range: ${searchParams.priceRange[0]} - ${searchParams.priceRange[1]}</Typography>
+              <Slider
+                value={searchParams.priceRange}
+                onChange={(e, newValue) => setSearchParams(prev => ({ ...prev, priceRange: newValue }))}
+                valueLabelDisplay="auto"
+                min={0}
+                max={300}
+                step={5}
+                marks={[
+                  { value: 0, label: '$0' },
+                  { value: 100, label: '$100' },
+                  { value: 200, label: '$200' },
+                  { value: 300, label: '$300+' },
+                ]}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Typography gutterBottom>Minimum Rating: {searchParams.minRating}⭐</Typography>
+              <Slider
+                value={searchParams.minRating}
+                onChange={(e, newValue) => setSearchParams(prev => ({ ...prev, minRating: newValue }))}
+                step={0.5}
+                marks
+                min={0}
+                max={5}
+                valueLabelDisplay="auto"
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Stack direction="row" spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={searchParams.verified}
+                      onChange={(e) => setSearchParams(prev => ({ ...prev, verified: e.target.checked }))}
+                      color="secondary"
+                    />
+                  }
+                  label="Verified Only"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={searchParams.certifications}
+                      onChange={(e) => setSearchParams(prev => ({ ...prev, certifications: e.target.checked }))}
+                      color="secondary"
+                    />
+                  }
+                  label="Certified Professionals"
+                />
+              </Stack>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Stack direction="row" spacing={1}>
+                <Button onClick={clearFilters} startIcon={<Clear />} variant="outlined">
+                  Clear All
+                </Button>
+                <AnimatedButton onClick={handleSearch} startIcon={<Search />}>
+                  Apply Filters
+                </AnimatedButton>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Collapse>
+
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            endIcon={showAdvancedFilters ? <ExpandLess /> : <ExpandMore />}
+            sx={{ color: theme.palette.secondary.main }}
+          >
+            {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+          </Button>
+        </Box>
+      </SearchInterface>
+    </Container>
+  );
+
+  const renderCategories = () => (
+    <Container maxWidth="xl" sx={{ py: 6 }}>
+      <Typography
+        variant="h3"
+        fontWeight={700}
+        textAlign="center"
+        sx={{ mb: 6, color: theme.palette.secondary.main }}
+      >
+        🎯 Browse by Expertise
+      </Typography>
+      
+      <Grid container spacing={3}>
+        {talentCategories.map((category, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={2} key={category.name}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <GlassCard
+                sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  background: selectedCategory === category.name 
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.1)})`
+                    : 'background.paper',
+                  border: selectedCategory === category.name 
+                    ? `2px solid ${theme.palette.secondary.main}`
+                    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                }}
+                onClick={() => setSelectedCategory(category.name === selectedCategory ? '' : category.name)}
+              >
+                <Box sx={{ color: category.color, mb: 2, fontSize: 48 }}>
+                  {category.icon}
+                </Box>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  {category.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {category.description}
+                </Typography>
+                <Chip
+                  label={`${category.count.toLocaleString()} professionals`}
+                  size="small"
+                  sx={{ mb: 1 }}
+                />
+                <Box>
+                  {category.trending && <Chip label="🔥 Trending" size="small" sx={{ m: 0.25 }} />}
+                  {category.hot && <Chip label="💎 Hot" size="small" sx={{ m: 0.25 }} />}
+                  {category.newest && <Chip label="✨ New" size="small" sx={{ m: 0.25 }} />}
+                  {category.premium && <Chip label="👑 Premium" size="small" sx={{ m: 0.25 }} />}
+                </Box>
+              </GlassCard>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
+
+  const renderProfessionalCard = (professional, index) => (
+    <Grid item xs={12} sm={6} lg={viewMode === 'list' ? 12 : 4} key={professional.id}>
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+      >
+        <ProfessionalCard
+          featured={professional.featured}
+          premium={professional.premium}
+          elevation={professional.featured ? 12 : 4}
+        >
+          {professional.featured && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: professional.premium ? 28 : 0,
+                left: 0,
+                right: 0,
+                bgcolor: alpha(theme.palette.secondary.main, 0.9),
+                color: 'white',
+                textAlign: 'center',
+                py: 0.5,
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                letterSpacing: 1,
+              }}
+            >
+              ⭐ FEATURED PROFESSIONAL ⭐
+            </Box>
+          )}
+
+          <CardContent sx={{ p: 3, pt: professional.featured && professional.premium ? 7 : professional.featured || professional.premium ? 5 : 3 }}>
+            {/* Professional Header */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+              <Badge
+                overlap="circular"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                badgeContent={
+                  professional.verified ? (
+                    <Verified sx={{ color: theme.palette.secondary.main, fontSize: 20 }} />
+                  ) : null
+                }
+              >
+                <Avatar
+                  src={professional.avatar}
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    mr: 2,
+                    border: `3px solid ${theme.palette.secondary.main}`,
+                    boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  }}
+                />
+              </Badge>
+              
+              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom noWrap>
+                  {professional.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {professional.title}
+                </Typography>
+                
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <Rating value={professional.rating} precision={0.01} size="small" readOnly />
+                  <Typography variant="body2" fontWeight={600}>
+                    {professional.rating} ({professional.reviewCount})
+                  </Typography>
+                </Stack>
+                
+                <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                  {professional.badges?.slice(0, 2).map((badge) => (
+                    <Chip
+                      key={badge}
+                      label={badge}
+                      size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                        bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                        color: theme.palette.secondary.main,
+                      }}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+              
+              <IconButton
+                onClick={() => handleToggleSaveWorker(professional.id)}
+                sx={{
+                  color: savedWorkers.includes(professional.id)
+                    ? theme.palette.secondary.main
+                    : theme.palette.text.secondary,
+                }}
+              >
+                {savedWorkers.includes(professional.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+              </IconButton>
+            </Box>
+
+            {/* Professional Details */}
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 3,
+                lineHeight: 1.6,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {professional.description}
+            </Typography>
+
+            {/* Skills */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                Top Skills
+              </Typography>
+              <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                {professional.skills.slice(0, 4).map((skill) => (
+                  <SkillChip
+                    key={skill.name}
+                    label={skill.name}
+                    size="small"
+                    level={skill.level}
+                  />
+                ))}
+              </Stack>
+            </Box>
+
+            {/* Stats Grid */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={4}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h6" fontWeight={700} color="secondary.main">
+                    ${professional.hourlyRate}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    per hour
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={4}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h6" fontWeight={700} color="primary.main">
+                    {professional.completedJobs}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    jobs done
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={4}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h6" fontWeight={700} color="success.main">
+                    {professional.successRate}%
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    success
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+
+            {/* Location & Availability */}
+            <Stack spacing={1} sx={{ mb: 3 }}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <LocationOn fontSize="small" color="secondary" />
+                <Typography variant="body2">{professional.location}</Typography>
+              </Stack>
+              
+              <Stack direction="row" spacing={1} alignItems="center">
+                <AccessTimeIcon fontSize="small" color="secondary" />
+                <Typography variant="body2">Responds {professional.responseTime}</Typography>
+              </Stack>
+              
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Schedule fontSize="small" />
+                <Typography
+                  variant="body2"
+                  color={professional.availability === 'Available' ? 'success.main' : 'warning.main'}
+                  fontWeight={600}
+                >
+                  {professional.availability}
+                </Typography>
+              </Stack>
+            </Stack>
+
+            {/* Certifications */}
+            {professional.certifications && (
+              <Box sx={{ mb: 2 }}>
+                <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                  <Tooltip title={professional.certifications.join(', ')}>
+                    <Chip
+                      icon={<CertificateIcon />}
+                      label={`${professional.certifications.length} Certifications`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Tooltip>
+                  <Chip
+                    icon={<Portfolio />}
+                    label={`${professional.portfolioImages} Portfolio`}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Stack>
+              </Box>
+            )}
+          </CardContent>
+
+          <CardActions sx={{ p: 3, pt: 0 }}>
+            <Stack direction="row" spacing={1} width="100%">
+              <AnimatedButton
+                variant="contained"
+                fullWidth
+                startIcon={<VisibilityIcon />}
+                onClick={() => navigate(`/professionals/${professional.id}`)}
+              >
+                View Profile
+              </AnimatedButton>
+              <AnimatedButton
+                variant="outlined"
+                startIcon={<MessageIcon />}
+                onClick={() => navigate(`/messages?recipient=${professional.id}`)}
+                sx={{
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.main,
+                }}
+              >
+                Message
+              </AnimatedButton>
+              <IconButton
+                onClick={() => handleToggleSaveWorker(professional.id)}
+                sx={{
+                  color: savedWorkers.includes(professional.id)
+                    ? theme.palette.secondary.main
+                    : theme.palette.text.secondary,
+                }}
+              >
+                <ShareIcon />
+              </IconButton>
+            </Stack>
+          </CardActions>
+        </ProfessionalCard>
+      </motion.div>
+    </Grid>
+  );
+
+  const renderFeaturedProfessionals = () => (
+    <Container maxWidth="xl" sx={{ py: 6 }}>
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Typography
+          variant="h2"
+          fontWeight={900}
           sx={{
-            position: 'fixed',
-            bottom: 90,
-            right: 20,
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-            display: { xs: 'flex', md: 'none' },
-            '&:hover': {
-              backgroundColor: theme.palette.secondary.dark,
-            },
+            background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            mb: 2,
           }}
         >
-          <Star />
-        </Fab>
-      </Container>
-    </Box>
+          🌟 Featured Professionals
+        </Typography>
+        <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
+          Hand-picked experts ready to transform your projects
+        </Typography>
+      </Box>
+
+      <Grid container spacing={4}>
+        {creativeProfessionals.map((professional, index) => 
+          renderProfessionalCard(professional, index)
+        )}
+      </Grid>
+    </Container>
+  );
+
+  return (
+    <>
+      <Helmet>
+        <title>Find Elite Professionals - Skilled Talent Discovery | Kelmah</title>
+        <meta name="description" content="Discover and hire verified professionals in construction, electrical, plumbing, HVAC, and specialized trades. Connect with elite talent for your projects." />
+      </Helmet>
+
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        {renderHeroSection()}
+        {renderSearchInterface()}
+        {renderCategories()}
+        
+        {loading ? (
+          <Container maxWidth="xl" sx={{ py: 4 }}>
+            <Grid container spacing={3}>
+              {Array.from(new Array(8)).map((_, idx) => (
+                <Grid item xs={12} sm={6} lg={4} key={idx}>
+                  <Skeleton variant="rectangular" height={450} sx={{ borderRadius: 3 }} />
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        ) : showSampleData ? (
+          renderFeaturedProfessionals()
+        ) : (
+          <Container maxWidth="xl" sx={{ py: 4 }}>
+            <Typography variant="h4" gutterBottom>
+              Search Results ({results.workers.length} professionals found)
+            </Typography>
+            <Grid container spacing={3}>
+              {results.workers.map((professional, index) => 
+                renderProfessionalCard(professional, index)
+              )}
+            </Grid>
+            
+            {results.pagination.totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                <Pagination
+                  count={results.pagination.totalPages}
+                  page={results.pagination.currentPage}
+                  onChange={(e, page) => handleSearch(page)}
+                  color="secondary"
+                  size="large"
+                />
+              </Box>
+            )}
+          </Container>
+        )}
+
+        {/* Floating Actions */}
+        <SpeedDial
+          ariaLabel="Quick Actions"
+          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          icon={<SpeedDialIcon />}
+        >
+          <SpeedDialAction
+            icon={<RefreshIcon />}
+            tooltipTitle="Refresh Results"
+            onClick={() => handleSearch()}
+          />
+          <SpeedDialAction
+            icon={<SaveAltIcon />}
+            tooltipTitle="Saved Professionals"
+            onClick={() => navigate('/saved-professionals')}
+          />
+          <SpeedDialAction
+            icon={<HandshakeIcon />}
+            tooltipTitle="Post a Job"
+            onClick={() => navigate('/post-job')}
+          />
+        </SpeedDial>
+      </Box>
+    </>
   );
 };
 

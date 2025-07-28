@@ -302,11 +302,11 @@ const EarningsTracker = () => {
       csvData.map((row) => Object.values(row).join(',')).join('\n');
 
     const blob = new Blob([csvString], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
     a.download = `earnings-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
+      a.click();
   };
 
   const renderSummaryCards = () => {
@@ -372,7 +372,7 @@ const EarningsTracker = () => {
                   >
                     {metric.icon}
                   </Avatar>
-                </Box>
+            </Box>
                 <Typography
                   variant="h4"
                   fontWeight={700}
@@ -380,10 +380,10 @@ const EarningsTracker = () => {
                   gutterBottom
                 >
                   {metric.value}
-                </Typography>
+            </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   {metric.title}
-                </Typography>
+            </Typography>
                 {metric.growth && (
                   <Box
                     sx={{
@@ -407,15 +407,15 @@ const EarningsTracker = () => {
                     >
                       {metric.growth > 0 ? '+' : ''}
                       {metric.growth}%
-                    </Typography>
-                  </Box>
+            </Typography>
+            </Box>
                 )}
               </MetricCard>
             </motion.div>
-          </Grid>
-        ))}
       </Grid>
-    );
+        ))}
+    </Grid>
+  );
   };
 
   const renderEarningsChart = () => {
@@ -424,33 +424,33 @@ const EarningsTracker = () => {
     return (
       <GlassCard sx={{ mb: 4 }}>
         <CardContent>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
               mb: 3,
-            }}
-          >
+        }}
+      >
             <Typography variant="h5" fontWeight={700}>
               Earnings Trend
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
+          <Select
                   value={chartType}
                   onChange={(e) => setChartType(e.target.value)}
-                >
+          >
                   <MenuItem value="line">Line Chart</MenuItem>
                   <MenuItem value="bar">Bar Chart</MenuItem>
                   <MenuItem value="area">Area Chart</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
+          </Select>
+        </FormControl>
+      </Box>
           </Box>
 
           <Box sx={{ height: 400, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%">
               {chartType === 'line' && (
                 <LineChart data={earningsData.monthlyTrend}>
                   <CartesianGrid
@@ -469,16 +469,16 @@ const EarningsTracker = () => {
                       borderRadius: 8,
                     }}
                   />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="earnings"
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="earnings"
                     stroke={theme.palette.primary.main}
                     strokeWidth={3}
                     dot={{ fill: theme.palette.primary.main, r: 6 }}
                     name="Earnings ($)"
-                  />
-                </LineChart>
+            />
+          </LineChart>
               )}
 
               {chartType === 'bar' && (
@@ -582,8 +582,8 @@ const EarningsTracker = () => {
                       }}
                     />
                   </PieChart>
-                </ResponsiveContainer>
-              </Box>
+        </ResponsiveContainer>
+      </Box>
             </Grid>
 
             <Grid item xs={12} md={6}>
@@ -622,14 +622,14 @@ const EarningsTracker = () => {
   const renderTransactionsTable = () => (
     <GlassCard>
       <CardContent>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
             mb: 3,
-          }}
-        >
+        }}
+      >
           <Typography variant="h5" fontWeight={700}>
             Recent Transactions
           </Typography>
@@ -639,28 +639,28 @@ const EarningsTracker = () => {
               startIcon={<FileDownloadIcon />}
               onClick={handleExportData}
               size="small"
-            >
-              Export
+        >
+          Export
             </AnimatedButton>
             <IconButton onClick={loadEarningsData} disabled={loading}>
               <RefreshIcon />
             </IconButton>
           </Box>
-        </Box>
+      </Box>
 
         <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Client</TableCell>
                 <TableCell align="right">Amount</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
               {transactions.map((transaction) => (
                 <TableRow key={transaction.id} hover>
                   <TableCell>
@@ -708,9 +708,9 @@ const EarningsTracker = () => {
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+          </TableBody>
+        </Table>
+      </TableContainer>
       </CardContent>
     </GlassCard>
   );
@@ -735,7 +735,7 @@ const EarningsTracker = () => {
       <Alert severity="error" sx={{ borderRadius: 2 }}>
         {error}
       </Alert>
-    );
+  );
   }
 
   return (
@@ -775,10 +775,10 @@ const EarningsTracker = () => {
       </Box>
 
       {/* Summary Cards */}
-      {renderSummaryCards()}
+          {renderSummaryCards()}
 
       {/* Charts */}
-      {renderEarningsChart()}
+          {renderEarningsChart()}
       {renderCategoryBreakdown()}
 
       {/* Transactions Table */}
@@ -797,45 +797,45 @@ const EarningsTracker = () => {
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Date
-                </Typography>
-                <Typography variant="body1">
+                    Date
+                  </Typography>
+                  <Typography variant="body1">
                   {format(parseISO(selectedTransaction.date), 'MMMM dd, yyyy')}
-                </Typography>
-              </Grid>
+                  </Typography>
+                </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Amount
-                </Typography>
+                    Amount
+                  </Typography>
                 <Typography variant="h6" color="primary">
                   ${selectedTransaction.amount.toFixed(2)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
                 <Typography variant="subtitle2" color="text.secondary">
                   Description
-                </Typography>
-                <Typography variant="body1">
+                  </Typography>
+                  <Typography variant="body1">
                   {selectedTransaction.description}
-                </Typography>
-              </Grid>
+                  </Typography>
+                </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">
                   Client
-                </Typography>
-                <Typography variant="body1">
+                  </Typography>
+                  <Typography variant="body1">
                   {selectedTransaction.client}
-                </Typography>
-              </Grid>
+                  </Typography>
+                </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle2" color="text.secondary">
                   Payment Method
-                </Typography>
-                <Typography variant="body1">
+                    </Typography>
+                    <Typography variant="body1">
                   {selectedTransaction.paymentMethod
                     .replace('_', ' ')
                     .toUpperCase()}
-                </Typography>
+                    </Typography>
               </Grid>
             </Grid>
           )}

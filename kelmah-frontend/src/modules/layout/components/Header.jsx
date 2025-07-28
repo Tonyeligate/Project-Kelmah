@@ -222,8 +222,8 @@ const Header = ({ toggleTheme, mode }) => {
           px: 2,
           py: 1,
           borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
+      }}
+    >
         <Typography variant="subtitle1" fontWeight={600}>
           Notifications
         </Typography>
@@ -285,37 +285,37 @@ const Header = ({ toggleTheme, mode }) => {
         {/* Logo */}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <LogoBox component={RouterLink} to="/">
-            <Box
-              sx={{
+        <Box
+          sx={{
                 width: 40,
                 height: 40,
                 borderRadius: '50%',
                 background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                display: 'flex',
-                alignItems: 'center',
+            display: 'flex',
+            alignItems: 'center',
                 justifyContent: 'center',
                 mr: 1,
                 color: 'white',
                 fontWeight: 800,
                 fontSize: '1.2rem',
-              }}
-            >
+          }}
+        >
               K
             </Box>
-            <Typography
-              variant="h6"
-              sx={{
+          <Typography
+            variant="h6"
+            sx={{
                 fontWeight: 800,
-                fontFamily: 'Montserrat, sans-serif',
+              fontFamily: 'Montserrat, sans-serif',
                 fontSize: { xs: '1.3rem', sm: '1.5rem' },
                 background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.text.primary})`,
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-              }}
-            >
+            }}
+          >
               elmah
-            </Typography>
+          </Typography>
           </LogoBox>
         </motion.div>
 
@@ -342,8 +342,8 @@ const Header = ({ toggleTheme, mode }) => {
                 transition: 'all 0.3s ease-in-out',
               }}
             >
-              {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
+          {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+        </IconButton>
           </Tooltip>
 
           {isAuthenticated ? (

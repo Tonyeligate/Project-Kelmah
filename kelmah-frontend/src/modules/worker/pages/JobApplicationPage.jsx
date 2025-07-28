@@ -342,7 +342,7 @@ const JobApplicationPage = () => {
           message: 'Job removed from saved',
           severity: 'info',
         });
-      } else {
+    } else {
         await workerService.saveJob(jobId);
         setSavedJobs((prev) => new Set([...prev, jobId]));
         setSnackbar({
@@ -584,38 +584,38 @@ const JobApplicationPage = () => {
     <FilterSection>
       <Typography variant="h6" fontWeight={700} gutterBottom>
         Find Your Perfect Job
-      </Typography>
+        </Typography>
 
       <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
             placeholder="Search jobs, skills, companies..."
             value={filters.search}
             onChange={(e) => handleFilterChange('search', e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          />
-        </Grid>
+              />
+            </Grid>
 
-        <Grid item xs={12} md={3}>
-          <TextField
-            fullWidth
+            <Grid item xs={12} md={3}>
+              <TextField
+                fullWidth
             placeholder="Location"
             value={filters.location}
             onChange={(e) => handleFilterChange('location', e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LocationIcon />
-                </InputAdornment>
-              ),
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LocationIcon />
+                    </InputAdornment>
+                  ),
               endAdornment: (
                 <InputAdornment position="end">
                   <Tooltip title="Use my location">
@@ -623,36 +623,36 @@ const JobApplicationPage = () => {
                       <MyLocationIcon />
                     </IconButton>
                   </Tooltip>
-                </InputAdornment>
-              ),
-            }}
+                    </InputAdornment>
+                  ),
+                }}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          />
-        </Grid>
+              />
+            </Grid>
 
-        <Grid item xs={12} md={2}>
-          <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
-            <Select
+            <Grid item xs={12} md={2}>
+              <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
+                <Select
               value={filters.category}
-              label="Category"
+                  label="Category"
               onChange={(e) => handleFilterChange('category', e.target.value)}
               sx={{ borderRadius: 3 }}
-            >
-              <MenuItem value="">All Categories</MenuItem>
+                >
+                  <MenuItem value="">All Categories</MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category} value={category}>
                   {category}
                 </MenuItem>
               ))}
-            </Select>
-          </FormControl>
-        </Grid>
+                </Select>
+              </FormControl>
+            </Grid>
 
-        <Grid item xs={12} md={2}>
-          <FormControl fullWidth>
+            <Grid item xs={12} md={2}>
+              <FormControl fullWidth>
             <InputLabel>Sort By</InputLabel>
-            <Select
+                <Select
               value={filters.sortBy}
               label="Sort By"
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
@@ -663,9 +663,9 @@ const JobApplicationPage = () => {
                   {option.label}
                 </MenuItem>
               ))}
-            </Select>
-          </FormControl>
-        </Grid>
+                </Select>
+              </FormControl>
+            </Grid>
 
         <Grid item xs={12} md={1}>
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -685,7 +685,7 @@ const JobApplicationPage = () => {
             </Tooltip>
           </Box>
         </Grid>
-      </Grid>
+          </Grid>
 
       {/* Active filters display */}
       {Object.values(filters).some(
@@ -893,12 +893,12 @@ const JobApplicationPage = () => {
                         height={24}
                         sx={{ borderRadius: 1 }}
                       />
-                      <Skeleton
-                        variant="rectangular"
+                    <Skeleton
+                      variant="rectangular"
                         width={60}
                         height={24}
                         sx={{ borderRadius: 1 }}
-                      />
+                    />
                     </Box>
                   </CardContent>
                 </Card>
@@ -1000,7 +1000,7 @@ const JobApplicationPage = () => {
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
                   <InputLabel>Job Type</InputLabel>
-                  <Select
+                <Select
                     value={filters.jobType}
                     label="Job Type"
                     onChange={(e) =>
@@ -1013,8 +1013,8 @@ const JobApplicationPage = () => {
                         {type}
                       </MenuItem>
                     ))}
-                  </Select>
-                </FormControl>
+                </Select>
+              </FormControl>
               </Grid>
 
               <Grid item xs={12}>
@@ -1049,7 +1049,7 @@ const JobApplicationPage = () => {
                     onChange={(e) =>
                       handleFilterChange('datePosted', e.target.value)
                     }
-                  >
+                                >
                     <MenuItem value="">Any Time</MenuItem>
                     <MenuItem value="today">Today</MenuItem>
                     <MenuItem value="week">This Week</MenuItem>
@@ -1066,7 +1066,7 @@ const JobApplicationPage = () => {
             <AnimatedButton
               variant="contained"
               onClick={() => setFilterDialog(false)}
-            >
+                            >
               Apply Filters
             </AnimatedButton>
           </DialogActions>
@@ -1092,7 +1092,7 @@ const JobApplicationPage = () => {
           ariaLabel="Quick Actions"
           sx={{ position: 'fixed', bottom: 16, right: 16 }}
           icon={<SpeedDialIcon />}
-        >
+                          >
           <SpeedDialAction
             icon={<SavingsIcon />}
             tooltipTitle="Saved Jobs"
@@ -1107,7 +1107,7 @@ const JobApplicationPage = () => {
             icon={<TuneIcon />}
             tooltipTitle="Advanced Filters"
             onClick={() => setFilterDialog(true)}
-          />
+                  />
         </SpeedDial>
       </Container>
     </>
