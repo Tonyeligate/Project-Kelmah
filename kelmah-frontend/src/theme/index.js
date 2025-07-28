@@ -421,8 +421,8 @@ const lightTheme = createTheme({
       contrastText: BRAND_COLORS.white,
     },
     background: {
-      default: BRAND_COLORS.goldLight, // Changed from whiteLight to goldLight
-      paper: BRAND_COLORS.gold, // Changed from white to gold
+      default: BRAND_COLORS.gold, // Pure gold background
+      paper: BRAND_COLORS.gold, // Pure gold for all paper surfaces
     },
     text: {
       primary: BRAND_COLORS.black,
@@ -468,13 +468,14 @@ const lightTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
+          backgroundColor: BRAND_COLORS.gold, // Pure gold body background
           scrollbarWidth: 'thin',
-          scrollbarColor: `${BRAND_COLORS.black} ${BRAND_COLORS.goldLight}`,
+          scrollbarColor: `${BRAND_COLORS.black} ${BRAND_COLORS.gold}`,
           '&::-webkit-scrollbar': {
             width: '8px',
           },
           '&::-webkit-scrollbar-track': {
-            background: BRAND_COLORS.goldLight,
+            background: BRAND_COLORS.gold,
           },
           '&::-webkit-scrollbar-thumb': {
             background: BRAND_COLORS.black,
@@ -489,7 +490,7 @@ const lightTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: BRAND_COLORS.gold, // Changed from white to gold
+          backgroundColor: BRAND_COLORS.gold, // Pure gold header
           borderBottom: `2px solid rgba(0, 0, 0, 0.2)`,
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
           backdropFilter: 'blur(20px)',
@@ -500,7 +501,7 @@ const lightTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: BRAND_COLORS.goldLight, // Changed from white to goldLight
+          backgroundColor: BRAND_COLORS.gold, // Pure gold for all papers
           border: `1px solid rgba(0, 0, 0, 0.15)`,
           borderRadius: 12,
           '&:hover': {
@@ -513,7 +514,7 @@ const lightTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: BRAND_COLORS.goldLight, // Changed from white to goldLight
+          backgroundColor: BRAND_COLORS.gold, // Pure gold for all cards
           border: `1px solid rgba(0, 0, 0, 0.15)`,
           '&:hover': {
             borderColor: `rgba(0, 0, 0, 0.25)`,
@@ -522,11 +523,27 @@ const lightTheme = createTheme({
         },
       },
     },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          backgroundColor: BRAND_COLORS.gold, // Pure gold containers
+        },
+      },
+    },
+    MuiBox: {
+      styleOverrides: {
+        root: {
+          '&.MuiBox-root': {
+            backgroundColor: 'inherit', // Inherit gold from parent
+          },
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: `rgba(255, 255, 255, 0.6)`, // Semi-transparent white over gold
+            backgroundColor: `rgba(0, 0, 0, 0.05)`, // Slight dark tint on gold
             '& fieldset': {
               borderColor: `rgba(0, 0, 0, 0.25)`,
             },
@@ -549,7 +566,7 @@ const lightTheme = createTheme({
     MuiMenu: {
       styleOverrides: {
         paper: {
-          backgroundColor: BRAND_COLORS.goldLight, // Changed from white to goldLight
+          backgroundColor: BRAND_COLORS.gold, // Pure gold menus
           border: `1px solid rgba(0, 0, 0, 0.2)`,
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
         },
@@ -606,6 +623,7 @@ const lightTheme = createTheme({
           borderColor: BRAND_COLORS.black,
           borderWidth: '2px',
           color: BRAND_COLORS.black,
+          backgroundColor: 'transparent',
           '&:hover': {
             borderColor: BRAND_COLORS.blackLight,
             backgroundColor: `rgba(0, 0, 0, 0.08)`,
@@ -623,7 +641,7 @@ const lightTheme = createTheme({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: BRAND_COLORS.gold, // Changed from white to gold
+          backgroundColor: BRAND_COLORS.gold, // Pure gold drawer
           borderRight: `1px solid rgba(0, 0, 0, 0.15)`,
         },
       },
@@ -631,7 +649,7 @@ const lightTheme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: BRAND_COLORS.goldLight, // Changed from white to goldLight
+          backgroundColor: BRAND_COLORS.gold, // Pure gold dialogs
           border: `2px solid ${BRAND_COLORS.black}`,
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
         },
@@ -664,6 +682,41 @@ const lightTheme = createTheme({
           backgroundColor: BRAND_COLORS.black,
           color: BRAND_COLORS.gold,
           fontWeight: 600,
+        },
+      },
+    },
+    MuiList: {
+      styleOverrides: {
+        root: {
+          backgroundColor: BRAND_COLORS.gold, // Pure gold lists
+        },
+      },
+    },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          backgroundColor: BRAND_COLORS.gold, // Pure gold list items
+          '&:hover': {
+            backgroundColor: `rgba(0, 0, 0, 0.05)`,
+          },
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: `rgba(0, 0, 0, 0.15)`,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          backgroundColor: `rgba(0, 0, 0, 0.1)`,
+          color: BRAND_COLORS.black,
+          '&:hover': {
+            backgroundColor: `rgba(0, 0, 0, 0.15)`,
+          },
         },
       },
     },

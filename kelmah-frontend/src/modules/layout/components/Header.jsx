@@ -19,6 +19,7 @@ import {
   ListItemText,
   Chip,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import {
   Brightness4 as Brightness4Icon,
@@ -260,20 +261,26 @@ const Header = ({ toggleTheme, mode }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAuthenticated, loading } = useAuth();
+  const { user, logout, isAuthenticated, loading, isInitialized } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Mock data - replace with real data from API
-  const unreadNotifications = 3;
-  const unreadMessages = 2;
-  const isUserOnline = true;
+  // Only show authenticated features if user is actually authenticated and initialized
+  const showUserFeatures = isInitialized && isAuthenticated() && user;
+  const showAuthButtons = isInitialized && !isAuthenticated();
+  
+  // Mock data - replace with real data from API when authenticated
+  const unreadNotifications = showUserFeatures ? 3 : 0;
+  const unreadMessages = showUserFeatures ? 2 : 0;
+  const isUserOnline = showUserFeatures ? true : false;
 
   const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+    if (showUserFeatures) {
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handleMenuClose = () => {
@@ -281,7 +288,9 @@ const Header = ({ toggleTheme, mode }) => {
   };
 
   const handleNotificationsOpen = (event) => {
-    setNotificationsAnchor(event.currentTarget);
+    if (showUserFeatures) {
+      setNotificationsAnchor(event.currentTarget);
+    }
   };
 
   const handleNotificationsClose = () => {
@@ -340,7 +349,7 @@ const Header = ({ toggleTheme, mode }) => {
             : `1px solid rgba(0, 0, 0, 0.2)`,
           backgroundColor: theme.palette.mode === 'dark' 
             ? BRAND_COLORS.blackMedium 
-            : BRAND_COLORS.goldLight,
+            : BRAND_COLORS.gold, // Pure gold instead of goldLight
           '&:before': {
             content: '""',
             display: 'block',
@@ -351,7 +360,7 @@ const Header = ({ toggleTheme, mode }) => {
             height: 10,
             bgcolor: theme.palette.mode === 'dark' 
               ? BRAND_COLORS.blackMedium 
-              : BRAND_COLORS.goldLight,
+              : BRAND_COLORS.gold, // Pure gold instead of goldLight
             transform: 'translateY(-50%) rotate(45deg)',
             zIndex: 0,
             border: theme.palette.mode === 'dark'
@@ -476,7 +485,7 @@ const Header = ({ toggleTheme, mode }) => {
             : `1px solid rgba(0, 0, 0, 0.2)`,
           backgroundColor: theme.palette.mode === 'dark' 
             ? BRAND_COLORS.blackMedium 
-            : BRAND_COLORS.goldLight,
+            : BRAND_COLORS.gold, // Pure gold instead of goldLight
         },
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -617,7 +626,12 @@ const Header = ({ toggleTheme, mode }) => {
             </ActionButton>
           </Tooltip>
 
-          {isAuthenticated ? (
+          {/* Show loading state during initialization */}
+          {!isInitialized ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CircularProgress size={20} />
+            </Box>
+          ) : showUserFeatures ? (
             <>
               {/* Messages */}
               <Tooltip title="Messages" arrow>
@@ -647,7 +661,7 @@ const Header = ({ toggleTheme, mode }) => {
                 </Box>
               </Tooltip>
             </>
-          ) : (
+          ) : showAuthButtons ? (
             <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
               <AuthButton
                 component={RouterLink}
@@ -666,7 +680,7 @@ const Header = ({ toggleTheme, mode }) => {
                 Get Started
               </AuthButton>
             </Stack>
-          )}
+          ) : null}
         </Box>
       </Toolbar>
 
