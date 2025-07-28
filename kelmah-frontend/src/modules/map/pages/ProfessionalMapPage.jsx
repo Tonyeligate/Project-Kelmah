@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -28,6 +28,28 @@ import {
   Zoom,
   Slide,
   Grow,
+  TextField,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  ListItemSecondaryAction,
+  Switch,
+  FormControlLabel,
+  Slider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Collapse,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   Work as JobIcon,
@@ -61,1109 +83,910 @@ import {
   Close as CloseIcon,
   Fullscreen as FullscreenIcon,
   FullscreenExit as FullscreenExitIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Clear as ClearIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
+  PriorityHigh as PriorityHighIcon,
+  LocalOffer as LocalOfferIcon,
+  Category as CategoryIcon,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon,
+  Timeline as TimelineIcon,
+  TrendingDown as TrendingDownIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  ZoomIn as ZoomInIcon,
+  ZoomOut as ZoomOutIcon,
+  Layers as LayersIcon,
+  Settings as SettingsIcon,
+  Notifications as NotificationsIcon,
+  Chat as ChatIcon,
+  Error as ErrorIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import InteractiveMap from '../components/common/InteractiveMap';
-import MapSearchOverlay from '../components/common/MapSearchOverlay';
-import mapService from '../services/mapService';
 
-// Category icons mapping for visual appeal
-const categoryIcons = {
-  Carpentry: ConstructionIcon,
-  Masonry: HomeIcon,
-  Plumbing: BuildIcon,
-  Electrical: ElectricalIcon,
-  Painting: PaletteIcon,
-  Welding: FireIcon,
-  HVAC: EcoIcon,
-  Security: SecurityIcon,
-  Landscaping: EcoIcon,
-  Roofing: HomeIcon,
+// Mock data for demonstration
+const mockMapData = {
+  jobs: [
+    {
+      id: 'job-1',
+      title: 'Catering Service',
+      category: 'Food & Hospitality',
+      location: { lat: 5.5600, lng: -0.2057, address: 'Accra, Ghana' },
+      budget: '$500-800',
+      urgency: 'high',
+      status: 'active',
+      posted: '2 hours ago',
+      views: 45,
+      applications: 12,
+      client: { name: 'Event Pro Ghana', rating: 4.8, verified: true },
+      skills: ['Cooking', 'Event Planning', 'Customer Service'],
+      description: 'Professional catering service needed for corporate event',
+    },
+    {
+      id: 'job-2',
+      title: 'Electrical Installation',
+      category: 'Electrical',
+      location: { lat: 5.5700, lng: -0.2157, address: 'Kumasi, Ghana' },
+      budget: '$300-500',
+      urgency: 'medium',
+      status: 'active',
+      posted: '4 hours ago',
+      views: 32,
+      applications: 8,
+      client: { name: 'Tech Solutions Ltd', rating: 4.6, verified: true },
+      skills: ['Electrical Wiring', 'Safety Standards', 'Installation'],
+      description: 'Complete electrical installation for new office building',
+    },
+    {
+      id: 'job-3',
+      title: 'Plumbing Repair',
+      category: 'Plumbing',
+      location: { lat: 5.5500, lng: -0.1957, address: 'Tema, Ghana' },
+      budget: '$150-300',
+      urgency: 'urgent',
+      status: 'active',
+      posted: '1 hour ago',
+      views: 28,
+      applications: 15,
+      client: { name: 'HomeFix Services', rating: 4.9, verified: true },
+      skills: ['Plumbing', 'Repair', 'Maintenance'],
+      description: 'Emergency plumbing repair needed immediately',
+    },
+  ],
+  workers: [
+    {
+      id: 'worker-1',
+      name: 'Kwame Asante',
+      category: 'Electrical',
+      location: { lat: 5.5600, lng: -0.2057, address: 'Accra, Ghana' },
+      rating: 4.8,
+      hourlyRate: '$25-35',
+      status: 'available',
+      verified: true,
+      skills: ['Electrical Wiring', 'Safety Standards', 'Installation'],
+      completedJobs: 156,
+      responseTime: '< 2 min',
+      portfolio: ['Commercial Projects', 'Residential Wiring'],
+      languages: ['English', 'Twi'],
+      availability: 'Immediate',
+    },
+    {
+      id: 'worker-2',
+      name: 'Ama Osei',
+      category: 'Catering',
+      location: { lat: 5.5700, lng: -0.2157, address: 'Kumasi, Ghana' },
+      rating: 4.9,
+      hourlyRate: '$20-30',
+      status: 'available',
+      verified: true,
+      skills: ['Cooking', 'Event Planning', 'Customer Service'],
+      completedJobs: 89,
+      responseTime: '< 5 min',
+      portfolio: ['Weddings', 'Corporate Events', 'Private Parties'],
+      languages: ['English', 'Twi', 'Ga'],
+      availability: 'Next Week',
+    },
+  ],
+  analytics: {
+    responseTime: { value: '< 2 min', trend: -5, color: '#4CAF50' },
+    successRate: { value: '94%', trend: 2, color: '#2196F3' },
+    avgRating: { value: '4.8', trend: 1, color: '#FFC107' },
+    onlineNow: { value: '847', trend: 8, color: '#9C27B0' },
+  },
+  categories: [
+    { name: 'Carpentry', count: 124, percentage: 124, color: '#FF9800' },
+    { name: 'Electrical', count: 89, percentage: 89, color: '#FFC107' },
+    { name: 'Plumbing', count: 67, percentage: 67, color: '#2196F3' },
+    { name: 'Catering', count: 45, percentage: 45, color: '#4CAF50' },
+    { name: 'Painting', count: 34, percentage: 34, color: '#9C27B0' },
+  ],
+  status: {
+    active: { count: 0, trend: 15, color: '#4CAF50' },
+    verified: { count: 34, trend: 8, color: '#2196F3' },
+    urgent: { count: 7, trend: -5, color: '#F44336' },
+    topRated: { count: 0, trend: 12, color: '#FFC107' },
+  },
 };
 
-// Professional stats component for the right panel
-const ProfessionalStatsCard = ({ title, value, trend, icon: IconComponent, color }) => {
+// Interactive Map Component
+const InteractiveMap = ({ 
+  data, 
+  viewType, 
+  onMarkerClick, 
+  center, 
+  zoom = 12,
+  loading = false 
+}) => {
   const theme = useTheme();
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ scale: 1.02, y: -2 }}
-    >
-      <Card
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${color}11 100%)`,
-          border: `1px solid ${color}33`,
-          borderRadius: 3,
-          overflow: 'hidden',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: `linear-gradient(90deg, ${color} 0%, ${color}66 100%)`,
-          },
-          '&:hover': {
-            boxShadow: `0 8px 32px ${color}22`,
-            transform: 'translateY(-4px)',
-          },
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-      >
-        <CardContent sx={{ p: 2.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Avatar
-              sx={{
-                bgcolor: `${color}22`,
-                color: color,
-                width: 48,
-                height: 48,
-              }}
-            >
-              <IconComponent />
-            </Avatar>
-            {trend && (
-              <Chip
-                label={`${trend > 0 ? '+' : ''}${trend}%`}
-                size="small"
-                sx={{
-                  bgcolor: trend > 0 ? '#4CAF5022' : '#F4433622',
-                  color: trend > 0 ? '#4CAF50' : '#F44336',
-                  fontWeight: 'bold',
-                }}
-              />
-            )}
-          </Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color, mb: 0.5 }}>
-            {value}
-          </Typography>
-          <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-            {title}
-          </Typography>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-// Real-time activity feed
-const ActivityFeedItem = ({ activity, index }) => {
-  const theme = useTheme();
-  
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1 }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          p: 2,
-          borderRadius: 2,
-          bgcolor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.secondary.main}11`,
-          mb: 1,
-          '&:hover': {
-            bgcolor: theme.palette.secondary.main + '08',
-            borderColor: theme.palette.secondary.main + '33',
-          },
-          transition: 'all 0.3s ease',
-        }}
-      >
-        <Avatar
-          sx={{
-            bgcolor: activity.color + '22',
-            color: activity.color,
-            width: 32,
-            height: 32,
-            mr: 2,
-          }}
-        >
-          {activity.icon}
-        </Avatar>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: 'medium', mb: 0.5 }}>
-            {activity.title}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {activity.time}
-          </Typography>
-        </Box>
-        {activity.badge && (
-          <Chip
-            label={activity.badge}
-            size="small"
-            color="secondary"
-            variant="outlined"
-          />
-        )}
-      </Box>
-    </motion.div>
-  );
-};
-
-// Professional heatmap legend
-const HeatmapLegend = () => {
-  const theme = useTheme();
-  
-  return (
-    <Card
+    <Box
       sx={{
-        position: 'absolute',
-        bottom: 20,
-        left: 20,
-        zIndex: 1000,
-        bgcolor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.secondary.main}33`,
+        position: 'relative',
+        height: '100%',
+        width: '100%',
         borderRadius: 2,
-        p: 2,
-        minWidth: 200,
+        overflow: 'hidden',
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+        border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.secondary.main }}>
-        Activity Density
-      </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="caption">Low</Typography>
-        <Box
-          sx={{
-            width: 100,
-            height: 8,
-            borderRadius: 4,
-            background: `linear-gradient(90deg, ${theme.palette.secondary.main}22 0%, ${theme.palette.secondary.main} 100%)`,
-          }}
-        />
-        <Typography variant="caption">High</Typography>
-      </Box>
-    </Card>
-  );
-};
-
-const ProfessionalMapPage = () => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('xl'));
-
-  // Map state
-  const [mapCenter, setMapCenter] = useState([5.6037, -0.187]);
-  const [userLocation, setUserLocation] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchType, setSearchType] = useState('jobs');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [initializing, setInitializing] = useState(true);
-  
-  // UI state
-  const [showSearchOverlay, setShowSearchOverlay] = useState(!isMobile);
-  const [showStatsPanel, setShowStatsPanel] = useState(!isMobile);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentFilters, setCurrentFilters] = useState({
-    radius: 25,
-    categories: [],
-    budget: [0, 10000],
-    rating: 0,
-  });
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [totalResults, setTotalResults] = useState(0);
-  const [realtimeStats, setRealtimeStats] = useState({
-    activeJobs: 1247,
-    availableWorkers: 892,
-    completedToday: 156,
-    avgRating: 4.8,
-    responseTime: '< 2 min',
-    successRate: 94,
-  });
-
-  // Mock real-time activities
-  const [realtimeActivities, setRealtimeActivities] = useState([
-    { id: 1, title: 'New carpenter joined near you', time: '2 min ago', icon: '🔨', color: '#FFD700', badge: 'New' },
-    { id: 2, title: 'Plumbing job completed in Accra', time: '5 min ago', icon: '🔧', color: '#2196F3', badge: 'Completed' },
-    { id: 3, title: 'Electrical work posted - URGENT', time: '8 min ago', icon: '⚡', color: '#FF5722', badge: 'Urgent' },
-    { id: 4, title: 'Mason verified profile updated', time: '12 min ago', icon: '🧱', color: '#4CAF50', badge: 'Verified' },
-    { id: 5, title: 'Painting job started in Kumasi', time: '15 min ago', icon: '🎨', color: '#9C27B0', badge: 'Active' },
-  ]);
-
-  // Category stats for visualization
-  const [categoryStats, setCategoryStats] = useState([
-    { name: 'Carpentry', jobs: 234, workers: 189, icon: ConstructionIcon, color: '#8B4513' },
-    { name: 'Plumbing', jobs: 189, workers: 156, icon: BuildIcon, color: '#2196F3' },
-    { name: 'Electrical', jobs: 156, workers: 134, icon: ElectricalIcon, color: '#FFC107' },
-    { name: 'Masonry', jobs: 123, workers: 98, icon: HomeIcon, color: '#795548' },
-    { name: 'Painting', jobs: 98, workers: 87, icon: PaletteIcon, color: '#9C27B0' },
-  ]);
-
-  // Initialize map and load data
-  useEffect(() => {
-    const initializeMap = async () => {
-      try {
-        setInitializing(true);
-        const location = await mapService.getCurrentLocation();
-        setUserLocation(location);
-        setMapCenter([location.latitude, location.longitude]);
-        
-        await loadMapData(searchType, location);
-        
-        // Simulate real-time updates
-        const interval = setInterval(() => {
-          setRealtimeStats(prev => ({
-            ...prev,
-            activeJobs: prev.activeJobs + Math.floor(Math.random() * 3) - 1,
-            availableWorkers: prev.availableWorkers + Math.floor(Math.random() * 5) - 2,
-            completedToday: prev.completedToday + Math.floor(Math.random() * 2),
-          }));
-        }, 30000);
-
-        return () => clearInterval(interval);
-      } catch (error) {
-        console.warn('Could not get user location:', error);
-        setError('Could not access your location. Using default area (Accra, Ghana).');
-        await loadMapData(searchType, { latitude: 5.6037, longitude: -0.187 });
-      } finally {
-        setInitializing(false);
-      }
-    };
-
-    initializeMap();
-  }, []);
-
-  // Load map data from APIs
-  const loadMapData = async (type, location, filters = currentFilters) => {
-    if (!location) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const searchParams = {
-        latitude: location.latitude,
-        longitude: location.longitude,
-        radius: filters.radius,
-        category: filters.categories.length > 0 ? filters.categories[0] : null,
-        skills: filters.categories.length > 1 ? filters.categories : null,
-        budget: filters.budget,
-        rating: filters.rating,
-        page: 1,
-        limit: 100,
-      };
-
-      let results = [];
-      if (type === 'jobs') {
-        results = await mapService.searchJobsNearLocation(searchParams);
-      } else {
-        results = await mapService.searchWorkersNearLocation(searchParams);
-      }
-
-      setSearchResults(results);
-      setTotalResults(results.length);
-    } catch (error) {
-      console.error('Search error:', error);
-      setError(`Failed to load ${type}. Please try again.`);
-      setSearchResults([]);
-      setTotalResults(0);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle search type change
-  const handleSearchTypeChange = useCallback((event, newType) => {
-    if (newType !== null) {
-      setSearchType(newType);
-      const location = selectedLocation || userLocation;
-      if (location) {
-        loadMapData(newType, location);
-      }
-    }
-  }, [selectedLocation, userLocation, currentFilters]);
-
-  // Handle search
-  const handleSearch = useCallback(async (searchParams) => {
-    const location = selectedLocation || userLocation || { 
-      latitude: mapCenter[0], 
-      longitude: mapCenter[1] 
-    };
-
-    const enhancedParams = {
-      ...searchParams,
-      latitude: location.latitude,
-      longitude: location.longitude,
-    };
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      let results = [];
-      if (searchParams.type === 'jobs') {
-        results = await mapService.searchJobsNearLocation(enhancedParams);
-      } else {
-        results = await mapService.searchWorkersNearLocation(enhancedParams);
-      }
-
-      if (searchParams.query) {
-        const query = searchParams.query.toLowerCase();
-        results = results.filter(
-          (item) =>
-            item.title?.toLowerCase().includes(query) ||
-            item.name?.toLowerCase().includes(query) ||
-            item.description?.toLowerCase().includes(query) ||
-            item.category?.toLowerCase().includes(query) ||
-            item.skills?.some((skill) => skill.toLowerCase().includes(query)),
-        );
-      }
-
-      setSearchResults(results);
-      setTotalResults(results.length);
-    } catch (error) {
-      console.error('Search error:', error);
-      setError('Search failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedLocation, userLocation, mapCenter]);
-
-  // Handle filter changes
-  const handleFilterChange = useCallback((filters) => {
-    setCurrentFilters(filters);
-  }, []);
-
-  // Handle location change
-  const handleLocationChange = useCallback((location) => {
-    setSelectedLocation(location);
-    if (location.coordinates) {
-      setMapCenter([location.coordinates.latitude, location.coordinates.longitude]);
-      loadMapData(searchType, location.coordinates, currentFilters);
-    }
-  }, [searchType, currentFilters]);
-
-  // Handle marker click
-  const handleMarkerClick = useCallback((marker) => {
-    if (marker.type === 'job') {
-      navigate(`/jobs/${marker.id}`);
-    } else if (marker.type === 'worker') {
-      navigate(`/profiles/user/${marker.id}`);
-    }
-  }, [navigate]);
-
-  // Toggle fullscreen
-  const toggleFullscreen = useCallback(() => {
-    setIsFullscreen(!isFullscreen);
-  }, [isFullscreen]);
-
-  // Get search type label
-  const getSearchTypeLabel = () => {
-    return searchType === 'jobs' ? 'Vocational Jobs' : 'Skilled Workers';
-  };
-
-  return (
-    <Box sx={{ 
-      height: '100vh',
-      overflow: 'hidden',
-      bgcolor: theme.palette.background.default,
-      position: 'relative',
-    }}>
-      {/* Professional Loading Backdrop */}
-      <Backdrop 
-        open={initializing} 
-        sx={{ 
-          zIndex: 9999,
-          bgcolor: 'rgba(26, 26, 26, 0.95)',
-          backdropFilter: 'blur(10px)',
+      {/* Map Placeholder with Professional Styling */}
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          background: `linear-gradient(45deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <Box sx={{ textAlign: 'center', color: theme.palette.secondary.main }}>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            >
-              <CircularProgress color="inherit" size={80} thickness={2} sx={{ mb: 3 }} />
-            </motion.div>
-            <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
-              Kelmah Professional Map
-            </Typography>
-            <Typography variant="h6" sx={{ mb: 1, opacity: 0.8 }}>
-              Initializing Advanced Location Services
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.6 }}>
-              Finding {getSearchTypeLabel()} near you...
-            </Typography>
-            <Box sx={{ width: 300, mt: 3 }}>
-              <LinearProgress 
-                color="secondary" 
-                sx={{ 
-                  height: 4, 
-                  borderRadius: 2,
-                  bgcolor: theme.palette.secondary.main + '22'
-                }} 
-              />
-            </Box>
-          </Box>
-        </motion.div>
-      </Backdrop>
-
-      {/* Professional Header Bar */}
-      <motion.div
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        <Paper 
-          elevation={8}
+        {/* Animated Background Pattern */}
+        <Box
           sx={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            zIndex: 1200,
-            background: `linear-gradient(135deg, ${theme.palette.background.paper}ee 0%, ${theme.palette.background.paper}cc 100%)`,
-            backdropFilter: 'blur(20px)',
-            borderBottom: `1px solid ${theme.palette.secondary.main}33`,
-            p: 2,
+            bottom: 0,
+            background: `
+              radial-gradient(circle at 20% 80%, ${theme.palette.primary.main}22 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, ${theme.palette.secondary.main}22 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, ${theme.palette.primary.light}11 0%, transparent 50%)
+            `,
+            animation: 'pulse 4s ease-in-out infinite alternate',
+            '@keyframes pulse': {
+              '0%': { opacity: 0.3 },
+              '100%': { opacity: 0.7 },
+            },
+          }}
+        />
+
+        {/* Map Content */}
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 2,
+            textAlign: 'center',
+            color: 'white',
           }}
         >
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 2
-          }}>
-            {/* Brand Section */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar
-                  sx={{
-                    bgcolor: theme.palette.secondary.main,
-                    color: theme.palette.secondary.contrastText,
-                    width: 48,
-                    height: 48,
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  K
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" sx={{ 
-                    color: theme.palette.secondary.main,
-                    fontWeight: 'bold',
-                    lineHeight: 1,
-                  }}>
-                    Kelmah Professional Map
-                  </Typography>
-                  <Typography variant="caption" sx={{ 
-                    color: theme.palette.text.secondary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                  }}>
-                    <FlashOnIcon fontSize="small" />
-                    Live tracking • {totalResults} results found
-                  </Typography>
-                </Box>
-              </Box>
-            </motion.div>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <LocationOnIcon sx={{ fontSize: 64, mb: 2, color: theme.palette.secondary.main }} />
+            <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold' }}>
+              Kelmah Professional Map
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
+              Live tracking • {data.length} {viewType} found
+            </Typography>
+          </motion.div>
 
-            {/* Real-time Stats Bar */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
-              <motion.div whileHover={{ scale: 1.1 }}>
-                <Tooltip title="Active Jobs">
-                  <Chip
-                    icon={<BusinessIcon />}
-                    label={`${realtimeStats.activeJobs} Jobs`}
-                    color="secondary"
-                    variant="outlined"
-                    sx={{ fontWeight: 'bold' }}
-                  />
-                </Tooltip>
-              </motion.div>
-              
-              <motion.div whileHover={{ scale: 1.1 }}>
-                <Tooltip title="Available Workers">
-                  <Chip
-                    icon={<PeopleIcon />}
-                    label={`${realtimeStats.availableWorkers} Workers`}
-                    color="primary"
-                    variant="outlined"
-                    sx={{ fontWeight: 'bold' }}
-                  />
-                </Tooltip>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.1 }}>
-                <Tooltip title="Completed Today">
-                  <Chip
-                    icon={<VerifiedIcon />}
-                    label={`${realtimeStats.completedToday} Completed`}
-                    sx={{ 
-                      bgcolor: '#4CAF5022',
-                      color: '#4CAF50',
-                      fontWeight: 'bold',
-                      border: '1px solid #4CAF5033'
-                    }}
-                  />
-                </Tooltip>
-              </motion.div>
-            </Box>
-
-            {/* Search Type Toggle */}
-            <ToggleButtonGroup
-              value={searchType}
-              exclusive
-              onChange={handleSearchTypeChange}
-              size="small"
-              sx={{ 
-                bgcolor: theme.palette.background.default,
-                borderRadius: 3,
-                '& .MuiToggleButton-root': {
-                  border: `1px solid ${theme.palette.secondary.main}33`,
-                  color: theme.palette.text.primary,
-                  px: 3,
-                  py: 1.5,
-                  '&.Mui-selected': {
-                    bgcolor: theme.palette.secondary.main,
-                    color: theme.palette.secondary.contrastText,
-                    '&:hover': {
-                      bgcolor: theme.palette.secondary.dark,
-                    },
-                  },
-                  '&:hover': {
-                    bgcolor: theme.palette.secondary.main + '11',
-                  },
-                },
-              }}
-            >
-              <ToggleButton value="jobs">
-                <JobIcon sx={{ mr: 1 }} />
-                <Badge badgeContent={searchResults.filter((r) => r.type === 'job').length} color="secondary">
-                  <span>Jobs</span>
-                </Badge>
-              </ToggleButton>
-              <ToggleButton value="workers">
-                <WorkerIcon sx={{ mr: 1 }} />
-                <Badge badgeContent={searchResults.filter((r) => r.type === 'worker').length} color="primary">
-                  <span>Workers</span>
-                </Badge>
-              </ToggleButton>
-            </ToggleButtonGroup>
-
-            {/* Action Controls */}
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Tooltip title="Refresh Data">
-                <IconButton
-                  onClick={() => {
-                    const location = selectedLocation || userLocation;
-                    if (location) loadMapData(searchType, location, currentFilters);
-                  }}
-                  disabled={loading}
-                  sx={{
-                    bgcolor: theme.palette.background.default,
-                    border: `1px solid ${theme.palette.secondary.main}33`,
-                    '&:hover': {
-                      bgcolor: theme.palette.secondary.main + '11',
-                    },
-                  }}
-                >
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-                <IconButton
-                  onClick={toggleFullscreen}
-                  sx={{
-                    bgcolor: theme.palette.background.default,
-                    border: `1px solid ${theme.palette.secondary.main}33`,
-                    '&:hover': {
-                      bgcolor: theme.palette.secondary.main + '11',
-                    },
-                  }}
-                >
-                  {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-        </Paper>
-      </motion.div>
-
-      {/* Main Content Container */}
-      <Box sx={{ 
-        display: 'flex',
-        height: '100vh',
-        pt: '88px', // Account for header
-        ...(isFullscreen && {
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 9998,
-          pt: 0,
-        }),
-      }}>
-        {/* Left Search Panel */}
-        <AnimatePresence>
-          {showSearchOverlay && !isFullscreen && (
-            <motion.div
-              initial={{ x: -400, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -400, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              style={{ position: 'relative', zIndex: 1000 }}
-            >
-              <Paper
-                elevation={12}
-                sx={{
-                  width: isMobile ? '100vw' : isTablet ? 380 : 420,
-                  height: '100%',
-                  background: `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-                  borderRight: `2px solid ${theme.palette.secondary.main}33`,
-                  borderRadius: 0,
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <MapSearchOverlay
-                  onSearch={handleSearch}
-                  onFilterChange={handleFilterChange}
-                  onLocationChange={handleLocationChange}
-                  searchResults={searchResults}
-                  loading={loading}
-                  searchType={searchType}
-                  userLocation={userLocation}
-                  isVisible={true}
-                  onClose={() => setShowSearchOverlay(false)}
-                />
-              </Paper>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Map Container */}
-        <Box sx={{ 
-          flex: 1, 
-          position: 'relative',
-          height: '100%',
-          overflow: 'hidden',
-        }}>
-          <InteractiveMap
-            center={mapCenter}
-            zoom={12}
-            markers={searchResults}
-            onMarkerClick={handleMarkerClick}
-            showUserLocation={true}
-            showSearchRadius={true}
-            searchRadius={currentFilters.radius}
-            height="100%"
-            controls={{
-              location: true,
-              zoom: true,
-              layers: true,
-              fullscreen: false,
-            }}
-          />
-
-          {/* Professional Heatmap Legend */}
-          <HeatmapLegend />
-
-          {/* Floating Search Button for Mobile */}
-          {(isMobile || isFullscreen) && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Fab
-                color="secondary"
-                onClick={() => setShowSearchOverlay(!showSearchOverlay)}
-                sx={{
+          {/* Interactive Markers */}
+          <Box sx={{ position: 'relative', height: 300, width: '100%' }}>
+            {data.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                style={{
                   position: 'absolute',
-                  top: 20,
-                  left: 20,
-                  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
-                  boxShadow: `0 8px 32px ${theme.palette.secondary.main}44`,
+                  left: `${20 + (index * 15) % 60}%`,
+                  top: `${30 + (index * 20) % 40}%`,
                 }}
               >
-                {showSearchOverlay ? <CloseIcon /> : <SearchIcon />}
-              </Fab>
-            </motion.div>
-          )}
+                <Tooltip title={`${item.title || item.name} - ${item.location.address}`}>
+                  <IconButton
+                    onClick={() => onMarkerClick(item)}
+                    sx={{
+                      background: viewType === 'jobs' ? theme.palette.primary.main : theme.palette.secondary.main,
+                      color: 'white',
+                      '&:hover': {
+                        background: viewType === 'jobs' ? theme.palette.primary.dark : theme.palette.secondary.dark,
+                        transform: 'scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {viewType === 'jobs' ? <JobIcon /> : <WorkerIcon />}
+                  </IconButton>
+                </Tooltip>
+              </motion.div>
+            ))}
+          </Box>
 
-          {/* Professional Results Counter */}
-          <AnimatePresence>
-            {totalResults > 0 && !loading && (
+          {/* Map Controls */}
+          <Box sx={{ position: 'absolute', bottom: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
+              <ZoomInIcon />
+            </IconButton>
+            <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
+              <ZoomOutIcon />
+            </IconButton>
+            <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
+              <MyLocation as LocationIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <Backdrop
+          sx={{
+            position: 'absolute',
+            zIndex: 3,
+            color: theme.palette.secondary.main,
+            background: 'rgba(0,0,0,0.7)',
+          }}
+          open={loading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
+    </Box>
+  );
+};
+
+// Live Analytics Component
+const LiveAnalytics = ({ analytics, onClose }) => {
+  const theme = useTheme();
+
+  return (
+    <Paper
+      sx={{
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        width: 320,
+        maxHeight: 'calc(100vh - 32px)',
+        overflow: 'auto',
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
+        zIndex: 10,
+      }}
+    >
+      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            Live Analytics
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Box sx={{ p: 2 }}>
+        <Grid container spacing={2}>
+          {Object.entries(analytics).map(([key, data]) => (
+            <Grid item xs={6} key={key}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                style={{
-                  position: 'absolute',
-                  bottom: 20,
-                  right: showStatsPanel && !isMobile && !isFullscreen ? 420 : 20,
-                  zIndex: 1000,
-                }}
+                transition={{ duration: 0.3 }}
               >
-                <Paper
-                  elevation={8}
+                <Card
                   sx={{
-                    px: 3,
-                    py: 2,
-                    background: `linear-gradient(135deg, ${theme.palette.background.paper}ee 0%, ${theme.palette.background.paper}cc 100%)`,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${theme.palette.secondary.main}33`,
-                    borderRadius: 4,
-                    boxShadow: `0 8px 32px rgba(255, 215, 0, 0.2)`,
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${data.color}11 100%)`,
+                    border: `1px solid ${data.color}33`,
+                    borderRadius: 2,
+                    p: 2,
+                    textAlign: 'center',
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <VisibilityIcon sx={{ color: theme.palette.secondary.main }} />
-                    <Box>
-                      <Typography variant="h6" sx={{ 
-                        fontWeight: 'bold',
-                        color: theme.palette.secondary.main,
-                        lineHeight: 1,
-                      }}>
-                        {totalResults} {getSearchTypeLabel()}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                        {selectedLocation ? `near ${selectedLocation.city || 'selected area'}` : 'in your area'}
-                      </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        background: data.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: 1,
+                      }}
+                    >
+                      {key === 'responseTime' && <SpeedIcon sx={{ color: 'white', fontSize: 20 }} />}
+                      {key === 'successRate' && <TimelineIcon sx={{ color: 'white', fontSize: 20 }} />}
+                      {key === 'avgRating' && <StarIcon sx={{ color: 'white', fontSize: 20 }} />}
+                      {key === 'onlineNow' && <PeopleIcon sx={{ color: 'white', fontSize: 20 }} />}
                     </Box>
                   </Box>
-                </Paper>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    {data.value}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {data.trend > 0 ? (
+                      <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 16, mr: 0.5 }} />
+                    ) : (
+                      <TrendingDownIcon sx={{ color: '#F44336', fontSize: 16, mr: 0.5 }} />
+                    )}
+                    <Typography
+                      variant="caption"
+                      sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}
+                    >
+                      {Math.abs(data.trend)}%
+                    </Typography>
+                  </Box>
+                </Card>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Category Performance */}
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Category Performance
+        </Typography>
+        <Box sx={{ maxHeight: 200, overflow: 'auto' }}>
+          {mockMapData.categories.map((category, index) => (
+            <motion.div
+              key={category.name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="body2">{category.name}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  {category.percentage}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={category.percentage}
+                sx={{
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: `${category.color}22`,
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: category.color,
+                  },
+                }}
+              />
+            </motion.div>
+          ))}
+        </Box>
+      </Box>
+    </Paper>
+  );
+};
+
+// Search and Filter Panel
+const SearchFilterPanel = ({ 
+  searchQuery, 
+  setSearchQuery, 
+  filters, 
+  setFilters, 
+  onSearch,
+  onClearFilters,
+  viewType,
+  setViewType,
+  status,
+  resultsCount
+}) => {
+  const theme = useTheme();
+  const [expandedFilters, setExpandedFilters] = useState(false);
+
+  return (
+    <Paper
+      sx={{
+        position: 'absolute',
+        top: 16,
+        left: 16,
+        width: 350,
+        maxHeight: 'calc(100vh - 32px)',
+        overflow: 'auto',
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
+        zIndex: 10,
+      }}
+    >
+      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+          Search & Filters
+        </Typography>
+        
+        {/* Search Bar */}
+        <TextField
+          fullWidth
+          placeholder="Search jobs, workers, location..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={onSearch}>
+                  <RefreshIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 2 }}
+        />
+
+        {/* Status Cards */}
+        <Grid container spacing={1} sx={{ mb: 2 }}>
+          {Object.entries(status).map(([key, data]) => (
+            <Grid item xs={6} key={key}>
+              <Card
+                sx={{
+                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${data.color}11 100%)`,
+                  border: `1px solid ${data.color}33`,
+                  borderRadius: 2,
+                  p: 1.5,
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: data.color }}>
+                  {data.count}
+                </Typography>
+                <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>
+                  {key}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.5 }}>
+                  {data.trend > 0 ? (
+                    <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 12 }} />
+                  ) : (
+                    <TrendingDownIcon sx={{ color: '#F44336', fontSize: 12 }} />
+                  )}
+                  <Typography variant="caption" sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}>
+                    {Math.abs(data.trend)}%
+                  </Typography>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* View Type Toggle */}
+        <ToggleButtonGroup
+          value={viewType}
+          exclusive
+          onChange={(e, newValue) => newValue && setViewType(newValue)}
+          sx={{ mb: 2, width: '100%' }}
+        >
+          <ToggleButton value="jobs" sx={{ flex: 1 }}>
+            <JobIcon sx={{ mr: 1 }} />
+            Jobs
+          </ToggleButton>
+          <ToggleButton value="workers" sx={{ flex: 1 }}>
+            <WorkerIcon sx={{ mr: 1 }} />
+            Workers
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        {/* Results Summary */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box
+            sx={{
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              backgroundColor: '#4CAF50',
+              mr: 1,
+            }}
+          />
+          <Typography variant="body2">
+            Live Results {resultsCount}
+          </Typography>
         </Box>
 
-        {/* Right Analytics Panel */}
-        <AnimatePresence>
-          {showStatsPanel && !isMobile && !isFullscreen && (
-            <motion.div
-              initial={{ x: 400, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 400, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <Paper
-                elevation={12}
-                sx={{
-                  width: 400,
-                  height: '100%',
-                  background: `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-                  borderLeft: `2px solid ${theme.palette.secondary.main}33`,
-                  borderRadius: 0,
-                  overflow: 'auto',
-                  p: 3,
-                }}
+        {/* Advanced Filters Button */}
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<FilterIcon />}
+          onClick={() => setExpandedFilters(!expandedFilters)}
+          sx={{ mb: 2 }}
+        >
+          Advanced Filters
+        </Button>
+
+        {/* Advanced Filters */}
+        <Collapse in={expandedFilters}>
+          <Box sx={{ mb: 2 }}>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={filters.category || ''}
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                label="Category"
               >
-                {/* Analytics Header */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography variant="h6" sx={{ 
-                    color: theme.palette.secondary.main,
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}>
-                    <AnalyticsIcon />
-                    Live Analytics
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => setShowStatsPanel(false)}
-                    sx={{ color: theme.palette.text.secondary }}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
+                <MenuItem value="">All Categories</MenuItem>
+                {mockMapData.categories.map((cat) => (
+                  <MenuItem key={cat.name} value={cat.name}>{cat.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-                {/* Professional Stats Grid */}
-                <Grid container spacing={2} sx={{ mb: 3 }}>
-                  <Grid item xs={6}>
-                    <ProfessionalStatsCard
-                      title="Response Time"
-                      value={realtimeStats.responseTime}
-                      trend={-5}
-                      icon={SpeedIcon}
-                      color="#4CAF50"
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <ProfessionalStatsCard
-                      title="Success Rate"
-                      value={`${realtimeStats.successRate}%`}
-                      trend={2}
-                      icon={TrendingUpIcon}
-                      color="#2196F3"
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <ProfessionalStatsCard
-                      title="Avg Rating"
-                      value={realtimeStats.avgRating}
-                      trend={1}
-                      icon={StarIcon}
-                      color="#FF9800"
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <ProfessionalStatsCard
-                      title="Online Now"
-                      value="847"
-                      trend={8}
-                      icon={PeopleIcon}
-                      color="#9C27B0"
-                    />
-                  </Grid>
-                </Grid>
-
-                {/* Category Performance */}
-                <Paper
-                  sx={{
-                    p: 2.5,
-                    mb: 3,
-                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}08 100%)`,
-                    border: `1px solid ${theme.palette.secondary.main}22`,
-                    borderRadius: 3,
-                  }}
-                >
-                  <Typography variant="subtitle1" sx={{ 
-                    mb: 2, 
-                    fontWeight: 'bold',
-                    color: theme.palette.secondary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}>
-                    <AssessmentIcon />
-                    Category Performance
-                  </Typography>
-                  <Stack spacing={2}>
-                    {categoryStats.map((category, index) => {
-                      const IconComponent = category.icon;
-                      return (
-                        <motion.div
-                          key={category.name}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between',
-                            p: 1.5,
-                            borderRadius: 2,
-                            '&:hover': {
-                              bgcolor: category.color + '11',
-                            },
-                            transition: 'all 0.3s ease',
-                          }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                              <Avatar
-                                sx={{
-                                  bgcolor: category.color + '22',
-                                  color: category.color,
-                                  width: 32,
-                                  height: 32,
-                                }}
-                              >
-                                <IconComponent fontSize="small" />
-                              </Avatar>
-                              <Box>
-                                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                                  {category.name}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {category.jobs} jobs • {category.workers} workers
-                                </Typography>
-                              </Box>
-                            </Box>
-                            <Box sx={{ textAlign: 'right' }}>
-                              <Typography variant="body2" sx={{ fontWeight: 'bold', color: category.color }}>
-                                {Math.round((category.jobs / category.workers) * 100)}%
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                match rate
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </motion.div>
-                      );
-                    })}
-                  </Stack>
-                </Paper>
-
-                {/* Live Activity Feed */}
-                <Paper
-                  sx={{
-                    p: 2.5,
-                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}08 100%)`,
-                    border: `1px solid ${theme.palette.primary.main}22`,
-                    borderRadius: 3,
-                  }}
-                >
-                  <Typography variant="subtitle1" sx={{ 
-                    mb: 2, 
-                    fontWeight: 'bold',
-                    color: theme.palette.primary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}>
-                    <TimelineIcon />
-                    Live Activity
-                    <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <Box
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          bgcolor: '#4CAF50',
-                          ml: 1,
-                        }}
-                      />
-                    </motion.div>
-                  </Typography>
-                  <Stack spacing={1}>
-                    {realtimeActivities.map((activity, index) => (
-                      <ActivityFeedItem key={activity.id} activity={activity} index={index} />
-                    ))}
-                  </Stack>
-                </Paper>
-              </Paper>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Toggle Stats Panel Button */}
-        {!isMobile && !isFullscreen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{
-              position: 'absolute',
-              right: showStatsPanel ? 410 : 20,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 1100,
-            }}
-          >
-            <Tooltip title={showStatsPanel ? "Hide Analytics" : "Show Analytics"}>
-              <Fab
-                size="medium"
-                onClick={() => setShowStatsPanel(!showStatsPanel)}
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                  color: 'white',
-                  boxShadow: `0 8px 32px ${theme.palette.primary.main}44`,
-                  '&:hover': {
-                    transform: 'scale(1.1)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Distance</InputLabel>
+              <Select
+                value={filters.distance || 50}
+                onChange={(e) => setFilters({ ...filters, distance: e.target.value })}
+                label="Distance"
               >
-                <AnalyticsIcon />
-              </Fab>
-            </Tooltip>
-          </motion.div>
-        )}
+                <MenuItem value={10}>Within 10km</MenuItem>
+                <MenuItem value={25}>Within 25km</MenuItem>
+                <MenuItem value={50}>Within 50km</MenuItem>
+                <MenuItem value={100}>Within 100km</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={filters.sortBy || 'relevance'}
+                onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                label="Sort By"
+              >
+                <MenuItem value="relevance">Relevance</MenuItem>
+                <MenuItem value="distance">Distance</MenuItem>
+                <MenuItem value="rating">Rating</MenuItem>
+                <MenuItem value="price">Price</MenuItem>
+                <MenuItem value="date">Date Posted</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<ClearIcon />}
+                onClick={onClearFilters}
+              >
+                Clear
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={onSearch}
+              >
+                Apply
+              </Button>
+            </Box>
+          </Box>
+        </Collapse>
       </Box>
 
-      {/* Professional Loading Overlay */}
-      <AnimatePresence>
-        {loading && !initializing && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <Paper
-              elevation={16}
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 1300,
-                p: 4,
-                textAlign: 'center',
-                background: `linear-gradient(135deg, ${theme.palette.background.paper}ee 0%, ${theme.palette.background.paper}cc 100%)`,
-                backdropFilter: 'blur(20px)',
-                border: `2px solid ${theme.palette.secondary.main}33`,
-                borderRadius: 4,
-                minWidth: 300,
-              }}
+      {/* Live Results List */}
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Live Results
+        </Typography>
+        <List sx={{ maxHeight: 300, overflow: 'auto' }}>
+          {mockMapData[viewType].slice(0, 5).map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+              <ListItem
+                sx={{
+                  mb: 1,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.action.hover} 0%, ${theme.palette.background.paper} 100%)`,
+                  },
+                }}
               >
-                <CircularProgress 
-                  sx={{ color: theme.palette.secondary.main, mb: 2 }} 
-                  size={60}
-                  thickness={3}
+                <ListItemAvatar>
+                  <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                    {viewType === 'jobs' ? <JobIcon /> : <WorkerIcon />}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={item.title || item.name}
+                  secondary={`${item.location.address} • ${item.category}`}
                 />
-              </motion.div>
-              <Typography variant="h6" sx={{ 
-                color: theme.palette.secondary.main,
-                fontWeight: 'bold',
-                mb: 1,
-              }}>
-                Searching {getSearchTypeLabel()}
-              </Typography>
-              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-                Analyzing {currentFilters.radius}km radius for best matches...
-              </Typography>
-            </Paper>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <ListItemSecondaryAction>
+                  <Chip
+                    label={viewType === 'jobs' ? item.budget : item.hourlyRate}
+                    size="small"
+                    color="primary"
+                  />
+                </ListItemSecondaryAction>
+              </ListItem>
+            </motion.div>
+          ))}
+        </List>
+      </Box>
+    </Paper>
+  );
+};
 
-      {/* Professional Error Snackbar */}
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+// Main Professional Map Page
+const ProfessionalMapPage = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // State management
+  const [viewType, setViewType] = useState('jobs');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    category: '',
+    distance: 50,
+    sortBy: 'relevance',
+  });
+  const [loading, setLoading] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(true);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 5.5600, lng: -0.2057 });
+  const [mapZoom, setMapZoom] = useState(12);
+
+  // Computed values
+  const currentData = useMemo(() => mockMapData[viewType], [viewType]);
+  const resultsCount = currentData.length;
+
+  // Handlers
+  const handleSearch = useCallback(() => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({
+      category: '',
+      distance: 50,
+      sortBy: 'relevance',
+    });
+    setSearchQuery('');
+  }, []);
+
+  const handleMarkerClick = useCallback((item) => {
+    setSelectedItem(item);
+  }, []);
+
+  const handleViewTypeChange = useCallback((newType) => {
+    setViewType(newType);
+    setSelectedItem(null);
+  }, []);
+
+  // Effects
+  useEffect(() => {
+    handleSearch();
+  }, [viewType, filters]);
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+        position: 'relative',
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+          color: 'white',
+          p: 2,
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+        }}
       >
-        <Alert 
-          onClose={() => setError(null)} 
-          severity="warning" 
-          elevation={8}
-          sx={{ 
-            width: '100%',
-            background: `linear-gradient(135deg, ${theme.palette.background.paper}ee 0%, ${theme.palette.background.paper}cc 100%)`,
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${theme.palette.secondary.main}33`,
-            borderRadius: 3,
-          }}
-        >
-          {error}
+        <Container maxWidth="xl">
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar sx={{ bgcolor: theme.palette.secondary.main, mr: 2 }}>
+                K
+              </Avatar>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  Kelmah Professional Map
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Live tracking • {resultsCount} results found
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Key Metrics */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Chip
+                  label={`${mockMapData.jobs.length} Jobs`}
+                  icon={<JobIcon />}
+                  sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
+                />
+                <Chip
+                  label={`${mockMapData.workers.length} Workers`}
+                  icon={<WorkerIcon />}
+                  sx={{ 
+                    background: viewType === 'workers' ? theme.palette.secondary.main : 'rgba(255,255,255,0.1)',
+                    color: 'white'
+                  }}
+                />
+                <Chip
+                  label="161 Completed"
+                  icon={<CheckCircleIcon />}
+                  sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
+                />
+              </Box>
+
+              {/* View Type Toggle */}
+              <ToggleButtonGroup
+                value={viewType}
+                exclusive
+                onChange={(e, newValue) => newValue && handleViewTypeChange(newValue)}
+                size="small"
+              >
+                <ToggleButton value="jobs" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                  Jobs
+                  <Badge badgeContent={mockMapData.jobs.length} color="secondary" sx={{ ml: 1 }} />
+                </ToggleButton>
+                <ToggleButton value="workers" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                  Workers
+                  <Badge badgeContent={mockMapData.workers.length} color="secondary" sx={{ ml: 1 }} />
+                </ToggleButton>
+              </ToggleButtonGroup>
+
+              {/* Action Buttons */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton sx={{ color: 'white' }}>
+                  <RefreshIcon />
+                </IconButton>
+                <IconButton sx={{ color: 'white' }}>
+                  <FullscreenIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Main Content */}
+      <Container maxWidth="xl" sx={{ py: 2 }}>
+        <Box sx={{ position: 'relative', height: 'calc(100vh - 200px)', minHeight: 600 }}>
+          {/* Interactive Map */}
+          <InteractiveMap
+            data={currentData}
+            viewType={viewType}
+            onMarkerClick={handleMarkerClick}
+            center={mapCenter}
+            zoom={mapZoom}
+            loading={loading}
+          />
+
+          {/* Search and Filter Panel */}
+          <SearchFilterPanel
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filters={filters}
+            setFilters={setFilters}
+            onSearch={handleSearch}
+            onClearFilters={handleClearFilters}
+            viewType={viewType}
+            setViewType={setViewType}
+            status={mockMapData.status}
+            resultsCount={resultsCount}
+          />
+
+          {/* Live Analytics Panel */}
+          {showAnalytics && (
+            <LiveAnalytics
+              analytics={mockMapData.analytics}
+              onClose={() => setShowAnalytics(false)}
+            />
+          )}
+
+          {/* Floating Action Button */}
+          <Fab
+            color="secondary"
+            aria-label="add"
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              right: 16,
+              zIndex: 10,
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </Box>
+      </Container>
+
+      {/* Selected Item Dialog */}
+      <Dialog
+        open={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6">
+              {selectedItem?.title || selectedItem?.name}
+            </Typography>
+            <IconButton onClick={() => setSelectedItem(null)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {selectedItem && (
+            <Box>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {selectedItem.description || `${selectedItem.category} professional`}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                {selectedItem.skills?.map((skill) => (
+                  <Chip key={skill} label={skill} size="small" />
+                ))}
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Location: {selectedItem.location.address}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedItem(null)}>Close</Button>
+          <Button variant="contained">View Details</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Notifications */}
+      <Snackbar
+        open={false}
+        autoHideDuration={6000}
+        onClose={() => {}}
+      >
+        <Alert severity="info" sx={{ width: '100%' }}>
+          Map data updated successfully
         </Alert>
       </Snackbar>
     </Box>
