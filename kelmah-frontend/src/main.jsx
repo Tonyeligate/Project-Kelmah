@@ -12,8 +12,6 @@ import { ContractProvider } from './modules/contracts/contexts/ContractContext';
 import App from './App.jsx';
 import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 
 // Add debugging for module loading
 console.log('🔧 Main.jsx loading - React version:', React.version);
@@ -24,47 +22,106 @@ const ErrorFallback = ({ error }) => (
   <div
     style={{
       padding: 24,
-      backgroundColor: '#1A1A1A',
+      backgroundColor: '#000000',
       color: '#FFD700',
       minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
     }}
   >
-    <h2 style={{ color: '#FFD700', marginBottom: 16 }}>
-      Something went wrong.
+    <div
+      style={{
+        width: 64,
+        height: 64,
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, #FFD700 0%, #FFE55C 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 24,
+        color: '#000000',
+        fontSize: '24px',
+        fontWeight: 'bold',
+      }}
+    >
+      !
+    </div>
+    <h2 style={{ 
+      color: '#FFD700', 
+      marginBottom: 16, 
+      fontSize: '24px',
+      fontWeight: 600,
+      textAlign: 'center',
+    }}>
+      Oops! Something went wrong
     </h2>
-    <pre style={{ color: '#FF5252', whiteSpace: 'pre-wrap' }}>
-      {error.message}
-    </pre>
+    <p style={{ 
+      color: 'rgba(255, 255, 255, 0.7)', 
+      marginBottom: 24,
+      textAlign: 'center',
+      maxWidth: '600px',
+    }}>
+      We're sorry for the inconvenience. Please refresh the page or contact support if the problem persists.
+    </p>
+    <details style={{ 
+      color: '#FF5252', 
+      maxWidth: '800px',
+      width: '100%',
+      backgroundColor: 'rgba(255, 82, 82, 0.1)',
+      padding: '16px',
+      borderRadius: '8px',
+      border: '1px solid rgba(255, 82, 82, 0.3)',
+    }}>
+      <summary style={{ 
+        cursor: 'pointer', 
+        marginBottom: '12px',
+        fontWeight: 600,
+      }}>
+        Technical Details
+      </summary>
+      <pre style={{ 
+        whiteSpace: 'pre-wrap',
+        fontSize: '14px',
+        lineHeight: '1.4',
+        margin: 0,
+      }}>
+        {error.message}
+        {error.stack && '\n\nStack Trace:\n' + error.stack}
+      </pre>
+    </details>
   </div>
 );
 
-const muiTheme = createTheme({
-  palette: { mode: 'dark' },
-});
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      <Provider store={store}>
-        <BrowserRouter>
-          <SnackbarProvider maxSnack={3}>
-            <AuthProvider>
-              <NotificationProvider>
-                <MessageProvider>
-                  <PaymentProvider>
-                    <ContractProvider>
-                      <ErrorBoundary FallbackComponent={ErrorFallback}>
-                        <App />
-                      </ErrorBoundary>
-                    </ContractProvider>
-                  </PaymentProvider>
-                </MessageProvider>
-              </NotificationProvider>
-            </AuthProvider>
-          </SnackbarProvider>
-        </BrowserRouter>
-      </Provider>
-    </ThemeProvider>
+    <Provider store={store}>
+      <BrowserRouter>
+        <SnackbarProvider 
+          maxSnack={3}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          dense
+        >
+          <AuthProvider>
+            <NotificationProvider>
+              <MessageProvider>
+                <PaymentProvider>
+                  <ContractProvider>
+                    <ErrorBoundary FallbackComponent={ErrorFallback}>
+                      <App />
+                    </ErrorBoundary>
+                  </ContractProvider>
+                </PaymentProvider>
+              </MessageProvider>
+            </NotificationProvider>
+          </AuthProvider>
+        </SnackbarProvider>
+      </BrowserRouter>
+    </Provider>
   </React.StrictMode>,
 );

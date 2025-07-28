@@ -151,10 +151,12 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import searchService from '../../search/services/searchService';
 import { hirerService } from '../services/hirerService';
 
-// Animations
+// Advanced Animations for Talent Discovery
 const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-15px) rotate(2deg); }
+  50% { transform: translateY(-25px) rotate(0deg); }
+  75% { transform: translateY(-15px) rotate(-2deg); }
 `;
 
 const shimmer = keyframes`
@@ -163,27 +165,64 @@ const shimmer = keyframes`
 `;
 
 const pulse = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
 `;
 
 const slideInUp = keyframes`
-  from { transform: translateY(50px); opacity: 0; }
+  from { transform: translateY(100px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 `;
 
-// Styled Components
+const gradientShift = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
+const sparkle = keyframes`
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(360deg); }
+`;
+
+const rotateGlow = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const heartbeat = keyframes`
+  0% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  70% { transform: scale(1); }
+`;
+
+const magneticHover = keyframes`
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(2px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  75% { transform: translate(2px, 2px); }
+  100% { transform: translate(0, 0); }
+`;
+
+// Professional Styled Components for Talent Discovery
 const HeroGradientSection = styled(Box)(({ theme }) => ({
   background: `linear-gradient(135deg, 
     ${theme.palette.primary.main} 0%, 
-    ${theme.palette.secondary.main} 50%, 
-    ${theme.palette.primary.dark} 100%)`,
+    ${theme.palette.secondary.main} 20%,
+    ${theme.palette.primary.dark} 40%,
+    ${theme.palette.secondary.dark} 60%,
+    ${theme.palette.primary.main} 80%,
+    ${theme.palette.secondary.main} 100%)`,
+  backgroundSize: '600% 600%',
+  animation: `${gradientShift} 25s ease infinite`,
   color: 'white',
-  padding: theme.spacing(10, 0),
+  padding: theme.spacing(14, 0),
   position: 'relative',
   overflow: 'hidden',
-  minHeight: '80vh',
+  minHeight: '95vh',
   display: 'flex',
   alignItems: 'center',
   '&::before': {
@@ -193,114 +232,72 @@ const HeroGradientSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'4\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-    animation: `${float} 8s ease-in-out infinite`,
+    background: `radial-gradient(circle at 30% 70%, ${alpha('#4ECDC4', 0.4)} 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, ${alpha('#FFD700', 0.4)} 0%, transparent 50%),
+                radial-gradient(circle at 20% 20%, ${alpha('#FF6B6B', 0.3)} 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, ${alpha('#9B59B6', 0.3)} 0%, transparent 60%)`,
+    animation: `${float} 30s ease-in-out infinite`,
   },
   '&::after': {
     content: '""',
     position: 'absolute',
-    top: '-50%',
-    right: '-20%',
-    width: '100%',
-    height: '200%',
-    background: `radial-gradient(circle, ${alpha('#FFD700', 0.1)} 0%, transparent 70%)`,
-    animation: `${float} 12s ease-in-out infinite reverse`,
+    top: '-40%',
+    left: '-40%',
+    width: '180%',
+    height: '180%',
+    background: `conic-gradient(from 30deg at 50% 50%, 
+      transparent 0deg, 
+      ${alpha('#FFD700', 0.2)} 60deg, 
+      transparent 120deg,
+      ${alpha('#4ECDC4', 0.2)} 180deg,
+      transparent 240deg,
+      ${alpha('#FF6B6B', 0.2)} 300deg,
+      transparent 360deg)`,
+    animation: `${rotateGlow} 50s linear infinite`,
+  },
+  [theme.breakpoints.down('md')]: {
+    minHeight: '80vh',
+    padding: theme.spacing(12, 0),
+  },
+  [theme.breakpoints.down('sm')]: {
+    minHeight: '70vh',
+    padding: theme.spacing(10, 0),
   },
 }));
 
-const GlassCard = styled(Card)(({ theme, variant = 'default' }) => ({
+const GlassCard = styled(Card)(({ theme, variant = 'default', featured = false, premium = false, verified = false }) => ({
   background: variant === 'glass' 
-    ? alpha(theme.palette.background.paper, 0.9)
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.92)})`
+    : featured 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.08)})`
+    : premium
+    ? `linear-gradient(135deg, ${alpha('#9C27B0', 0.08)}, ${alpha('#673AB7', 0.08)})`
     : theme.palette.background.paper,
-  backdropFilter: variant === 'glass' ? 'blur(20px)' : 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: 20,
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 25px 50px ${alpha(theme.palette.secondary.main, 0.3)}`,
-    borderColor: theme.palette.secondary.main,
-  },
-}));
-
-const ProfessionalCard = styled(GlassCard)(({ theme, featured, premium }) => ({
-  height: '100%',
-  position: 'relative',
-  background: featured 
-    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)}, ${alpha(theme.palette.primary.main, 0.1)})`
-    : theme.palette.background.paper,
+  backdropFilter: variant === 'glass' ? 'blur(30px)' : 'blur(20px)',
   border: featured 
-    ? `2px solid ${theme.palette.secondary.main}`
+    ? `3px solid ${theme.palette.secondary.main}` 
+    : premium
+    ? `3px solid #9C27B0`
+    : verified
+    ? `2px solid ${theme.palette.success.main}`
     : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  '&::before': premium ? {
-    content: '"✨ PREMIUM"',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
-    color: 'white',
-    textAlign: 'center',
-    fontSize: '0.7rem',
-    fontWeight: 700,
-    padding: '4px 0',
-    letterSpacing: '1px',
-  } : {},
-}));
-
-const SearchInterface = styled(Paper)(({ theme }) => ({
-  position: 'sticky',
-  top: theme.spacing(2),
-  zIndex: 1000,
-  background: alpha(theme.palette.background.paper, 0.95),
-  backdropFilter: 'blur(20px)',
-  borderRadius: 25,
-  padding: theme.spacing(3),
-  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-  boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`,
-}));
-
-const SkillChip = styled(Chip)(({ theme, level }) => {
-  const getSkillColor = () => {
-    switch (level) {
-      case 'expert': return theme.palette.error.main;
-      case 'advanced': return theme.palette.warning.main;
-      case 'intermediate': return theme.palette.info.main;
-      default: return theme.palette.success.main;
-    }
-  };
-
-  return {
-    borderRadius: 20,
-    fontWeight: 600,
-    fontSize: '0.8rem',
-    background: alpha(getSkillColor(), 0.1),
-    color: getSkillColor(),
-    border: `1px solid ${alpha(getSkillColor(), 0.3)}`,
-    '&:hover': {
-      background: alpha(getSkillColor(), 0.2),
-      transform: 'translateY(-1px)',
-    },
-  };
-});
-
-const AnimatedButton = styled(Button)(({ theme, variant = 'contained' }) => ({
-  borderRadius: 25,
-  padding: theme.spacing(1.5, 4),
-  fontWeight: 700,
-  fontSize: '1rem',
-  textTransform: 'none',
+  borderRadius: 32,
+  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s ease-in-out',
-  background: variant === 'contained' 
-    ? `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`
-    : 'transparent',
   '&:hover': {
-    transform: 'translateY(-3px)',
-    boxShadow: `0 12px 25px ${alpha(theme.palette.secondary.main, 0.5)}`,
+    transform: 'translateY(-20px) scale(1.03) rotateY(5deg)',
+    boxShadow: featured 
+      ? `0 40px 80px ${alpha(theme.palette.secondary.main, 0.4)}, 0 25px 50px ${alpha(theme.palette.primary.main, 0.2)}`
+      : premium
+      ? `0 35px 70px ${alpha('#9C27B0', 0.4)}`
+      : verified
+      ? `0 30px 60px ${alpha(theme.palette.success.main, 0.3)}`
+      : `0 32px 64px ${alpha(theme.palette.common.black, 0.15)}`,
+    borderColor: featured ? theme.palette.secondary.main : premium ? '#9C27B0' : theme.palette.secondary.main,
+    '&::before': {
+      opacity: 1,
+    },
   },
   '&::before': {
     content: '""',
@@ -309,40 +306,293 @@ const AnimatedButton = styled(Button)(({ theme, variant = 'contained' }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.3)}, transparent)`,
-    transition: 'left 0.5s',
+    background: featured
+      ? `linear-gradient(90deg, transparent, ${alpha(theme.palette.secondary.main, 0.2)}, transparent)`
+      : premium
+      ? `linear-gradient(90deg, transparent, ${alpha('#9C27B0', 0.2)}, transparent)`
+      : `linear-gradient(90deg, transparent, ${alpha(theme.palette.secondary.main, 0.15)}, transparent)`,
+    transition: 'left 0.8s, opacity 0.3s',
+    opacity: 0,
   },
   '&:hover::before': {
     left: '100%',
+    opacity: 1,
   },
 }));
 
-const StatCard = styled(motion.div)(({ theme }) => ({
-  background: alpha(theme.palette.background.paper, 0.9),
-  backdropFilter: 'blur(20px)',
-  borderRadius: 20,
-  padding: theme.spacing(3),
-  textAlign: 'center',
-  border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-  transition: 'all 0.3s ease-in-out',
-  cursor: 'pointer',
+const ProfessionalCard = styled(GlassCard)(({ theme, featured, premium, topRated, verified }) => ({
+  height: '100%',
+  position: 'relative',
+  background: featured 
+    ? `linear-gradient(135deg, 
+        ${alpha(theme.palette.secondary.main, 0.12)} 0%, 
+        ${alpha(theme.palette.primary.main, 0.12)} 50%,
+        ${alpha(theme.palette.secondary.main, 0.08)} 100%)`
+    : premium
+    ? `linear-gradient(135deg, 
+        ${alpha('#9C27B0', 0.1)} 0%, 
+        ${alpha('#673AB7', 0.1)} 100%)`
+    : topRated
+    ? `linear-gradient(135deg, 
+        ${alpha('#FFD700', 0.08)} 0%, 
+        ${alpha('#FFA500', 0.08)} 100%)`
+    : theme.palette.background.paper,
+  border: featured 
+    ? `3px solid ${theme.palette.secondary.main}`
+    : premium
+    ? `3px solid #9C27B0`
+    : topRated
+    ? `3px solid #FFD700`
+    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  '&::before': premium ? {
+    content: '"👑 PREMIUM TALENT"',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    background: `linear-gradient(90deg, #9C27B0, #673AB7)`,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '0.85rem',
+    fontWeight: 900,
+    padding: '10px 0',
+    letterSpacing: '1.5px',
+    boxShadow: `0 6px 18px ${alpha('#9C27B0', 0.3)}`,
+    animation: `${sparkle} 3s ease-in-out infinite`,
+  } : featured ? {
+    content: '"⭐ FEATURED PROFESSIONAL"',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '0.8rem',
+    fontWeight: 900,
+    padding: '8px 0',
+    letterSpacing: '1.2px',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`,
+  } : topRated ? {
+    content: '"🏆 TOP RATED EXPERT"',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    background: `linear-gradient(90deg, #FFD700, #FFA500)`,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '0.8rem',
+    fontWeight: 900,
+    padding: '8px 0',
+    letterSpacing: '1.2px',
+    boxShadow: `0 4px 12px ${alpha('#FFD700', 0.3)}`,
+    animation: `${pulse} 2s ease-in-out infinite`,
+  } : {},
+}));
+
+const SearchInterface = styled(Paper)(({ theme }) => ({
+  position: 'sticky',
+  top: theme.spacing(2),
+  zIndex: 1300,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.95)})`,
+  backdropFilter: 'blur(40px)',
+  borderRadius: 36,
+  padding: theme.spacing(5),
+  border: `3px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+  boxShadow: `0 24px 72px ${alpha(theme.palette.common.black, 0.12)}, 0 16px 48px ${alpha(theme.palette.secondary.main, 0.1)}`,
+  margin: theme.spacing(4, 0),
+  transition: 'all 0.4s ease',
   '&:hover': {
-    transform: 'translateY(-5px) scale(1.02)',
-    boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.4)}`,
     borderColor: theme.palette.secondary.main,
+    boxShadow: `0 28px 84px ${alpha(theme.palette.common.black, 0.15)}, 0 20px 60px ${alpha(theme.palette.secondary.main, 0.2)}`,
+    transform: 'translateY(-6px)',
   },
 }));
 
-const FilterAccordion = styled(Accordion)(({ theme }) => ({
-  background: alpha(theme.palette.background.paper, 0.8),
-  backdropFilter: 'blur(10px)',
-  borderRadius: '15px !important',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: 'none',
-  '&:before': { display: 'none' },
-  '&.Mui-expanded': {
-    margin: '8px 0',
+const SkillChip = styled(Chip)(({ theme, level, expertise }) => {
+  const getSkillColor = () => {
+    switch (level || expertise) {
+      case 'expert': return theme.palette.error.main;
+      case 'advanced': return theme.palette.warning.main;
+      case 'intermediate': return theme.palette.info.main;
+      case 'beginner': return theme.palette.success.main;
+      default: return theme.palette.secondary.main;
+    }
+  };
+
+  const skillColor = getSkillColor();
+
+  return {
+    borderRadius: 28,
+    fontWeight: 800,
+    fontSize: '0.9rem',
+    minHeight: 40,
+    background: alpha(skillColor, 0.12),
+    color: skillColor,
+    border: `2px solid ${alpha(skillColor, 0.3)}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+    position: 'relative',
+    overflow: 'hidden',
+    '&:hover': {
+      background: alpha(skillColor, 0.2),
+      transform: 'translateY(-3px) scale(1.08)',
+      boxShadow: `0 12px 24px ${alpha(skillColor, 0.3)}`,
+      borderColor: skillColor,
+      '&::before': {
+        opacity: 1,
+      },
+    },
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: `linear-gradient(45deg, ${alpha(skillColor, 0.1)}, ${alpha(skillColor, 0.2)})`,
+      opacity: 0,
+      transition: 'opacity 0.3s ease',
+    },
+    '&:active': {
+      transform: 'translateY(-1px) scale(1.02)',
+    },
+  };
+});
+
+const AnimatedButton = styled(Button)(({ theme, variant = 'contained', size = 'medium', magnetic = false }) => ({
+  borderRadius: size === 'large' ? 36 : size === 'small' ? 20 : 32,
+  padding: size === 'large' 
+    ? theme.spacing(3, 7) 
+    : size === 'small' 
+    ? theme.spacing(1, 3) 
+    : theme.spacing(2, 5),
+  fontWeight: 900,
+  fontSize: size === 'large' ? '1.3rem' : size === 'small' ? '0.85rem' : '1.1rem',
+  textTransform: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  background: variant === 'contained' 
+    ? `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.dark} 100%)`
+    : 'transparent',
+  border: variant === 'outlined' 
+    ? `3px solid ${theme.palette.secondary.main}` 
+    : 'none',
+  color: variant === 'contained' ? 'white' : theme.palette.secondary.main,
+  boxShadow: variant === 'contained' 
+    ? `0 12px 36px ${alpha(theme.palette.secondary.main, 0.3)}` 
+    : 'none',
+  '&:hover': {
+    transform: 'translateY(-8px) scale(1.05)',
+    boxShadow: variant === 'contained' 
+      ? `0 24px 60px ${alpha(theme.palette.secondary.main, 0.4)}` 
+      : `0 16px 40px ${alpha(theme.palette.secondary.main, 0.2)}`,
+    background: variant === 'outlined' 
+      ? alpha(theme.palette.secondary.main, 0.1) 
+      : `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.secondary.main} 100%)`,
+    '&::before': {
+      left: '100%',
+    },
   },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.6)}, transparent)`,
+    transition: 'left 0.8s',
+  },
+  '&:active': {
+    transform: 'translateY(-4px) scale(1.02)',
+  },
+  ...(magnetic && {
+    '&:hover': {
+      animation: `${magneticHover} 0.6s ease-in-out infinite`,
+    },
+  }),
+}));
+
+const StatCard = styled(motion.div)(({ theme, gradient = 'primary', glowing = false }) => ({
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.92)})`,
+  backdropFilter: 'blur(30px)',
+  borderRadius: 32,
+  padding: theme.spacing(5),
+  textAlign: 'center',
+  border: `3px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+  cursor: 'pointer',
+  position: 'relative',
+  overflow: 'hidden',
+  minHeight: 240,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  '&:hover': {
+    transform: 'translateY(-16px) scale(1.1) rotateY(8deg)',
+    boxShadow: `0 32px 64px ${alpha(theme.palette.secondary.main, 0.3)}`,
+    borderColor: theme.palette.secondary.main,
+    '&::after': {
+      opacity: 1,
+    },
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '150px',
+    height: '150px',
+    background: gradient === 'primary' 
+      ? `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.25)} 0%, transparent 70%)`
+      : gradient === 'success'
+      ? `radial-gradient(circle, ${alpha('#4CAF50', 0.25)} 0%, transparent 70%)`
+      : gradient === 'error'
+      ? `radial-gradient(circle, ${alpha('#F44336', 0.25)} 0%, transparent 70%)`
+      : `radial-gradient(circle, ${alpha('#2196F3', 0.25)} 0%, transparent 70%)`,
+    transform: 'translate(-50%, -50%)',
+    opacity: 0,
+    transition: 'opacity 0.5s ease',
+  },
+  ...(glowing && {
+    animation: `${pulse} 3s ease-in-out infinite`,
+  }),
+}));
+
+const InteractiveIcon = styled(Box)(({ theme, color = theme.palette.secondary.main, size = 'large', animated = false }) => ({
+  color: color,
+  fontSize: size === 'large' ? '5rem' : size === 'medium' ? '3.5rem' : '2.5rem',
+  marginBottom: theme.spacing(3),
+  transition: 'all 0.5s ease',
+  filter: `drop-shadow(0 12px 24px ${alpha(color, 0.3)})`,
+  '&:hover': {
+    transform: 'scale(1.4) rotate(20deg)',
+    filter: `drop-shadow(0 16px 32px ${alpha(color, 0.4)})`,
+  },
+  ...(animated && {
+    animation: `${float} 4s ease-in-out infinite`,
+  }),
+}));
+
+const GradientText = styled(Typography)(({ theme, gradient = 'primary' }) => ({
+  background: gradient === 'primary' 
+    ? `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`
+    : gradient === 'success'
+    ? `linear-gradient(135deg, #4CAF50, #8BC34A)`
+    : gradient === 'error'
+    ? `linear-gradient(135deg, #F44336, #FF5722)`
+    : gradient === 'info'
+    ? `linear-gradient(135deg, #2196F3, #03DAC6)`
+    : gradient === 'warning'
+    ? `linear-gradient(135deg, #FF9800, #FFC107)`
+    : `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  fontWeight: 900,
 }));
 
 // Enhanced sample data with more creative professional profiles
@@ -1082,6 +1332,8 @@ const WorkerSearchPage = () => {
         <ProfessionalCard
           featured={professional.featured}
           premium={professional.premium}
+          topRated={professional.topRated}
+          verified={professional.verified}
           elevation={professional.featured ? 12 : 4}
         >
           {professional.featured && (

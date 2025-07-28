@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -118,6 +118,8 @@ import {
   Home as HomeIcon,
   Handyman as CarpenterIcon,
   Thermostat as HvacIcon,
+  Rocket as RocketIcon,
+  Diamond as DiamondIcon,
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -136,11 +138,14 @@ import {
   setFilters,
   selectJobsPagination,
 } from '../../jobs/services/jobSlice';
+import { useAuth } from '../../auth/hooks/useAuth';
 
-// Animations
+// Enhanced Animations with Worker-focused Themes
 const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-12px) rotate(1deg); }
+  50% { transform: translateY(-18px) rotate(0deg); }
+  75% { transform: translateY(-12px) rotate(-1deg); }
 `;
 
 const shimmer = keyframes`
@@ -149,9 +154,9 @@ const shimmer = keyframes`
 `;
 
 const pulse = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
 `;
 
 const slideInFromLeft = keyframes`
@@ -164,17 +169,45 @@ const slideInFromRight = keyframes`
   to { transform: translateX(0); opacity: 1; }
 `;
 
-// Styled Components
+const gradientShift = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
+const sparkle = keyframes`
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+`;
+
+const rotateGlow = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const heartbeat = keyframes`
+  0% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+`;
+
+// Professional Worker-focused Styled Components
 const HeroGradientSection = styled(Box)(({ theme }) => ({
   background: `linear-gradient(135deg, 
     ${theme.palette.primary.main} 0%, 
-    ${theme.palette.secondary.main} 50%, 
-    ${theme.palette.primary.dark} 100%)`,
+    ${theme.palette.secondary.main} 25%,
+    ${theme.palette.primary.dark} 50%,
+    ${theme.palette.secondary.dark} 75%,
+    ${theme.palette.primary.main} 100%)`,
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
   color: 'white',
-  padding: theme.spacing(10, 0),
+  padding: theme.spacing(12, 0),
   position: 'relative',
   overflow: 'hidden',
-  minHeight: '75vh',
+  minHeight: '90vh',
   display: 'flex',
   alignItems: 'center',
   '&::before': {
@@ -184,8 +217,10 @@ const HeroGradientSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.08\'%3E%3Cpath d=\'M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-    animation: `${float} 10s ease-in-out infinite`,
+    background: `radial-gradient(circle at 25% 75%, ${alpha('#4ECDC4', 0.3)} 0%, transparent 50%),
+                radial-gradient(circle at 75% 25%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 70%)`,
+    animation: `${float} 25s ease-in-out infinite`,
   },
   '&::after': {
     content: '""',
@@ -194,114 +229,48 @@ const HeroGradientSection = styled(Box)(({ theme }) => ({
     left: '-20%',
     width: '140%',
     height: '160%',
-    background: `radial-gradient(circle, ${alpha('#FFD700', 0.15)} 0%, transparent 70%)`,
-    animation: `${float} 15s ease-in-out infinite reverse`,
+    background: `conic-gradient(from 45deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.15)} 90deg, transparent 180deg, ${alpha('#4ECDC4', 0.15)} 270deg, transparent 360deg)`,
+    animation: `${rotateGlow} 40s linear infinite`,
+  },
+  [theme.breakpoints.down('md')]: {
+    minHeight: '75vh',
+    padding: theme.spacing(10, 0),
+  },
+  [theme.breakpoints.down('sm')]: {
+    minHeight: '65vh',
+    padding: theme.spacing(8, 0),
   },
 }));
 
-const GlassCard = styled(Card)(({ theme, variant = 'default' }) => ({
+const GlassCard = styled(Card)(({ theme, variant = 'default', featured = false, urgent = false }) => ({
   background: variant === 'glass' 
-    ? alpha(theme.palette.background.paper, 0.9)
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)}, ${alpha(theme.palette.background.paper, 0.88)})`
+    : featured 
+    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.08)})`
+    : urgent
+    ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.05)}, ${alpha(theme.palette.warning.main, 0.05)})`
     : theme.palette.background.paper,
-  backdropFilter: variant === 'glass' ? 'blur(20px)' : 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: 20,
+  backdropFilter: variant === 'glass' ? 'blur(25px)' : 'blur(15px)',
+  border: featured 
+    ? `3px solid ${theme.palette.secondary.main}` 
+    : urgent
+    ? `2px solid ${theme.palette.error.main}`
+    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: 28,
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 25px 50px ${alpha(theme.palette.secondary.main, 0.3)}`,
-    borderColor: theme.palette.secondary.main,
-  },
-}));
-
-const JobOpportunityCard = styled(GlassCard)(({ theme, featured, urgent, premium }) => ({
-  height: '100%',
-  position: 'relative',
-  background: featured 
-    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)}, ${alpha(theme.palette.primary.main, 0.1)})`
-    : theme.palette.background.paper,
-  border: featured 
-    ? `2px solid ${theme.palette.secondary.main}`
-    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  '&::before': urgent ? {
-    content: '"🔥 URGENT"',
-    position: 'absolute',
-    top: 15,
-    right: -35,
-    background: theme.palette.error.main,
-    color: 'white',
-    padding: '5px 45px',
-    fontSize: '0.7rem',
-    fontWeight: 700,
-    transform: 'rotate(45deg)',
-    letterSpacing: '1px',
-    zIndex: 2,
-  } : {},
-  '&::after': premium ? {
-    content: '"💎 PREMIUM"',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
-    color: 'white',
-    textAlign: 'center',
-    fontSize: '0.7rem',
-    fontWeight: 700,
-    padding: '4px 0',
-    letterSpacing: '1px',
-  } : {},
-}));
-
-const SearchInterface = styled(Paper)(({ theme }) => ({
-  position: 'sticky',
-  top: theme.spacing(2),
-  zIndex: 1000,
-  background: alpha(theme.palette.background.paper, 0.95),
-  backdropFilter: 'blur(20px)',
-  borderRadius: 25,
-  padding: theme.spacing(3),
-  border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-  boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`,
-}));
-
-const CategoryChip = styled(Chip)(({ theme, selected }) => ({
-  borderRadius: 25,
-  padding: theme.spacing(1, 2),
-  margin: theme.spacing(0.5),
-  fontWeight: 600,
-  fontSize: '0.9rem',
-  background: selected 
-    ? `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`
-    : alpha(theme.palette.background.paper, 0.8),
-  color: selected ? 'white' : theme.palette.text.primary,
-  border: `2px solid ${selected ? 'transparent' : alpha(theme.palette.secondary.main, 0.3)}`,
-  transition: 'all 0.3s ease-in-out',
-  cursor: 'pointer',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
-    borderColor: theme.palette.secondary.main,
-  },
-}));
-
-const AnimatedButton = styled(Button)(({ theme, variant = 'contained' }) => ({
-  borderRadius: 25,
-  padding: theme.spacing(1.5, 4),
-  fontWeight: 700,
-  fontSize: '1rem',
-  textTransform: 'none',
-  position: 'relative',
-  overflow: 'hidden',
-  transition: 'all 0.3s ease-in-out',
-  background: variant === 'contained' 
-    ? `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`
-    : 'transparent',
-  '&:hover': {
-    transform: 'translateY(-3px)',
-    boxShadow: `0 12px 25px ${alpha(theme.palette.secondary.main, 0.5)}`,
+    transform: 'translateY(-16px) scale(1.03)',
+    boxShadow: featured 
+      ? `0 35px 70px ${alpha(theme.palette.secondary.main, 0.4)}, 0 20px 40px ${alpha(theme.palette.primary.main, 0.2)}`
+      : urgent
+      ? `0 30px 60px ${alpha(theme.palette.error.main, 0.3)}`
+      : `0 28px 56px ${alpha(theme.palette.common.black, 0.15)}`,
+    borderColor: featured ? theme.palette.secondary.main : urgent ? theme.palette.error.main : theme.palette.secondary.main,
+    '&::before': {
+      opacity: 1,
+    },
   },
   '&::before': {
     content: '""',
@@ -310,155 +279,435 @@ const AnimatedButton = styled(Button)(({ theme, variant = 'contained' }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.3)}, transparent)`,
-    transition: 'left 0.5s',
+    background: featured
+      ? `linear-gradient(90deg, transparent, ${alpha(theme.palette.secondary.main, 0.15)}, transparent)`
+      : urgent
+      ? `linear-gradient(90deg, transparent, ${alpha(theme.palette.error.main, 0.15)}, transparent)`
+      : `linear-gradient(90deg, transparent, ${alpha(theme.palette.secondary.main, 0.1)}, transparent)`,
+    transition: 'left 0.7s, opacity 0.3s',
+    opacity: 0,
   },
   '&:hover::before': {
     left: '100%',
+    opacity: 1,
   },
 }));
 
-const StatCard = styled(motion.div)(({ theme }) => ({
-  background: alpha(theme.palette.background.paper, 0.9),
-  backdropFilter: 'blur(20px)',
-  borderRadius: 20,
-  padding: theme.spacing(3),
-  textAlign: 'center',
-  border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-  transition: 'all 0.3s ease-in-out',
-  cursor: 'pointer',
+const JobOpportunityCard = styled(GlassCard)(({ theme, featured, urgent, premium, trending, matchScore }) => ({
+  height: '100%',
+  position: 'relative',
+  background: featured 
+    ? `linear-gradient(135deg, 
+        ${alpha(theme.palette.secondary.main, 0.12)} 0%, 
+        ${alpha(theme.palette.primary.main, 0.12)} 50%,
+        ${alpha(theme.palette.secondary.main, 0.08)} 100%)`
+    : premium
+    ? `linear-gradient(135deg, 
+        ${alpha('#9C27B0', 0.08)} 0%, 
+        ${alpha('#673AB7', 0.08)} 100%)`
+    : theme.palette.background.paper,
+  border: featured 
+    ? `3px solid ${theme.palette.secondary.main}`
+    : premium
+    ? `2px solid #9C27B0`
+    : urgent
+    ? `2px solid ${theme.palette.error.main}`
+    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  '&::before': urgent ? {
+    content: '"🚨 URGENT HIRING"',
+    position: 'absolute',
+    top: 25,
+    right: -50,
+    background: `linear-gradient(135deg, ${theme.palette.error.main}, ${theme.palette.error.dark})`,
+    color: 'white',
+    padding: '10px 60px',
+    fontSize: '0.8rem',
+    fontWeight: 900,
+    transform: 'rotate(45deg)',
+    letterSpacing: '1.5px',
+    zIndex: 3,
+    boxShadow: `0 6px 18px ${alpha(theme.palette.error.main, 0.4)}`,
+    animation: `${heartbeat} 2s ease-in-out infinite`,
+  } : {},
+  '&::after': premium ? {
+    content: '"👑 PREMIUM OPPORTUNITY"',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    background: `linear-gradient(90deg, #9C27B0, #673AB7)`,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '0.85rem',
+    fontWeight: 900,
+    padding: '10px 0',
+    letterSpacing: '1.5px',
+    boxShadow: `0 6px 18px ${alpha('#9C27B0', 0.3)}`,
+    animation: `${sparkle} 3s ease-in-out infinite`,
+  } : featured ? {
+    content: '"⭐ FEATURED JOB"',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '0.8rem',
+    fontWeight: 900,
+    padding: '8px 0',
+    letterSpacing: '1.2px',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`,
+  } : {},
+  ...(matchScore >= 90 && {
+    '&::before': {
+      content: '"🎯 PERFECT MATCH"',
+      position: 'absolute',
+      top: 15,
+      left: 15,
+      background: `linear-gradient(135deg, #4CAF50, #8BC34A)`,
+      color: 'white',
+      padding: '6px 12px',
+      fontSize: '0.7rem',
+      fontWeight: 800,
+      borderRadius: '20px',
+      zIndex: 3,
+      animation: `${pulse} 2s ease-in-out infinite`,
+    },
+  }),
+}));
+
+const SearchInterface = styled(Paper)(({ theme }) => ({
+  position: 'sticky',
+  top: theme.spacing(2),
+  zIndex: 1200,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.95)})`,
+  backdropFilter: 'blur(35px)',
+  borderRadius: 32,
+  padding: theme.spacing(4),
+  border: `3px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+  boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.12)}, 0 12px 36px ${alpha(theme.palette.secondary.main, 0.1)}`,
+  margin: theme.spacing(3, 0),
+  transition: 'all 0.4s ease',
   '&:hover': {
-    transform: 'translateY(-5px) scale(1.02)',
-    boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.4)}`,
     borderColor: theme.palette.secondary.main,
+    boxShadow: `0 24px 72px ${alpha(theme.palette.common.black, 0.15)}, 0 16px 48px ${alpha(theme.palette.secondary.main, 0.2)}`,
+    transform: 'translateY(-4px)',
   },
 }));
 
-// Enhanced sample data with creative job opportunities
+const SkillChip = styled(Chip)(({ theme, level, isSelected }) => {
+  const getSkillColor = () => {
+    switch (level) {
+      case 'expert': return theme.palette.error.main;
+      case 'advanced': return theme.palette.warning.main;
+      case 'intermediate': return theme.palette.info.main;
+      default: return theme.palette.success.main;
+    }
+  };
+
+  const skillColor = getSkillColor();
+
+  return {
+    borderRadius: 24,
+    fontWeight: 700,
+    fontSize: '0.85rem',
+    minHeight: 36,
+    background: isSelected 
+      ? `linear-gradient(135deg, ${skillColor}, ${alpha(skillColor, 0.8)})`
+      : alpha(skillColor, 0.1),
+    color: isSelected ? 'white' : skillColor,
+    border: `2px solid ${alpha(skillColor, isSelected ? 0 : 0.3)}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+    '&:hover': {
+      background: isSelected 
+        ? `linear-gradient(135deg, ${alpha(skillColor, 0.9)}, ${skillColor})`
+        : alpha(skillColor, 0.2),
+      transform: 'translateY(-2px) scale(1.05)',
+      boxShadow: `0 8px 20px ${alpha(skillColor, 0.3)}`,
+    },
+    '&:active': {
+      transform: 'translateY(0) scale(0.98)',
+    },
+  };
+});
+
+const AnimatedButton = styled(Button)(({ theme, variant = 'contained', size = 'medium', glowing = false }) => ({
+  borderRadius: size === 'large' ? 32 : size === 'small' ? 20 : 28,
+  padding: size === 'large' 
+    ? theme.spacing(2.5, 6) 
+    : size === 'small' 
+    ? theme.spacing(1, 3) 
+    : theme.spacing(1.5, 4),
+  fontWeight: 900,
+  fontSize: size === 'large' ? '1.2rem' : size === 'small' ? '0.85rem' : '1rem',
+  textTransform: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  background: variant === 'contained' 
+    ? `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.dark} 100%)`
+    : 'transparent',
+  border: variant === 'outlined' 
+    ? `3px solid ${theme.palette.secondary.main}` 
+    : 'none',
+  color: variant === 'contained' ? 'white' : theme.palette.secondary.main,
+  boxShadow: variant === 'contained' 
+    ? `0 10px 30px ${alpha(theme.palette.secondary.main, 0.3)}` 
+    : 'none',
+  '&:hover': {
+    transform: 'translateY(-6px) scale(1.03)',
+    boxShadow: variant === 'contained' 
+      ? `0 20px 50px ${alpha(theme.palette.secondary.main, 0.4)}` 
+      : `0 12px 30px ${alpha(theme.palette.secondary.main, 0.2)}`,
+    background: variant === 'outlined' 
+      ? alpha(theme.palette.secondary.main, 0.1) 
+      : `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.secondary.main} 100%)`,
+    '&::before': {
+      left: '100%',
+    },
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.5)}, transparent)`,
+    transition: 'left 0.7s',
+  },
+  '&:active': {
+    transform: 'translateY(-3px) scale(0.98)',
+  },
+  ...(glowing && {
+    animation: `${pulse} 2s ease-in-out infinite`,
+  }),
+}));
+
+const StatCard = styled(motion.div)(({ theme, gradient = 'primary' }) => ({
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)}, ${alpha(theme.palette.background.paper, 0.88)})`,
+  backdropFilter: 'blur(25px)',
+  borderRadius: 28,
+  padding: theme.spacing(4),
+  textAlign: 'center',
+  border: `3px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  cursor: 'pointer',
+  position: 'relative',
+  overflow: 'hidden',
+  minHeight: 200,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  '&:hover': {
+    transform: 'translateY(-12px) scale(1.08)',
+    boxShadow: `0 25px 50px ${alpha(theme.palette.secondary.main, 0.3)}`,
+    borderColor: theme.palette.secondary.main,
+    '&::after': {
+      opacity: 1,
+    },
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '120px',
+    height: '120px',
+    background: gradient === 'primary' 
+      ? `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.2)} 0%, transparent 70%)`
+      : gradient === 'success'
+      ? `radial-gradient(circle, ${alpha('#4CAF50', 0.2)} 0%, transparent 70%)`
+      : `radial-gradient(circle, ${alpha('#FF5722', 0.2)} 0%, transparent 70%)`,
+    transform: 'translate(-50%, -50%)',
+    opacity: 0,
+    transition: 'opacity 0.4s ease',
+  },
+}));
+
+const InteractiveIcon = styled(Box)(({ theme, color = theme.palette.secondary.main, size = 'large' }) => ({
+  color: color,
+  fontSize: size === 'large' ? '4rem' : size === 'medium' ? '3rem' : '2rem',
+  marginBottom: theme.spacing(2),
+  transition: 'all 0.4s ease',
+  filter: `drop-shadow(0 8px 16px ${alpha(color, 0.3)})`,
+  '&:hover': {
+    transform: 'scale(1.3) rotate(15deg)',
+    filter: `drop-shadow(0 12px 24px ${alpha(color, 0.4)})`,
+  },
+}));
+
+const GradientText = styled(Typography)(({ theme, gradient = 'primary' }) => ({
+  background: gradient === 'primary' 
+    ? `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`
+    : gradient === 'success'
+    ? `linear-gradient(135deg, #4CAF50, #8BC34A)`
+    : gradient === 'error'
+    ? `linear-gradient(135deg, #F44336, #FF5722)`
+    : gradient === 'info'
+    ? `linear-gradient(135deg, #2196F3, #03DAC6)`
+    : `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  fontWeight: 900,
+}));
+
+// Enhanced sample data with more creative and high-value job opportunities
 const creativeJobOpportunities = [
   {
-    id: 'job-1',
-    title: '🏠 Smart Home Electrical Installation - Tesla Powerwall Project',
-    description: 'Join our elite team installing cutting-edge Tesla Powerwall systems and smart home automation. Work with the latest technology while helping homeowners achieve energy independence.',
+    id: 'dream-job-1',
+    title: '🚀 SpaceX Starship Manufacturing Engineer',
+    description: 'Join the mission to Mars! Work on cutting-edge spacecraft manufacturing using the most advanced materials and techniques. Be part of humanity\'s greatest adventure while building the vehicles that will take us to other planets.',
     company: {
-      name: 'Tesla Energy Solutions',
-      logo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400',
-      rating: 4.9,
+      name: 'SpaceX',
+      logo: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400',
+      rating: 4.98,
       verified: true,
       size: 'Large Corporation',
+      employees: '12,000+',
+      industry: 'Aerospace & Defense',
     },
-    budget: { min: 85, max: 125, currency: 'USD', type: 'hourly' },
-    location: 'San Francisco Bay Area, CA',
-    remote: false,
-    jobType: 'contract',
-    experience: 'senior',
-    skills: ['Electrical Installation', 'Smart Home Tech', 'Solar Systems', 'Tesla Certified'],
-    urgency: 'high',
-    postedDate: '2024-01-20',
-    applicants: 12,
-    views: 450,
-    featured: true,
-    premium: true,
-    estimatedDuration: '3-6 months',
-    benefits: ['Health Insurance', 'Tool Allowance', 'Training Provided', 'Performance Bonus'],
-    requirements: ['Tesla Certification Preferred', '5+ years electrical experience', 'Valid driver\'s license'],
-    tags: ['High-Tech', 'Clean Energy', 'Career Growth'],
-    workSchedule: 'Mon-Fri, 7AM-4PM',
-    responseTime: 'Responds within 24 hours',
-    matchScore: 95,
-  },
-  {
-    id: 'job-2',
-    title: '🔧 Master Plumber - Luxury Resort Construction',
-    description: 'Lead plumbing installation for a prestigious 5-star resort development. Work with premium materials and cutting-edge water systems while building your portfolio with luxury projects.',
-    company: {
-      name: 'Luxury Resorts International',
-      logo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400',
-      rating: 4.8,
-      verified: true,
-      size: 'Mid-size Company',
-    },
-    budget: { min: 75, max: 95, currency: 'USD', type: 'hourly' },
-    location: 'Miami, FL',
+    budget: { min: 120, max: 180, currency: 'USD', type: 'hourly' },
+    annualSalary: { min: 150000, max: 220000 },
+    location: 'Hawthorne, CA',
     remote: false,
     jobType: 'full-time',
     experience: 'expert',
-    skills: ['Commercial Plumbing', 'Luxury Installations', 'Project Management', 'Team Leadership'],
-    urgency: 'medium',
-    postedDate: '2024-01-19',
+    skills: ['Aerospace Manufacturing', 'Precision Engineering', 'Welding', 'Quality Control', 'CAD Design'],
+    urgency: 'high',
+    postedDate: '2024-01-23',
     applicants: 8,
-    views: 320,
-    featured: false,
+    views: 1240,
+    featured: true,
     premium: true,
-    estimatedDuration: '12-18 months',
-    benefits: ['Full Benefits Package', 'Resort Discounts', 'Career Advancement', 'Relocation Assistance'],
-    requirements: ['Master Plumber License', '10+ years experience', 'Luxury project portfolio'],
-    tags: ['Luxury', 'Full-Time', 'Benefits'],
-    workSchedule: 'Mon-Fri, Flexible hours',
+    trending: true,
+    estimatedDuration: 'Career opportunity',
+    benefits: ['Stock Options', 'Mars Mission Access', 'Cutting-edge Training', 'Health Insurance', 'Relocation Package'],
+    requirements: ['Aerospace experience', 'Security clearance eligible', 'Advanced manufacturing skills'],
+    tags: ['Space Technology', 'Mars Mission', 'Innovation', 'Career Defining'],
+    workSchedule: 'Full-time with mission flexibility',
     responseTime: 'Responds within 2 hours',
-    matchScore: 88,
+    matchScore: 98,
+    careerGrowth: 'Exceptional - Lead future missions',
+    impactLevel: 'Global - Shape human spaceflight',
+    learningOpportunities: ['Rocket Manufacturing', 'Advanced Materials', 'Grid Storage'],
   },
   {
-    id: 'job-3',
-    title: '🏗️ Construction Project Manager - Sustainable Building',
-    description: 'Lead LEED-certified sustainable construction projects. Make a positive environmental impact while advancing your career with green building technologies.',
+    id: 'dream-job-2',
+    title: '⚡ Tesla Gigafactory Battery Technology Specialist',
+    description: 'Power the future of sustainable energy! Work with revolutionary battery technology that\'s changing the world. Install and maintain the most advanced energy storage systems while contributing to a carbon-neutral future.',
     company: {
-      name: 'EcoGreen Construction',
-      logo: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=400',
-      rating: 4.7,
+      name: 'Tesla Energy',
+      logo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400',
+      rating: 4.94,
       verified: true,
-      size: 'Growing Startup',
+      size: 'Large Corporation',
+      employees: '100,000+',
+      industry: 'Clean Energy & Automotive',
     },
-    budget: { min: 95, max: 130, currency: 'USD', type: 'hourly' },
+    budget: { min: 85, max: 125, currency: 'USD', type: 'hourly' },
+    annualSalary: { min: 110000, max: 160000 },
     location: 'Austin, TX',
-    remote: true,
-    jobType: 'contract',
+    remote: false,
+    jobType: 'full-time',
     experience: 'senior',
-    skills: ['LEED Certification', 'Project Management', 'Sustainable Building', 'Team Leadership'],
-    urgency: 'low',
-    postedDate: '2024-01-18',
+    skills: ['Battery Technology', 'Electrical Systems', 'Renewable Energy', 'Industrial Automation', 'Safety Protocols'],
+    urgency: 'medium',
+    postedDate: '2024-01-22',
     applicants: 15,
-    views: 680,
+    views: 2180,
     featured: true,
     premium: false,
-    estimatedDuration: '6-9 months',
-    benefits: ['Remote Work', 'Professional Development', 'Stock Options', 'Green Incentives'],
-    requirements: ['LEED AP certification', 'PMP preferred', 'Sustainability experience'],
-    tags: ['Sustainable', 'Remote', 'Innovation'],
-    workSchedule: 'Flexible schedule',
+    trending: true,
+    estimatedDuration: 'Long-term career',
+    benefits: ['Tesla Stock', 'Free Supercharging', 'Employee Vehicle Discount', 'Comprehensive Health'],
+    requirements: ['Electrical certification', 'Clean energy experience', 'Safety training'],
+    tags: ['Clean Energy', 'Innovation', 'Sustainability', 'Technology'],
+    workSchedule: 'Standard with overtime opportunities',
     responseTime: 'Responds within 4 hours',
-    matchScore: 92,
+    matchScore: 94,
+    careerGrowth: 'High - Lead energy revolution',
+    impactLevel: 'Global - Combat climate change',
+    learningOpportunities: ['Battery Tech', 'Grid Storage', 'Manufacturing'],
   },
   {
-    id: 'job-4',
-    title: '🎨 Interior Design Specialist - High-End Residential',
-    description: 'Create stunning interior spaces for luxury homes. Work with unlimited budgets and premium materials while building your design portfolio.',
+    id: 'dream-job-3',
+    title: '🏗️ Apple Park Smart Building Systems Engineer',
+    description: 'Design the future of workspaces! Work on the most advanced smart building systems in the world at Apple Park. Integrate cutting-edge IoT, AI, and sustainability technologies in an architectural masterpiece.',
     company: {
-      name: 'Elite Design Studios',
-      logo: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400',
-      rating: 4.9,
+      name: 'Apple Facilities',
+      logo: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400',
+      rating: 4.92,
       verified: true,
-      size: 'Boutique Agency',
+      size: 'Large Corporation',
+      employees: '150,000+',
+      industry: 'Technology',
     },
-    budget: { min: 65, max: 85, currency: 'USD', type: 'hourly' },
-    location: 'Los Angeles, CA',
+    budget: { min: 95, max: 140, currency: 'USD', type: 'hourly' },
+    annualSalary: { min: 125000, max: 180000 },
+    location: 'Cupertino, CA',
     remote: false,
-    jobType: 'freelance',
-    experience: 'mid',
-    skills: ['Interior Design', 'Space Planning', '3D Visualization', 'Client Relations'],
-    urgency: 'medium',
-    postedDate: '2024-01-17',
+    jobType: 'contract',
+    experience: 'senior',
+    skills: ['Smart Building Tech', 'IoT Systems', 'HVAC Advanced', 'Building Automation', 'Sustainability'],
+    urgency: 'low',
+    postedDate: '2024-01-21',
     applicants: 22,
-    views: 890,
+    views: 3450,
     featured: false,
-    premium: false,
-    estimatedDuration: '4-6 months',
-    benefits: ['Portfolio Building', 'Networking', 'Creative Freedom', 'High-End Clients'],
-    requirements: ['Interior Design degree', 'Portfolio required', '3+ years experience'],
-    tags: ['Creative', 'Portfolio Building', 'Luxury'],
-    workSchedule: 'Project-based',
+    premium: true,
+    trending: false,
+    estimatedDuration: '12-18 months',
+    benefits: ['Apple Benefits', 'Campus Access', 'Tech Training', 'Innovation Environment'],
+    requirements: ['Smart building experience', 'Apple certification preferred', 'Portfolio required'],
+    tags: ['Smart Buildings', 'Innovation', 'Technology', 'Sustainability'],
+    workSchedule: 'Flexible with core hours',
     responseTime: 'Responds within 1 hour',
-    matchScore: 85,
+    matchScore: 91,
+    careerGrowth: 'High - Pioneer smart buildings',
+    impactLevel: 'Industry - Set new standards',
+    learningOpportunities: ['AI Integration', 'Smart Systems', 'Green Tech'],
+  },
+  {
+    id: 'dream-job-4',
+    title: '🌊 Ocean Cleanup Project Marine Engineer',
+    description: 'Save our oceans! Join the revolutionary Ocean Cleanup project building systems to remove plastic from our seas. Work on floating barriers, collection systems, and marine robotics that are healing our planet.',
+    company: {
+      name: 'The Ocean Cleanup',
+      logo: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400',
+      rating: 4.89,
+      verified: true,
+      size: 'Non-profit',
+      employees: '100+',
+      industry: 'Environmental Technology',
+    },
+    budget: { min: 75, max: 110, currency: 'USD', type: 'hourly' },
+    annualSalary: { min: 95000, max: 140000 },
+    location: 'Rotterdam, Netherlands',
+    remote: true,
+    jobType: 'contract',
+    experience: 'mid',
+    skills: ['Marine Engineering', 'Environmental Tech', 'Robotics', 'Materials Science', 'Project Management'],
+    urgency: 'medium',
+    postedDate: '2024-01-20',
+    applicants: 31,
+    views: 4200,
+    featured: true,
+    premium: false,
+    trending: true,
+    estimatedDuration: '2-3 years',
+    benefits: ['Mission Impact', 'International Team', 'Travel Opportunities', 'Research Access'],
+    requirements: ['Marine engineering background', 'Environmental passion', 'International experience'],
+    tags: ['Environmental', 'Ocean Conservation', 'Innovation', 'Global Impact'],
+    workSchedule: 'Flexible with field work',
+    responseTime: 'Responds within 6 hours',
+    matchScore: 87,
+    careerGrowth: 'Medium - Environmental leadership',
+    impactLevel: 'Global - Save marine ecosystems',
+    learningOpportunities: ['Marine Tech', 'Environmental Systems', 'Global Collaboration'],
   },
 ];
 
@@ -466,83 +715,140 @@ const jobCategories = [
   { 
     name: 'Electrical', 
     icon: <ElectricalIcon />, 
-    count: 8450, 
+    count: 18450, 
     color: '#FFD700', 
     trending: true,
-    description: 'Smart systems & power solutions'
+    description: 'Smart systems, renewable energy & automation',
+    avgSalary: '$85,000',
+    growth: '+28%',
+    demandLevel: 'Explosive',
+    topSkills: ['Smart Home Tech', 'Solar Systems', 'Industrial Automation'],
   },
   { 
     name: 'Plumbing', 
     icon: <PlumbingIcon />, 
-    count: 6240, 
+    count: 14240, 
     color: '#4A90E2', 
     hot: true,
-    description: 'Water systems & emergency repairs'
+    description: 'Water systems, green solutions & emergency response',
+    avgSalary: '$78,000',
+    growth: '+22%',
+    demandLevel: 'Very High',
+    topSkills: ['Green Plumbing', 'Emergency Repair', 'Water Treatment'],
   },
   { 
     name: 'Construction', 
     icon: <ConstructionIcon />, 
-    count: 12890, 
+    count: 32890, 
     color: '#E74C3C',
-    description: 'Building & renovation projects'
+    description: 'Smart buildings, infrastructure & sustainable construction',
+    avgSalary: '$82,000',
+    growth: '+18%',
+    demandLevel: 'Very High',
+    topSkills: ['Smart Buildings', 'Sustainable Construction', 'Project Management'],
   },
   { 
     name: 'HVAC', 
     icon: <SpeedIcon />, 
-    count: 4560, 
+    count: 11560, 
     color: '#2ECC71',
-    description: 'Climate control systems'
-  },
-  { 
-    name: 'Design', 
-    icon: <PsychologyIcon />, 
-    count: 5670, 
-    color: '#9B59B6', 
-    premium: true,
-    description: 'Interior & architectural design'
+    description: 'Climate control, energy efficiency & smart systems',
+    avgSalary: '$80,000',
+    growth: '+25%',
+    demandLevel: 'High',
+    topSkills: ['Smart Climate', 'Energy Efficiency', 'System Integration'],
   },
   { 
     name: 'Smart Tech', 
     icon: <HomeIcon />, 
-    count: 2340, 
-    color: '#F39C12', 
+    count: 8780, 
+    color: '#9B59B6', 
     newest: true,
-    description: 'IoT & automation systems'
+    description: 'IoT integration, automation & AI systems',
+    avgSalary: '$95,000',
+    growth: '+52%',
+    demandLevel: 'Explosive',
+    topSkills: ['IoT Systems', 'AI Integration', 'Home Automation'],
+  },
+  { 
+    name: 'Design', 
+    icon: <PsychologyIcon />, 
+    count: 12340, 
+    color: '#E67E22',
+    description: 'Interior design, space planning & creative solutions',
+    avgSalary: '$72,000',
+    growth: '+19%',
+    demandLevel: 'High',
+    topSkills: ['Space Planning', '3D Design', 'Sustainable Design'],
   },
 ];
 
 const workerStats = [
   { 
-    icon: <WorkIcon sx={{ fontSize: 48 }} />, 
-    value: '45,000+', 
-    label: 'Active Opportunities',
+    icon: <WorkIcon sx={{ fontSize: 56 }} />, 
+    value: '125,000+', 
+    label: 'Dream Opportunities',
     subtitle: 'Updated every minute',
     color: '#FFD700',
-    trend: '+18% this week'
+    trend: '+23% this month',
+    description: 'From entry-level to industry-leading positions',
+    animation: pulse,
+    gradient: 'primary',
   },
   { 
-    icon: <AttachMoneyIcon sx={{ fontSize: 48 }} />, 
-    value: '$125K', 
-    label: 'Average Annual Salary',
+    icon: <AttachMoneyIcon sx={{ fontSize: 56 }} />, 
+    value: '$145K', 
+    label: 'Average Salary',
     subtitle: 'For skilled professionals',
     color: '#2ECC71',
-    trend: '+12% year over year'
+    trend: '+18% year over year',
+    description: 'Industry-leading compensation packages',
+    animation: float,
+    gradient: 'success',
   },
   { 
-    icon: <TrendingUpIcon sx={{ fontSize: 48 }} />, 
-    value: '2.3x', 
-    label: 'Salary Growth Rate',
-    subtitle: 'Outpacing inflation',
+    icon: <TrendingUpIcon sx={{ fontSize: 56 }} />, 
+    value: '3.2x', 
+    label: 'Career Growth Rate',
+    subtitle: 'Faster than other industries',
     color: '#3498DB',
-    trend: 'Industry leading'
+    trend: 'Accelerating rapidly',
+    description: 'Unmatched professional development',
+    animation: shimmer,
+    gradient: 'info',
   },
   { 
-    icon: <StarIcon sx={{ fontSize: 48 }} />, 
-    value: '4.8/5', 
+    icon: <StarIcon sx={{ fontSize: 56 }} />, 
+    value: '4.92/5', 
     label: 'Worker Satisfaction',
-    subtitle: 'Job quality rating',
+    subtitle: 'Job fulfillment rating',
     color: '#E74C3C',
-    trend: '+0.3 this quarter'
+    trend: '+0.08 this quarter',
+    description: 'Love what you do, every day',
+    animation: sparkle,
+    gradient: 'error',
+  },
+  { 
+    icon: <RocketIcon sx={{ fontSize: 56 }} />, 
+    value: '24hrs', 
+    label: 'Average Hire Time',
+    subtitle: 'From application to offer',
+    color: '#9C27B0',
+    trend: '67% faster',
+    description: 'Lightning-fast job matching',
+    animation: rotateGlow,
+    gradient: 'primary',
+  },
+  { 
+    icon: <DiamondIcon sx={{ fontSize: 56 }} />, 
+    value: '89%', 
+    label: 'Premium Job Rate',
+    subtitle: 'High-quality opportunities',
+    color: '#FF5722',
+    trend: 'Industry leading',
+    description: 'Exceptional career opportunities',
+    animation: heartbeat,
+    gradient: 'error',
   },
 ];
 
@@ -550,19 +856,22 @@ const JobSearchPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user, isAuthenticated, isInitialized } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const heroRef = useRef(null);
+  const searchRef = useRef(null);
   
-  // Redux state
-  const jobs = useSelector(selectJobs);
-  const loading = useSelector(selectJobsLoading);
+  // Redux state with enhanced safety
+  const jobs = useSelector(selectJobs) || [];
+  const loading = useSelector(selectJobsLoading) || false;
   const error = useSelector(selectJobsError);
-  const filters = useSelector(selectJobFilters);
-  const { currentPage, totalPages } = useSelector(selectJobsPagination);
+  const filters = useSelector(selectJobFilters) || {};
+  const { currentPage = 1, totalPages = 0 } = useSelector(selectJobsPagination) || {};
 
-  // Local state
-  const [viewMode, setViewMode] = useState('grid');
+  // Enhanced local state for better UX
+  const [viewMode, setViewMode] = useState(isMobile ? 'list' : 'grid');
   const [userPosition, setUserPosition] = useState(null);
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -574,74 +883,260 @@ const JobSearchPage = () => {
   const [salaryRange, setSalaryRange] = useState([0, 200]);
   const [onlyRemote, setOnlyRemote] = useState(false);
   const [onlyUrgent, setOnlyUrgent] = useState(false);
+  const [onlyFeatured, setOnlyFeatured] = useState(false);
   const [experienceLevel, setExperienceLevel] = useState('');
   const [jobType, setJobType] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [matchingJobs, setMatchingJobs] = useState([]);
+  const [personalizedRecommendations, setPersonalizedRecommendations] = useState([]);
+  const [careerInsights, setCareerInsights] = useState(null);
+  const [skillGaps, setSkillGaps] = useState([]);
+  const [animateCards, setAnimateCards] = useState(false);
 
-  // Get user location
+  // Skill options for autocomplete
+  const skillOptions = [
+    'Electrical Wiring', 'Smart Home Integration', 'Solar Installation', 'Industrial Automation',
+    'Plumbing Repair', 'Water Systems', 'Emergency Response', 'Green Plumbing',
+    'Project Management', 'Construction', 'Renovation', 'Sustainable Building',
+    'HVAC Systems', 'Climate Control', 'Energy Efficiency', 'Smart Climate',
+    'Interior Design', 'Custom Furniture', 'Space Planning', '3D Design',
+    'Carpentry', 'Woodworking', 'Cabinet Making', 'Custom Millwork',
+    'IoT Systems', 'Home Automation', 'AI Integration', 'Smart Buildings',
+    'Welding', 'Fabrication', 'Metal Working', 'Precision Manufacturing',
+  ];
+
+  // Get user location for personalized job matching
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        setUserPosition([pos.coords.latitude, pos.coords.longitude]);
-      });
+    if (navigator.geolocation && isAuthenticated()) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserPosition([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (error) => {
+          console.log('Location access denied:', error);
+        }
+      );
     }
-  }, []);
+  }, [isAuthenticated]);
 
-  // Fetch jobs
+  // Responsive view mode adjustment
   useEffect(() => {
-    if (!showSampleData) {
-      const searchParams = {
-        ...filters,
-        page: currentPage,
-        search: searchQuery,
-        category: selectedCategory,
-        sortBy,
-        remote: onlyRemote,
-        urgent: onlyUrgent,
-        experience: experienceLevel,
-        jobType,
-        minSalary: salaryRange[0],
-        maxSalary: salaryRange[1],
-      };
-      dispatch(fetchJobs(searchParams));
+    if (isMobile && viewMode === 'grid') {
+      setViewMode('list');
     }
-  }, [dispatch, filters, currentPage, searchQuery, selectedCategory, sortBy, onlyRemote, onlyUrgent, experienceLevel, jobType, salaryRange, showSampleData]);
+  }, [isMobile, viewMode]);
 
-  const handleSearch = () => {
+  // Enhanced search with AI-powered matching
+  const handleSearch = useCallback(async () => {
     setShowSampleData(false);
-    const newFilters = {
+    setAnimateCards(true);
+    
+    const searchParams = {
       search: searchQuery.trim(),
       category: selectedCategory,
       sortBy,
       remote: onlyRemote,
       urgent: onlyUrgent,
+      featured: onlyFeatured,
       experience: experienceLevel,
       jobType,
       minSalary: salaryRange[0],
       maxSalary: salaryRange[1],
+      skills: selectedSkills,
+      location: userPosition,
       page: 1,
     };
-    dispatch(setFilters(newFilters));
-  };
 
-  const clearFilters = () => {
+    try {
+      const newFilters = { ...filters, ...searchParams };
+      dispatch(setFilters(newFilters));
+      dispatch(fetchJobs(newFilters));
+      
+      // Analytics tracking
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'job_search', {
+          search_term: searchQuery,
+          category: selectedCategory,
+          skills_count: selectedSkills.length,
+          filters_applied: Object.keys(searchParams).filter(key => searchParams[key]).length,
+        });
+      }
+      
+      // Personalized recommendations based on user profile
+      if (isAuthenticated() && user) {
+        generatePersonalizedRecommendations();
+        analyzeCareerGrowth();
+        identifySkillGaps();
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+    }
+  }, [searchQuery, selectedCategory, sortBy, onlyRemote, onlyUrgent, onlyFeatured, experienceLevel, jobType, salaryRange, selectedSkills, userPosition, filters, dispatch, isAuthenticated, user]);
+
+  // Generate personalized job recommendations
+  const generatePersonalizedRecommendations = useCallback(() => {
+    if (!user) return;
+    
+    // Mock AI-powered recommendations based on user profile
+    const userSkills = user.skills || [];
+    const userExperience = user.experience || 'mid';
+    const userLocation = user.location || 'Remote';
+    
+    const recommendations = creativeJobOpportunities.filter(job => {
+      const skillMatch = job.skills.some(skill => 
+        userSkills.some(userSkill => 
+          skill.toLowerCase().includes(userSkill.toLowerCase()) ||
+          userSkill.toLowerCase().includes(skill.toLowerCase())
+        )
+      );
+      const experienceMatch = job.experience === userExperience || 
+        (userExperience === 'expert' && ['senior', 'mid'].includes(job.experience)) ||
+        (userExperience === 'senior' && job.experience === 'mid');
+      
+      return skillMatch && experienceMatch;
+    });
+    
+    setPersonalizedRecommendations(recommendations);
+  }, [user]);
+
+  // Analyze career growth opportunities
+  const analyzeCareerGrowth = useCallback(() => {
+    if (!user) return;
+    
+    const insights = {
+      currentLevel: user.experience || 'mid',
+      nextLevel: user.experience === 'entry' ? 'mid' : user.experience === 'mid' ? 'senior' : 'expert',
+      avgSalaryIncrease: user.experience === 'entry' ? '35%' : user.experience === 'mid' ? '28%' : '22%',
+      timeToPromotion: user.experience === 'entry' ? '18 months' : user.experience === 'mid' ? '2-3 years' : '3-5 years',
+      recommendedSkills: ['Smart Home Tech', 'Project Management', 'Advanced Certification'],
+      marketDemand: 'Very High',
+      growthPotential: user.experience === 'entry' ? 'Excellent' : user.experience === 'mid' ? 'Strong' : 'Moderate',
+    };
+    
+    setCareerInsights(insights);
+  }, [user]);
+
+  // Identify skill gaps for career advancement
+  const identifySkillGaps = useCallback(() => {
+    if (!user) return;
+    
+    const userSkills = user.skills || [];
+    const demandedSkills = ['Smart Home Integration', 'IoT Systems', 'Project Management', 'Renewable Energy', 'AI Integration'];
+    
+    const gaps = demandedSkills.filter(skill => 
+      !userSkills.some(userSkill => 
+        userSkill.toLowerCase().includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(userSkill.toLowerCase())
+      )
+    );
+    
+    setSkillGaps(gaps);
+  }, [user]);
+
+  const clearFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedCategory('');
     setSortBy('relevance');
     setOnlyRemote(false);
     setOnlyUrgent(false);
+    setOnlyFeatured(false);
     setExperienceLevel('');
     setJobType('');
     setSalaryRange([0, 200]);
+    setSelectedSkills([]);
     setShowSampleData(true);
-  };
+    dispatch(setFilters({}));
+  }, [dispatch]);
 
-  const toggleSaveJob = (jobId) => {
+  const toggleSaveJob = useCallback((jobId) => {
+    if (!isAuthenticated()) {
+      navigate('/login', { state: { from: `/jobs/${jobId}` } });
+      return;
+    }
+    
     setSavedJobs(prev => 
       prev.includes(jobId) 
         ? prev.filter(id => id !== jobId)
         : [...prev, jobId]
     );
-  };
+    
+    // TODO: Sync with backend API
+  }, [isAuthenticated, navigate]);
+
+  // Enhanced keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault();
+            searchRef.current?.querySelector('input')?.focus();
+            break;
+          case 'f':
+            e.preventDefault();
+            setFilterDialog(true);
+            break;
+          case 's':
+            e.preventDefault();
+            handleSearch();
+            break;
+          default:
+            break;
+        }
+      }
+      if (e.key === 'Escape') {
+        setFilterDialog(false);
+        setShowAdvancedFilters(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [handleSearch]);
+
+  // Auto-save user preferences
+  useEffect(() => {
+    if (isAuthenticated()) {
+      const preferences = {
+        viewMode,
+        sortBy,
+        salaryRange,
+        selectedSkills,
+        experienceLevel,
+        jobType,
+      };
+      localStorage.setItem('workerJobSearchPreferences', JSON.stringify(preferences));
+    }
+  }, [viewMode, sortBy, salaryRange, selectedSkills, experienceLevel, jobType, isAuthenticated]);
+
+  // Load saved preferences
+  useEffect(() => {
+    if (isAuthenticated()) {
+      try {
+        const saved = localStorage.getItem('workerJobSearchPreferences');
+        if (saved) {
+          const preferences = JSON.parse(saved);
+          setViewMode(preferences.viewMode || (isMobile ? 'list' : 'grid'));
+          setSortBy(preferences.sortBy || 'relevance');
+          setSalaryRange(preferences.salaryRange || [0, 200]);
+          setSelectedSkills(preferences.selectedSkills || []);
+          setExperienceLevel(preferences.experienceLevel || '');
+          setJobType(preferences.jobType || '');
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      }
+    }
+  }, [isAuthenticated, isMobile]);
+
+  // Initialize personalized features for authenticated users
+  useEffect(() => {
+    if (isAuthenticated() && user && isInitialized) {
+      generatePersonalizedRecommendations();
+      analyzeCareerGrowth();
+      identifySkillGaps();
+    }
+  }, [isAuthenticated, user, isInitialized, generatePersonalizedRecommendations, analyzeCareerGrowth, identifySkillGaps]);
 
   const renderHeroSection = () => (
     <HeroGradientSection ref={heroRef}>
@@ -1046,6 +1541,8 @@ const JobSearchPage = () => {
           featured={job.featured}
           urgent={job.urgency === 'high'}
           premium={job.premium}
+          trending={job.matchScore >= 90}
+          matchScore={job.matchScore}
           elevation={job.featured ? 12 : 4}
         >
           <CardContent sx={{ 

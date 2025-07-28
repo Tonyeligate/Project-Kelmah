@@ -1,15 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Kelmah Global Styles - Unified Theme System */
 
-/* Base styles */
-* {
+/* CSS Reset and Base Styles */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -17,9 +22,9 @@ body {
   padding: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  background-color: #1a1a1a;
-  color: #f5f5f5;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+  line-height: 1.6;
+  /* Theme colors will be applied via Material-UI */
 }
 
 #root {
@@ -28,42 +33,42 @@ body {
   flex-direction: column;
 }
 
-/* Typography */
+/* Typography Reset */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-weight: 600;
   line-height: 1.2;
+  font-family: 'Montserrat', sans-serif;
 }
 
 p {
   margin: 0 0 1rem 0;
 }
 
-/* Links */
-a {
-  color: #FFD700;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* Buttons */
+/* Remove default button styles to let Material-UI handle them */
 button {
-  cursor: pointer;
   border: none;
   outline: none;
+  background: none;
   font-family: inherit;
+  cursor: pointer;
 }
 
 /* Form elements */
 input, textarea, select {
   font-family: inherit;
   font-size: inherit;
+  border: none;
+  outline: none;
 }
 
-/* Layout utilities */
+/* Links - Let Material-UI components handle their own styling */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Layout utilities - Minimal, let Material-UI handle most layout */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -91,59 +96,74 @@ input, textarea, select {
   justify-content: space-between;
 }
 
-/* Spacing utilities */
-.mt-4 {
-  margin-top: 1rem;
-}
-
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.p-4 {
-  padding: 1rem;
-}
-
-/* Dark mode specific styles */
-html.dark {
-  background-color: #0f0f0f;
-  color: #e5e5e5;
-}
-
-html.dark body {
-  background-color: #0f0f0f;
-  color: #e5e5e5;
-}
-
-/* Custom scrollbar */
+/* Custom scrollbar - Theme aware */
 ::-webkit-scrollbar {
   width: 8px;
   background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #FFD700;
   border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #D4AF37;
+  background: #FFE55C;
 }
 
-/* Material-UI overrides */
-.MuiPaper-root {
-  background-color: rgba(42, 42, 42, 0.9) !important;
+/* Dark mode scrollbar */
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #FFD700;
 }
 
-.MuiAppBar-root {
-  background-color: #1a1a1a !important;
+html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #FFE55C;
 }
 
-/* Loading animation */
+/* Light mode scrollbar */
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #000000;
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: #1a1a1a;
+}
+
+/* Loading animations and transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -153,42 +173,89 @@ html.dark body {
   }
 }
 
-.animate-spin {
+/* Utility classes for animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+.spin {
   animation: spin 1s linear infinite;
 }
 
-/* Fade animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+/* Focus management for accessibility */
+.focus-visible {
+  outline: 2px solid #FFD700;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  ::-webkit-scrollbar-thumb {
+    background: #FFD700 !important;
   }
-  to {
-    opacity: 1;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-.fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+/* Print styles */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  
+  img {
+    max-width: 100% !important;
+  }
+  
+  @page {
+    margin: 0.5in;
+  }
 }
 
-/* Card styles */
-.kelmah-card {
-  background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 42, 42, 0.8) 100%);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+/* Remove default Material-UI overrides that conflict with our theme */
+.MuiCssBaseline-root {
+  /* Let our theme handle all styling */
 }
 
-/* Gold accent utilities */
-.text-kelmah-gold {
-  color: #FFD700;
+/* Ensure consistent font loading */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+/* Custom selection colors */
+::selection {
+  background: #FFD700;
+  color: #000000;
 }
 
-.bg-kelmah-gold {
-  background-color: #FFD700;
-}
-
-.border-kelmah-gold {
-  border-color: #FFD700;
+::-moz-selection {
+  background: #FFD700;
+  color: #000000;
 }
