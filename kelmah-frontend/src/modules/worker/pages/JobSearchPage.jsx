@@ -910,7 +910,7 @@ const JobSearchPage = () => {
     if (navigator.geolocation && isAuthenticated()) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setUserPosition([pos.coords.latitude, pos.coords.longitude]);
+        setUserPosition([pos.coords.latitude, pos.coords.longitude]);
         },
         (error) => {
           console.log('Location access denied:', error);
@@ -1192,7 +1192,7 @@ const JobSearchPage = () => {
                   Explore Opportunities
                 </AnimatedButton>
                 <AnimatedButton
-                  variant="outlined"
+          variant="outlined"
                   size="large"
                   startIcon={<WorkspacePremiumIcon />}
                   sx={{
@@ -1281,7 +1281,7 @@ const JobSearchPage = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <TextField
-              fullWidth
+          fullWidth
               placeholder="Search jobs by title, company, or skills..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1359,12 +1359,12 @@ const JobSearchPage = () => {
                 Find Jobs
               </AnimatedButton>
               
-              <ToggleButtonGroup
-                value={viewMode}
-                exclusive
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
                 onChange={(e, newView) => newView && setViewMode(newView)}
-                size="small"
-              >
+          size="small"
+        >
                 <ToggleButton value="grid">
                   <ViewModuleIcon />
                 </ToggleButton>
@@ -1374,7 +1374,7 @@ const JobSearchPage = () => {
                 <ToggleButton value="map">
                   <MapIcon />
                 </ToggleButton>
-              </ToggleButtonGroup>
+        </ToggleButtonGroup>
             </Stack>
           </Grid>
         </Grid>
@@ -1458,7 +1458,7 @@ const JobSearchPage = () => {
           >
             {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
           </Button>
-        </Box>
+          </Box>
       </SearchInterface>
     </Container>
   );
@@ -1485,7 +1485,7 @@ const JobSearchPage = () => {
               whileTap={{ scale: 0.95 }}
             >
               <GlassCard
-                sx={{
+                  sx={{
                   p: 3,
                   textAlign: 'center',
                   cursor: 'pointer',
@@ -1565,12 +1565,12 @@ const JobSearchPage = () => {
               
               <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
-                  {job.title}
-                </Typography>
+                      {job.title}
+                    </Typography>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
                     {job.company.name}
-                  </Typography>
+                    </Typography>
                   {job.company.verified && (
                     <VerifiedIcon sx={{ fontSize: 16, color: theme.palette.secondary.main }} />
                   )}
@@ -1640,10 +1640,10 @@ const JobSearchPage = () => {
               </Typography>
               <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
                 {job.skills.slice(0, 4).map((skill) => (
-                  <Chip
+                      <Chip
                     key={skill}
                     label={skill}
-                    size="small"
+                        size="small"
                     sx={{
                       bgcolor: alpha(theme.palette.secondary.main, 0.1),
                       color: theme.palette.secondary.main,
@@ -1660,7 +1660,7 @@ const JobSearchPage = () => {
                   />
                 )}
               </Stack>
-            </Box>
+                    </Box>
 
             {/* Job Details Grid */}
             <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -1668,7 +1668,7 @@ const JobSearchPage = () => {
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h5" fontWeight={700} color="secondary.main">
                     ${job.budget.min}-{job.budget.max}
-                  </Typography>
+                    </Typography>
                   <Typography variant="caption" color="text.secondary">
                     per {job.budget.type}
                   </Typography>
@@ -1683,7 +1683,7 @@ const JobSearchPage = () => {
                     applicants
                   </Typography>
                 </Box>
-              </Grid>
+          </Grid>
             </Grid>
 
             {/* Location & Details */}
@@ -1816,11 +1816,11 @@ const JobSearchPage = () => {
   const renderMapView = () => (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ height: 600, borderRadius: 3, overflow: 'hidden' }}>
-        <MapContainer
+            <MapContainer
           center={userPosition || [39.8283, -98.5795]} // Center of USA if no user location
           zoom={userPosition ? 13 : 4}
-          style={{ height: '100%', width: '100%' }}
-        >
+              style={{ height: '100%', width: '100%' }}
+            >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           
               {/* User Location Marker */}

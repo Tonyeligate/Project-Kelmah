@@ -135,7 +135,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
   router.get('/google/callback', 
     passport.authenticate('google', { 
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login` 
+      failureRedirect: `${process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'}/login` 
     }),
     authController.oauthCallback
   );
@@ -150,7 +150,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   });
 
   router.get('/google/callback', (req, res) => {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=oauth_not_configured`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'}/login?error=oauth_not_configured`);
   });
 }
 
@@ -162,7 +162,7 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
 
   router.get('/facebook/callback', 
     passport.authenticate('facebook', { 
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`
+      failureRedirect: `${process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'}/login`
     }),
     authController.oauthCallback
   );
@@ -177,7 +177,7 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
   });
 
   router.get('/facebook/callback', (req, res) => {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=oauth_not_configured`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'}/login?error=oauth_not_configured`);
   });
 }
 
@@ -189,7 +189,7 @@ if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
 
   router.get('/linkedin/callback', 
     passport.authenticate('linkedin', { 
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`
+      failureRedirect: `${process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'}/login`
     }),
     authController.oauthCallback
   );
@@ -204,7 +204,7 @@ if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
   });
 
   router.get('/linkedin/callback', (req, res) => {
-    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=oauth_not_configured`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'}/login?error=oauth_not_configured`);
   });
 }
 

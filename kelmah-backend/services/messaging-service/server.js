@@ -16,7 +16,15 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'https://kelmah-frontend-cyan.vercel.app',
+    'http://localhost:5173'
+  ],
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

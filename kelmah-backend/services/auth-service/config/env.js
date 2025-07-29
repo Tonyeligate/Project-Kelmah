@@ -204,15 +204,13 @@ const LOGGING_CONFIG = {
 // ===============================================
 
 const CORS_CONFIG = {
-  ALLOWED_ORIGINS: process.env.CORS_ALLOWED_ORIGINS 
+  ALLOWED_ORIGINS: process.env.CORS_ALLOWED_ORIGINS
     ? process.env.CORS_ALLOWED_ORIGINS.split(',')
     : [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'https://kelmah-frontend.onrender.com',
-        'https://project-kelmah.onrender.com',
-        process.env.FRONTEND_URL
-      ].filter(Boolean),
+      'http://localhost:3000',
+      'https://kelmah-frontend-cyan.vercel.app',
+      'http://localhost:5173',
+    ],
   
   CREDENTIALS: parseBoolean(process.env.CORS_CREDENTIALS, true),
   MAX_AGE: parseInteger(process.env.CORS_MAX_AGE, 86400) // 24 hours

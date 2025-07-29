@@ -104,13 +104,13 @@ const User = mongoose.model('User', userSchema);
 connectDB();
 
 // CORS middleware: whitelist frontend origins for cross-domain auth
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  'http://localhost:5173'
-];
 const corsOptions = {
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://kelmah-frontend-cyan.vercel.app',
+      'http://localhost:5173'
+    ];
     // allow requests with no origin (e.g. mobile apps, curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {

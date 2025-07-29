@@ -26,8 +26,8 @@ const USE_MOCK_DATA = false; // Force disable mocks to use real API data
 
 const env = {
   // API configuration
-  API_URL: VITE_API_URL || 'http://localhost:5000',
-  SOCKET_URL: VITE_SOCKET_URL || 'http://localhost:3000',
+  API_URL: VITE_API_URL || 'https://kelmah-backend-six.vercel.app',
+  SOCKET_URL: VITE_SOCKET_URL || 'https://kelmah-backend-six.vercel.app',
 
   // Feature flags
   ENABLE_ANALYTICS: VITE_ENABLE_ANALYTICS === 'true',

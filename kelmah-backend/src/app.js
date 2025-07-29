@@ -63,7 +63,7 @@ app.use(cookieParser());
 // Configure CORS to allow multiple dev origins
 const allowedOrigins = [
   config.FRONTEND_URL || 'http://localhost:3000',
-  'http://127.0.0.1:5173',
+  'https://kelmah-frontend-cyan.vercel.app',
   'http://localhost:5173'
 ];
 

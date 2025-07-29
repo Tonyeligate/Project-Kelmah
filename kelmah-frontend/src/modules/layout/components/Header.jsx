@@ -2,700 +2,499 @@ import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
-  Typography,
   Box,
-  useMediaQuery,
-  useTheme,
   IconButton,
-  Avatar,
   Menu,
   MenuItem,
+  Avatar,
   Badge,
-  Tooltip,
-  Button,
-  alpha,
   Divider,
-  ListItemIcon,
-  ListItemText,
-  Chip,
-  Stack,
-  CircularProgress,
+  Typography,
+  useMediaQuery,
+  Drawer,
 } from '@mui/material';
+import { styled, useTheme as useMuiTheme } from '@mui/material/styles';
 import {
-  Brightness4 as Brightness4Icon,
-  Brightness7 as Brightness7Icon,
+  Menu as MenuIcon,
   Notifications as NotificationsIcon,
-  Message as MessageIcon,
-  AccountCircle as AccountCircleIcon,
   Settings as SettingsIcon,
-  ExitToApp as LogoutIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  LightMode as LightModeIcon,
+  DarkMode as DarkModeIcon,
   Dashboard as DashboardIcon,
   Work as WorkIcon,
-  Business as BusinessIcon,
-  Menu as MenuIcon,
-  Engineering as EngineeringIcon,
-  Person as PersonIcon,
-  Wallet as WalletIcon,
-  Assessment as AssessmentIcon,
+  AccountCircle as AccountCircleIcon,
 } from '@mui/icons-material';
-import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import DesktopNav from './DesktopNav';
-import MobileNav from './MobileNav';
-import { useAuth } from '../../auth/contexts/AuthContext';
-import { BRAND_COLORS } from '../../../theme';
 
-// Enhanced Styled Components
+import { useTheme } from '../../../theme/ThemeProvider';
+import { logout } from '../../auth/services/authSlice';
+import { PRIMARY_COLORS, BRAND_GRADIENTS } from '../../../design-system/foundations/colors';
+import { SEMANTIC_SPACING, BORDER_RADIUS, Z_INDEX } from '../../../design-system/foundations/spacing';
+import { TYPOGRAPHY_SCALE, FONT_WEIGHTS } from '../../../design-system/foundations/typography';
+import { IconButton as DesignIconButton } from '../../../design-system/components/UI/Button';
+import { Flex, Inline } from '../../../design-system/components/Layout/Grid';
+import Container from '../../../design-system/components/Layout/Container';
+
+/**
+ * Enhanced Header Component with Design System Integration
+ * 
+ * Features:
+ * - Responsive design with mobile drawer
+ * - Theme toggle with smooth animations
+ * - User menu with profile actions
+ * - Notification center
+ * - Consistent brand styling
+ * - Accessibility improvements
+ */
+
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: theme.palette.mode === 'dark' 
-    ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
+  backgroundColor: theme.palette.background.paper,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  boxShadow: 'none',
   backdropFilter: 'blur(20px)',
-  borderBottom: theme.palette.mode === 'dark'
-    ? `2px solid rgba(255, 215, 0, 0.3)`
-    : `2px solid rgba(0, 0, 0, 0.2)`,
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 8px 32px rgba(0, 0, 0, 0.8)'
-    : '0 4px 20px rgba(0, 0, 0, 0.15)',
-  position: 'sticky',
-  top: 0,
-  zIndex: 1100,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  zIndex: Z_INDEX.sticky,
+  
+  // Glassmorphism effect
+  background: theme.palette.mode === 'dark' 
+    ? 'rgba(0, 0, 0, 0.8)' 
+    : 'rgba(255, 215, 0, 0.9)',
+  
+  transition: theme.transitions.create(['background', 'border-color'], {
+    duration: theme.transitions.duration.standard,
+  }),
 }));
 
-const BrandLogo = styled(Box)(({ theme }) => ({
+const LogoContainer = styled(motion.div)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   textDecoration: 'none',
   cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  padding: `${SEMANTIC_SPACING.component.xs} ${SEMANTIC_SPACING.component.sm}`,
+  borderRadius: BORDER_RADIUS.md,
+  transition: theme.transitions.create(['background-color', 'transform']),
+  
   '&:hover': {
+    backgroundColor: theme.palette.action.hover,
     transform: 'scale(1.02)',
   },
 }));
 
-const LogoIcon = styled(Box)(({ theme }) => ({
-  width: 48,
-  height: 48,
-  borderRadius: '50%',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginRight: theme.spacing(1.5),
-  color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
-  fontWeight: 800,
-  fontSize: '1.5rem',
-  fontFamily: 'Montserrat, sans-serif',
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 4px 15px rgba(255, 215, 0, 0.4)`
-    : `0 4px 15px rgba(0, 0, 0, 0.3)`,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: theme.palette.mode === 'dark'
-      ? `linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)`
-      : `linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%)`,
-    transform: 'translateX(-100%)',
-    transition: 'transform 0.6s ease',
-  },
-  '&:hover::before': {
-    transform: 'translateX(100%)',
-  },
-}));
-
-const BrandText = styled(Typography)(({ theme }) => ({
-  fontWeight: 800,
-  fontFamily: 'Montserrat, sans-serif',
-  fontSize: '1.75rem',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+const LogoText = styled(Typography)(({ theme }) => ({
+  fontFamily: TYPOGRAPHY_SCALE['display-md'].fontFamily,
+  fontSize: TYPOGRAPHY_SCALE['heading-lg'].fontSize,
+  fontWeight: FONT_WEIGHTS.bold,
+  background: theme.palette.mode === 'dark' 
+    ? BRAND_GRADIENTS.gold 
+    : BRAND_GRADIENTS.black,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  textShadow: theme.palette.mode === 'dark'
-    ? '0 2px 10px rgba(255, 215, 0, 0.3)'
-    : '0 2px 10px rgba(0, 0, 0, 0.2)',
+  textDecoration: 'none',
   letterSpacing: '-0.02em',
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '1.5rem',
-  },
 }));
 
-const TaglineText = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
+const LogoAccent = styled('span')(({ theme }) => ({
   color: theme.palette.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.7)' 
-    : 'rgba(0, 0, 0, 0.8)',
-  fontWeight: 500,
-  marginTop: '-2px',
-  letterSpacing: '0.5px',
-  [theme.breakpoints.down('sm')]: {
-    display: 'none',
+    ? PRIMARY_COLORS.gold[500]
+    : PRIMARY_COLORS.black[900],
+  fontWeight: FONT_WEIGHTS.extrabold,
+}));
+
+const NavigationLink = styled(Link)(({ theme, active }) => ({
+  textDecoration: 'none',
+  color: theme.palette.text.primary,
+  padding: `${SEMANTIC_SPACING.component.sm} ${SEMANTIC_SPACING.component.md}`,
+  borderRadius: BORDER_RADIUS.md,
+  fontSize: TYPOGRAPHY_SCALE['label-md'].fontSize,
+  fontWeight: active ? FONT_WEIGHTS.semibold : FONT_WEIGHTS.medium,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: theme.transitions.create(['color', 'background-color']),
+  
+  '&:before': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: active ? '100%' : 0,
+    height: '2px',
+    background: theme.palette.mode === 'dark' 
+      ? BRAND_GRADIENTS.gold 
+      : BRAND_GRADIENTS.black,
+    transition: theme.transitions.create('width'),
+  },
+  
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    color: theme.palette.primary.main,
+    
+    '&:before': {
+      width: '100%',
+    },
   },
 }));
 
-const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark'
-    ? 'rgba(255, 215, 0, 0.1)'
-    : 'rgba(0, 0, 0, 0.1)',
-  color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-  border: theme.palette.mode === 'dark'
-    ? `1px solid rgba(255, 215, 0, 0.2)`
-    : `1px solid rgba(0, 0, 0, 0.2)`,
-  margin: theme.spacing(0, 0.5),
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+const ThemeToggleButton = styled(IconButton)(({ theme }) => ({
+  borderRadius: BORDER_RADIUS.full,
+  padding: SEMANTIC_SPACING.component.sm,
+  backgroundColor: theme.palette.action.hover,
+  border: `1px solid ${theme.palette.divider}`,
+  transition: theme.transitions.create(['background-color', 'transform', 'box-shadow']),
+  
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 215, 0, 0.2)'
-      : 'rgba(0, 0, 0, 0.15)',
-    transform: 'translateY(-1px) scale(1.05)',
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 4px 15px rgba(255, 215, 0, 0.3)'
-      : '0 4px 15px rgba(0, 0, 0, 0.2)',
-  },
-  '&:active': {
-    transform: 'translateY(0) scale(1)',
+    backgroundColor: theme.palette.action.selected,
+    transform: 'rotate(180deg)',
+    boxShadow: `0 0 20px ${theme.palette.primary.main}40`,
   },
 }));
 
 const UserAvatar = styled(Avatar)(({ theme }) => ({
   width: 40,
   height: 40,
-  backgroundColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-  color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
-  fontWeight: 700,
-  fontSize: '1rem',
-  border: theme.palette.mode === 'dark'
-    ? `2px solid rgba(255, 215, 0, 0.3)`
-    : `2px solid rgba(0, 0, 0, 0.3)`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? PRIMARY_COLORS.gold[500]
+    : PRIMARY_COLORS.black[900],
+  color: theme.palette.mode === 'dark' 
+    ? PRIMARY_COLORS.black[900]
+    : PRIMARY_COLORS.gold[500],
+  fontSize: TYPOGRAPHY_SCALE['label-lg'].fontSize,
+  fontWeight: FONT_WEIGHTS.semibold,
   cursor: 'pointer',
+  transition: theme.transitions.create(['transform', 'box-shadow']),
+  
   '&:hover': {
     transform: 'scale(1.1)',
-    border: theme.palette.mode === 'dark'
-      ? `2px solid ${BRAND_COLORS.gold}`
-      : `2px solid ${BRAND_COLORS.black}`,
-    boxShadow: theme.palette.mode === 'dark'
-      ? `0 4px 15px rgba(255, 215, 0, 0.4)`
-      : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+    boxShadow: `0 0 15px ${theme.palette.primary.main}40`,
   },
 }));
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
+const NotificationBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
-    backgroundColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
-    fontWeight: 600,
+    backgroundColor: '#EF4444',
+    color: '#FFFFFF',
     fontSize: '0.75rem',
+    fontWeight: FONT_WEIGHTS.semibold,
     minWidth: '18px',
     height: '18px',
-    border: `2px solid ${theme.palette.background.paper}`,
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+    animation: 'pulse 2s infinite',
+  },
+  
+  '@keyframes pulse': {
+    '0%': { transform: 'scale(1)' },
+    '50%': { transform: 'scale(1.1)' },
+    '100%': { transform: 'scale(1)' },
   },
 }));
 
-const AuthButton = styled(Button)(({ theme, variant }) => ({
-  borderRadius: 8,
-  textTransform: 'none',
-  fontWeight: 600,
-  padding: '8px 20px',
-  fontSize: '0.9rem',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  ...(variant === 'outlined' && {
-    borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-    borderWidth: '2px',
-    '&:hover': {
-      borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.goldLight : BRAND_COLORS.blackLight,
-      backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(255, 215, 0, 0.1)' 
-        : 'rgba(0, 0, 0, 0.08)',
-      transform: 'translateY(-1px)',
-      borderWidth: '2px',
-    },
-  }),
-  ...(variant === 'contained' && {
-    background: theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-      : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 4px 15px rgba(255, 215, 0, 0.3)'
-      : '0 4px 15px rgba(0, 0, 0, 0.3)',
-    '&:hover': {
-      background: theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`
-        : `linear-gradient(135deg, ${BRAND_COLORS.blackLight} 0%, ${BRAND_COLORS.black} 100%)`,
-      boxShadow: theme.palette.mode === 'dark'
-        ? '0 6px 20px rgba(255, 215, 0, 0.4)'
-        : '0 6px 20px rgba(0, 0, 0, 0.4)',
-      transform: 'translateY(-2px)',
-    },
-  }),
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    borderRadius: BORDER_RADIUS.xl,
+    border: `1px solid ${theme.palette.divider}`,
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? 'rgba(26, 26, 26, 0.95)'
+      : 'rgba(255, 215, 0, 0.95)',
+    backdropFilter: 'blur(20px)',
+    boxShadow: `0 10px 40px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'}`,
+    minWidth: '250px',
+    marginTop: SEMANTIC_SPACING.component.sm,
+  },
 }));
 
-const StatusIndicator = styled(Box)(({ theme, online }) => ({
-  position: 'absolute',
-  bottom: 2,
-  right: 2,
-  width: 10,
-  height: 10,
-  borderRadius: '50%',
-  backgroundColor: online ? '#4caf50' : '#f44336',
-  border: `2px solid ${theme.palette.background.paper}`,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
+const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
+  padding: `${SEMANTIC_SPACING.component.sm} ${SEMANTIC_SPACING.component.md}`,
+  borderRadius: BORDER_RADIUS.sm,
+  margin: `${SEMANTIC_SPACING.component.xs} ${SEMANTIC_SPACING.component.sm}`,
+  fontSize: TYPOGRAPHY_SCALE['body-sm'].fontSize,
+  gap: SEMANTIC_SPACING.component.sm,
+  
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    transform: 'translateX(4px)',
+  },
+  
+  '& .MuiSvgIcon-root': {
+    fontSize: '1.2rem',
+  },
 }));
 
-const Header = ({ toggleTheme, mode }) => {
-  const theme = useTheme();
+const MobileDrawer = styled(Drawer)(({ theme }) => ({
+  '& .MuiDrawer-paper': {
+    width: 280,
+    backgroundColor: theme.palette.background.paper,
+    borderRight: `1px solid ${theme.palette.divider}`,
+    padding: SEMANTIC_SPACING.layout.md,
+  },
+}));
+
+const Header = () => {
+  const muiTheme = useMuiTheme();
+  const { mode, toggleTheme } = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAuthenticated, loading, isInitialized } = useAuth();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const dispatch = useDispatch();
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [notificationsAnchor, setNotificationsAnchor] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Only show authenticated features if user is actually authenticated and initialized
-  const showUserFeatures = isInitialized && isAuthenticated() && user;
-  const showAuthButtons = isInitialized && !isAuthenticated();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   
-  // Mock data - replace with real data from API when authenticated
-  const unreadNotifications = showUserFeatures ? 3 : 0;
-  const unreadMessages = showUserFeatures ? 2 : 0;
-  const isUserOnline = showUserFeatures ? true : false;
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const [notificationMenuAnchor, setNotificationMenuAnchor] = useState(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
-  const handleProfileMenuOpen = (event) => {
-    if (showUserFeatures) {
-      setAnchorEl(event.currentTarget);
-    }
+  const handleUserMenuOpen = (event) => {
+    setUserMenuAnchor(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
   };
 
-  const handleNotificationsOpen = (event) => {
-    if (showUserFeatures) {
-      setNotificationsAnchor(event.currentTarget);
-    }
+  const handleNotificationMenuOpen = (event) => {
+    setNotificationMenuAnchor(event.currentTarget);
   };
 
-  const handleNotificationsClose = () => {
-    setNotificationsAnchor(null);
+  const handleNotificationMenuClose = () => {
+    setNotificationMenuAnchor(null);
   };
 
-  const handleLogout = async () => {
-    handleMenuClose();
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Force navigation even if logout fails
-      navigate('/');
-    }
+  const handleLogout = () => {
+    dispatch(logout());
+    handleUserMenuClose();
+    navigate('/');
   };
 
-  const navigateToDashboard = () => {
-    handleMenuClose();
-    if (user?.role === 'worker') {
-      navigate('/worker/dashboard');
-    } else if (user?.role === 'hirer') {
-      navigate('/hirer/dashboard');
-    } else {
-      navigate('/dashboard');
-    }
+  const handleProfileClick = () => {
+    navigate('/profile');
+    handleUserMenuClose();
   };
 
-  const getUserInitials = () => {
-    if (!user) return 'U';
-    const firstName = user.firstName || user.name?.split(' ')[0] || '';
-    const lastName = user.lastName || user.name?.split(' ')[1] || '';
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U';
+  const handleDashboardClick = () => {
+    const dashboardPath = user?.role === 'worker' ? '/worker/dashboard' : '/hirer/dashboard';
+    navigate(dashboardPath);
+    handleUserMenuClose();
   };
 
-  const getUserRole = () => {
-    return user?.role || user?.userType || user?.userRole || 'user';
+  const navigationItems = [
+    { path: '/', label: 'Home', icon: <DashboardIcon /> },
+    { path: '/jobs', label: 'Jobs', icon: <WorkIcon /> },
+    { path: '/workers', label: 'Find Talent', icon: <PersonIcon /> },
+  ];
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
+
+  const renderNavigationItems = () => (
+    <Inline gap="sm">
+      {navigationItems.map((item) => (
+        <NavigationLink
+          key={item.path}
+          to={item.path}
+          active={location.pathname === item.path}
+        >
+          {item.label}
+        </NavigationLink>
+      ))}
+    </Inline>
+  );
 
   const renderUserMenu = () => (
-    <Menu
-      anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
-      onClose={handleMenuClose}
-      PaperProps={{
-        elevation: 12,
-        sx: {
-          overflow: 'visible',
-          filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
-          mt: 1.5,
-          borderRadius: 3,
-          minWidth: 280,
-          border: theme.palette.mode === 'dark'
-            ? `1px solid rgba(255, 215, 0, 0.3)`
-            : `1px solid rgba(0, 0, 0, 0.2)`,
-          backgroundColor: theme.palette.mode === 'dark' 
-            ? BRAND_COLORS.blackMedium 
-            : BRAND_COLORS.gold, // Pure gold instead of goldLight
-          '&:before': {
-            content: '""',
-            display: 'block',
-            position: 'absolute',
-            top: 0,
-            right: 14,
-            width: 10,
-            height: 10,
-            bgcolor: theme.palette.mode === 'dark' 
-              ? BRAND_COLORS.blackMedium 
-              : BRAND_COLORS.gold, // Pure gold instead of goldLight
-            transform: 'translateY(-50%) rotate(45deg)',
-            zIndex: 0,
-            border: theme.palette.mode === 'dark'
-              ? `1px solid rgba(255, 215, 0, 0.3)`
-              : `1px solid rgba(0, 0, 0, 0.2)`,
-            borderBottom: 'none',
-            borderRight: 'none',
-          },
-        },
-      }}
-      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+    <StyledMenu
+      anchorEl={userMenuAnchor}
+      open={Boolean(userMenuAnchor)}
+      onClose={handleUserMenuClose}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      {/* User Info Header */}
-      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Box sx={{ position: 'relative' }}>
-            <UserAvatar>
-              {getUserInitials()}
-            </UserAvatar>
-            <StatusIndicator online={isUserOnline} />
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap>
-              {user?.firstName && user?.lastName 
-                ? `${user.firstName} ${user.lastName}`
-                : user?.name || user?.email || 'User'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" noWrap>
-              {user?.email}
-            </Typography>
-            <Chip
-              label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
-              size="small"
-              sx={{
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(255, 215, 0, 0.15)' 
-                  : 'rgba(0, 0, 0, 0.1)',
-                color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                mt: 0.5,
-              }}
-            />
-          </Box>
-        </Stack>
+      <Box sx={{ p: 2, borderBottom: `1px solid ${muiTheme.palette.divider}` }}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Signed in as
+        </Typography>
+        <Typography variant="body1" fontWeight={600}>
+          {user?.name || user?.email}
+        </Typography>
       </Box>
-
-      {/* Menu Items */}
-      <MenuItem onClick={navigateToDashboard} sx={{ py: 1.5 }}>
-        <ListItemIcon>
-          <DashboardIcon color="primary" />
-        </ListItemIcon>
-        <ListItemText 
-          primary="Dashboard" 
-          primaryTypographyProps={{ fontWeight: 500 }}
-        />
-      </MenuItem>
-
-      <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }} sx={{ py: 1.5 }}>
-        <ListItemIcon>
-          <PersonIcon color="primary" />
-        </ListItemIcon>
-        <ListItemText 
-          primary="Profile" 
-          primaryTypographyProps={{ fontWeight: 500 }}
-        />
-      </MenuItem>
-
-      {user?.role === 'worker' && (
-        <MenuItem onClick={() => { handleMenuClose(); navigate('/worker/wallet'); }} sx={{ py: 1.5 }}>
-          <ListItemIcon>
-            <WalletIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText 
-            primary="Wallet" 
-            primaryTypographyProps={{ fontWeight: 500 }}
-          />
-        </MenuItem>
-      )}
-
-      <MenuItem onClick={() => { handleMenuClose(); navigate('/settings'); }} sx={{ py: 1.5 }}>
-        <ListItemIcon>
-          <SettingsIcon color="primary" />
-        </ListItemIcon>
-        <ListItemText 
-          primary="Settings" 
-          primaryTypographyProps={{ fontWeight: 500 }}
-        />
-      </MenuItem>
-
+      
+      <StyledMenuItem onClick={handleDashboardClick}>
+        <DashboardIcon />
+        Dashboard
+      </StyledMenuItem>
+      
+      <StyledMenuItem onClick={handleProfileClick}>
+        <AccountCircleIcon />
+        Profile
+      </StyledMenuItem>
+      
+      <StyledMenuItem onClick={() => navigate('/settings')}>
+        <SettingsIcon />
+        Settings
+      </StyledMenuItem>
+      
       <Divider sx={{ my: 1 }} />
-
-      <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: 'error.main' }}>
-        <ListItemIcon>
-          <LogoutIcon color="error" />
-        </ListItemIcon>
-        <ListItemText 
-          primary="Sign Out" 
-          primaryTypographyProps={{ fontWeight: 500, color: 'error.main' }}
-        />
-      </MenuItem>
-    </Menu>
+      
+      <StyledMenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+        <LogoutIcon />
+        Sign Out
+      </StyledMenuItem>
+    </StyledMenu>
   );
 
-  const renderNotificationsMenu = () => (
-    <Menu
-      anchorEl={notificationsAnchor}
-      open={Boolean(notificationsAnchor)}
-      onClose={handleNotificationsClose}
-      PaperProps={{
-        elevation: 12,
-        sx: {
-          overflow: 'visible',
-          filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
-          mt: 1.5,
-          borderRadius: 3,
-          minWidth: 320,
-          maxHeight: 400,
-          border: theme.palette.mode === 'dark'
-            ? `1px solid rgba(255, 215, 0, 0.3)`
-            : `1px solid rgba(0, 0, 0, 0.2)`,
-          backgroundColor: theme.palette.mode === 'dark' 
-            ? BRAND_COLORS.blackMedium 
-            : BRAND_COLORS.gold, // Pure gold instead of goldLight
-        },
-      }}
-      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+  const renderNotificationMenu = () => (
+    <StyledMenu
+      anchorEl={notificationMenuAnchor}
+      open={Boolean(notificationMenuAnchor)}
+      onClose={handleNotificationMenuClose}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h6" fontWeight={700}>
-          Notifications
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          You have {unreadNotifications} unread notifications
-        </Typography>
+      <Box sx={{ p: 2, borderBottom: `1px solid ${muiTheme.palette.divider}` }}>
+        <Typography variant="h6">Notifications</Typography>
       </Box>
-
-      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
-        <ListItemText
-          primary="New job application received"
-          secondary="2 minutes ago"
-          primaryTypographyProps={{ fontWeight: 500 }}
-          secondaryTypographyProps={{ fontSize: '0.75rem' }}
-        />
-      </MenuItem>
-
-      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
-        <ListItemText
-          primary="Payment processed successfully"
-          secondary="1 hour ago"
-          primaryTypographyProps={{ fontWeight: 500 }}
-          secondaryTypographyProps={{ fontSize: '0.75rem' }}
-        />
-      </MenuItem>
-
-      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
-        <ListItemText
-          primary="Profile verification approved"
-          secondary="3 hours ago"
-          primaryTypographyProps={{ fontWeight: 500 }}
-          secondaryTypographyProps={{ fontSize: '0.75rem' }}
-        />
-      </MenuItem>
-
-      <Divider />
-
-      <MenuItem
-        onClick={() => {
-          handleNotificationsClose();
-          navigate('/notifications');
-        }}
-        sx={{ 
-          py: 1.5, 
-          justifyContent: 'center',
-          color: 'primary.main',
-          fontWeight: 600,
-        }}
-      >
-        View All Notifications
-      </MenuItem>
-    </Menu>
+      
+      <StyledMenuItem>
+        <Typography variant="body2" color="text.secondary">
+          No new notifications
+        </Typography>
+      </StyledMenuItem>
+    </StyledMenu>
   );
-
-  if (loading) {
-    return (
-      <StyledAppBar position="static" elevation={0}>
-        <Toolbar sx={{ minHeight: { xs: 70, sm: 80 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <BrandLogo component={RouterLink} to="/">
-              <LogoIcon>K</LogoIcon>
-              <Box>
-                <BrandText variant="h6">elmah</BrandText>
-                <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
-              </Box>
-            </BrandLogo>
-            <Box sx={{ flexGrow: 1 }} />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ActionButton onClick={toggleTheme}>
-                {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-              </ActionButton>
-            </Box>
-          </Box>
-        </Toolbar>
-      </StyledAppBar>
-    );
-  }
 
   return (
-    <StyledAppBar position="static" elevation={0}>
-      <Toolbar sx={{ minHeight: { xs: 70, sm: 80 }, px: { xs: 2, sm: 3 } }}>
-        {/* Mobile Menu Button */}
-        {isMobile && isAuthenticated && (
-          <ActionButton
-            edge="start"
-            aria-label="menu"
-            onClick={() => setMobileMenuOpen(true)}
-            sx={{ mr: 1 }}
-          >
-            <MenuIcon />
-          </ActionButton>
-        )}
+    <>
+      <StyledAppBar position="sticky" elevation={0}>
+        <Container size="2xl" padding="none">
+          <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
+            {/* Logo */}
+            <LogoContainer
+              component={Link}
+              to="/"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <LogoText variant="h5" component="div">
+                <LogoAccent>K</LogoAccent>elmah
+              </LogoText>
+            </LogoContainer>
 
-        {/* Brand Logo */}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
-          <BrandLogo component={RouterLink} to="/">
-            <LogoIcon>
-              <EngineeringIcon sx={{ fontSize: '1.2rem' }} />
-            </LogoIcon>
-            <Box>
-              <BrandText variant="h6">elmah</BrandText>
-              <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
-            </Box>
-          </BrandLogo>
-        </motion.div>
+            {/* Desktop Navigation */}
+            {!isMobile && (
+              <Flex justify="center" align="center">
+                {renderNavigationItems()}
+              </Flex>
+            )}
 
-        <Box sx={{ flexGrow: 1 }} />
+            {/* Actions */}
+            <Flex align="center" gap="sm">
+              {/* Theme Toggle */}
+              <ThemeToggleButton
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={mode}
+                    initial={{ rotate: -180, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 180, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                  </motion.div>
+                </AnimatePresence>
+              </ThemeToggleButton>
 
-        {/* Desktop Navigation */}
-        {!isMobile && <DesktopNav />}
+              {isAuthenticated ? (
+                <>
+                  {/* Notifications */}
+                  <DesignIconButton
+                    size="md"
+                    onClick={handleNotificationMenuOpen}
+                    aria-label="View notifications"
+                  >
+                    <NotificationBadge badgeContent={0} max={99}>
+                      <NotificationsIcon />
+                    </NotificationBadge>
+                  </DesignIconButton>
 
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
-          {/* Theme Toggle */}
-          <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} arrow>
-            <ActionButton onClick={toggleTheme}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={mode}
-                  initial={{ rotate: -180, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 180, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-                </motion.div>
-              </AnimatePresence>
-            </ActionButton>
-          </Tooltip>
-
-          {/* Show loading state during initialization */}
-          {!isInitialized ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CircularProgress size={20} />
-            </Box>
-          ) : showUserFeatures ? (
-            <>
-              {/* Messages */}
-              <Tooltip title="Messages" arrow>
-                <ActionButton onClick={() => navigate('/messages')}>
-                  <StyledBadge badgeContent={unreadMessages} color="primary">
-                    <MessageIcon />
-                  </StyledBadge>
-                </ActionButton>
-              </Tooltip>
-
-              {/* Notifications */}
-              <Tooltip title="Notifications" arrow>
-                <ActionButton onClick={handleNotificationsOpen}>
-                  <StyledBadge badgeContent={unreadNotifications} color="primary">
-                    <NotificationsIcon />
-                  </StyledBadge>
-                </ActionButton>
-              </Tooltip>
-
-              {/* User Avatar */}
-              <Tooltip title="Account menu" arrow>
-                <Box sx={{ position: 'relative', ml: 1 }}>
-                  <UserAvatar onClick={handleProfileMenuOpen}>
-                    {getUserInitials()}
+                  {/* User Avatar */}
+                  <UserAvatar
+                    onClick={handleUserMenuOpen}
+                    aria-label="User menu"
+                    src={user?.avatar}
+                  >
+                    {getInitials(user?.name)}
                   </UserAvatar>
-                  <StatusIndicator online={isUserOnline} />
-                </Box>
-              </Tooltip>
-            </>
-          ) : showAuthButtons ? (
-            <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
-              <AuthButton
-                component={RouterLink}
-                to="/login"
-                variant="outlined"
-                size="small"
-              >
-                Sign In
-              </AuthButton>
-              <AuthButton
-                component={RouterLink}
-                to="/register"
-                variant="contained"
-                size="small"
-              >
-                Get Started
-              </AuthButton>
-            </Stack>
-          ) : null}
-        </Box>
-      </Toolbar>
+                </>
+              ) : (
+                <Inline gap="sm">
+                  <NavigationLink to="/auth/login">Sign In</NavigationLink>
+                  <NavigationLink to="/auth/register">Get Started</NavigationLink>
+                </Inline>
+              )}
 
-      {/* Mobile Navigation */}
-      {isMobile && (
-        <MobileNav
-          open={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-        />
-      )}
+              {/* Mobile Menu Button */}
+              {isMobile && (
+                <DesignIconButton
+                  size="md"
+                  onClick={() => setMobileDrawerOpen(true)}
+                  aria-label="Open navigation menu"
+                >
+                  <MenuIcon />
+                </DesignIconButton>
+              )}
+            </Flex>
+          </Toolbar>
+        </Container>
+      </StyledAppBar>
+
+      {/* Mobile Drawer */}
+      <MobileDrawer
+        anchor="right"
+        open={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+      >
+        <Box sx={{ py: 2 }}>
+          <LogoContainer sx={{ mb: 3, justifyContent: 'center' }}>
+            <LogoText variant="h5">
+              <LogoAccent>K</LogoAccent>elmah
+            </LogoText>
+          </LogoContainer>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {navigationItems.map((item) => (
+              <NavigationLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileDrawerOpen(false)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: SEMANTIC_SPACING.component.sm,
+                  width: '100%',
+                }}
+              >
+                {item.icon}
+                {item.label}
+              </NavigationLink>
+            ))}
+          </Box>
+        </Box>
+      </MobileDrawer>
 
       {/* Menus */}
       {renderUserMenu()}
-      {renderNotificationsMenu()}
-    </StyledAppBar>
+      {renderNotificationMenu()}
+    </>
   );
 };
 

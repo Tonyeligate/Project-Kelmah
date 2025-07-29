@@ -1,73 +1,153 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
+import { ThemeProvider as MuiThemeProvider, CssBaseline } from '@mui/material';
+import { darkTheme, lightTheme } from '../design-system/theme';
 import PropTypes from 'prop-types';
-import darkTheme, { lightTheme } from './index';
 
-// Theme Context
+/**
+ * Enhanced Theme Provider with Design System Integration
+ * 
+ * Features:
+ * - Persistent theme preference
+ * - Smooth theme transitions
+ * - System preference detection
+ * - Theme context for components
+ */
+
 const ThemeContext = createContext();
 
-// Custom hook to use theme context
-export const useThemeMode = () => {
+export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useThemeMode must be used within a KelmahThemeProvider');
+    throw new Error('useTheme must be used within a KelmahThemeProvider');
   }
   return context;
 };
 
-// Theme Provider Component
-export const KelmahThemeProvider = ({ children }) => {
-  // Initialize theme mode from localStorage or default to dark
-  const [mode, setMode] = useState(() => {
+const KelmahThemeProvider = ({ children }) => {
+  // Initialize theme from localStorage or system preference
+  const getInitialTheme = () => {
     try {
-      const savedMode = localStorage.getItem('kelmah-theme-mode');
-      return savedMode || 'dark';
+      const savedTheme = localStorage.getItem('kelmah-theme');
+      if (savedTheme && ['light', 'dark'].includes(savedTheme)) {
+        return savedTheme;
+      }
     } catch (error) {
-      console.warn('Failed to load theme from localStorage:', error);
-      return 'dark';
+      console.warn('Failed to read theme from localStorage:', error);
     }
-  });
+    
+    // Fallback to system preference
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    return 'dark'; // Default fallback
+  };
 
-  // Update localStorage when mode changes
+  const [mode, setMode] = useState(getInitialTheme);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e) => {
+      // Only update if no manual preference is stored
+      const savedTheme = localStorage.getItem('kelmah-theme');
+      if (!savedTheme) {
+        setMode(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Persist theme preference
   useEffect(() => {
     try {
-      localStorage.setItem('kelmah-theme-mode', mode);
-      // Update HTML data attribute for CSS customizations
-      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('kelmah-theme', mode);
     } catch (error) {
       console.warn('Failed to save theme to localStorage:', error);
     }
   }, [mode]);
 
-  // Theme toggle function
   const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === 'dark' ? 'light' : 'dark'));
+    setIsTransitioning(true);
+    setMode(prevMode => prevMode === 'light' ? 'dark' : 'light');
+    
+    // Reset transition state after animation
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
   };
 
-  // Set theme mode directly
-  const setThemeMode = (newMode) => {
-    if (newMode === 'dark' || newMode === 'light') {
+  const setTheme = (newMode) => {
+    if (['light', 'dark'].includes(newMode) && newMode !== mode) {
+      setIsTransitioning(true);
       setMode(newMode);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
     }
   };
 
-  // Get current theme object
-  const currentTheme = mode === 'dark' ? darkTheme : lightTheme;
+  const currentTheme = mode === 'light' ? lightTheme : darkTheme;
 
-  // Context value
+  // Add transition styles to theme
+  const themeWithTransitions = {
+    ...currentTheme,
+    transitions: {
+      ...currentTheme.transitions,
+      create: (props, options = {}) => {
+        const defaultOptions = {
+          duration: currentTheme.transitions.duration.standard,
+          easing: currentTheme.transitions.easing.easeInOut,
+        };
+        
+        if (isTransitioning) {
+          return currentTheme.transitions.create(props, {
+            ...defaultOptions,
+            ...options,
+            duration: 300,
+          });
+        }
+        
+        return currentTheme.transitions.create(props, {
+          ...defaultOptions,
+          ...options,
+        });
+      },
+    },
+    components: {
+      ...currentTheme.components,
+      
+      // Add smooth transitions to all components during theme changes
+      MuiCssBaseline: {
+        ...currentTheme.components.MuiCssBaseline,
+        styleOverrides: {
+          ...currentTheme.components.MuiCssBaseline.styleOverrides,
+          '*': {
+            transition: isTransitioning ? 'background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease' : undefined,
+          },
+        },
+      },
+    },
+  };
+
   const contextValue = {
     mode,
     toggleTheme,
-    setThemeMode,
-    isDark: mode === 'dark',
-    isLight: mode === 'light',
+    setTheme,
+    theme: currentTheme,
+    isTransitioning,
   };
 
   return (
     <ThemeContext.Provider value={contextValue}>
-      <MuiThemeProvider theme={currentTheme}>
-        <CssBaseline />
+      <MuiThemeProvider theme={themeWithTransitions}>
+        <CssBaseline enableColorScheme />
         {children}
       </MuiThemeProvider>
     </ThemeContext.Provider>
