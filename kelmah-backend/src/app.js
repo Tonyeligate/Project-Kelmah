@@ -34,6 +34,7 @@ const subscriptionRoutes = require('./routes/subscriptions');
 const planRoutes = require('./routes/plans');
 const escrowRoutes = require('./routes/escrows');
 const walletRoutes = require('./routes/wallets');
+const healthRoutes = require('./routes/health');
 
 // Import application controller and auth middleware
 const applicationController = require('./controllers/application.controller');
@@ -116,19 +117,14 @@ app.use('/api/escrows', escrowRoutes);
 app.use('/api/wallets', walletRoutes);
 app.use('/api/docs', express.static(path.join(__dirname, '../docs')));
 
+// Health check routes
+app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
+
 // Application endpoints
 app.post('/api/jobs/:id/apply', authenticateUser, applicationController.applyToJob);
 app.get('/api/jobs/:id/applications', authenticateUser, authorizeRoles(['hirer']), applicationController.getJobApplications);
 app.get('/api/applications', authenticateUser, applicationController.getMyApplications);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    service: 'Kelmah API',
-    status: 'OK',
-    timestamp: new Date().toISOString()
-  });
-});
 
 // Root endpoint with API information
 app.get('/', (req, res) => {

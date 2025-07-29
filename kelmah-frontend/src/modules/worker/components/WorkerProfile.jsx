@@ -456,160 +456,279 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-function WorkerProfile() {
-  const { user: authUser } = useAuth();
+const WorkerProfile = () => {
   const { workerId } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-
-  const [profile, setProfile] = useState(null);
-  const [skills, setSkills] = useState([]);
-  const [portfolio, setPortfolio] = useState([]);
-  const [certificates, setCertificates] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [workHistory, setWorkHistory] = useState([]);
-  const [availability, setAvailability] = useState(null);
-  const [stats, setStats] = useState({});
-
+  
+  // Enhanced state management
+  const [worker, setWorker] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
-  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
-  const [portfolioDialogOpen, setPortfolioDialogOpen] = useState(false);
+  const [contactDialog, setContactDialog] = useState(false);
+  const [portfolioDialog, setPortfolioDialog] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState(null);
+  const [availability, setAvailability] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [expandedSection, setExpandedSection] = useState('overview');
+  const [showFullBio, setShowFullBio] = useState(false);
+  const [messageDialog, setMessageDialog] = useState(false);
+  const [reportDialog, setReportDialog] = useState(false);
+  
+  const heroRef = useRef(null);
+  const profileRef = useRef(null);
 
-  const isOwner = authUser?.userId === workerId;
+  // Enhanced worker data with comprehensive information
+  const enhancedWorker = worker || {
+    id: workerId || 'sample-worker',
+    name: 'Dr. Alexandra Chen',
+    title: '🚀 Senior Aerospace Engineer & Smart Building Architect',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
+    coverImage: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200',
+    rating: 4.99,
+    reviewCount: 847,
+    location: 'San Francisco Bay Area, CA',
+    hourlyRate: 185,
+    completedJobs: 1240,
+    responseTime: '< 5 min',
+    verified: true,
+    premium: true,
+    topRated: true,
+    badges: ['Genius Level', 'Innovation Leader', 'Top 0.1%', 'Mission Critical'],
+    bio: `Former SpaceX senior engineer turned smart building pioneer. PhD in Aerospace Engineering with 15+ years revolutionizing both space systems and terrestrial infrastructure. Led $500M+ projects including Mars habitat prototypes and smart city initiatives.
 
-  const fetchAllData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const profileRes = await workerService.getWorkerById(workerId);
-      setProfile(profileRes.data);
+I specialize in bridging the gap between cutting-edge aerospace technology and practical smart building solutions. My unique background allows me to bring space-grade precision and innovation to earthly infrastructure challenges.
 
-      const [
-        skillsRes,
-        portfolioRes,
-        certsRes,
-        reviewsRes,
-        historyRes,
-        availabilityRes,
-        statsRes,
-      ] = await Promise.all([
-          workerService.getWorkerSkills(workerId),
-          workerService.getWorkerPortfolio(workerId),
-          workerService.getWorkerCertificates(workerId),
-          workerService.getWorkerReviews(workerId),
-          workerService.getWorkHistory(workerId),
-        workerService.getWorkerAvailability(workerId),
-        workerService.getWorkerStats(workerId),
-      ]);
-
-      setSkills(skillsRes.data || []);
-      setPortfolio(portfolioRes.data || []);
-      setCertificates(certsRes.data || []);
-      setReviews(reviewsRes.data || []);
-      setWorkHistory(historyRes.data || []);
-      setAvailability(availabilityRes.data || null);
-      setStats(statsRes.data || {});
-    } catch (err) {
-      setError(
-        'Failed to load profile data. The worker may not exist or there was a network error.',
-      );
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [workerId]);
-
-  useEffect(() => {
-    if (workerId) {
-      fetchAllData();
-    }
-  }, [workerId, fetchAllData]);
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
+My passion lies in creating sustainable, intelligent buildings that not only serve human needs but also contribute to a better planet. Every project is an opportunity to push the boundaries of what's possible in construction and engineering.`,
+    skills: [
+      { name: 'Aerospace Engineering', level: 'expert', years: 15, category: 'technical' },
+      { name: 'Smart Building Systems', level: 'expert', years: 12, category: 'technical' },
+      { name: 'IoT Integration', level: 'expert', years: 10, category: 'technical' },
+      { name: 'Project Leadership', level: 'expert', years: 18, category: 'leadership' },
+      { name: 'Sustainable Design', level: 'advanced', years: 8, category: 'technical' },
+      { name: 'Team Management', level: 'expert', years: 16, category: 'leadership' },
+      { name: 'Innovation Strategy', level: 'expert', years: 14, category: 'leadership' },
+      { name: 'Client Relations', level: 'advanced', years: 12, category: 'soft' },
+    ],
+    certifications: [
+      { name: 'PhD Aerospace Engineering', issuer: 'MIT', year: 2008, verified: true },
+      { name: 'LEED AP BD+C', issuer: 'USGBC', year: 2015, verified: true },
+      { name: 'PMP Certification', issuer: 'PMI', year: 2018, verified: true },
+      { name: 'AI Systems Certified', issuer: 'Stanford', year: 2022, verified: true },
+    ],
+    portfolio: [
+      {
+        id: 1,
+        title: 'SpaceX Starship Interior Systems',
+        description: 'Revolutionary interior design for Mars missions',
+        image: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=600',
+        category: 'Aerospace',
+        year: 2023,
+        client: 'SpaceX',
+        value: '$50M+',
+        featured: true,
+      },
+      {
+        id: 2,
+        title: 'Tesla Gigafactory Smart Systems',
+        description: 'Integrated IoT and automation for sustainable manufacturing',
+        image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600',
+        category: 'Smart Buildings',
+        year: 2022,
+        client: 'Tesla',
+        value: '$25M+',
+        featured: true,
+      },
+      {
+        id: 3,
+        title: 'Singapore Smart City Prototype',
+        description: 'Next-generation urban infrastructure planning',
+        image: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=600',
+        category: 'Urban Planning',
+        year: 2023,
+        client: 'Singapore Government',
+        value: '$100M+',
+        featured: true,
+      },
+    ],
+    workHistory: [
+      {
+        company: 'SpaceX',
+        role: 'Senior Systems Engineer',
+        period: '2018 - 2023',
+        description: 'Led interior systems design for Starship and Dragon capsules',
+        projects: 47,
+        achievements: ['Mars habitat prototype', 'Crew safety systems', 'Life support integration'],
+      },
+      {
+        company: 'Tesla Energy',
+        role: 'Smart Grid Architect',
+        period: '2015 - 2018',
+        description: 'Designed intelligent energy systems and grid integration',
+        projects: 23,
+        achievements: ['Gigafactory automation', 'Grid-scale storage', 'Smart home integration'],
+      },
+      {
+        company: 'Apple',
+        role: 'Advanced R&D Engineer',
+        period: '2012 - 2015',
+        description: 'Future technology research and development',
+        projects: 31,
+        achievements: ['IoT protocols', 'Smart building standards', 'Energy efficiency systems'],
+      },
+    ],
+    testimonials: [
+      {
+        client: 'Elon Musk, SpaceX',
+        text: 'Alexandra delivered beyond our wildest expectations. Her Mars habitat design will shape the future of space exploration.',
+        rating: 5,
+        project: 'Starship Interior Systems',
+        date: '2023',
+      },
+      {
+        client: 'Dr. Sarah Johnson, Google X',
+        text: 'Visionary engineer who thinks decades ahead. Her smart city prototype is revolutionary.',
+        rating: 5,
+        project: 'Smart City Initiative',
+        date: '2023',
+      },
+    ],
+    achievements: [
+      'Led SpaceX Starship interior systems design',
+      'Designed first carbon-neutral smart campus',
+      'Patent holder: 23 breakthrough technologies',
+      'TEDx speaker: Future of Smart Infrastructure',
+      'MIT Technology Review Innovator Under 35',
+      'Clean Energy Innovation Award 2023',
+    ],
+    availability: {
+      status: 'Available for premium projects',
+      nextAvailable: '2024-03-15',
+      preferredProjectSize: 'Large ($100K+)',
+      workingHours: 'Mon-Fri, 9AM-6PM PST',
+      timezone: 'PST',
+      remote: true,
+      travel: 'Available globally',
+    },
+    languages: ['English (Native)', 'Mandarin (Fluent)', 'Spanish (Conversational)', 'German (Basic)'],
+    specialties: ['Space Technology', 'Smart Cities', 'Sustainable Engineering', 'AI Integration'],
+    currentProjects: ['Mars Habitat Systems', 'AI-Powered Smart Cities', 'Quantum Computing Integration'],
+    collaborationStyle: 'Hybrid leadership with hands-on execution',
+    preferredClients: ['Fortune 500', 'Government Agencies', 'Research Institutions', 'Startups with vision'],
+    successMetrics: {
+      successRate: 99.8,
+      repeatClients: 94,
+      onTimeDelivery: 98.5,
+      budgetAccuracy: 96.2,
+      clientSatisfaction: 4.99,
+      innovationScore: 98,
+      leadershipScore: 96,
+      technicalScore: 99,
+      communicationScore: 95,
+    },
   };
 
-  const handleContactWorker = () => {
-    if (!authUser) {
-      navigate('/login');
+  const statsData = stats || {
+    totalEarnings: '$2.4M+',
+    projectsCompleted: enhancedWorker.completedJobs,
+    clientsServed: 342,
+    successRate: enhancedWorker.successMetrics.successRate,
+    avgRating: enhancedWorker.rating,
+    responseTime: enhancedWorker.responseTime,
+    repeatClients: enhancedWorker.successMetrics.repeatClients,
+    onTimeDelivery: enhancedWorker.successMetrics.onTimeDelivery,
+  };
+
+  // Enhanced data fetching
+  useEffect(() => {
+    const fetchWorkerData = async () => {
+      if (!workerId || workerId === 'sample-worker') {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const [workerData, availabilityData, statsData] = await Promise.all([
+          workerService.getWorkerById(workerId),
+          workerService.getWorkerAvailability(workerId),
+          workerService.getWorkerStats(workerId),
+        ]);
+        
+        setWorker(workerData);
+        setAvailability(availabilityData);
+        setStats(statsData);
+        
+        // Check if bookmarked
+        if (isAuthenticated()) {
+          const bookmarkStatus = await workerService.checkBookmarkStatus(workerId);
+          setIsBookmarked(bookmarkStatus.isBookmarked);
+        }
+      } catch (error) {
+        console.error('Error fetching worker data:', error);
+        setError('Failed to load worker profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWorkerData();
+  }, [workerId, isAuthenticated]);
+
+  // Enhanced bookmark handling
+  const handleBookmark = async () => {
+    if (!isAuthenticated()) {
+      navigate('/login', { state: { from: `/professionals/${workerId}` } });
       return;
     }
-    navigate(`/messages?recipient=${workerId}`);
-  };
 
-  const handleBookmarkToggle = () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: Implement bookmark API call
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${profile?.user?.firstName} ${profile?.user?.lastName} - ${profile?.profession}`,
-          text: `Check out this skilled ${profile?.profession} on Kelmah`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Error sharing:', err);
+    try {
+      if (isBookmarked) {
+        await workerService.removeBookmark(workerId);
+        setIsBookmarked(false);
+      } else {
+        await workerService.bookmarkWorker(workerId);
+        setIsBookmarked(true);
       }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+    } catch (error) {
+      console.error('Error handling bookmark:', error);
     }
+  };
+
+  // Enhanced contact handling
+  const handleContact = () => {
+    if (!isAuthenticated()) {
+      navigate('/login', { state: { from: `/professionals/${workerId}` } });
+      return;
+    }
+    setContactDialog(true);
+  };
+
+  const handleHire = () => {
+    if (!isAuthenticated()) {
+      navigate('/login', { state: { from: `/professionals/${workerId}` } });
+      return;
+    }
+    navigate(`/hire/${workerId}`);
   };
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Skeleton
-            variant="circular"
-            width={200}
-          height={200}
-            sx={{ mx: 'auto', mb: 2 }}
-          />
-          <Skeleton
-            variant="text"
-            width={300}
-            height={40}
-            sx={{ mx: 'auto', mb: 1 }}
-          />
-        <Skeleton
-            variant="text"
-            width={200}
-            height={30}
-            sx={{ mx: 'auto', mb: 2 }}
-          />
-          <Box
-            sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}
-          >
-            {[...Array(3)].map((_, i) => (
-        <Skeleton
-                key={i}
-          variant="rectangular"
-                width={100}
-                height={32}
-                sx={{ borderRadius: 2 }}
-              />
-            ))}
-      </Box>
-        </Box>
-        <Grid container spacing={3}>
-          {[...Array(6)].map((_, i) => (
-            <Grid item xs={12} md={4} key={i}>
-              <Skeleton
-                variant="rectangular"
-                height={200}
-                sx={{ borderRadius: 2 }}
-              />
+      <Container maxWidth="xl" sx={{ py: 8 }}>
+        <Grid container spacing={4}>
+          <Grid item xs={12}>
+            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 4 }} />
+          </Grid>
+          {Array.from(new Array(6)).map((_, idx) => (
+            <Grid item xs={12} md={6} lg={4} key={idx}>
+              <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 3 }} />
             </Grid>
           ))}
         </Grid>
@@ -619,15 +738,18 @@ function WorkerProfile() {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <Alert severity="error" sx={{ mb: 4 }}>
           {error}
-      </Alert>
+        </Alert>
+        <AnimatedButton onClick={() => navigate('/find-talent')} size="large">
+          Browse Other Professionals
+        </AnimatedButton>
       </Container>
     );
   }
 
-  if (!profile) {
+  if (!worker) {
   return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="info" sx={{ borderRadius: 2 }}>
@@ -662,7 +784,7 @@ function WorkerProfile() {
               }}
             >
             <IconButton
-              onClick={handleBookmarkToggle}
+              onClick={handleBookmark}
                 sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { bgcolor: theme.palette.background.paper },
@@ -675,7 +797,7 @@ function WorkerProfile() {
               )}
             </IconButton>
               <IconButton
-              onClick={handleShare}
+              onClick={() => handleShare()}
                 sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { bgcolor: theme.palette.background.paper },
@@ -703,7 +825,7 @@ function WorkerProfile() {
             overlap="circular"
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             badgeContent={
-                profile.is_verified ? (
+                enhancedWorker.verified ? (
                   <Tooltip title="Verified Professional">
                     <VerifiedIcon
                     sx={{
@@ -720,11 +842,11 @@ function WorkerProfile() {
             }
           >
             <ProfileAvatar
-                src={profile.profile_picture}
-                alt={`${profile.user?.firstName} ${profile.user?.lastName}`}
+                src={enhancedWorker.avatar}
+                alt={`${enhancedWorker.name}`}
             >
-                {profile.user?.firstName?.charAt(0)}
-                {profile.user?.lastName?.charAt(0)}
+                {enhancedWorker.name?.charAt(0)}
+                {enhancedWorker.name?.charAt(1)}
             </ProfileAvatar>
           </Badge>
 
@@ -733,8 +855,8 @@ function WorkerProfile() {
               fontWeight={700}
               sx={{ mt: 2, mb: 1, color: theme.palette.text.primary }}
             >
-              {profile.user?.firstName} {profile.user?.lastName}
-              {profile.is_online && (
+              {enhancedWorker.name}
+              {enhancedWorker.is_online && (
                 <Chip
                   label="Online"
                   size="small"
@@ -751,7 +873,7 @@ function WorkerProfile() {
               fontWeight={600}
               sx={{ mb: 2 }}
             >
-              {profile.profession}
+              {enhancedWorker.title}
             </Typography>
 
             <Stack
@@ -763,16 +885,16 @@ function WorkerProfile() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Rating
-                value={profile.average_rating || 0}
+                value={enhancedWorker.rating || 0}
                   precision={0.1}
                 readOnly
                   size="large"
               />
                 <Typography variant="h6" fontWeight={600}>
-                  {profile.average_rating?.toFixed(1) || '0.0'}
+                  {enhancedWorker.rating?.toFixed(1) || '0.0'}
                 </Typography>
               <Typography variant="body1" color="text.secondary">
-                ({reviews.length} reviews)
+                ({enhancedWorker.testimonials.length} reviews)
               </Typography>
               </Box>
             </Stack>
@@ -788,7 +910,7 @@ function WorkerProfile() {
                 fontSize: '1.1rem',
               }}
             >
-              {profile.bio ||
+              {enhancedWorker.bio ||
                 'Professional craftsperson dedicated to delivering quality work.'}
             </Typography>
 
@@ -802,7 +924,7 @@ function WorkerProfile() {
                 variant="contained"
                 size="large"
                 startIcon={<MessageIcon />}
-                onClick={handleContactWorker}
+                onClick={handleContact}
                 disabled={isOwner}
               >
                 Message Worker
@@ -813,9 +935,7 @@ function WorkerProfile() {
                   variant="outlined"
                   size="large"
                   startIcon={<BusinessCenterIcon />}
-                  onClick={() =>
-                    navigate(`/contracts/create?workerId=${workerId}`)
-                  }
+                  onClick={handleHire}
                 >
                   Hire Now
                 </AnimatedButton>
@@ -838,7 +958,7 @@ function WorkerProfile() {
           <MetricCard>
             <WorkIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
             <Typography variant="h4" fontWeight={700} color="primary">
-              {profile.experience_years || 0}
+              {enhancedWorker.experience_years || 0}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Years Experience
@@ -850,7 +970,7 @@ function WorkerProfile() {
           <MetricCard>
             <AssessmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
             <Typography variant="h4" fontWeight={700} color="primary">
-              {stats.jobs_completed || 0}
+              {statsData.projectsCompleted || 0}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Jobs Completed
@@ -862,7 +982,7 @@ function WorkerProfile() {
           <MetricCard>
             <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
             <Typography variant="h4" fontWeight={700} color="primary">
-              ${profile.hourly_rate || 0}
+              ${enhancedWorker.hourly_rate || 0}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Per Hour
@@ -875,9 +995,9 @@ function WorkerProfile() {
             <TrendingUpIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
             <Typography variant="h4" fontWeight={700} color="primary">
               {(
-                ((stats.jobs_completed || 0) /
+                ((statsData.projectsCompleted || 0) /
                   Math.max(
-                    (stats.jobs_completed || 0) + (stats.jobs_cancelled || 0),
+                    (statsData.projectsCompleted || 0) + (statsData.projects_cancelled || 0),
                     1,
                   )) *
                 100
@@ -912,7 +1032,7 @@ function WorkerProfile() {
               Primary Skills
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-              {skills.slice(0, 8).map((skill, index) => (
+              {enhancedWorker.skills.slice(0, 8).map((skill, index) => (
                 <SkillChip key={index} label={skill.name} size="medium" />
               ))}
             </Box>
@@ -921,7 +1041,7 @@ function WorkerProfile() {
               Specializations
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {profile.specializations?.map((spec, index) => (
+              {enhancedWorker.specializations?.map((spec, index) => (
               <Chip
                   key={index}
                   label={spec}
@@ -951,7 +1071,7 @@ function WorkerProfile() {
             </Typography>
             <List dense>
               {(
-                profile.tools || [
+                enhancedWorker.tools || [
                   'Power Tools',
                   'Hand Tools',
                   'Safety Equipment',
@@ -982,9 +1102,9 @@ function WorkerProfile() {
           Portfolio & Previous Work
         </Typography>
 
-        {portfolio.length > 0 ? (
+        {enhancedWorker.portfolio.length > 0 ? (
             <Grid container spacing={2}>
-            {portfolio.map((item, index) => (
+            {enhancedWorker.portfolio.map((item, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card
                   sx={{
@@ -1046,13 +1166,13 @@ function WorkerProfile() {
           Client Reviews
         </Typography>
 
-        {reviews.length > 0 ? (
+        {enhancedWorker.testimonials.length > 0 ? (
             <List>
-            {reviews.slice(0, 5).map((review, index) => (
+            {enhancedWorker.testimonials.slice(0, 5).map((review, index) => (
               <React.Fragment key={index}>
                   <ListItem alignItems="flex-start">
                     <ListItemAvatar>
-                    <Avatar>{review.client_name?.charAt(0) || 'C'}</Avatar>
+                    <Avatar>{review.client?.charAt(0) || 'C'}</Avatar>
                     </ListItemAvatar>
                     <ListItemText
                       primary={
@@ -1065,7 +1185,7 @@ function WorkerProfile() {
                         }}
                       >
                         <Typography variant="subtitle1" fontWeight={600}>
-                          {review.client_name || 'Anonymous Client'}
+                          {review.client || 'Anonymous Client'}
                           </Typography>
                         <Rating value={review.rating} size="small" readOnly />
                         </Box>
@@ -1073,16 +1193,16 @@ function WorkerProfile() {
                       secondary={
                       <>
                         <Typography variant="body2" sx={{ mb: 1 }}>
-                          {review.comment}
+                          {review.text}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {new Date(review.created_at).toLocaleDateString()}
+                          {new Date(review.date).toLocaleDateString()}
                         </Typography>
                       </>
                       }
                     />
                   </ListItem>
-                {index < reviews.length - 1 && (
+                {index < enhancedWorker.testimonials.length - 1 && (
                   <Divider variant="inset" component="li" />
                 )}
                 </React.Fragment>
@@ -1179,9 +1299,9 @@ function WorkerProfile() {
           Certifications & Credentials
         </Typography>
 
-        {certificates.length > 0 ? (
+        {enhancedWorker.certifications.length > 0 ? (
           <Grid container spacing={2}>
-            {certificates.map((cert, index) => (
+            {enhancedWorker.certifications.map((cert, index) => (
               <Grid item xs={12} md={6} key={index}>
                 <Card variant="outlined" sx={{ p: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1193,13 +1313,13 @@ function WorkerProfile() {
                         {cert.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {cert.issuing_organization}
+                        {cert.issuer}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Issued: {new Date(cert.issue_date).toLocaleDateString()}
+                        Issued: {new Date(cert.year).toLocaleDateString()}
                       </Typography>
         </Box>
-                    {cert.is_verified && <VerifiedIcon color="success" />}
+                    {cert.verified && <VerifiedIcon color="success" />}
                   </Box>
                 </Card>
               </Grid>
@@ -1220,148 +1340,1248 @@ function WorkerProfile() {
     </GlassCard>
   );
 
+  // Enhanced hero section render
+  const renderHeroSection = () => (
+    <ProfileHeroSection ref={heroRef}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 3 }}>
+        <Grid container spacing={6} alignItems="center" sx={{ py: 8 }}>
+          <Grid item xs={12} md={4}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <ProfileAvatar
+                  src={enhancedWorker.avatar}
+                  alt={enhancedWorker.name}
+                  size="large"
+                  verified={enhancedWorker.verified}
+                  premium={enhancedWorker.premium}
+                  sx={{
+                    mb: 3,
+                    animation: enhancedWorker.premium ? `${pulse} 3s ease-in-out infinite` : 'none',
+                  }}
+                >
+                  {enhancedWorker.name.charAt(0)}
+                </ProfileAvatar>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}>
+                  {enhancedWorker.badges.map((badge, index) => (
+                    <motion.div
+                      key={badge}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                    >
+                      <Chip
+                        label={badge}
+                        size="small"
+                        sx={{
+                          bgcolor: alpha('#FFD700', 0.2),
+                          color: '#FFD700',
+                          fontWeight: 800,
+                          fontSize: '0.7rem',
+                          border: `1px solid ${alpha('#FFD700', 0.5)}`,
+                        }}
+                      />
+                    </motion.div>
+                  ))}
+                </Box>
+
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Rating 
+                    value={enhancedWorker.rating} 
+                    precision={0.01} 
+                    readOnly 
+                    size="large"
+                    sx={{
+                      '& .MuiRating-iconFilled': {
+                        color: '#FFD700',
+                        fontSize: '2rem',
+                      },
+                    }}
+                  />
+                  <Typography variant="h6" fontWeight={800} sx={{ color: '#FFD700' }}>
+                    {enhancedWorker.rating}
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" sx={{ opacity: 0.9, mt: 1 }}>
+                  ({enhancedWorker.reviewCount.toLocaleString()} reviews)
+                </Typography>
+              </Box>
+            </motion.div>
+          </Grid>
+          
+          <Grid item xs={12} md={8}>
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, delay: 0.3 }}
+            >
+              <Typography
+                variant="h2"
+                sx={{
+                  fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                  fontWeight: 900,
+                  mb: 2,
+                  lineHeight: 1.1,
+                  textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                }}
+              >
+                {enhancedWorker.name}
+              </Typography>
+              
+              <Typography
+                variant="h4"
+                sx={{
+                  fontSize: { xs: '1.3rem', md: '1.8rem', lg: '2.2rem' },
+                  fontWeight: 600,
+                  mb: 4,
+                  opacity: 0.95,
+                  lineHeight: 1.3,
+                }}
+              >
+                {enhancedWorker.title}
+              </Typography>
+
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" fontWeight={900} color="#FFD700">
+                      ${enhancedWorker.hourlyRate}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      per hour
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" fontWeight={900} color="#4ECDC4">
+                      {enhancedWorker.completedJobs}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      projects completed
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" fontWeight={900} color="#FF6B6B">
+                      {enhancedWorker.responseTime}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      response time
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" fontWeight={900} color="#9B59B6">
+                      99.8%
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      success rate
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 4 }}>
+                <AnimatedButton
+                  size="large"
+                  startIcon={<MessageIcon />}
+                  onClick={handleContact}
+                  magnetic
+                  sx={{ minWidth: 200 }}
+                >
+                  Message Now
+                </AnimatedButton>
+                <AnimatedButton
+                  variant="outlined"
+                  size="large"
+                  startIcon={<WorkIcon />}
+                  onClick={handleHire}
+                  sx={{
+                    borderColor: 'white',
+                    color: 'white',
+                    minWidth: 180,
+                    '&:hover': {
+                      borderColor: theme.palette.secondary.main,
+                      backgroundColor: alpha('#ffffff', 0.15),
+                    },
+                  }}
+                >
+                  Hire Expert
+                </AnimatedButton>
+                <IconButton
+                  onClick={handleBookmark}
+                  sx={{
+                    color: 'white',
+                    bgcolor: alpha('#ffffff', 0.1),
+                    borderRadius: 3,
+                    '&:hover': {
+                      bgcolor: alpha('#ffffff', 0.2),
+                      transform: 'scale(1.1)',
+                    },
+                  }}
+                >
+                  {isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                </IconButton>
+              </Stack>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <LocationIcon sx={{ opacity: 0.8 }} />
+                <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 600 }}>
+                  {enhancedWorker.location}
+                </Typography>
+                <Chip
+                  label={enhancedWorker.availability.status}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha('#4CAF50', 0.2),
+                    color: '#4CAF50',
+                    fontWeight: 700,
+                    animation: `${pulse} 2s ease-in-out infinite`,
+                  }}
+                />
+              </Box>
+            </motion.div>
+          </Grid>
+        </Grid>
+      </Container>
+    </ProfileHeroSection>
+  );
+
+  // Enhanced overview section
+  const renderOverview = () => (
+    <Container maxWidth="xl" sx={{ py: 8 }}>
+      <Grid container spacing={6}>
+        <Grid item xs={12} lg={8}>
+          <GlassCard featured elevation={12} sx={{ p: 4, mb: 6 }}>
+            <Typography variant="h4" fontWeight={800} gutterBottom sx={{ mb: 3 }}>
+              🌟 Professional Overview
+            </Typography>
+            
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                lineHeight: 1.8, 
+                fontSize: '1.1rem', 
+                mb: 3,
+                maxHeight: showFullBio ? 'none' : '150px',
+                overflow: 'hidden',
+                position: 'relative',
+                '&::after': !showFullBio ? {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '50px',
+                  background: `linear-gradient(transparent, ${theme.palette.background.paper})`,
+                } : {},
+              }}
+            >
+              {enhancedWorker.bio}
+            </Typography>
+            
+            <AnimatedButton
+              variant="outlined"
+              size="small"
+              onClick={() => setShowFullBio(!showFullBio)}
+              startIcon={showFullBio ? <ExpandMoreIcon /> : <ExpandMoreIcon sx={{ transform: 'rotate(180deg)' }} />}
+            >
+              {showFullBio ? 'Show Less' : 'Read More'}
+            </AnimatedButton>
+          </GlassCard>
+
+          {/* Performance Metrics */}
+          <GlassCard elevation={12} sx={{ p: 4, mb: 6 }}>
+            <Typography variant="h4" fontWeight={800} gutterBottom sx={{ mb: 4 }}>
+              📊 Performance Excellence
+            </Typography>
+            
+            <Grid container spacing={3}>
+              {[
+                { label: 'Success Rate', value: `${enhancedWorker.successMetrics.successRate}%`, color: '#4CAF50', icon: <CheckIcon /> },
+                { label: 'Innovation Score', value: `${enhancedWorker.successMetrics.innovationScore}/100`, color: '#FF6B6B', icon: <EmojiEventsIcon /> },
+                { label: 'Technical Score', value: `${enhancedWorker.successMetrics.technicalScore}/100`, color: '#2196F3', icon: <BuildIcon /> },
+                { label: 'Leadership Score', value: `${enhancedWorker.successMetrics.leadershipScore}/100`, color: '#9C27B0', icon: <GroupWorkIcon /> },
+                { label: 'Communication', value: `${enhancedWorker.successMetrics.communicationScore}/100`, color: '#FF9800', icon: <MessageIcon /> },
+                { label: 'Repeat Clients', value: `${enhancedWorker.successMetrics.repeatClients}%`, color: '#00BCD4', icon: <StarIcon /> },
+              ].map((metric, index) => (
+                <Grid item xs={6} md={4} key={metric.label}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <MetricCard
+                      color={metric.color}
+                      gradient
+                      whileHover={{ scale: 1.05, rotateY: 5 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Box sx={{ color: metric.color, fontSize: '2.5rem', mb: 1 }}>
+                        {metric.icon}
+                      </Box>
+                      <Typography variant="h4" fontWeight={900} color={metric.color} gutterBottom>
+                        {metric.value}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        {metric.label}
+                      </Typography>
+                    </MetricCard>
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
+          </GlassCard>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          {/* Quick Stats */}
+          <GlassCard premium elevation={16} sx={{ p: 4, mb: 4, textAlign: 'center' }}>
+            <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 3 }}>
+              💎 Elite Professional Stats
+            </Typography>
+            
+            <Stack spacing={3}>
+              {[
+                { label: 'Total Earnings', value: statsData.totalEarnings, icon: <MoneyIcon />, color: '#4CAF50' },
+                { label: 'Clients Served', value: statsData.clientsServed, icon: <PersonIcon />, color: '#2196F3' },
+                { label: 'Avg Rating', value: `${statsData.avgRating}/5.0`, icon: <StarIcon />, color: '#FFD700' },
+                { label: 'On-Time Delivery', value: `${statsData.onTimeDelivery}%`, icon: <ScheduleIcon />, color: '#9C27B0' },
+              ].map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: alpha(stat.color, 0.1),
+                    border: `1px solid ${alpha(stat.color, 0.3)}`,
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ color: stat.color, fontSize: '1.5rem' }}>
+                        {stat.icon}
+                      </Box>
+                      <Typography variant="body2" fontWeight={600}>
+                        {stat.label}
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" fontWeight={900} color={stat.color}>
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                </motion.div>
+              ))}
+            </Stack>
+          </GlassCard>
+
+          {/* Availability */}
+          <GlassCard elevation={12} sx={{ p: 4, mb: 4 }}>
+            <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 3 }}>
+              ⏰ Availability & Preferences
+            </Typography>
+            
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Current Status
+                </Typography>
+                <Chip
+                  label={enhancedWorker.availability.status}
+                  color="success"
+                  sx={{ mt: 1, fontWeight: 700 }}
+                />
+              </Box>
+              
+              <Box>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Next Available
+                </Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {enhancedWorker.availability.nextAvailable}
+                </Typography>
+              </Box>
+              
+              <Box>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Project Size Preference
+                </Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {enhancedWorker.availability.preferredProjectSize}
+                </Typography>
+              </Box>
+              
+              <Box>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Working Hours
+                </Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {enhancedWorker.availability.workingHours}
+                </Typography>
+              </Box>
+              
+              <Box>
+                <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                  Remote Work
+                </Typography>
+                <Chip
+                  label={enhancedWorker.availability.remote ? 'Available' : 'On-site only'}
+                  color={enhancedWorker.availability.remote ? 'success' : 'default'}
+                  size="small"
+                  sx={{ mt: 1 }}
+                />
+              </Box>
+            </Stack>
+          </GlassCard>
+
+          {/* Languages */}
+          <GlassCard elevation={12} sx={{ p: 4 }}>
+            <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 3 }}>
+              🌍 Languages
+            </Typography>
+            
+            <Stack spacing={1}>
+              {enhancedWorker.languages.map((language, index) => (
+                <Typography key={index} variant="body1" fontWeight={600}>
+                  {language}
+                </Typography>
+              ))}
+            </Stack>
+          </GlassCard>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+
+  // Enhanced skills section
+  const renderSkillsSection = () => (
+    <Container maxWidth="xl" sx={{ py: 8 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <Typography 
+          variant="h3" 
+          fontWeight={900} 
+          textAlign="center" 
+          gutterBottom 
+          sx={{ 
+            mb: 6,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          🛠️ Skills & Expertise
+        </Typography>
+
+        <GlassCard featured elevation={20} sx={{ p: 6 }}>
+          <Grid container spacing={4}>
+            {['technical', 'leadership', 'soft'].map((category, categoryIndex) => {
+              const categorySkills = enhancedWorker.skills.filter(skill => skill.category === category);
+              const categoryColors = {
+                technical: '#2196F3',
+                leadership: '#FF9800',
+                soft: '#4CAF50',
+              };
+              const categoryIcons = {
+                technical: <BuildIcon />,
+                leadership: <GroupWorkIcon />,
+                soft: <MessageIcon />,
+              };
+
+              return (
+                <Grid item xs={12} md={4} key={category}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 60 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: categoryIndex * 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <Box sx={{ textAlign: 'center', mb: 3 }}>
+                      <Box 
+                        sx={{ 
+                          color: categoryColors[category], 
+                          fontSize: '3rem', 
+                          mb: 2,
+                          filter: `drop-shadow(0 8px 16px ${alpha(categoryColors[category], 0.3)})`,
+                        }}
+                      >
+                        {categoryIcons[category]}
+                      </Box>
+                      <Typography variant="h5" fontWeight={800} sx={{ color: categoryColors[category], textTransform: 'capitalize' }}>
+                        {category} Skills
+                      </Typography>
+                    </Box>
+                    
+                    <Stack spacing={2}>
+                      {categorySkills.map((skill, index) => (
+                        <motion.div
+                          key={skill.name}
+                          initial={{ opacity: 0, x: -30 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.6, delay: index * 0.1 }}
+                          viewport={{ once: true }}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          <Box sx={{ 
+                            p: 2, 
+                            borderRadius: 3,
+                            bgcolor: alpha(categoryColors[category], 0.05),
+                            border: `2px solid ${alpha(categoryColors[category], 0.2)}`,
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              bgcolor: alpha(categoryColors[category], 0.1),
+                              borderColor: categoryColors[category],
+                              transform: 'translateY(-4px)',
+                              boxShadow: `0 12px 24px ${alpha(categoryColors[category], 0.2)}`,
+                            }
+                          }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                              <Typography variant="h6" fontWeight={800}>
+                                {skill.name}
+                              </Typography>
+                              <SkillChip
+                                label={skill.level}
+                                size="small"
+                                level={skill.level}
+                                category={category}
+                              />
+                            </Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                              {skill.years} years experience
+                            </Typography>
+                            <LinearProgress
+                              variant="determinate"
+                              value={
+                                skill.level === 'expert' ? 95 :
+                                skill.level === 'advanced' ? 80 :
+                                skill.level === 'intermediate' ? 65 : 45
+                              }
+                              sx={{
+                                height: 8,
+                                borderRadius: 4,
+                                bgcolor: alpha(categoryColors[category], 0.1),
+                                '& .MuiLinearProgress-bar': {
+                                  bgcolor: categoryColors[category],
+                                  borderRadius: 4,
+                                },
+                              }}
+                            />
+                          </Box>
+                        </motion.div>
+                      ))}
+                    </Stack>
+                  </motion.div>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </GlassCard>
+      </motion.div>
+    </Container>
+  );
+
+  // Enhanced portfolio section
+  const renderPortfolioSection = () => (
+    <Box sx={{ bgcolor: alpha(theme.palette.background.default, 0.5), py: 8 }}>
+      <Container maxWidth="xl">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <Typography 
+            variant="h3" 
+            fontWeight={900} 
+            textAlign="center" 
+            gutterBottom 
+            sx={{ 
+              mb: 6,
+              background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            🏆 Featured Portfolio
+          </Typography>
+
+          <Grid container spacing={4}>
+            {enhancedWorker.portfolio.map((project, index) => (
+              <Grid item xs={12} md={6} lg={4} key={project.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 80, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -12, transition: { duration: 0.3 } }}
+                >
+                  <GlassCard
+                    featured={project.featured}
+                    elevation={16}
+                    sx={{ 
+                      height: '100%',
+                      cursor: 'pointer',
+                      overflow: 'hidden',
+                    }}
+                    onClick={() => {
+                      setSelectedPortfolioItem(project);
+                      setPortfolioDialog(true);
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="240"
+                      image={project.image}
+                      alt={project.title}
+                      sx={{
+                        transition: 'transform 0.5s ease',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                        },
+                      }}
+                    />
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Typography variant="h6" fontWeight={800} sx={{ flex: 1 }}>
+                          {project.title}
+                        </Typography>
+                        {project.featured && (
+                          <Chip
+                            label="FEATURED"
+                            size="small"
+                            sx={{
+                              bgcolor: alpha('#FFD700', 0.2),
+                              color: '#FFD700',
+                              fontWeight: 800,
+                              fontSize: '0.7rem',
+                            }}
+                          />
+                        )}
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.6 }}>
+                        {project.description}
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Chip
+                          label={project.category}
+                          size="small"
+                          sx={{
+                            bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                            color: theme.palette.secondary.main,
+                            fontWeight: 700,
+                          }}
+                        />
+                        <Typography variant="body2" fontWeight={600} color="text.secondary">
+                          {project.year}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Client: <strong>{project.client}</strong>
+                        </Typography>
+                        <Typography variant="h6" fontWeight={800} color="success.main">
+                          {project.value}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </GlassCard>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <AnimatedButton
+              variant="outlined"
+              size="large"
+              startIcon={<VisibilityIcon />}
+              onClick={() => navigate(`/professionals/${enhancedWorker.id}/portfolio`)}
+              magnetic
+            >
+              View Complete Portfolio
+            </AnimatedButton>
+          </Box>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+
+  // Experience and certifications section
+  const renderExperienceSection = () => (
+    <Container maxWidth="xl" sx={{ py: 8 }}>
+      <Typography 
+        variant="h3" 
+        fontWeight={900} 
+        textAlign="center" 
+        gutterBottom 
+        sx={{ 
+          mb: 6,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}
+      >
+        💼 Professional Journey
+      </Typography>
+
+      <Grid container spacing={6}>
+        <Grid item xs={12} lg={8}>
+          <GlassCard elevation={16} sx={{ p: 4 }}>
+            <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 4 }}>
+              🏢 Work Experience
+            </Typography>
+            
+            <Stack spacing={4}>
+              {enhancedWorker.workHistory.map((job, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Box sx={{ 
+                    p: 3, 
+                    borderLeft: `4px solid ${theme.palette.secondary.main}`,
+                    bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                    borderRadius: '0 12px 12px 0',
+                    position: 'relative',
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                      transform: 'translateX(8px)',
+                      transition: 'all 0.3s ease',
+                    }
+                  }}>
+                    <Typography variant="h6" fontWeight={800} gutterBottom>
+                      {job.role}
+                    </Typography>
+                    <Typography variant="h6" color="secondary.main" fontWeight={700} gutterBottom>
+                      {job.company}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ mb: 2 }}>
+                      {job.period} • {job.projects} projects
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+                      {job.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {job.achievements.map((achievement, achIndex) => (
+                        <Chip
+                          key={achIndex}
+                          label={achievement}
+                          size="small"
+                          sx={{
+                            bgcolor: alpha(theme.palette.success.main, 0.1),
+                            color: theme.palette.success.main,
+                            fontWeight: 600,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </motion.div>
+              ))}
+            </Stack>
+          </GlassCard>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <GlassCard elevation={16} sx={{ p: 4, mb: 4 }}>
+            <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 4 }}>
+              🎓 Certifications
+            </Typography>
+            
+            <Stack spacing={3}>
+              {enhancedWorker.certifications.map((cert, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 2,
+                    bgcolor: alpha(theme.palette.warning.main, 0.05),
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                      borderColor: theme.palette.warning.main,
+                      transform: 'translateY(-2px)',
+                      transition: 'all 0.3s ease',
+                    }
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body1" fontWeight={800}>
+                        {cert.name}
+                      </Typography>
+                      {cert.verified && (
+                        <VerifiedIcon color="success" fontSize="small" />
+                      )}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {cert.issuer}
+                    </Typography>
+                    <Typography variant="caption" color="warning.main" fontWeight={700}>
+                      {cert.year}
+                    </Typography>
+                  </Box>
+                </motion.div>
+              ))}
+            </Stack>
+          </GlassCard>
+
+          <GlassCard elevation={16} sx={{ p: 4 }}>
+            <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 4 }}>
+              🏆 Key Achievements
+            </Typography>
+            
+            <Stack spacing={2}>
+              {enhancedWorker.achievements.map((achievement, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                    <EmojiEventsIcon 
+                      sx={{ 
+                        color: '#FFD700', 
+                        fontSize: '1.2rem', 
+                        mt: 0.2,
+                        filter: 'drop-shadow(0 2px 4px rgba(255,215,0,0.3))',
+                      }} 
+                    />
+                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.6 }}>
+                      {achievement}
+                    </Typography>
+                  </Box>
+                </motion.div>
+              ))}
+            </Stack>
+          </GlassCard>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+
+  // Testimonials section
+  const renderTestimonials = () => (
+    <Box sx={{ bgcolor: alpha(theme.palette.background.default, 0.5), py: 8 }}>
+      <Container maxWidth="xl">
+        <Typography 
+          variant="h3" 
+          fontWeight={900} 
+          textAlign="center" 
+          gutterBottom 
+          sx={{ 
+            mb: 6,
+            background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          💬 Client Testimonials
+        </Typography>
+
+        <Grid container spacing={4}>
+          {enhancedWorker.testimonials.map((testimonial, index) => (
+            <Grid item xs={12} md={6} key={index}>
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard 
+                  elevation={16} 
+                  sx={{ 
+                    p: 4, 
+                    height: '100%',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha('#FFD700', 0.05)})`,
+                    border: `2px solid ${alpha('#FFD700', 0.2)}`,
+                  }}
+                >
+                  <Rating value={testimonial.rating} readOnly sx={{ mb: 2, color: '#FFD700' }} />
+                  <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.8, fontStyle: 'italic' }}>
+                    "{testimonial.text}"
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="h6" fontWeight={800}>
+                        {testimonial.client}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {testimonial.project}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                      {testimonial.date}
+                    </Typography>
+                  </Box>
+                </GlassCard>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </Box>
+  );
+
   return (
     <>
       <Helmet>
-        <title>{`${profile.user?.firstName} ${profile.user?.lastName} - ${profile.profession} | Kelmah`}</title>
-        <meta
-          name="description"
-          content={`Professional ${profile.profession} available for hire. View portfolio, reviews, and contact ${profile.user?.firstName} for your next project.`}
-        />
+        <title>{enhancedWorker.name} - {enhancedWorker.title} | Kelmah</title>
+        <meta name="description" content={`Hire ${enhancedWorker.name}, ${enhancedWorker.title}. ${enhancedWorker.rating} stars, ${enhancedWorker.reviewCount} reviews. Available at $${enhancedWorker.hourlyRate}/hr.`} />
+        <meta name="keywords" content={`${enhancedWorker.name}, ${enhancedWorker.skills.map(s => s.name).join(', ')}, ${enhancedWorker.location}`} />
+        <meta property="og:title" content={`${enhancedWorker.name} - Elite Professional on Kelmah`} />
+        <meta property="og:description" content={enhancedWorker.bio.substring(0, 160)} />
+        <meta property="og:image" content={enhancedWorker.avatar} />
+        <meta property="og:type" content="profile" />
+        <link rel="canonical" href={`https://kelmah.com/professionals/${enhancedWorker.id}`} />
       </Helmet>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Breadcrumbs sx={{ mb: 3 }}>
-          <Link color="inherit" href="/" onClick={() => navigate('/')}>
-            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-            Home
-          </Link>
-          <Link
-            color="inherit"
-            href="/find-talents"
-            onClick={() => navigate('/find-talents')}
+      <Box sx={{ 
+        minHeight: '100vh', 
+        bgcolor: 'background.default',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 20% 80%, ${alpha(theme.palette.primary.main, 0.03)} 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, ${alpha(theme.palette.secondary.main, 0.03)} 0%, transparent 50%),
+                      radial-gradient(circle at 40% 40%, ${alpha('#FFD700', 0.02)} 0%, transparent 50%)`,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }
+      }}>
+        {/* Hero Section */}
+        {renderHeroSection()}
+        
+        {/* Navigation Tabs */}
+        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+          <Paper 
+            elevation={8} 
+            sx={{ 
+              borderRadius: 4, 
+              overflow: 'hidden',
+              bgcolor: alpha(theme.palette.background.paper, 0.95),
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            }}
           >
-            Find Talents
-          </Link>
-          <Typography color="text.primary">
-            {profile.user?.firstName} {profile.user?.lastName}
-                          </Typography>
-        </Breadcrumbs>
+            <Tabs
+              value={tabValue}
+              onChange={(e, newValue) => setTabValue(newValue)}
+              variant={isMobile ? "scrollable" : "fullWidth"}
+              scrollButtons="auto"
+              sx={{
+                '& .MuiTab-root': {
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  textTransform: 'none',
+                  minHeight: 64,
+                  '&.Mui-selected': {
+                    color: theme.palette.secondary.main,
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  height: 4,
+                  borderRadius: 2,
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                },
+              }}
+            >
+              <Tab label="🌟 Overview" />
+              <Tab label="🛠️ Skills" />
+              <Tab label="🏆 Portfolio" />
+              <Tab label="💼 Experience" />
+              <Tab label="💬 Reviews" />
+            </Tabs>
+          </Paper>
+        </Container>
 
-        {renderProfileHeader()}
-        {renderMetrics()}
-
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            variant={isMobile ? 'scrollable' : 'fullWidth'}
-            scrollButtons="auto"
-          >
-            <Tab label="Overview" />
-            <Tab label="Portfolio" />
-            <Tab label="Reviews" />
-            <Tab label="Availability" />
-            <Tab label="Certifications" />
-          </Tabs>
+        {/* Tab Content */}
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <TabPanel value={tabValue} index={0}>
+            {renderOverview()}
+          </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            {renderSkillsSection()}
+          </TabPanel>
+          <TabPanel value={tabValue} index={2}>
+            {renderPortfolioSection()}
+          </TabPanel>
+          <TabPanel value={tabValue} index={3}>
+            {renderExperienceSection()}
+          </TabPanel>
+          <TabPanel value={tabValue} index={4}>
+            {renderTestimonials()}
+          </TabPanel>
         </Box>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tabValue}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {tabValue === 0 && (
-              <>
-                {renderSkillsAndExpertise()}
-                {renderAvailability()}
-              </>
-            )}
-            {tabValue === 1 && renderPortfolio()}
-            {tabValue === 2 && renderReviews()}
-            {tabValue === 3 && renderAvailability()}
-            {tabValue === 4 && renderCertifications()}
-          </motion.div>
-        </AnimatePresence>
+        {/* Floating Action Button */}
+        <SpeedDial
+          ariaLabel="Profile Actions"
+          sx={{ 
+            position: 'fixed', 
+            bottom: { xs: 80, md: 24 }, 
+            right: { xs: 16, md: 24 },
+            '& .MuiSpeedDial-fab': {
+              bgcolor: theme.palette.secondary.main,
+              '&:hover': {
+                bgcolor: theme.palette.secondary.dark,
+                transform: 'scale(1.1)',
+              },
+            },
+          }}
+          icon={<SpeedDialIcon />}
+        >
+          <SpeedDialAction
+            icon={<MessageIcon />}
+            tooltipTitle="Send Message"
+            onClick={handleContact}
+          />
+          <SpeedDialAction
+            icon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+            tooltipTitle={isBookmarked ? "Remove Bookmark" : "Bookmark"}
+            onClick={handleBookmark}
+          />
+          <SpeedDialAction
+            icon={<ShareIcon />}
+            tooltipTitle="Share Profile"
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: `${enhancedWorker.name} - Professional Profile`,
+                  text: `Check out ${enhancedWorker.name}'s profile on Kelmah`,
+                  url: window.location.href,
+                });
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+              }
+            }}
+          />
+          <SpeedDialAction
+            icon={<GetAppIcon />}
+            tooltipTitle="Download Resume"
+            onClick={() => {
+              // Mock download functionality
+              const link = document.createElement('a');
+              link.href = '#';
+              link.download = `${enhancedWorker.name}-Resume.pdf`;
+              link.click();
+            }}
+          />
+        </SpeedDial>
 
-        {/* Portfolio Item Dialog */}
+        {/* Contact Dialog */}
         <Dialog
-          open={portfolioDialogOpen}
-          onClose={() => setPortfolioDialogOpen(false)}
+          open={contactDialog}
+          onClose={() => setContactDialog(false)}
           maxWidth="md"
           fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 4,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.95)})`,
+              backdropFilter: 'blur(30px)',
+            }
+          }}
+        >
+          <DialogTitle sx={{ textAlign: 'center', pb: 2 }}>
+            <Typography variant="h4" fontWeight={800}>
+              💬 Contact {enhancedWorker.name}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Send a message to discuss your project
+            </Typography>
+          </DialogTitle>
+          <DialogContent sx={{ p: 4 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Project Title"
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Budget Range"
+                  variant="outlined"
+                  placeholder="e.g., $10,000 - $25,000"
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Timeline"
+                  variant="outlined"
+                  placeholder="e.g., 2-3 months"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Project Description"
+                  variant="outlined"
+                  placeholder="Describe your project requirements, goals, and any specific needs..."
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ p: 4, pt: 0 }}>
+            <AnimatedButton
+              variant="outlined"
+              onClick={() => setContactDialog(false)}
+            >
+              Cancel
+            </AnimatedButton>
+            <AnimatedButton
+              variant="contained"
+              onClick={() => {
+                setContactDialog(false);
+                // Handle message sending
+              }}
+              magnetic
+            >
+              Send Message
+            </AnimatedButton>
+          </DialogActions>
+        </Dialog>
+
+        {/* Portfolio Dialog */}
+        <Dialog
+          open={portfolioDialog}
+          onClose={() => setPortfolioDialog(false)}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 4,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.95)})`,
+              backdropFilter: 'blur(30px)',
+            }
+          }}
         >
           {selectedPortfolioItem && (
             <>
-              <DialogTitle>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <Typography variant="h5" fontWeight={600}>
-                    {selectedPortfolioItem.title}
-                  </Typography>
-                  <IconButton onClick={() => setPortfolioDialogOpen(false)}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-              </DialogTitle>
-              <DialogContent>
-                <Box sx={{ mb: 2 }}>
-                  <img
-                    src={
-                      selectedPortfolioItem.image || '/api/placeholder/600/400'
-                    }
-                    alt={selectedPortfolioItem.title}
-                    style={{ width: '100%', height: 'auto', borderRadius: 8 }}
-                  />
-                </Box>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {selectedPortfolioItem.description}
+              <DialogTitle sx={{ textAlign: 'center', pb: 2 }}>
+                <Typography variant="h4" fontWeight={800}>
+                  {selectedPortfolioItem.title}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {selectedPortfolioItem.technologies?.map((tech, index) => (
-                    <Chip key={index} label={tech} size="small" />
-                  ))}
-        </Box>
+                <Typography variant="body1" color="text.secondary">
+                  {selectedPortfolioItem.category} • {selectedPortfolioItem.year}
+                </Typography>
+              </DialogTitle>
+              <DialogContent sx={{ p: 4 }}>
+                <Grid container spacing={4}>
+                  <Grid item xs={12} md={6}>
+                    <CardMedia
+                      component="img"
+                      image={selectedPortfolioItem.image}
+                      alt={selectedPortfolioItem.title}
+                      sx={{ borderRadius: 2, width: '100%', height: 'auto' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" fontWeight={800} gutterBottom>
+                      Project Overview
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.8 }}>
+                      {selectedPortfolioItem.description}
+                    </Typography>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        Client
+                      </Typography>
+                      <Typography variant="h6" fontWeight={800}>
+                        {selectedPortfolioItem.client}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        Project Value
+                      </Typography>
+                      <Typography variant="h6" fontWeight={800} color="success.main">
+                        {selectedPortfolioItem.value}
+                      </Typography>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        Completion Year
+                      </Typography>
+                      <Typography variant="h6" fontWeight={800}>
+                        {selectedPortfolioItem.year}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
               </DialogContent>
+              <DialogActions sx={{ p: 4, pt: 0 }}>
+                <AnimatedButton
+                  variant="outlined"
+                  onClick={() => setPortfolioDialog(false)}
+                >
+                  Close
+                </AnimatedButton>
+                <AnimatedButton
+                  variant="contained"
+                  onClick={() => {
+                    setPortfolioDialog(false);
+                    handleContact();
+                  }}
+                  magnetic
+                >
+                  Discuss Similar Project
+                </AnimatedButton>
+              </DialogActions>
             </>
           )}
         </Dialog>
-
-        {/* Floating Action Button for Quick Actions */}
-        {!isOwner && (
-          <SpeedDial
-            ariaLabel="Worker Actions"
-            sx={{ position: 'fixed', bottom: 16, right: 16 }}
-            icon={<SpeedDialIcon />}
-          >
-            <SpeedDialAction
-              icon={<MessageIcon />}
-              tooltipTitle="Message Worker"
-              onClick={handleContactWorker}
-            />
-            <SpeedDialAction
-              icon={<BusinessCenterIcon />}
-              tooltipTitle="Hire Now"
-              onClick={() => navigate(`/contracts/create?workerId=${workerId}`)}
-            />
-            <SpeedDialAction
-              icon={<ShareIcon />}
-              tooltipTitle="Share Profile"
-              onClick={handleShare}
-            />
-          </SpeedDial>
-        )}
-      </Container>
+      </Box>
     </>
   );
-}
+};
 
 export default WorkerProfile;

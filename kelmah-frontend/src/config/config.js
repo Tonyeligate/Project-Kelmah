@@ -13,7 +13,7 @@ export const AUTH_USER_KEY = 'kelmah_user';
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
 // API configuration
-const baseUrl = metaEnv.VITE_API_URL || 'http://localhost:8080';
+const baseUrl = metaEnv.VITE_API_URL || 'https://kelmah-backend-six.vercel.app';
 export const API_BASE_URL = `${baseUrl}/api`;
 export const WS_URL = baseUrl;
 

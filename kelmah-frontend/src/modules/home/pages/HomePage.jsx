@@ -23,7 +23,7 @@ import {
   Stack, 
   Flex, 
   Center 
-} from '../../../design-system/components/Layout';
+} from '@mui/material';
 import { 
   Button, 
   PrimaryButton, 
