@@ -453,8 +453,12 @@ const EnhancedWorkerDashboard = () => {
     <Box
       sx={{
         minHeight: '100vh',
+        width: '100%',
+        maxWidth: '100vw',
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         p: { xs: 1, sm: 2, md: 3 },
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       {/* Header Section */}

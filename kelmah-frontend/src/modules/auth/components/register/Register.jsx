@@ -244,29 +244,29 @@ const Register = () => {
                     >
                       <Card
                         elevation={accountType === 'worker' ? 12 : 4}
-                        sx={{
+                      sx={{
                           p: { xs: 1.5, sm: 2 },
                           borderRadius: { xs: 2, sm: 3 },
-                          border:
-                            accountType === 'worker'
+                        border:
+                          accountType === 'worker'
                               ? '2px solid #FFD700'
                               : '1px solid rgba(255,215,0,0.3)',
-                          background:
-                            accountType === 'worker'
+                        background:
+                          accountType === 'worker'
                               ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%)'
                               : 'rgba(38,38,38,0.8)',
-                          boxShadow:
-                            accountType === 'worker'
+                        boxShadow:
+                          accountType === 'worker'
                               ? '0 8px 32px rgba(255,215,0,0.25)'
                               : '0 4px 16px rgba(0,0,0,0.2)',
-                          cursor: 'pointer',
+                        cursor: 'pointer',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           backdropFilter: 'blur(10px)',
                           position: 'relative',
                           overflow: 'hidden',
                           minHeight: { xs: 'auto', sm: '280px' },
                           '&:hover': {
-                            border: '3px solid #FFD700',
+                          border: '3px solid #FFD700',
                             boxShadow: '0 12px 40px rgba(255,215,0,0.3)',
                           },
                           '&::before':
@@ -282,9 +282,9 @@ const Register = () => {
                                     'linear-gradient(90deg, #FFD700, #FFC000)',
                                 }
                               : {},
-                        }}
-                        onClick={() => setAccountType('worker')}
-                      >
+                      }}
+                      onClick={() => setAccountType('worker')}
+                    >
                         <Stack
                           spacing={{ xs: 2, sm: 3 }}
                           alignItems="center"
@@ -388,29 +388,29 @@ const Register = () => {
                     >
                       <Card
                         elevation={accountType === 'hirer' ? 12 : 4}
-                        sx={{
+                      sx={{
                           p: { xs: 2, sm: 3 },
                           borderRadius: { xs: 3, sm: 4 },
-                          border:
-                            accountType === 'hirer'
-                              ? '3px solid #FFD700'
+                        border:
+                          accountType === 'hirer'
+                            ? '3px solid #FFD700'
                               : '2px solid rgba(255,215,0,0.3)',
-                          background:
-                            accountType === 'hirer'
+                        background:
+                          accountType === 'hirer'
                               ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%)'
                               : 'rgba(38,38,38,0.8)',
-                          boxShadow:
-                            accountType === 'hirer'
+                        boxShadow:
+                          accountType === 'hirer'
                               ? '0 8px 32px rgba(255,215,0,0.25)'
                               : '0 4px 16px rgba(0,0,0,0.2)',
-                          cursor: 'pointer',
+                        cursor: 'pointer',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           backdropFilter: 'blur(10px)',
                           position: 'relative',
                           overflow: 'hidden',
                           minHeight: { xs: 'auto', sm: '280px' },
                           '&:hover': {
-                            border: '3px solid #FFD700',
+                          border: '3px solid #FFD700',
                             boxShadow: '0 12px 40px rgba(255,215,0,0.3)',
                           },
                           '&::before':
@@ -426,9 +426,9 @@ const Register = () => {
                                     'linear-gradient(90deg, #FFD700, #FFC000)',
                                 }
                               : {},
-                        }}
-                        onClick={() => setAccountType('hirer')}
-                      >
+                      }}
+                      onClick={() => setAccountType('hirer')}
+                    >
                         <Stack
                           spacing={{ xs: 2, sm: 3 }}
                           alignItems="center"
@@ -553,26 +553,26 @@ const Register = () => {
 
                 <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%' }}>
                   <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="First Name"
-                        variant="outlined"
-                        fullWidth
-                        required
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="First Name"
+                  variant="outlined"
+                  fullWidth
+                  required
                         size="small"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
                               <PersonIcon
                                 sx={{
                                   color: 'rgba(255,215,0,0.7)',
                                   fontSize: { xs: 16, sm: 18 },
                                 }}
                               />
-                            </InputAdornment>
-                          ),
+                      </InputAdornment>
+                    ),
                           sx: {
                             color: 'white',
                             fontSize: { xs: '0.85rem', sm: '0.9rem' },
@@ -594,28 +594,28 @@ const Register = () => {
                             color: 'rgba(255,215,0,0.8)',
                             fontSize: { xs: '0.9rem', sm: '1rem' },
                           },
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Last Name"
-                        variant="outlined"
-                        fullWidth
-                        required
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Last Name"
+                  variant="outlined"
+                  fullWidth
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
                               <PersonIcon
                                 sx={{
                                   color: 'rgba(255,215,0,0.7)',
                                   fontSize: { xs: 20, sm: 24 },
                                 }}
                               />
-                            </InputAdornment>
-                          ),
+                      </InputAdornment>
+                    ),
                           sx: {
                             color: 'white',
                             fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -637,30 +637,30 @@ const Register = () => {
                             color: 'rgba(255,215,0,0.8)',
                             fontSize: { xs: '0.9rem', sm: '1rem' },
                           },
-                        }}
-                      />
-                    </Grid>
+                  }}
+                />
+              </Grid>
                   </Grid>
 
-                  <TextField
-                    label="Email Address"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
+                <TextField
+                  label="Email Address"
+                  variant="outlined"
+                  fullWidth
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
                           <EmailIcon
                             sx={{
                               color: 'rgba(255,215,0,0.7)',
                               fontSize: { xs: 20, sm: 24 },
                             }}
                           />
-                        </InputAdornment>
-                      ),
+                      </InputAdornment>
+                    ),
                       sx: {
                         color: 'white',
                         fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -685,25 +685,25 @@ const Register = () => {
                     }}
                   />
 
-                  <TextField
+                <TextField
                     label="Phone Number (+233 or 0)"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g., +233 24 123 4567 or 024 123 4567"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
                           <PhoneIcon
                             sx={{
                               color: 'rgba(255,215,0,0.7)',
                               fontSize: { xs: 20, sm: 24 },
                             }}
                           />
-                        </InputAdornment>
-                      ),
+                      </InputAdornment>
+                    ),
                       sx: {
                         color: 'white',
                         fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -754,25 +754,25 @@ const Register = () => {
                 </Typography>
 
                 <Stack spacing={{ xs: 2.5, sm: 3 }} sx={{ width: '100%' }}>
-                  {accountType === 'hirer' && (
-                    <TextField
+              {accountType === 'hirer' && (
+                  <TextField
                       label="Company/Organization Name"
-                      variant="outlined"
-                      fullWidth
-                      required
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
+                    variant="outlined"
+                    fullWidth
+                    required
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
                             <BusinessIcon
                               sx={{
                                 color: 'rgba(255,215,0,0.7)',
                                 fontSize: { xs: 20, sm: 24 },
                               }}
                             />
-                          </InputAdornment>
-                        ),
+                        </InputAdornment>
+                      ),
                         sx: {
                           color: 'white',
                           fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -798,30 +798,30 @@ const Register = () => {
                     />
                   )}
 
-                  <TextField
-                    label="Password"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
+                <TextField
+                  label="Password"
+                  variant="outlined"
+                  fullWidth
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
                     onChange={(e) => handlePasswordChange(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
                             size={isMobile ? 'small' : 'medium'}
                             sx={{
                               color: 'rgba(255,215,0,0.7)',
                               minWidth: { xs: '40px', sm: '48px' },
                             }}
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
                       sx: {
                         color: 'white',
                         fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -873,30 +873,30 @@ const Register = () => {
                     </Box>
                   )}
 
-                  <TextField
-                    label="Confirm Password"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
+                <TextField
+                  label="Confirm Password"
+                  variant="outlined"
+                  fullWidth
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
                             size={isMobile ? 'small' : 'medium'}
                             sx={{
                               color: 'rgba(255,215,0,0.7)',
                               minWidth: { xs: '40px', sm: '48px' },
                             }}
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
                       sx: {
                         color: 'white',
                         fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -1004,7 +1004,7 @@ const Register = () => {
                     }}
                   >
                     Ready to Join Kelmah!
-                  </Typography>
+            </Typography>
                   <Typography
                     variant="body1"
                     sx={{
@@ -1027,7 +1027,7 @@ const Register = () => {
                   }}
                 >
                   <Grid container spacing={2} sx={{ textAlign: 'left' }}>
-                    <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6}>
                       <Typography
                         variant="subtitle2"
                         sx={{
@@ -1046,12 +1046,12 @@ const Register = () => {
                           fontSize: { xs: '0.9rem', sm: '1rem' },
                         }}
                       >
-                        {accountType === 'worker'
+                  {accountType === 'worker'
                           ? '🔨 Skilled Worker'
                           : '🏢 Service Hirer'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                       <Typography
                         variant="subtitle2"
                         sx={{
@@ -1070,10 +1070,10 @@ const Register = () => {
                           fontSize: { xs: '0.9rem', sm: '1rem' },
                         }}
                       >
-                        {firstName} {lastName}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
+                  {firstName} {lastName}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                       <Typography
                         variant="subtitle2"
                         sx={{
@@ -1093,10 +1093,10 @@ const Register = () => {
                           wordBreak: 'break-word',
                         }}
                       >
-                        {email}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
+                  {email}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                       <Typography
                         variant="subtitle2"
                         sx={{
@@ -1115,11 +1115,11 @@ const Register = () => {
                           fontSize: { xs: '0.9rem', sm: '1rem' },
                         }}
                       >
-                        {phone}
-                      </Typography>
-                    </Grid>
-                    {accountType === 'hirer' && (
-                      <Grid item xs={12}>
+                  {phone}
+                </Typography>
+              </Grid>
+              {accountType === 'hirer' && (
+                <Grid item xs={12}>
                         <Typography
                           variant="subtitle2"
                           sx={{
@@ -1138,11 +1138,11 @@ const Register = () => {
                             fontSize: { xs: '0.9rem', sm: '1rem' },
                           }}
                         >
-                          {companyName}
-                        </Typography>
-                      </Grid>
-                    )}
-                  </Grid>
+                    {companyName}
+                  </Typography>
+                </Grid>
+              )}
+            </Grid>
                 </Card>
 
                 <Box
@@ -1167,8 +1167,8 @@ const Register = () => {
                     By creating your account, you're joining Ghana's most
                     trusted platform for skilled trades and professional
                     services.
-                  </Typography>
-                </Box>
+            </Typography>
+          </Box>
               </Stack>
             </Container>
           </motion.div>
@@ -1191,13 +1191,16 @@ const Register = () => {
         overflow: 'hidden',
       }}
     >
-      <Container
-        maxWidth="md"
+      <Box
         sx={{
           height: '100%',
+          width: '100%',
+          maxWidth: { xs: '100%', sm: '600px', md: '800px' },
+          mx: 'auto',
           display: 'flex',
           alignItems: 'center',
           px: { xs: 0.5, sm: 2 },
+          boxSizing: 'border-box',
         }}
       >
         <motion.div
@@ -1206,13 +1209,13 @@ const Register = () => {
           transition={{ duration: 0.4 }}
           style={{ width: '100%' }}
         >
-          <Paper
+    <Paper
             elevation={12}
-            sx={{
+      sx={{
               p: { xs: 1.5, sm: 2.5, md: 3 },
               width: '100%',
               maxWidth: { xs: '100%', sm: 500, md: 700 },
-              mx: 'auto',
+        mx: 'auto',
               borderRadius: { xs: 2, sm: 3 },
               background:
                 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)',
@@ -1275,12 +1278,12 @@ const Register = () => {
                 alignItems="center"
                 sx={{ textAlign: 'center' }}
               >
-                <Typography
+        <Typography
                   variant="h5"
-                  component="h1"
-                  sx={{
-                    color: '#FFD700',
-                    fontWeight: 800,
+          component="h1"
+          sx={{
+            color: '#FFD700',
+            fontWeight: 800,
                     fontSize: { xs: '1.2rem', sm: '1.4rem' },
                     letterSpacing: 0.3,
                     textShadow: '0 2px 10px rgba(255,215,0,0.3)',
@@ -1288,8 +1291,8 @@ const Register = () => {
                   }}
                 >
                   Join Kelmah
-                </Typography>
-                <Typography
+        </Typography>
+        <Typography
                   variant="body2"
                   sx={{
                     color: 'rgba(255,255,255,0.8)',
@@ -1298,24 +1301,24 @@ const Register = () => {
                   }}
                 >
                   Connect with Ghana's skilled trade professionals
-                </Typography>
+        </Typography>
               </Stack>
             </Stack>
 
             {/* Compact Stepper */}
-            <Stepper
-              activeStep={activeStep}
+      <Stepper
+        activeStep={activeStep}
               alternativeLabel={!isMobile}
               orientation={isMobile ? 'horizontal' : 'horizontal'}
-              sx={{
+        sx={{
                 mb: { xs: 1.5, sm: 2 },
-                '& .MuiStepLabel-label': {
+          '& .MuiStepLabel-label': {
                   color: 'rgba(255,255,255,0.7)',
                   fontWeight: 600,
                   fontSize: { xs: '0.65rem', sm: '0.75rem' },
                   '&.Mui-active': {
-                    color: '#FFD700',
-                    fontWeight: 700,
+            color: '#FFD700',
+            fontWeight: 700,
                   },
                   '&.Mui-completed': {
                     color: '#FFD700',
@@ -1334,17 +1337,17 @@ const Register = () => {
                 '& .MuiStepConnector-line': {
                   borderColor: 'rgba(255,215,0,0.3)',
                 },
-              }}
-            >
-              {steps.map((label) => (
-                <Step key={label}>
+        }}
+      >
+        {steps.map((label) => (
+          <Step key={label}>
                   <StepLabel>{isMobile ? '' : label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
+          </Step>
+        ))}
+      </Stepper>
 
             {/* Compact Error Alert */}
-            {error && (
+      {error && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1365,8 +1368,8 @@ const Register = () => {
                     },
                   }}
                 >
-                  {error}
-                </Alert>
+          {error}
+        </Alert>
               </motion.div>
             )}
 
@@ -1379,7 +1382,7 @@ const Register = () => {
                 mb: { xs: 1, sm: 2 },
               }}
             >
-              {getStepContent(activeStep)}
+      {getStepContent(activeStep)}
             </Box>
 
             {/* Compact Navigation Buttons */}
@@ -1389,12 +1392,12 @@ const Register = () => {
               spacing={1.5}
               sx={{ mt: { xs: 1, sm: 2 } }}
             >
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                variant="outlined"
+        <Button
+          disabled={activeStep === 0}
+          onClick={handleBack}
+          variant="outlined"
                 size="small"
-                sx={{
+          sx={{
                   fontWeight: 600,
                   fontSize: { xs: '0.8rem', sm: '0.85rem' },
                   px: { xs: 2, sm: 3 },
@@ -1405,7 +1408,7 @@ const Register = () => {
                   color: activeStep === 0 ? 'rgba(255,215,0,0.5)' : '#FFD700',
                   borderWidth: 1.5,
                   borderRadius: 1.5,
-                  '&:hover': {
+            '&:hover': {
                     background:
                       activeStep === 0 ? 'transparent' : 'rgba(255,215,0,0.1)',
                     borderColor:
@@ -1415,23 +1418,23 @@ const Register = () => {
                   '&:disabled': {
                     borderColor: 'rgba(255,215,0,0.2)',
                     color: 'rgba(255,215,0,0.4)',
-                  },
-                }}
-              >
-                Back
-              </Button>
+            },
+          }}
+        >
+          Back
+        </Button>
 
               <motion.div
                 whileHover={{ scale: isMobile ? 1 : 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  disabled={loading}
+        <Button
+          variant="contained"
+          onClick={handleNext}
+          disabled={loading}
                   size="small"
-                  sx={{
-                    fontWeight: 700,
+          sx={{
+            fontWeight: 700,
                     fontSize: { xs: '0.8rem', sm: '0.85rem' },
                     px: { xs: 2, sm: 3 },
                     py: { xs: 1, sm: 1.2 },
@@ -1442,7 +1445,7 @@ const Register = () => {
                     borderRadius: 1.5,
                     boxShadow: '0 3px 12px rgba(255,215,0,0.2)',
                     textTransform: 'none',
-                    '&:hover': {
+            '&:hover': {
                       background:
                         'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                       boxShadow: '0 4px 16px rgba(255,215,0,0.3)',
@@ -1450,9 +1453,9 @@ const Register = () => {
                     '&:disabled': {
                       background: 'rgba(255,215,0,0.3)',
                       color: 'rgba(0,0,0,0.5)',
-                    },
-                  }}
-                >
+            },
+          }}
+        >
                   {loading ? (
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <CircularProgress size={14} sx={{ color: '#000' }} />
@@ -1467,7 +1470,7 @@ const Register = () => {
                   ) : (
                     'Continue'
                   )}
-                </Button>
+        </Button>
               </motion.div>
             </Stack>
 
@@ -1486,25 +1489,25 @@ const Register = () => {
                   textAlign: 'center',
                 }}
               >
-                Already have an account?{' '}
-                <Link
-                  component={RouterLink}
-                  to="/login"
+          Already have an account?{' '}
+          <Link
+            component={RouterLink}
+            to="/login"
                   variant="body2"
-                  sx={{
-                    color: '#FFD700',
-                    fontWeight: 700,
+            sx={{
+              color: '#FFD700',
+              fontWeight: 700,
                     textDecoration: 'none',
                     fontSize: 'inherit',
-                    '&:hover': {
-                      color: '#FFC000',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Sign in
-                </Link>
-              </Typography>
+              '&:hover': {
+                color: '#FFC000',
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            Sign in
+          </Link>
+        </Typography>
 
               {/* Compact Social Login */}
               <Divider
@@ -1526,8 +1529,8 @@ const Register = () => {
                   }}
                 >
                   OR SIGN UP WITH
-                </Typography>
-              </Divider>
+          </Typography>
+        </Divider>
 
               <Grid container spacing={1} sx={{ maxWidth: 300 }}>
                 <Grid item xs={6}>
@@ -1535,76 +1538,76 @@ const Register = () => {
                     whileHover={{ scale: isMobile ? 1 : 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Button
-                      fullWidth
-                      variant="outlined"
+            <Button
+              fullWidth
+              variant="outlined"
                       startIcon={
                         <GoogleIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />
                       }
                       size="small"
-                      sx={{
+              sx={{
                         py: { xs: 0.8, sm: 1 },
                         minHeight: { xs: '32px', sm: '36px' },
                         fontWeight: 600,
                         fontSize: { xs: '0.7rem', sm: '0.75rem' },
                         background: 'rgba(255,255,255,0.95)',
-                        color: '#4285F4',
-                        borderColor: '#4285F4',
+                color: '#4285F4',
+                borderColor: '#4285F4',
                         borderWidth: 1.5,
                         borderRadius: 1.5,
                         textTransform: 'none',
-                        '&:hover': {
-                          background: '#4285F4',
-                          color: '#fff',
-                          borderColor: '#4285F4',
+                '&:hover': {
+                  background: '#4285F4',
+                  color: '#fff',
+                  borderColor: '#4285F4',
                           borderWidth: 1.5,
-                        },
-                      }}
-                    >
-                      Google
-                    </Button>
+                },
+              }}
+            >
+              Google
+            </Button>
                   </motion.div>
-                </Grid>
+          </Grid>
                 <Grid item xs={6}>
                   <motion.div
                     whileHover={{ scale: isMobile ? 1 : 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Button
-                      fullWidth
-                      variant="outlined"
+            <Button
+              fullWidth
+              variant="outlined"
                       startIcon={
                         <LinkedInIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />
                       }
                       size="small"
-                      sx={{
+              sx={{
                         py: { xs: 0.8, sm: 1 },
                         minHeight: { xs: '32px', sm: '36px' },
                         fontWeight: 600,
                         fontSize: { xs: '0.7rem', sm: '0.75rem' },
                         background: 'rgba(255,255,255,0.95)',
-                        color: '#0077B5',
-                        borderColor: '#0077B5',
+                color: '#0077B5',
+                borderColor: '#0077B5',
                         borderWidth: 1.5,
                         borderRadius: 1.5,
                         textTransform: 'none',
-                        '&:hover': {
-                          background: '#0077B5',
-                          color: '#fff',
-                          borderColor: '#0077B5',
+                '&:hover': {
+                  background: '#0077B5',
+                  color: '#fff',
+                  borderColor: '#0077B5',
                           borderWidth: 1.5,
-                        },
-                      }}
-                    >
-                      LinkedIn
-                    </Button>
+                },
+              }}
+            >
+              LinkedIn
+            </Button>
                   </motion.div>
-                </Grid>
-              </Grid>
+          </Grid>
+        </Grid>
             </Stack>
-          </Paper>
+              </Paper>
         </motion.div>
-      </Container>
+      </Box>
     </Box>
   );
 };

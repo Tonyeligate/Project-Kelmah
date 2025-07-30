@@ -466,9 +466,9 @@ const darkTheme = createTheme({
           color: BRAND_COLORS.gold,
           '&:hover': {
             backgroundColor: 'rgba(255, 215, 0, 0.2)',
-          },
-        },
       },
+    },
+  },
     },
     MuiContainer: {
       styleOverrides: {

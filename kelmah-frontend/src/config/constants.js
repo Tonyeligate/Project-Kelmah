@@ -6,7 +6,7 @@ const isDevelopment = ENV === 'development';
 const API_URLS = {
   development: 'http://localhost:5000',
   test: 'http://localhost:5000',
-  production: process.env.VITE_API_URL || 'https://kelmah-backend-six.vercel.app',
+  production: process.env.VITE_API_URL || 'https://api.kelmah.com',
 };
 
 // Determine API_BASE_URL: use VITE_API_URL if provided, otherwise fallback to environment-specific defaults

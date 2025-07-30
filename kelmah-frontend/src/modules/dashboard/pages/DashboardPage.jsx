@@ -96,7 +96,11 @@ const DashboardPage = () => {
     <Box
       sx={{
         flexGrow: 1,
+        width: '100%',
+        maxWidth: '100vw',
         padding: isMobile ? 2 : 3,
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       <Paper

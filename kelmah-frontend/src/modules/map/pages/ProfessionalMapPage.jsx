@@ -106,13 +106,6 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { keyframes } from '@mui/system';
-
-// Animation keyframes
-const pulseAnimation = keyframes`
-  0% { opacity: 0.3; }
-  100% { opacity: 0.7; }
-`;
 
 // Mock data for demonstration
 const mockMapData = {
@@ -269,7 +262,11 @@ const InteractiveMap = ({
               radial-gradient(circle at 80% 20%, ${theme.palette.secondary.main}22 0%, transparent 50%),
               radial-gradient(circle at 40% 40%, ${theme.palette.primary.light}11 0%, transparent 50%)
             `,
-            animation: `${pulseAnimation} 4s ease-in-out infinite alternate`,
+            animation: 'pulse 4s ease-in-out infinite alternate',
+            '@keyframes pulse': {
+              '0%': { opacity: 0.3 },
+              '100%': { opacity: 0.7 },
+            },
           }}
         />
 

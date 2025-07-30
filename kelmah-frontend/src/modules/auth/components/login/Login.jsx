@@ -136,9 +136,17 @@ const Login = () => {
         overflow: 'hidden',
       }}
     >
-      <Container
-        maxWidth="sm"
-        sx={{ height: '100%', display: 'flex', alignItems: 'center' }}
+      <Box
+        sx={{ 
+          height: '100%', 
+          width: '100%',
+          maxWidth: { xs: '100%', sm: '480px' },
+          mx: 'auto',
+          display: 'flex', 
+          alignItems: 'center',
+          px: { xs: 1, sm: 2 },
+          boxSizing: 'border-box',
+        }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -223,21 +231,21 @@ const Login = () => {
                 style={{ textAlign: 'center' }}
               >
                 <Stack spacing={0.5} alignItems="center">
-                  <Typography
+        <Typography
                     variant="h4"
-                    component="h1"
-                    sx={{
-                      color: '#FFD700',
-                      fontWeight: 800,
+          component="h1"
+          sx={{
+            color: '#FFD700',
+            fontWeight: 800,
                       fontSize: { xs: '1.4rem', sm: '1.6rem' },
                       letterSpacing: 0.3,
                       textShadow: '0 2px 10px rgba(255,215,0,0.3)',
                       lineHeight: 1.1,
-                    }}
-                  >
-                    Welcome Back
-                  </Typography>
-                  <Typography
+          }}
+        >
+          Welcome Back
+        </Typography>
+        <Typography
                     variant="body2"
                     sx={{
                       color: 'rgba(255,255,255,0.8)',
@@ -284,8 +292,8 @@ const Login = () => {
                     }}
                   >
                     Secure & Protected Login
-                  </Typography>
-                </Box>
+        </Typography>
+      </Box>
               </Fade>
             )}
 
@@ -307,7 +315,7 @@ const Login = () => {
                   }}
                 >
                   {apiError || loginError}
-                </Alert>
+        </Alert>
               </motion.div>
             )}
 
@@ -320,19 +328,19 @@ const Login = () => {
               <Box component="form" onSubmit={handleSubmit} noValidate>
                 <Stack spacing={{ xs: 1.8, sm: 2.2 }}>
                   {/* Email Field */}
-                  <TextField
+        <TextField
                     label="Email"
-                    variant="outlined"
-                    fullWidth
-                    required
+          variant="outlined"
+          fullWidth
+          required
                     size="small"
                     type="email"
                     autoComplete="email"
-                    error={Boolean(errors.email)}
-                    helperText={errors.email}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    InputProps={{
+          error={Boolean(errors.email)}
+          helperText={errors.email}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
                           <EmailOutlined
@@ -366,13 +374,13 @@ const Login = () => {
                     InputLabelProps={{
                       sx: {
                         color: 'rgba(255,215,0,0.8)',
-                        fontWeight: 600,
+              fontWeight: 600,
                         fontSize: { xs: '0.85rem', sm: '0.9rem' },
                         '&.Mui-focused': {
-                          color: '#FFD700',
-                        },
-                      },
-                    }}
+              color: '#FFD700',
+              },
+            },
+          }}
                     FormHelperTextProps={{
                       sx: {
                         fontSize: { xs: '0.7rem', sm: '0.75rem' },
@@ -382,19 +390,19 @@ const Login = () => {
                   />
 
                   {/* Password Field */}
-                  <TextField
-                    label="Password"
-                    variant="outlined"
-                    fullWidth
-                    required
+        <TextField
+          label="Password"
+          variant="outlined"
+          fullWidth
+          required
                     size="small"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
-                    error={Boolean(errors.password)}
-                    helperText={errors.password}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    InputProps={{
+          error={Boolean(errors.password)}
+          helperText={errors.password}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
                           <LockOutlined
@@ -405,11 +413,11 @@ const Login = () => {
                           />
                         </InputAdornment>
                       ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
                             size="small"
                             sx={{
                               color: 'rgba(255,215,0,0.7)',
@@ -422,10 +430,10 @@ const Login = () => {
                             ) : (
                               <Visibility fontSize="small" />
                             )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                      sx: {
+                </IconButton>
+              </InputAdornment>
+            ),
+            sx: {
                         fontSize: { xs: '0.9rem', sm: '1rem' },
                         fontWeight: 500,
                         color: 'white',
@@ -448,13 +456,13 @@ const Login = () => {
                     InputLabelProps={{
                       sx: {
                         color: 'rgba(255,215,0,0.8)',
-                        fontWeight: 600,
+              fontWeight: 600,
                         fontSize: { xs: '0.85rem', sm: '0.9rem' },
                         '&.Mui-focused': {
-                          color: '#FFD700',
-                        },
-                      },
-                    }}
+              color: '#FFD700',
+              },
+            },
+          }}
                     FormHelperTextProps={{
                       sx: {
                         fontSize: { xs: '0.7rem', sm: '0.75rem' },
@@ -464,28 +472,28 @@ const Login = () => {
                   />
 
                   {/* Compact Remember Me & Forgot Password */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
                       py: 0.5,
-                    }}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                           size="small"
                           sx={{
                             color: 'rgba(255,215,0,0.7)',
                             '&.Mui-checked': { color: '#FFD700' },
                             p: 0.5,
                           }}
-                        />
-                      }
-                      label={
+              />
+            }
+            label={
                         <Typography
                           sx={{
                             color: 'rgba(255,255,255,0.9)',
@@ -493,41 +501,41 @@ const Login = () => {
                             fontSize: { xs: '0.8rem', sm: '0.85rem' },
                           }}
                         >
-                          Remember me
+                Remember me
                         </Typography>
-                      }
+            }
                       sx={{ m: 0 }}
-                    />
-                    <Link
-                      component={RouterLink}
-                      to="/forgot-password"
-                      variant="body2"
-                      sx={{
-                        color: '#FFD700',
+          />
+          <Link
+            component={RouterLink}
+            to="/forgot-password"
+            variant="body2"
+            sx={{
+              color: '#FFD700',
                         fontWeight: 600,
                         textDecoration: 'none',
                         fontSize: { xs: '0.8rem', sm: '0.85rem' },
-                        '&:hover': {
-                          color: '#FFC000',
-                          textDecoration: 'underline',
-                        },
-                      }}
-                    >
-                      Forgot password?
-                    </Link>
-                  </Box>
+              '&:hover': {
+                color: '#FFC000',
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            Forgot password?
+          </Link>
+        </Box>
 
                   {/* Compact Submit Button */}
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                   >
-                    <Button
-                      type="submit"
-                      fullWidth
-                      variant="contained"
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
                       disabled={submitting}
-                      sx={{
+          sx={{
                         fontWeight: 700,
                         fontSize: { xs: '1rem', sm: '1.1rem' },
                         py: { xs: 1.3, sm: 1.5 },
@@ -538,7 +546,7 @@ const Login = () => {
                         boxShadow: '0 4px 16px rgba(255,215,0,0.2)',
                         borderRadius: 1.5,
                         textTransform: 'none',
-                        '&:hover': {
+            '&:hover': {
                           background:
                             'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                           boxShadow: '0 6px 20px rgba(255,215,0,0.3)',
@@ -561,7 +569,7 @@ const Login = () => {
                       ) : (
                         'Sign In to Kelmah'
                       )}
-                    </Button>
+        </Button>
                   </motion.div>
                 </Stack>
               </Box>
@@ -579,7 +587,7 @@ const Login = () => {
                 sx={{ mt: { xs: 2.5, sm: 3 } }}
               >
                 {/* Sign Up Link */}
-                <Typography
+        <Typography
                   variant="body2"
                   sx={{
                     color: 'rgba(255,255,255,0.9)',
@@ -589,24 +597,24 @@ const Login = () => {
                   }}
                 >
                   New to Kelmah?{' '}
-                  <Link
-                    component={RouterLink}
-                    to="/register"
+          <Link
+            component={RouterLink}
+            to="/register"
                     variant="body2"
-                    sx={{
-                      color: '#FFD700',
-                      fontWeight: 700,
+            sx={{
+              color: '#FFD700',
+              fontWeight: 700,
                       textDecoration: 'none',
                       fontSize: 'inherit',
-                      '&:hover': {
-                        color: '#FFC000',
-                        textDecoration: 'underline',
-                      },
-                    }}
-                  >
+              '&:hover': {
+                color: '#FFC000',
+                textDecoration: 'underline',
+              },
+            }}
+          >
                     Create account
-                  </Link>
-                </Typography>
+          </Link>
+        </Typography>
 
                 {/* Compact Social Login */}
                 <Divider
@@ -628,8 +636,8 @@ const Login = () => {
                     }}
                   >
                     OR CONTINUE WITH
-                  </Typography>
-                </Divider>
+          </Typography>
+        </Divider>
 
                 {/* Compact Social Buttons */}
                 <Grid container spacing={1.5} sx={{ width: '100%' }}>
@@ -638,82 +646,82 @@ const Login = () => {
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
-                      <Button
-                        fullWidth
-                        variant="outlined"
+            <Button
+              fullWidth
+              variant="outlined"
                         startIcon={
                           <GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-                        onClick={() => {
-                          window.location.href = `${API_BASE_URL}/api/auth/google`;
-                        }}
-                        sx={{
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/api/auth/google`;
+              }}
+              sx={{
                           py: { xs: 1, sm: 1.2 },
                           minHeight: { xs: '38px', sm: '42px' },
                           fontWeight: 600,
                           fontSize: { xs: '0.8rem', sm: '0.85rem' },
                           background: 'rgba(255,255,255,0.95)',
-                          color: '#4285F4',
-                          borderColor: '#4285F4',
+                color: '#4285F4',
+                borderColor: '#4285F4',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
-                          '&:hover': {
-                            background: '#4285F4',
-                            color: '#fff',
-                            borderColor: '#4285F4',
+                '&:hover': {
+                  background: '#4285F4',
+                  color: '#fff',
+                  borderColor: '#4285F4',
                             borderWidth: 1.5,
-                          },
-                        }}
-                      >
-                        Google
-                      </Button>
+                },
+              }}
+            >
+              Google
+            </Button>
                     </motion.div>
-                  </Grid>
+          </Grid>
                   <Grid item xs={6}>
                     <motion.div
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
-                      <Button
-                        fullWidth
-                        variant="outlined"
+            <Button
+              fullWidth
+              variant="outlined"
                         startIcon={
                           <LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-                        onClick={() => {
-                          window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
-                        }}
-                        sx={{
+              onClick={() => {
+                window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
+              }}
+              sx={{
                           py: { xs: 1, sm: 1.2 },
                           minHeight: { xs: '38px', sm: '42px' },
                           fontWeight: 600,
                           fontSize: { xs: '0.8rem', sm: '0.85rem' },
                           background: 'rgba(255,255,255,0.95)',
-                          color: '#0077B5',
-                          borderColor: '#0077B5',
+                color: '#0077B5',
+                borderColor: '#0077B5',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
-                          '&:hover': {
-                            background: '#0077B5',
-                            color: '#fff',
-                            borderColor: '#0077B5',
+                '&:hover': {
+                  background: '#0077B5',
+                  color: '#fff',
+                  borderColor: '#0077B5',
                             borderWidth: 1.5,
-                          },
-                        }}
-                      >
-                        LinkedIn
-                      </Button>
+                },
+              }}
+            >
+              LinkedIn
+            </Button>
                     </motion.div>
-                  </Grid>
-                </Grid>
+          </Grid>
+        </Grid>
               </Stack>
             </motion.div>
           </Paper>
         </motion.div>
-      </Container>
-    </Box>
+      </Box>
+      </Box>
   );
 };
 

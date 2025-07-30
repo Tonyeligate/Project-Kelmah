@@ -38,10 +38,18 @@ const Layout = ({ children, toggleTheme, mode }) => {
     // Desktop: permanent sidebar
     if (isMdUp) {
       return (
-        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
           <Sidebar variant="permanent" />
-          <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
-            <Container maxWidth="lg">{children}</Container>
+          <Box 
+            component="main" 
+            sx={{ 
+              flexGrow: 1, 
+              width: '100%',
+              minWidth: 0, // Prevents flex item from growing beyond container
+              p: { xs: 1, sm: 2, md: 3 },
+            }}
+          >
+            {children}
           </Box>
         </Box>
       );
@@ -90,9 +98,11 @@ const Layout = ({ children, toggleTheme, mode }) => {
           component="main"
           sx={{
             flexGrow: 1,
+            width: '100%',
+            minWidth: 0,
             pt: '64px',
             pb: '56px',
-            px: 2,
+            px: { xs: 1, sm: 2 },
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
           }}
@@ -106,11 +116,31 @@ const Layout = ({ children, toggleTheme, mode }) => {
 
   // Public/non-dashboard pages
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh',
+      width: '100%',
+      overflow: 'hidden', // Prevents horizontal scroll
+    }}>
       <Header toggleTheme={toggleTheme} mode={mode} />
       <Fade in key={location.pathname} timeout={500}>
-        <Box component="main" sx={{ flexGrow: 1, py: { xs: 2, md: 4 } }}>
-          <Container maxWidth="lg">{children}</Container>
+        <Box 
+          component="main" 
+          sx={{ 
+            flexGrow: 1, 
+            width: '100%',
+            minWidth: 0,
+            py: { xs: 1, sm: 2, md: 3 },
+            px: { xs: 1, sm: 2, md: 3 },
+            // Ensure content adapts to all zoom levels
+            '@media (min-width: 1px)': {
+              maxWidth: '100vw',
+              boxSizing: 'border-box',
+            },
+          }}
+        >
+          {children}
         </Box>
       </Fade>
       <Footer />

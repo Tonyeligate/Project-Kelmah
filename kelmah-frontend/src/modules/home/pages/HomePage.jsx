@@ -1,511 +1,781 @@
-import React from 'react';
-import { Box, Typography, Chip, useMediaQuery } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import {
-  Build as BuildIcon,
-  Star as StarIcon,
-  People as PeopleIcon,
-  Verified as VerifiedIcon,
-  TrendingUp as TrendingUpIcon,
-  WorkOutline as WorkIcon,
-  Security as SecurityIcon,
-  Speed as SpeedIcon,
-  Support as SupportIcon,
-} from '@mui/icons-material';
-
-import { 
-  PageLayout, 
-  LandingLayout, 
-  Container, 
-  Grid, 
-  GridItem, 
-  Stack, 
-  Flex, 
-  Center 
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  CircularProgress,
+  Card,
+  CardMedia,
+  CardContent,
+  Chip,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+  Avatar,
 } from '@mui/material';
-import { 
-  Button, 
-  PrimaryButton, 
-  SecondaryButton 
-} from '../../../design-system/components/UI/Button';
-import { 
-  Card, 
-  FeatureCard, 
-  StatCard 
-} from '../../../design-system/components/UI/Card';
-import { 
-  PRIMARY_COLORS, 
-  BRAND_GRADIENTS 
-} from '../../../design-system/foundations/colors';
-import { 
-  SEMANTIC_SPACING, 
-  BORDER_RADIUS 
-} from '../../../design-system/foundations/spacing';
-import { 
-  TYPOGRAPHY_SCALE, 
-  FONT_WEIGHTS 
-} from '../../../design-system/foundations/typography';
-import Header from '../../layout/components/Header';
+import { motion } from 'framer-motion';
+import { styled } from '@mui/material/styles';
+import LoadingScreen from '../../common/components/loading/LoadingScreen';
+import GestureControl from '../../common/components/controls/GestureControl';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/contexts/AuthContext';
+import { checkApiHealth } from '../../common/utils/apiUtils';
+import backgroundImg from '../../../assets/images/background.jpg';
+import plumbingImg from '../../../assets/images/plumbing.jpg.jpeg';
+import electricalImg from '../../../assets/images/electrical.jpg';
+import carpentryImg from '../../../assets/images/carpentry.jpg';
+import constructionImg from '../../../assets/images/construction.jpg';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import BuildIcon from '@mui/icons-material/Build';
+import HandymanIcon from '@mui/icons-material/Handyman';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import PlumbingIcon from '@mui/icons-material/Plumbing';
+import CarpenterIcon from '@mui/icons-material/Carpenter';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import SecurityIcon from '@mui/icons-material/Security';
+import StarIcon from '@mui/icons-material/Star';
+import { alpha } from '@mui/material/styles';
 
-/**
- * Enhanced HomePage with Design System Integration
- * 
- * Features:
- * - Modern hero section with animations
- * - Feature showcase with interactive cards
- * - Statistics section with animated counters
- * - Service categories with Ghana focus
- * - Responsive design with mobile optimization
- * - Consistent brand styling throughout
- */
-
-const HeroSection = styled(Box)(({ theme }) => ({
-  minHeight: '80vh',
-  display: 'flex',
-  alignItems: 'center',
+const Section = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
   position: 'relative',
   overflow: 'hidden',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${PRIMARY_COLORS.black[900]} 0%, ${PRIMARY_COLORS.black[800]} 50%, ${PRIMARY_COLORS.gold[500]}15 100%)`
-    : `linear-gradient(135deg, ${PRIMARY_COLORS.gold[400]} 0%, ${PRIMARY_COLORS.gold[500]} 50%, ${PRIMARY_COLORS.gold[600]} 100%)`,
-  
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-    opacity: 0.1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: '#000000',
+  width: '100%',
+  maxWidth: '100vw',
+  boxSizing: 'border-box',
+  // Ensure proper full width utilization on all devices and zoom levels
+  '@media (min-width: 1px)': {
+    width: '100%',
+    maxWidth: '100vw',
   },
-}));
-
-const HeroContent = styled(motion.div)(({ theme }) => ({
-  textAlign: 'center',
-  zIndex: 1,
-  position: 'relative',
-  maxWidth: '800px',
-  margin: '0 auto',
-  padding: `${SEMANTIC_SPACING.layout.xl} ${SEMANTIC_SPACING.container.md}`,
-}));
-
-const HeroTitle = styled(Typography)(({ theme }) => ({
-  ...TYPOGRAPHY_SCALE['display-lg'],
-  fontWeight: FONT_WEIGHTS.black,
-  marginBottom: SEMANTIC_SPACING.layout.md,
-  background: theme.palette.mode === 'dark' 
-    ? BRAND_GRADIENTS.gold 
-    : `linear-gradient(135deg, ${PRIMARY_COLORS.black[900]}, ${PRIMARY_COLORS.black[700]})`,
-  backgroundClip: 'text',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  lineHeight: 1.1,
-  
-  [theme.breakpoints.down('md')]: {
-    ...TYPOGRAPHY_SCALE['display-md'],
-  },
-  
+  // Mobile specific adjustments
   [theme.breakpoints.down('sm')]: {
-    ...TYPOGRAPHY_SCALE['display-sm'],
+    width: '100%',
+    maxWidth: '100vw',
+    padding: 0,
   },
 }));
 
-const HeroSubtitle = styled(Typography)(({ theme }) => ({
-  ...TYPOGRAPHY_SCALE['body-xl'],
-  marginBottom: SEMANTIC_SPACING.layout.lg,
-  opacity: 0.9,
-  color: theme.palette.mode === 'dark' 
-    ? theme.palette.text.primary 
-    : PRIMARY_COLORS.black[800],
-  maxWidth: '600px',
-  margin: `0 auto ${SEMANTIC_SPACING.layout.lg}`,
-  
-  [theme.breakpoints.down('sm')]: {
-    ...TYPOGRAPHY_SCALE['body-lg'],
-  },
-}));
-
-const StatsSection = styled(Box)(({ theme }) => ({
-  padding: `${SEMANTIC_SPACING.layout['2xl']} 0`,
-  backgroundColor: theme.palette.background.paper,
-  position: 'relative',
-  
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '100px',
-    background: `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
-  },
-}));
-
-const FeaturesSection = styled(Box)(({ theme }) => ({
-  padding: `${SEMANTIC_SPACING.layout['3xl']} 0`,
-  backgroundColor: theme.palette.background.default,
-}));
-
-const ServicesSection = styled(Box)(({ theme }) => ({
-  padding: `${SEMANTIC_SPACING.layout['3xl']} 0`,
-  backgroundColor: theme.palette.background.paper,
-}));
-
-const SectionTitle = styled(Typography)(({ theme }) => ({
-  ...TYPOGRAPHY_SCALE['display-sm'],
-  fontWeight: FONT_WEIGHTS.bold,
-  textAlign: 'center',
-  marginBottom: SEMANTIC_SPACING.layout.xl,
-  background: theme.palette.mode === 'dark' 
-    ? BRAND_GRADIENTS.gold 
-    : BRAND_GRADIENTS.black,
-  backgroundClip: 'text',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-}));
-
-const SectionSubtitle = styled(Typography)(({ theme }) => ({
-  ...TYPOGRAPHY_SCALE['body-lg'],
-  textAlign: 'center',
-  marginBottom: SEMANTIC_SPACING.layout.xl,
-  opacity: 0.8,
-  maxWidth: '600px',
-  margin: `0 auto ${SEMANTIC_SPACING.layout.xl}`,
-}));
-
-const ServiceCard = styled(motion.div)(({ theme }) => ({
-  padding: SEMANTIC_SPACING.card.padding.lg,
-  borderRadius: BORDER_RADIUS.xl,
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${PRIMARY_COLORS.gold[500]}10, ${PRIMARY_COLORS.gold[600]}20)`
-    : `linear-gradient(135deg, ${PRIMARY_COLORS.gold[200]}, ${PRIMARY_COLORS.gold[300]})`,
-  border: `1px solid ${theme.palette.mode === 'dark' ? PRIMARY_COLORS.gold[500] : PRIMARY_COLORS.black[900]}40`,
-  cursor: 'pointer',
+const HeroBackgroundImage = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
   height: '100%',
-  transition: 'all 0.3s ease-in-out',
-  
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: `0 20px 40px ${theme.palette.mode === 'dark' ? 'rgba(255,215,0,0.2)' : 'rgba(0,0,0,0.1)'}`,
+  maxWidth: '100vw',
+  backgroundImage: `url(${plumbingImg})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  zIndex: 0,
+  boxSizing: 'border-box',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 1,
+    pointerEvents: 'none',
+    background:
+      'linear-gradient(90deg, #000 0%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.4) 35%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0.85) 85%, #000 100%)',
   },
 }));
 
-const SkillTag = styled(Chip)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? `${PRIMARY_COLORS.gold[500]}20` 
-    : `${PRIMARY_COLORS.black[900]}20`,
-  color: theme.palette.mode === 'dark' 
-    ? PRIMARY_COLORS.gold[500] 
-    : PRIMARY_COLORS.black[900],
-  border: `1px solid ${theme.palette.mode === 'dark' ? PRIMARY_COLORS.gold[500] : PRIMARY_COLORS.black[900]}40`,
-  fontSize: '0.75rem',
-  fontWeight: FONT_WEIGHTS.medium,
-  
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: theme.spacing(2),
+  padding: `${theme.spacing(1.8)} ${theme.spacing(4)}`,
+  fontSize: '1.1rem',
+  textTransform: 'none',
+  fontWeight: 'bold',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' 
-      ? `${PRIMARY_COLORS.gold[500]}30` 
-      : `${PRIMARY_COLORS.black[900]}30`,
+    transform: 'translateY(-3px)',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
   },
+}));
+
+const FeatureCircle = styled(Box)(({ theme }) => ({
+  width: 50,
+  height: 50,
+  borderRadius: '50%',
+  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: theme.palette.secondary.contrastText,
+  fontWeight: 'bold',
+  marginRight: theme.spacing(3),
+  boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
+}));
+
+const FeatureBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(2),
+  background: 'rgba(50, 50, 50, 0.9)',
+  backdropFilter: 'blur(10px)',
+  marginBottom: theme.spacing(3),
+  border: '1px solid rgba(255,215,0,0.2)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'rgba(60, 60, 60, 0.95)',
+    border: '1px solid rgba(255,215,0,0.4)',
+    transform: 'translateX(5px)',
+  },
+}));
+
+const ServiceCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  background: 'rgba(44, 44, 44, 0.6)',
+  backdropFilter: 'blur(8px)',
+  borderRadius: theme.spacing(3),
+  overflow: 'hidden',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  border: '2px solid rgba(255, 215, 0, 0.2)',
+  cursor: 'pointer',
+  '&:hover': {
+    transform: 'translateY(-12px) scale(1.02)',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+    border: '2px solid rgba(255, 215, 0, 0.6)',
+    '& .MuiCardMedia-root': {
+      transform: 'scale(1.1)',
+    },
+    '& .service-icon': {
+      transform: 'rotate(360deg)',
+    },
+  },
+}));
+
+const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
+  height: 220,
+  transition: 'transform 0.6s ease',
+  position: 'relative',
+}));
+
+const ServiceCardContent = styled(CardContent)(({ theme }) => ({
+  background:
+    'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(44,44,44,0.6) 100%)',
+  padding: theme.spacing(3),
+}));
+
+const TradeIcon = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 15,
+  right: 15,
+  width: 40,
+  height: 40,
+  borderRadius: '50%',
+  background: 'rgba(255,215,0,0.9)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'transform 0.4s ease',
 }));
 
 const HomePage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user } = useAuth();
+  const [apiStatus, setApiStatus] = useState({
+    isReachable: true,
+    checking: false,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [bgIndex, setBgIndex] = useState(0);
 
-  const stats = [
-    { label: 'Active Professionals', value: '2,500+', trend: 15, icon: <PeopleIcon /> },
-    { label: 'Jobs Completed', value: '10,000+', trend: 22, icon: <WorkIcon /> },
-    { label: 'Client Satisfaction', value: '98%', trend: 5, icon: <StarIcon /> },
-    { label: 'Cities Covered', value: '16', trend: 8, icon: <VerifiedIcon /> },
+  // Enhanced services with proper vocational trade focus
+  const services = [
+    {
+      title: 'Plumbing Services',
+      description:
+        'Professional plumbing installations, repairs, and maintenance for homes and businesses',
+      image: plumbingImg,
+      icon: <PlumbingIcon sx={{ color: '#000', fontSize: 24 }} />,
+      skills: ['Pipe Installation', 'Leak Repairs', 'Drain Cleaning'],
+    },
+    {
+      title: 'Electrical Work',
+      description:
+        'Licensed electricians for wiring, installations, and electrical system maintenance',
+      image: electricalImg,
+      icon: <ElectricalServicesIcon sx={{ color: '#000', fontSize: 24 }} />,
+      skills: ['Wiring', 'Panel Upgrades', 'Lighting Installation'],
+    },
+    {
+      title: 'Carpentry & Woodwork',
+      description:
+        'Custom carpentry, furniture making, and wooden structure construction',
+      image: carpentryImg,
+      icon: <CarpenterIcon sx={{ color: '#000', fontSize: 24 }} />,
+      skills: ['Custom Furniture', 'Framing', 'Cabinet Making'],
+    },
+    {
+      title: 'Construction & Masonry',
+      description:
+        'Building construction, masonry work, and renovation projects',
+      image: constructionImg,
+      icon: <ConstructionIcon sx={{ color: '#000', fontSize: 24 }} />,
+      skills: ['Foundation Work', 'Bricklaying', 'Concrete Work'],
+    },
   ];
 
   const features = [
     {
-      icon: <VerifiedIcon />,
-      title: 'Verified Professionals',
-      description: 'Every tradesperson undergoes thorough background checks and skill verification to ensure quality and reliability.',
+      icon: <VerifiedIcon sx={{ fontSize: 28, color: '#000' }} />,
+      title: 'Verified Skilled Workers',
+      description:
+        'All tradespeople are vetted and verified for quality assurance',
     },
     {
-      icon: <SecurityIcon />,
-      title: 'Secure Payments',
-      description: 'Protected payment system with escrow services, ensuring safe transactions for both clients and professionals.',
+      icon: <SecurityIcon sx={{ fontSize: 28, color: '#000' }} />,
+      title: 'Secure Escrow Payments',
+      description: 'Safe payment system protecting both workers and hirers',
     },
     {
-      icon: <SpeedIcon />,
-      title: 'Quick Matching',
-      description: 'AI-powered matching system connects you with the right professionals in your area within minutes.',
-    },
-    {
-      icon: <SupportIcon />,
-      title: '24/7 Support',
-      description: 'Round-the-clock customer support to assist you throughout your project journey.',
+      icon: <StarIcon sx={{ fontSize: 28, color: '#000' }} />,
+      title: 'Quality Guarantee',
+      description: 'Rating system ensuring high-quality workmanship',
     },
   ];
 
-  const services = [
-    {
-      title: 'Construction & Building',
-      description: 'Professional builders, masons, and construction workers for residential and commercial projects.',
-      skills: ['Masonry', 'Roofing', 'Tiling', 'Concrete Work', 'Steel Bending'],
-      icon: <BuildIcon />,
-    },
-    {
-      title: 'Electrical Services',
-      description: 'Licensed electricians for installations, repairs, and electrical maintenance.',
-      skills: ['Wiring', 'Solar Installation', 'Electrical Repairs', 'Security Systems'],
-      icon: '⚡',
-    },
-    {
-      title: 'Plumbing & Water',
-      description: 'Expert plumbers for installations, repairs, and water system maintenance.',
-      skills: ['Pipe Installation', 'Water Heating', 'Drainage', 'Bathroom Fitting'],
-      icon: '🔧',
-    },
-    {
-      title: 'Automotive Services',
-      description: 'Skilled mechanics and auto technicians for vehicle maintenance and repairs.',
-      skills: ['Engine Repair', 'Body Work', 'Tire Services', 'Auto Painting'],
-      icon: '🚗',
-    },
-    {
-      title: 'Welding & Metalwork',
-      description: 'Professional welders and metalworkers for fabrication and repair services.',
-      skills: ['Arc Welding', 'Metal Fabrication', 'Gate Making', 'Structural Work'],
-      icon: '🔥',
-    },
-    {
-      title: 'Tailoring & Fashion',
-      description: 'Experienced tailors and seamstresses for custom clothing and alterations.',
-      skills: ['Custom Tailoring', 'Alterations', 'Traditional Wear', 'Fashion Design'],
-      icon: '✂️',
-    },
-  ];
+  // Control loading screen
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const heroVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: 'easeOut',
-        staggerChildren: 0.2,
-      },
-    },
-  };
+  useEffect(() => {
+    const checkApiStatus = async () => {
+      try {
+        const isReachable =
+          import.meta.env.DEV || (await checkApiHealth(false));
+        setApiStatus((prev) => {
+          if (prev.isReachable !== isReachable) {
+            return { isReachable, checking: false };
+          }
+          return prev;
+        });
+      } catch (error) {
+        console.warn('API check failed, continuing anyway:', error);
+        setApiStatus({ isReachable: true, checking: false });
+      }
+    };
+    checkApiStatus();
+  }, []);
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: 'easeOut',
-      },
-    },
-  };
+  useEffect(() => {
+    const rotate = setInterval(
+      () => setBgIndex((i) => (i + 1) % services.length),
+      10000,
+    );
+    return () => clearInterval(rotate);
+  }, [services.length]);
 
   return (
-    <LandingLayout header={<Header />}>
-      {/* Hero Section */}
-      <HeroSection>
-        <Container size="xl">
-          <HeroContent
-            variants={heroVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.div variants={cardVariants}>
-              <HeroTitle>
-                Ghana's Premier Platform for Skilled Trades
-              </HeroTitle>
-            </motion.div>
-            
-            <motion.div variants={cardVariants}>
-              <HeroSubtitle>
-                Connect with verified local professionals for construction, electrical, plumbing, 
-                automotive, and specialized trade services across Ghana.
-              </HeroSubtitle>
-            </motion.div>
-            
-            <motion.div variants={cardVariants}>
-              <Flex 
-                justify="center" 
-                gap="md" 
-                direction={isMobile ? 'column' : 'row'}
-                align="center"
-              >
-                <PrimaryButton 
-                  size="lg"
-                  href="/auth/register"
-                >
-                  Get Started Today
-                </PrimaryButton>
-                <SecondaryButton 
-                  size="lg"
-                  href="/jobs"
-                >
-                  Browse Services
-                </SecondaryButton>
-              </Flex>
-            </motion.div>
-          </HeroContent>
-        </Container>
-      </HeroSection>
+    <>
+      <LoadingScreen isLoading={isLoading} />
+      <GestureControl>
+        <Box sx={{ position: 'relative' }}>
+          {/* Enhanced platform status badge */}
+          <Chip
+            label={`Platform ${apiStatus.isReachable ? 'Online' : 'Offline'}`}
+            color={apiStatus.isReachable ? 'success' : 'error'}
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              zIndex: 2,
+              fontWeight: 'bold',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            }}
+          />
 
-      {/* Stats Section */}
-      <StatsSection>
-        <Container size="lg">
-          <Grid columns={isMobile ? 2 : 4} gap="md">
-            {stats.map((stat, index) => (
-              <GridItem key={stat.label}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <StatCard {...stat} />
-                </motion.div>
-              </GridItem>
-            ))}
-          </Grid>
-        </Container>
-      </StatsSection>
-
-      {/* Features Section */}
-      <FeaturesSection>
-        <Container size="lg">
-          <SectionTitle>Why Choose Kelmah?</SectionTitle>
-          <SectionSubtitle>
-            We're committed to connecting you with Ghana's most skilled and reliable tradespeople
-          </SectionSubtitle>
-          
-          <Grid columns={isMobile ? 1 : 2} gap="lg">
-            {features.map((feature, index) => (
-              <GridItem key={feature.title}>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <FeatureCard {...feature} />
-                </motion.div>
-              </GridItem>
-            ))}
-          </Grid>
-        </Container>
-      </FeaturesSection>
-
-      {/* Services Section */}
-      <ServicesSection>
-        <Container size="lg">
-          <SectionTitle>Our Services</SectionTitle>
-          <SectionSubtitle>
-            Comprehensive trade services covering all your professional needs across Ghana
-          </SectionSubtitle>
-          
-          <Grid columns={isMobile ? 1 : 3} gap="lg">
-            {services.map((service, index) => (
-              <GridItem key={service.title}>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <ServiceCard
-                    whileHover={{ y: -8 }}
-                    whileTap={{ scale: 0.98 }}
+          <Section>
+            <HeroBackgroundImage
+              sx={{ backgroundImage: `url(${services[bgIndex].image})` }}
+            />
+            <Box sx={{ 
+              position: 'relative', 
+              zIndex: 1, 
+              width: '100%',
+              maxWidth: '100vw',
+              px: { xs: 2, sm: 3, md: 4, lg: 6 },
+              boxSizing: 'border-box',
+            }}>
+              <Grid container spacing={4}>
+                <Grid item xs={12} md={8}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
                   >
-                    <Stack gap="md">
-                      <Center>
-                        <Box sx={{ fontSize: '3rem', mb: 2 }}>
-                          {typeof service.icon === 'string' ? service.icon : service.icon}
-                        </Box>
-                      </Center>
-                      
-                      <Typography 
-                        variant="h5" 
-                        fontWeight={600} 
-                        textAlign="center"
-                        gutterBottom
+                    {user && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
                       >
-                        {service.title}
-                      </Typography>
-                      
-                      <Typography 
-                        variant="body2" 
-                        textAlign="center" 
-                        sx={{ opacity: 0.8, mb: 3 }}
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            mb: 2,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Welcome back, {user.firstName || user.username}!
+                        </Typography>
+                      </motion.div>
+                    )}
+                    <Typography
+                      variant={isSm ? 'h4' : 'h1'}
+                      sx={{
+                        fontSize: { xs: '2.2rem', sm: '3.8rem', md: '5rem' },
+                        fontWeight: 800,
+                        color: theme.palette.secondary.main,
+                        mb: 3,
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      Ghana's Premier
+                      <br />
+                      <Typography
+                        component="span"
+                        sx={{
+                          fontSize: 'inherit',
+                          fontWeight: 'inherit',
+                          background:
+                            'linear-gradient(45deg, #FFD700 30%, #FFC000 90%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
                       >
-                        {service.description}
-                      </Typography>
-                      
-                      <Flex gap="xs" wrap="wrap" justify="center">
-                        {service.skills.map((skill) => (
-                          <SkillTag 
-                            key={skill} 
-                            label={skill} 
-                            size="small"
-                            variant="outlined"
-                          />
-                        ))}
-                      </Flex>
-                    </Stack>
-                  </ServiceCard>
-                </motion.div>
-              </GridItem>
-            ))}
-          </Grid>
-          
-          <Center sx={{ mt: 6 }}>
-            <PrimaryButton size="lg" href="/services">
-              View All Services
-            </PrimaryButton>
-          </Center>
-        </Container>
-      </ServicesSection>
+                        Skilled Trades
+                      </Typography>{' '}
+                      Network
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.95)',
+                        mb: 4,
+                        fontWeight: 400,
+                        maxWidth: '85%',
+                        lineHeight: 1.4,
+                        fontSize: { xs: '1.1rem', md: '1.3rem' },
+                      }}
+                    >
+                      Connect with verified skilled workers across Ghana. From
+                      plumbing and electrical work to carpentry and construction
+                      - find the right professional for every job.
+                    </Typography>
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 0.6 }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: isSm ? 'column' : 'row',
+                          gap: isSm ? 2 : 3,
+                          mt: 5,
+                        }}
+                      >
+                        {!user ? (
+                          <>
+                            <StyledButton
+                              variant="contained"
+                              size="large"
+                              sx={{
+                                background:
+                                  'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                                color: '#000',
+                                fontWeight: 800,
+                                fontSize: '1.2rem',
+                                px: 5,
+                                py: 2,
+                                '&:hover': {
+                                  background:
+                                    'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                                },
+                              }}
+                              fullWidth={isSm}
+                              onClick={() => navigate('/register')}
+                            >
+                              {isSm ? 'Join Kelmah' : 'Join the Network'}
+                            </StyledButton>
+                            <StyledButton
+                              variant="outlined"
+                              size="large"
+                              sx={{
+                                borderColor: theme.palette.secondary.main,
+                                color: theme.palette.secondary.main,
+                                borderWidth: 3,
+                                fontWeight: 700,
+                                fontSize: '1.2rem',
+                                px: 5,
+                                py: 2,
+                                '&:hover': {
+                                  borderColor: theme.palette.secondary.dark,
+                                  background: alpha(
+                                    theme.palette.secondary.main,
+                                    0.15,
+                                  ),
+                                  borderWidth: 3,
+                                },
+                              }}
+                              fullWidth={isSm}
+                              onClick={() => navigate('/search')}
+                            >
+                              Find Workers
+                            </StyledButton>
+                          </>
+                        ) : user.role === 'worker' ? (
+                          <StyledButton
+                            variant="contained"
+                            size="large"
+                            sx={{
+                              background:
+                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                              color: '#000',
+                              fontWeight: 800,
+                              fontSize: '1.2rem',
+                              px: 5,
+                              py: 2,
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                              },
+                            }}
+                            onClick={() => navigate('/jobs')}
+                          >
+                            Browse Available Jobs
+                          </StyledButton>
+                        ) : (
+                          <StyledButton
+                            variant="contained"
+                            size="large"
+                            sx={{
+                              background:
+                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                              color: '#000',
+                              fontWeight: 800,
+                              fontSize: '1.2rem',
+                              px: 5,
+                              py: 2,
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                              },
+                            }}
+                            onClick={() => navigate('/hirer/jobs/post')}
+                          >
+                            Post a Job
+                          </StyledButton>
+                        )}
+                      </Box>
+                    </motion.div>
+                  </motion.div>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 1, delay: 0.4 }}
+                  >
+                    <Box sx={{ mt: { xs: 4, md: 8 } }}>
+                      {features.map((feature, index) => (
+                        <motion.div
+                          key={feature.title}
+                          initial={{ opacity: 0, y: 30 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.6, delay: index * 0.2 }}
+                        >
+                          <FeatureBox>
+                            <FeatureCircle>{feature.icon}</FeatureCircle>
+                            <Box>
+                              <Typography
+                                color="white"
+                                variant="h6"
+                                sx={{ fontWeight: 700, mb: 0.5 }}
+                              >
+                                {feature.title}
+                              </Typography>
+                              <Typography
+                                color="rgba(255,255,255,0.8)"
+                                variant="body2"
+                                sx={{ fontSize: '0.95rem' }}
+                              >
+                                {feature.description}
+                              </Typography>
+                            </Box>
+                          </FeatureBox>
+                        </motion.div>
+                      ))}
+                    </Box>
+                  </motion.div>
+                </Grid>
+              </Grid>
+            </Box>
 
-      {/* CTA Section */}
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <Container size="md">
-          <Stack gap="lg" align="center">
-            <Typography 
-              variant="h3" 
-              fontWeight={700}
+            {/* Enhanced scroll indicator */}
+            <Box
               sx={{
-                background: theme.palette.mode === 'dark' 
-                  ? BRAND_GRADIENTS.gold 
-                  : BRAND_GRADIENTS.black,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                position: 'absolute',
+                bottom: 32,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 1,
               }}
             >
-              Ready to Get Started?
-            </Typography>
-            
-            <Typography variant="h6" sx={{ opacity: 0.8, maxWidth: 500 }}>
-              Join thousands of satisfied clients who have found reliable tradespeople through Kelmah
-            </Typography>
-            
-            <Flex gap="md" direction={isMobile ? 'column' : 'row'}>
-              <PrimaryButton size="lg" href="/auth/register">
-                Sign Up as Client
-              </PrimaryButton>
-              <SecondaryButton size="lg" href="/auth/register?role=worker">
-                Join as Professional
-              </SecondaryButton>
-            </Flex>
-          </Stack>
-        </Container>
-      </Box>
-    </LandingLayout>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.secondary.main,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+              >
+                Explore Services
+              </Typography>
+              <motion.div
+                initial={{ y: -10 }}
+                animate={{ y: 10 }}
+                transition={{
+                  y: { repeat: Infinity, repeatType: 'reverse', duration: 1.5 },
+                }}
+                style={{ cursor: 'pointer' }}
+                onClick={() =>
+                  document
+                    .getElementById('services')
+                    .scrollIntoView({ behavior: 'smooth' })
+                }
+              >
+                <KeyboardArrowDownIcon
+                  sx={{ fontSize: 40, color: theme.palette.secondary.main }}
+                />
+              </motion.div>
+            </Box>
+          </Section>
+
+          {/* Enhanced Services Section */}
+          <Section
+            id="services"
+            sx={{
+              minHeight: 'auto',
+              py: 16,
+              background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)',
+            }}
+          >
+            <Box sx={{ 
+            width: '100%',
+            maxWidth: '100vw',
+            px: { xs: 2, sm: 3, md: 4, lg: 6 },
+            boxSizing: 'border-box',
+          }}>
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <Typography
+                  variant="h2"
+                  sx={{
+                    textAlign: 'center',
+                    mb: 3,
+                    color: theme.palette.secondary.main,
+                    fontWeight: 800,
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                  }}
+                >
+                  Trade Services Available
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    textAlign: 'center',
+                    mb: 10,
+                    color: 'rgba(255,255,255,0.8)',
+                    maxWidth: 600,
+                    mx: 'auto',
+                    fontWeight: 400,
+                  }}
+                >
+                  Professional skilled workers ready to tackle your projects
+                  with expertise and dedication
+                </Typography>
+              </motion.div>
+
+              <Grid container spacing={4}>
+                {services.map((service, index) => (
+                  <Grid item xs={12} sm={6} md={3} key={service.title}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 50 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: index * 0.15 }}
+                    >
+                      <ServiceCard>
+                        <Box sx={{ position: 'relative' }}>
+                          <ServiceCardMedia
+                            image={service.image}
+                            title={service.title}
+                          />
+                          <TradeIcon className="service-icon">
+                            {service.icon}
+                          </TradeIcon>
+                        </Box>
+                        <ServiceCardContent>
+                          <Typography
+                            gutterBottom
+                            variant="h5"
+                            component="div"
+                            color="white"
+                            sx={{ fontWeight: 700, mb: 2 }}
+                          >
+                            {service.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="rgba(255,255,255,0.85)"
+                            sx={{ mb: 2, lineHeight: 1.5 }}
+                          >
+                            {service.description}
+                          </Typography>
+                          <Box
+                            sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
+                          >
+                            {service.skills.map((skill) => (
+                              <Chip
+                                key={skill}
+                                label={skill}
+                                size="small"
+                                sx={{
+                                  backgroundColor: 'rgba(255,215,0,0.2)',
+                                  color: '#FFD700',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </ServiceCardContent>
+                      </ServiceCard>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* Call-to-action section */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <Box sx={{ textAlign: 'center', mt: 12 }}>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      color: 'white',
+                      mb: 3,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Ready to Get Started?
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: 'rgba(255,255,255,0.8)',
+                      mb: 4,
+                      maxWidth: 500,
+                      mx: 'auto',
+                    }}
+                  >
+                    Join thousands of skilled workers and satisfied customers on
+                    Ghana's leading trade platform
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 3,
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <StyledButton
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        background:
+                          'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        color: '#000',
+                        fontWeight: 800,
+                        fontSize: '1.1rem',
+                        px: 4,
+                        py: 1.5,
+                        '&:hover': {
+                          background:
+                            'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                        },
+                      }}
+                      onClick={() => navigate('/register')}
+                    >
+                      Join as a Worker
+                    </StyledButton>
+                    <StyledButton
+                      variant="outlined"
+                      size="large"
+                      sx={{
+                        borderColor: '#FFD700',
+                        color: '#FFD700',
+                        borderWidth: 2,
+                        fontWeight: 700,
+                        fontSize: '1.1rem',
+                        px: 4,
+                        py: 1.5,
+                        '&:hover': {
+                          background: alpha('#FFD700', 0.1),
+                          borderWidth: 2,
+                        },
+                      }}
+                      onClick={() => navigate('/find-talents')}
+                    >
+                      Hire Skilled Workers
+                    </StyledButton>
+                  </Box>
+                </Box>
+              </motion.div>
+            </Box>
+          </Section>
+        </Box>
+      </GestureControl>
+    </>
   );
 };
 

@@ -27,7 +27,7 @@ import {
   Stack,
   Rating,
   Divider,
-
+  alpha,
   Grow,
   Collapse,
   Fab,
@@ -142,7 +142,7 @@ import {
   Architecture as ArchitectureIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { styled, keyframes, alpha } from '@mui/material/styles';
+import { styled, keyframes } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet';
 import useAuth from '../../auth/hooks/useAuth';
@@ -208,7 +208,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     ${theme.palette.secondary.main} 75%,
     ${theme.palette.primary.main} 100%)`,
   backgroundSize: '400% 400%',
-  animation: `${gradientShift} 15s ease infinite`,
+  // animation: `${gradientShift} 15s ease infinite`,
   color: 'white',
   padding: theme.spacing(12, 0),
   position: 'relative',
@@ -226,7 +226,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     background: `radial-gradient(circle at 20% 80%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, ${alpha('#FFA500', 0.3)} 0%, transparent 50%),
                 radial-gradient(circle at 40% 40%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 50%)`,
-    animation: `${float} 20s ease-in-out infinite`,
+    // animation: `${float} 20s ease-in-out infinite`,
   },
   '&::after': {
     content: '""',
@@ -819,1728 +819,796 @@ const platformMetrics = [
 ];
 
 const JobsPage = () => {
-  const { user, isAuthenticated, isInitialized } = useAuth();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  // Redux state with safe defaults
-  const filters = useSelector(selectJobFilters) || {};
-  const { currentPage = 1, totalPages = 0 } = useSelector(selectJobsPagination) || {};
-  const jobs = useSelector(selectJobs) || [];
-  const loading = useSelector(selectJobsLoading) || false;
-  const error = useSelector(selectJobsError);
-
-  // Enhanced local state
-  const [searchQuery, setSearchQuery] = useState(filters.search || '');
-  const [showSampleData, setShowSampleData] = useState(true);
-  const [savedJobs, setSavedJobs] = useState([]);
-  const [viewMode, setViewMode] = useState(isMobile ? 'list' : 'grid');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [budgetRange, setBudgetRange] = useState([500, 10000]);
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 150000]);
-  const [sortBy, setSortBy] = useState('relevance');
-  const [onlyRemote, setOnlyRemote] = useState(false);
-  const [onlyUrgent, setOnlyUrgent] = useState(false);
-  const [onlyFeatured, setOnlyFeatured] = useState(false);
-  const [filterDialog, setFilterDialog] = useState(false);
-  const [mapView, setMapView] = useState(false);
-  const [experienceLevel, setExperienceLevel] = useState('');
-  const [jobType, setJobType] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [animateCards, setAnimateCards] = useState(false);
   
-  const heroRef = useRef(null);
-  const searchRef = useRef(null);
-
-  // Responsive view mode adjustment
-  useEffect(() => {
-    if (isMobile && viewMode === 'grid') {
-      setViewMode('list');
+  // Enhanced Ghana-focused skilled trades jobs
+  const sampleJobs = [
+    {
+      id: 1,
+      title: "Senior Electrical Engineer - Commercial Projects",
+      company: "PowerTech Solutions Ghana",
+      location: "Accra, Greater Accra",
+      budget: "GHS 3,500 - 5,500",
+      type: "Full-time",
+      category: "Electrical",
+      urgent: true,
+      verified: true,
+      rating: 4.8,
+      applicants: 12,
+      description: "Seeking certified electrician for high-rise commercial installations. Must have 5+ years experience with industrial wiring and safety protocols.",
+      skills: ["Electrical Installation", "Industrial Wiring", "Safety Protocols", "Circuit Design", "Maintenance"],
+      requirements: ["Valid Electrical License", "5+ Years Experience", "Safety Certification"],
+      benefits: ["Health Insurance", "Performance Bonus", "Transport Allowance"],
+      postedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      icon: ElectricalIcon,
+      companyLogo: "/images/powertech-logo.png"
+    },
+    {
+      id: 2,
+      title: "Master Plumber - Residential & Commercial",
+      company: "AquaFlow Ghana Limited",
+      location: "Kumasi, Ashanti Region", 
+      budget: "GHS 2,800 - 4,200",
+      type: "Contract",
+      category: "Plumbing",
+      urgent: false,
+      verified: true,
+      rating: 4.9,
+      applicants: 8,
+      description: "Professional plumber needed for luxury residential and commercial plumbing systems. Experience with modern fixtures required.",
+      skills: ["Pipe Installation", "Water Systems", "Drainage", "Fixture Installation", "Leak Detection"],
+      requirements: ["Plumbing Certification", "3+ Years Experience", "Own Tools"],
+      benefits: ["Project Bonus", "Material Allowance", "Training Opportunities"],
+      postedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      icon: PlumbingIcon,
+      companyLogo: "/images/aquaflow-logo.png"
+    },
+    {
+      id: 3,
+      title: "Expert Carpenter - Custom Furniture Specialist",
+      company: "WoodCraft Artisans Ltd",
+      location: "Tema, Greater Accra",
+      budget: "GHS 2,200 - 3,800", 
+      type: "Part-time",
+      category: "Carpentry",
+      urgent: false,
+      verified: true,
+      rating: 4.7,
+      applicants: 15,
+      description: "Seeking master carpenter for high-end custom furniture and cabinet making. Must excel in traditional and modern woodworking techniques.",
+      skills: ["Fine Woodworking", "Cabinet Making", "Furniture Design", "Tool Mastery", "Finishing"],
+      requirements: ["Carpentry Certification", "Portfolio Required", "4+ Years Experience"],
+      benefits: ["Flexible Hours", "Material Discount", "Skill Development"],
+      postedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      icon: CarpenterIcon,
+      companyLogo: "/images/woodcraft-logo.png"
+    },
+    {
+      id: 4,
+      title: "HVAC Technician - Climate Control Systems",
+      company: "CoolAir Ghana",
+      location: "Accra, Greater Accra",
+      budget: "GHS 2,800 - 4,500",
+      type: "Full-time",
+      category: "HVAC",
+      urgent: true,
+      verified: true,
+      rating: 4.6,
+      applicants: 7,
+      description: "Install and maintain air conditioning systems in commercial buildings. Experience with energy-efficient systems preferred.",
+      skills: ["HVAC Installation", "System Maintenance", "Refrigeration", "Energy Efficiency", "Troubleshooting"],
+      requirements: ["HVAC License", "3+ Years Experience", "Transport Available"],
+      benefits: ["Medical Cover", "Overtime Pay", "Equipment Provided"],
+      postedDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      deadline: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+      icon: HvacIcon,
+      companyLogo: "/images/coolair-logo.png"
+    },
+    {
+      id: 5,
+      title: "Construction Supervisor - Building Projects",
+      company: "BuildRight Construction",
+      location: "Kumasi, Ashanti Region",
+      budget: "GHS 4,200 - 6,500",
+      type: "Full-time",
+      category: "Construction",
+      urgent: false,
+      verified: true,
+      rating: 4.8,
+      applicants: 9,
+      description: "Lead construction teams for residential and commercial building projects. Strong leadership and technical skills required.",
+      skills: ["Project Management", "Team Leadership", "Quality Control", "Safety Management", "Cost Control"],
+      requirements: ["Construction Management Degree", "5+ Years Experience", "Leadership Skills"],
+      benefits: ["Car Allowance", "Profit Sharing", "Career Growth"],
+      postedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      deadline: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+      icon: ConstructionIcon,
+      companyLogo: "/images/buildright-logo.png"
+    },
+    {
+      id: 6,
+      title: "Professional Painter - Residential & Commercial",
+      company: "ColorMaster Painters",
+      location: "Tema, Greater Accra",
+      budget: "GHS 1,800 - 2,800",
+      type: "Contract",
+      category: "Painting",
+      urgent: false,
+      verified: true,
+      rating: 4.5,
+      applicants: 11,
+      description: "Skilled painter for interior and exterior painting projects. Experience with decorative finishes and modern techniques preferred.",
+      skills: ["Interior Painting", "Exterior Painting", "Decorative Finishes", "Surface Preparation", "Color Consultation"],
+      requirements: ["Painting Experience", "Own Equipment", "Quality Portfolio"],
+      benefits: ["Material Discount", "Flexible Schedule", "Performance Bonus"],
+      postedDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      deadline: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+      icon: PaintIcon,
+      companyLogo: "/images/colormaster-logo.png"
     }
-  }, [isMobile, viewMode]);
+  ];
 
-  // Enhanced search functionality
-  const handleSearch = useCallback(() => {
-    const newFilters = {
-      ...filters,
-      page: 1,
-      search: searchQuery.trim(),
-      category: selectedCategory,
-      minBudget: priceRange[0],
-      maxBudget: priceRange[1],
-      sortBy,
-      remote: onlyRemote,
-      urgent: onlyUrgent,
-      featured: onlyFeatured,
-      experience: experienceLevel,
-      jobType,
-      skills: selectedSkills,
-    };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchJobs(newFilters));
-    setShowSampleData(false);
-    setAnimateCards(true);
+  const tradeCategories = [
+    { value: '', label: 'All Trades', icon: WorkIcon },
+    { value: 'Electrical', label: 'Electrical Work', icon: ElectricalIcon },
+    { value: 'Plumbing', label: 'Plumbing Services', icon: PlumbingIcon },
+    { value: 'Carpentry', label: 'Carpentry & Woodwork', icon: CarpenterIcon },
+    { value: 'HVAC', label: 'HVAC & Climate Control', icon: HvacIcon },
+    { value: 'Construction', label: 'Construction & Building', icon: ConstructionIcon },
+    { value: 'Painting', label: 'Painting & Decoration', icon: PaintIcon },
+    { value: 'Roofing', label: 'Roofing Services', icon: RoofingIcon },
+    { value: 'Masonry', label: 'Masonry & Stonework', icon: BuildIcon }
+  ];
+
+  const ghanaLocations = [
+    { value: '', label: 'All Locations' },
+    { value: 'Accra', label: 'Accra, Greater Accra' },
+    { value: 'Kumasi', label: 'Kumasi, Ashanti Region' },
+    { value: 'Tema', label: 'Tema, Greater Accra' },
+    { value: 'Takoradi', label: 'Takoradi, Western Region' },
+    { value: 'Cape Coast', label: 'Cape Coast, Central Region' },
+    { value: 'Tamale', label: 'Tamale, Northern Region' },
+    { value: 'Ho', label: 'Ho, Volta Region' },
+    { value: 'Koforidua', label: 'Koforidua, Eastern Region' }
+  ];
+
+  const filteredJobs = sampleJobs.filter(job => {
+    const matchesSearch = !searchQuery || 
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    // Analytics tracking
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'job_search', {
-        search_term: searchQuery,
-        category: selectedCategory,
-        filters_applied: Object.keys(newFilters).length,
-      });
-    }
-  }, [filters, searchQuery, selectedCategory, priceRange, sortBy, onlyRemote, onlyUrgent, onlyFeatured, experienceLevel, jobType, selectedSkills, dispatch]);
-
-  const handlePageChange = useCallback((event, value) => {
-    const newFilters = { ...filters, page: value };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchJobs(newFilters));
-    setShowSampleData(false);
-    window.scrollTo({ top: searchRef.current?.offsetTop || 0, behavior: 'smooth' });
-  }, [filters, dispatch]);
-
-  const handleCategorySelect = useCallback((category) => {
-    const newCategory = category === selectedCategory ? '' : category;
-    setSelectedCategory(newCategory);
+    const matchesCategory = !selectedCategory || job.category === selectedCategory;
+    const matchesLocation = !selectedLocation || job.location.includes(selectedLocation);
     
-    // Auto-search when category is selected
-    setTimeout(() => {
-      const newFilters = {
-        ...filters,
-        page: 1,
-        category: newCategory,
-        search: searchQuery.trim(),
-      };
-      dispatch(setFilters(newFilters));
-      dispatch(fetchJobs(newFilters));
-      setShowSampleData(false);
-    }, 300);
-  }, [selectedCategory, filters, searchQuery, dispatch]);
+    return matchesSearch && matchesCategory && matchesLocation;
+  });
 
-  const clearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedCategory('');
-    setPriceRange([0, 150000]);
-    setSortBy('relevance');
-    setOnlyRemote(false);
-    setOnlyUrgent(false);
-    setOnlyFeatured(false);
-    setExperienceLevel('');
-    setJobType('');
-    setSelectedSkills([]);
-    setShowSampleData(true);
-    
-    // Clear Redux filters
-    dispatch(setFilters({}));
-  }, [dispatch]);
-
-  const toggleSaveJob = useCallback((jobId) => {
-    if (!isAuthenticated()) {
-      navigate('/login', { state: { from: `/jobs/${jobId}` } });
-      return;
-    }
-    
-    setSavedJobs(prev => 
-      prev.includes(jobId) 
-        ? prev.filter(id => id !== jobId)
-        : [...prev, jobId]
-    );
-    
-    // TODO: Sync with backend
-  }, [isAuthenticated, navigate]);
-
-  // Enhanced keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 'k':
-            e.preventDefault();
-            searchRef.current?.querySelector('input')?.focus();
-            break;
-          case 'f':
-            e.preventDefault();
-            setFilterDialog(true);
-            break;
-          default:
-            break;
-        }
-      }
-      if (e.key === 'Escape') {
-        setFilterDialog(false);
-        setShowFilters(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
-
-  // Auto-save search preferences
-  useEffect(() => {
-    const preferences = {
-      viewMode,
-      sortBy,
-      priceRange,
-      selectedSkills,
-    };
-    localStorage.setItem('jobSearchPreferences', JSON.stringify(preferences));
-  }, [viewMode, sortBy, priceRange, selectedSkills]);
-
-  // Load saved preferences
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('jobSearchPreferences');
-      if (saved) {
-        const preferences = JSON.parse(saved);
-        setViewMode(preferences.viewMode || (isMobile ? 'list' : 'grid'));
-        setSortBy(preferences.sortBy || 'relevance');
-        setPriceRange(preferences.priceRange || [0, 150000]);
-        setSelectedSkills(preferences.selectedSkills || []);
-      }
-    } catch (error) {
-      console.error('Error loading preferences:', error);
-    }
-  }, [isMobile]);
-
-  const renderHeroSection = () => (
-    <HeroSection ref={heroRef}>
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 3 }}>
-        <Grid container spacing={6} alignItems="center" sx={{ minHeight: '85vh' }}>
-          <Grid item xs={12} lg={6}>
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
+  return (
+    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Helmet>
+          <title>Find Skilled Trade Jobs - Kelmah | Ghana's Premier Job Platform</title>
+          <meta name="description" content="Discover high-paying skilled trade opportunities across Ghana. Connect with top employers in electrical, plumbing, carpentry, HVAC, and construction." />
+        </Helmet>
+        
+        {/* Hero Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Box sx={{ mb: 6, textAlign: 'center' }}>
+            <Typography 
+              variant="h2" 
+              component="h1" 
+              gutterBottom
+              sx={{ 
+                fontWeight: 'bold',
+                background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 2
+              }}
             >
-              <Box sx={{ mb: 4 }}>
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                >
-                  <Typography
-                    variant="h1"
+              Find Your Next Trade Opportunity
+            </Typography>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.8)', 
+                mb: 4,
+                maxWidth: 800,
+                mx: 'auto'
+              }}
+            >
+              Connect with Ghana's top employers and advance your skilled trades career
+            </Typography>
+            
+            {/* Enhanced Search & Filter Section */}
+            <Paper 
+              elevation={8}
+              sx={{ 
+                p: 3, 
+                maxWidth: 1000, 
+                mx: 'auto', 
+                mb: 4,
+                bgcolor: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(212,175,55,0.2)'
+              }}
+            >
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search jobs, skills, companies..."
                     sx={{
-                      fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem', lg: '5.5rem' },
-                      fontWeight: 900,
-                      mb: 3,
-                      background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 25%, #FF6B6B 50%, #4ECDC4 75%, #45B7D1 100%)',
-                      backgroundSize: '200% 200%',
-                      animation: `${gradientShift} 8s ease infinite`,
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      textShadow: '0 8px 16px rgba(0,0,0,0.3)',
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    Discover Your
-                    <br />
-                    <span style={{ position: 'relative' }}>
-                      Dream Career
-                      <motion.div
-                        style={{
-                          position: 'absolute',
-                          bottom: -10,
-                          left: 0,
-                          right: 0,
-                          height: 4,
-                          background: 'linear-gradient(90deg, #FFD700, #FFA500)',
-                          borderRadius: 2,
-                        }}
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ duration: 1, delay: 1 }}
-                      />
-                    </span>
-                  </Typography>
-                </motion.div>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                >
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.8rem', lg: '2.2rem' },
-                      fontWeight: 400,
-                      mb: 4,
-                      opacity: 0.95,
-                      lineHeight: 1.5,
-                      maxWidth: '90%',
-                    }}
-                  >
-                    🚀 <strong>Join 450,000+ professionals</strong> building the future
-                    <br />
-                    💰 <strong>Earn up to $150K+</strong> in skilled trades
-                    <br />
-                    🌟 <strong>Work on cutting-edge projects</strong> worldwide
-                    <br />
-                    ⚡ <strong>Get hired in 24 hours</strong> or less
-                  </Typography>
-                </motion.div>
-              </Box>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-              >
-                <Stack 
-                  direction={{ xs: 'column', sm: 'row' }} 
-                  spacing={3} 
-                  sx={{ mb: 6 }}
-                >
-                  <AnimatedButton
-                    size="large"
-                    startIcon={<SearchIcon />}
-                    onClick={() => window.scrollTo({ 
-                      top: heroRef.current?.offsetHeight || 700, 
-                      behavior: 'smooth' 
-                    })}
-                    sx={{ minWidth: { xs: '100%', sm: 200 } }}
-                  >
-                    Explore 125K+ Jobs
-                  </AnimatedButton>
-                  <AnimatedButton
-                    variant="outlined"
-                    size="large"
-                    startIcon={<WorkspacePremium />}
-                    onClick={() => navigate(isAuthenticated() ? '/post-job' : '/register?type=hirer')}
-                    sx={{
-                      borderColor: 'white',
-                      color: 'white',
-                      minWidth: { xs: '100%', sm: 180 },
-                      '&:hover': {
-                        borderColor: theme.palette.secondary.main,
-                        backgroundColor: alpha('#ffffff', 0.15),
-                        color: theme.palette.secondary.main,
+                      '& .MuiOutlinedInput-root': {
+                        color: 'white',
+                        '& fieldset': {
+                          borderColor: 'rgba(212,175,55,0.3)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#D4AF37',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#D4AF37',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255,255,255,0.7)',
                       },
                     }}
-                  >
-                    {isAuthenticated() ? 'Post a Job' : 'Hire Talent'}
-                  </AnimatedButton>
-                </Stack>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.8 }}
-              >
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="h6" sx={{ mb: 3, opacity: 0.9, fontWeight: 600 }}>
-                    🏆 Trusted by industry leaders:
-                  </Typography>
-                  <Stack 
-                    direction="row" 
-                    spacing={{ xs: 2, sm: 4 }} 
-                    sx={{ 
-                      opacity: 0.8, 
-                      flexWrap: 'wrap',
-                      '& > *': {
-                        fontSize: { xs: '1rem', sm: '1.2rem' },
-                        fontWeight: 300,
-                        letterSpacing: 1,
-                      }
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#D4AF37' }} />
+                        </InputAdornment>
+                      ),
                     }}
-                  >
-                    {['Tesla', 'Apple', 'Google', 'SpaceX', 'Microsoft', 'Amazon'].map((company, index) => (
-                      <motion.div
-                        key={company}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 1 + index * 0.1 }}
-                      >
-                        <Typography variant="h6" component="span">
-                          {company}
-                        </Typography>
-                      </motion.div>
-                    ))}
-                  </Stack>
-                </Box>
-              </motion.div>
-            </motion.div>
-          </Grid>
-          
-          <Grid item xs={12} lg={6}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, rotateY: 45 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-            >
-              <Grid container spacing={3}>
-                {platformMetrics.map((metric, index) => (
-                  <Grid item xs={6} md={4} lg={6} key={index}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 50, rotateX: 45 }}
-                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                      transition={{ 
-                        duration: 0.6, 
-                        delay: 0.5 + index * 0.15,
-                        ease: "easeOut"
-                      }}
-                      whileHover={{ 
-                        scale: 1.05, 
-                        rotateY: 5,
-                        transition: { duration: 0.2 }
-                      }}
-                    >
-                      <StatCard
-                        whileHover={{ 
-                          scale: 1.05,
-                          boxShadow: `0 25px 50px ${alpha(metric.color, 0.3)}`,
-                        }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <InteractiveIcon color={metric.color}>
-                          {metric.icon}
-                        </InteractiveIcon>
-                        
-                        <GradientText variant="h3" sx={{ mb: 1 }}>
-                          {metric.value}
-                        </GradientText>
-                        
-                        <Typography 
-                          variant="h6" 
-                          fontWeight={700} 
-                          color="white" 
-                          sx={{ mb: 0.5 }}
-                        >
-                          {metric.label}
-                        </Typography>
-                        
-                        <Typography 
-                          variant="body2" 
-                          color="rgba(255,255,255,0.8)" 
-                          sx={{ mb: 2 }}
-                        >
-                          {metric.subtitle}
-                        </Typography>
-                        
-                        <Chip
-                          label={metric.trend}
-                          size="small"
-                          sx={{
-                            bgcolor: alpha('#ffffff', 0.2),
-                            color: 'white',
-                            fontWeight: 700,
-                            mb: 1,
-                            animation: `${pulse} 2s ease-in-out infinite`,
-                          }}
-                        />
-                        
-                        <Typography 
-                          variant="caption" 
-                          color="rgba(255,255,255,0.7)"
-                          sx={{ fontSize: '0.75rem' }}
-                        >
-                          {metric.description}
-                        </Typography>
-                      </StatCard>
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
-            </motion.div>
-          </Grid>
-        </Grid>
-      </Container>
-    </HeroSection>
-  );
-
-  const renderSearchInterface = () => (
-    <Container maxWidth="xl" sx={{ py: 6 }} ref={searchRef}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <FloatingSearchBar elevation={16}>
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <GradientText variant="h3" sx={{ mb: 2 }}>
-              🎯 Smart Job Discovery Engine
-            </GradientText>
-            <Typography variant="h6" color="text.secondary" sx={{ opacity: 0.8 }}>
-              Find your perfect opportunity with AI-powered matching
-            </Typography>
-          </Box>
-          
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={5}>
-              <TextField
-                fullWidth
-                placeholder="Search by job title, company, skills, or location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchQuery && (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => setSearchQuery('')}
-                        sx={{ color: theme.palette.text.secondary }}
-                      >
-                        <CloseIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  sx: {
-                    borderRadius: 4,
-                    fontSize: '1.1rem',
-                    '& fieldset': { 
-                      borderColor: alpha(theme.palette.secondary.main, 0.3),
-                      borderWidth: 2,
-                    },
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                      borderWidth: 2,
-                    },
-                    bgcolor: alpha(theme.palette.background.default, 0.7),
-                    backdropFilter: 'blur(10px)',
-                  },
-                }}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </Grid>
-            
-            <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: theme.palette.secondary.main, fontWeight: 600 }}>
-                  Sort By
-                </InputLabel>
-                <Select
-                  value={sortBy}
-                  label="Sort By"
-                  onChange={(e) => setSortBy(e.target.value)}
-                  sx={{
-                    borderRadius: 3,
-                    '& fieldset': { 
-                      borderColor: alpha(theme.palette.secondary.main, 0.3),
-                      borderWidth: 2,
-                    },
-                    '&:hover fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: theme.palette.secondary.main,
-                    },
-                    bgcolor: alpha(theme.palette.background.default, 0.7),
-                  }}
-                >
-                  <MenuItem value="relevance">🎯 Most Relevant</MenuItem>
-                  <MenuItem value="newest">🆕 Newest First</MenuItem>
-                  <MenuItem value="salary_high">💰 Highest Salary</MenuItem>
-                  <MenuItem value="salary_low">💵 Lowest Salary</MenuItem>
-                  <MenuItem value="deadline">⏰ Deadline Soon</MenuItem>
-                  <MenuItem value="featured">⭐ Featured Jobs</MenuItem>
-                  <MenuItem value="trending">🔥 Trending Now</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={onlyRemote}
-                      onChange={(e) => setOnlyRemote(e.target.checked)}
-                      color="secondary"
+                  />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth>
+                    <Select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      displayEmpty
                       sx={{
-                        '& .MuiSwitch-thumb': {
-                          bgcolor: onlyRemote ? theme.palette.secondary.main : 'grey.400',
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(212,175,55,0.3)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#D4AF37',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#D4AF37',
+                        },
+                        '& .MuiSvgIcon-root': {
+                          color: '#D4AF37',
                         },
                       }}
-                    />
-                  }
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <PublicIcon fontSize="small" />
-                      <Typography variant="body2" fontWeight={600}>Remote Only</Typography>
-                    </Box>
-                  }
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={onlyUrgent}
-                      onChange={(e) => setOnlyUrgent(e.target.checked)}
-                      color="error"
-                    />
-                  }
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <FireIcon fontSize="small" />
-                      <Typography variant="body2" fontWeight={600}>Urgent</Typography>
-                    </Box>
-                  }
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={onlyFeatured}
-                      onChange={(e) => setOnlyFeatured(e.target.checked)}
-                      color="secondary"
-                    />
-                  }
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <StarIcon fontSize="small" />
-                      <Typography variant="body2" fontWeight={600}>Featured</Typography>
-                    </Box>
-                  }
-                />
-              </Stack>
-            </Grid>
-          </Grid>
-
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <Stack direction="row" spacing={2}>
-              <AnimatedButton
-                variant="contained"
-                onClick={handleSearch}
-                size="large"
-                startIcon={<SearchIcon />}
-                sx={{ minWidth: 180 }}
-              >
-                Find Perfect Jobs
-              </AnimatedButton>
-              
-              <AnimatedButton
-                variant="outlined"
-                onClick={() => setFilterDialog(true)}
-                size="large"
-                startIcon={<TuneIcon />}
-              >
-                Advanced Filters
-              </AnimatedButton>
-            </Stack>
-
-            <Stack direction="row" spacing={1}>
-              <Tooltip title="Clear all filters">
-                <IconButton
-                  onClick={clearFilters}
-                  sx={{
-                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                    color: theme.palette.error.main,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.error.main, 0.2),
-                    },
-                  }}
-                >
-                  <ClearIcon />
-                </IconButton>
-              </Tooltip>
-              
-              <ToggleButtonGroup
-                value={viewMode}
-                exclusive
-                onChange={(e, newView) => newView && setViewMode(newView)}
-                size="small"
-                sx={{
-                  '& .MuiToggleButton-root': {
-                    border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                    '&.Mui-selected': {
-                      bgcolor: theme.palette.secondary.main,
-                      color: 'white',
+                    >
+                      {tradeCategories.map((category) => (
+                        <MenuItem key={category.value} value={category.value}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <category.icon sx={{ mr: 1, color: '#D4AF37' }} />
+                            {category.label}
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    startIcon={<SearchIcon />}
+                    sx={{
+                      bgcolor: '#D4AF37',
+                      color: 'black',
+                      fontWeight: 'bold',
                       '&:hover': {
-                        bgcolor: theme.palette.secondary.dark,
+                        bgcolor: '#B8941F',
                       },
-                    },
-                  },
-                }}
-              >
-                <ToggleButton value="grid" disabled={isMobile}>
-                  <ViewModuleIcon />
-                </ToggleButton>
-                <ToggleButton value="list">
-                  <ViewListIcon />
-                </ToggleButton>
-                <ToggleButton value="map">
-                  <MapIcon />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Stack>
-          </Box>
-
-          {/* Quick Search Suggestions */}
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
-              🔥 Trending Searches:
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-              {['Electrical Engineer', 'Smart Home Tech', 'Solar Installation', 'HVAC Specialist', 'Construction Manager', 'Plumbing Expert'].map((suggestion) => (
-                <Chip
-                  key={suggestion}
-                  label={suggestion}
-                  size="small"
-                  onClick={() => {
-                    setSearchQuery(suggestion);
-                    setTimeout(handleSearch, 100);
-                  }}
-                  sx={{
-                    cursor: 'pointer',
-                    bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                    color: theme.palette.secondary.main,
-                    fontWeight: 600,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.secondary.main, 0.2),
-                      transform: 'translateY(-2px)',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                />
-              ))}
-            </Stack>
-          </Box>
-        </FloatingSearchBar>
-      </motion.div>
-    </Container>
-  );
-
-  const renderCategories = () => (
-    <Container maxWidth="xl" sx={{ py: 8 }}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <GradientText variant="h2" sx={{ mb: 3, fontSize: { xs: '2.5rem', md: '3.5rem' } }}>
-            🎯 Explore Career Opportunities
-          </GradientText>
-          <Typography 
-            variant="h5" 
-            color="text.secondary" 
-            sx={{ 
-              mb: 4, 
-              maxWidth: 600, 
-              mx: 'auto',
-              fontSize: { xs: '1.1rem', md: '1.3rem' }
-            }}
-          >
-            Discover high-demand careers with competitive salaries and growth potential
-          </Typography>
-          
-          <Stack 
-            direction="row" 
-            spacing={4} 
-            justifyContent="center" 
-            sx={{ 
-              flexWrap: 'wrap', 
-              gap: 2,
-              '& > *': {
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                fontSize: '1rem',
-                fontWeight: 600,
-                color: theme.palette.text.secondary,
-              }
-            }}
-          >
-            <Box>
-              <TrendingUpIcon color="success" />
-              <span>Growing Industries</span>
-            </Box>
-            <Box>
-              <AttachMoneyIcon color="primary" />
-              <span>Competitive Salaries</span>
-            </Box>
-            <Box>
-              <GraphIcon color="secondary" />
-              <span>Career Growth</span>
-            </Box>
-            <Box>
-              <VerifiedIcon color="info" />
-              <span>Verified Opportunities</span>
-            </Box>
-          </Stack>
-        </Box>
-        
-        <Grid container spacing={4} justifyContent="center">
-          {categoryData.map((category, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={category.name}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, y: 50 }}
-                whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: index * 0.1,
-                  ease: "easeOut"
-                }}
-                viewport={{ once: true }}
-                whileHover={{ 
-                  scale: 1.05, 
-                  rotateY: 5,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <GlassCard
-                  featured={selectedCategory === category.name}
-                  sx={{
-                    p: 4,
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    minHeight: 320,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    background: selectedCategory === category.name 
-                      ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.15)}, ${alpha(theme.palette.primary.main, 0.1)})`
-                      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)}, ${alpha(theme.palette.background.paper, 0.85)})`,
-                    border: selectedCategory === category.name 
-                      ? `3px solid ${theme.palette.secondary.main}`
-                      : `2px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 6,
-                      background: `linear-gradient(90deg, ${category.color}, ${alpha(category.color, 0.7)})`,
-                      opacity: selectedCategory === category.name ? 1 : 0.7,
-                    },
-                  }}
-                  onClick={() => handleCategorySelect(category.name)}
+                    }}
+                  >
+                    Search Jobs
+                  </Button>
+                </Grid>
+              </Grid>
+              
+              {/* Advanced Filters Toggle */}
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Button
+                  startIcon={<FilterListIcon />}
+                  onClick={() => setShowFilters(!showFilters)}
+                  sx={{ color: '#D4AF37' }}
                 >
-                  <Box>
-                    <InteractiveIcon 
-                      color={category.color}
-                      sx={{ 
-                        fontSize: '4rem !important',
-                        mb: 3,
-                        filter: `drop-shadow(0 8px 16px ${alpha(category.color, 0.3)})`,
-                      }}
-                    >
-                      {React.cloneElement(category.icon, { 
-                        sx: { fontSize: 'inherit', color: category.color }
-                      })}
-                    </InteractiveIcon>
-                    
-                    <Typography 
-                      variant="h5" 
-                      fontWeight={800} 
-                      gutterBottom
-                      sx={{ 
-                        color: selectedCategory === category.name 
-                          ? theme.palette.secondary.main 
-                          : theme.palette.text.primary,
-                        mb: 2,
-                      }}
-                    >
-                      {category.name}
-                    </Typography>
-                    
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mb: 3, lineHeight: 1.6, fontSize: '0.95rem' }}
-                    >
-                      {category.description}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Stack spacing={2} sx={{ mb: 3 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                          Available Jobs:
+                  {showFilters ? 'Hide' : 'Show'} Advanced Filters
+                </Button>
+              </Box>
+              
+              {/* Advanced Filters */}
+              <Collapse in={showFilters}>
+                <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(212,175,55,0.2)' }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                      <FormControl fullWidth>
+                        <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37' }}>
+                          Location
                         </Typography>
-                        <Chip
-                          label={`${category.count.toLocaleString()}`}
-                          size="small"
+                        <Select
+                          value={selectedLocation}
+                          onChange={(e) => setSelectedLocation(e.target.value)}
+                          displayEmpty
                           sx={{
-                            bgcolor: alpha(category.color, 0.1),
-                            color: category.color,
-                            fontWeight: 700,
+                            color: 'white',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(212,175,55,0.3)',
+                            },
                           }}
-                        />
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                          Avg. Salary:
-                        </Typography>
-                        <Typography variant="body2" fontWeight={700} color={category.color}>
-                          {category.avgSalary}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                          Growth:
-                        </Typography>
-                        <Typography variant="body2" fontWeight={700} color="success.main">
-                          {category.growth}
-                        </Typography>
-                      </Box>
-                    </Stack>
-
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center', mb: 2 }}>
-                      {category.trending && (
-                        <Chip 
-                          label="🔥 Trending" 
-                          size="small" 
-                          sx={{ 
-                            bgcolor: alpha('#FF6B6B', 0.1),
-                            color: '#FF6B6B',
-                            fontWeight: 600,
-                            animation: `${pulse} 2s ease-in-out infinite`,
-                          }} 
-                        />
-                      )}
-                      {category.hot && (
-                        <Chip 
-                          label="💎 Hot" 
-                          size="small" 
-                          sx={{ 
-                            bgcolor: alpha('#FFA500', 0.1),
-                            color: '#FFA500',
-                            fontWeight: 600,
-                            animation: `${sparkle} 2s ease-in-out infinite`,
-                          }} 
-                        />
-                      )}
-                      {category.newest && (
-                        <Chip 
-                          label="✨ New" 
-                          size="small" 
-                          sx={{ 
-                            bgcolor: alpha('#4CAF50', 0.1),
-                            color: '#4CAF50',
-                            fontWeight: 600,
-                            animation: `${float} 3s ease-in-out infinite`,
-                          }} 
-                        />
-                      )}
-                      {category.premium && (
-                        <Chip 
-                          label="👑 Premium" 
-                          size="small" 
-                          sx={{ 
-                            bgcolor: alpha('#9C27B0', 0.1),
-                            color: '#9C27B0',
-                            fontWeight: 600,
-                          }} 
-                        />
-                      )}
-                    </Box>
-
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: 6,
-                        bgcolor: alpha(category.color, 0.1),
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <Box
+                        >
+                          {ghanaLocations.map((location) => (
+                            <MenuItem key={location.value} value={location.value}>
+                              {location.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37' }}>
+                        Salary Range (GHS)
+                      </Typography>
+                      <Slider
+                        value={budgetRange}
+                        onChange={(e, newValue) => setBudgetRange(newValue)}
+                        valueLabelDisplay="auto"
+                        min={500}
+                        max={10000}
+                        step={100}
                         sx={{
-                          width: category.demandLevel === 'Explosive' ? '100%' :
-                                 category.demandLevel === 'Very High' ? '90%' :
-                                 category.demandLevel === 'High' ? '75%' : '60%',
-                          height: '100%',
-                          bgcolor: category.color,
-                          borderRadius: 3,
-                          transition: 'width 1s ease-in-out',
-                        }}
-                      />
-                    </Box>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        mt: 1, 
-                        fontWeight: 600,
-                        color: category.color,
-                      }}
-                    >
-                      Demand: {category.demandLevel}
-                    </Typography>
-                  </Box>
-                </GlassCard>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Box sx={{ textAlign: 'center', mt: 6 }}>
-          <AnimatedButton
-            variant="outlined"
-            size="large"
-            startIcon={<ExploreIcon />}
-            onClick={() => navigate('/categories')}
-          >
-            Explore All Categories
-          </AnimatedButton>
-        </Box>
-      </motion.div>
-    </Container>
-  );
-
-  const renderFeaturedJobs = () => (
-    <Container maxWidth="xl" sx={{ py: 8 }}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <GradientText 
-            variant="h2" 
-            sx={{ 
-              mb: 3, 
-              fontSize: { xs: '2.5rem', md: '3.5rem' },
-            }}
-          >
-            🌟 Premium Opportunities
-          </GradientText>
-          <Typography 
-            variant="h5" 
-            color="text.secondary" 
-            sx={{ 
-              mb: 4,
-              maxWidth: 700,
-              mx: 'auto',
-              fontSize: { xs: '1.1rem', md: '1.3rem' }
-            }}
-          >
-            Hand-picked premium jobs from top employers with exceptional benefits and career growth potential
-          </Typography>
-          
-          <Stack 
-            direction="row" 
-            spacing={3} 
-            justifyContent="center" 
-            sx={{ 
-              flexWrap: 'wrap', 
-              gap: 2,
-              mb: 4,
-              '& > *': {
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 2,
-                py: 1,
-                borderRadius: 3,
-                bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                color: theme.palette.secondary.main,
-                fontWeight: 600,
-              }
-            }}
-          >
-            <Box>
-              <DiamondIcon />
-              <span>Premium Benefits</span>
-            </Box>
-            <Box>
-              <RocketIcon />
-              <span>Fast-Track Hiring</span>
-            </Box>
-            <Box>
-              <BoltIcon />
-              <span>Instant Matching</span>
-            </Box>
-          </Stack>
-        </Box>
-
-        <Grid container spacing={4}>
-          {enhancedSampleJobs.map((job, index) => (
-            <Grid item xs={12} md={6} lg={6} xl={4} key={job.id}>
-              <motion.div
-                initial={{ opacity: 0, y: 80, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ 
-                  duration: 0.8, 
-                  delay: index * 0.2,
-                  ease: "easeOut"
-                }}
-                viewport={{ once: true }}
-                whileHover={{ 
-                  y: -12,
-                  transition: { duration: 0.3, ease: "easeOut" }
-                }}
-              >
-                <PremiumJobCard
-                  featured={job.featured}
-                  urgent={job.urgency === 'high'}
-                  premium={job.premium}
-                  trending={job.trending}
-                  elevation={job.featured ? 16 : 8}
-                  sx={{ height: '100%' }}
-                >
-                  <CardContent sx={{ 
-                    p: 4, 
-                    pt: job.featured && job.premium ? 8 : job.featured || job.premium ? 6 : 4,
-                    pb: 2,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    {/* Job Header */}
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                      <Avatar
-                        src={job.client.avatar}
-                        sx={{
-                          width: 70,
-                          height: 70,
-                          mr: 2,
-                          border: `3px solid ${theme.palette.secondary.main}`,
-                          boxShadow: `0 8px 24px ${alpha(theme.palette.secondary.main, 0.3)}`,
-                        }}
-                      />
-                      
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography variant="h6" fontWeight={800} gutterBottom>
-                          {job.title}
-                        </Typography>
-                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                            {job.client.name}
-                          </Typography>
-                          {job.client.verified && (
-                            <Verified sx={{ fontSize: 18, color: theme.palette.secondary.main }} />
-                          )}
-                          <Chip
-                            label={job.client.companyType}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.info.main, 0.1),
-                              color: theme.palette.info.main,
-                              fontWeight: 600,
-                              fontSize: '0.7rem',
-                            }}
-                          />
-                        </Stack>
-                        
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Rating value={job.client.rating} precision={0.01} size="small" readOnly />
-                          <Typography variant="body2" fontWeight={600}>
-                            {job.client.rating} ({job.client.jobsPosted} jobs)
-                          </Typography>
-                        </Stack>
-                      </Box>
-                      
-                      <IconButton
-                        onClick={() => toggleSaveJob(job.id)}
-                        sx={{
-                          bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                          color: savedJobs.includes(job.id)
-                            ? theme.palette.secondary.main
-                            : theme.palette.text.secondary,
-                          '&:hover': {
-                            bgcolor: alpha(theme.palette.secondary.main, 0.2),
-                            transform: 'scale(1.1)',
+                          color: '#D4AF37',
+                          '& .MuiSlider-thumb': {
+                            bgcolor: '#D4AF37',
+                          },
+                          '& .MuiSlider-track': {
+                            bgcolor: '#D4AF37',
+                          },
+                          '& .MuiSlider-rail': {
+                            bgcolor: 'rgba(212,175,55,0.3)',
                           },
                         }}
-                      >
-                        {savedJobs.includes(job.id) ? <Bookmark /> : <BookmarkBorder />}
-                      </IconButton>
-                    </Box>
-
-                    {/* Job Description */}
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        mb: 3,
-                        lineHeight: 1.6,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 4,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        fontSize: '0.95rem',
-                      }}
-                    >
-                      {job.description}
-                    </Typography>
-
-                    {/* Skills */}
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ color: theme.palette.secondary.main }}>
-                        Required Skills
-                      </Typography>
-                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-                        {job.skills.slice(0, 4).map((skill) => (
-                          <Chip
-                            key={skill}
-                            label={skill}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                              color: theme.palette.secondary.main,
-                              fontWeight: 700,
-                              fontSize: '0.8rem',
-                              '&:hover': {
-                                bgcolor: alpha(theme.palette.secondary.main, 0.2),
-                                transform: 'translateY(-1px)',
-                              },
-                            }}
-                          />
-                        ))}
-                        {job.skills.length > 4 && (
-                          <Chip
-                            label={`+${job.skills.length - 4} more`}
-                            size="small"
-                            variant="outlined"
-                            sx={{ fontWeight: 600 }}
-                          />
-                        )}
-                      </Stack>
-                    </Box>
-
-                    {/* Job Details Grid */}
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                      <Grid item xs={6}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: alpha(theme.palette.success.main, 0.05), borderRadius: 2 }}>
-                          <GradientText variant="h5" gradient="success" sx={{ fontWeight: 900 }}>
-                            ${job.budget.min.toLocaleString()}
-                          </GradientText>
-                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                            Starting {job.budget.type}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
-                          <Typography variant="h5" fontWeight={900} color="info.main">
-                            {job.applicants}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                            applicants
-                          </Typography>
-                        </Box>
-                      </Grid>
+                      />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                        <Typography variant="caption">GHS {budgetRange[0]}</Typography>
+                        <Typography variant="caption">GHS {budgetRange[1]}+</Typography>
+                      </Box>
                     </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37' }}>
+                        Quick Filters
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        <Chip 
+                          label="Urgent Jobs" 
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                        <Chip 
+                          label="Verified Companies" 
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                        <Chip 
+                          label="Full-time" 
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Collapse>
+            </Paper>
+          </Box>
+        </motion.div>
 
-                    {/* Location & Details */}
-                    <Stack spacing={1.5} sx={{ mb: 3 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <LocationOn fontSize="small" color="secondary" />
-                        <Typography variant="body2" fontWeight={600}>{job.location}</Typography>
-                        {job.workEnvironment && (
+        {/* Stats Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <Grid container spacing={3} sx={{ mb: 6 }}>
+            <Grid item xs={6} md={3}>
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  textAlign: 'center',
+                  bgcolor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,175,55,0.2)'
+                }}
+              >
+                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
+                  {filteredJobs.length}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Available Jobs
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={6} md={3}>
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  textAlign: 'center',
+                  bgcolor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,175,55,0.2)'
+                }}
+              >
+                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
+                  2,500+
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Active Employers
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={6} md={3}>
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  textAlign: 'center',
+                  bgcolor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,175,55,0.2)'
+                }}
+              >
+                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
+                  15K+
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Skilled Workers
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={6} md={3}>
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  textAlign: 'center',
+                  bgcolor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212,175,55,0.2)'
+                }}
+              >
+                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
+                  98%
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Success Rate
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </motion.div>
+
+        {/* Enhanced Jobs Grid */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
+              Featured Opportunities
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Chip 
+                label={`${filteredJobs.length} Jobs Found`} 
+                sx={{ 
+                  bgcolor: 'rgba(212,175,55,0.2)', 
+                  color: '#D4AF37',
+                  fontWeight: 'bold'
+                }} 
+              />
+            </Box>
+          </Box>
+          
+          <Grid container spacing={3}>
+            {filteredJobs.map((job, index) => (
+              <Grid item xs={12} md={6} lg={4} key={job.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <Card 
+                    sx={{ 
+                      height: '100%', 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      bgcolor: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(212,175,55,0.2)',
+                      '&:hover': {
+                        border: '1px solid #D4AF37',
+                        boxShadow: '0 8px 32px rgba(212,175,55,0.3)',
+                      },
+                      transition: 'all 0.3s ease-in-out'
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                      {/* Job Header */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <job.icon sx={{ mr: 1, color: '#D4AF37', fontSize: 24 }} />
+                          <Box>
+                            <Typography variant="h6" component="h2" sx={{ color: 'white', fontWeight: 'bold' }}>
+                              {job.title}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                              {job.company}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                          {job.urgent && (
+                            <Chip 
+                              label="URGENT" 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: '#ff4444', 
+                                color: 'white',
+                                fontWeight: 'bold',
+                                mb: 1
+                              }} 
+                            />
+                          )}
+                          {job.verified && (
+                            <Chip 
+                              icon={<Verified sx={{ fontSize: 16 }} />}
+                              label="Verified" 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: 'rgba(76,175,80,0.2)', 
+                                color: '#4CAF50',
+                                border: '1px solid #4CAF50'
+                              }} 
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                      
+                      {/* Job Details */}
+                      <Box sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <LocationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
+                          <Typography variant="body2" sx={{ color: 'white' }}>{job.location}</Typography>
+                        </Box>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <MonetizationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
+                          <Typography variant="body2" fontWeight="bold" sx={{ color: '#D4AF37' }}>
+                            {job.budget}
+                          </Typography>
                           <Chip 
-                            label={job.workEnvironment} 
+                            label={job.type} 
                             size="small" 
-                            color="info"
-                            sx={{ fontSize: '0.7rem' }}
+                            sx={{ 
+                              ml: 1, 
+                              bgcolor: 'rgba(212,175,55,0.2)', 
+                              color: '#D4AF37' 
+                            }} 
                           />
-                        )}
-                      </Stack>
+                        </Box>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Star fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
+                          <Typography variant="body2" sx={{ color: 'white' }}>
+                            {job.rating} Rating • {job.applicants} Applicants
+                          </Typography>
+                        </Box>
+                      </Box>
                       
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Schedule fontSize="small" color="secondary" />
-                        <Typography variant="body2" fontWeight={600}>{job.estimatedDuration}</Typography>
-                      </Stack>
+                      <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255,255,255,0.8)' }}>
+                        {job.description}
+                      </Typography>
                       
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <AccessTime fontSize="small" color="secondary" />
-                        <Typography variant="body2" fontWeight={600}>
-                          Posted {formatDistanceToNow(new Date(job.postedDate))} ago
+                      {/* Skills */}
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
+                          Required Skills:
                         </Typography>
-                      </Stack>
-                    </Stack>
-
-                    {/* Benefits Preview */}
-                    {job.benefits && (
-                      <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ color: theme.palette.secondary.main }}>
-                          Benefits & Perks
-                        </Typography>
-                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-                          {job.benefits.slice(0, 3).map((benefit) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {job.skills.slice(0, 3).map((skill, index) => (
                             <Chip
-                              key={benefit}
-                              label={benefit}
+                              key={index}
+                              label={skill}
                               size="small"
-                              sx={{
-                                bgcolor: alpha(theme.palette.success.main, 0.1),
-                                color: theme.palette.success.main,
-                                fontSize: '0.75rem',
-                                fontWeight: 600,
+                              sx={{ 
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                color: 'white',
+                                fontSize: '0.75rem'
                               }}
                             />
                           ))}
-                          {job.benefits.length > 3 && (
-                            <Chip
-                              label={`+${job.benefits.length - 3} more`}
-                              size="small"
-                              variant="outlined"
-                              sx={{ fontSize: '0.75rem', fontWeight: 600 }}
+                          {job.skills.length > 3 && (
+                            <Chip 
+                              label={`+${job.skills.length - 3} more`} 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: 'rgba(212,175,55,0.2)',
+                                color: '#D4AF37'
+                              }} 
                             />
                           )}
-                        </Stack>
+                        </Box>
                       </Box>
-                    )}
-
-                    {/* Tags */}
-                    {job.tags && (
-                      <Stack direction="row" spacing={0.5} sx={{ mb: 3, flexWrap: 'wrap', gap: 0.5 }}>
-                        {job.tags.map((tag) => (
-                          <Chip
-                            key={tag}
-                            label={tag}
-                            size="small"
-                            variant="outlined"
-                            sx={{ 
-                              fontSize: '0.7rem',
-                              fontWeight: 600,
-                              borderColor: theme.palette.secondary.main,
-                              color: theme.palette.secondary.main,
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </CardContent>
-
-                  <CardActions sx={{ p: 4, pt: 0, mt: 'auto' }}>
-                    <Stack direction="row" spacing={1} width="100%">
-                      <AnimatedButton
-                        variant="contained"
+                      
+                      {/* Deadlines */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                          Posted {formatDistanceToNow(job.postedDate, { addSuffix: true })}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#ff6b6b' }}>
+                          Apply by {format(job.deadline, 'MMM dd')}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                    
+                    <CardActions sx={{ p: 3, pt: 0 }}>
+                      <Button 
+                        variant="contained" 
                         fullWidth
-                        startIcon={<Visibility />}
-                        onClick={() => navigate(`/jobs/${job.id}`)}
-                        size="large"
-                      >
-                        View Details
-                      </AnimatedButton>
-                      <AnimatedButton
-                        variant="outlined"
-                        startIcon={<HandshakeIcon />}
-                        onClick={() => navigate(isAuthenticated() ? `/jobs/${job.id}/apply` : '/login')}
-                        sx={{ minWidth: 120 }}
+                        sx={{
+                          bgcolor: '#D4AF37',
+                          color: 'black',
+                          fontWeight: 'bold',
+                          '&:hover': {
+                            bgcolor: '#B8941F',
+                          },
+                        }}
                       >
                         Apply Now
-                      </AnimatedButton>
-                      <IconButton
-                        color="primary"
-                        sx={{
-                          bgcolor: alpha(theme.palette.primary.main, 0.1),
-                          '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.2),
-                          },
+                      </Button>
+                      <IconButton 
+                        sx={{ 
+                          color: '#D4AF37',
+                          '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                        }}
+                      >
+                        <BookmarkBorder />
+                      </IconButton>
+                      <IconButton 
+                        sx={{ 
+                          color: '#D4AF37',
+                          '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
                         }}
                       >
                         <Share />
                       </IconButton>
-                    </Stack>
-                  </CardActions>
-                </PremiumJobCard>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Box sx={{ textAlign: 'center', mt: 8 }}>
-          <AnimatedButton
-            variant="contained"
-            size="large"
-            startIcon={<ExploreIcon />}
-            onClick={() => {
-              setShowSampleData(false);
-              handleSearch();
+                    </CardActions>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </motion.div>
+        
+        {/* Load More Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Button 
+              variant="outlined" 
+              size="large" 
+              startIcon={<RefreshIcon />}
+              sx={{
+                borderColor: '#D4AF37',
+                color: '#D4AF37',
+                px: 4,
+                py: 1.5,
+                '&:hover': {
+                  borderColor: '#B8941F',
+                  bgcolor: 'rgba(212,175,55,0.1)',
+                },
+              }}
+            >
+              Load More Opportunities
+            </Button>
+          </Box>
+        </motion.div>
+        
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <Paper 
+            sx={{ 
+              mt: 8, 
+              p: 4, 
+              textAlign: 'center',
+              bgcolor: 'rgba(212,175,55,0.1)',
+              border: '1px solid rgba(212,175,55,0.3)'
             }}
           >
-            Explore All Premium Jobs
-          </AnimatedButton>
-        </Box>
-      </motion.div>
-    </Container>
-  );
-
-  return (
-    <>
-      <Helmet>
-        <title>Find Your Dream Job - 125K+ Premium Opportunities | Kelmah</title>
-        <meta name="description" content="Discover amazing job opportunities in skilled trades, technology, and construction. Connect with top employers, earn competitive salaries, and advance your career with Kelmah's professional job marketplace." />
-        <meta name="keywords" content="jobs, careers, skilled trades, electrical, plumbing, construction, HVAC, technology jobs, premium opportunities" />
-        <meta property="og:title" content="Find Your Dream Job - 125K+ Premium Opportunities | Kelmah" />
-        <meta property="og:description" content="Join 450,000+ professionals building the future. Earn up to $150K+ in skilled trades with cutting-edge projects worldwide." />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://kelmah.com/jobs" />
-      </Helmet>
-
-      <Box sx={{ 
-        minHeight: '100vh', 
-        bgcolor: 'background.default',
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at 20% 20%, ${alpha(theme.palette.secondary.main, 0.03)} 0%, transparent 50%),
-                      radial-gradient(circle at 80% 80%, ${alpha(theme.palette.primary.main, 0.03)} 0%, transparent 50%)`,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }
-      }}>
-        {/* Hero Section */}
-        {renderHeroSection()}
-        
-        {/* Search Interface */}
-        {renderSearchInterface()}
-        
-        {/* Categories */}
-        {renderCategories()}
-        
-        {/* Content Area */}
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          {loading ? (
-            <Container maxWidth="xl" sx={{ py: 8 }}>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+            <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 2 }}>
+              Ready to Take Your Career to the Next Level?
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 3, maxWidth: 600, mx: 'auto' }}>
+              Join thousands of skilled professionals who've found their dream jobs through Kelmah. 
+              Get personalized job recommendations and connect directly with employers.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button 
+                variant="contained" 
+                size="large"
+                sx={{
+                  bgcolor: '#D4AF37',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  px: 4,
+                  '&:hover': {
+                    bgcolor: '#B8941F',
+                  },
+                }}
               >
-                <Typography variant="h4" textAlign="center" gutterBottom sx={{ mb: 6 }}>
-                  🔍 Finding Perfect Matches...
-                </Typography>
-                <Grid container spacing={4}>
-                  {Array.from(new Array(6)).map((_, idx) => (
-                    <Grid item xs={12} sm={6} lg={4} key={idx}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      >
-                        <Skeleton 
-                          variant="rectangular" 
-                          height={450} 
-                          sx={{ 
-                            borderRadius: 3,
-                            transform: 'none',
-                            '&::after': {
-                              background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.secondary.main, 0.1)}, transparent)`,
-                            }
-                          }} 
-                        />
-                      </motion.div>
-                    </Grid>
-                  ))}
-                </Grid>
-              </motion.div>
-            </Container>
-          ) : showSampleData ? (
-            renderFeaturedJobs()
-          ) : (
-            <Container maxWidth="xl" sx={{ py: 8 }}>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                Create Job Alert
+              </Button>
+              <Button 
+                variant="outlined" 
+                size="large"
+                sx={{
+                  borderColor: '#D4AF37',
+                  color: '#D4AF37',
+                  px: 4,
+                  '&:hover': {
+                    borderColor: '#B8941F',
+                    bgcolor: 'rgba(212,175,55,0.1)',
+                  },
+                }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6, flexWrap: 'wrap', gap: 2 }}>
-                  <Box>
-                    <Typography variant="h4" fontWeight={800} gutterBottom>
-                      🎯 Search Results
-                    </Typography>
-                    <Typography variant="h6" color="text.secondary">
-                      Found <strong>{jobs.length.toLocaleString()}</strong> opportunities matching your criteria
-                    </Typography>
-                  </Box>
-                  
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
-                      View:
-                    </Typography>
-                    <ToggleButtonGroup
-                      value={viewMode}
-                      exclusive
-                      onChange={(e, newView) => newView && setViewMode(newView)}
-                      size="small"
-                    >
-                      <ToggleButton value="grid" disabled={isMobile}>
-                        <ViewModuleIcon />
-                      </ToggleButton>
-                      <ToggleButton value="list">
-                        <ViewListIcon />
-                      </ToggleButton>
-                    </ToggleButtonGroup>
-                  </Stack>
-                </Box>
-
-                <Grid container spacing={4}>
-                  <AnimatePresence>
-                    {jobs.map((job, index) => (
-                      <Grid 
-                        item 
-                        xs={12} 
-                        sm={viewMode === 'list' ? 12 : 6} 
-                        lg={viewMode === 'list' ? 12 : 4} 
-                        key={job.id}
-                      >
-                        <motion.div
-                          initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -50, scale: 0.9 }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
-                          layout
-                        >
-                          <JobCard 
-                            job={job} 
-                            viewMode={viewMode}
-                            onSave={() => toggleSaveJob(job.id)}
-                            isSaved={savedJobs.includes(job.id)}
-                          />
-                        </motion.div>
-                      </Grid>
-                    ))}
-                  </AnimatePresence>
-                </Grid>
-                
-                {totalPages > 1 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
-                    >
-                      <Pagination
-                        count={totalPages}
-                        page={currentPage}
-                        onChange={handlePageChange}
-                        color="secondary"
-                        size="large"
-                        sx={{
-                          '& .MuiPaginationItem-root': {
-                            fontSize: '1.1rem',
-                            fontWeight: 600,
-                            '&.Mui-selected': {
-                              bgcolor: theme.palette.secondary.main,
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: theme.palette.secondary.dark,
-                              },
-                            },
-                          },
-                        }}
-                      />
-                    </motion.div>
-                  </Box>
-                )}
-              </motion.div>
-            </Container>
-          )}
-        </Box>
-
-        {/* Advanced Filters Dialog */}
-        <Dialog
-          open={filterDialog}
-          onClose={() => setFilterDialog(false)}
-          maxWidth="md"
-          fullWidth
-          fullScreen={isMobile}
-          PaperProps={{
-            sx: { 
-              borderRadius: isMobile ? 0 : 4,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)}, ${alpha(theme.palette.background.paper, 0.9)})`,
-              backdropFilter: 'blur(20px)',
-            }
-          }}
-        >
-          <DialogTitle sx={{ pb: 2 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="h4" fontWeight={800} sx={{ color: theme.palette.secondary.main }}>
-                  🎯 Advanced Job Filters
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Refine your search to find the perfect opportunity
-                </Typography>
-              </Box>
-              {isMobile && (
-                <IconButton onClick={() => setFilterDialog(false)}>
-                  <CloseIcon />
-                </IconButton>
-              )}
-            </Stack>
-          </DialogTitle>
-          
-          <DialogContent sx={{ pb: 2 }}>
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
-                <Typography gutterBottom fontWeight={600}>
-                  💰 Budget Range: ${priceRange[0].toLocaleString()} - ${priceRange[1].toLocaleString()}
-                </Typography>
-                <Slider
-                  value={priceRange}
-                  onChange={(e, newValue) => setPriceRange(newValue)}
-                  valueLabelDisplay="auto"
-                  min={0}
-                  max={200000}
-                  step={5000}
-                  marks={[
-                    { value: 0, label: '$0' },
-                    { value: 50000, label: '$50K' },
-                    { value: 100000, label: '$100K' },
-                    { value: 150000, label: '$150K' },
-                    { value: 200000, label: '$200K+' },
-                  ]}
-                  sx={{
-                    '& .MuiSlider-thumb': {
-                      bgcolor: theme.palette.secondary.main,
-                    },
-                    '& .MuiSlider-track': {
-                      bgcolor: theme.palette.secondary.main,
-                    },
-                    '& .MuiSlider-rail': {
-                      bgcolor: alpha(theme.palette.secondary.main, 0.3),
-                    },
-                  }}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Experience Level</InputLabel>
-                  <Select
-                    value={experienceLevel}
-                    label="Experience Level"
-                    onChange={(e) => setExperienceLevel(e.target.value)}
-                  >
-                    <MenuItem value="">All Levels</MenuItem>
-                    <MenuItem value="entry">🌱 Entry Level (0-2 years)</MenuItem>
-                    <MenuItem value="mid">🚀 Mid Level (2-5 years)</MenuItem>
-                    <MenuItem value="senior">⭐ Senior Level (5-10 years)</MenuItem>
-                    <MenuItem value="expert">👑 Expert Level (10+ years)</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Job Type</InputLabel>
-                  <Select
-                    value={jobType}
-                    label="Job Type"
-                    onChange={(e) => setJobType(e.target.value)}
-                  >
-                    <MenuItem value="">All Types</MenuItem>
-                    <MenuItem value="full-time">💼 Full Time</MenuItem>
-                    <MenuItem value="part-time">⏰ Part Time</MenuItem>
-                    <MenuItem value="contract">📋 Contract</MenuItem>
-                    <MenuItem value="freelance">🎯 Freelance</MenuItem>
-                    <MenuItem value="internship">🎓 Internship</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Autocomplete
-                  multiple
-                  options={['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'AWS', 'Docker', 'Kubernetes', 'TypeScript', 'Vue.js']}
-                  value={selectedSkills}
-                  onChange={(event, newSkills) => setSelectedSkills(newSkills)}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Required Skills" placeholder="Select skills" />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        variant="outlined"
-                        label={option}
-                        {...getTagProps({ index })}
-                        key={option}
-                        sx={{
-                          borderColor: theme.palette.secondary.main,
-                          color: theme.palette.secondary.main,
-                        }}
-                      />
-                    ))
-                  }
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          
-          <DialogActions sx={{ p: 3, gap: 2 }}>
-            <AnimatedButton 
-              onClick={clearFilters} 
-              startIcon={<Clear />}
-              variant="outlined"
-              sx={{ minWidth: 120 }}
-            >
-              Clear All
-            </AnimatedButton>
-            <AnimatedButton
-              onClick={() => {
-                handleSearch();
-                setFilterDialog(false);
-              }}
-              startIcon={<SearchIcon />}
-              sx={{ minWidth: 140 }}
-            >
-              Apply Filters
-            </AnimatedButton>
-          </DialogActions>
-        </Dialog>
-
-        {/* Floating Action Button */}
-        <SpeedDial
-          ariaLabel="Quick Actions"
-          sx={{ 
-            position: 'fixed', 
-            bottom: { xs: 80, md: 24 }, 
-            right: { xs: 16, md: 24 },
-            '& .MuiSpeedDial-fab': {
-              bgcolor: theme.palette.secondary.main,
-              '&:hover': {
-                bgcolor: theme.palette.secondary.dark,
-              },
-            },
-          }}
-          icon={<SpeedDialIcon />}
-        >
-          <SpeedDialAction
-            icon={<RefreshIcon />}
-            tooltipTitle="Refresh Jobs"
-            onClick={handleSearch}
-          />
-          <SpeedDialAction
-            icon={<BookmarkBorder />}
-            tooltipTitle="Saved Jobs"
-            onClick={() => navigate('/jobs/saved')}
-          />
-          <SpeedDialAction
-            icon={<NotificationsActiveIcon />}
-            tooltipTitle="Job Alerts"
-            onClick={() => navigate('/job-alerts')}
-          />
-          <SpeedDialAction
-            icon={<DashboardIcon />}
-            tooltipTitle="Dashboard"
-            onClick={() => navigate(isAuthenticated() ? '/dashboard' : '/login')}
-          />
-        </SpeedDial>
-      </Box>
-    </>
+                Upload CV
+              </Button>
+            </Box>
+          </Paper>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 

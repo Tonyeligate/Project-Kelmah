@@ -159,13 +159,14 @@ const AuthWrapper = ({ children }) => {
         }}
       />
 
-      <Container
-        maxWidth="lg"
+      <Box
         sx={{
           position: 'relative',
           zIndex: 2,
           width: '100%',
-          px: { xs: 1, sm: 2, md: 3 },
+          maxWidth: '100vw',
+          px: { xs: 1, sm: 2, md: 3, lg: 4 },
+          boxSizing: 'border-box',
         }}
       >
         <motion.div
@@ -173,14 +174,14 @@ const AuthWrapper = ({ children }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          <Paper
+        <Paper
             elevation={12}
-            sx={{
-              display: 'flex',
+          sx={{
+            display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
               width: '100%',
               maxWidth: { xs: '100%', sm: '90%', md: 'none' },
-              mx: 'auto',
+            mx: 'auto',
               overflow: 'hidden',
               borderRadius: { xs: 4, sm: 5, md: 6 },
               background:
@@ -212,22 +213,22 @@ const AuthWrapper = ({ children }) => {
           >
             {/* Left Panel - Branding & Features - Mobile Optimized */}
             {!isMobile && (
-              <Box
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
                   p: { xs: 2, sm: 3, md: 4 },
                   background: `linear-gradient(135deg, 
                     rgba(40,40,40,0.9) 0%, 
                     rgba(30,30,30,0.95) 50%, 
                     rgba(25,25,25,0.98) 100%)`,
                   borderRight: isTablet
-                    ? 'none'
+                ? 'none'
                     : '1px solid rgba(255,215,0,0.15)',
-                  color: theme.palette.primary.contrastText,
-                  position: 'relative',
+              color: theme.palette.primary.contrastText,
+              position: 'relative',
                   minWidth: { xs: 'auto', md: 380, lg: 420 },
                   minHeight: { xs: 'auto', md: 650 },
                   overflow: 'hidden',
@@ -318,19 +319,19 @@ const AuthWrapper = ({ children }) => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                >
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+          >
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                       position: 'relative',
                       my: { xs: 2, sm: 3 },
-                    }}
-                  >
-                    <Box
-                      sx={{
+              }}
+            >
+              <Box
+                sx={{
                         width: {
                           xs: '160px',
                           sm: '200px',
@@ -343,7 +344,7 @@ const AuthWrapper = ({ children }) => {
                           md: '240px',
                           lg: '280px',
                         },
-                        position: 'relative',
+                  position: 'relative',
                         borderRadius: '50%',
                         overflow: 'hidden',
                         boxShadow: '0 15px 40px rgba(0,0,0,0.3)',
@@ -354,40 +355,40 @@ const AuthWrapper = ({ children }) => {
                       }}
                     >
                       {/* Golden glow effect */}
-                      <Box
-                        sx={{
-                          position: 'absolute',
+                <Box
+                  sx={{
+                    position: 'absolute',
                           inset: { xs: '-15px', md: '-20px' },
-                          borderRadius: '50%',
-                          background:
+                    borderRadius: '50%',
+                    background:
                             'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
                           animation: 'pulse 3s ease-in-out infinite',
                           '@keyframes pulse': {
                             '0%, 100%': { opacity: 0.7, transform: 'scale(1)' },
                             '50%': { opacity: 1, transform: 'scale(1.05)' },
-                          },
-                        }}
-                      />
+                    },
+                  }}
+                />
 
-                      {cartoonImages.map((img, idx) => (
+                {cartoonImages.map((img, idx) => (
                         <motion.img
-                          key={img}
-                          src={img}
+                    key={img}
+                    src={img}
                           alt="Professional worker"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: currentImage === idx ? 1 : 0 }}
                           transition={{ duration: 1 }}
                           style={{
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
                             objectFit: 'cover',
                             borderRadius: '50%',
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
                 </motion.div>
 
                 {/* Features Section */}
@@ -424,11 +425,11 @@ const AuthWrapper = ({ children }) => {
                             {feature.icon}
                           </Box>
                           <Box sx={{ minWidth: 0 }}>
-                            <Typography
+              <Typography
                               variant="subtitle2"
-                              sx={{
+                sx={{
                                 color: '#FFD700',
-                                fontWeight: 700,
+                  fontWeight: 700,
                                 mb: 0.5,
                                 fontSize: {
                                   xs: '0.8rem',
@@ -438,10 +439,10 @@ const AuthWrapper = ({ children }) => {
                               }}
                             >
                               {feature.title}
-                            </Typography>
-                            <Typography
+              </Typography>
+              <Typography
                               variant="caption"
-                              sx={{
+                sx={{
                                 color: 'rgba(255,255,255,0.8)',
                                 fontSize: {
                                   xs: '0.7rem',
@@ -452,9 +453,9 @@ const AuthWrapper = ({ children }) => {
                               }}
                             >
                               {feature.description}
-                            </Typography>
-                          </Box>
-                        </Box>
+              </Typography>
+            </Box>
+          </Box>
                       </motion.div>
                     ))}
                   </Stack>
@@ -614,16 +615,16 @@ const AuthWrapper = ({ children }) => {
             )}
 
             {/* Right Panel - Auth Forms - Better Mobile Layout */}
-            <Box
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
                 p: { xs: 2, sm: 3, md: 4 },
                 minWidth: { xs: 'auto', md: 450, lg: 500 },
-                backgroundColor: 'transparent',
+              backgroundColor: 'transparent',
                 minHeight: { xs: 'auto', md: 650 },
               }}
             >
@@ -632,13 +633,13 @@ const AuthWrapper = ({ children }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
                 style={{ width: '100%', maxWidth: isMobile ? '100%' : '480px' }}
-              >
-                {children}
+          >
+            {children}
               </motion.div>
-            </Box>
-          </Paper>
+          </Box>
+        </Paper>
         </motion.div>
-      </Container>
+      </Box>
     </Box>
   );
 };
