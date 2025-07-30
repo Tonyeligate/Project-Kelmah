@@ -150,13 +150,16 @@ const Layout = ({ children, toggleTheme, mode }) => {
             '@media (max-width: 768px)': {
               py: { xs: 0.5, sm: 1 },
               px: { xs: 0.5, sm: 1 },
-              minHeight: 'calc(100vh - 120px)', // Account for header and footer
+              minHeight: '100vh', // Full height since footer is now dynamic
             },
+            // No bottom padding needed since footer is now dynamic and fixed
+            pb: { xs: 1, sm: 2, md: 3 },
           }}
         >
           {children}
         </Box>
       </Fade>
+      {/* Dynamic footer - only shows when scrolled to bottom */}
       <Footer />
     </Box>
   );
