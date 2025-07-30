@@ -20,50 +20,52 @@ const Footer = () => {
   const theme = useTheme();
   const currentYear = new Date().getFullYear();
   const [showFooter, setShowFooter] = useState(false);
-  const [hasUserScrolled, setHasUserScrolled] = useState(false);
 
   useEffect(() => {
-    const checkScrollPosition = () => {
-      const scrollHeight = document.documentElement.scrollHeight;
-      const scrollTop = document.documentElement.scrollTop || window.pageYOffset;
-      const clientHeight = document.documentElement.clientHeight;
-      
-      // Debug info
-      console.log('Footer Debug:', {
-        scrollHeight,
-        scrollTop,
-        clientHeight,
-        hasUserScrolled,
-        isNearBottom: scrollTop + clientHeight >= scrollHeight - 100,
-        calculation: `${scrollTop} + ${clientHeight} >= ${scrollHeight - 100}`
-      });
-      
-      // Track if user has scrolled at all (to prevent showing on initial load)
-      if (scrollTop > 10 && !hasUserScrolled) {
-        setHasUserScrolled(true);
-        console.log('User has started scrolling!');
-      }
-      
-      // Show footer when user reaches within 100px of bottom AND has scrolled before
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
-      const shouldShowFooter = hasUserScrolled && isNearBottom;
-      
-      console.log('Should show footer:', shouldShowFooter);
-      setShowFooter(shouldShowFooter);
-    };
+    // Create a sentinel element at the very bottom of the page
+    const sentinel = document.createElement('div');
+    sentinel.style.height = '1px';
+    sentinel.style.position = 'absolute';
+    sentinel.style.bottom = '0';
+    sentinel.style.width = '100%';
+    sentinel.setAttribute('data-footer-sentinel', 'true');
+    
+    // Add sentinel to the body
+    document.body.appendChild(sentinel);
 
-    // Add scroll listener
-    window.addEventListener('scroll', checkScrollPosition, { passive: true });
-    
-    // Also check on window resize
-    window.addEventListener('resize', checkScrollPosition, { passive: true });
-    
+    // Use Intersection Observer to detect when user reaches bottom
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          console.log('Intersection Observer:', {
+            isIntersecting: entry.isIntersecting,
+            intersectionRatio: entry.intersectionRatio,
+            boundingClientRect: entry.boundingClientRect,
+            rootBounds: entry.rootBounds
+          });
+          
+          // Show footer when sentinel comes into view
+          setShowFooter(entry.isIntersecting);
+        });
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '100px', // Trigger 100px before reaching bottom
+        threshold: 0 // Trigger as soon as any part is visible
+      }
+    );
+
+    // Start observing the sentinel
+    observer.observe(sentinel);
+
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', checkScrollPosition);
-      window.removeEventListener('resize', checkScrollPosition);
+      observer.disconnect();
+      if (sentinel && sentinel.parentNode) {
+        sentinel.parentNode.removeChild(sentinel);
+      }
     };
-  }, [hasUserScrolled]);
+  }, []);
 
   // Don't render anything if footer shouldn't show
   if (!showFooter) {

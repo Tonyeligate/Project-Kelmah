@@ -55,7 +55,6 @@ import {
   Work as JobIcon,
   Person as WorkerIcon,
   Search as SearchIcon,
-  MyLocation as LocationIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
   TrendingUp as TrendingUpIcon,
@@ -103,6 +102,7 @@ import {
   Notifications as NotificationsIcon,
   Chat as ChatIcon,
   Error as ErrorIcon,
+  MyLocation as MyLocationIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -336,7 +336,7 @@ const InteractiveMap = ({
               <ZoomOutIcon />
             </IconButton>
             <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
-              <MyLocation as LocationIcon />
+              <MyLocationIcon />
             </IconButton>
           </Box>
         </Box>
