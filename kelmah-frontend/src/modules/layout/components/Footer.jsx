@@ -19,59 +19,39 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 const Footer = () => {
   const theme = useTheme();
   const currentYear = new Date().getFullYear();
-  const [isVisible, setIsVisible] = useState(false);
-  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [showFooter, setShowFooter] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const checkScrollPosition = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop || window.pageYOffset;
+      const clientHeight = document.documentElement.clientHeight;
       
-      // Calculate if user has reached the EXACT bottom (within 10px for precision)
-      const isAtActualBottom = scrollTop + windowHeight >= documentHeight - 10;
+      // Check if user has scrolled to within 100px of the bottom
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
       
-      // Only show footer when user has actually scrolled to the very bottom
-      if (isAtActualBottom) {
-        setIsAtBottom(true);
-        setIsVisible(true);
-      } else {
-        setIsAtBottom(false);
-        setIsVisible(false);
-      }
+      setShowFooter(isNearBottom);
     };
 
-    // Throttle scroll events for better performance
-    let timeoutId;
-    const throttledHandleScroll = () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      timeoutId = setTimeout(handleScroll, 16); // ~60fps
-    };
-
-    // Add scroll event listener
-    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    // Add scroll listener
+    window.addEventListener('scroll', checkScrollPosition, { passive: true });
     
     // Check initial position
-    handleScroll();
+    checkScrollPosition();
 
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      window.removeEventListener('scroll', checkScrollPosition);
     };
   }, []);
 
-  // Don't render footer at all if not at bottom
-  if (!isAtBottom) {
+  // Don't render anything if not near bottom
+  if (!showFooter) {
     return null;
   }
 
   return (
-    <Slide direction="up" in={isVisible} timeout={500}>
+    <Slide direction="up" in={showFooter} timeout={500}>
       <Box
         component="footer"
         sx={{
@@ -79,11 +59,8 @@ const Footer = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 1300, // Higher z-index to ensure it appears above everything
-          transform: isVisible ? 'translateY(0)' : 'translateY(100%)',
+          zIndex: 1300,
           transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          // Ensure footer doesn't interfere when hidden
-          pointerEvents: isVisible ? 'auto' : 'none',
         }}
       >
         <Box
@@ -113,20 +90,20 @@ const Footer = () => {
           }}
         >
           <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{
-                fontWeight: 'bold',
-                background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              KELMAH
-            </Typography>
+            <Grid container spacing={4}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{
+                    fontWeight: 'bold',
+                    background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  KELMAH
+                </Typography>
             <Typography variant="body2" color="text.secondary">
               Your professional platform for skilled trades, connecting experts,
               and growing businesses.
