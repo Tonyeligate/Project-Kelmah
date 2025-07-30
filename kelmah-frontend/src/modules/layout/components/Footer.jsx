@@ -27,24 +27,29 @@ const Footer = () => {
       const scrollTop = document.documentElement.scrollTop || window.pageYOffset;
       const clientHeight = document.documentElement.clientHeight;
       
-      // Only show footer if:
-      // 1. Page has enough content (scrollHeight > clientHeight + 200px)
-      // 2. User has scrolled (scrollTop > 50px) 
-      // 3. User is within 50px of the bottom
-      const hasEnoughContent = scrollHeight > clientHeight + 200;
-      const hasScrolled = scrollTop > 50;
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+      // Debug logging to see what's happening
+      console.log('Footer Debug:', {
+        scrollHeight,
+        scrollTop,
+        clientHeight,
+        calculation: scrollTop + clientHeight,
+        threshold: scrollHeight - 100,
+        isAtBottom: scrollTop + clientHeight >= scrollHeight - 100
+      });
       
-      const shouldShowFooter = hasEnoughContent && hasScrolled && isNearBottom;
+      // Show footer when user is within 100px of the bottom
+      // Remove the strict conditions that were preventing it from showing
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
       
-      setShowFooter(shouldShowFooter);
+      setShowFooter(isAtBottom);
     };
 
     // Add scroll listener
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
     
-    // Delay initial check to ensure page is fully loaded
-    const timeoutId = setTimeout(checkScrollPosition, 1000);
+    // Check position immediately and after a short delay
+    checkScrollPosition();
+    const timeoutId = setTimeout(checkScrollPosition, 500);
 
     // Cleanup
     return () => {
