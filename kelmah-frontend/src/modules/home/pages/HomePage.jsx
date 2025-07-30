@@ -42,7 +42,8 @@ import { alpha } from '@mui/material/styles';
 const Section = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   position: 'relative',
-  overflow: 'hidden',
+  overflowX: 'hidden', // Prevent horizontal scroll
+  overflowY: 'visible', // Allow vertical scroll
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -60,6 +61,15 @@ const Section = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '100vw',
     padding: 0,
+    minHeight: 'auto', // Allow natural height on mobile
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+  },
+  // Tablet adjustments
+  [theme.breakpoints.between('sm', 'md')]: {
+    minHeight: 'auto',
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
   },
 }));
 

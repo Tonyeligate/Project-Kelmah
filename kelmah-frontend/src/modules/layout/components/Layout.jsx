@@ -64,7 +64,8 @@ const Layout = ({ children, toggleTheme, mode }) => {
           height: '100vh',
           bgcolor: theme.palette.grey[900],
           color: theme.palette.common.white,
-          overflow: 'hidden',
+          overflowX: 'hidden',
+          overflowY: 'auto',
         }}
       >
         <AppBar
@@ -104,7 +105,11 @@ const Layout = ({ children, toggleTheme, mode }) => {
             pb: '56px',
             px: { xs: 1, sm: 2 },
             overflowY: 'auto',
+            overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
+            // Fix mobile scroll issues
+            maxHeight: 'calc(100vh - 120px)',
+            position: 'relative',
           }}
         >
           {children}
@@ -121,7 +126,8 @@ const Layout = ({ children, toggleTheme, mode }) => {
       flexDirection: 'column', 
       minHeight: '100vh',
       width: '100%',
-      overflow: 'hidden', // Prevents horizontal scroll
+      overflowX: 'hidden', // Prevents horizontal scroll only
+      overflowY: 'auto', // Allows vertical scroll
     }}>
       <Header toggleTheme={toggleTheme} mode={mode} />
       <Fade in key={location.pathname} timeout={500}>
@@ -133,10 +139,18 @@ const Layout = ({ children, toggleTheme, mode }) => {
             minWidth: 0,
             py: { xs: 1, sm: 2, md: 3 },
             px: { xs: 1, sm: 2, md: 3 },
+            overflowX: 'hidden',
+            overflowY: 'auto',
             // Ensure content adapts to all zoom levels
             '@media (min-width: 1px)': {
               maxWidth: '100vw',
               boxSizing: 'border-box',
+            },
+            // Mobile-specific improvements
+            '@media (max-width: 768px)': {
+              py: { xs: 0.5, sm: 1 },
+              px: { xs: 0.5, sm: 1 },
+              minHeight: 'calc(100vh - 120px)', // Account for header and footer
             },
           }}
         >

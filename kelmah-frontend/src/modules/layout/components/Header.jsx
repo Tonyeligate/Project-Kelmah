@@ -279,7 +279,7 @@ const Header = ({ toggleTheme, mode }) => {
 
   const handleProfileMenuOpen = (event) => {
     if (showUserFeatures) {
-      setAnchorEl(event.currentTarget);
+    setAnchorEl(event.currentTarget);
     }
   };
 
@@ -289,7 +289,7 @@ const Header = ({ toggleTheme, mode }) => {
 
   const handleNotificationsOpen = (event) => {
     if (showUserFeatures) {
-      setNotificationsAnchor(event.currentTarget);
+    setNotificationsAnchor(event.currentTarget);
     }
   };
 
@@ -300,8 +300,8 @@ const Header = ({ toggleTheme, mode }) => {
   const handleLogout = async () => {
     handleMenuClose();
     try {
-      await logout();
-      navigate('/');
+    await logout();
+    navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
       // Force navigation even if logout fails
@@ -388,10 +388,10 @@ const Header = ({ toggleTheme, mode }) => {
               {user?.firstName && user?.lastName 
                 ? `${user.firstName} ${user.lastName}`
                 : user?.name || user?.email || 'User'}
-            </Typography>
+        </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
-              {user?.email}
-            </Typography>
+          {user?.email}
+        </Typography>
             <Chip
               label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
               size="small"
@@ -619,8 +619,8 @@ const Header = ({ toggleTheme, mode }) => {
                   animate={{ rotate: 0, opacity: 1 }}
                   exit={{ rotate: 180, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                >
-                  {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            >
+          {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
                 </motion.div>
               </AnimatePresence>
             </ActionButton>

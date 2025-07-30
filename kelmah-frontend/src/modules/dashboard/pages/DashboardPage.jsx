@@ -98,9 +98,15 @@ const DashboardPage = () => {
         flexGrow: 1,
         width: '100%',
         maxWidth: '100vw',
-        padding: isMobile ? 2 : 3,
+        padding: isMobile ? 1 : 3,
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
+        // Mobile-specific improvements
+        '@media (max-width: 768px)': {
+          padding: 0.5,
+          minHeight: 'calc(100vh - 120px)',
+        },
       }}
     >
       <Paper

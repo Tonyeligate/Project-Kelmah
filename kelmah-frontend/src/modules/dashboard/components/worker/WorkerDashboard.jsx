@@ -458,7 +458,13 @@ const EnhancedWorkerDashboard = () => {
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         p: { xs: 1, sm: 2, md: 3 },
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
+        // Mobile-specific improvements
+        '@media (max-width: 768px)': {
+          p: 1,
+          minHeight: 'calc(100vh - 120px)', // Account for mobile navigation
+        },
       }}
     >
       {/* Header Section */}

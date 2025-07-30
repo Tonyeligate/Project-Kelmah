@@ -1605,7 +1605,7 @@ const Register = () => {
           </Grid>
         </Grid>
             </Stack>
-              </Paper>
+    </Paper>
         </motion.div>
       </Box>
     </Box>
