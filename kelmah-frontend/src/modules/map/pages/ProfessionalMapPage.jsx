@@ -907,11 +907,6 @@ const WorkerCard = ({ worker, onClick }) => (
 );
 
 export default ProfessionalMapPage;
-  data, 
-  viewType, 
-  onMarkerClick, 
-  center, 
-  zoom = 12,
   loading = false 
 }) => {
   const theme = useTheme();
