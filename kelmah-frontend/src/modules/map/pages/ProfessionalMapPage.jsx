@@ -406,21 +406,311 @@ const ProfessionalMapPage = () => {
 
   // Professional header component
   const ProfessionalHeader = () => (
-    avgRating: { value: '4.8', trend: 1, color: '#FFC107' },
-    onlineNow: { value: '847', trend: 8, color: '#9C27B0' },
-  },
-  categories: [
-    { name: 'Carpentry', count: 124, percentage: 124, color: '#FF9800' },
-    { name: 'Electrical', count: 89, percentage: 89, color: '#FFC107' },
-    { name: 'Plumbing', count: 67, percentage: 67, color: '#2196F3' },
-    { name: 'Catering', count: 45, percentage: 45, color: '#4CAF50' },
-    { name: 'Painting', count: 34, percentage: 34, color: '#9C27B0' },
-  ],
-  status: {
-    active: { count: 0, trend: 15, color: '#4CAF50' },
-    verified: { count: 34, trend: 8, color: '#2196F3' },
-    urgent: { count: 7, trend: -5, color: '#F44336' },
-    topRated: { count: 0, trend: 12, color: '#FFC107' },
+    <Box sx={{ 
+      background: theme.gradients.primary,
+      color: 'white',
+      py: 3,
+      px: 2,
+      borderRadius: 2,
+      mb: 3,
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Background Pattern */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: '50%',
+        height: '100%',
+        background: `linear-gradient(45deg, ${theme.colors.secondary}20, transparent)`,
+        borderRadius: '50% 0 0 50%'
+      }} />
+      
+      <Container maxWidth="xl">
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} md={8}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Typography variant="h3" fontWeight="bold" gutterBottom sx={{ color: theme.colors.secondary }}>
+                Find Skilled Professionals in Ghana
+              </Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+                Connect with verified electricians, plumbers, carpenters, masons, and more
+              </Typography>
+              <Stack direction="row" spacing={2} flexWrap="wrap">
+                <Chip 
+                  icon={<VerifiedIcon />} 
+                  label={`${mapData.stats.activeWorkers}+ Verified Workers`}
+                  sx={{ bgcolor: theme.colors.secondary, color: 'black', fontWeight: 'bold' }}
+                />
+                <Chip 
+                  icon={<StarIcon />} 
+                  label={`${mapData.stats.averageRating} Average Rating`}
+                  sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                />
+                <Chip 
+                  icon={<CheckCircleIcon />} 
+                  label={`${mapData.stats.completedProjects}+ Completed Jobs`}
+                  sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                />
+              </Stack>
+            </motion.div>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <motion.div
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <BuildIcon sx={{ fontSize: 80, color: theme.colors.secondary, mb: 1 }} />
+              </motion.div>
+              <Typography variant="h6" sx={{ color: theme.colors.secondary }}>
+                Professional Services
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
+  );
+
+  // Professional search and filter bar
+  const ProfessionalSearchBar = () => (
+    <Paper sx={{ 
+      p: 2, 
+      mb: 3, 
+      background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+      border: `1px solid ${theme.colors.secondary}20`,
+      borderRadius: 3,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+    }}>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            placeholder="Search for jobs, workers, or skills..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: theme.colors.secondary }} />
+                </InputAdornment>
+              ),
+              sx: {
+                borderRadius: 2,
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: theme.colors.secondary,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.colors.secondary,
+                  },
+                }
+              }
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth>
+            <InputLabel sx={{ color: theme.colors.primary }}>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Category"
+              sx={{
+                borderRadius: 2,
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.colors.secondary,
+                }
+              }}
+            >
+              <MenuItem value="all">All Categories</MenuItem>
+              {mapData.categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ 
+                      width: 12, 
+                      height: 12, 
+                      borderRadius: '50%', 
+                      bgcolor: category.color 
+                    }} />
+                    {category.name} ({category.jobCount})
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Stack direction="row" spacing={1}>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(e, newMode) => newMode && setViewMode(newMode)}
+              sx={{
+                '& .MuiToggleButton-root': {
+                  border: `1px solid ${theme.colors.secondary}`,
+                  color: theme.colors.primary,
+                  '&.Mui-selected': {
+                    bgcolor: theme.colors.secondary,
+                    color: 'white',
+                    '&:hover': {
+                      bgcolor: theme.colors.secondary,
+                    }
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="jobs" sx={{ px: 3 }}>
+                <WorkIcon sx={{ mr: 1 }} />
+                Jobs ({mapData.jobs.length})
+              </ToggleButton>
+              <ToggleButton value="workers" sx={{ px: 3 }}>
+                <PersonIcon sx={{ mr: 1 }} />
+                Workers ({mapData.workers.length})
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <IconButton 
+              onClick={() => setShowFilters(!showFilters)}
+              sx={{ 
+                border: `1px solid ${theme.colors.secondary}`,
+                color: showFilters ? 'white' : theme.colors.primary,
+                bgcolor: showFilters ? theme.colors.secondary : 'transparent'
+              }}
+            >
+              <FilterIcon />
+            </IconButton>
+          </Stack>
+        </Grid>
+      </Grid>
+    </Paper>
+  );
+
+  // Main component return
+  return (
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      <ProfessionalHeader />
+      <ProfessionalSearchBar />
+      
+      <Grid container spacing={3}>
+        {/* Map Section */}
+        <Grid item xs={12} lg={8}>
+          <Paper sx={{ 
+            height: 600, 
+            borderRadius: 3,
+            overflow: 'hidden',
+            position: 'relative',
+            border: `2px solid ${theme.colors.secondary}20`
+          }}>
+            {/* Map placeholder with professional styling */}
+            <Box sx={{
+              height: '100%',
+              background: `linear-gradient(135deg, ${theme.colors.primary}10 0%, ${theme.colors.secondary}10 100%)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+              <Box sx={{ textAlign: 'center', color: theme.colors.primary }}>
+                <LocationOnIcon sx={{ fontSize: 60, color: theme.colors.secondary, mb: 2 }} />
+                <Typography variant="h5" fontWeight="bold" gutterBottom>
+                  Interactive Map View
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.7 }}>
+                  Showing {filteredData.length} {viewMode} in Greater Accra Region
+                </Typography>
+              </Box>
+              
+              {/* Map controls */}
+              <Box sx={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1
+              }}>
+                <IconButton sx={{ 
+                  background: 'rgba(0,0,0,0.8)', 
+                  color: 'white',
+                  '&:hover': { background: 'rgba(0,0,0,0.9)' }
+                }}>
+                  <ZoomInIcon />
+                </IconButton>
+                <IconButton sx={{ 
+                  background: 'rgba(0,0,0,0.8)', 
+                  color: 'white',
+                  '&:hover': { background: 'rgba(0,0,0,0.9)' }
+                }}>
+                  <ZoomOutIcon />
+                </IconButton>
+                <IconButton sx={{ 
+                  background: `${theme.colors.secondary}`, 
+                  color: 'white',
+                  '&:hover': { background: `${theme.colors.secondary}dd` }
+                }}>
+                  <MyLocationIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Results Panel */}
+        <Grid item xs={12} lg={4}>
+          <Paper sx={{ 
+            height: 600, 
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: `1px solid ${theme.colors.secondary}20`
+          }}>
+            <Box sx={{ 
+              p: 2, 
+              background: theme.gradients.gold,
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <Typography variant="h6" fontWeight="bold">
+                {viewMode === 'jobs' ? 'Available Jobs' : 'Professional Workers'}
+              </Typography>
+              <Chip 
+                label={filteredData.length}
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.3)', 
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}
+              />
+            </Box>
+            
+            <Box sx={{ height: 'calc(100% - 80px)', overflow: 'auto', p: 1 }}>
+              {filteredData.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {viewMode === 'jobs' ? (
+                    <JobCard job={item} onClick={() => setSelectedItem(item)} />
+                  ) : (
+                    <WorkerCard worker={item} onClick={() => setSelectedItem(item)} />
+                  )}
+                </motion.div>
+              ))}
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
+  );
   },
 };
 
