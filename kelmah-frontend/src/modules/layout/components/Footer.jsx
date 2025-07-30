@@ -20,6 +20,7 @@ const Footer = () => {
   const theme = useTheme();
   const currentYear = new Date().getFullYear();
   const [showFooter, setShowFooter] = useState(false);
+  const [hasUserScrolled, setHasUserScrolled] = useState(false);
 
   useEffect(() => {
     const checkScrollPosition = () => {
@@ -27,36 +28,42 @@ const Footer = () => {
       const scrollTop = document.documentElement.scrollTop || window.pageYOffset;
       const clientHeight = document.documentElement.clientHeight;
       
-      // Debug logging to see what's happening
+      // Debug info
       console.log('Footer Debug:', {
         scrollHeight,
         scrollTop,
         clientHeight,
-        calculation: scrollTop + clientHeight,
-        threshold: scrollHeight - 100,
-        isAtBottom: scrollTop + clientHeight >= scrollHeight - 100
+        hasUserScrolled,
+        isNearBottom: scrollTop + clientHeight >= scrollHeight - 100,
+        calculation: `${scrollTop} + ${clientHeight} >= ${scrollHeight - 100}`
       });
       
-      // Show footer when user is within 100px of the bottom
-      // Remove the strict conditions that were preventing it from showing
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      // Track if user has scrolled at all (to prevent showing on initial load)
+      if (scrollTop > 10 && !hasUserScrolled) {
+        setHasUserScrolled(true);
+        console.log('User has started scrolling!');
+      }
       
-      setShowFooter(isAtBottom);
+      // Show footer when user reaches within 100px of bottom AND has scrolled before
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      const shouldShowFooter = hasUserScrolled && isNearBottom;
+      
+      console.log('Should show footer:', shouldShowFooter);
+      setShowFooter(shouldShowFooter);
     };
 
     // Add scroll listener
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
     
-    // Check position immediately and after a short delay
-    checkScrollPosition();
-    const timeoutId = setTimeout(checkScrollPosition, 500);
-
+    // Also check on window resize
+    window.addEventListener('resize', checkScrollPosition, { passive: true });
+    
     // Cleanup
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
-      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkScrollPosition);
     };
-  }, []);
+  }, [hasUserScrolled]);
 
   // Don't render anything if footer shouldn't show
   if (!showFooter) {

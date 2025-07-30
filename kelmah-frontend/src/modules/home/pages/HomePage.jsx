@@ -346,9 +346,9 @@ const HomePage = () => {
                             mb: 2,
                             fontWeight: 600,
                           }}
-                        >
-                          Welcome back, {user.firstName || user.username}!
-                        </Typography>
+                      >
+                        Welcome back, {user.firstName || user.username}!
+                      </Typography>
                       </motion.div>
                     )}
                     <Typography
@@ -400,20 +400,20 @@ const HomePage = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: isSm ? 'column' : 'row',
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: isSm ? 'column' : 'row',
                           gap: isSm ? 2 : 3,
                           mt: 5,
-                        }}
-                      >
-                        {!user ? (
-                          <>
-                            <StyledButton
-                              variant="contained"
+                      }}
+                    >
+                      {!user ? (
+                        <>
+                          <StyledButton
+                            variant="contained"
                               size="large"
-                              sx={{
+                            sx={{
                                 background:
                                   'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                 color: '#000',
@@ -421,47 +421,47 @@ const HomePage = () => {
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
-                                '&:hover': {
+                              '&:hover': {
                                   background:
                                     'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                                },
-                              }}
-                              fullWidth={isSm}
-                              onClick={() => navigate('/register')}
-                            >
+                              },
+                            }}
+                            fullWidth={isSm}
+                            onClick={() => navigate('/register')}
+                          >
                               {isSm ? 'Join Kelmah' : 'Join the Network'}
-                            </StyledButton>
-                            <StyledButton
-                              variant="outlined"
+                          </StyledButton>
+                          <StyledButton
+                            variant="outlined"
                               size="large"
-                              sx={{
-                                borderColor: theme.palette.secondary.main,
-                                color: theme.palette.secondary.main,
+                            sx={{
+                              borderColor: theme.palette.secondary.main,
+                              color: theme.palette.secondary.main,
                                 borderWidth: 3,
                                 fontWeight: 700,
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
-                                '&:hover': {
-                                  borderColor: theme.palette.secondary.dark,
-                                  background: alpha(
-                                    theme.palette.secondary.main,
+                              '&:hover': {
+                                borderColor: theme.palette.secondary.dark,
+                                background: alpha(
+                                  theme.palette.secondary.main,
                                     0.15,
-                                  ),
+                                ),
                                   borderWidth: 3,
-                                },
-                              }}
-                              fullWidth={isSm}
-                              onClick={() => navigate('/search')}
-                            >
+                              },
+                            }}
+                            fullWidth={isSm}
+                            onClick={() => navigate('/search')}
+                          >
                               Find Workers
-                            </StyledButton>
-                          </>
-                        ) : user.role === 'worker' ? (
-                          <StyledButton
-                            variant="contained"
+                          </StyledButton>
+                        </>
+                      ) : user.role === 'worker' ? (
+                        <StyledButton
+                          variant="contained"
                             size="large"
-                            sx={{
+                          sx={{
                               background:
                                 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                               color: '#000',
@@ -469,20 +469,20 @@ const HomePage = () => {
                               fontSize: '1.2rem',
                               px: 5,
                               py: 2,
-                              '&:hover': {
+                            '&:hover': {
                                 background:
                                   'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                              },
-                            }}
-                            onClick={() => navigate('/jobs')}
-                          >
+                            },
+                          }}
+                          onClick={() => navigate('/jobs')}
+                        >
                             Browse Available Jobs
-                          </StyledButton>
-                        ) : (
-                          <StyledButton
-                            variant="contained"
+                        </StyledButton>
+                      ) : (
+                        <StyledButton
+                          variant="contained"
                             size="large"
-                            sx={{
+                          sx={{
                               background:
                                 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                               color: '#000',
@@ -490,17 +490,17 @@ const HomePage = () => {
                               fontSize: '1.2rem',
                               px: 5,
                               py: 2,
-                              '&:hover': {
+                            '&:hover': {
                                 background:
                                   'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                              },
-                            }}
-                            onClick={() => navigate('/hirer/jobs/post')}
-                          >
-                            Post a Job
-                          </StyledButton>
-                        )}
-                      </Box>
+                            },
+                          }}
+                          onClick={() => navigate('/hirer/jobs/post')}
+                        >
+                          Post a Job
+                        </StyledButton>
+                      )}
+                    </Box>
                     </motion.div>
                   </motion.div>
                 </Grid>
@@ -535,7 +535,7 @@ const HomePage = () => {
                                 sx={{ fontSize: '0.95rem' }}
                               >
                                 {feature.description}
-                              </Typography>
+                            </Typography>
                             </Box>
                           </FeatureBox>
                         </motion.div>
@@ -612,12 +612,12 @@ const HomePage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
               >
-                <Typography
-                  variant="h2"
-                  sx={{
-                    textAlign: 'center',
+              <Typography
+                variant="h2"
+                sx={{
+                  textAlign: 'center',
                     mb: 3,
-                    color: theme.palette.secondary.main,
+                  color: theme.palette.secondary.main,
                     fontWeight: 800,
                     fontSize: { xs: '2.5rem', md: '3.5rem' },
                   }}
@@ -637,7 +637,7 @@ const HomePage = () => {
                 >
                   Professional skilled workers ready to tackle your projects
                   with expertise and dedication
-                </Typography>
+              </Typography>
               </motion.div>
 
               <Grid container spacing={4}>
@@ -651,10 +651,10 @@ const HomePage = () => {
                     >
                       <ServiceCard>
                         <Box sx={{ position: 'relative' }}>
-                          <ServiceCardMedia
-                            image={service.image}
-                            title={service.title}
-                          />
+                        <ServiceCardMedia
+                          image={service.image}
+                          title={service.title}
+                        />
                           <TradeIcon className="service-icon">
                             {service.icon}
                           </TradeIcon>
