@@ -710,12 +710,203 @@ const ProfessionalMapPage = () => {
         </Grid>
       </Grid>
     </Container>
-  );
-  },
 };
 
-// Interactive Map Component
-const InteractiveMap = ({ 
+// Professional Job Card Component
+const JobCard = ({ job, onClick }) => (
+  <Card sx={{ 
+    mb: 1, 
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    border: `1px solid ${theme.colors.secondary}20`,
+    '&:hover': { 
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 25px ${theme.colors.secondary}30`,
+      borderColor: theme.colors.secondary
+    }
+  }} onClick={onClick}>
+    <CardContent sx={{ p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ color: theme.colors.primary, flex: 1 }}>
+          {job.title}
+        </Typography>
+        <Chip 
+          label={job.urgency}
+          size="small"
+          sx={{
+            bgcolor: job.urgency === 'urgent' ? '#f44336' : job.urgency === 'high' ? '#ff9800' : '#4caf50',
+            color: 'white',
+            fontWeight: 'bold',
+            ml: 1
+          }}
+        />
+      </Box>
+      
+      <Typography variant="body2" sx={{ color: theme.colors.secondary, fontWeight: 'bold', mb: 1 }}>
+        {job.category}
+      </Typography>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <LocationOnIcon sx={{ fontSize: 16, color: theme.colors.secondary, mr: 0.5 }} />
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {job.location.address}
+        </Typography>
+      </Box>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ color: theme.colors.secondary }}>
+          {job.budget}
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {job.posted}
+        </Typography>
+      </Box>
+      
+      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.4 }}>
+        {job.description}
+      </Typography>
+      
+      <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+        {job.skills.slice(0, 3).map((skill, index) => (
+          <Chip 
+            key={index}
+            label={skill}
+            size="small"
+            sx={{ 
+              bgcolor: `${theme.colors.secondary}20`,
+              color: theme.colors.primary,
+              fontSize: '0.75rem'
+            }}
+          />
+        ))}
+      </Stack>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <VisibilityIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
+          <Typography variant="body2" sx={{ color: 'text.secondary', mr: 2 }}>
+            {job.views} views
+          </Typography>
+          <PeopleIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {job.applications} applied
+          </Typography>
+        </Box>
+        {job.client.verified && (
+          <VerifiedIcon sx={{ fontSize: 16, color: theme.colors.secondary }} />
+        )}
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+// Professional Worker Card Component  
+const WorkerCard = ({ worker, onClick }) => (
+  <Card sx={{ 
+    mb: 1, 
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    border: `1px solid ${theme.colors.secondary}20`,
+    '&:hover': { 
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 25px ${theme.colors.secondary}30`,
+      borderColor: theme.colors.secondary
+    }
+  }} onClick={onClick}>
+    <CardContent sx={{ p: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+        <Avatar 
+          src={worker.profileImage} 
+          sx={{ 
+            width: 50, 
+            height: 50, 
+            mr: 2,
+            border: `2px solid ${theme.colors.secondary}`
+          }}
+        >
+          {worker.name.charAt(0)}
+        </Avatar>
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ color: theme.colors.primary }}>
+              {worker.name}
+            </Typography>
+            {worker.verified && (
+              <VerifiedIcon sx={{ fontSize: 18, color: theme.colors.secondary, ml: 1 }} />
+            )}
+          </Box>
+          <Typography variant="body2" sx={{ color: theme.colors.secondary, fontWeight: 'bold' }}>
+            {worker.profession}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+            <StarIcon sx={{ fontSize: 16, color: '#ffc107', mr: 0.5 }} />
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              {worker.rating} ({worker.reviewCount} reviews)
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ textAlign: 'right' }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: theme.colors.secondary }}>
+            {worker.hourlyRate}
+          </Typography>
+          <Chip 
+            label={worker.available ? 'Available' : 'Busy'}
+            size="small"
+            sx={{
+              bgcolor: worker.available ? '#4caf50' : '#f44336',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+          />
+        </Box>
+      </Box>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <LocationOnIcon sx={{ fontSize: 16, color: theme.colors.secondary, mr: 0.5 }} />
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {worker.location.address}
+        </Typography>
+      </Box>
+      
+      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.4 }}>
+        {worker.description}
+      </Typography>
+      
+      <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+        {worker.skills.slice(0, 3).map((skill, index) => (
+          <Chip 
+            key={index}
+            label={skill}
+            size="small"
+            sx={{ 
+              bgcolor: `${theme.colors.secondary}20`,
+              color: theme.colors.primary,
+              fontSize: '0.75rem'
+            }}
+          />
+        ))}
+      </Stack>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <WorkIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
+          <Typography variant="body2" sx={{ color: 'text.secondary', mr: 2 }}>
+            {worker.completedJobs} jobs
+          </Typography>
+          <ScheduleIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {worker.responseTime}
+          </Typography>
+        </Box>
+        <Typography variant="body2" sx={{ color: theme.colors.secondary, fontWeight: 'bold' }}>
+          {worker.experience}
+        </Typography>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+export default ProfessionalMapPage;
   data, 
   viewType, 
   onMarkerClick, 
