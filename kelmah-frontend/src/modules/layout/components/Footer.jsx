@@ -31,35 +31,92 @@ const Footer = () => {
       
       // Use a small delay to debounce scroll events
       scrollTimeout = setTimeout(() => {
-        // Try multiple methods to get scroll information
+        // ANALYTICAL DEBUG - Let's see EVERYTHING
         const docElement = document.documentElement;
         const body = document.body;
+        const mainElement = document.querySelector('main');
         
-        const scrollHeight = Math.max(docElement.scrollHeight, body.scrollHeight);
-        const scrollTop = Math.max(docElement.scrollTop, body.scrollTop, window.pageYOffset);
-        const clientHeight = Math.max(docElement.clientHeight, window.innerHeight);
+        // Check BOTH document scroll AND main element scroll
+        const docScrollHeight = Math.max(docElement.scrollHeight, body.scrollHeight);
+        const docScrollTop = Math.max(docElement.scrollTop, body.scrollTop, window.pageYOffset);
+        const docClientHeight = Math.max(docElement.clientHeight, window.innerHeight);
         
-        // Track if user has scrolled at all (to prevent showing on initial load)
-        if (scrollTop > 20 && !hasUserScrolled) {
-          setHasUserScrolled(true);
-        }
+        // Check main element scroll (this might be where the real scrolling happens)
+        const mainScrollHeight = mainElement ? mainElement.scrollHeight : 0;
+        const mainScrollTop = mainElement ? mainElement.scrollTop : 0;
+        const mainClientHeight = mainElement ? mainElement.clientHeight : 0;
         
-        // Show footer when user reaches within 150px of bottom AND has scrolled before
+        // Use whichever scroll container has actual scrolling
+        const scrollHeight = Math.max(docScrollHeight, mainScrollHeight);
+        const scrollTop = Math.max(docScrollTop, mainScrollTop);
+        const clientHeight = Math.max(docClientHeight, mainClientHeight);
+        
         const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
         const isNearBottom = distanceFromBottom <= 150;
-        const shouldShowFooter = hasUserScrolled && isNearBottom;
         
-        // Only show if there's actually content to scroll through
+        // COMPREHENSIVE DEBUG LOG
+        console.log('🔍 FOOTER ANALYSIS:', {
+          '📏 DOC SCROLL': {
+            docScrollHeight,
+            docScrollTop,
+            docClientHeight,
+          },
+          '🎯 MAIN SCROLL': {
+            mainScrollHeight,
+            mainScrollTop,
+            mainClientHeight,
+            mainExists: !!mainElement,
+          },
+          '🔥 FINAL VALUES': {
+            scrollHeight,
+            scrollTop,
+            clientHeight,
+            distanceFromBottom,
+            isNearBottom,
+          },
+          '✅ DETECTION': {
+            hasUserScrolled,
+            hasScrollableContent: scrollHeight > clientHeight + 100,
+          }
+        });
+        
+        // Track if user has scrolled at all
+        if (scrollTop > 20 && !hasUserScrolled) {
+          setHasUserScrolled(true);
+          console.log('✅ User started scrolling!');
+        }
+        
+        const shouldShowFooter = hasUserScrolled && isNearBottom;
         const hasScrollableContent = scrollHeight > clientHeight + 100;
         const finalShouldShow = shouldShowFooter && hasScrollableContent;
+        
+        console.log('🎭 FOOTER DECISION:', {
+          shouldShowFooter,
+          hasScrollableContent,
+          finalShouldShow,
+          currentFooterState: showFooter
+        });
         
         setShowFooter(finalShouldShow);
       }, 50);
     };
 
-    // Add scroll listeners
+    // Add scroll listeners to ALL possible scroll containers
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
+    document.addEventListener('scroll', checkScrollPosition, { passive: true });
     window.addEventListener('resize', checkScrollPosition, { passive: true });
+    
+    // CRITICAL: Also listen to the main element scroll (this is likely where the real scrolling happens)
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.addEventListener('scroll', checkScrollPosition, { passive: true });
+    }
+    
+    // Listen to the parent layout container too
+    const layoutContainer = document.querySelector('[data-testid="layout-container"], .MuiBox-root');
+    if (layoutContainer) {
+      layoutContainer.addEventListener('scroll', checkScrollPosition, { passive: true });
+    }
     
     // Initial check after a delay to ensure page is loaded
     const initialTimeout = setTimeout(checkScrollPosition, 1000);
@@ -67,7 +124,14 @@ const Footer = () => {
     // Cleanup
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
+      document.removeEventListener('scroll', checkScrollPosition);
       window.removeEventListener('resize', checkScrollPosition);
+      if (mainElement) {
+        mainElement.removeEventListener('scroll', checkScrollPosition);
+      }
+      if (layoutContainer) {
+        layoutContainer.removeEventListener('scroll', checkScrollPosition);
+      }
       if (scrollTimeout) clearTimeout(scrollTimeout);
       if (initialTimeout) clearTimeout(initialTimeout);
     };

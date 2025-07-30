@@ -107,92 +107,305 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-// Mock data for demonstration
+// Professional vocational job data for Ghana
 const mockMapData = {
   jobs: [
     {
       id: 'job-1',
-      title: 'Catering Service',
-      category: 'Food & Hospitality',
-      location: { lat: 5.5600, lng: -0.2057, address: 'Accra, Ghana' },
-      budget: '$500-800',
+      title: 'Residential Electrical Wiring',
+      category: 'Electrical Services',
+      location: { lat: 5.5600, lng: -0.2057, address: 'East Legon, Accra' },
+      budget: 'GH₵1,200-2,000',
       urgency: 'high',
       status: 'active',
       posted: '2 hours ago',
       views: 45,
       applications: 12,
-      client: { name: 'Event Pro Ghana', rating: 4.8, verified: true },
-      skills: ['Cooking', 'Event Planning', 'Customer Service'],
-      description: 'Professional catering service needed for corporate event',
+      client: { name: 'Homeowner - Mr. Asante', rating: 4.8, verified: true },
+      skills: ['Electrical Wiring', 'Circuit Installation', 'Safety Compliance'],
+      description: 'Complete electrical wiring for 3-bedroom house including lighting, outlets, and safety switches',
+      jobType: 'contract',
+      duration: '5-7 days',
+      experienceLevel: 'intermediate'
     },
     {
       id: 'job-2',
-      title: 'Electrical Installation',
-      category: 'Electrical',
-      location: { lat: 5.5700, lng: -0.2157, address: 'Kumasi, Ghana' },
-      budget: '$300-500',
+      title: 'Commercial Plumbing Installation',
+      category: 'Plumbing Services',
+      location: { lat: 5.5700, lng: -0.2157, address: 'Osu, Accra' },
+      budget: 'GH₵800-1,500',
       urgency: 'medium',
       status: 'active',
       posted: '4 hours ago',
       views: 32,
       applications: 8,
-      client: { name: 'Tech Solutions Ltd', rating: 4.6, verified: true },
-      skills: ['Electrical Wiring', 'Safety Standards', 'Installation'],
-      description: 'Complete electrical installation for new office building',
+      client: { name: 'Golden Plaza Hotel', rating: 4.6, verified: true },
+      skills: ['Commercial Plumbing', 'Pipe Installation', 'Water Systems'],
+      description: 'Install plumbing system for new restaurant including kitchen and bathroom facilities',
+      jobType: 'project',
+      duration: '3-4 days',
+      experienceLevel: 'expert'
     },
     {
       id: 'job-3',
-      title: 'Plumbing Repair',
-      category: 'Plumbing',
-      location: { lat: 5.5500, lng: -0.1957, address: 'Tema, Ghana' },
-      budget: '$150-300',
+      title: 'Carpentry & Furniture Making',
+      category: 'Carpentry',
+      location: { lat: 5.5500, lng: -0.1957, address: 'Tema, Greater Accra' },
+      budget: 'GH₵600-1,200',
       urgency: 'urgent',
       status: 'active',
       posted: '1 hour ago',
       views: 28,
       applications: 15,
-      client: { name: 'HomeFix Services', rating: 4.9, verified: true },
-      skills: ['Plumbing', 'Repair', 'Maintenance'],
-      description: 'Emergency plumbing repair needed immediately',
+      client: { name: 'Furniture Plus Ltd', rating: 4.9, verified: true },
+      skills: ['Custom Furniture', 'Wood Working', 'Design'],
+      description: 'Create custom office furniture including desks, chairs, and storage units',
+      jobType: 'project',
+      duration: '2-3 weeks',
+      experienceLevel: 'expert'
     },
+    {
+      id: 'job-4',
+      title: 'Masonry & Bricklaying',
+      category: 'Construction',
+      location: { lat: 5.5800, lng: -0.2300, address: 'Dansoman, Accra' },
+      budget: 'GH₵2,000-3,500',
+      urgency: 'medium',
+      status: 'active',
+      posted: '6 hours ago',
+      views: 38,
+      applications: 6,
+      client: { name: 'BuildRight Construction', rating: 4.7, verified: true },
+      skills: ['Bricklaying', 'Concrete Work', 'Foundation'],
+      description: 'Build perimeter wall and foundation for residential property',
+      jobType: 'contract',
+      duration: '2-3 weeks',
+      experienceLevel: 'intermediate'
+    },
+    {
+      id: 'job-5',
+      title: 'Auto Mechanic Services',
+      category: 'Automotive',
+      location: { lat: 5.5400, lng: -0.1800, address: 'Spintex, Accra' },
+      budget: 'GH₵400-800',
+      urgency: 'high',
+      status: 'active',
+      posted: '3 hours ago',
+      views: 52,
+      applications: 18,
+      client: { name: 'Fleet Manager - TransCorp', rating: 4.5, verified: true },
+      skills: ['Engine Repair', 'Diagnostics', 'Maintenance'],
+      description: 'Complete engine overhaul and maintenance for company vehicles',
+      jobType: 'service',
+      duration: '1-2 weeks',
+      experienceLevel: 'expert'
+    }
   ],
   workers: [
     {
       id: 'worker-1',
       name: 'Kwame Asante',
-      category: 'Electrical',
-      location: { lat: 5.5600, lng: -0.2057, address: 'Accra, Ghana' },
-      rating: 4.8,
-      hourlyRate: '$25-35',
-      status: 'available',
+      profession: 'Master Electrician',
+      category: 'Electrical Services',
+      location: { lat: 5.5600, lng: -0.2057, address: 'East Legon, Accra' },
+      rating: 4.9,
+      reviewCount: 127,
+      experience: '8 years',
       verified: true,
-      skills: ['Electrical Wiring', 'Safety Standards', 'Installation'],
+      available: true,
+      hourlyRate: 'GH₵45-65/hr',
+      skills: ['Residential Wiring', 'Industrial Electrical', 'Solar Installation', 'Electrical Repairs'],
+      certifications: ['Licensed Electrician', 'Safety Certified', 'Solar Installation Certified'],
       completedJobs: 156,
-      responseTime: '< 2 min',
-      portfolio: ['Commercial Projects', 'Residential Wiring'],
-      languages: ['English', 'Twi'],
-      availability: 'Immediate',
+      responseTime: '< 2 hours',
+      profileImage: '/api/placeholder/150/150',
+      description: 'Certified master electrician with 8+ years experience in residential and commercial electrical work'
     },
     {
       id: 'worker-2',
-      name: 'Ama Osei',
-      category: 'Catering',
-      location: { lat: 5.5700, lng: -0.2157, address: 'Kumasi, Ghana' },
-      rating: 4.9,
-      hourlyRate: '$20-30',
-      status: 'available',
+      name: 'Akosua Mensah',
+      profession: 'Professional Plumber',
+      category: 'Plumbing Services',
+      location: { lat: 5.5700, lng: -0.2157, address: 'Osu, Accra' },
+      rating: 4.7,
+      reviewCount: 89,
+      experience: '6 years',
       verified: true,
-      skills: ['Cooking', 'Event Planning', 'Customer Service'],
-      completedJobs: 89,
-      responseTime: '< 5 min',
-      portfolio: ['Weddings', 'Corporate Events', 'Private Parties'],
-      languages: ['English', 'Twi', 'Ga'],
-      availability: 'Next Week',
+      available: true,
+      hourlyRate: 'GH₵35-50/hr',
+      skills: ['Pipe Installation', 'Water Systems', 'Drain Cleaning', 'Emergency Repairs'],
+      certifications: ['Licensed Plumber', 'Water Systems Certified'],
+      completedJobs: 134,
+      responseTime: '< 1 hour',
+      profileImage: '/api/placeholder/150/150',
+      description: 'Expert plumber specializing in residential and commercial water systems'
     },
+    {
+      id: 'worker-3',
+      name: 'Kofi Boateng',
+      profession: 'Master Carpenter',
+      category: 'Carpentry',
+      location: { lat: 5.5500, lng: -0.1957, address: 'Tema, Greater Accra' },
+      rating: 4.8,
+      reviewCount: 102,
+      experience: '12 years',
+      verified: true,
+      available: true,
+      hourlyRate: 'GH₵40-60/hr',
+      skills: ['Custom Furniture', 'Cabinetry', 'Wood Finishing', 'Restoration'],
+      certifications: ['Master Carpenter', 'Wood Working Specialist'],
+      completedJobs: 198,
+      responseTime: '< 3 hours',
+      profileImage: '/api/placeholder/150/150',
+      description: 'Master carpenter with 12+ years creating custom furniture and cabinetry'
+    },
+    {
+      id: 'worker-4',
+      name: 'Ama Osei',
+      profession: 'Construction Mason',
+      category: 'Construction',
+      location: { lat: 5.5800, lng: -0.2300, address: 'Dansoman, Accra' },
+      rating: 4.6,
+      reviewCount: 76,
+      experience: '10 years',
+      verified: true,
+      available: true,
+      hourlyRate: 'GH₵30-45/hr',
+      skills: ['Bricklaying', 'Concrete Work', 'Foundation', 'Block Work'],
+      certifications: ['Construction Safety', 'Masonry Specialist'],
+      completedJobs: 143,
+      responseTime: '< 4 hours',
+      profileImage: '/api/placeholder/150/150',
+      description: 'Experienced mason specializing in residential and commercial construction'
+    }
   ],
-  analytics: {
-    responseTime: { value: '< 2 min', trend: -5, color: '#4CAF50' },
-    successRate: { value: '94%', trend: 2, color: '#2196F3' },
+  categories: [
+    {
+      id: 'electrical',
+      name: 'Electrical Services',
+      icon: 'electrical',
+      color: '#FFD700',
+      jobCount: 45,
+      description: 'Licensed electricians for residential and commercial work'
+    },
+    {
+      id: 'plumbing',
+      name: 'Plumbing Services', 
+      icon: 'plumbing',
+      color: '#4A90E2',
+      jobCount: 32,
+      description: 'Professional plumbers for all water system needs'
+    },
+    {
+      id: 'carpentry',
+      name: 'Carpentry & Woodwork',
+      icon: 'carpentry',
+      color: '#8B4513',
+      jobCount: 28,
+      description: 'Master carpenters for custom furniture and construction'
+    },
+    {
+      id: 'construction',
+      name: 'Construction & Masonry',
+      icon: 'construction',
+      color: '#FF6B35',
+      jobCount: 38,
+      description: 'Skilled masons and construction workers'
+    },
+    {
+      id: 'automotive',
+      name: 'Automotive Services',
+      icon: 'automotive',
+      color: '#1A1A1A',
+      jobCount: 24,
+      description: 'Certified auto mechanics and technicians'
+    },
+    {
+      id: 'welding',
+      name: 'Welding & Metalwork',
+      icon: 'welding',
+      color: '#FF4500',
+      jobCount: 19,
+      description: 'Professional welders and metal fabricators'
+    },
+    {
+      id: 'painting',
+      name: 'Painting & Decoration',
+      icon: 'painting',
+      color: '#9B59B6',
+      jobCount: 35,
+      description: 'House painters and decorative specialists'
+    }
+  ],
+  stats: {
+    totalJobs: 234,
+    activeWorkers: 1247,
+    completedProjects: 5678,
+    averageRating: 4.7
+  }
+};
+
+// Professional styling theme for Kelmah
+const theme = {
+  colors: {
+    primary: '#1A1A1A',    // Black
+    secondary: '#D4AF37',   // Gold
+    accent: '#FFFFFF',      // White
+    success: '#4CAF50',
+    warning: '#FF9800',
+    error: '#F44336',
+    info: '#2196F3'
+  },
+  gradients: {
+    primary: 'linear-gradient(135deg, #1A1A1A 0%, #333333 100%)',
+    gold: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
+    professional: 'linear-gradient(135deg, #1A1A1A 0%, #D4AF37 50%, #FFFFFF 100%)'
+  }
+};
+
+// Enhanced Professional Map Component
+const ProfessionalMapPage = () => {
+  const navigate = useNavigate();
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(muiTheme.breakpoints.down('lg'));
+
+  // State management
+  const [mapData, setMapData] = useState(mockMapData);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('jobs'); // 'jobs' or 'workers'
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    budget: [0, 5000],
+    rating: 0,
+    experience: 'all',
+    availability: 'all'
+  });
+  const [loading, setLoading] = useState(false);
+  const [mapCenter, setMapCenter] = useState({ lat: 5.5600, lng: -0.2057 });
+  const [mapZoom, setMapZoom] = useState(11);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showStats, setShowStats] = useState(true);
+
+  // Filter data based on selected category and search
+  const filteredData = useMemo(() => {
+    const dataToFilter = viewMode === 'jobs' ? mapData.jobs : mapData.workers;
+    
+    return dataToFilter.filter(item => {
+      const matchesCategory = selectedCategory === 'all' || 
+        item.category.toLowerCase().includes(selectedCategory.toLowerCase());
+      const matchesSearch = item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.skills?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesRating = !filters.rating || item.rating >= filters.rating;
+      
+      return matchesCategory && matchesSearch && matchesRating;
+    });
+  }, [mapData, selectedCategory, viewMode, searchQuery, filters]);
+
+  // Professional header component
+  const ProfessionalHeader = () => (
     avgRating: { value: '4.8', trend: 1, color: '#FFC107' },
     onlineNow: { value: '847', trend: 8, color: '#9C27B0' },
   },
