@@ -27,25 +27,33 @@ const Footer = () => {
       const scrollTop = document.documentElement.scrollTop || window.pageYOffset;
       const clientHeight = document.documentElement.clientHeight;
       
-      // Check if user has scrolled to within 100px of the bottom
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      // Only show footer if:
+      // 1. Page has enough content (scrollHeight > clientHeight + 200px)
+      // 2. User has scrolled (scrollTop > 50px) 
+      // 3. User is within 50px of the bottom
+      const hasEnoughContent = scrollHeight > clientHeight + 200;
+      const hasScrolled = scrollTop > 50;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
       
-      setShowFooter(isNearBottom);
+      const shouldShowFooter = hasEnoughContent && hasScrolled && isNearBottom;
+      
+      setShowFooter(shouldShowFooter);
     };
 
     // Add scroll listener
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
     
-    // Check initial position
-    checkScrollPosition();
+    // Delay initial check to ensure page is fully loaded
+    const timeoutId = setTimeout(checkScrollPosition, 1000);
 
     // Cleanup
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
+      clearTimeout(timeoutId);
     };
   }, []);
 
-  // Don't render anything if not near bottom
+  // Don't render anything if footer shouldn't show
   if (!showFooter) {
     return null;
   }
