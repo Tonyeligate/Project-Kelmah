@@ -290,7 +290,7 @@ export const paymentServiceClient = axios.create({
 });
 
 // Add auth interceptors to all service clients
-[messagingServiceClient, paymentServiceClient].forEach(client => {
+[authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, schedulingClient].forEach(client => {
   // Request interceptor
   client.interceptors.request.use(
     (config) => {
