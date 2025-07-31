@@ -473,53 +473,94 @@ const EnhancedWorkerDashboard = () => {
             alignItems: 'center',
             backgroundColor: '#161513',
             p: 2,
-            pb: 1,
+            pb: 1.5,
+            pt: 1.5,
             justifyContent: 'space-between',
             position: 'sticky',
             top: 0,
             zIndex: 10,
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
           }}
         >
-          <Box sx={{ width: 48, display: 'flex', justifyContent: 'flex-start' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               sx={{
-                backgroundColor: 'transparent',
-                color: 'white',
-                width: 48,
-                height: 48,
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                color: '#FFD700',
+                width: 40,
+                height: 40,
                 p: 0,
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                },
               }}
             >
-              <MenuIcon sx={{ fontSize: 24 }} />
+              <MenuIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+            <Box>
+              <Typography
+                sx={{
+                  color: '#FFD700',
+                  fontSize: '1.125rem',
+                  fontWeight: 'bold',
+                  letterSpacing: '-0.015em',
+                  lineHeight: 1,
+                }}
+              >
+                Kelmah
+              </Typography>
+              <Typography
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '0.75rem',
+                  lineHeight: 1,
+                }}
+              >
+                Worker Hub
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              sx={{
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                color: '#FFD700',
+                width: 40,
+                height: 40,
+                p: 0,
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                },
+              }}
+            >
+              <NotificationsIcon sx={{ fontSize: 20 }} />
             </IconButton>
           </Box>
+        </Box>
+
+        {/* Welcome Section */}
+        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
           <Typography
-            variant="h6"
             sx={{
-              color: 'white',
-              fontSize: '1.125rem',
-              fontWeight: 'bold',
-              letterSpacing: '-0.015em',
-              flex: 1,
-              textAlign: 'center',
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '1rem',
+              fontWeight: 500,
+              mb: 0.5,
             }}
           >
-            Home
+            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName || 'Worker'}! 👋
           </Typography>
-          <Box sx={{ width: 48, display: 'flex', justifyContent: 'flex-end' }}>
-            <IconButton
-              sx={{
-                backgroundColor: 'transparent',
-                color: 'white',
-                width: 48,
-                height: 48,
-                p: 0,
-              }}
-            >
-              <NotificationsIcon sx={{ fontSize: 24 }} />
-            </IconButton>
-          </Box>
+          <Typography
+            sx={{
+              color: '#FFD700',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              mb: 1.5,
+            }}
+          >
+            Ready to find your next {user?.profession || 'vocational'} job?
+          </Typography>
         </Box>
 
         {/* Overview Section */}
@@ -532,10 +573,9 @@ const EnhancedWorkerDashboard = () => {
             letterSpacing: '-0.015em',
             px: 2,
             pb: 1,
-            pt: 2,
           }}
         >
-          Overview
+          Your Performance
         </Typography>
 
         {/* Stats Cards */}
@@ -736,29 +776,36 @@ const EnhancedWorkerDashboard = () => {
         <Box
           sx={{
             display: 'flex',
-            overflowY: 'auto',
+            overflowX: 'auto',
             scrollbarWidth: 'none',
             '&::-webkit-scrollbar': { display: 'none' },
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'stretch', p: 2, gap: 1.5 }}>
             {[
               {
-                title: 'Job Applications',
-                description: 'View and manage your job applications.',
-                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
+                title: 'Find Work',
+                description: 'Browse carpentry, plumbing & electrical jobs',
+                image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
+                onClick: () => navigate('/worker/find-work'),
+              },
+              {
+                title: 'My Jobs',
+                description: 'Manage active projects and applications',
+                image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&h=200&fit=crop',
                 onClick: () => navigate('/worker/applications'),
               },
               {
                 title: 'Messages',
-                description: 'Access your messages and communicate with clients.',
-                image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=300&h=200&fit=crop',
+                description: 'Chat with potential clients',
+                image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
                 onClick: () => navigate('/messages'),
               },
               {
-                title: 'Profile',
-                description: 'Edit your profile and settings.',
-                image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=200&fit=crop',
+                title: 'My Skills',
+                description: 'Update certifications & portfolio',
+                image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=200&fit=crop',
                 onClick: () => navigate('/worker/profile'),
               },
             ].map((action, index) => (
@@ -819,14 +866,28 @@ const EnhancedWorkerDashboard = () => {
         {/* Job Cards */}
         {[
           {
-            title: 'Senior UX/UI Designer',
-            company: 'Tech Innovators Inc. | Remote',
-            image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=300&h=200&fit=crop',
+            title: 'Residential Carpenter',
+            company: 'Golden Gate Construction | Accra',
+            location: 'East Legon, Accra',
+            pay: 'GH₵150/day',
+            type: 'Full-time',
+            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
           },
           {
-            title: 'Frontend Developer',
-            company: 'Web Solutions Co. | Remote',
-            image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=300&h=200&fit=crop',
+            title: 'Plumbing Technician',
+            company: 'AquaFlow Services | Kumasi',
+            location: 'Asokwa, Kumasi',
+            pay: 'GH₵120/day',
+            type: 'Contract',
+            image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
+          },
+          {
+            title: 'Electrical Installer',
+            company: 'PowerTech Ghana | Tema',
+            location: 'Industrial Area, Tema',
+            pay: 'GH₵180/day',
+            type: 'Full-time',
+            image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&h=200&fit=crop',
           },
         ].map((job, index) => (
           <Box key={index} sx={{ p: 2 }}>
@@ -844,9 +905,14 @@ const EnhancedWorkerDashboard = () => {
             >
               <Box sx={{ display: 'flex', flex: '2 2 0px', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
-                    Featured
-                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Typography sx={{ color: '#ffd700', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                      {job.type?.toUpperCase()}
+                    </Typography>
+                    <Typography sx={{ color: '#4CAF50', fontSize: '0.875rem', fontWeight: 'bold' }}>
+                      {job.pay}
+                    </Typography>
+                  </Box>
                   <Typography
                     sx={{ color: 'white', fontSize: '1rem', fontWeight: 'bold' }}
                   >
@@ -854,6 +920,9 @@ const EnhancedWorkerDashboard = () => {
                   </Typography>
                   <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
                     {job.company}
+                  </Typography>
+                  <Typography sx={{ color: '#9e9e9e', fontSize: '0.75rem' }}>
+                    📍 {job.location}
                   </Typography>
                 </Box>
                 <Button
