@@ -18,32 +18,10 @@ class PaymentsApi {
   async getPaymentMethods() {
     try {
       const response = await this.client.get('/api/payments/methods');
-      return response.data;
+      return response.data || { methods: [] };
     } catch (error) {
-      console.warn(
-        'Payment service unavailable for methods, using mock data:',
-        error.message,
-      );
-      return {
-        methods: [
-          {
-            id: 'pm-1',
-            type: 'mobile_money',
-            provider: 'MTN',
-            number: '+233*****678',
-            isDefault: true,
-            status: 'active',
-          },
-          {
-            id: 'pm-2',
-            type: 'bank_account',
-            provider: 'GCB Bank',
-            accountNumber: '****4567',
-            isDefault: false,
-            status: 'active',
-          },
-        ],
-      };
+      console.warn('Payment service unavailable for methods:', error.message);
+      return { methods: [] };
     }
   }
 

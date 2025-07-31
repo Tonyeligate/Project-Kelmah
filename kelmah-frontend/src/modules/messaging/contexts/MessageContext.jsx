@@ -35,8 +35,10 @@ export const MessageProvider = ({ children }) => {
   const loadConversations = useCallback(async () => {
     setLoadingConversations(true);
     try {
-      const convs = await messagingService.getConversations();
-      setConversations(convs);
+      const response = await messagingService.getConversations();
+      // Ensure we extract the conversations array from the response
+      const convs = Array.isArray(response) ? response : (response?.conversations || response?.data || []);
+      setConversations(Array.isArray(convs) ? convs : []);
     } catch (error) {
       console.error('Error loading conversations:', error);
       setConversations([]);

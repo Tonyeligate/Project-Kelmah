@@ -10,60 +10,11 @@ export const messagingService = {
   async getConversations() {
     try {
       const response = await messagingServiceClient.get('/api/conversations');
-      return response.data;
+      return response.data || [];
     } catch (error) {
-      console.warn(
-        'Messaging service unavailable for conversations, using mock data:',
-        error.message,
-      );
-      return {
-        conversations: [
-          {
-            id: 'conv-1',
-            participants: [
-              {
-                id: 'user-1',
-                name: 'John Contractor',
-                avatar: '/api/placeholder/40/40',
-              },
-              {
-                id: 'user-2',
-                name: 'Sarah Client',
-                avatar: '/api/placeholder/40/40',
-              },
-            ],
-            lastMessage: {
-              content: 'Thanks for the update on the project!',
-              timestamp: new Date(Date.now() - 1000 * 60 * 30),
-              senderId: 'user-2',
-            },
-            unreadCount: 2,
-            jobTitle: 'Kitchen Renovation',
-          },
-          {
-            id: 'conv-2',
-            participants: [
-              {
-                id: 'user-1',
-                name: 'Mike Builder',
-                avatar: '/api/placeholder/40/40',
-              },
-              {
-                id: 'user-3',
-                name: 'Tech Support',
-                avatar: '/api/placeholder/40/40',
-              },
-            ],
-            lastMessage: {
-              content: 'When can we schedule the next phase?',
-              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-              senderId: 'user-1',
-            },
-            unreadCount: 0,
-            jobTitle: 'Office Setup',
-          },
-        ],
-      };
+      console.warn('Messaging service unavailable:', error.message);
+      // Return empty array instead of mock data - let user create real conversations
+      return [];
     }
   },
 
@@ -76,19 +27,8 @@ export const messagingService = {
       });
       return response.data;
     } catch (error) {
-      console.warn(
-        'Messaging service unavailable for creating conversation, simulating success:',
-        error.message,
-      );
-      return {
-        success: true,
-        conversation: {
-          id: `conv-${Date.now()}`,
-          participants: [{ id: participantId }],
-          jobId,
-          createdAt: new Date(),
-        },
-      };
+      console.warn('Messaging service unavailable for creating conversation:', error.message);
+      throw error; // Let the calling code handle the error appropriately
     }
   },
 

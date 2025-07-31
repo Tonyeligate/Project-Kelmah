@@ -289,7 +289,9 @@ const AuthButton = styled(Button)(({ theme, variant }) => ({
   }),
 }));
 
-const StatusIndicator = styled(Box)(({ theme, online }) => ({
+const StatusIndicator = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'online',
+})(({ theme, online }) => ({
   position: 'absolute',
   bottom: 2,
   right: 2,

@@ -41,8 +41,9 @@ const getServiceUrl = (serviceName) => {
     return envValue;
   }
 
-  const env = isProduction ? 'production' : 'development';
-  return DEFAULT_SERVICES[env][serviceName];
+  // Always use production services for real data (no localhost dependencies)
+  // Use development services only if explicitly configured via environment variables
+  return DEFAULT_SERVICES.production[serviceName];
 };
 
 // Service URLs

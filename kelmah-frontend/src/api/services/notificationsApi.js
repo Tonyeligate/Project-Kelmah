@@ -24,20 +24,8 @@ class NotificationsApi {
       const response = await this.client.get('/api/notifications', { params });
       return response.data;
     } catch (error) {
-      console.warn(
-        'Notification service unavailable, using mock data:',
-        error.message,
-      );
-      return {
-        notifications: [
-          {
-            id: 'notif-1',
-            title: 'New Job Application',
-            message:
-              'You have a new application for your Kitchen Renovation job',
-            type: 'application',
-            read: false,
-            createdAt: new Date(Date.now() - 1000 * 60 * 30),
+      console.warn('Notification service unavailable:', error.message);
+      return { notifications: [] };
           },
           {
             id: 'notif-2',
