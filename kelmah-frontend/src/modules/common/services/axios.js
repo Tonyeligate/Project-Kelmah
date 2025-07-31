@@ -289,6 +289,14 @@ export const paymentServiceClient = axios.create({
   },
 });
 
+export const schedulingClient = axios.create({
+  baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Add auth interceptors to all service clients
 [authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, schedulingClient].forEach(client => {
   // Request interceptor
@@ -353,14 +361,6 @@ export const paymentServiceClient = axios.create({
       return Promise.reject(error);
     },
   );
-});
-
-export const schedulingClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
-  timeout: 5000, // Reduced timeout for better UX
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export default axiosInstance;
