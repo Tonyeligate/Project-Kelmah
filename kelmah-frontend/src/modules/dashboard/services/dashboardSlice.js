@@ -16,26 +16,44 @@ const jobServiceClient = axios.create({
 });
 
 // Add auth tokens to requests
-[],
+[userServiceClient, jobServiceClient].forEach(client => {
+  client.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+});
+
+// Mock data fallback
+const mockDashboardData = {
+  metrics: {
+    totalJobs: 0,
+    activeJobs: 0,
+    completedJobs: 0,
+    totalEarnings: 0,
+    pendingApplications: 0,
+    avgRating: 0,
+  },
+  recentJobs: [],
   activeWorkers: [],
   analytics: {
-    jobsThisMonth: 8,
-    applicationsThisMonth: 25,
-    earningsThisMonth: 3200,
-    averageResponseTime: '2.5 hours',
-    completionRate: 94,
-    clientSatisfaction: 4.7,
+    jobsThisMonth: 0,
+    applicationsThisMonth: 0,
+    earningsThisMonth: 0,
+    averageResponseTime: '0 hours',
+    completionRate: 0,
+    clientSatisfaction: 0,
     monthlyGrowth: {
-      jobs: 15,
-      earnings: 12,
-      applications: 8,
+      jobs: 0,
+      earnings: 0,
+      applications: 0,
     },
-    topSkills: [
-      { skill: 'Carpentry', demand: 85, jobs: 12 },
-      { skill: 'Plumbing', demand: 78, jobs: 9 },
-      { skill: 'Electrical', demand: 72, jobs: 8 },
-      { skill: 'Painting', demand: 65, jobs: 6 },
-    ],
+    topSkills: [],
   },
 };
 
@@ -80,18 +98,16 @@ export const fetchDashboardData = createAsyncThunk(
 
       // Log which services are using mock data
       if (metricsResponse.status === 'rejected') {
-        console.warn(User service unavailable for metrics, service unavailable);
+        console.warn('User service unavailable for metrics');
       }
       if (jobsResponse.status === 'rejected') {
-        console.warn(Job service unavailable for dashboard jobs, service unavailable,
-        );
+        console.warn('Job service unavailable for dashboard jobs');
       }
       if (workersResponse.status === 'rejected') {
-        console.warn(User service unavailable for workers data, service unavailable,
-        );
+        console.warn('User service unavailable for workers data');
       }
       if (analyticsResponse.status === 'rejected') {
-        console.warn(User service unavailable for analytics, service unavailable);
+        console.warn('User service unavailable for analytics');
       }
 
       return {

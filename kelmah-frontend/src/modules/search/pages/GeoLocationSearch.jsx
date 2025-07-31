@@ -244,42 +244,8 @@ const CompactLocationSearch = ({
   getCurrentLocation,
 }) => {
   const theme = useTheme();
-  const []);
-    } else {
-      setSkills([]);
-    }
-  }, [searchType]);
 
-  // Get user's current location
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      setLoading(true);
-      setLocationError(false);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // In a real app, you would use position.coords.latitude and position.coords.longitude
-          // to get the location name from a geocoding service.
-          // For this example, we'll use a mock location.
-          const mockLocations = [
-            'Accra, Ghana',
-            'Kumasi, Ghana',
-            'Tema, Ghana',
-          ];
-          const randomLocation =
-            mockLocations[Math.floor(Math.random() * mockLocations.length)];
-          setLocation(randomLocation);
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error getting current location:', error);
-          setLoading(false);
-          setLocationError(true);
-        },
-      );
-    } else {
-      setLocationError(true);
-    }
-  };
+  // Component uses getCurrentLocation passed as prop
 
   // Handle location suggestions
   const fetchLocationSuggestions = useCallback(

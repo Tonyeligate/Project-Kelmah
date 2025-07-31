@@ -238,7 +238,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
     background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.1)} 60deg, transparent 120deg)`,
     animation: `${rotateGlow} 30s linear infinite`,
   },
-  [];
+}));
 
 const categoryData = [
   { 

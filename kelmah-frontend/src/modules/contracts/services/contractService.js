@@ -14,13 +14,8 @@ export const contractService = {
       });
       return response.data;
     } catch (error) {
-      console.warn(
-        'Contract service unavailable, using mock data:',
-        error.message,
-      );
-      return { contracts: [] },
-          [],
-      };
+      console.warn('Contract service unavailable:', error.message);
+      return { contracts: [] };
     }
   },
 

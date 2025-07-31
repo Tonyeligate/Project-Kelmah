@@ -74,80 +74,25 @@ const EnhancedMessagingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
-  // State management
-  const [],
-      lastMessage: {
-        id: '1',
-        text: 'Hey, I saw your carpentry work. Are you available for a kitchen renovation project?',
-        sender: '2',
-        timestamp: new Date(Date.now() - 1000 * 60 * 15),
-        status: 'delivered',
-      },
-      unreadCount: 2,
-      isArchived: false,
-      isPinned: true,
-      jobRelated: { id: 'job-1', title: 'Kitchen Renovation' },
-    },
-    {
-      id: '2',
-      type: 'direct',
-      participants: [],
-      lastMessage: {
-        id: '2',
-        text: "Thank you for the excellent plumbing work! I've left a 5-star review.",
-        sender: '3',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-        status: 'read',
-      },
-      unreadCount: 0,
-      isArchived: false,
-      isPinned: false,
-      jobRelated: { id: 'job-2', title: 'Bathroom Plumbing Repair' },
-    },
-    {
-      id: '3',
-      type: 'direct',
-      participants: [],
-      lastMessage: {
-        id: '3',
-        text: 'When can you start the electrical work?',
-        sender: user?.id,
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        status: 'read',
-      },
-      unreadCount: 0,
-      isArchived: false,
-      isPinned: false,
-      jobRelated: { id: 'job-3', title: 'House Rewiring Project' },
-    },
-  ];
+  // State management - Get conversations from context
+  const { conversations, selectedConversation, selectConversation } = useMessages();
+  
+  // Local state for UI
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const mockMessages = {
-    1: [],
-      },
-      {
-        id: '5',
-        text: "Wow, these look amazing! Exactly what I had in mind. What's your availability?",
-        sender: '2',
-        timestamp: new Date(Date.now() - 1000 * 60 * 15),
-        status: 'delivered',
-        type: 'text',
-      },
-    ],
-  };
-
-  // Initialize messaging system
+  // Initialize messaging system  
   useEffect(() => {
     const initializeMessaging = async () => {
       setIsLoading(true);
       try {
-        // Mock WebSocket connection
-        setIsConnected(true);
-        setConversations(mockConversations);
-
-        // Calculate total unread count
-        const totalUnread = mockConversations.reduce(
-          (sum, conv) => sum + conv.unreadCount,
+        // Real messaging initialization will be handled by the context
+        console.log('Messaging system initialized with real data');
+        
+        // Calculate total unread count from context conversations
+        const totalUnread = (conversations || []).reduce(
+          (sum, conv) => sum + (conv.unreadCount || 0),
           0,
         );
         setUnreadCount(totalUnread);

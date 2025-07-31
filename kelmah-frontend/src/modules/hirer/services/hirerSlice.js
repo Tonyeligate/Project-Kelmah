@@ -81,16 +81,40 @@ const createHirerProfile = () => {
   }
 
   // Fallback mock data if no real user data
-  return [];
-
-      return {
-        success: true,
-        data: newJob,
-        message: 'Job created successfully (mock)',
-      };
-    }
-  },
-);
+  return {
+    id: 'default-hirer',
+    firstName: 'Guest',
+    lastName: 'Hirer',
+    email: 'guest@example.com',
+    phone: '',
+    company: '',
+    location: 'Accra, Ghana',
+    bio: '',
+    avatar: '/api/placeholder/150/150',
+    role: 'hirer',
+    rating: 0,
+    reviewsCount: 0,
+    totalJobsPosted: 0,
+    totalAmountSpent: 0,
+    currency: 'GH₵',
+    verified: false,
+    joinedAt: new Date(),
+    completionRate: 0,
+    responseTime: 'N/A',
+    preferences: {
+      communicationMethod: 'email',
+      jobNotifications: true,
+      marketingEmails: false,
+      currency: "GHS",
+    },
+    businessDetails: {
+      registrationNumber: '',
+      industry: '',
+      employees: '',
+      website: '',
+    },
+  };
+};
 
 export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',

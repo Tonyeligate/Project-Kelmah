@@ -42,9 +42,9 @@ const transformJobListItem = (job) => {
     currency: job.currency,
     status: job.status,
     location: job.location,
-    skills: job.skills || [];
-    }
-  },
+    skills: job.skills || [],
+  };
+};
 };
 
 export default jobsApi;

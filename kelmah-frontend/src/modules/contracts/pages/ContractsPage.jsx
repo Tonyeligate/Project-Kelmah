@@ -98,12 +98,11 @@ const EnhancedContractsPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
-  const [],
-      payments: [],
-      totalPaid: 1100,
+        payments: [],
+     1100,
       nextPaymentDue: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5),
       documents: [],
-      signatures: {
+     {
         worker: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8),
