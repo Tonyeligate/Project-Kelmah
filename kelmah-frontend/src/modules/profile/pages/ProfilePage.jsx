@@ -18,11 +18,18 @@ import {
   ListItemText,
   IconButton,
   Divider,
+  useMediaQuery,
+  useTheme,
+  Avatar,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
+  TrendingUp as TrendingUpIcon,
+  Star as StarIcon,
+  Work as WorkIcon,
+  MonetizationOn as EarningsIcon,
 } from '@mui/icons-material';
 import { useProfile } from '../hooks/useProfile';
 import ProfilePicture from '../components/ProfilePicture';
@@ -34,6 +41,9 @@ import {
 } from '../../../store/slices/profileSlice.js';
 
 const ProfilePage = () => {
+  const theme = useTheme();
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  
   const {
     updateProfile,
     updateSkills,

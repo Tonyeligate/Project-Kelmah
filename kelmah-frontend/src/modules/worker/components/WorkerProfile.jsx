@@ -523,71 +523,174 @@ function WorkerProfile() {
     </motion.div>
   );
 
-  const renderMetrics = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
-    >
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={6} md={3}>
-          <MetricCard>
-            <WorkIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h4" fontWeight={700} color="primary">
-              {profile.experience_years || 0}
+  const renderMetrics = () => {
+    const isActualMobile = useMediaQuery('(max-width: 768px)');
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        {/* Mobile Performance Stats for Owner */}
+        {isActualMobile && isOwner && (
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                fontSize: '1.125rem',
+                fontWeight: 'bold',
+                letterSpacing: '-0.015em',
+                mb: 2,
+              }}
+            >
+              Your Performance
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Years Experience
-            </Typography>
-          </MetricCard>
-        </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    borderRadius: '12px',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
+                    Earnings
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '1.25rem',
+                      fontWeight: 'bold',
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    ${stats.total_earnings || '2,400'}
+                  </Typography>
+                  <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
+                    +15%
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    borderRadius: '12px',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
+                    Upcoming Jobs
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '1.25rem',
+                      fontWeight: 'bold',
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    {stats.upcoming_jobs || '3'}
+                  </Typography>
+                  <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
+                    +1
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    borderRadius: '12px',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
+                    Reviews
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '1.25rem',
+                      fontWeight: 'bold',
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    {stats.average_rating || '4.8'}
+                  </Typography>
+                  <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
+                    +0.2
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
 
-        <Grid item xs={6} md={3}>
-          <MetricCard>
-            <AssessmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h4" fontWeight={700} color="primary">
-              {stats.jobs_completed || 0}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Jobs Completed
-            </Typography>
-          </MetricCard>
-        </Grid>
+        {/* Regular Professional Metrics */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={6} md={3}>
+            <MetricCard>
+              <WorkIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h4" fontWeight={700} color="primary">
+                {profile.experience_years || 0}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Years Experience
+              </Typography>
+            </MetricCard>
+          </Grid>
 
-        <Grid item xs={6} md={3}>
-          <MetricCard>
-            <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h4" fontWeight={700} color="primary">
-              ${profile.hourly_rate || 0}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Per Hour
-            </Typography>
-          </MetricCard>
-        </Grid>
+          <Grid item xs={6} md={3}>
+            <MetricCard>
+              <AssessmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h4" fontWeight={700} color="primary">
+                {stats.jobs_completed || 0}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Jobs Completed
+              </Typography>
+            </MetricCard>
+          </Grid>
 
-        <Grid item xs={6} md={3}>
-          <MetricCard>
-            <TrendingIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h4" fontWeight={700} color="primary">
-              {(
-                ((stats.jobs_completed || 0) /
-                  Math.max(
-                    (stats.jobs_completed || 0) + (stats.jobs_cancelled || 0),
-                    1,
-                  )) *
-                100
-              ).toFixed(0)}
-              %
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Success Rate
-            </Typography>
-          </MetricCard>
+          <Grid item xs={6} md={3}>
+            <MetricCard>
+              <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h4" fontWeight={700} color="primary">
+                ${profile.hourly_rate || 0}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Per Hour
+              </Typography>
+            </MetricCard>
+          </Grid>
+
+          <Grid item xs={6} md={3}>
+            <MetricCard>
+              <TrendingIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h4" fontWeight={700} color="primary">
+                {(
+                  ((stats.jobs_completed || 0) /
+                    Math.max(
+                      (stats.jobs_completed || 0) + (stats.jobs_cancelled || 0),
+                      1,
+                    )) *
+                  100
+                ).toFixed(0)}
+                %
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Success Rate
+              </Typography>
+            </MetricCard>
+          </Grid>
         </Grid>
-      </Grid>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   const renderSkillsAndExpertise = () => (
     <GlassCard sx={{ mb: 4 }}>
