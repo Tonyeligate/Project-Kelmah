@@ -70,11 +70,11 @@ const MobileBottomNav = () => {
   // Determine current tab based on path
   let currentValue;
   if (path.includes('/dashboard')) currentValue = 'dashboard';
-  else if (path.startsWith('/search') || path.startsWith('/find-talents'))
-    currentValue = 'search';
-  else if (path.includes('/applications')) currentValue = 'applications';
+  else if (path.startsWith('/search') || path.startsWith('/find-talents') || path.includes('/find-work'))
+    currentValue = 'jobs';
+  else if (path.includes('/applications')) currentValue = 'jobs';
   else if (path.startsWith('/messages')) currentValue = 'messages';
-  else if (path.startsWith('/profile')) currentValue = 'profile';
+  else if (path.includes('/profile')) currentValue = 'profile';
   else currentValue = 'dashboard';
 
   const [value, setValue] = React.useState(currentValue);
@@ -85,11 +85,8 @@ const MobileBottomNav = () => {
       case 'dashboard':
         navigate(isHirer ? '/hirer/dashboard' : '/worker/dashboard');
         break;
-      case 'search':
-        navigate(isHirer ? '/find-talents' : '/search/location');
-        break;
-      case 'applications':
-        navigate(isHirer ? '/hirer/applications' : '/worker/applications');
+      case 'jobs':
+        navigate(isHirer ? '/find-talents' : '/worker/find-work');
         break;
       case 'messages':
         navigate('/messages');
@@ -111,7 +108,7 @@ const MobileBottomNav = () => {
     },
     {
       label: "Jobs",
-      value: "search",
+      value: "jobs",
       icon: <JobsIcon />,
       badge: null,
     },
