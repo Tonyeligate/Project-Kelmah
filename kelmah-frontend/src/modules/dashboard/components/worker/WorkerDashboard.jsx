@@ -459,9 +459,12 @@ const EnhancedWorkerDashboard = () => {
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
   });
 
+  // FORCE MOBILE DESIGN FOR TESTING - Remove after debugging
+  const forceMobile = true;
+  
   // Mobile-first design matching the provided template
-  if (isActualMobile) {
-    console.log('✅ Rendering mobile design');
+  if (isActualMobile || forceMobile) {
+    console.log('✅ Rendering mobile design (isActualMobile:', isActualMobile, ', forceMobile:', forceMobile, ')');
     return (
       <Box
         sx={{
