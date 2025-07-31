@@ -456,20 +456,22 @@ const HomePage = () => {
                             variant="outlined"
                               size="large"
                             sx={{
-                              borderColor: theme.palette.secondary.main,
-                              color: theme.palette.secondary.main,
+                              borderColor: '#FFD700',
+                              color: '#FFD700',
                                 borderWidth: 3,
                                 fontWeight: 700,
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
+                                textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                                boxShadow: '0 4px 20px rgba(255,215,0,0.3)',
                               '&:hover': {
-                                borderColor: theme.palette.secondary.dark,
-                                background: alpha(
-                                  theme.palette.secondary.main,
-                                    0.15,
-                                ),
+                                borderColor: '#FFC000',
+                                color: '#000',
+                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                   borderWidth: 3,
+                                  textShadow: 'none',
+                                  boxShadow: '0 6px 25px rgba(255,215,0,0.4)',
                               },
                             }}
                             fullWidth={isSm}
