@@ -25,7 +25,8 @@ import MobileBottomNav from './MobileBottomNav';
 const Layout = ({ children, toggleTheme, mode }) => {
   const location = useLocation();
   const theme = useTheme();
-  const isMdUp = true; // Force desktop layout on all devices
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md')); // Use actual breakpoint for layout
+  const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size
   const isDashboardPage =
     location.pathname.includes('/dashboard') ||
     location.pathname.startsWith('/worker') ||
@@ -35,6 +36,20 @@ const Layout = ({ children, toggleTheme, mode }) => {
 
   // Dashboard layout
   if (isDashboardPage) {
+    // On actual mobile screens, render children directly (no sidebar/wrapper)
+    if (isActualMobile) {
+      return (
+        <Box sx={{ 
+          width: '100%', 
+          minHeight: '100vh',
+          position: 'relative',
+        }}>
+          {children}
+          <MobileBottomNav />
+        </Box>
+      );
+    }
+    
     // Desktop: permanent sidebar
     if (isMdUp) {
       return (
