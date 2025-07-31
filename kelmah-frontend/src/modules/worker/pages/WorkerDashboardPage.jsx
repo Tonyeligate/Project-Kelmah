@@ -13,7 +13,8 @@ import workerImage from '../../../assets/cartoon-worker.jpeg';
 
 const WorkerDashboardPage = () => {
   const theme = useTheme();
-  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSm = false; // Disabled responsive behavior as per user requirement
+  const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size for styling
   const user = useSelector((state) => state.auth.user);
   const defaultUser = {
     firstName: 'Demo',
@@ -30,6 +31,11 @@ const WorkerDashboardPage = () => {
     if (displayUser?.role === 'worker') return 'Professional Carpenter';
     return '';
   };
+
+  // On mobile, render only the WorkerDashboard component (it has its own mobile header)
+  if (isActualMobile) {
+    return <WorkerDashboard user={displayUser} />;
+  }
 
   return (
     <>

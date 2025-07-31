@@ -23,7 +23,8 @@ import HirerDashboard from '../../hirer/pages/HirerDashboardPage';
 const DashboardPage = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = false; // Disabled responsive behavior as per user requirement
+  const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size
   const { user, loading: authLoading } = useAuth();
   // Get data from Redux store
   const { loading: dataLoading, error: dataError } = useSelector(
@@ -92,6 +93,11 @@ const DashboardPage = () => {
     }
   };
 
+  // On mobile, render dashboard component directly without wrapper
+  if (isActualMobile) {
+    return renderDashboard();
+  }
+
   return (
     <Box
       sx={{
@@ -102,11 +108,6 @@ const DashboardPage = () => {
         boxSizing: 'border-box',
         overflowX: 'hidden',
         overflowY: 'auto',
-        // Mobile-specific improvements
-        '@media (max-width: 768px)': {
-          padding: 0.5,
-          minHeight: 'calc(100vh - 120px)',
-        },
       }}
     >
       <Paper
