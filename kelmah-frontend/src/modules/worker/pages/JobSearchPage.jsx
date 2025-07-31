@@ -120,6 +120,7 @@ import {
   Thermostat as HvacIcon,
   Rocket as RocketIcon,
   Diamond as DiamondIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -1865,6 +1866,291 @@ const JobSearchPage = () => {
           </Box>
     </Container>
   );
+
+  // Mobile detection
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
+
+  // Mobile job search template
+  if (isActualMobile) {
+    return (
+      <>
+        <Helmet>
+          <title>Find Work - Kelmah</title>
+          <meta name="description" content="Find vocational jobs - carpentry, plumbing, electrical work" />
+        </Helmet>
+
+        <Box
+          sx={{
+            minHeight: '100vh',
+            backgroundColor: '#161513',
+            color: 'white',
+            fontFamily: 'Manrope, "Noto Sans", sans-serif',
+          }}
+        >
+          {/* Mobile Header */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#161513',
+              p: 2,
+              justifyContent: 'space-between',
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                onClick={() => navigate('/worker/dashboard')}
+                sx={{
+                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                  color: '#FFD700',
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <ArrowBackIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+              <Typography
+                sx={{
+                  color: '#FFD700',
+                  fontSize: '1.125rem',
+                  fontWeight: 'bold',
+                }}
+              >
+                Find Work
+              </Typography>
+            </Box>
+            <IconButton
+              sx={{
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                color: '#FFD700',
+                width: 40,
+                height: 40,
+              }}
+            >
+              <FilterListIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Box>
+
+          {/* Search Bar */}
+          <Box sx={{ p: 2 }}>
+            <TextField
+              fullWidth
+              placeholder="Search jobs (carpenter, plumber, electrician...)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: '#24231e',
+                  borderRadius: '12px',
+                  '& fieldset': { borderColor: '#35332c' },
+                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                },
+                '& .MuiInputBase-input': {
+                  color: 'white',
+                  fontSize: '0.875rem',
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: '#b2afa3',
+                  opacity: 1,
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <SearchIcon sx={{ color: '#b2afa3', mr: 1, fontSize: 20 }} />
+                ),
+              }}
+            />
+          </Box>
+
+          {/* Quick Filters */}
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
+              {['All Jobs', 'Carpenter', 'Plumber', 'Electrician', 'Mason'].map((filter) => (
+                <Chip
+                  key={filter}
+                  label={filter}
+                  onClick={() => setSelectedCategory(filter === 'All Jobs' ? '' : filter)}
+                  sx={{
+                    backgroundColor: selectedCategory === (filter === 'All Jobs' ? '' : filter) 
+                      ? '#FFD700' 
+                      : '#35332c',
+                    color: selectedCategory === (filter === 'All Jobs' ? '' : filter) 
+                      ? '#161513' 
+                      : 'white',
+                    fontWeight: 500,
+                    fontSize: '0.75rem',
+                    minWidth: 'fit-content',
+                    whiteSpace: 'nowrap',
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+
+          {/* Job Results */}
+          <Box sx={{ px: 2 }}>
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                mb: 2,
+              }}
+            >
+              Available Jobs ({showSampleData ? '12' : jobs.length})
+            </Typography>
+
+            {/* Sample Job Cards */}
+            {[
+              {
+                title: 'Residential Carpenter',
+                company: 'Golden Gate Construction',
+                location: 'East Legon, Accra',
+                pay: 'GH₵150/day',
+                type: 'Full-time',
+                posted: '2 hours ago',
+                description: 'Looking for experienced carpenter for residential project...',
+              },
+              {
+                title: 'Plumbing Technician',
+                company: 'AquaFlow Services',
+                location: 'Asokwa, Kumasi',
+                pay: 'GH₵120/day',
+                type: 'Contract',
+                posted: '4 hours ago',
+                description: 'Emergency plumbing repairs and installations needed...',
+              },
+              {
+                title: 'Electrical Installer',
+                company: 'PowerTech Ghana',
+                location: 'Industrial Area, Tema',
+                pay: 'GH₵180/day',
+                type: 'Full-time',
+                posted: '1 day ago',
+                description: 'Commercial electrical installation and maintenance...',
+              },
+            ].map((job, index) => (
+              <Paper
+                key={index}
+                sx={{
+                  backgroundColor: '#24231e',
+                  borderRadius: '12px',
+                  p: 2,
+                  mb: 2,
+                  border: '1px solid #35332c',
+                }}
+              >
+                <Box sx={{ mb: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        sx={{
+                          color: 'white',
+                          fontSize: '1rem',
+                          fontWeight: 'bold',
+                          mb: 0.5,
+                        }}
+                      >
+                        {job.title}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: '#b2afa3',
+                          fontSize: '0.875rem',
+                          mb: 0.5,
+                        }}
+                      >
+                        {job.company}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: '#9e9e9e',
+                          fontSize: '0.75rem',
+                          mb: 1,
+                        }}
+                      >
+                        📍 {job.location} • {job.posted}
+                      </Typography>
+                    </Box>
+                    <IconButton
+                      sx={{
+                        color: '#b2afa3',
+                        '&:hover': { color: '#FFD700' },
+                      }}
+                    >
+                      <BookmarkBorderIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                    <Chip
+                      label={job.type}
+                      size="small"
+                      sx={{
+                        backgroundColor: '#FFD700',
+                        color: '#161513',
+                        fontSize: '0.65rem',
+                        fontWeight: 'bold',
+                        height: 20,
+                      }}
+                    />
+                    <Chip
+                      label={job.pay}
+                      size="small"
+                      sx={{
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        fontSize: '0.65rem',
+                        fontWeight: 'bold',
+                        height: 20,
+                      }}
+                    />
+                  </Box>
+
+                  <Typography
+                    sx={{
+                      color: '#b2afa3',
+                      fontSize: '0.8rem',
+                      mb: 2,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {job.description}
+                  </Typography>
+
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    sx={{
+                      backgroundColor: '#FFD700',
+                      color: '#161513',
+                      fontWeight: 'bold',
+                      fontSize: '0.875rem',
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      '&:hover': {
+                        backgroundColor: '#FFC000',
+                      },
+                    }}
+                  >
+                    Apply Now
+                  </Button>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+
+          {/* Bottom spacing for nav */}
+          <Box sx={{ height: '100px' }} />
+        </Box>
+      </>
+    );
+  }
 
   return (
     <>
