@@ -289,6 +289,72 @@ export const paymentServiceClient = axios.create({
   },
 });
 
+// Add auth interceptors to all service clients
+[messagingServiceClient, paymentServiceClient].forEach(client => {
+  // Request interceptor
+  client.interceptors.request.use(
+    (config) => {
+      // Add auth token if available
+      const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+
+      // Add request timestamp for debugging
+      config.metadata = { startTime: new Date() };
+
+      // Log request in development
+      if (LOG_CONFIG.enableConsole) {
+        console.group(
+          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+        );
+        console.log('Config:', {
+          baseURL: config.baseURL,
+          url: config.url,
+          method: config.method,
+          headers: config.headers,
+          data: config.data,
+        });
+        console.groupEnd();
+      }
+
+      return config;
+    },
+    (error) => {
+      console.error('❌ Request Error:', error);
+      return Promise.reject(error);
+    },
+  );
+
+  // Response interceptor
+  client.interceptors.response.use(
+    (response) => {
+      // Log response time in development
+      if (LOG_CONFIG.enableConsole && response.config.metadata) {
+        const duration = new Date() - response.config.metadata.startTime;
+        console.log(
+          `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        );
+      }
+
+      return response;
+    },
+    (error) => {
+      // Log error in development
+      if (LOG_CONFIG.enableConsole) {
+        console.error('❌ API Error:', {
+          url: error.config?.url,
+          method: error.config?.method,
+          status: error.response?.status,
+          message: error.response?.data?.message || error.message,
+        });
+      }
+
+      return Promise.reject(error);
+    },
+  );
+});
+
 export const schedulingClient = axios.create({
   baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
   timeout: 5000, // Reduced timeout for better UX

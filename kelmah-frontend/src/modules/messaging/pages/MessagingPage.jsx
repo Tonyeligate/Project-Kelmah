@@ -1454,6 +1454,419 @@ const EnhancedMessagingPage = () => {
     );
   }
 
+  // Mobile detection for our custom template
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
+
+  // Mobile messaging template
+  if (isActualMobile) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          backgroundColor: '#161513',
+          color: 'white',
+          fontFamily: 'Manrope, "Noto Sans", sans-serif',
+        }}
+      >
+        {!selectedConversation ? (
+          // Conversations List View
+          <>
+            {/* Mobile Header */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#161513',
+                p: 2,
+                justifyContent: 'space-between',
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton
+                  onClick={() => navigate('/worker/dashboard')}
+                  sx={{
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    color: '#FFD700',
+                    width: 40,
+                    height: 40,
+                  }}
+                >
+                  <ArrowBackIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+                <Typography
+                  sx={{
+                    color: '#FFD700',
+                    fontSize: '1.125rem',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Messages
+                </Typography>
+              </Box>
+              <IconButton
+                sx={{
+                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                  color: '#FFD700',
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <SearchIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Box>
+
+            {/* Search Bar */}
+            <Box sx={{ p: 2 }}>
+              <TextField
+                fullWidth
+                placeholder="Search conversations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#24231e',
+                    borderRadius: '12px',
+                    '& fieldset': { borderColor: '#35332c' },
+                    '&:hover fieldset': { borderColor: '#FFD700' },
+                    '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: 'white',
+                    fontSize: '0.875rem',
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: '#b2afa3',
+                    opacity: 1,
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <SearchIcon sx={{ color: '#b2afa3', mr: 1, fontSize: 20 }} />
+                  ),
+                }}
+              />
+            </Box>
+
+            {/* Conversations List */}
+            <Box sx={{ px: 2 }}>
+              <Typography
+                sx={{
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  mb: 2,
+                }}
+              >
+                Recent Conversations
+              </Typography>
+
+              {/* Sample Conversations */}
+              {[
+                {
+                  id: 1,
+                  name: 'Golden Gate Construction',
+                  role: 'Hirer',
+                  lastMessage: 'When can you start the carpentry project?',
+                  time: '10:30 AM',
+                  unread: 2,
+                  avatar: 'GG',
+                  online: true,
+                },
+                {
+                  id: 2,
+                  name: 'AquaFlow Services',
+                  role: 'Hirer',
+                  lastMessage: 'Great work on the plumbing installation!',
+                  time: 'Yesterday',
+                  unread: 0,
+                  avatar: 'AS',
+                  online: false,
+                },
+                {
+                  id: 3,
+                  name: 'PowerTech Ghana',
+                  role: 'Hirer',
+                  lastMessage: 'Can you handle electrical wiring for our new office?',
+                  time: '2 days ago',
+                  unread: 1,
+                  avatar: 'PT',
+                  online: true,
+                },
+              ].map((conversation) => (
+                <Paper
+                  key={conversation.id}
+                  sx={{
+                    backgroundColor: '#24231e',
+                    borderRadius: '12px',
+                    p: 2,
+                    mb: 1.5,
+                    border: '1px solid #35332c',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: '#2a2926',
+                    },
+                  }}
+                  onClick={() => setSelectedConversation(conversation)}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ position: 'relative' }}>
+                      <Avatar
+                        sx={{
+                          backgroundColor: '#FFD700',
+                          color: '#161513',
+                          width: 48,
+                          height: 48,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {conversation.avatar}
+                      </Avatar>
+                      {conversation.online && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 2,
+                            right: 2,
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#4CAF50',
+                            borderRadius: '50%',
+                            border: '2px solid #24231e',
+                          }}
+                        />
+                      )}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                        <Typography
+                          sx={{
+                            color: 'white',
+                            fontSize: '1rem',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {conversation.name}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: '#b2afa3',
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          {conversation.time}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography
+                          sx={{
+                            color: '#b2afa3',
+                            fontSize: '0.875rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            flex: 1,
+                          }}
+                        >
+                          {conversation.lastMessage}
+                        </Typography>
+                        {conversation.unread > 0 && (
+                          <Badge
+                            badgeContent={conversation.unread}
+                            sx={{
+                              '& .MuiBadge-badge': {
+                                backgroundColor: '#FFD700',
+                                color: '#161513',
+                                fontWeight: 'bold',
+                                fontSize: '0.65rem',
+                              },
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
+                </Paper>
+              ))}
+            </Box>
+
+            {/* Bottom spacing for nav */}
+            <Box sx={{ height: '100px' }} />
+          </>
+        ) : (
+          // Chat View
+          <>
+            {/* Chat Header */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#161513',
+                p: 2,
+                justifyContent: 'space-between',
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton
+                  onClick={() => setSelectedConversation(null)}
+                  sx={{
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    color: '#FFD700',
+                    width: 40,
+                    height: 40,
+                  }}
+                >
+                  <ArrowBackIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+                <Avatar
+                  sx={{
+                    backgroundColor: '#FFD700',
+                    color: '#161513',
+                    width: 36,
+                    height: 36,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {selectedConversation.avatar}
+                </Avatar>
+                <Box>
+                  <Typography
+                    sx={{
+                      color: 'white',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {selectedConversation.name}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: '#b2afa3',
+                      fontSize: '0.75rem',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {selectedConversation.online ? 'Online' : 'Last seen recently'}
+                  </Typography>
+                </Box>
+              </Box>
+              <IconButton
+                sx={{
+                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                  color: '#FFD700',
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <MoreVertIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Box>
+
+            {/* Messages Area */}
+            <Box sx={{ flex: 1, p: 2, overflowY: 'auto', minHeight: 'calc(100vh - 160px)' }}>
+              {/* Sample Messages */}
+              {[
+                { id: 1, text: 'Hello! I saw your profile and I\'m interested in hiring you for a carpentry project.', sender: 'them', time: '10:25 AM' },
+                { id: 2, text: 'Hi! Thank you for reaching out. I\'d be happy to help. Could you tell me more about the project?', sender: 'me', time: '10:27 AM' },
+                { id: 3, text: 'We need custom kitchen cabinets installed. The project should take about a week. When can you start?', sender: 'them', time: '10:30 AM' },
+              ].map((message) => (
+                <Box
+                  key={message.id}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: message.sender === 'me' ? 'flex-end' : 'flex-start',
+                    mb: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      maxWidth: '75%',
+                      p: 1.5,
+                      borderRadius: '12px',
+                      backgroundColor: message.sender === 'me' ? '#FFD700' : '#35332c',
+                      color: message.sender === 'me' ? '#161513' : 'white',
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                      {message.text}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: '0.7rem',
+                        opacity: 0.7,
+                        textAlign: 'right',
+                      }}
+                    >
+                      {message.time}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Message Input */}
+            <Box
+              sx={{
+                position: 'sticky',
+                bottom: 0,
+                backgroundColor: '#161513',
+                p: 2,
+                borderTop: '1px solid #35332c',
+              }}
+            >
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <TextField
+                  fullWidth
+                  placeholder="Type a message..."
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#24231e',
+                      borderRadius: '20px',
+                      '& fieldset': { borderColor: '#35332c' },
+                      '&:hover fieldset': { borderColor: '#FFD700' },
+                      '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: 'white',
+                      fontSize: '0.875rem',
+                      py: 1,
+                    },
+                  }}
+                />
+                <IconButton
+                  sx={{
+                    backgroundColor: '#FFD700',
+                    color: '#161513',
+                    width: 40,
+                    height: 40,
+                    '&:hover': {
+                      backgroundColor: '#FFC000',
+                    },
+                  }}
+                >
+                  <SendIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Bottom spacing for mobile nav */}
+            <Box sx={{ height: '80px' }} />
+          </>
+        )}
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
