@@ -222,15 +222,15 @@ const InteractiveMap = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
+  
   return (
     <Box
-      sx={{
+        sx={{
         position: 'relative',
         height: '100%',
         width: '100%',
         borderRadius: 2,
-        overflow: 'hidden',
+          overflow: 'hidden',
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
         border: `1px solid ${theme.palette.divider}`,
       }}
@@ -310,7 +310,7 @@ const InteractiveMap = ({
                 <Tooltip title={`${item.title || item.name} - ${item.location.address}`}>
                   <IconButton
                     onClick={() => onMarkerClick(item)}
-                    sx={{
+              sx={{
                       background: viewType === 'jobs' ? theme.palette.primary.main : theme.palette.secondary.main,
                       color: 'white',
                       '&:hover': {
@@ -345,7 +345,7 @@ const InteractiveMap = ({
       {/* Loading Overlay */}
       {loading && (
         <Backdrop
-          sx={{
+                sx={{
             position: 'absolute',
             zIndex: 3,
             color: theme.palette.secondary.main,
@@ -355,15 +355,15 @@ const InteractiveMap = ({
         >
           <CircularProgress color="inherit" />
         </Backdrop>
-      )}
-    </Box>
+            )}
+          </Box>
   );
 };
 
 // Live Analytics Component
 const LiveAnalytics = ({ analytics, onClose }) => {
   const theme = useTheme();
-
+  
   return (
     <Paper
       sx={{
@@ -394,23 +394,23 @@ const LiveAnalytics = ({ analytics, onClose }) => {
         <Grid container spacing={2}>
           {Object.entries(analytics).map(([key, data]) => (
             <Grid item xs={6} key={key}>
-              <motion.div
+    <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <Card
-                  sx={{
+        sx={{
                     background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${data.color}11 100%)`,
                     border: `1px solid ${data.color}33`,
-                    borderRadius: 2,
+          borderRadius: 2,
                     p: 2,
                     textAlign: 'center',
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
                     <Box
-                      sx={{
+          sx={{
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
@@ -429,7 +429,7 @@ const LiveAnalytics = ({ analytics, onClose }) => {
                   </Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                     {data.value}
-                  </Typography>
+          </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {data.trend > 0 ? (
                       <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 16, mr: 0.5 }} />
@@ -441,8 +441,8 @@ const LiveAnalytics = ({ analytics, onClose }) => {
                       sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}
                     >
                       {Math.abs(data.trend)}%
-                    </Typography>
-                  </Box>
+          </Typography>
+        </Box>
                 </Card>
               </motion.div>
             </Grid>
@@ -468,7 +468,7 @@ const LiveAnalytics = ({ analytics, onClose }) => {
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                   {category.percentage}%
                 </Typography>
-              </Box>
+      </Box>
               <LinearProgress
                 variant="determinate"
                 value={category.percentage}
@@ -481,7 +481,7 @@ const LiveAnalytics = ({ analytics, onClose }) => {
                   },
                 }}
               />
-            </motion.div>
+    </motion.div>
           ))}
         </Box>
       </Box>
@@ -504,7 +504,7 @@ const SearchFilterPanel = ({
 }) => {
   const theme = useTheme();
   const [expandedFilters, setExpandedFilters] = useState(false);
-
+  
   return (
     <Paper
       sx={{
@@ -523,7 +523,7 @@ const SearchFilterPanel = ({
       <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
           Search & Filters
-        </Typography>
+      </Typography>
         
         {/* Search Bar */}
         <TextField
@@ -576,8 +576,8 @@ const SearchFilterPanel = ({
                   <Typography variant="caption" sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}>
                     {Math.abs(data.trend)}%
                   </Typography>
-                </Box>
-              </Card>
+      </Box>
+    </Card>
             </Grid>
           ))}
         </Grid>
@@ -800,7 +800,7 @@ const ProfessionalMapPage = () => {
 
   return (
     <Box
-      sx={{
+        sx={{ 
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
         position: 'relative',
@@ -808,7 +808,7 @@ const ProfessionalMapPage = () => {
     >
       {/* Header */}
       <Box
-        sx={{
+                sx={{ 
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           color: 'white',
           p: 2,
@@ -821,30 +821,30 @@ const ProfessionalMapPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ bgcolor: theme.palette.secondary.main, mr: 2 }}>
-                K
-              </Avatar>
-              <Box>
+                  K
+                </Avatar>
+                <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  Kelmah Professional Map
-                </Typography>
+                    Kelmah Professional Map
+                  </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Live tracking • {resultsCount} results found
-                </Typography>
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {/* Key Metrics */}
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Chip
+                  <Chip
                   label={`${mockMapData.jobs.length} Jobs`}
                   icon={<JobIcon />}
                   sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
                 />
-                <Chip
+                  <Chip
                   label={`${mockMapData.workers.length} Workers`}
                   icon={<WorkerIcon />}
-                  sx={{ 
+                    sx={{ 
                     background: viewType === 'workers' ? theme.palette.secondary.main : 'rgba(255,255,255,0.1)',
                     color: 'white'
                   }}
@@ -854,24 +854,24 @@ const ProfessionalMapPage = () => {
                   icon={<CheckCircleIcon />}
                   sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
                 />
-              </Box>
+            </Box>
 
               {/* View Type Toggle */}
-              <ToggleButtonGroup
+            <ToggleButtonGroup
                 value={viewType}
-                exclusive
+              exclusive
                 onChange={(e, newValue) => newValue && handleViewTypeChange(newValue)}
-                size="small"
+              size="small"
               >
                 <ToggleButton value="jobs" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
                   Jobs
                   <Badge badgeContent={mockMapData.jobs.length} color="secondary" sx={{ ml: 1 }} />
-                </ToggleButton>
+              </ToggleButton>
                 <ToggleButton value="workers" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
                   Workers
                   <Badge badgeContent={mockMapData.workers.length} color="secondary" sx={{ ml: 1 }} />
-                </ToggleButton>
-              </ToggleButtonGroup>
+              </ToggleButton>
+            </ToggleButtonGroup>
 
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -881,8 +881,8 @@ const ProfessionalMapPage = () => {
                 <IconButton sx={{ color: 'white' }}>
                   <FullscreenIcon />
                 </IconButton>
-              </Box>
             </Box>
+          </Box>
           </Box>
         </Container>
       </Box>
@@ -897,7 +897,7 @@ const ProfessionalMapPage = () => {
             onMarkerClick={handleMarkerClick}
             center={mapCenter}
             zoom={mapZoom}
-            loading={loading}
+                  loading={loading}
           />
 
           {/* Search and Filter Panel */}
@@ -923,19 +923,19 @@ const ProfessionalMapPage = () => {
           )}
 
           {/* Floating Action Button */}
-          <Fab
-            color="secondary"
+              <Fab
+                color="secondary"
             aria-label="add"
-            sx={{
-              position: 'absolute',
+                sx={{
+                  position: 'absolute',
               bottom: 16,
               right: 16,
               zIndex: 10,
             }}
           >
             <AddIcon />
-          </Fab>
-        </Box>
+              </Fab>
+                    </Box>
       </Container>
 
       {/* Selected Item Dialog */}
@@ -949,27 +949,27 @@ const ProfessionalMapPage = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h6">
               {selectedItem?.title || selectedItem?.name}
-            </Typography>
+                  </Typography>
             <IconButton onClick={() => setSelectedItem(null)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
         </DialogTitle>
         <DialogContent>
           {selectedItem && (
-            <Box>
+                              <Box>
               <Typography variant="body1" sx={{ mb: 2 }}>
                 {selectedItem.description || `${selectedItem.category} professional`}
-              </Typography>
+                                </Typography>
               <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 {selectedItem.skills?.map((skill) => (
                   <Chip key={skill} label={skill} size="small" />
                 ))}
-              </Box>
+                              </Box>
               <Typography variant="body2" color="text.secondary">
                 Location: {selectedItem.location.address}
-              </Typography>
-            </Box>
+                              </Typography>
+                            </Box>
           )}
         </DialogContent>
         <DialogActions>

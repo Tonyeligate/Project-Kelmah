@@ -335,7 +335,16 @@ class SchedulingService {
       );
 
       // Generate mock available time slots
-      const selectedDate = new Date(date);
+      // Validate date parameter
+      let selectedDate;
+      try {
+        selectedDate = new Date(date);
+        if (isNaN(selectedDate.getTime())) {
+          selectedDate = new Date(); // Fallback to current date
+        }
+      } catch (error) {
+        selectedDate = new Date(); // Fallback to current date
+      }
       const timeSlots = [];
 
       for (let hour = 8; hour <= 17; hour++) {
@@ -348,16 +357,26 @@ class SchedulingService {
 
           // Check if slot conflicts with existing appointments
           const hasConflict = mockAppointments.some((apt) => {
-            const aptStart = new Date(apt.startTime);
-            const aptEnd = new Date(apt.endTime);
-            const slotEnd = new Date(slotTime.getTime() + duration * 60000);
+            try {
+              const aptStart = new Date(apt.startTime);
+              const aptEnd = new Date(apt.endTime);
+              const slotEnd = new Date(slotTime.getTime() + duration * 60000);
+              
+              // Validate dates
+              if (isNaN(aptStart.getTime()) || isNaN(aptEnd.getTime()) || isNaN(slotEnd.getTime())) {
+                return false; // Skip invalid appointments
+              }
 
-            return (
-              apt.workerId === workerId &&
-              apt.status !== 'cancelled' &&
-              ((slotTime >= aptStart && slotTime < aptEnd) ||
-                (slotEnd > aptStart && slotEnd <= aptEnd))
-            );
+              return (
+                apt.workerId === workerId &&
+                apt.status !== 'cancelled' &&
+                ((slotTime >= aptStart && slotTime < aptEnd) ||
+                  (slotEnd > aptStart && slotEnd <= aptEnd))
+              );
+            } catch (error) {
+              console.warn('Error processing appointment date:', error);
+              return false; // Skip problematic appointments
+            }
           });
 
           if (!hasConflict) {

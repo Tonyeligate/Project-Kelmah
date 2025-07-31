@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Container,
+  Container, 
   Typography,
   Button,
-  Grid,
+  Grid, 
   CircularProgress,
   Card,
   CardMedia,
@@ -349,7 +349,7 @@ const HomePage = () => {
                       >
                         Welcome back, {user.firstName || user.username}!
                       </Typography>
-                      </motion.div>
+            </motion.div>
                     )}
                     <Typography
                       variant={isSm ? 'h3' : 'h1'}
@@ -399,7 +399,7 @@ const HomePage = () => {
                       plumbing and electrical work to carpentry and construction
                       - find the right professional for every job.
                     </Typography>
-                    <motion.div
+                <motion.div
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
@@ -542,8 +542,8 @@ const HomePage = () => {
                       )}
                     </Box>
                     </motion.div>
-                  </motion.div>
-                </Grid>
+                </motion.div>
+          </Grid>
                 <Grid item xs={12} md={4}>
                   <motion.div
                     initial={{ opacity: 0, x: 50 }}
@@ -551,12 +551,12 @@ const HomePage = () => {
                     transition={{ duration: 1, delay: 0.4 }}
                   >
                     <Box sx={{ mt: { xs: 4, md: 8 } }}>
-                      {features.map((feature, index) => (
-                        <motion.div
+            {features.map((feature, index) => (
+                <motion.div
                           key={feature.title}
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
                           transition={{ duration: 0.6, delay: index * 0.2 }}
                         >
                           <FeatureBox>
@@ -578,12 +578,12 @@ const HomePage = () => {
                             </Typography>
                             </Box>
                           </FeatureBox>
-                        </motion.div>
-                      ))}
+                </motion.div>
+            ))}
                     </Box>
                   </motion.div>
                 </Grid>
-              </Grid>
+          </Grid>
             </Box>
 
             {/* Enhanced scroll indicator */}
@@ -646,10 +646,10 @@ const HomePage = () => {
             px: { xs: 2, sm: 3, md: 4, lg: 6 },
             boxSizing: 'border-box',
           }}>
-              <motion.div
+                <motion.div
                 initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
               >
               <Typography
@@ -700,46 +700,46 @@ const HomePage = () => {
                           </TradeIcon>
                         </Box>
                         <ServiceCardContent>
-                          <Typography
+                      <Typography 
                             gutterBottom
-                            variant="h5"
+                        variant="h5" 
                             component="div"
                             color="white"
                             sx={{ fontWeight: 700, mb: 2 }}
-                          >
-                            {service.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
+                      >
+                        {service.title}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
                             color="rgba(255,255,255,0.85)"
                             sx={{ mb: 2, lineHeight: 1.5 }}
-                          >
-                            {service.description}
-                          </Typography>
+                      >
+                        {service.description}
+                      </Typography>
                           <Box
                             sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
                           >
-                            {service.skills.map((skill) => (
+                        {service.skills.map((skill) => (
                               <Chip
-                                key={skill}
-                                label={skill}
-                                size="small"
+                            key={skill} 
+                            label={skill} 
+                            size="small"
                                 sx={{
                                   backgroundColor: 'rgba(255,215,0,0.2)',
                                   color: '#FFD700',
                                   fontSize: '0.75rem',
                                   fontWeight: 600,
                                 }}
-                              />
-                            ))}
+                          />
+                        ))}
                           </Box>
                         </ServiceCardContent>
-                      </ServiceCard>
-                    </motion.div>
+                  </ServiceCard>
+                </motion.div>
                   </Grid>
-                ))}
-              </Grid>
-
+            ))}
+          </Grid>
+          
               {/* Call-to-action section */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -748,16 +748,16 @@ const HomePage = () => {
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
                 <Box sx={{ textAlign: 'center', mt: 12 }}>
-                  <Typography
+            <Typography 
                     variant="h4"
-                    sx={{
+              sx={{
                       color: 'white',
                       mb: 3,
                       fontWeight: 700,
-                    }}
-                  >
-                    Ready to Get Started?
-                  </Typography>
+              }}
+            >
+              Ready to Get Started?
+            </Typography>
                   <Typography
                     variant="h6"
                     sx={{
@@ -769,7 +769,7 @@ const HomePage = () => {
                   >
                     Join thousands of skilled workers and satisfied customers on
                     Ghana's leading trade platform
-                  </Typography>
+            </Typography>
                   <Box
                     sx={{
                       display: 'flex',
@@ -823,7 +823,7 @@ const HomePage = () => {
               </motion.div>
             </Box>
           </Section>
-        </Box>
+      </Box>
       </GestureControl>
     </>
   );

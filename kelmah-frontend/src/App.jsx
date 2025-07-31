@@ -77,7 +77,7 @@ const AppContent = () => {
     const checkAuth = () => {
       // Force disable development mock authentication to use real auth
       const isDevelopment = false; // Disabled to use real authentication
-
+      
       if (isDevelopment) {
         // Skip mock auth after manual logout
         if (sessionStorage.getItem('dev-logout') === 'true') {
@@ -224,15 +224,15 @@ const AppContent = () => {
   return (
     <ContractProvider>
       <Layout toggleTheme={toggleTheme} mode={mode}>
-        <Routes>
+          <Routes>
           {/* Public routes */}
           {publicRoutes}
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-          <Route
+            <Route 
             path="/mfa/setup"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
@@ -240,11 +240,11 @@ const AppContent = () => {
               >
                 <MfaSetupPage />
               </ProtectedRoute>
-            }
-          />
-          <Route
+              } 
+            />
+            <Route 
             path="/profile"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
@@ -252,11 +252,11 @@ const AppContent = () => {
               >
                 <ProfilePage />
               </ProtectedRoute>
-            }
-          />
-          <Route
+              } 
+            />
+            <Route 
             path="/settings"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
@@ -277,9 +277,9 @@ const AppContent = () => {
           </>
 
           {/* Admin routes */}
-          <Route
+            <Route 
             path="/admin/skills"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated && hasRole(user, 'admin')}
                 redirectPath="/login"
@@ -291,7 +291,7 @@ const AppContent = () => {
           />
 
           {/* Contract routes */}
-          <Route
+            <Route 
             path="/contracts"
             element={
               <ProtectedRoute
@@ -304,128 +304,128 @@ const AppContent = () => {
             }
           />
 
-          <Route
+            <Route 
             path="/contracts/create"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
                 loading={loading}
               >
                 <CreateContractPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route
+            <Route 
             path="/contracts/:contractId"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
                 loading={loading}
               >
                 <ContractDetailsPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
           {/* Common protected routes */}
-          <Route
+            <Route 
             path="/notifications"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
                 loading={loading}
               >
                 <NotificationsPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route
+            <Route 
             path="/messages"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
                 loading={loading}
               >
                 <MessagingPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
           {/* Worker payment routes */}
-          <Route
+            <Route 
             path="/worker/payment"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated && hasRole(user, 'worker')}
                 redirectPath="/login"
                 loading={loading}
               >
                 <PaymentCenterPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route
+            <Route 
             path="/worker/wallet"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated && hasRole(user, 'worker')}
                 redirectPath="/login"
                 loading={loading}
               >
                 <WalletPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route
+            <Route 
             path="/payment/methods"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
                 loading={loading}
               >
                 <PaymentMethodsPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route
+            <Route 
             path="/escrows/:escrowId"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated && hasRole(user, 'worker')}
                 redirectPath="/login"
                 loading={loading}
               >
                 <EscrowDetailsPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
-          <Route
+            <Route 
             path="/payment/bill"
-            element={
+              element={
               <ProtectedRoute
                 isAllowed={isAuthenticated}
                 redirectPath="/login"
                 loading={loading}
               >
                 <BillPage />
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              } 
+            />
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          </Routes>
       </Layout>
     </ContractProvider>
   );
@@ -435,7 +435,7 @@ const AppContent = () => {
 function App() {
   return (
     <KelmahThemeProvider>
-      <AppContent />
+        <AppContent />
     </KelmahThemeProvider>
   );
 }

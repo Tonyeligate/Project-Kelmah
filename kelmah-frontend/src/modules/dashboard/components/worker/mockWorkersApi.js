@@ -118,7 +118,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: 'https://via.placeholder.com/150x150/1a1a1a/FFD700?text=Worker',
+      profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Ik0zNSAxMjBDMzUgMTA2LjE5MyA0Ni4xOTMgOTUgNjAgOTVIOTBDMTAzLjgwNyA5NSAxMTUgMTA2LjE5MyAxMTUgMTIwVjEzNUgzNVYxMjBaIiBmaWxsPSIjRkZENzAwIi8+CjwvdXZnPgo=',
     });
   }
 
@@ -133,7 +133,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: 'https://via.placeholder.com/150x150/1a1a1a/FFD700?text=Worker',
+      profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Ik0zNSAxMjBDMzUgMTA2LjE5MyA0Ni4xOTMgOTUgNjAgOTVIOTBDMTAzLjgwNyA5NSAxMTUgMTA2LjE5MyAxMTUgMTIwVjEzNUgzNVYxMjBaIiBmaWxsPSIjRkZENzAwIi8+CjwvdXZnPgo=',
     });
   }
 }
