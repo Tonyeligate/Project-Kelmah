@@ -25,8 +25,8 @@ import MobileBottomNav from './MobileBottomNav';
 const Layout = ({ children, toggleTheme, mode }) => {
   const location = useLocation();
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md')); // Use actual breakpoint for layout
-  const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md')); 
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
   const isDashboardPage =
     location.pathname.includes('/dashboard') ||
     location.pathname.startsWith('/worker') ||
@@ -34,32 +34,17 @@ const Layout = ({ children, toggleTheme, mode }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 
-  // Debug logging
-  console.log('🔍 Layout Debug:', {
-    isDashboardPage,
-    isActualMobile,
-    isMdUp,
-    pathname: location.pathname,
-    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown'
-  });
-
   // Dashboard layout
   if (isDashboardPage) {
-    // FORCE MOBILE LAYOUT FOR TESTING - Remove after perfect
-    const forceMobileLayout = true;
-    
-    // On actual mobile screens, render children directly (no sidebar/wrapper)
-    if (isActualMobile || forceMobileLayout) {
-      console.log('✅ Layout: Rendering mobile dashboard layout');
+    // On mobile, render children directly (no sidebar)
+    if (isActualMobile) {
       return (
         <Box sx={{ 
           width: '100%', 
           minHeight: '100vh',
           position: 'relative',
-          backgroundColor: '#161513', // Match template background
         }}>
           {children}
-          <MobileBottomNav />
         </Box>
       );
     }

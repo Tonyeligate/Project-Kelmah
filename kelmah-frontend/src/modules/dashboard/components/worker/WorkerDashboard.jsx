@@ -452,19 +452,8 @@ const EnhancedWorkerDashboard = () => {
     );
   }
 
-  // Debug logging
-  console.log('🔍 WorkerDashboard Debug:', {
-    isActualMobile,
-    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown',
-    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
-  });
-
-  // FORCE MOBILE DESIGN FOR TESTING - Remove after debugging
-  const forceMobile = true;
-  
   // Mobile-first design matching the provided template
-  if (isActualMobile || forceMobile) {
-    console.log('✅ Rendering mobile design (isActualMobile:', isActualMobile, ', forceMobile:', forceMobile, ')');
+  if (isActualMobile) {
     return (
       <Box
         sx={{
