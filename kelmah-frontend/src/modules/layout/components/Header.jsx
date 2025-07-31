@@ -294,7 +294,7 @@ const Header = ({ toggleTheme, mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAuthenticated, loading, isInitialized } = useAuth();
-  const isMobile = false; // Force desktop view on all devices
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // SportyBet-style responsive design
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);

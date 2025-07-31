@@ -56,7 +56,15 @@ const Section = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '100vw',
   },
-  // Ensure consistent desktop layout on all devices
+  // SportyBet-style mobile responsive adjustments
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    maxWidth: '100vw',
+    padding: 0,
+    minHeight: '100vh',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(4),
+  },
   // Tablet adjustments
   [theme.breakpoints.between('sm', 'md')]: {
     minHeight: 'auto',
@@ -99,7 +107,15 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: 'bold',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-  // Desktop styling for all devices
+  // SportyBet-style responsive button styling
+  [theme.breakpoints.down('sm')]: {
+    padding: `${theme.spacing(1.8)} ${theme.spacing(3.5)}`,
+    fontSize: '1.1rem',
+    borderRadius: theme.spacing(1.5),
+    minHeight: 52,
+    fontWeight: 700,
+    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+  },
   '&:hover': {
     transform: 'translateY(-3px)',
     boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
@@ -189,7 +205,7 @@ const TradeIcon = styled(Box)(({ theme }) => ({
 const HomePage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isSm = false; // Force desktop layout on all devices
+  const isSm = useMediaQuery(theme.breakpoints.down('sm')); // Enable mobile responsive design like SportyBet
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState({
     isReachable: true,
@@ -349,13 +365,14 @@ const HomePage = () => {
                     <Typography
                       variant={isSm ? 'h3' : 'h1'}
                       sx={{
-                        fontSize: { xs: '2.5rem', sm: '3.8rem', md: '5rem' },
+                        fontSize: { xs: '2.8rem', sm: '3.8rem', md: '5rem' },
                         fontWeight: 800,
                         color: '#FFFFFF',
-                        mb: { xs: 2, sm: 3 },
+                        mb: { xs: 2.5, sm: 3 },
                         textShadow: '3px 3px 6px rgba(0,0,0,0.9), 1px 1px 3px rgba(0,0,0,0.8)',
-                        lineHeight: { xs: 1.2, sm: 1.1 },
+                        lineHeight: { xs: 1.3, sm: 1.1 },
                         textAlign: { xs: 'center', md: 'left' },
+                        letterSpacing: { xs: '-0.5px', md: '-1px' },
                       }}
                     >
                       Ghana's Premier
@@ -384,9 +401,9 @@ const HomePage = () => {
                         fontWeight: 500,
                         maxWidth: { xs: '100%', md: '85%' },
                         lineHeight: 1.6,
-                        fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem' },
+                        fontSize: { xs: '1.25rem', sm: '1.3rem', md: '1.4rem' },
                         textAlign: { xs: 'center', md: 'left' },
-                        px: { xs: 1, sm: 0 },
+                        px: { xs: 2, sm: 0 },
                         textShadow: '2px 2px 4px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
                       }}
                     >
@@ -403,11 +420,12 @@ const HomePage = () => {
                       sx={{
                         display: 'flex',
                         flexDirection: isSm ? 'column' : 'row',
-                        gap: { xs: 2.5, sm: 3 },
-                        mt: { xs: 4, sm: 5 },
-                        alignItems: { xs: 'center', md: 'flex-start' },
+                        gap: { xs: 3, sm: 3 },
+                        mt: { xs: 4.5, sm: 5 },
+                        alignItems: { xs: 'stretch', md: 'flex-start' },
                         justifyContent: { xs: 'center', md: 'flex-start' },
                         width: '100%',
+                        px: { xs: 2, sm: 0 },
                       }}
                       >
                       {!user ? (

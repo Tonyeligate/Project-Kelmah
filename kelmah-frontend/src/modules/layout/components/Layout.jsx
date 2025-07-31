@@ -25,7 +25,7 @@ import MobileBottomNav from './MobileBottomNav';
 const Layout = ({ children, toggleTheme, mode }) => {
   const location = useLocation();
   const theme = useTheme();
-  const isMdUp = true; // Force desktop layout on all devices
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md')); // SportyBet-style responsive breakpoints
   const isDashboardPage =
     location.pathname.includes('/dashboard') ||
     location.pathname.startsWith('/worker') ||
