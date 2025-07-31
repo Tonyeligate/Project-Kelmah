@@ -49,15 +49,15 @@ import { BRAND_COLORS } from '../../../theme';
 // Enhanced Styled Components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background: theme.palette.mode === 'dark' 
-    ? `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
+    ? `linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%)`
+    : `linear-gradient(135deg, rgba(255, 215, 0, 0.95) 0%, rgba(255, 193, 7, 0.95) 100%)`,
   backdropFilter: 'blur(20px)',
   borderBottom: theme.palette.mode === 'dark'
-    ? `2px solid rgba(255, 215, 0, 0.3)`
-    : `2px solid rgba(0, 0, 0, 0.2)`,
+    ? `2px solid rgba(255, 215, 0, 0.5)`
+    : `2px solid rgba(0, 0, 0, 0.3)`,
   boxShadow: theme.palette.mode === 'dark'
-    ? '0 8px 32px rgba(0, 0, 0, 0.8)'
-    : '0 4px 20px rgba(0, 0, 0, 0.15)',
+    ? '0 8px 32px rgba(0, 0, 0, 0.9)'
+    : '0 6px 25px rgba(0, 0, 0, 0.25)',
   position: 'sticky',
   top: 0,
   zIndex: 1100,

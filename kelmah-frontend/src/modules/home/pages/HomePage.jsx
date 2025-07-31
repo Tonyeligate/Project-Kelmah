@@ -87,7 +87,7 @@ const HeroBackgroundImage = styled(Box)(({ theme }) => ({
     zIndex: 1,
     pointerEvents: 'none',
     background:
-      'linear-gradient(90deg, #000 0%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.4) 35%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0.85) 85%, #000 100%)',
+      'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.2) 35%, rgba(0,0,0,0.2) 65%, rgba(0,0,0,0.4) 85%, rgba(0,0,0,0.6) 100%)',
   },
 }));
 
@@ -351,9 +351,9 @@ const HomePage = () => {
                       sx={{
                         fontSize: { xs: '2.5rem', sm: '3.8rem', md: '5rem' },
                         fontWeight: 800,
-                        color: theme.palette.secondary.main,
+                        color: '#FFFFFF',
                         mb: { xs: 2, sm: 3 },
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                        textShadow: '3px 3px 6px rgba(0,0,0,0.9), 1px 1px 3px rgba(0,0,0,0.8)',
                         lineHeight: { xs: 1.2, sm: 1.1 },
                         textAlign: { xs: 'center', md: 'left' },
                       }}
@@ -379,14 +379,15 @@ const HomePage = () => {
                     <Typography
                       variant="h5"
                       sx={{
-                        color: 'rgba(255, 255, 255, 0.95)',
+                        color: '#FFFFFF',
                         mb: { xs: 3, sm: 4 },
-                        fontWeight: 400,
+                        fontWeight: 500,
                         maxWidth: { xs: '100%', md: '85%' },
-                        lineHeight: 1.5,
-                        fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
+                        lineHeight: 1.6,
+                        fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem' },
                         textAlign: { xs: 'center', md: 'left' },
                         px: { xs: 1, sm: 0 },
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
                       }}
                     >
                       Connect with verified skilled workers across Ghana. From
@@ -422,9 +423,13 @@ const HomePage = () => {
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
+                                boxShadow: '0 6px 20px rgba(255, 215, 0, 0.5)',
+                                border: '2px solid rgba(255, 215, 0, 0.8)',
                               '&:hover': {
                                   background:
                                     'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                                  boxShadow: '0 8px 25px rgba(255, 215, 0, 0.7)',
+                                  transform: 'translateY(-2px)',
                               },
                             }}
                             fullWidth={isSm}
@@ -443,15 +448,18 @@ const HomePage = () => {
                                 fontSize: '1.2rem',
                                 px: 5,
                                 py: 2,
-                                textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                                boxShadow: '0 4px 20px rgba(255,215,0,0.3)',
+                                textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
+                                boxShadow: '0 6px 20px rgba(255,215,0,0.5)',
+                                background: 'rgba(255, 215, 0, 0.1)',
+                                backdropFilter: 'blur(10px)',
                               '&:hover': {
                                 borderColor: '#FFC000',
                                 color: '#000',
                                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                   borderWidth: 3,
                                   textShadow: 'none',
-                                  boxShadow: '0 6px 25px rgba(255,215,0,0.4)',
+                                  boxShadow: '0 8px 30px rgba(255,215,0,0.6)',
+                                  transform: 'translateY(-2px)',
                               },
                             }}
                             fullWidth={isSm}
