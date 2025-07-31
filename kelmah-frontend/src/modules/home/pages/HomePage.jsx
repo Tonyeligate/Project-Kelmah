@@ -56,18 +56,7 @@ const Section = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '100vw',
   },
-  // Mobile specific adjustments
-  [theme.breakpoints.down('sm')]: {
-    width: '100%',
-    maxWidth: '100vw',
-    padding: 0,
-    minHeight: '100vh', // Full height on mobile for better experience
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(4),
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // Ensure consistent desktop layout on all devices
   // Tablet adjustments
   [theme.breakpoints.between('sm', 'md')]: {
     minHeight: 'auto',
@@ -110,20 +99,11 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: 'bold',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-  [theme.breakpoints.down('sm')]: {
-    padding: `${theme.spacing(1.5)} ${theme.spacing(3)}`,
-    fontSize: '1rem',
-    borderRadius: theme.spacing(1.5),
-    minHeight: 48,
-    fontWeight: 700,
-  },
+  // Desktop styling for all devices
   '&:hover': {
     transform: 'translateY(-3px)',
     boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
-    [theme.breakpoints.down('sm')]: {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
-    },
+    // Consistent hover effects for all devices
   },
 }));
 
@@ -209,7 +189,7 @@ const TradeIcon = styled(Box)(({ theme }) => ({
 const HomePage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSm = false; // Force desktop layout on all devices
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState({
     isReachable: true,

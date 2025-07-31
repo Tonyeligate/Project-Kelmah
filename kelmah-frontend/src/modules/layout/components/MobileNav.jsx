@@ -110,8 +110,8 @@ const MobileNav = ({ open, onClose }) => {
   const handleLogout = async () => {
     onClose();
     try {
-      sessionStorage.setItem('dev-logout', 'true');
-      dispatch(logoutUser());
+    sessionStorage.setItem('dev-logout', 'true');
+    dispatch(logoutUser());
       await logout();
       navigate('/');
     } catch (error) {
@@ -216,14 +216,14 @@ const MobileNav = ({ open, onClose }) => {
           >
             Kelmah
           </Typography>
-          <IconButton 
+      <IconButton
             onClick={onClose}
             sx={{
               color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
             }}
           >
             <CloseIcon />
-          </IconButton>
+      </IconButton>
         </Box>
 
         {/* Profile Section */}
