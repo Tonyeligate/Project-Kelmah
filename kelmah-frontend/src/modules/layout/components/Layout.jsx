@@ -36,7 +36,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
 
   // Dashboard layout
   if (isDashboardPage) {
-    // On mobile, render children directly (no sidebar)
+    // On mobile, render children directly (no sidebar) + bottom nav
     if (isActualMobile) {
       return (
         <Box sx={{ 
@@ -45,6 +45,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
           position: 'relative',
         }}>
           {children}
+          <MobileBottomNav />
         </Box>
       );
     }

@@ -43,6 +43,7 @@ import {
   Schedule as ScheduleIcon,
   TrendingFlat as TrendingFlatIcon,
   Refresh as RefreshIcon,
+  Menu as MenuIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
@@ -474,8 +475,25 @@ const EnhancedWorkerDashboard = () => {
             p: 2,
             pb: 1,
             justifyContent: 'space-between',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           }}
         >
+          <Box sx={{ width: 48, display: 'flex', justifyContent: 'flex-start' }}>
+            <IconButton
+              sx={{
+                backgroundColor: 'transparent',
+                color: 'white',
+                width: 48,
+                height: 48,
+                p: 0,
+              }}
+            >
+              <MenuIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+          </Box>
           <Typography
             variant="h6"
             sx={{
@@ -485,7 +503,6 @@ const EnhancedWorkerDashboard = () => {
               letterSpacing: '-0.015em',
               flex: 1,
               textAlign: 'center',
-              pl: 6,
             }}
           >
             Home
