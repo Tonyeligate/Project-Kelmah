@@ -95,6 +95,12 @@ const LogoIcon = styled(Box)(({ theme }) => ({
     : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   position: 'relative',
   overflow: 'hidden',
+  [theme.breakpoints.down('sm')]: {
+    width: 40,
+    height: 40,
+    marginRight: theme.spacing(1),
+    fontSize: '1.2rem',
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -140,6 +146,9 @@ const TaglineText = styled(Typography)(({ theme }) => ({
   fontWeight: 500,
   marginTop: '-2px',
   letterSpacing: '0.5px',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '0.65rem',
+  },
   [theme.breakpoints.down('sm')]: {
     display: 'none',
   },
@@ -155,6 +164,16 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
     : `1px solid rgba(0, 0, 0, 0.2)`,
   margin: theme.spacing(0, 0.5),
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  [theme.breakpoints.down('sm')]: {
+    margin: theme.spacing(0, 0.25),
+    padding: theme.spacing(1),
+    minWidth: 'auto',
+    width: 40,
+    height: 40,
+    '& .MuiSvgIcon-root': {
+      fontSize: '1.2rem',
+    },
+  },
   '&:hover': {
     backgroundColor: theme.palette.mode === 'dark'
       ? 'rgba(255, 215, 0, 0.2)'
@@ -181,6 +200,14 @@ const UserAvatar = styled(Avatar)(({ theme }) => ({
     : `2px solid rgba(0, 0, 0, 0.3)`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
+  [theme.breakpoints.down('sm')]: {
+    width: 36,
+    height: 36,
+    fontSize: '0.9rem',
+    border: theme.palette.mode === 'dark'
+      ? `1.5px solid rgba(255, 215, 0, 0.3)`
+      : `1.5px solid rgba(0, 0, 0, 0.3)`,
+  },
   '&:hover': {
     transform: 'scale(1.1)',
     border: theme.palette.mode === 'dark'
@@ -212,6 +239,11 @@ const AuthButton = styled(Button)(({ theme, variant }) => ({
   padding: '8px 20px',
   fontSize: '0.9rem',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  [theme.breakpoints.down('sm')]: {
+    padding: '6px 12px',
+    fontSize: '0.8rem',
+    minWidth: 'auto',
+  },
   ...(variant === 'outlined' && {
     borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
     color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
@@ -572,16 +604,29 @@ const Header = ({ toggleTheme, mode }) => {
 
   return (
     <StyledAppBar position="static" elevation={0}>
-      <Toolbar sx={{ minHeight: { xs: 70, sm: 80 }, px: { xs: 2, sm: 3 } }}>
+      <Toolbar sx={{ 
+        minHeight: { xs: 64, sm: 72, md: 80 }, 
+        px: { xs: 1.5, sm: 2.5, md: 3 },
+        py: { xs: 1, sm: 1.5 },
+        gap: { xs: 1, sm: 1.5 }
+      }}>
         {/* Mobile Menu Button */}
-        {isMobile && isAuthenticated && (
+        {isMobile && isAuthenticated() && (
           <ActionButton
             edge="start"
             aria-label="menu"
             onClick={() => setMobileMenuOpen(true)}
-            sx={{ mr: 1 }}
+            sx={{ 
+              mr: { xs: 0.5, sm: 1 },
+              p: { xs: 1, sm: 1.5 },
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.15)'
+                  : 'rgba(0, 0, 0, 0.15)',
+              }
+            }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />
           </ActionButton>
         )}
 
@@ -608,7 +653,12 @@ const Header = ({ toggleTheme, mode }) => {
         {!isMobile && <DesktopNav />}
 
         {/* Action Buttons */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: { xs: 0.25, sm: 0.5, md: 1 },
+          ml: 'auto'
+        }}>
           {/* Theme Toggle */}
           <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} arrow>
             <ActionButton onClick={toggleTheme}>

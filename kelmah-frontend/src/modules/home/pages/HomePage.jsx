@@ -61,9 +61,12 @@ const Section = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '100vw',
     padding: 0,
-    minHeight: 'auto', // Allow natural height on mobile
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    minHeight: '100vh', // Full height on mobile for better experience
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(4),
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   // Tablet adjustments
   [theme.breakpoints.between('sm', 'md')]: {
@@ -107,9 +110,20 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: 'bold',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+  [theme.breakpoints.down('sm')]: {
+    padding: `${theme.spacing(1.5)} ${theme.spacing(3)}`,
+    fontSize: '1rem',
+    borderRadius: theme.spacing(1.5),
+    minHeight: 48,
+    fontWeight: 700,
+  },
   '&:hover': {
     transform: 'translateY(-3px)',
     boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
+    [theme.breakpoints.down('sm')]: {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+    },
   },
 }));
 
@@ -323,7 +337,8 @@ const HomePage = () => {
               zIndex: 1, 
               width: '100%',
               maxWidth: '100vw',
-              px: { xs: 2, sm: 3, md: 4, lg: 6 },
+              px: { xs: 3, sm: 4, md: 5, lg: 6 },
+              py: { xs: 2, sm: 3 },
               boxSizing: 'border-box',
             }}>
               <Grid container spacing={4}>
@@ -352,14 +367,15 @@ const HomePage = () => {
                       </motion.div>
                     )}
                     <Typography
-                      variant={isSm ? 'h4' : 'h1'}
+                      variant={isSm ? 'h3' : 'h1'}
                       sx={{
-                        fontSize: { xs: '2.2rem', sm: '3.8rem', md: '5rem' },
+                        fontSize: { xs: '2.5rem', sm: '3.8rem', md: '5rem' },
                         fontWeight: 800,
                         color: theme.palette.secondary.main,
-                        mb: 3,
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                        lineHeight: 1.1,
+                        mb: { xs: 2, sm: 3 },
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                        lineHeight: { xs: 1.2, sm: 1.1 },
+                        textAlign: { xs: 'center', md: 'left' },
                       }}
                     >
                       Ghana's Premier
@@ -384,11 +400,13 @@ const HomePage = () => {
                       variant="h5"
                       sx={{
                         color: 'rgba(255, 255, 255, 0.95)',
-                        mb: 4,
+                        mb: { xs: 3, sm: 4 },
                         fontWeight: 400,
-                        maxWidth: '85%',
-                        lineHeight: 1.4,
-                        fontSize: { xs: '1.1rem', md: '1.3rem' },
+                        maxWidth: { xs: '100%', md: '85%' },
+                        lineHeight: 1.5,
+                        fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.3rem' },
+                        textAlign: { xs: 'center', md: 'left' },
+                        px: { xs: 1, sm: 0 },
                       }}
                     >
                       Connect with verified skilled workers across Ghana. From
@@ -400,14 +418,17 @@ const HomePage = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                    <Box
+                                        <Box
                       sx={{
                         display: 'flex',
                         flexDirection: isSm ? 'column' : 'row',
-                          gap: isSm ? 2 : 3,
-                          mt: 5,
+                        gap: { xs: 2.5, sm: 3 },
+                        mt: { xs: 4, sm: 5 },
+                        alignItems: { xs: 'center', md: 'flex-start' },
+                        justifyContent: { xs: 'center', md: 'flex-start' },
+                        width: '100%',
                       }}
-                    >
+                      >
                       {!user ? (
                         <>
                           <StyledButton
