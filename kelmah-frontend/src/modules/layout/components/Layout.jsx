@@ -34,10 +34,20 @@ const Layout = ({ children, toggleTheme, mode }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 
+  // Debug logging
+  console.log('🔍 Layout Debug:', {
+    isDashboardPage,
+    isActualMobile,
+    isMdUp,
+    pathname: location.pathname,
+    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown'
+  });
+
   // Dashboard layout
   if (isDashboardPage) {
     // On actual mobile screens, render children directly (no sidebar/wrapper)
     if (isActualMobile) {
+      console.log('✅ Layout: Rendering mobile dashboard layout');
       return (
         <Box sx={{ 
           width: '100%', 
