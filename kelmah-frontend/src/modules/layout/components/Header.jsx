@@ -96,10 +96,17 @@ const LogoIcon = styled(Box)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    width: 40,
-    height: 40,
-    marginRight: theme.spacing(1),
-    fontSize: '1.2rem',
+    width: 36,
+    height: 36,
+    marginRight: theme.spacing(0.5),
+    fontSize: '1.1rem',
+  },
+  // SportyBet-style mobile optimization
+  '@media (max-width: 768px)': {
+    width: 32,
+    height: 32,
+    marginRight: 4,
+    fontSize: '1rem',
   },
   '&::before': {
     content: '""',
@@ -134,7 +141,12 @@ const BrandText = styled(Typography)(({ theme }) => ({
     : '0 2px 10px rgba(0, 0, 0, 0.2)',
   letterSpacing: '-0.02em',
   [theme.breakpoints.down('sm')]: {
-    fontSize: '1.5rem',
+    fontSize: '1.4rem',
+  },
+  // SportyBet-style mobile brand optimization
+  '@media (max-width: 768px)': {
+    fontSize: '1.2rem',
+    fontWeight: 700,
   },
 }));
 
@@ -294,7 +306,7 @@ const Header = ({ toggleTheme, mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAuthenticated, loading, isInitialized } = useAuth();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // SportyBet-style responsive design
+  const isMobile = false; // Force desktop view on all devices
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
@@ -605,10 +617,16 @@ const Header = ({ toggleTheme, mode }) => {
   return (
     <StyledAppBar position="static" elevation={0}>
       <Toolbar sx={{ 
-        minHeight: { xs: 64, sm: 72, md: 80 }, 
-        px: { xs: 1.5, sm: 2.5, md: 3 },
-        py: { xs: 1, sm: 1.5 },
-        gap: { xs: 1, sm: 1.5 }
+        minHeight: { xs: 56, sm: 64, md: 72 }, 
+        px: { xs: 1, sm: 2, md: 3 },
+        py: { xs: 0.5, sm: 1 },
+        gap: { xs: 0.5, sm: 1 },
+        // SportyBet-style compact mobile header
+        '@media (max-width: 768px)': {
+          minHeight: '52px',
+          px: 1,
+          py: 0.5,
+        }
       }}>
         {/* Mobile Menu Button */}
         {isMobile && isAuthenticated() && (

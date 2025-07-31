@@ -264,12 +264,15 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* Mobile-specific scroll improvements */
+/* SportyBet-inspired Mobile Optimizations */
 @media (max-width: 768px) {
   html, body {
-    /* Improve mobile scrolling performance */
+    /* Improve mobile scrolling performance like SportyBet */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    /* Better text rendering on mobile */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
   
   /* Prevent horizontal scroll on mobile */
@@ -286,6 +289,9 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
   body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
+    /* SportyBet-style mobile optimization */
+    font-size: 14px;
+    line-height: 1.4;
   }
   
   #root {
@@ -298,6 +304,23 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
     overflow-x: hidden;
+  }
+  
+  /* SportyBet-style touch targets */
+  button, .MuiButton-root {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    touch-action: manipulation;
+  }
+  
+  /* Better mobile interaction */
+  .MuiIconButton-root {
+    padding: 12px !important;
+  }
+  
+  /* Improved mobile typography */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2 !important;
   }
 }
 
