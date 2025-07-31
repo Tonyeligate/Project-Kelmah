@@ -630,6 +630,109 @@ function WorkerProfile() {
           </Box>
         )}
 
+        {/* Mobile Wallet Section for Owner */}
+        {isActualMobile && isOwner && (
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                fontSize: '1.125rem',
+                fontWeight: 'bold',
+                letterSpacing: '-0.015em',
+                mb: 2,
+              }}
+            >
+              Wallet & Payments
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    borderRadius: '12px',
+                  }}
+                >
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+                          Wallet Balance
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: '1.125rem',
+                            fontWeight: 'bold',
+                            color: theme.palette.primary.main,
+                          }}
+                        >
+                          ${stats.wallet_balance || '1,200'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+                          In Escrow
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: '1.125rem',
+                            fontWeight: 'bold',
+                            color: '#ff9800',
+                          }}
+                        >
+                          ${stats.in_escrow || '800'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+                          Pending Payments
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: '1.125rem',
+                            fontWeight: 'bold',
+                            color: '#2196f3',
+                          }}
+                        >
+                          ${stats.pending_payments || '400'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            borderRadius: '16px',
+                            px: 2,
+                            py: 0.5,
+                            textTransform: 'none',
+                            '&:hover': {
+                              backgroundColor: theme.palette.primary.dark,
+                            },
+                          }}
+                        >
+                          Withdraw
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+
         {/* Regular Professional Metrics */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={6} md={3}>
