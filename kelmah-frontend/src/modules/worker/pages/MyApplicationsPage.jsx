@@ -26,6 +26,7 @@ import {
   TextField,
   Grid,
   Stack,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -38,11 +39,15 @@ import {
   AccessTime as AccessTimeIcon,
   Business as BusinessIcon,
   Person as PersonIcon,
+  ArrowBack as ArrowBackIcon,
+  FilterList as FilterListIcon,
 } from '@mui/icons-material';
 import applicationsApi from '../services/applicationsApi';
 import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 const MyApplicationsPage = () => {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
@@ -142,6 +147,300 @@ const MyApplicationsPage = () => {
         };
     }
   };
+
+  // Mobile detection
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
+
+  // Mobile applications template
+  if (isActualMobile) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          backgroundColor: '#161513',
+          color: 'white',
+          fontFamily: 'Manrope, "Noto Sans", sans-serif',
+        }}
+      >
+        {/* Mobile Header */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#161513',
+            p: 2,
+            justifyContent: 'space-between',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              onClick={() => navigate('/worker/dashboard')}
+              sx={{
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                color: '#FFD700',
+                width: 40,
+                height: 40,
+              }}
+            >
+              <ArrowBackIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+            <Typography
+              sx={{
+                color: '#FFD700',
+                fontSize: '1.125rem',
+                fontWeight: 'bold',
+              }}
+            >
+              My Jobs
+            </Typography>
+          </Box>
+          <IconButton
+            sx={{
+              backgroundColor: 'rgba(255, 215, 0, 0.1)',
+              color: '#FFD700',
+              width: 40,
+              height: 40,
+            }}
+          >
+            <FilterListIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Box>
+
+        {/* Status Tabs */}
+        <Box sx={{ px: 2, pt: 2 }}>
+          <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 2 }}>
+            {['All', 'Pending', 'Interview', 'Offer', 'Rejected'].map((status, index) => (
+              <Chip
+                key={status}
+                label={status}
+                onClick={() => setTabValue(index)}
+                sx={{
+                  backgroundColor: tabValue === index ? '#FFD700' : '#35332c',
+                  color: tabValue === index ? '#161513' : 'white',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  minWidth: 'fit-content',
+                  whiteSpace: 'nowrap',
+                }}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Applications List */}
+        <Box sx={{ px: 2 }}>
+          <Typography
+            sx={{
+              color: 'white',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              mb: 2,
+            }}
+          >
+            {filteredApplications.length} Applications
+          </Typography>
+
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress sx={{ color: '#FFD700' }} />
+            </Box>
+          ) : filteredApplications.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 6 }}>
+              <WorkOutlineIcon sx={{ fontSize: 60, color: '#b2afa3', mb: 2 }} />
+              <Typography sx={{ color: '#b2afa3', fontSize: '1rem', mb: 1 }}>
+                No applications found
+              </Typography>
+              <Typography sx={{ color: '#9e9e9e', fontSize: '0.875rem' }}>
+                Start applying to jobs to see them here
+              </Typography>
+            </Box>
+          ) : (
+            // Sample applications for demonstration
+            [
+              {
+                id: 1,
+                jobTitle: 'Residential Carpenter',
+                company: 'Golden Gate Construction',
+                location: 'East Legon, Accra',
+                appliedDate: '2024-01-15',
+                status: 'pending',
+                salary: 'GH₵150/day',
+                type: 'Full-time',
+              },
+              {
+                id: 2,
+                jobTitle: 'Plumbing Technician',
+                company: 'AquaFlow Services',
+                location: 'Asokwa, Kumasi',
+                appliedDate: '2024-01-10',
+                status: 'interview',
+                salary: 'GH₵120/day',
+                type: 'Contract',
+              },
+              {
+                id: 3,
+                jobTitle: 'Electrical Installer',
+                company: 'PowerTech Ghana',
+                location: 'Industrial Area, Tema',
+                appliedDate: '2024-01-08',
+                status: 'offer',
+                salary: 'GH₵180/day',
+                type: 'Full-time',
+              },
+            ].map((application) => {
+              const getStatusColor = (status) => {
+                switch (status) {
+                  case 'pending': return '#ff9800';
+                  case 'interview': return '#2196f3';
+                  case 'offer': return '#4caf50';
+                  case 'rejected': return '#f44336';
+                  default: return '#9e9e9e';
+                }
+              };
+
+              const getStatusLabel = (status) => {
+                switch (status) {
+                  case 'pending': return 'Under Review';
+                  case 'interview': return 'Interview';
+                  case 'offer': return 'Job Offer';
+                  case 'rejected': return 'Rejected';
+                  default: return 'Unknown';
+                }
+              };
+
+              return (
+                <Paper
+                  key={application.id}
+                  sx={{
+                    backgroundColor: '#24231e',
+                    borderRadius: '12px',
+                    p: 2,
+                    mb: 2,
+                    border: '1px solid #35332c',
+                  }}
+                >
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          sx={{
+                            color: 'white',
+                            fontSize: '1rem',
+                            fontWeight: 'bold',
+                            mb: 0.5,
+                          }}
+                        >
+                          {application.jobTitle}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: '#b2afa3',
+                            fontSize: '0.875rem',
+                            mb: 0.5,
+                          }}
+                        >
+                          {application.company}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: '#9e9e9e',
+                            fontSize: '0.75rem',
+                            mb: 1,
+                          }}
+                        >
+                          📍 {application.location} • Applied {new Date(application.appliedDate).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={getStatusLabel(application.status)}
+                        size="small"
+                        sx={{
+                          backgroundColor: getStatusColor(application.status),
+                          color: 'white',
+                          fontSize: '0.65rem',
+                          fontWeight: 'bold',
+                          height: 22,
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                      <Chip
+                        label={application.type}
+                        size="small"
+                        sx={{
+                          backgroundColor: '#35332c',
+                          color: 'white',
+                          fontSize: '0.65rem',
+                          height: 20,
+                        }}
+                      />
+                      <Chip
+                        label={application.salary}
+                        size="small"
+                        sx={{
+                          backgroundColor: '#4CAF50',
+                          color: 'white',
+                          fontSize: '0.65rem',
+                          fontWeight: 'bold',
+                          height: 20,
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          flex: 1,
+                          borderColor: '#FFD700',
+                          color: '#FFD700',
+                          fontSize: '0.75rem',
+                          textTransform: 'none',
+                          '&:hover': {
+                            borderColor: '#FFC000',
+                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                          },
+                        }}
+                        onClick={() => handleOpenDetails(application)}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          flex: 1,
+                          backgroundColor: '#FFD700',
+                          color: '#161513',
+                          fontSize: '0.75rem',
+                          textTransform: 'none',
+                          '&:hover': {
+                            backgroundColor: '#FFC000',
+                          },
+                        }}
+                        onClick={() => handleOpenMessage(application)}
+                      >
+                        Message
+                      </Button>
+                    </Box>
+                  </Box>
+                </Paper>
+              );
+            })
+          )}
+        </Box>
+
+        {/* Bottom spacing for nav */}
+        <Box sx={{ height: '100px' }} />
+      </Box>
+    );
+  }
 
   return (
     <Container sx={{ py: 4 }}>

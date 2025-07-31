@@ -295,6 +295,76 @@ const changeJobStatus = async (req, res, next) => {
   }
 };
 
+/**
+ * Get dashboard jobs
+ * @route GET /api/jobs/dashboard
+ * @access Public
+ */
+const getDashboardJobs = async (req, res, next) => {
+  try {
+    // Get recent jobs for dashboard
+    const jobs = await Job.find({ status: "open", visibility: "public" })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate("hirer", "firstName lastName companyName")
+      .select("title description budget location urgency createdAt");
+
+    const dashboardData = {
+      recentJobs: jobs,
+      totalOpenJobs: await Job.countDocuments({ status: "open", visibility: "public" }),
+      totalJobsToday: await Job.countDocuments({
+        status: "open",
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+      })
+    };
+
+    return successResponse(res, 200, "Dashboard jobs retrieved successfully", dashboardData);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get contracts (jobs with contracts)
+ * @route GET /api/jobs/contracts
+ * @access Public
+ */
+const getContracts = async (req, res, next) => {
+  try {
+    // Mock contracts data for now - in real implementation, this would come from a contracts table
+    const contracts = [
+      {
+        id: "contract-1",
+        title: "Kitchen Renovation Contract",
+        status: "active",
+        client: "Sarah Mitchell",
+        worker: "John Contractor",
+        amount: 5500,
+        currency: "GHS",
+        startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+        endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+        progress: 65
+      },
+      {
+        id: "contract-2",
+        title: "Office Interior Design",
+        status: "pending",
+        client: "Tech Solutions Ltd",
+        worker: "Maria Designer",
+        amount: 8000,
+        currency: "GHS",
+        startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+        endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 28),
+        progress: 0
+      }
+    ];
+
+    return successResponse(res, 200, "Contracts retrieved successfully", { contracts });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createJob,
   getJobs,
@@ -303,4 +373,6 @@ module.exports = {
   deleteJob,
   getMyJobs,
   changeJobStatus,
+  getDashboardJobs,
+  getContracts,
 };
