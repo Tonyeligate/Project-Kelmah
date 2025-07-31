@@ -67,10 +67,13 @@ const EnhancedWorkerDashboard = () => {
   const { data, loading, error } = useSelector((state) => state.dashboard);
   const theme = useTheme();
 
-  // Responsive breakpoints
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  // Force mobile design on small screens but maintain desktop functionality
+  const isMobile = false; // Disabled responsive behavior as per user requirement
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  
+  // Check actual screen size for styling (not functionality)
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
 
   // Local state
   const [expandedSection, setExpandedSection] = useState(null);
@@ -445,6 +448,441 @@ const EnhancedWorkerDashboard = () => {
         >
           Failed to load dashboard data: {error}
         </Alert>
+      </Box>
+    );
+  }
+
+  // Mobile-first design matching the provided template
+  if (isActualMobile) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          minHeight: '100vh',
+          backgroundColor: '#161513',
+          color: 'white',
+          fontFamily: 'Manrope, "Noto Sans", sans-serif',
+          overflowX: 'hidden',
+        }}
+      >
+        {/* Mobile Header */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#161513',
+            p: 2,
+            pb: 1,
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontSize: '1.125rem',
+              fontWeight: 'bold',
+              letterSpacing: '-0.015em',
+              flex: 1,
+              textAlign: 'center',
+              pl: 6,
+            }}
+          >
+            Home
+          </Typography>
+          <Box sx={{ width: 48, display: 'flex', justifyContent: 'flex-end' }}>
+            <IconButton
+              sx={{
+                backgroundColor: 'transparent',
+                color: 'white',
+                width: 48,
+                height: 48,
+                p: 0,
+              }}
+            >
+              <NotificationsIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* Overview Section */}
+        <Typography
+          variant="h6"
+          sx={{
+            color: 'white',
+            fontSize: '1.125rem',
+            fontWeight: 'bold',
+            letterSpacing: '-0.015em',
+            px: 2,
+            pb: 1,
+            pt: 2,
+          }}
+        >
+          Overview
+        </Typography>
+
+        {/* Stats Cards */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, p: 2 }}>
+          <Paper
+            sx={{
+              flex: 1,
+              minWidth: '158px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              borderRadius: '12px',
+              p: 3,
+              backgroundColor: '#35332c',
+            }}
+          >
+            <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
+              Earnings
+            </Typography>
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                letterSpacing: '-0.025em',
+              }}
+            >
+              ${data?.metrics?.totalEarnings || '2,400'}
+            </Typography>
+            <Typography sx={{ color: '#0bda1d', fontSize: '1rem', fontWeight: 500 }}>
+              +15%
+            </Typography>
+          </Paper>
+
+          <Paper
+            sx={{
+              flex: 1,
+              minWidth: '158px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              borderRadius: '12px',
+              p: 3,
+              backgroundColor: '#35332c',
+            }}
+          >
+            <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
+              Upcoming Jobs
+            </Typography>
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                letterSpacing: '-0.025em',
+              }}
+            >
+              {data?.metrics?.upcomingJobs || '3'}
+            </Typography>
+            <Typography sx={{ color: '#0bda1d', fontSize: '1rem', fontWeight: 500 }}>
+              +1
+            </Typography>
+          </Paper>
+
+          <Paper
+            sx={{
+              flex: 1,
+              minWidth: '158px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              borderRadius: '12px',
+              p: 3,
+              backgroundColor: '#35332c',
+            }}
+          >
+            <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
+              Client Reviews
+            </Typography>
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                letterSpacing: '-0.025em',
+              }}
+            >
+              {data?.metrics?.averageRating || '4.8'}
+            </Typography>
+            <Typography sx={{ color: '#0bda1d', fontSize: '1rem', fontWeight: 500 }}>
+              +0.2
+            </Typography>
+          </Paper>
+        </Box>
+
+        {/* Wallet Section */}
+        <Box sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '20% 1fr',
+              gap: 3,
+            }}
+          >
+            <Box
+              sx={{
+                gridColumn: 'span 2',
+                display: 'grid',
+                gridTemplateColumns: 'subgrid',
+                borderTop: '1px solid #4e4b41',
+                py: 2.5,
+              }}
+            >
+              <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
+                Wallet Balance
+              </Typography>
+              <Typography sx={{ color: 'white', fontSize: '0.875rem' }}>
+                ${data?.metrics?.walletBalance || '1,200'}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                gridColumn: 'span 2',
+                display: 'grid',
+                gridTemplateColumns: 'subgrid',
+                borderTop: '1px solid #4e4b41',
+                py: 2.5,
+              }}
+            >
+              <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
+                In Escrow
+              </Typography>
+              <Typography sx={{ color: 'white', fontSize: '0.875rem' }}>
+                ${data?.metrics?.inEscrow || '800'}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                gridColumn: 'span 2',
+                display: 'grid',
+                gridTemplateColumns: 'subgrid',
+                borderTop: '1px solid #4e4b41',
+                py: 2.5,
+              }}
+            >
+              <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
+                Pending Payments
+              </Typography>
+              <Typography sx={{ color: 'white', fontSize: '0.875rem' }}>
+                ${data?.metrics?.pendingPayments || '400'}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Withdraw Button */}
+        <Box sx={{ display: 'flex', px: 2, py: 1.5, justifyContent: 'flex-end' }}>
+          <Button
+            sx={{
+              minWidth: '84px',
+              maxWidth: '480px',
+              height: '40px',
+              px: 2,
+              backgroundColor: '#ece4ca',
+              color: '#161513',
+              fontSize: '0.875rem',
+              fontWeight: 'bold',
+              letterSpacing: '0.015em',
+              borderRadius: '20px',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#e6ddc4',
+              },
+            }}
+          >
+            Withdraw Funds
+          </Button>
+        </Box>
+
+        {/* Quick Actions */}
+        <Typography
+          variant="h6"
+          sx={{
+            color: 'white',
+            fontSize: '1.125rem',
+            fontWeight: 'bold',
+            letterSpacing: '-0.015em',
+            px: 2,
+            pb: 1,
+            pt: 2,
+          }}
+        >
+          Quick Actions
+        </Typography>
+
+        <Box
+          sx={{
+            display: 'flex',
+            overflowY: 'auto',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'stretch', p: 2, gap: 1.5 }}>
+            {[
+              {
+                title: 'Job Applications',
+                description: 'View and manage your job applications.',
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
+                onClick: () => navigate('/worker/applications'),
+              },
+              {
+                title: 'Messages',
+                description: 'Access your messages and communicate with clients.',
+                image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=300&h=200&fit=crop',
+                onClick: () => navigate('/messages'),
+              },
+              {
+                title: 'Profile',
+                description: 'Edit your profile and settings.',
+                image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=200&fit=crop',
+                onClick: () => navigate('/worker/profile'),
+              },
+            ].map((action, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  height: 'full',
+                  flex: 1,
+                  flexDirection: 'column',
+                  gap: 2,
+                  borderRadius: '8px',
+                  minWidth: '240px',
+                  cursor: 'pointer',
+                }}
+                onClick={action.onClick}
+              >
+                <Box
+                  sx={{
+                    width: '100%',
+                    aspectRatio: '16/9',
+                    backgroundImage: `url(${action.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    borderRadius: '12px',
+                  }}
+                />
+                <Box>
+                  <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
+                    {action.title}
+                  </Typography>
+                  <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
+                    {action.description}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Top Job Matches */}
+        <Typography
+          variant="h6"
+          sx={{
+            color: 'white',
+            fontSize: '1.125rem',
+            fontWeight: 'bold',
+            letterSpacing: '-0.015em',
+            px: 2,
+            pb: 1,
+            pt: 2,
+          }}
+        >
+          Top Job Matches
+        </Typography>
+
+        {/* Job Cards */}
+        {[
+          {
+            title: 'Senior UX/UI Designer',
+            company: 'Tech Innovators Inc. | Remote',
+            image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=300&h=200&fit=crop',
+          },
+          {
+            title: 'Frontend Developer',
+            company: 'Web Solutions Co. | Remote',
+            image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=300&h=200&fit=crop',
+          },
+        ].map((job, index) => (
+          <Box key={index} sx={{ p: 2 }}>
+            <Paper
+              sx={{
+                display: 'flex',
+                alignItems: 'stretch',
+                justifyContent: 'space-between',
+                gap: 2,
+                borderRadius: '12px',
+                backgroundColor: '#24231e',
+                p: 2,
+                boxShadow: '0 0 4px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Box sx={{ display: 'flex', flex: '2 2 0px', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
+                    Featured
+                  </Typography>
+                  <Typography
+                    sx={{ color: 'white', fontSize: '1rem', fontWeight: 'bold' }}
+                  >
+                    {job.title}
+                  </Typography>
+                  <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
+                    {job.company}
+                  </Typography>
+                </Box>
+                <Button
+                  sx={{
+                    minWidth: '84px',
+                    maxWidth: '480px',
+                    height: '32px',
+                    px: 2,
+                    display: 'flex',
+                    flexDirection: 'row-reverse',
+                    backgroundColor: '#35332c',
+                    color: 'white',
+                    pr: 1,
+                    gap: 0.5,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    width: 'fit-content',
+                    borderRadius: '16px',
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: '#3a3830',
+                    },
+                  }}
+                >
+                  <Box sx={{ color: 'white', fontSize: '18px' }}>→</Box>
+                  Apply
+                </Button>
+              </Box>
+              <Box
+                sx={{
+                  width: '100%',
+                  aspectRatio: '16/9',
+                  backgroundImage: `url(${job.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  borderRadius: '12px',
+                  flex: 1,
+                }}
+              />
+            </Paper>
+          </Box>
+        ))}
+
+        {/* Add bottom padding to account for bottom navigation */}
+        <Box sx={{ height: '100px' }} />
       </Box>
     );
   }

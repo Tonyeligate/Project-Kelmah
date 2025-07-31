@@ -1,34 +1,27 @@
 import React from 'react';
-import { BottomNavigation, BottomNavigationAction, Paper, Badge, useTheme } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Paper, Badge, useTheme, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import {
   Home as HomeIcon,
-  Search as SearchIcon,
-  AssignmentTurnedIn as ApplicationsIcon,
-  Chat as MessagesIcon,
+  Work as JobsIcon,
+  ChatBubbleOutline as MessagesIcon,
   AccountCircle as ProfileIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BRAND_COLORS } from '../../../theme';
 
-// Styled Components
+// Styled Components - Updated to match the template design
 const StyledPaper = styled(Paper)(({ theme }) => ({
   position: 'fixed',
   bottom: 0,
   left: 0,
   right: 0,
   zIndex: 1000,
-  borderTop: theme.palette.mode === 'dark'
-    ? `1px solid rgba(255, 215, 0, 0.2)`
-    : `1px solid rgba(0, 0, 0, 0.1)`,
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(180deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`
-    : `linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)`,
+  borderTop: '1px solid #35332c',
+  backgroundColor: '#24231e',
   backdropFilter: 'blur(20px)',
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 -4px 20px rgba(0, 0, 0, 0.8)'
-    : '0 -2px 15px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.8)',
 }));
 
 const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
@@ -39,29 +32,29 @@ const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
 }));
 
 const StyledBottomNavigationAction = styled(BottomNavigationAction)(({ theme }) => ({
-  color: theme.palette.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.6)' 
-    : 'rgba(0, 0, 0, 0.6)',
+  color: '#b2afa3',
   minWidth: 'auto',
   padding: theme.spacing(0.5, 1),
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&.Mui-selected': {
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    color: 'white',
     '& .MuiBottomNavigationAction-label': {
       fontSize: '0.75rem',
       fontWeight: 600,
+      letterSpacing: '0.015em',
     },
     '& .MuiSvgIcon-root': {
       transform: 'scale(1.1)',
     },
   },
   '& .MuiBottomNavigationAction-label': {
-    fontSize: '0.7rem',
+    fontSize: '0.75rem',
     fontWeight: 500,
     marginTop: theme.spacing(0.5),
+    letterSpacing: '0.015em',
   },
   '& .MuiSvgIcon-root': {
-    fontSize: '1.4rem',
+    fontSize: '1.5rem',
     transition: 'transform 0.2s ease',
   },
 }));
@@ -117,22 +110,16 @@ const MobileBottomNav = () => {
       badge: null,
     },
     {
-      label: "Search",
+      label: "Jobs",
       value: "search",
-      icon: <SearchIcon />,
-      badge: null,
-    },
-    {
-      label: "Apps",
-      value: "applications", 
-      icon: <ApplicationsIcon />,
+      icon: <JobsIcon />,
       badge: null,
     },
     {
       label: "Messages",
       value: "messages",
       icon: <MessagesIcon />,
-      badge: 2, // Mock unread count
+      badge: null,
     },
     {
       label: "Profile",
@@ -169,6 +156,8 @@ const MobileBottomNav = () => {
           </motion.div>
         ))}
       </StyledBottomNavigation>
+      {/* Add bottom spacing like in the template */}
+      <Box sx={{ height: '20px', backgroundColor: '#24231e' }} />
     </StyledPaper>
   );
 };
