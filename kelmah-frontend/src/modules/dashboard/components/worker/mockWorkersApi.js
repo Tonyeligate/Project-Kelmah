@@ -118,7 +118,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Ik0zNSAxMjBDMzUgMTA2LjE5MyA0Ni4xOTMgOTUgNjAgOTVIOTBDMTAzLjgwNyA5NSAxMTUgMTA2LjE5MyAxMTUgMTIwVjEzNUgzNVYxMjBaIiBmaWxsPSIjRkZENzAwIi8+CjwvdXZnPgo=',
+      profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Im0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NSIgZmlsbD0iI0ZGRDcwMCIvPgo8L3N2Zz4K',
     });
   }
 
@@ -133,7 +133,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Ik0zNSAxMjBDMzUgMTA2LjE5MyA0Ni4xOTMgOTUgNjAgOTVIOTBDMTAzLjgwNyA5NSAxMTUgMTA2LjE5MyAxMTUgMTIwVjEzNUgzNVYxMjBaIiBmaWxsPSIjRkZENzAwIi8+CjwvdXZnPgo=',
+      profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Im0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NSIgZmlsbD0iI0ZGRDcwMCIvPgo8L3N2Zz4K',
     });
   }
 }

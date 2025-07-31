@@ -85,9 +85,10 @@ app.get("/health", (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).json({
     name: "Job Service API",
-    version: "1.0.0",
+    version: "1.0.1", // Updated to force redeploy
     description: "Job management service for the Kelmah platform",
     health: "/health",
+    endpoints: ["/api/jobs", "/api/jobs/dashboard"],
   });
 });
 
