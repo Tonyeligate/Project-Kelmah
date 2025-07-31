@@ -164,7 +164,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Avatar
           alt={user?.firstName || 'Worker'}
-          src={user?.profileImage || '/path/to/default-avatar.jpg'}
+          src={user?.profileImage || 'https://via.placeholder.com/150x150/1a1a1a/FFD700?text=User'}
           sx={{
             width: 80,
             height: 80,

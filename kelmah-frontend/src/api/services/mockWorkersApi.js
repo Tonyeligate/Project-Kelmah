@@ -118,7 +118,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: '/path/to/default-avatar.jpg',
+      profileImage: 'https://via.placeholder.com/150x150/1a1a1a/FFD700?text=Worker',
     });
   }
 
@@ -133,7 +133,7 @@ class MockWorkersApi {
       lastName: 'Worker',
       profession: 'Professional Carpenter',
       rating: 4.5,
-      profileImage: '/path/to/default-avatar.jpg',
+      profileImage: 'https://via.placeholder.com/150x150/1a1a1a/FFD700?text=Worker',
     });
   }
 }

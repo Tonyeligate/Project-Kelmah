@@ -290,7 +290,7 @@ const ProposalReview = () => {
     accepted: proposals.filter((p) => p.status === 'accepted').length,
     rejected: proposals.filter((p) => p.status === 'rejected').length,
     averageRate:
-      proposals.reduce((sum, p) => sum + p.proposedRate, 0) / proposals.length,
+      proposals.length > 0 ? (proposals || []).reduce((sum, p) => sum + (p.proposedRate || 0), 0) / proposals.length : 0,
   };
 
   if (loading) {

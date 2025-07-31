@@ -520,8 +520,8 @@ const EnhancedContractsPage = () => {
       const pending = contracts.filter(
         (c) => c.status === 'pending-signature',
       ).length;
-      const totalValue = contracts.reduce((sum, c) => sum + c.budget, 0);
-      const totalPaid = contracts.reduce((sum, c) => sum + c.totalPaid, 0);
+      const totalValue = (contracts || []).reduce((sum, c) => sum + (c.budget || 0), 0);
+      const totalPaid = (contracts || []).reduce((sum, c) => sum + (c.totalPaid || 0), 0);
       const avgValue = total > 0 ? totalValue / total : 0;
 
       return {

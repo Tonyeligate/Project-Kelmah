@@ -273,6 +273,22 @@ export const jobServiceClient = axios.create({
   },
 });
 
+export const messagingServiceClient = axios.create({
+  baseURL: SERVICES.MESSAGING_SERVICE,
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export const paymentServiceClient = axios.create({
+  baseURL: SERVICES.PAYMENT_SERVICE,
+  timeout: 5000, // Reduced timeout for better UX
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 export const schedulingClient = axios.create({
   baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
   timeout: 5000, // Reduced timeout for better UX

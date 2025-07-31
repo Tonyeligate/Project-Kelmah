@@ -3,12 +3,12 @@
  * Handles payment operations and transactions
  */
 
-import { authServiceClient } from '../../modules/common/services/axios';
+import { paymentServiceClient } from '../../modules/common/services/axios';
 
 class PaymentsApi {
   constructor() {
-    // Temporarily use auth service client until payment service is deployed
-    this.client = authServiceClient;
+    // Use proper payment service client
+    this.client = paymentServiceClient;
   }
 
   /**

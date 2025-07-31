@@ -45,14 +45,18 @@ const Layout = ({ children, toggleTheme, mode }) => {
 
   // Dashboard layout
   if (isDashboardPage) {
+    // FORCE MOBILE LAYOUT FOR TESTING - Remove after perfect
+    const forceMobileLayout = true;
+    
     // On actual mobile screens, render children directly (no sidebar/wrapper)
-    if (isActualMobile) {
+    if (isActualMobile || forceMobileLayout) {
       console.log('✅ Layout: Rendering mobile dashboard layout');
       return (
         <Box sx={{ 
           width: '100%', 
           minHeight: '100vh',
           position: 'relative',
+          backgroundColor: '#161513', // Match template background
         }}>
           {children}
           <MobileBottomNav />

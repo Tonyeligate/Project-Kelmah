@@ -3,13 +3,13 @@
  * Handles contract-related API operations with proper fallbacks
  */
 
-import { authServiceClient } from '../../common/services/axios';
+import { jobServiceClient } from '../../common/services/axios';
 
 export const contractService = {
   // Get contracts with filters
   async getContracts(filters = {}) {
     try {
-      const response = await authServiceClient.get('/api/contracts', {
+      const response = await jobServiceClient.get('/api/contracts', {
         params: filters,
       });
       return response.data;
