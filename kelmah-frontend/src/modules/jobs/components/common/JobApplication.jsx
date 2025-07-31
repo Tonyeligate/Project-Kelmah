@@ -102,7 +102,7 @@ function JobApplication() {
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
     proposedBudget: '',
-    currency: 'GHS',
+    currency: "GHS",
     estimatedDuration: '',
     attachments: [],
     milestoneProposal: [],

@@ -45,7 +45,7 @@ import { Link as RouterLink } from 'react-router-dom';
 // Currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: 'GHS',
+  currency: "GHS",
 });
 
 const PaymentsPage = () => {

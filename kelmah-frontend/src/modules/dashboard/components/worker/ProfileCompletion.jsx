@@ -39,72 +39,7 @@ const ProfileCompletion = ({
   onComplete = () => {},
 }) => {
   const theme = useTheme();
-  const [expanded, setExpanded] = useState(false);
-
-  // Profile completion breakdown
-  const profileItems = [
-    {
-      id: 'basic-info',
-      title: 'Basic Information',
-      description: 'Name, email, phone, location',
-      completed: !!(
-        profileData.firstName &&
-        profileData.lastName &&
-        profileData.email &&
-        profileData.phone
-      ),
-      icon: <PersonIcon />,
-      weight: 15,
-    },
-    {
-      id: 'profile-photo',
-      title: 'Profile Photo',
-      description: 'Professional profile picture',
-      completed: !!profileData.profileImage,
-      icon: <PhotoIcon />,
-      weight: 10,
-    },
-    {
-      id: 'skills',
-      title: 'Skills & Expertise',
-      description: 'Add at least 3 skills',
-      completed: profileData.skills?.length >= 3,
-      icon: <SkillIcon />,
-      weight: 25,
-    },
-    {
-      id: 'experience',
-      title: 'Work Experience',
-      description: 'Add work history',
-      completed: profileData.experience?.length > 0,
-      icon: <WorkIcon />,
-      weight: 20,
-    },
-    {
-      id: 'portfolio',
-      title: 'Portfolio & Projects',
-      description: 'Showcase your work',
-      completed: profileData.portfolio?.length > 0,
-      icon: <PhotoIcon />,
-      weight: 15,
-    },
-    {
-      id: 'documents',
-      title: 'Certifications',
-      description: 'Upload licenses and certificates',
-      completed: profileData.certifications?.length > 0,
-      icon: <DocumentIcon />,
-      weight: 10,
-    },
-    {
-      id: 'verification',
-      title: 'Identity Verification',
-      description: 'Verify your identity',
-      completed: profileData.isVerified,
-      icon: <VerificationIcon />,
-      weight: 5,
-    },
-  ];
+  const [];
 
   const completedItems = profileItems.filter((item) => item.completed);
   const actualCompletion = profileItems.reduce((acc, item) => {

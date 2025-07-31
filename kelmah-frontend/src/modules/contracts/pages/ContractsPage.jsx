@@ -98,127 +98,11 @@ const EnhancedContractsPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
-  const [activeTab, setActiveTab] = useState(0);
-  const [contracts, setContracts] = useState([]);
-  const [filteredContracts, setFilteredContracts] = useState([]);
-  const [selectedContract, setSelectedContract] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [selectedSort, setSelectedSort] = useState('newest');
-  const [createDialog, setCreateDialog] = useState(false);
-  const [viewDialog, setViewDialog] = useState(false);
-  const [signDialog, setSignDialog] = useState(false);
-  const [filterMenuAnchor, setFilterMenuAnchor] = useState(null);
-  const [sortMenuAnchor, setSortMenuAnchor] = useState(null);
-  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
-  const [feedback, setFeedback] = useState({
-    open: false,
-    message: '',
-    severity: 'info',
-  });
-
-  // Contract form state
-  const [contractForm, setContractForm] = useState({
-    title: '',
-    client: '',
-    description: '',
-    budget: '',
-    startDate: '',
-    endDate: '',
-    milestones: [],
-    terms: '',
-    type: 'fixed-price',
-  });
-
-  // Mock contract data
-  const mockContracts = [
-    {
-      id: 'contract-1',
-      title: 'Kitchen Renovation Contract',
-      client: {
-        id: 'client-1',
-        name: 'Sarah Mitchell',
-        email: 'sarah.mitchell@email.com',
-        avatar: '/api/placeholder/50/50',
-        company: 'Mitchell Residence',
-      },
-      job: {
-        id: 'job-1',
-        title: 'Complete Kitchen Renovation',
-      },
-      status: 'active',
-      type: 'fixed-price',
-      budget: 5500,
-      currency: 'GH₵',
-      startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-      signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8),
-      progress: 35,
-      milestones: [
-        {
-          id: 'milestone-1',
-          title: 'Design and Planning',
-          description:
-            'Create detailed kitchen design and obtain necessary permits',
-          amount: 1100,
-          dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-          status: 'completed',
-          completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-        },
-        {
-          id: 'milestone-2',
-          title: 'Demolition and Preparation',
-          description:
-            'Remove existing fixtures and prepare space for renovation',
-          amount: 800,
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
-          status: 'in-progress',
-          progress: 60,
-        },
-        {
-          id: 'milestone-3',
-          title: 'Cabinet Installation',
-          description: 'Install custom cabinets and hardware',
-          amount: 2200,
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
-          status: 'pending',
-        },
-        {
-          id: 'milestone-4',
-          title: 'Final Installation and Cleanup',
-          description: 'Install countertops, appliances, and final touches',
-          amount: 1400,
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18),
-          status: 'pending',
-        },
-      ],
-      payments: [
-        {
-          id: 'payment-1',
-          amount: 1100,
-          status: 'completed',
-          paidAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
-          method: 'Bank Transfer',
-        },
-      ],
+  const [],
+      payments: [],
       totalPaid: 1100,
       nextPaymentDue: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5),
-      documents: [
-        {
-          id: 'doc-1',
-          name: 'Kitchen_Renovation_Contract.pdf',
-          type: 'contract',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9),
-        },
-        {
-          id: 'doc-2',
-          name: 'Kitchen_Design_Plans.pdf',
-          type: 'design',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-        },
-      ],
+      documents: [],
       signatures: {
         worker: {
           signed: true,
@@ -232,65 +116,7 @@ const EnhancedContractsPage = () => {
         },
       },
     },
-    {
-      id: 'contract-2',
-      title: 'Bathroom Plumbing Repair Contract',
-      client: {
-        id: 'client-2',
-        name: 'David Chen',
-        email: 'david.chen@email.com',
-        avatar: '/api/placeholder/50/50',
-        company: 'Chen Family Home',
-      },
-      job: {
-        id: 'job-2',
-        title: 'Emergency Bathroom Plumbing Repair',
-      },
-      status: 'completed',
-      type: 'hourly',
-      budget: 800,
-      currency: 'GH₵',
-      startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21),
-      endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 19),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25),
-      signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22),
-      completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 19),
-      progress: 100,
-      milestones: [
-        {
-          id: 'milestone-5',
-          title: 'Plumbing Repair',
-          description: 'Fix leaking pipes and replace damaged fixtures',
-          amount: 800,
-          dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20),
-          status: 'completed',
-          completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 19),
-        },
-      ],
-      payments: [
-        {
-          id: 'payment-2',
-          amount: 800,
-          status: 'completed',
-          paidAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 18),
-          method: 'Mobile Money',
-        },
-      ],
-      totalPaid: 800,
-      documents: [
-        {
-          id: 'doc-3',
-          name: 'Plumbing_Repair_Contract.pdf',
-          type: 'contract',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 23),
-        },
-      ],
-      signatures: {
-        worker: {
-          signed: true,
-          signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22),
-          ipAddress: '192.168.1.100',
-        },
+    [],
         client: {
           signed: true,
           signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 22),
@@ -298,70 +124,7 @@ const EnhancedContractsPage = () => {
         },
       },
     },
-    {
-      id: 'contract-3',
-      title: 'House Electrical Wiring Contract',
-      client: {
-        id: 'client-3',
-        name: 'Lisa Thompson',
-        email: 'lisa.thompson@email.com',
-        avatar: '/api/placeholder/50/50',
-        company: 'Thompson Residence',
-      },
-      job: {
-        id: 'job-3',
-        title: 'Complete House Rewiring Project',
-      },
-      status: 'pending-signature',
-      type: 'fixed-price',
-      budget: 3200,
-      currency: 'GH₵',
-      startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 35),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-      progress: 0,
-      milestones: [
-        {
-          id: 'milestone-6',
-          title: 'Electrical Assessment',
-          description: 'Assess current wiring and create rewiring plan',
-          amount: 400,
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10),
-          status: 'pending',
-        },
-        {
-          id: 'milestone-7',
-          title: 'Main Panel Upgrade',
-          description: 'Upgrade electrical panel and main connections',
-          amount: 1200,
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18),
-          status: 'pending',
-        },
-        {
-          id: 'milestone-8',
-          title: 'House Rewiring',
-          description: 'Complete rewiring of all rooms and outlets',
-          amount: 1600,
-          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 32),
-          status: 'pending',
-        },
-      ],
-      payments: [],
-      totalPaid: 0,
-      documents: [
-        {
-          id: 'doc-4',
-          name: 'Electrical_Wiring_Contract.pdf',
-          type: 'contract',
-          uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
-        },
-      ],
-      signatures: {
-        worker: {
-          signed: true,
-          signedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
-          ipAddress: '192.168.1.100',
-        },
+    [],
         client: {
           signed: false,
           signedAt: null,

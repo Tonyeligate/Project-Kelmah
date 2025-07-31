@@ -75,59 +75,7 @@ const EnhancedMessagingPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   // State management
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredConversations, setFilteredConversations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [typingUsers, setTypingUsers] = useState(new Set());
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
-  const [newChatDialog, setNewChatDialog] = useState(false);
-  const [archiveMode, setArchiveMode] = useState(false);
-
-  // Message input state
-  const [messageText, setMessageText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-
-  // UI state
-  const [feedback, setFeedback] = useState({
-    open: false,
-    message: '',
-    severity: 'info',
-  });
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-  // Refs
-  const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
-  const wsRef = useRef(null);
-
-  // Mock data for development
-  const mockConversations = [
-    {
-      id: '1',
-      type: 'direct',
-      participants: [
-        {
-          id: user?.id,
-          name: user?.firstName || 'You',
-          avatar: user?.profileImage,
-        },
-        {
-          id: '2',
-          name: 'John Carpenter',
-          avatar: '/api/placeholder/40/40',
-          status: 'online',
-        },
-      ],
+  const [],
       lastMessage: {
         id: '1',
         text: 'Hey, I saw your carpentry work. Are you available for a kitchen renovation project?',
@@ -143,19 +91,7 @@ const EnhancedMessagingPage = () => {
     {
       id: '2',
       type: 'direct',
-      participants: [
-        {
-          id: user?.id,
-          name: user?.firstName || 'You',
-          avatar: user?.profileImage,
-        },
-        {
-          id: '3',
-          name: 'Sarah Wilson',
-          avatar: '/api/placeholder/40/40',
-          status: 'offline',
-        },
-      ],
+      participants: [],
       lastMessage: {
         id: '2',
         text: "Thank you for the excellent plumbing work! I've left a 5-star review.",
@@ -171,19 +107,7 @@ const EnhancedMessagingPage = () => {
     {
       id: '3',
       type: 'direct',
-      participants: [
-        {
-          id: user?.id,
-          name: user?.firstName || 'You',
-          avatar: user?.profileImage,
-        },
-        {
-          id: '4',
-          name: 'Mike Johnson',
-          avatar: '/api/placeholder/40/40',
-          status: 'online',
-        },
-      ],
+      participants: [],
       lastMessage: {
         id: '3',
         text: 'When can you start the electrical work?',
@@ -199,50 +123,7 @@ const EnhancedMessagingPage = () => {
   ];
 
   const mockMessages = {
-    1: [
-      {
-        id: '1',
-        text: "Hi there! I saw your profile and I'm impressed with your carpentry skills.",
-        sender: '2',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60),
-        status: 'read',
-        type: 'text',
-      },
-      {
-        id: '2',
-        text: "Thank you! I'd be happy to help with your project. What kind of work are you looking for?",
-        sender: user?.id,
-        timestamp: new Date(Date.now() - 1000 * 60 * 45),
-        status: 'read',
-        type: 'text',
-      },
-      {
-        id: '3',
-        text: 'I need a complete kitchen renovation. Custom cabinets, countertops, the works.',
-        sender: '2',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30),
-        status: 'read',
-        type: 'text',
-      },
-      {
-        id: '4',
-        text: 'Here are some photos of my previous kitchen projects for reference.',
-        sender: user?.id,
-        timestamp: new Date(Date.now() - 1000 * 60 * 25),
-        status: 'read',
-        type: 'text',
-        attachments: [
-          {
-            type: 'image',
-            url: '/api/placeholder/300/200',
-            name: 'kitchen1.jpg',
-          },
-          {
-            type: 'image',
-            url: '/api/placeholder/300/200',
-            name: 'kitchen2.jpg',
-          },
-        ],
+    1: [],
       },
       {
         id: '5',

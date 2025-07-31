@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, CircularProgress } from '@mui/material';
 import Layout from './modules/layout/components/Layout';
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './modules/home/pages/HomePage';
 import Dashboard from './modules/dashboard/pages/DashboardPage';
 import WorkerDashboardPage from './modules/worker/pages/WorkerDashboardPage';
@@ -434,9 +435,11 @@ const AppContent = () => {
 // Main App component with theme provider
 function App() {
   return (
-    <KelmahThemeProvider>
-        <AppContent />
-    </KelmahThemeProvider>
+    <ErrorBoundary>
+      <KelmahThemeProvider>
+          <AppContent />
+      </KelmahThemeProvider>
+    </ErrorBoundary>
   );
 }
 

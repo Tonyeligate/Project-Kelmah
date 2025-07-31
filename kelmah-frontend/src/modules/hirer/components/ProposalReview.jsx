@@ -64,97 +64,9 @@ jobServiceClient.interceptors.request.use(
 );
 
 // Comprehensive mock proposal data
-const mockProposalData = [
-  {
-    id: 'proposal-1',
-    jobId: 'job-h1',
-    jobTitle: 'Kitchen Renovation - Custom Cabinets',
-    jobBudget: 5500,
-    worker: {
-      id: 'worker-1',
-      name: 'Tony Gate',
-      avatar: '/api/placeholder/40/40',
-      rating: 4.8,
-      completedJobs: 23,
-      skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing'],
-      location: 'Accra, Greater Accra',
-      experience: '5+ years',
-    },
-    proposedRate: 5200,
-    estimatedDuration: '3 weeks',
-    proposalText:
-      'I have extensive experience in custom cabinet making and kitchen renovations. I can deliver high-quality cabinets with modern designs that will transform your kitchen. My approach includes detailed measurements, custom design, quality materials, and professional installation.',
-    submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    status: 'pending',
-    attachments: [
-      { name: 'portfolio.pdf', size: '2.3 MB' },
-      { name: 'previous_work.jpg', size: '1.8 MB' },
-    ],
-    timeline: [
-      { phase: 'Design & Planning', duration: '3 days' },
-      { phase: 'Material Selection', duration: '2 days' },
-      { phase: 'Cabinet Construction', duration: '12 days' },
-      { phase: 'Installation & Finishing', duration: '4 days' },
-    ],
-  },
-  {
-    id: 'proposal-2',
-    jobId: 'job-h2',
-    jobTitle: 'Office Interior Design & Setup',
-    jobBudget: 15000,
-    worker: {
-      id: 'worker-2',
-      name: 'Sarah Williams',
-      avatar: '/api/placeholder/40/40',
-      rating: 4.9,
-      completedJobs: 31,
-      skills: ['Interior Design', 'Space Planning', 'Project Management'],
-      location: 'Kumasi, Ashanti',
-      experience: '7+ years',
-    },
-    proposedRate: 14500,
-    estimatedDuration: '4 weeks',
-    proposalText:
-      'I specialize in modern office interior design that maximizes productivity and creates inspiring work environments. My comprehensive approach includes space planning, furniture selection, lighting design, and complete project management from concept to completion.',
-    submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
-    status: 'pending',
-    attachments: [
-      { name: 'design_portfolio.pdf', size: '5.2 MB' },
-      { name: 'office_mockup.jpg', size: '3.1 MB' },
-      { name: 'references.pdf', size: '1.5 MB' },
-    ],
-    timeline: [
-      { phase: 'Space Assessment & Planning', duration: '5 days' },
-      { phase: 'Design Development', duration: '7 days' },
-      { phase: 'Procurement & Ordering', duration: '10 days' },
-      { phase: 'Installation & Setup', duration: '6 days' },
-    ],
-  },
-  {
-    id: 'proposal-3',
-    jobId: 'job-h3',
-    jobTitle: 'Bathroom Renovation - Modern Design',
-    jobBudget: 8000,
-    worker: {
-      id: 'worker-3',
-      name: 'Michael Asante',
-      avatar: '/api/placeholder/40/40',
-      rating: 4.7,
-      completedJobs: 18,
-      skills: ['Plumbing', 'Tiling', 'Bathroom Design'],
-      location: 'Tema, Greater Accra',
-      experience: '4+ years',
-    },
-    proposedRate: 7800,
-    estimatedDuration: '2.5 weeks',
-    proposalText:
-      'I offer complete bathroom renovation services with modern designs and quality fixtures. My expertise includes plumbing, tiling, electrical work, and finishing. I ensure all work meets building codes and delivers a stunning, functional bathroom.',
-    submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    status: 'pending',
-    attachments: [
-      { name: 'bathroom_designs.pdf', size: '4.1 MB' },
-      { name: 'certifications.pdf', size: '1.2 MB' },
-    ],
+const mockProposalData = [],
+    timeline: [],
+    timeline: [],
     timeline: [
       { phase: 'Demolition & Preparation', duration: '3 days' },
       { phase: 'Plumbing & Electrical', duration: '4 days' },
@@ -207,7 +119,7 @@ const ProposalReview = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: 'GHS',
+      currency: "GHS",
       minimumFractionDigits: 0,
     }).format(amount);
   };

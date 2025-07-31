@@ -71,7 +71,7 @@ function CreateJobDialog({
     paymentType: 'fixed',
     experience: 'intermediate',
     budget: '',
-    currency: 'GHS',
+    currency: "GHS",
     location: '',
     skills: [],
     applicationDeadline: '',

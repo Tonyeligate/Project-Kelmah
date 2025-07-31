@@ -50,100 +50,9 @@ const mockPaymentData = {
     escrowBalance: 45000,
     thisMonthPaid: 23500,
     averagePaymentTime: '2.3 days',
-    paymentMethods: [
-      { method: 'Mobile Money', percentage: 65 },
-      { method: 'Bank Transfer', percentage: 30 },
-      { method: 'Card Payment', percentage: 5 },
-    ],
-  },
+    paymentMethods: [],
 
-  pendingPayments: [
-    {
-      id: 'payment-1',
-      jobId: 'job-h1',
-      jobTitle: 'Kitchen Renovation - Custom Cabinets',
-      worker: {
-        id: 'worker-1',
-        name: 'Tony Gate',
-        avatar: '/api/placeholder/40/40',
-        rating: 4.8,
-      },
-      milestone: 'Cabinet Construction',
-      amount: 1650,
-      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2),
-      status: 'ready_for_release',
-      completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24),
-      escrowId: 'escrow-001',
-    },
-    {
-      id: 'payment-2',
-      jobId: 'job-h2',
-      jobTitle: 'Office Interior Design & Setup',
-      worker: {
-        id: 'worker-2',
-        name: 'Sarah Williams',
-        avatar: '/api/placeholder/40/40',
-        rating: 4.9,
-      },
-      milestone: 'Furniture Selection & Ordering',
-      amount: 5250,
-      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5),
-      status: 'pending_approval',
-      submittedDate: new Date(Date.now() - 1000 * 60 * 60 * 12),
-      escrowId: 'escrow-002',
-    },
-  ],
-
-  paymentHistory: [
-    {
-      id: 'payment-h1',
-      jobId: 'job-h1',
-      jobTitle: 'Kitchen Renovation - Custom Cabinets',
-      worker: {
-        id: 'worker-1',
-        name: 'Tony Gate',
-        avatar: '/api/placeholder/40/40',
-      },
-      milestone: 'Material Purchase & Preparation',
-      amount: 1100,
-      paidDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-      status: 'completed',
-      paymentMethod: 'Mobile Money',
-      transactionId: 'TXN-001234',
-    },
-    {
-      id: 'payment-h2',
-      jobId: 'job-h1',
-      jobTitle: 'Kitchen Renovation - Custom Cabinets',
-      worker: {
-        id: 'worker-1',
-        name: 'Tony Gate',
-        avatar: '/api/placeholder/40/40',
-      },
-      milestone: 'Initial Measurements & Design',
-      amount: 1100,
-      paidDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-      status: 'completed',
-      paymentMethod: 'Bank Transfer',
-      transactionId: 'TXN-001233',
-    },
-    {
-      id: 'payment-h3',
-      jobId: 'job-h2',
-      jobTitle: 'Office Interior Design & Setup',
-      worker: {
-        id: 'worker-2',
-        name: 'Sarah Williams',
-        avatar: '/api/placeholder/40/40',
-      },
-      milestone: 'Space Planning & Design',
-      amount: 4500,
-      paidDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-      status: 'completed',
-      paymentMethod: 'Mobile Money',
-      transactionId: 'TXN-001235',
-    },
-  ],
+  paymentHistory: [],
 };
 
 const PaymentRelease = () => {
@@ -165,7 +74,7 @@ const PaymentRelease = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: 'GHS',
+      currency: "GHS",
       minimumFractionDigits: 0,
     }).format(amount);
   };

@@ -12,62 +12,7 @@ import { USE_MOCK_DATA } from '../../../config/env';
 
 const ContractContext = createContext(null);
 
-const mockContracts = [
-  {
-    id: '1',
-    title: 'Complete Kitchen Remodel',
-    hirer: {
-      name: 'Alice Johnson',
-      avatar: 'https://i.pravatar.cc/150?u=alice',
-    },
-    value: 5000,
-    amountPaid: 2500,
-    endDate: '2024-09-15T23:59:59Z',
-    status: 'active',
-  },
-  {
-    id: '2',
-    title: 'New Website Design',
-    hirer: { name: 'Bob Williams', avatar: 'https://i.pravatar.cc/150?u=bob' },
-    value: 3000,
-    amountPaid: 3000,
-    endDate: '2024-07-20T23:59:59Z',
-    status: 'completed',
-  },
-  {
-    id: '3',
-    title: 'Initial Plumbing Consultation',
-    hirer: {
-      name: 'Charlie Brown',
-      avatar: 'https://i.pravatar.cc/150?u=charlie',
-    },
-    value: 250,
-    amountPaid: 0,
-    endDate: '2024-08-05T23:59:59Z',
-    status: 'pending',
-  },
-  {
-    id: '4',
-    title: 'Garden Landscaping Project',
-    hirer: {
-      name: 'Diana Miller',
-      avatar: 'https://i.pravatar.cc/150?u=diana',
-    },
-    value: 7500,
-    amountPaid: 1000,
-    endDate: '2024-10-01T23:59:59Z',
-    status: 'dispute',
-  },
-  {
-    id: '5',
-    title: 'House Repainting (Exterior)',
-    hirer: { name: 'Ethan Davis', avatar: 'https://i.pravatar.cc/150?u=ethan' },
-    value: 4200,
-    amountPaid: 4200,
-    endDate: '2024-06-30T23:59:59Z',
-    status: 'completed',
-  },
-];
+const mockContracts = [];
 
 export const ContractProvider = ({ children }) => {
   // Skip auth requirement when using mock data

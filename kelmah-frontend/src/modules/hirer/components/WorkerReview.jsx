@@ -66,95 +66,19 @@ userServiceClient.interceptors.request.use(
 );
 
 // Comprehensive mock worker data with completed jobs
-const mockWorkerData = [
-  {
-    id: 'worker-1',
-    name: 'Tony Gate',
-    avatar: '/api/placeholder/40/40',
-    skills: ['Carpentry', 'Cabinet Making', 'Wood Finishing'],
-    location: 'Accra, Greater Accra',
-    overallRating: 4.8,
-    totalJobs: 23,
-    completedJobs: [
-      {
-        id: 'job-completed-1',
-        title: 'Kitchen Renovation - Custom Cabinets',
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-        duration: '3 weeks',
-        amount: 5200,
-        status: 'completed',
-        review: {
-          rating: 5,
-          communication: 5,
-          quality: 5,
-          deadline: 4,
-          professionalism: 5,
-          comment:
-            'Outstanding work! Tony exceeded our expectations with the custom cabinets. Very professional and delivered on time.',
-          recommend: 'yes',
-          reviewDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25),
-        },
-      },
-      {
-        id: 'job-completed-2',
-        title: 'Bedroom Wardrobe Installation',
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60),
-        duration: '1 week',
-        amount: 2800,
-        status: 'completed',
-        review: null, // Pending review
-      },
-    ],
+const mockWorkerData = [],
   },
   {
     id: 'worker-2',
     name: 'Sarah Williams',
     avatar: '/api/placeholder/40/40',
-    skills: ['Interior Design', 'Space Planning', 'Project Management'],
-    location: 'Kumasi, Ashanti',
-    overallRating: 4.9,
-    totalJobs: 31,
-    completedJobs: [
-      {
-        id: 'job-completed-3',
-        title: 'Office Interior Design & Setup',
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 45),
-        duration: '4 weeks',
-        amount: 14500,
-        status: 'completed',
-        review: {
-          rating: 5,
-          communication: 5,
-          quality: 5,
-          deadline: 5,
-          professionalism: 5,
-          comment:
-            'Sarah transformed our office space beautifully. Her attention to detail and professional approach was impressive.',
-          recommend: 'yes',
-          reviewDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40),
-        },
-      },
-    ],
+    skills: [],
   },
   {
     id: 'worker-3',
     name: 'Michael Asante',
     avatar: '/api/placeholder/40/40',
-    skills: ['Plumbing', 'Tiling', 'Bathroom Design'],
-    location: 'Tema, Greater Accra',
-    overallRating: 4.7,
-    totalJobs: 18,
-    completedJobs: [
-      {
-        id: 'job-completed-4',
-        title: 'Bathroom Renovation - Modern Design',
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
-        duration: '2.5 weeks',
-        amount: 7800,
-        status: 'completed',
-        review: null, // Pending review
-      },
-    ],
+    skills: [],
   },
 ];
 
@@ -208,7 +132,7 @@ const WorkerReview = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: 'GHS',
+      currency: "GHS",
       minimumFractionDigits: 0,
     }).format(amount);
   };

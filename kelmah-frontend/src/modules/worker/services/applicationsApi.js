@@ -21,40 +21,7 @@ jobServiceClient.interceptors.request.use(
 );
 
 // Mock applications data
-const mockApplications = [
-  {
-    id: 'app-1',
-    jobId: 'job-1',
-    jobTitle: 'Kitchen Renovation - Custom Cabinets',
-    jobDescription:
-      'Looking for an experienced carpenter to build custom kitchen cabinets...',
-    company: 'Mitchell Residence',
-    location: 'Accra, Greater Accra',
-    budget: 5500,
-    currency: 'GH₵',
-    status: 'pending',
-    appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-    coverLetter:
-      'I am very interested in this kitchen cabinet project. With over 8 years of carpentry experience, I specialize in custom furniture and cabinet making. I have completed similar projects and can provide references.',
-    proposedRate: 5200,
-    estimatedDuration: '3-4 weeks',
-    clientResponse: null,
-    clientResponseAt: null,
-    hirer: {
-      id: 'client-1',
-      name: 'Sarah Mitchell',
-      avatar: '/api/placeholder/50/50',
-      rating: 4.8,
-      reviewsCount: 12,
-    },
-    attachments: [
-      {
-        id: 'att-1',
-        name: 'portfolio_kitchen_cabinets.pdf',
-        url: '/api/placeholder/document',
-        type: 'pdf',
-      },
-    ],
+const mockApplications = [],
   },
   {
     id: 'app-2',
@@ -65,7 +32,7 @@ const mockApplications = [
     company: 'Apartment Complex',
     location: 'Tema, Greater Accra',
     budget: 1200,
-    currency: 'GH₵',
+    currency: "GHS",
     status: 'accepted',
     appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
     coverLetter:
@@ -85,40 +52,6 @@ const mockApplications = [
     attachments: [],
   },
   {
-    id: 'app-3',
-    jobId: 'job-expired',
-    jobTitle: 'Deck Construction',
-    jobDescription: 'Build a wooden deck for backyard entertainment area...',
-    company: 'Williams Family',
-    location: 'Kumasi, Ashanti Region',
-    budget: 2800,
-    currency: 'GH₵',
-    status: 'rejected',
-    appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14), // 14 days ago
-    coverLetter:
-      'I am interested in building your deck. I have experience with outdoor construction and can work with various wood types.',
-    proposedRate: 2650,
-    estimatedDuration: '2-3 weeks',
-    clientResponse:
-      'Thank you for your application. We decided to go with another contractor who had more deck-specific experience.',
-    clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
-    hirer: {
-      id: 'client-5',
-      name: 'Jennifer Williams',
-      avatar: '/api/placeholder/50/50',
-      rating: 4.6,
-      reviewsCount: 9,
-    },
-    attachments: [
-      {
-        id: 'att-2',
-        name: 'deck_design_proposal.jpg',
-        url: '/api/placeholder/image',
-        type: 'image',
-      },
-    ],
-  },
-  {
     id: 'app-4',
     jobId: 'job-5',
     jobTitle: 'Roof Repair and Maintenance',
@@ -127,7 +60,7 @@ const mockApplications = [
     company: 'Wilson Residence',
     location: 'Cape Coast, Central Region',
     budget: 950,
-    currency: 'GH₵',
+    currency: "GHS",
     status: 'pending',
     appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
     coverLetter:
@@ -144,45 +77,6 @@ const mockApplications = [
       reviewsCount: 9,
     },
     attachments: [],
-  },
-  {
-    id: 'app-5',
-    jobId: 'job-completed',
-    jobTitle: 'Custom Bookshelf Installation',
-    jobDescription: 'Install custom-built bookshelves in home office...',
-    company: 'Thompson Residence',
-    location: 'Accra, Greater Accra',
-    budget: 1800,
-    currency: 'GH₵',
-    status: 'completed',
-    appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
-    coverLetter:
-      'I specialize in custom furniture and would love to create beautiful bookshelves for your home office.',
-    proposedRate: 1750,
-    estimatedDuration: '1 week',
-    clientResponse:
-      'Excellent work! The bookshelves look amazing and fit perfectly.',
-    clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-    completedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
-    finalPayment: 1750,
-    clientRating: 5,
-    clientReview:
-      'Tony did an outstanding job on our custom bookshelves. Professional, timely, and excellent craftsmanship.',
-    hirer: {
-      id: 'client-7',
-      name: 'Michael Thompson',
-      avatar: '/api/placeholder/50/50',
-      rating: 4.9,
-      reviewsCount: 15,
-    },
-    attachments: [
-      {
-        id: 'att-3',
-        name: 'bookshelf_final_photos.jpg',
-        url: '/api/placeholder/image',
-        type: 'image',
-      },
-    ],
   },
 ];
 
@@ -285,14 +179,8 @@ const applicationsApi = {
       );
       return response.data;
     } catch (error) {
-      console.warn(
-        'Job service unavailable for application withdrawal, simulating success:',
-        error.message,
-      );
-      return {
-        success: true,
-        message: 'Application withdrawn successfully (mock)',
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 
@@ -307,19 +195,8 @@ const applicationsApi = {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Job service unavailable for application update, simulating success:',
-        error.message,
-      );
-
-      const existingApplication = mockApplications.find(
-        (app) => app.id === applicationId,
-      );
-      return {
-        ...existingApplication,
-        ...updateData,
-        updatedAt: new Date(),
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 

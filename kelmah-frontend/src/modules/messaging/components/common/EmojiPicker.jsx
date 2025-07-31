@@ -21,18 +21,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 // Define emoji categories
-const categories = [
-  { id: 'recent', name: 'Recent', icon: <AccessTimeIcon /> },
-  { id: 'smileys', name: 'Smileys & Emotion', icon: <EmojiEmotionsIcon /> },
-  { id: 'people', name: 'People & Body', icon: <EmojiEmotionsIcon /> },
-  { id: 'animals', name: 'Animals & Nature', icon: <EmojiEmotionsIcon /> },
-  { id: 'food', name: 'Food & Drink', icon: <EmojiEmotionsIcon /> },
-  { id: 'travel', name: 'Travel & Places', icon: <EmojiEmotionsIcon /> },
-  { id: 'activities', name: 'Activities', icon: <EmojiEmotionsIcon /> },
-  { id: 'objects', name: 'Objects', icon: <EmojiEmotionsIcon /> },
-  { id: 'symbols', name: 'Symbols', icon: <EmojiEmotionsIcon /> },
-  { id: 'flags', name: 'Flags', icon: <EmojiEmotionsIcon /> },
-];
+const categories = [];
 
 // Sample emoji data (in a real app, this would be a more comprehensive dataset)
 const emojiData = {

@@ -16,103 +16,8 @@ const jobServiceClient = axios.create({
 });
 
 // Add auth tokens to requests
-[userServiceClient, jobServiceClient].forEach((client) => {
-  client.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('kelmah_auth_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error),
-  );
-});
-
-// Mock dashboard data
-const mockDashboardData = {
-  metrics: {
-    totalJobs: 45,
-    activeJobs: 12,
-    completedJobs: 28,
-    totalApplications: 156,
-    acceptedApplications: 23,
-    pendingApplications: 18,
-    totalEarnings: 15420,
-    monthlyEarnings: 3200,
-    averageRating: 4.7,
-    profileCompletion: 85,
-  },
-  recentJobs: [
-    {
-      id: 'job-recent-1',
-      title: 'Kitchen Cabinet Installation',
-      company: 'Mitchell Residence',
-      location: 'Accra, Greater Accra',
-      budget: 5500,
-      currency: 'GH₵',
-      status: 'active',
-      deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      applicationsCount: 8,
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    },
-    {
-      id: 'job-recent-2',
-      title: 'Bathroom Plumbing Repair',
-      company: 'Chen Family Home',
-      location: 'Kumasi, Ashanti Region',
-      budget: 800,
-      currency: 'GH₵',
-      status: 'pending',
-      deadline: new Date(Date.now() + 1000 * 60 * 60 * 48),
-      applicationsCount: 12,
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 6),
-    },
-    {
-      id: 'job-recent-3',
-      title: 'House Electrical Rewiring',
-      company: 'Thompson Residence',
-      location: 'Takoradi, Western Region',
-      budget: 3200,
-      currency: 'GH₵',
-      status: 'completed',
-      deadline: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-      applicationsCount: 6,
-      postedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-    },
-  ],
-  activeWorkers: [
-    {
-      id: 'worker-1',
-      name: 'Tony Gate',
-      skills: ['Carpentry', 'Furniture Making'],
-      rating: 4.8,
-      completedJobs: 15,
-      location: 'Accra, Greater Accra',
-      status: 'available',
-      lastActive: new Date(Date.now() - 1000 * 60 * 30),
-    },
-    {
-      id: 'worker-2',
-      name: 'Emmanuel Asante',
-      skills: ['Plumbing', 'Pipe Installation'],
-      rating: 4.6,
-      completedJobs: 12,
-      location: 'Kumasi, Ashanti Region',
-      status: 'busy',
-      lastActive: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    },
-    {
-      id: 'worker-3',
-      name: 'Kwame Osei',
-      skills: ['Electrical', 'Wiring'],
-      rating: 4.9,
-      completedJobs: 20,
-      location: 'Takoradi, Western Region',
-      status: 'available',
-      lastActive: new Date(Date.now() - 1000 * 60 * 15),
-    },
-  ],
+[],
+  activeWorkers: [],
   analytics: {
     jobsThisMonth: 8,
     applicationsThisMonth: 25,
@@ -175,20 +80,18 @@ export const fetchDashboardData = createAsyncThunk(
 
       // Log which services are using mock data
       if (metricsResponse.status === 'rejected') {
-        console.warn('User service unavailable for metrics, using mock data');
+        console.warn(User service unavailable for metrics, service unavailable);
       }
       if (jobsResponse.status === 'rejected') {
-        console.warn(
-          'Job service unavailable for dashboard jobs, using mock data',
+        console.warn(Job service unavailable for dashboard jobs, service unavailable,
         );
       }
       if (workersResponse.status === 'rejected') {
-        console.warn(
-          'User service unavailable for workers data, using mock data',
+        console.warn(User service unavailable for workers data, service unavailable,
         );
       }
       if (analyticsResponse.status === 'rejected') {
-        console.warn('User service unavailable for analytics, using mock data');
+        console.warn(User service unavailable for analytics, service unavailable);
       }
 
       return {
@@ -216,15 +119,8 @@ export const updateJobStatus = createAsyncThunk(
       );
       return { jobId, ...response.data };
     } catch (error) {
-      console.warn(
-        'Job service unavailable for status update, simulating success',
-      );
-      return {
-        jobId,
-        status,
-        updatedAt: new Date(),
-        message: 'Job status updated (mock)',
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 );

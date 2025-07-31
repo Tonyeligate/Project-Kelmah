@@ -21,90 +21,7 @@ schedulingClient.interceptors.request.use(
 );
 
 // Mock appointments data
-const mockAppointments = [
-  {
-    id: 'apt-1',
-    title: 'Kitchen Cabinet Installation Meeting',
-    description: 'Initial consultation for custom kitchen cabinet project',
-    jobId: 'job-1',
-    jobTitle: 'Kitchen Renovation - Custom Cabinets',
-    hirerId: 'client-1',
-    hirerName: 'Sarah Mitchell',
-    workerId: '7a1f417c-e2e2-4210-9824-08d5fac336ac',
-    workerName: 'Tony Gate',
-    startTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days from now
-    endTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2 + 1000 * 60 * 90), // 1.5 hours later
-    location: 'Mitchell Residence, Accra',
-    type: 'consultation',
-    status: 'confirmed',
-    meetingType: 'in-person',
-    notes: 'Bring measuring tools and sample materials',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12),
-  },
-  {
-    id: 'apt-2',
-    title: 'Plumbing Assessment',
-    description: 'Emergency bathroom plumbing inspection and quote',
-    jobId: 'job-2',
-    jobTitle: 'Emergency Bathroom Plumbing Repair',
-    hirerId: 'client-2',
-    hirerName: 'David Chen',
-    workerId: 'worker-2',
-    workerName: 'Emmanuel Asante',
-    startTime: new Date(Date.now() + 1000 * 60 * 60 * 6), // 6 hours from now
-    endTime: new Date(Date.now() + 1000 * 60 * 60 * 6 + 1000 * 60 * 60), // 1 hour later
-    location: 'Chen Family Home, Kumasi',
-    type: 'assessment',
-    status: 'pending',
-    meetingType: 'in-person',
-    notes: 'Urgent - water damage possible',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60),
-  },
-  {
-    id: 'apt-3',
-    title: 'Project Progress Review',
-    description: 'Weekly progress check for electrical rewiring project',
-    jobId: 'job-3',
-    jobTitle: 'Complete House Rewiring Project',
-    hirerId: 'client-3',
-    hirerName: 'Lisa Thompson',
-    workerId: 'worker-3',
-    workerName: 'Kwame Osei',
-    startTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 days from now
-    endTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5 + 1000 * 60 * 45), // 45 minutes later
-    location: 'Thompson Residence, Takoradi',
-    type: 'progress-review',
-    status: 'confirmed',
-    meetingType: 'in-person',
-    notes: 'Review completed rooms and plan next phase',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-  },
-  {
-    id: 'apt-4',
-    title: 'Virtual Consultation',
-    description:
-      'Online discussion about painting requirements and color selection',
-    jobId: 'job-4',
-    jobTitle: 'Interior House Painting',
-    hirerId: 'client-4',
-    hirerName: 'Robert Johnson',
-    workerId: '7a1f417c-e2e2-4210-9824-08d5fac336ac',
-    workerName: 'Tony Gate',
-    startTime: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day from now
-    endTime: new Date(Date.now() + 1000 * 60 * 60 * 24 + 1000 * 60 * 30), // 30 minutes later
-    location: 'Online Meeting',
-    type: 'consultation',
-    status: 'confirmed',
-    meetingType: 'virtual',
-    meetingLink: 'https://meet.google.com/abc-defg-hij',
-    notes: 'Prepare color samples and room photos',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 4),
-  },
-];
+const mockAppointments = [];
 
 class SchedulingService {
   /**
@@ -234,19 +151,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, simulating appointment update:',
-        error.message,
-      );
-
-      const existingAppointment = mockAppointments.find(
-        (apt) => apt.id === appointmentId,
-      );
-      return {
-        ...existingAppointment,
-        ...updateData,
-        updatedAt: new Date(),
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   }
 
@@ -260,14 +166,8 @@ class SchedulingService {
       );
       return response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, simulating appointment deletion:',
-        error.message,
-      );
-      return {
-        success: true,
-        message: 'Appointment deleted successfully (mock)',
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   }
 
@@ -300,19 +200,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, simulating status update:',
-        error.message,
-      );
-
-      const existingAppointment = mockAppointments.find(
-        (apt) => apt.id === appointmentId,
-      );
-      return {
-        ...existingAppointment,
-        status,
-        updatedAt: new Date(),
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   }
 

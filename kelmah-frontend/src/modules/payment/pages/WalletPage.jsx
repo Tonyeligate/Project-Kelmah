@@ -20,7 +20,7 @@ import TransactionsList from '../components/TransactionsList';
 // Add currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: 'GHS',
+  currency: "GHS",
 });
 
 const WalletPage = () => {

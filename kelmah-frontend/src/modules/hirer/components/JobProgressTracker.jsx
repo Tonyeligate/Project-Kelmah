@@ -45,78 +45,8 @@ import {
 } from '../services/hirerSlice';
 
 // Mock active jobs with detailed progress tracking
-const mockActiveJobsProgress = [
-  {
-    id: 'job-h1',
-    title: 'Kitchen Renovation - Custom Cabinets',
-    worker: {
-      id: 'worker-1',
-      name: 'Tony Gate',
-      avatar: '/api/placeholder/40/40',
-      rating: 4.8,
-      completedJobs: 23,
-    },
-    progress: 65,
-    status: 'in_progress',
-    budget: 5500,
-    paidAmount: 2200,
-    remainingAmount: 3300,
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12),
-    expectedCompletion: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8),
-    milestones: [
-      {
-        id: 'milestone-1',
-        title: 'Initial Measurements & Design',
-        description: 'Take accurate measurements and create cabinet design',
-        status: 'completed',
-        amount: 1100,
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-        paid: true,
-      },
-      {
-        id: 'milestone-2',
-        title: 'Material Purchase & Preparation',
-        description: 'Purchase wood and hardware, prepare materials',
-        status: 'completed',
-        amount: 1100,
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-        paid: true,
-      },
-      {
-        id: 'milestone-3',
-        title: 'Cabinet Construction',
-        description: 'Build cabinet frames and doors',
-        status: 'in_progress',
-        amount: 1650,
-        expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
-        paid: false,
-      },
-      {
-        id: 'milestone-4',
-        title: 'Installation & Finishing',
-        description: 'Install cabinets and apply final finish',
-        status: 'pending',
-        amount: 1650,
-        expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8),
-        paid: false,
-      },
-    ],
-    recentUpdates: [
-      {
-        id: 'update-1',
-        message:
-          'Cabinet frames are taking shape nicely. Should be ready for door installation by tomorrow.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-        type: 'progress',
-      },
-      {
-        id: 'update-2',
-        message:
-          'Milestone 2 completed - all materials ready for construction phase.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
-        type: 'milestone',
-      },
-    ],
+const mockActiveJobsProgress = [],
+    recentUpdates: [],
   },
   {
     id: 'job-h2',
@@ -135,44 +65,8 @@ const mockActiveJobsProgress = [
     remainingAmount: 10500,
     startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
     expectedCompletion: new Date(Date.now() + 1000 * 60 * 60 * 24 * 16),
-    milestones: [
-      {
-        id: 'milestone-1',
-        title: 'Space Planning & Design',
-        description: 'Create detailed floor plan and design concepts',
-        status: 'completed',
-        amount: 4500,
-        completedDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        paid: true,
-      },
-      {
-        id: 'milestone-2',
-        title: 'Furniture Selection & Ordering',
-        description: 'Select and order all furniture and fixtures',
-        status: 'in_progress',
-        amount: 5250,
-        expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        paid: false,
-      },
-      {
-        id: 'milestone-3',
-        title: 'Installation & Setup',
-        description: 'Deliver and install all furniture and fixtures',
-        status: 'pending',
-        amount: 5250,
-        expectedDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 16),
-        paid: false,
-      },
-    ],
-    recentUpdates: [
-      {
-        id: 'update-1',
-        message:
-          'Furniture selections approved. Placing orders with suppliers today.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-        type: 'progress',
-      },
-    ],
+    milestones: [],
+    recentUpdates: [],
   },
 ];
 
@@ -199,7 +93,7 @@ const JobProgressTracker = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: 'GHS',
+      currency: "GHS",
       minimumFractionDigits: 0,
     }).format(amount);
   };

@@ -24,21 +24,8 @@ class NotificationsApi {
       const response = await this.client.get('/api/notifications', { params });
       return response.data;
     } catch (error) {
-      console.warn('Notification service unavailable:', error.message);
-      return { notifications: [] };
-          },
-          {
-            id: 'notif-2',
-            title: 'Payment Released',
-            message: 'Payment of GH₵7,800 has been released',
-            type: 'payment',
-            read: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-          },
-        ],
-        total: 2,
-        unread: 1,
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   }
 

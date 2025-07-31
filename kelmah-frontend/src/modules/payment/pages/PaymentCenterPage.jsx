@@ -61,7 +61,7 @@ import { glowPulse } from '../../../styles/animations';
 // Add currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: 'GHS',
+  currency: "GHS",
 });
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (

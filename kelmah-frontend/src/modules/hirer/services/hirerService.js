@@ -22,85 +22,13 @@ const jobServiceClient = axios.create({
 });
 
 // Add auth tokens to requests
-[userServiceClient, jobServiceClient].forEach((client) => {
-  client.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('kelmah_auth_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error),
-  );
-});
-
-// Mock data for fallbacks
-const mockHirerData = {
-  profile: {
-    id: 'hirer-001',
-    firstName: 'Sarah',
-    lastName: 'Mitchell',
-    email: 'sarah.mitchell@example.com',
-    phone: '+233 24 567 8901',
-    company: 'Mitchell Construction Ltd',
-    location: 'Accra, Greater Accra',
-    bio: 'We are a leading construction company specializing in residential and commercial projects.',
-    avatar: '/api/placeholder/150/150',
-    rating: 4.8,
-    reviewsCount: 28,
-    verified: true,
-  },
-
-  jobs: {
-    active: [
-      {
-        id: 'job-h1',
-        title: 'Kitchen Renovation - Custom Cabinets',
-        description:
-          'Looking for an experienced carpenter to build custom kitchen cabinets.',
-        category: 'Carpentry',
-        location: 'Accra, Greater Accra',
-        budget: 5500,
-        currency: 'GH₵',
-        status: 'active',
-        applicationsCount: 12,
-        applications: [
-          {
-            id: 'app-h1',
-            workerId: '7a1f417c-e2e2-4210-9824-08d5fac336ac',
-            workerName: 'Tony Gate',
-            workerRating: 4.8,
-            proposedRate: 5200,
-            status: 'pending',
-            appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-          },
-        ],
+[],
       },
     ],
-    completed: [
-      {
-        id: 'job-h3',
-        title: 'Residential Plumbing Installation',
-        description:
-          'Complete plumbing installation for a new 3-bedroom house.',
-        category: 'Plumbing',
-        status: 'completed',
-        finalPayment: 8500,
-        applications: [],
-      },
-    ],
+    completed: [],
   },
 
-  savedWorkers: [
-    {
-      id: 'worker-s1',
-      name: 'Alice Brown',
-      rating: 4.8,
-      experience: '4 years',
-    },
-    { id: 'worker-s2', name: 'Bob Green', rating: 4.9, experience: '6 years' },
-  ],
+  savedWorkers: [],
 };
 
 export const hirerService = {
@@ -126,15 +54,8 @@ export const hirerService = {
       );
       return response.data;
     } catch (error) {
-      console.warn(
-        'User service unavailable for profile update, simulating success:',
-        error.message,
-      );
-      return {
-        ...mockHirerData.profile,
-        ...profileData,
-        updatedAt: new Date(),
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 
@@ -150,145 +71,7 @@ export const hirerService = {
         `Job service unavailable for hirer jobs (${status}), using mock data:`,
         error.message,
       );
-      return mockHirerData.jobs[status] || [];
-    }
-  },
-
-  async createJob(jobData) {
-    try {
-      const response = await jobServiceClient.post('/api/jobs', jobData);
-      return response.data;
-    } catch (error) {
-      console.warn(
-        'Job service unavailable for job creation, simulating success:',
-        error.message,
-      );
-      return {
-        id: `job-${Date.now()}`,
-        ...jobData,
-        status: jobData.status || 'draft',
-        createdAt: new Date(),
-        applicationsCount: 0,
-      };
-    }
-  },
-
-  async updateJob(jobId, jobData) {
-    try {
-      const response = await jobServiceClient.put(
-        `/api/jobs/${jobId}`,
-        jobData,
-      );
-      return response.data;
-    } catch (error) {
-      console.warn(
-        'Job service unavailable for job update, simulating success:',
-        error.message,
-      );
-      return { id: jobId, ...jobData, updatedAt: new Date() };
-    }
-  },
-
-  async deleteJob(jobId) {
-    try {
-      await jobServiceClient.delete(`/api/jobs/${jobId}`);
-      return { success: true, message: 'Job deleted successfully' };
-    } catch (error) {
-      console.warn(
-        'Job service unavailable for job deletion, simulating success:',
-        error.message,
-      );
-      return { success: true, message: 'Job deleted successfully (mock)' };
-    }
-  },
-
-  async publishJob(jobId) {
-    try {
-      const response = await jobServiceClient.post(
-        `/api/jobs/${jobId}/publish`,
-      );
-      return response.data;
-    } catch (error) {
-      console.warn(
-        'Job service unavailable for job publishing, simulating success:',
-        error.message,
-      );
-      return { id: jobId, status: 'active', publishedAt: new Date() };
-    }
-  },
-
-  // Application Management
-  async getJobApplications(jobId, status = 'pending') {
-    try {
-      const response = await jobServiceClient.get(
-        `/api/jobs/${jobId}/applications`,
-        {
-          params: { status },
-        },
-      );
-      return response.data;
-    } catch (error) {
-      console.warn(
-        `Job service unavailable for applications (${jobId}), using mock data:`,
-        error.message,
-      );
-
-      // Find mock job and return its applications
-      const allJobs = [
-        ...mockHirerData.jobs.active,
-        ...mockHirerData.jobs.completed,
-      ];
-      const job = allJobs.find((j) => j.id === jobId);
-      return job?.applications || [];
-    }
-  },
-
-  async updateApplicationStatus(jobId, applicationId, status, feedback = '') {
-    try {
-      const response = await jobServiceClient.put(
-        `/api/jobs/${jobId}/applications/${applicationId}`,
-        { status, feedback },
-      );
-      return response.data;
-    } catch (error) {
-      console.warn(
-        'Job service unavailable for application status update, simulating success:',
-        error.message,
-      );
-      return {
-        id: applicationId,
-        status,
-        feedback,
-        updatedAt: new Date(),
-        message: 'Application status updated successfully (mock)',
-      };
-    }
-  },
-
-  // Worker Search and Management
-  async searchWorkers(searchParams) {
-    try {
-      // For now, return mock data as worker service isn't fully implemented
-      const mockWorkers = [
-        {
-          id: 'worker-w1',
-          name: 'John Doe',
-          rating: 4.5,
-          experience: '5 years',
-          hourlyRate: 50,
-          skills: ['Carpentry', 'Furniture Making'],
-          location: 'Accra, Ghana',
-        },
-        {
-          id: 'worker-w2',
-          name: 'Jane Smith',
-          rating: 4.9,
-          experience: '3 years',
-          hourlyRate: 60,
-          skills: ['Plumbing', 'Installation'],
-          location: 'Kumasi, Ghana',
-        },
-      ];
+      return mockHirerData.jobs[];
 
       return {
         workers: mockWorkers,
@@ -328,11 +111,8 @@ export const hirerService = {
       // Mock save worker for now
       return { workerId, message: 'Worker saved successfully (mock)' };
     } catch (error) {
-      console.warn(
-        'Save worker unavailable, simulating success:',
-        error.message,
-      );
-      return { workerId, message: 'Worker saved successfully (mock)' };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 
@@ -341,11 +121,8 @@ export const hirerService = {
       // Mock unsave worker for now
       return { workerId, message: 'Worker unsaved successfully (mock)' };
     } catch (error) {
-      console.warn(
-        'Unsave worker unavailable, simulating success:',
-        error.message,
-      );
-      return { workerId, message: 'Worker unsaved successfully (mock)' };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 
@@ -361,17 +138,8 @@ export const hirerService = {
         message: 'Payment released successfully (mock)',
       };
     } catch (error) {
-      console.warn(
-        'Payment release unavailable, simulating success:',
-        error.message,
-      );
-      return {
-        jobId,
-        milestoneId,
-        amount,
-        totalPaid: amount,
-        message: 'Payment released successfully (mock)',
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 
@@ -386,16 +154,8 @@ export const hirerService = {
         message: 'Review created successfully (mock)',
       };
     } catch (error) {
-      console.warn(
-        'Review creation unavailable, simulating success:',
-        error.message,
-      );
-      return {
-        workerId,
-        jobId,
-        reviewData,
-        message: 'Review created successfully (mock)',
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   },
 };

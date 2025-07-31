@@ -20,123 +20,7 @@ class NotificationService {
         auth: {
           token: localStorage.getItem('token'),
         },
-        transports: ['websocket'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 2000,
-      });
-
-      this.socket.on('connect', () => {
-        this.isConnected = true;
-        console.log('Connected to notification service');
-      });
-
-      this.socket.on('disconnect', () => {
-        this.isConnected = false;
-        console.log('Disconnected from notification service');
-      });
-
-      this.socket.on('error', (error) => {
-        console.error('Notification socket error:', error);
-      });
-
-      // Set up event listeners based on subscribers
-      Object.keys(this.subscribers).forEach((event) => {
-        this.socket.on(event, (data) => {
-          this.subscribers[event].forEach((callback) => callback(data));
-        });
-      });
-    } catch (error) {
-      console.error('Error connecting to notification service:', error);
-    }
-  }
-
-  // Disconnect from notification socket
-  disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.isConnected = false;
-    }
-  }
-
-  // Subscribe to an event
-  subscribe(event, callback) {
-    if (!this.subscribers[event]) {
-      this.subscribers[event] = [];
-
-      // If socket is already connected, set up event listener
-      if (this.socket && this.isConnected) {
-        this.socket.on(event, (data) => {
-          this.subscribers[event].forEach((cb) => cb(data));
-        });
-      }
-    }
-
-    this.subscribers[event].push(callback);
-
-    // Return unsubscribe function
-    return () => {
-      this.subscribers[event] = this.subscribers[event].filter(
-        (cb) => cb !== callback,
-      );
-
-      // If no more subscribers for this event, remove event listener
-      if (this.subscribers[event].length === 0) {
-        delete this.subscribers[event];
-        if (this.socket && this.isConnected) {
-          this.socket.off(event);
-        }
-      }
-    };
-  }
-
-  // Get notifications with pagination
-  async getNotifications(page = 1, limit = 20) {
-    try {
-      const response = await this.client.get('/api/notifications', {
-        params: { page, limit },
-        timeout: 3000, // Even shorter timeout for notifications
-      });
-      return response.data;
-    } catch (error) {
-      console.warn(
-        'Notification service unavailable, using mock data:',
-        error.message,
-      );
-
-      // Return mock notifications as fallback
-      return {
-        notifications: [
-          {
-            id: 'notif-1',
-            title: 'New Job Application',
-            message:
-              'You have a new application for your Kitchen Renovation job',
-            type: 'application',
-            read: false,
-            createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-            data: { jobId: 'job-h1', applicantId: 'worker-1' },
-          },
-          {
-            id: 'notif-2',
-            title: 'Payment Released',
-            message:
-              'Payment of GH₵7,800 has been released for Bathroom Renovation',
-            type: 'payment',
-            read: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-            data: { paymentId: 'pay-1', amount: 7800 },
-          },
-          {
-            id: 'notif-3',
-            title: 'Job Completed',
-            message: 'Bathroom Renovation project has been marked as completed',
-            type: 'job_status',
-            read: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-            data: { jobId: 'job-completed-1' },
-          },
-        ],
+        transports: [],
         totalPages: 1,
         currentPage: 1,
         totalCount: 3,
@@ -152,11 +36,8 @@ class NotificationService {
       );
       return response.data;
     } catch (error) {
-      console.warn(
-        'Notification service unavailable for mark as read, simulating success:',
-        error.message,
-      );
-      return { success: true, message: 'Notification marked as read (mock)' };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   }
 
@@ -168,14 +49,8 @@ class NotificationService {
       );
       return response.data;
     } catch (error) {
-      console.warn(
-        'Notification service unavailable for mark all as read, simulating success:',
-        error.message,
-      );
-      return {
-        success: true,
-        message: 'All notifications marked as read (mock)',
-      };
+      console.warn('Service unavailable:', error.message);
+      throw error;
     }
   }
 

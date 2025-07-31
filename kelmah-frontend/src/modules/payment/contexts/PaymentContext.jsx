@@ -12,140 +12,14 @@ import { USE_MOCK_DATA } from '../../../config';
 
 const PaymentContext = createContext(null);
 
-const mockTransactions = [
-  {
-    id: '1',
-    type: 'deposit',
-    amount: 500.0,
-    status: 'completed',
-    date: '2024-07-20T10:00:00Z',
-    title: 'Job Payment: Kitchen Remodel',
-  },
-  {
-    id: '2',
-    type: 'withdrawal',
-    amount: 150.0,
-    status: 'completed',
-    date: '2024-07-19T15:30:00Z',
-    title: 'Withdrawal to Bank Account',
-  },
-  {
-    id: '3',
-    type: 'deposit',
-    amount: 75.5,
-    status: 'completed',
-    date: '2024-07-18T11:45:00Z',
-    title: 'Job Payment: Bookshelf Assembly',
-  },
-  {
-    id: '4',
-    type: 'withdrawal',
-    amount: 200.0,
-    status: 'pending',
-    date: '2024-07-21T09:00:00Z',
-    title: 'Withdrawal to Mobile Money',
-  },
-  {
-    id: '5',
-    type: 'deposit',
-    amount: 1200.0,
-    status: 'completed',
-    date: '2024-07-15T18:00:00Z',
-    title: 'Job Payment: Full-Stack Development',
-  },
-];
+const mockTransactions = [];
 
-const mockEscrowsData = [
-  {
-    id: 'e1',
-    contractId: 'c1',
-    title: 'Kitchen Renovation Project',
-    otherParty: 'Jane Doe',
-    amount: 1500,
-    status: 'Funded',
-  },
-  {
-    id: 'e2',
-    contractId: 'c2',
-    title: 'Website Development',
-    otherParty: 'John Smith',
-    amount: 800,
-    status: 'Pending Release',
-  },
-  {
-    id: 'e3',
-    contractId: 'c3',
-    title: 'Garden Landscaping',
-    otherParty: 'Emily White',
-    amount: 550,
-    status: 'Funded',
-  },
-];
+const mockEscrowsData = [];
 
-const mockBillsData = [
-  {
-    id: 'b1',
-    title: 'Monthly Subscription',
-    amount: 25.0,
-    dueDate: '2024-08-01',
-    status: 'unpaid',
-  },
-  {
-    id: 'b2',
-    title: 'Service Fee - Project X',
-    amount: 150.0,
-    dueDate: '2024-07-25',
-    status: 'paid',
-  },
-  {
-    id: 'b3',
-    title: 'Platform Fee',
-    amount: 12.5,
-    dueDate: '2024-07-20',
-    status: 'overdue',
-  },
-  {
-    id: 'b4',
-    title: 'Monthly Subscription',
-    amount: 25.0,
-    dueDate: '2024-07-01',
-    status: 'paid',
-  },
-];
+const mockBillsData = [];
 
 // Mock payment methods for initial display in deposit/withdraw dialogs
-const mockMethodsData = [
-  {
-    id: '1',
-    type: 'card',
-    name: 'Visa Card',
-    cardNumber: '•••• 4242',
-    expiryDate: '05/25',
-    isDefault: true,
-  },
-  {
-    id: '2',
-    type: 'card',
-    name: 'Mastercard',
-    cardNumber: '•••• 5678',
-    expiryDate: '03/24',
-    isDefault: false,
-  },
-  {
-    id: '3',
-    type: 'mobile',
-    name: 'MTN Mobile Money',
-    phoneNumber: '+233789012345',
-    isDefault: false,
-  },
-  {
-    id: '4',
-    type: 'bank',
-    name: 'Ghana Commercial Bank',
-    accountNumber: '•••• 3456',
-    isDefault: false,
-  },
-];
+const mockMethodsData = [];
 
 export const PaymentProvider = ({ children }) => {
   const { user } = useAuth();
@@ -215,7 +89,7 @@ export const PaymentProvider = ({ children }) => {
         await paymentsApi.createTransaction({
           amount,
           type: 'deposit',
-          currency: 'USD',
+          currency: "GHS",
           paymentMethodId,
         });
         showToast(`$${amount.toFixed(2)} deposited successfully.`, 'success');
@@ -243,7 +117,7 @@ export const PaymentProvider = ({ children }) => {
         await paymentsApi.createTransaction({
           amount,
           type: 'withdrawal',
-          currency: 'USD',
+          currency: "GHS",
           paymentMethodId,
         });
         showToast('Withdrawal request submitted.', 'info');
