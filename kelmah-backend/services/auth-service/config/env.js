@@ -164,7 +164,7 @@ const OAUTH_CONFIG = {
   OAUTH_SUCCESS_REDIRECT: process.env.OAUTH_SUCCESS_REDIRECT || 
                          (process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/dashboard` : 'http://localhost:5173/dashboard'),
   OAUTH_FAILURE_REDIRECT: process.env.OAUTH_FAILURE_REDIRECT || 
-                         (process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login` : 'http://localhost:5173/login')
+                         (process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login` : 'https://kelmah-frontend-cyan.vercel.app/login')
 };
 
 // ===============================================
@@ -173,7 +173,7 @@ const OAUTH_CONFIG = {
 
 const EXTERNAL_SERVICES_CONFIG = {
   // Frontend URL
-  FRONTEND_URL: process.env.FRONTEND_URL || 'https://kelmah-frontend-mu.vercel.app',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app',
   
   // Other microservices
   USER_SERVICE_URL: process.env.USER_SERVICE_URL || 'http://localhost:5002',

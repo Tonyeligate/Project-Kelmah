@@ -63,10 +63,13 @@ app.use(cookieParser());
 // Security middleware
 // Configure CORS to allow multiple dev origins
 const allowedOrigins = [
-  config.FRONTEND_URL || 'http://localhost:3000',
-  'https://kelmah-frontend-cyan.vercel.app',
-  'http://localhost:5173'
-];
+  'http://localhost:3000',
+  'https://kelmah-frontend-cyan.vercel.app', // Current production frontend
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://kelmah-frontend-mu.vercel.app', // Legacy URL for compatibility
+  config.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app' // Dynamic with fallback
+].filter(Boolean);
 
 // Enable CORS for allowed origins with dynamic reflection
 app.use(cors({

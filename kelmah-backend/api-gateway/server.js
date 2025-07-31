@@ -108,9 +108,12 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://kelmah-frontend-cyan.vercel.app',
-      'http://localhost:5173'
-    ];
+      'https://kelmah-frontend-cyan.vercel.app', // Current production frontend
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'https://kelmah-frontend-mu.vercel.app', // Legacy URL for compatibility
+      process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'
+    ].filter(Boolean);
     // allow requests with no origin (e.g. mobile apps, curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {

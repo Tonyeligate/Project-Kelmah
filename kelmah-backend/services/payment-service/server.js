@@ -19,12 +19,27 @@ const app = express();
 // Middleware
 app.use(helmet());
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://kelmah-frontend-cyan.vercel.app',
-    'http://localhost:5173'
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://kelmah-frontend-cyan.vercel.app', // Current production frontend
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'https://kelmah-frontend-mu.vercel.app', // Legacy URL for compatibility
+      process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'
+    ].filter(Boolean);
+    
+    if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));

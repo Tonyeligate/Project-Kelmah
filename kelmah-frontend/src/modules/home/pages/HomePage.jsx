@@ -404,7 +404,7 @@ const HomePage = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                                        <Box
+                    <Box
                       sx={{
                         display: 'flex',
                         flexDirection: isSm ? 'column' : 'row',
@@ -420,7 +420,7 @@ const HomePage = () => {
                           flexDirection: 'column',
                         },
                       }}
-                      >
+                    >
                       {!user ? (
                         <>
                           <StyledButton
