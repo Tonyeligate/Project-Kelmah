@@ -306,9 +306,15 @@ const SchedulingPage = () => {
       if (!appointmentDate) return null;
 
       try {
-        return format(new Date(appointmentDate), 'yyyy-MM-dd');
+        const dateObj = new Date(appointmentDate);
+        // Check if date is valid
+        if (isNaN(dateObj.getTime())) {
+          console.warn('Invalid appointment date:', appointmentDate);
+          return null;
+        }
+        return format(dateObj, 'yyyy-MM-dd');
       } catch (error) {
-        console.warn('Invalid appointment date:', appointmentDate);
+        console.warn('Invalid appointment date:', appointmentDate, error);
         return null;
       }
     })
@@ -496,16 +502,33 @@ const SchedulingPage = () => {
   });
 
   // Filter for selected day's appointments
-  const dailyAppointments = filteredAppointments.filter((a) =>
-    isSameDay(new Date(a.date), selectedDate),
-  );
+  const dailyAppointments = filteredAppointments.filter((a) => {
+    try {
+      const appointmentDate = new Date(a.date);
+      if (isNaN(appointmentDate.getTime())) return false;
+      return isSameDay(appointmentDate, selectedDate);
+    } catch (error) {
+      console.warn('Invalid appointment date in dailyAppointments filter:', a.date);
+      return false;
+    }
+  });
 
   // Group appointments by date string for agenda view
   const appointmentsByDate = filteredAppointments.reduce((acc, app) => {
-    const dateKey = format(new Date(app.date), 'yyyy-MM-dd');
-    acc[dateKey] = acc[dateKey] || [];
-    acc[dateKey].push(app);
-    return acc;
+    try {
+      const appointmentDate = new Date(app.date);
+      if (isNaN(appointmentDate.getTime())) {
+        console.warn('Invalid appointment date in reduce:', app.date);
+        return acc;
+      }
+      const dateKey = format(appointmentDate, 'yyyy-MM-dd');
+      acc[dateKey] = acc[dateKey] || [];
+      acc[dateKey].push(app);
+      return acc;
+    } catch (error) {
+      console.warn('Error processing appointment date in reduce:', app.date, error);
+      return acc;
+    }
   }, {});
 
   // Get upcoming appointments (next 7 days)
