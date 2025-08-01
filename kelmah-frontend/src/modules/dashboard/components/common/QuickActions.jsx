@@ -95,7 +95,7 @@ const QuickActions = ({ actions = [] }) => {
                     transform: 'translateY(0)',
                     boxShadow: 'none',
                   },
-                  opacity: actionStates[index].loading ? 0.7 : 1,
+                  opacity: actionStates[index]?.loading ? 0.7 : 1,
                 }}
               >
                 <Badge badgeContent={action.badgeContent} color="error">
@@ -113,7 +113,7 @@ const QuickActions = ({ actions = [] }) => {
                       position: 'relative',
                     }}
                   >
-                    {actionStates[index].loading ? (
+                    {actionStates[index]?.loading ? (
                       <CircularProgress
                         size={30}
                         sx={{
@@ -130,7 +130,7 @@ const QuickActions = ({ actions = [] }) => {
                   variant="body2"
                   sx={{
                     fontWeight: 'bold',
-                    opacity: actionStates[index].loading ? 0.7 : 1,
+                    opacity: actionStates[index]?.loading ? 0.7 : 1,
                   }}
                 >
                   {action.title}

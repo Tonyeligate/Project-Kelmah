@@ -7,20 +7,36 @@ import {
   Link,
   IconButton,
   useTheme,
+  useMediaQuery,
   Slide,
   Fade,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Stack,
+  Divider,
 } from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  Facebook as FacebookIcon,
+  Twitter as TwitterIcon,
+  LinkedIn as LinkedInIcon,
+  Instagram as InstagramIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  LocationOn as LocationIcon,
+} from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import InstagramIcon from '@mui/icons-material/Instagram';
+import { motion } from 'framer-motion';
 
 const Footer = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
   const [showFooter, setShowFooter] = useState(false);
   const [hasUserScrolled, setHasUserScrolled] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
 
   useEffect(() => {
     let scrollTimeout;
@@ -31,116 +47,77 @@ const Footer = () => {
       
       // Use a small delay to debounce scroll events
       scrollTimeout = setTimeout(() => {
-        // ANALYTICAL DEBUG - Let's see EVERYTHING
-        const docElement = document.documentElement;
-        const body = document.body;
-        const mainElement = document.querySelector('main');
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
         
-        // Check BOTH document scroll AND main element scroll
-        const docScrollHeight = Math.max(docElement.scrollHeight, body.scrollHeight);
-        const docScrollTop = Math.max(docElement.scrollTop, body.scrollTop, window.pageYOffset);
-        const docClientHeight = Math.max(docElement.clientHeight, window.innerHeight);
-        
-        // Check main element scroll (this might be where the real scrolling happens)
-        const mainScrollHeight = mainElement ? mainElement.scrollHeight : 0;
-        const mainScrollTop = mainElement ? mainElement.scrollTop : 0;
-        const mainClientHeight = mainElement ? mainElement.clientHeight : 0;
-        
-        // Use whichever scroll container has actual scrolling
-        const scrollHeight = Math.max(docScrollHeight, mainScrollHeight);
-        const scrollTop = Math.max(docScrollTop, mainScrollTop);
-        const clientHeight = Math.max(docClientHeight, mainClientHeight);
-        
-        const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-        const isNearBottom = distanceFromBottom <= 150;
-        
-        // COMPREHENSIVE DEBUG LOG
-        console.log('🔍 FOOTER ANALYSIS:', {
-          '📏 DOC SCROLL': {
-            docScrollHeight,
-            docScrollTop,
-            docClientHeight,
-          },
-          '🎯 MAIN SCROLL': {
-            mainScrollHeight,
-            mainScrollTop,
-            mainClientHeight,
-            mainExists: !!mainElement,
-          },
-          '🔥 FINAL VALUES': {
-            scrollHeight,
-            scrollTop,
-            clientHeight,
-            distanceFromBottom,
-            isNearBottom,
-          },
-          '✅ DETECTION': {
-            hasUserScrolled,
-            hasScrollableContent: scrollHeight > clientHeight + 100,
-          }
-        });
-        
-        // Track if user has scrolled at all
-        if (scrollTop > 20 && !hasUserScrolled) {
+        // Mark that user has scrolled at least once
+        if (scrollTop > 100 && !hasUserScrolled) {
           setHasUserScrolled(true);
-          console.log('✅ User started scrolling!');
         }
         
-        const shouldShowFooter = hasUserScrolled && isNearBottom;
-        const hasScrollableContent = scrollHeight > clientHeight + 100;
-        const finalShouldShow = shouldShowFooter && hasScrollableContent;
+        // Check if user is near the bottom of the page
+        const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
+        const shouldShow = distanceFromBottom <= 150 && hasUserScrolled; // Show when within 150px of bottom
         
-        console.log('🎭 FOOTER DECISION:', {
-          shouldShowFooter,
-          hasScrollableContent,
-          finalShouldShow,
-          currentFooterState: showFooter
-        });
-        
-        setShowFooter(finalShouldShow);
-      }, 50);
+        setShowFooter(shouldShow);
+      }, 50); // 50ms debounce
     };
 
-    // Add scroll listeners to ALL possible scroll containers
+    // Add scroll listener
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
-    document.addEventListener('scroll', checkScrollPosition, { passive: true });
-    window.addEventListener('resize', checkScrollPosition, { passive: true });
     
-    // CRITICAL: Also listen to the main element scroll (this is likely where the real scrolling happens)
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      mainElement.addEventListener('scroll', checkScrollPosition, { passive: true });
-    }
-    
-    // Listen to the parent layout container too
-    const layoutContainer = document.querySelector('[data-testid="layout-container"], .MuiBox-root');
-    if (layoutContainer) {
-      layoutContainer.addEventListener('scroll', checkScrollPosition, { passive: true });
-    }
-    
-    // Initial check after a delay to ensure page is loaded
-    const initialTimeout = setTimeout(checkScrollPosition, 1000);
-    
+    // Check initial position
+    checkScrollPosition();
+
     // Cleanup
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
-      document.removeEventListener('scroll', checkScrollPosition);
-      window.removeEventListener('resize', checkScrollPosition);
-      if (mainElement) {
-        mainElement.removeEventListener('scroll', checkScrollPosition);
-      }
-      if (layoutContainer) {
-        layoutContainer.removeEventListener('scroll', checkScrollPosition);
-      }
       if (scrollTimeout) clearTimeout(scrollTimeout);
-      if (initialTimeout) clearTimeout(initialTimeout);
     };
   }, [hasUserScrolled]);
 
-  // Don't render anything if footer shouldn't show
+  // Don't render if footer shouldn't be shown
   if (!showFooter) {
     return null;
   }
+
+  const footerSections = [
+    {
+      title: 'For Workers',
+      links: [
+        { label: 'Find Work', href: '/search/location' },
+        { label: 'Create Profile', href: '/profile' },
+        { label: 'Payment Settings', href: '/settings/payments' },
+        { label: 'Resources', href: '/resources/workers' },
+      ],
+    },
+    {
+      title: 'For Hirers',
+      links: [
+        { label: 'Find Talent', href: '/find-talent' },
+        { label: 'Post a Job', href: '/post-job' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Resources', href: '/resources/hirers' },
+      ],
+    },
+    {
+      title: 'Company',
+      links: [
+        { label: 'About Us', href: '/about' },
+        { label: 'Contact', href: '/contact' },
+        { label: 'Privacy Policy', href: '/privacy' },
+        { label: 'Terms of Service', href: '/terms' },
+      ],
+    },
+  ];
+
+  const socialLinks = [
+    { icon: FacebookIcon, color: '#1877F2', label: 'Facebook', href: '#' },
+    { icon: TwitterIcon, color: '#1DA1F2', label: 'Twitter', href: '#' },
+    { icon: LinkedInIcon, color: '#0A66C2', label: 'LinkedIn', href: '#' },
+    { icon: InstagramIcon, color: '#E4405F', label: 'Instagram', href: '#' },
+  ];
 
   return (
     <Slide direction="up" in={showFooter} timeout={500}>
@@ -157,14 +134,12 @@ const Footer = () => {
       >
         <Box
           sx={{
-            py: 3,
+            py: { xs: 2, sm: 3 },
             backgroundColor: 'rgba(25, 25, 25, 0.98)',
             backdropFilter: 'blur(25px)',
             borderTop: '3px solid rgba(255, 215, 0, 0.5)',
             boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.8)',
-            // Enhanced glassmorphism effect for popup
             background: 'linear-gradient(135deg, rgba(25, 25, 25, 0.98) 0%, rgba(35, 35, 35, 0.95) 100%)',
-            // Add a subtle glow effect
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -181,225 +156,404 @@ const Footer = () => {
             },
           }}
         >
-          <Container maxWidth="lg">
-            <Grid container spacing={4}>
-              <Grid item xs={12} sm={6} md={3}>
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{
-                    fontWeight: 'bold',
-                    background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+          <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 } }}>
+            {/* Mobile Accordion Layout */}
+            {isMobile ? (
+              <Box>
+                {/* Mobile Header */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Stack spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 800,
+                        background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        textAlign: 'center',
+                      }}
+                    >
+                      KELMAH
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ textAlign: 'center', px: 2, lineHeight: 1.5 }}
+                    >
+                      Ghana's premier platform for skilled trades
+                    </Typography>
+                  </Stack>
+                </motion.div>
+
+                {/* Mobile Social Icons */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                    <Stack direction="row" spacing={1}>
+                      {socialLinks.map((social) => (
+                        <IconButton
+                          key={social.label}
+                          size="large"
+                          href={social.href}
+                          sx={{
+                            background: `rgba(${
+                              social.color === '#1877F2' ? '24,119,242' : 
+                              social.color === '#1DA1F2' ? '29,161,242' : 
+                              social.color === '#0A66C2' ? '10,102,194' : 
+                              '228,64,95'
+                            }, 0.1)`,
+                            color: social.color,
+                            border: `1px solid rgba(${
+                              social.color === '#1877F2' ? '24,119,242' : 
+                              social.color === '#1DA1F2' ? '29,161,242' : 
+                              social.color === '#0A66C2' ? '10,102,194' : 
+                              '228,64,95'
+                            }, 0.2)`,
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              background: social.color,
+                              color: '#fff',
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 12px rgba(${
+                                social.color === '#1877F2' ? '24,119,242' : 
+                                social.color === '#1DA1F2' ? '29,161,242' : 
+                                social.color === '#0A66C2' ? '10,102,194' : 
+                                '228,64,95'
+                              }, 0.3)`,
+                            },
+                          }}
+                        >
+                          <social.icon sx={{ fontSize: 20 }} />
+                        </IconButton>
+                      ))}
+                    </Stack>
+                  </Box>
+                </motion.div>
+
+                {/* Mobile Accordion Sections */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  {footerSections.map((section, index) => (
+                    <Accordion
+                      key={section.title}
+                      expanded={expandedSection === index}
+                      onChange={() => setExpandedSection(expandedSection === index ? null : index)}
+                      sx={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,215,0,0.1)',
+                        borderRadius: 2,
+                        mb: 1,
+                        '&:before': { display: 'none' },
+                        '&.Mui-expanded': {
+                          margin: '0 0 8px 0',
+                          background: 'rgba(255,215,0,0.05)',
+                          border: '1px solid rgba(255,215,0,0.2)',
+                        },
+                      }}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon sx={{ color: '#FFD700' }} />}
+                        sx={{
+                          minHeight: 48,
+                          '&.Mui-expanded': { minHeight: 48 },
+                          '& .MuiAccordionSummary-content': {
+                            margin: '8px 0',
+                            '&.Mui-expanded': { margin: '8px 0' },
+                          },
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: 700,
+                            color: expandedSection === index ? '#FFD700' : 'text.primary',
+                            transition: 'color 0.3s ease',
+                          }}
+                        >
+                          {section.title}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ pt: 0, pb: 2 }}>
+                        <Stack spacing={1.5}>
+                          {section.links.map((link) => (
+                            <Link
+                              key={link.label}
+                              component={RouterLink}
+                              to={link.href}
+                              sx={{
+                                color: 'text.secondary',
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                                fontWeight: 500,
+                                py: 0.5,
+                                px: 1,
+                                borderRadius: 1,
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                  color: '#FFD700',
+                                  background: 'rgba(255,215,0,0.1)',
+                                  transform: 'translateX(4px)',
+                                },
+                              }}
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </Stack>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </motion.div>
+
+                {/* Mobile Contact Info */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  <Divider sx={{ my: 3, borderColor: 'rgba(255,215,0,0.2)' }} />
+                  <Stack spacing={2} alignItems="center">
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#FFD700',
+                        textAlign: 'center',
+                      }}
+                    >
+                      Get in Touch
+                    </Typography>
+                    <Stack spacing={1.5} alignItems="center">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EmailIcon sx={{ color: '#FFD700', fontSize: 20 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          support@kelmah.com
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PhoneIcon sx={{ color: '#FFD700', fontSize: 20 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          +233 24 123 4567
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <LocationIcon sx={{ color: '#FFD700', fontSize: 20 }} />
+                        <Typography variant="body2" color="text.secondary" textAlign="center">
+                          Accra, Ghana
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Stack>
+                </motion.div>
+              </Box>
+            ) : (
+              /* Desktop Grid Layout */
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Grid container spacing={{ sm: 3, md: 4 }}>
+                  {/* Company Info Column */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Stack spacing={2}>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          fontWeight: 800,
+                          background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          mb: 1,
+                        }}
+                      >
+                        KELMAH
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.6, maxWidth: 280 }}
+                      >
+                        Your professional platform for skilled trades, connecting experts,
+                        and growing businesses across Ghana.
+                      </Typography>
+                      
+                      {/* Enhanced Social Icons */}
+                      <Box sx={{ mt: 2 }}>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary"
+                          sx={{ fontWeight: 600, mb: 1, display: 'block' }}
+                        >
+                          FOLLOW US
+                        </Typography>
+                        <Stack direction="row" spacing={1}>
+                          {socialLinks.map((social) => (
+                            <IconButton
+                              key={social.label}
+                              size="medium"
+                              href={social.href}
+                              sx={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'text.secondary',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                  background: social.color,
+                                  color: '#fff',
+                                  transform: 'translateY(-2px) scale(1.05)',
+                                  boxShadow: `0 8px 25px rgba(${
+                                    social.color === '#1877F2' ? '24,119,242' : 
+                                    social.color === '#1DA1F2' ? '29,161,242' : 
+                                    social.color === '#0A66C2' ? '10,102,194' : 
+                                    '228,64,95'
+                                  }, 0.4)`,
+                                  border: `1px solid ${social.color}`,
+                                },
+                              }}
+                            >
+                              <social.icon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                          ))}
+                        </Stack>
+                      </Box>
+                      
+                      {/* Contact Info */}
+                      <Box sx={{ mt: 3 }}>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary"
+                          sx={{ fontWeight: 600, mb: 1.5, display: 'block' }}
+                        >
+                          CONTACT INFO
+                        </Typography>
+                        <Stack spacing={1}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <EmailIcon sx={{ color: '#FFD700', fontSize: 16 }} />
+                            <Typography variant="caption" color="text.secondary">
+                              support@kelmah.com
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <PhoneIcon sx={{ color: '#FFD700', fontSize: 16 }} />
+                            <Typography variant="caption" color="text.secondary">
+                              +233 24 123 4567
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </Grid>
+
+                  {/* Dynamic Sections */}
+                  {footerSections.map((section) => (
+                    <Grid key={section.title} item xs={12} sm={6} md={3}>
+                      <Stack spacing={2}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#FFD700',
+                            fontSize: { sm: '1.1rem', md: '1.2rem' },
+                            mb: 1,
+                          }}
+                        >
+                          {section.title}
+                        </Typography>
+                        <Stack spacing={1}>
+                          {section.links.map((link) => (
+                            <Link
+                              key={link.label}
+                              component={RouterLink}
+                              to={link.href}
+                              sx={{
+                                color: 'text.secondary',
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                                fontWeight: 500,
+                                py: 0.5,
+                                px: 1,
+                                borderRadius: 1,
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                display: 'block',
+                                '&:hover': {
+                                  color: '#FFD700',
+                                  background: 'rgba(255,215,0,0.08)',
+                                  transform: 'translateX(4px)',
+                                  paddingLeft: 1.5,
+                                },
+                              }}
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </Stack>
+                      </Stack>
+                    </Grid>
+                  ))}
+                </Grid>
+              </motion.div>
+            )}
+
+            {/* Enhanced Copyright Section */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Divider 
+                sx={{ 
+                  mt: { xs: 3, sm: 4 }, 
+                  mb: { xs: 2, sm: 3 },
+                  borderColor: 'rgba(255,215,0,0.2)' 
+                }} 
+              />
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                justifyContent="space-between" 
+                alignItems="center"
+                spacing={{ xs: 2, sm: 1 }}
+              >
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ 
+                    textAlign: { xs: 'center', sm: 'left' },
+                    fontWeight: 500,
                   }}
                 >
-                  KELMAH
+                  © {currentYear} Kelmah. All rights reserved.
                 </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Your professional platform for skilled trades, connecting experts,
-              and growing businesses.
-            </Typography>
-            <Box sx={{ mt: 2, display: 'flex' }}>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={{
-                  mr: 1,
-                  color: 'text.secondary',
-                  '&:hover': { color: theme.palette.secondary.main },
-                }}
-              >
-                <FacebookIcon />
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={{
-                  mr: 1,
-                  color: 'text.secondary',
-                  '&:hover': { color: theme.palette.secondary.main },
-                }}
-              >
-                <TwitterIcon />
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={{
-                  mr: 1,
-                  color: 'text.secondary',
-                  '&:hover': { color: theme.palette.secondary.main },
-                }}
-              >
-                <LinkedInIcon />
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': { color: theme.palette.secondary.main },
-                }}
-              >
-                <InstagramIcon />
-              </IconButton>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography
-              variant="subtitle1"
-              gutterBottom
-              color="text.primary"
-              fontWeight="bold"
-            >
-              For Workers
-            </Typography>
-            <Link
-              component={RouterLink}
-              to="/search/location"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Find Work
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/profile"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Create Profile
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/settings/payments"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Payment Settings
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/resources/workers"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Resources
-            </Link>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography
-              variant="subtitle1"
-              gutterBottom
-              color="text.primary"
-              fontWeight="bold"
-            >
-              For Hirers
-            </Typography>
-            <Link
-              component={RouterLink}
-              to="/find-talent"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Find Talent
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/post-job"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Post a Job
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/pricing"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Pricing
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/resources/hirers"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Resources
-            </Link>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography
-              variant="subtitle1"
-              gutterBottom
-              color="text.primary"
-              fontWeight="bold"
-            >
-              Company
-            </Typography>
-            <Link
-              component={RouterLink}
-              to="/about"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              About Us
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/contact"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Contact
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/privacy"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/terms"
-              color="text.secondary"
-              display="block"
-              sx={{ mb: 1, '&:hover': { color: theme.palette.secondary.main } }}
-            >
-              Terms of Service
-            </Link>
-          </Grid>
-        </Grid>
-
-        <Box
-          sx={{
-            mt: 5,
-            pt: 3,
-            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <Typography variant="body2" color="text.secondary" align="center">
-            © {currentYear} Kelmah. All rights reserved.
-          </Typography>
-        </Box>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Made with ❤️ in Ghana
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 16,
+                      background: 'linear-gradient(to bottom, #CE1126 33%, #FCD116 33%, #FCD116 66%, #006B3F 66%)',
+                      borderRadius: 0.5,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                    }}
+                  />
+                </Stack>
+              </Stack>
+            </motion.div>
           </Container>
         </Box>
       </Box>
