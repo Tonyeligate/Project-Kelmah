@@ -39,6 +39,7 @@ const ProfileCompletion = ({
   onComplete = () => {},
 }) => {
   const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
   
   // Profile completion items
   const profileItems = [
