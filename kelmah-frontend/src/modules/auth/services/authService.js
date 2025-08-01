@@ -7,6 +7,7 @@
 
 import axios from 'axios';
 import { SERVICES, AUTH_CONFIG } from '../../../config/environment';
+import { secureStorage } from '../../../utils/secureStorage';
 import { enhancedTestUser } from '../../../data/enhancedTestUser';
 import { 
   TEST_USERS_DATA, 
@@ -25,7 +26,7 @@ const authServiceClient = axios.create({
 // Add auth tokens to requests (except for login/register)
 authServiceClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+    const token = secureStorage.getAuthToken();
     if (
       token &&
       !config.url.includes('/login') &&
@@ -49,8 +50,8 @@ const authService = {
       const enhancedUser = generateEnhancedUserProfile(testUser);
       const mockToken = 'test-jwt-token-' + Date.now();
       
-      localStorage.setItem(AUTH_CONFIG.tokenKey, mockToken);
-      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(enhancedUser));
+      secureStorage.setAuthToken(mockToken);
+      secureStorage.setUserData(enhancedUser);
       
       return { 
         token: mockToken, 
@@ -69,10 +70,10 @@ const authService = {
       const { token, user } = response.data.data || response.data;
 
       if (token) {
-        localStorage.setItem(AUTH_CONFIG.tokenKey, token);
+        secureStorage.setAuthToken(token);
       }
       if (user) {
-        localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+        secureStorage.setUserData(user);
       }
 
       return { token, user, success: true };
@@ -81,8 +82,8 @@ const authService = {
       
       // Fallback to enhanced test user for development
       const mockToken = 'mock-jwt-token-' + Date.now();
-      localStorage.setItem(AUTH_CONFIG.tokenKey, mockToken);
-      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(enhancedTestUser));
+      secureStorage.setAuthToken(mockToken);
+      secureStorage.setUserData(enhancedTestUser);
       
       return { 
         token: mockToken, 
@@ -103,10 +104,10 @@ const authService = {
       const { token, user } = response.data.data || response.data;
 
       if (token) {
-        localStorage.setItem(AUTH_CONFIG.tokenKey, token);
+        secureStorage.setAuthToken(token);
       }
       if (user) {
-        localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+        secureStorage.setUserData(user);
       }
 
       return { token, user, success: true };
@@ -142,33 +143,26 @@ const authService = {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
     } finally {
-      // Always clean up local storage
-      localStorage.removeItem(AUTH_CONFIG.tokenKey);
-      localStorage.removeItem(AUTH_CONFIG.userKey);
+      // Always clean up secure storage
+      secureStorage.clear();
     }
   },
 
-  // Get current user from localStorage
+  // Get current user from secure storage
   getCurrentUser: () => {
-    try {
-      const userString = localStorage.getItem(AUTH_CONFIG.userKey);
-      return userString ? JSON.parse(userString) : null;
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      return null;
-    }
+    return secureStorage.getUserData();
   },
 
   // Check if user is authenticated
   isAuthenticated: () => {
-    const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+    const token = secureStorage.getAuthToken();
     const user = authService.getCurrentUser();
     return !!(token && user);
   },
 
   // Get auth token
   getToken: () => {
-    return localStorage.getItem(AUTH_CONFIG.tokenKey);
+    return secureStorage.getAuthToken();
   },
 
   // Refresh token
@@ -178,7 +172,7 @@ const authService = {
       const { token } = response.data.data || response.data;
 
       if (token) {
-        localStorage.setItem(AUTH_CONFIG.tokenKey, token);
+        secureStorage.setAuthToken(token);
       }
 
       return { token, success: true };
@@ -256,10 +250,9 @@ const authService = {
   // Get user role
   getUserRole: () => {
     try {
-      const userData = localStorage.getItem(AUTH_CONFIG.userKey);
+      const userData = secureStorage.getUserData();
       if (userData) {
-        const user = JSON.parse(userData);
-        return user.role || user.userType || user.userRole || null;
+        return userData.role || userData.userType || userData.userRole || null;
       }
     } catch (error) {
       console.error('Error getting user role:', error);
@@ -276,8 +269,7 @@ const authService = {
   // Get stored user data
   getStoredUser: () => {
     try {
-      const userData = localStorage.getItem(AUTH_CONFIG.userKey);
-      return userData ? JSON.parse(userData) : null;
+      return secureStorage.getUserData();
     } catch (error) {
       console.error('Error getting stored user:', error);
       return null;

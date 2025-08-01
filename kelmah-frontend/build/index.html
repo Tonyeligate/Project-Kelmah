@@ -3,117 +3,107 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
     <title>Kelma</title>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-    <!-- Ultimate React fix for Vercel - Module execution interception -->
     <script>
-      (function() {
-        'use strict';
-        
-        // Create comprehensive React implementation
-        const ReactImpl = {
-          useState: function(initial) { 
-            return [initial, function(newVal) { 
-              if (typeof newVal === 'function') return newVal(initial);
-              return newVal;
-            }]; 
-          },
-          useEffect: function(effect, deps) { 
-            if (typeof effect === 'function') {
-              try { effect(); } catch(e) {}
-            }
-          },
-          useContext: function(context) { return context ? context.defaultValue : null; },
-          useReducer: function(reducer, initial) { 
-            return [initial, function(action) { 
-              try { return reducer(initial, action); } catch(e) { return initial; }
-            }]; 
-          },
-          useCallback: function(fn, deps) { return fn; },
-          useMemo: function(fn, deps) { 
-            try { return fn(); } catch(e) { return null; }
-          },
-          useRef: function(initial) { return { current: initial }; },
-          useImperativeHandle: function() {},
-          useLayoutEffect: function(effect, deps) {
-            if (typeof effect === 'function') {
-              try { effect(); } catch(e) {}
-            }
-          },
-          useDebugValue: function() {},
-          useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) { 
-            try {
-              return getSnapshot ? getSnapshot() : (getServerSnapshot ? getServerSnapshot() : null);
-            } catch(e) { return null; }
-          },
-          createElement: function(type, props, ...children) { 
-            return { type, props: props || {}, children };
-          },
-          Fragment: function(props) { return props.children; },
-          Component: function() {},
-          PureComponent: function() {},
-          memo: function(component) { return component; },
-          forwardRef: function(render) { return render; },
-          createContext: function(defaultValue) { 
-            return { 
-              Provider: function(props) { return props.children; },
-              Consumer: function(props) { return props.children(defaultValue); },
-              defaultValue: defaultValue
-            };
-          },
-          lazy: function(fn) { return fn; },
-          Suspense: function(props) { return props.children; },
-          version: '18.3.1-vercel-fix'
-        };
+      // VERCEL BULLETPROOF FIX: Provide React immediately
+      console.log('🔧 Bulletproof React fix loading...');
+      
+      // Create a minimal React implementation that provides createContext
+      const ReactMini = {
+        version: '18.3.1-vercel-patched',
+        createElement: function(type, props, ...children) { 
+          return { type, props: props || {}, children };
+        },
+        createContext: function(defaultValue) { 
+          console.log('✅ React.createContext called');
+          return { 
+            Provider: function(props) { return props.children; },
+            Consumer: function(props) { return props.children(defaultValue); },
+            defaultValue: defaultValue,
+            _currentValue: defaultValue,
+            _currentValue2: defaultValue,
+            _threadCount: 0
+          };
+        },
+        useState: function(initial) { 
+          console.log('✅ React.useState called');
+          return [initial, function(newVal) { 
+            if (typeof newVal === 'function') return newVal(initial);
+            return newVal;
+          }]; 
+        },
+        useEffect: function(effect, deps) { 
+          console.log('✅ React.useEffect called');
+          if (typeof effect === 'function') {
+            try { effect(); } catch(e) { console.warn('useEffect error:', e); }
+          }
+        },
+        useContext: function(context) { 
+          console.log('✅ React.useContext called');
+          return context ? context.defaultValue : null; 
+        },
+        useReducer: function(reducer, initial) { 
+          console.log('✅ React.useReducer called');
+          return [initial, function(action) { 
+            try { return reducer(initial, action); } catch(e) { return initial; }
+          }]; 
+        },
+        useCallback: function(fn, deps) { 
+          console.log('✅ React.useCallback called');
+          return fn; 
+        },
+        useMemo: function(fn, deps) { 
+          console.log('✅ React.useMemo called');
+          try { return fn(); } catch(e) { return null; }
+        },
+        useRef: function(initial) { 
+          console.log('✅ React.useRef called');
+          return { current: initial }; 
+        },
+        Fragment: function(props) { return props.children; },
+        Component: function() {},
+        PureComponent: function() {},
+        memo: function(component) { return component; },
+        forwardRef: function(render) { return render; },
+        lazy: function(fn) { return fn; },
+        Suspense: function(props) { return props.children; }
+      };
 
-        // Intercept script execution
-        const originalCreateElement = document.createElement;
-        document.createElement = function(tagName) {
-          const element = originalCreateElement.call(this, tagName);
-          
-          if (tagName.toLowerCase() === 'script') {
-            const originalSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
-            Object.defineProperty(element, 'src', {
-              get: originalSrc.get,
-              set: function(value) {
-                // Before loading any script, ensure React is available
-                if (!window.React) {
-                  window.React = ReactImpl;
-                  globalThis.React = ReactImpl;
-                  if (typeof global !== 'undefined') global.React = ReactImpl;
-                }
-                return originalSrc.set.call(this, value);
-              }
+      // Set React IMMEDIATELY and SYNCHRONOUSLY
+      window.React = ReactMini;
+      globalThis.React = ReactMini;
+      
+      // Intercept ANY attempts to overwrite React
+      let reactSet = false;
+      Object.defineProperty(window, 'React', {
+        get: function() { return ReactMini; },
+        set: function(value) { 
+          if (!reactSet) {
+            console.log('🔧 Allowing first React assignment');
+            Object.defineProperty(window, 'React', {
+              value: { ...ReactMini, ...value },
+              writable: true,
+              configurable: true
             });
+            reactSet = true;
+          } else {
+            console.log('🔧 React assignment intercepted, merging...');
+            window.React = { ...ReactMini, ...value };
           }
-          
-          return element;
-        };
+        },
+        configurable: true
+      });
 
-        // Set React immediately
-        window.React = ReactImpl;
-        globalThis.React = ReactImpl;
-        if (typeof global !== 'undefined') global.React = ReactImpl;
-        
-        // Ensure React persists
-        setInterval(function() {
-          if (!window.React) {
-            window.React = ReactImpl;
-            globalThis.React = ReactImpl;
-            if (typeof global !== 'undefined') global.React = ReactImpl;
-          }
-        }, 100);
-
-        console.log('Ultimate React fix loaded - React will persist');
-      })();
+      console.log('✅ React.createContext immediately available:', typeof ReactMini.createContext);
+      console.log('✅ Bulletproof React protection enabled');
     </script>
-    <script type="module" crossorigin src="/assets/index-CM342ejW.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-C70G2IPe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor_react-DRNSsPOp.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor_mui-BMai0fIk.js">
-    <link rel="stylesheet" crossorigin href="/assets/vendor-Dgihpmma.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-DiQK8Iqf.css">
+    <script type="module" crossorigin src="/assets/index-nbjhg3xo.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/react-vendor-BeVsOIwe.js">
+    <link rel="modulepreload" crossorigin href="/assets/mui-vendor-Dtf53PDP.js">
+    <link rel="modulepreload" crossorigin href="/assets/redux-vendor-Cxy25wy7.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-D9NbeFAj.css">
   </head>
   <body>
     <div id="root"></div>

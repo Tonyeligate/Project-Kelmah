@@ -79,6 +79,8 @@ const EnhancedWorkerDashboard = () => {
   // Local state
   const [activeTab, setActiveTab] = useState(0);
   const [showQuickApply, setShowQuickApply] = useState(false);
+  const [showAllStats, setShowAllStats] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Effect to handle data loading
   useEffect(() => {
@@ -86,6 +88,79 @@ const EnhancedWorkerDashboard = () => {
       // Handle user data if needed
     }
   }, [data, navigate]);
+
+  // Handle refresh functionality
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Simulate refresh delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // In a real app, this would dispatch actions to refresh data
+      console.log('Dashboard refreshed');
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Dashboard statistics
+  const statistics = useMemo(() => [
+    {
+      id: 'total-jobs',
+      title: 'Total Jobs',
+      value: data?.metrics?.totalJobs || 0,
+      change: data?.metrics?.jobsChange || 0,
+      icon: <WorkIcon />,
+      color: '#2196F3',
+      priority: 1,
+    },
+    {
+      id: 'active-applications',
+      title: 'Active Applications',
+      value: data?.metrics?.activeApplications || 0,
+      change: data?.metrics?.applicationsChange || 0,
+      icon: <AssignmentIcon />,
+      color: '#4CAF50',
+      priority: 1,
+    },
+    {
+      id: 'total-earnings',
+      title: 'Total Earnings',
+      value: `GH₵ ${data?.metrics?.totalEarnings || 0}`,
+      change: data?.metrics?.earningsChange || 0,
+      icon: <EarningsIcon />,
+      color: '#FF9800',
+      priority: 2,
+    },
+    {
+      id: 'completion-rate',
+      title: 'Completion Rate',
+      value: `${data?.metrics?.completionRate || 0}%`,
+      change: data?.metrics?.completionChange || 0,
+      icon: <CompletionIcon />,
+      color: '#9C27B0',
+      priority: 2,
+    },
+    {
+      id: 'profile-views',
+      title: 'Profile Views',
+      value: data?.metrics?.profileViews || 0,
+      change: data?.metrics?.viewsChange || 0,
+      icon: <VisibilityIcon />,
+      color: '#F44336',
+      priority: 3,
+    },
+    {
+      id: 'rating',
+      title: 'Average Rating',
+      value: `${data?.metrics?.averageRating || 0}/5`,
+      change: data?.metrics?.ratingChange || 0,
+      icon: <StarIcon />,
+      color: '#FFD700',
+      priority: 3,
+    },
+  ], [data]);
 
   // Enhanced quick actions
   const quickActions = useMemo(

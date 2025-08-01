@@ -1,326 +1,291 @@
 /**
  * Secure Storage Utility
  * 
- * Provides secure, encrypted storage with automatic token management,
- * expiration handling, and security best practices.
+ * Provides secure client-side storage for sensitive data like tokens
+ * with encryption, automatic cleanup, and security best practices.
  */
 
 import CryptoJS from 'crypto-js';
 
-// Security configuration
-const STORAGE_CONFIG = {
-  encryption: {
-    algorithm: 'AES',
-    keySize: 256,
-    ivSize: 128,
-    iterations: 1000,
-  },
-  security: {
-    maxFailedAttempts: 5,
-    lockoutDuration: 15 * 60 * 1000, // 15 minutes
-    sessionTimeout: 24 * 60 * 60 * 1000, // 24 hours
-  },
-  keys: {
-    TOKEN: 'kelmah_auth_token',
-    REFRESH_TOKEN: 'kelmah_refresh_token',
-    USER: 'kelmah_user_data',
-    PREFERENCES: 'kelmah_user_preferences',
-    CACHE: 'kelmah_cache_data',
-  }
-};
-
 class SecureStorage {
   constructor() {
-    this.secretKey = this.generateSecretKey();
-    this.failedAttempts = 0;
-    this.lockoutTime = null;
+    this.storageKey = 'kelmah_secure_data';
+    this.encryptionKey = this.generateEncryptionKey();
+    this.maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    
+    // Initialize storage cleanup
+    this.cleanupExpiredData();
+    
+    // Set up periodic cleanup
+    setInterval(() => {
+      this.cleanupExpiredData();
+    }, 60 * 60 * 1000); // Every hour
   }
 
   /**
-   * Generate a secret key for encryption based on browser fingerprint
+   * Generate encryption key based on browser fingerprint
    */
-  generateSecretKey() {
+  generateEncryptionKey() {
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
       screen.width + 'x' + screen.height,
       new Date().getTimezoneOffset(),
-      navigator.platform
+      navigator.platform,
+      // Add session-specific component for extra security
+      sessionStorage.getItem('session_id') || this.generateSessionId()
     ].join('|');
-    
-    return CryptoJS.SHA256(fingerprint + 'kelmah-secret-salt').toString();
+
+    return CryptoJS.SHA256(fingerprint).toString();
   }
 
   /**
-   * Encrypt data before storage
+   * Generate unique session ID
+   */
+  generateSessionId() {
+    const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem('session_id', sessionId);
+    return sessionId;
+  }
+
+  /**
+   * Encrypt data
    */
   encrypt(data) {
     try {
-      const salt = CryptoJS.lib.WordArray.random(128/8);
-      const key = CryptoJS.PBKDF2(this.secretKey, salt, {
-        keySize: STORAGE_CONFIG.encryption.keySize/32,
-        iterations: STORAGE_CONFIG.encryption.iterations
-      });
-
-      const iv = CryptoJS.lib.WordArray.random(STORAGE_CONFIG.encryption.ivSize/8);
-      const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, { 
-        iv: iv,
-        padding: CryptoJS.pad.Pkcs7,
-        mode: CryptoJS.mode.CBC
-      });
-
-      return {
-        salt: salt.toString(),
-        iv: iv.toString(),
-        data: encrypted.toString(),
-        timestamp: Date.now()
-      };
+      const jsonString = JSON.stringify(data);
+      const encrypted = CryptoJS.AES.encrypt(jsonString, this.encryptionKey).toString();
+      return encrypted;
     } catch (error) {
-      console.error('🔒 Encryption failed:', error);
-      throw new Error('Failed to encrypt data');
+      console.error('Encryption failed:', error);
+      return null;
     }
   }
 
   /**
-   * Decrypt data from storage
+   * Decrypt data
    */
   decrypt(encryptedData) {
     try {
-      if (this.isLockedOut()) {
-        throw new Error('Storage is locked due to security policy');
+      const decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
+      const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error('Decryption failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all secure data
+   */
+  getSecureData() {
+    try {
+      const encryptedData = localStorage.getItem(this.storageKey);
+      if (!encryptedData) {
+        return {};
       }
 
-      const salt = CryptoJS.enc.Hex.parse(encryptedData.salt);
-      const key = CryptoJS.PBKDF2(this.secretKey, salt, {
-        keySize: STORAGE_CONFIG.encryption.keySize/32,
-        iterations: STORAGE_CONFIG.encryption.iterations
-      });
+      const decryptedData = this.decrypt(encryptedData);
+      if (!decryptedData) {
+        // Clear corrupted data
+        this.clear();
+        return {};
+      }
 
-      const iv = CryptoJS.enc.Hex.parse(encryptedData.iv);
-      const decrypted = CryptoJS.AES.decrypt(encryptedData.data, key, {
-        iv: iv,
-        padding: CryptoJS.pad.Pkcs7,
-        mode: CryptoJS.mode.CBC
-      });
-
-      const decryptedData = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
-      this.failedAttempts = 0; // Reset on success
       return decryptedData;
     } catch (error) {
-      this.failedAttempts++;
-      if (this.failedAttempts >= STORAGE_CONFIG.security.maxFailedAttempts) {
-        this.lockoutTime = Date.now() + STORAGE_CONFIG.security.lockoutDuration;
-        console.warn('🔒 Storage locked due to repeated decryption failures');
-      }
-      console.error('🔒 Decryption failed:', error);
-      return null;
+      console.error('Failed to get secure data:', error);
+      this.clear();
+      return {};
     }
   }
 
   /**
-   * Check if storage is locked out
+   * Set secure data
    */
-  isLockedOut() {
-    if (this.lockoutTime && Date.now() < this.lockoutTime) {
-      return true;
-    } else if (this.lockoutTime && Date.now() >= this.lockoutTime) {
-      this.lockoutTime = null;
-      this.failedAttempts = 0;
-    }
-    return false;
-  }
-
-  /**
-   * Securely store data
-   */
-  setItem(key, value, options = {}) {
+  setSecureData(data) {
     try {
-      if (this.isLockedOut()) {
-        throw new Error('Storage is locked due to security policy');
-      }
-
-      const dataToStore = {
-        value,
-        timestamp: Date.now(),
-        expires: options.expires ? Date.now() + options.expires : null,
-        secure: options.secure !== false
+      const dataWithTimestamp = {
+        ...data,
+        _timestamp: Date.now(),
+        _version: '1.0'
       };
 
-      if (options.encrypt !== false) {
-        const encrypted = this.encrypt(dataToStore);
-        localStorage.setItem(key, JSON.stringify(encrypted));
-      } else {
-        localStorage.setItem(key, JSON.stringify(dataToStore));
+      const encrypted = this.encrypt(dataWithTimestamp);
+      if (encrypted) {
+        localStorage.setItem(this.storageKey, encrypted);
+        return true;
       }
-
-      return true;
+      return false;
     } catch (error) {
-      console.error('🔒 Secure storage failed:', error);
+      console.error('Failed to set secure data:', error);
       return false;
     }
   }
 
   /**
-   * Securely retrieve data
+   * Set a specific key in secure storage
    */
-  getItem(key, options = {}) {
-    try {
-      if (this.isLockedOut()) {
-        console.warn('🔒 Storage access denied - locked out');
-        return null;
-      }
+  setItem(key, value) {
+    const currentData = this.getSecureData();
+    currentData[key] = {
+      value,
+      timestamp: Date.now()
+    };
+    return this.setSecureData(currentData);
+  }
 
-      const stored = localStorage.getItem(key);
-      if (!stored) return null;
+  /**
+   * Get a specific key from secure storage
+   */
+  getItem(key, maxAge = this.maxAge) {
+    const data = this.getSecureData();
+    const item = data[key];
 
-      const parsedData = JSON.parse(stored);
-      
-      let data;
-      if (parsedData.salt && parsedData.iv) {
-        // Encrypted data
-        data = this.decrypt(parsedData);
-        if (!data) return null;
-      } else {
-        // Unencrypted data
-        data = parsedData;
-      }
-
-      // Check expiration
-      if (data.expires && Date.now() > data.expires) {
-        this.removeItem(key);
-        return null;
-      }
-
-      return data.value;
-    } catch (error) {
-      console.error('🔒 Secure retrieval failed:', error);
+    if (!item) {
       return null;
     }
+
+    // Check if item has expired
+    if (Date.now() - item.timestamp > maxAge) {
+      this.removeItem(key);
+      return null;
+    }
+
+    return item.value;
   }
 
   /**
-   * Remove item securely
+   * Remove a specific key from secure storage
    */
   removeItem(key) {
-    try {
-      localStorage.removeItem(key);
-      return true;
-    } catch (error) {
-      console.error('🔒 Secure removal failed:', error);
-      return false;
-    }
+    const currentData = this.getSecureData();
+    delete currentData[key];
+    return this.setSecureData(currentData);
   }
 
   /**
-   * Clear all secure storage
+   * Clear all secure data
    */
   clear() {
     try {
-      // Only clear Kelmah-specific keys
-      const keys = Object.values(STORAGE_CONFIG.keys);
-      keys.forEach(key => this.removeItem(key));
+      localStorage.removeItem(this.storageKey);
+      sessionStorage.removeItem('session_id');
       return true;
     } catch (error) {
-      console.error('🔒 Secure clear failed:', error);
+      console.error('Failed to clear secure storage:', error);
       return false;
     }
   }
 
   /**
-   * Get authentication token securely
+   * Clean up expired data
    */
-  getAuthToken() {
-    return this.getItem(STORAGE_CONFIG.keys.TOKEN);
-  }
-
-  /**
-   * Set authentication token securely
-   */
-  setAuthToken(token, options = {}) {
-    return this.setItem(STORAGE_CONFIG.keys.TOKEN, token, {
-      expires: options.expires || STORAGE_CONFIG.security.sessionTimeout,
-      encrypt: true,
-      ...options
-    });
-  }
-
-  /**
-   * Get refresh token securely
-   */
-  getRefreshToken() {
-    return this.getItem(STORAGE_CONFIG.keys.REFRESH_TOKEN);
-  }
-
-  /**
-   * Set refresh token securely
-   */
-  setRefreshToken(token, options = {}) {
-    return this.setItem(STORAGE_CONFIG.keys.REFRESH_TOKEN, token, {
-      encrypt: true,
-      ...options
-    });
-  }
-
-  /**
-   * Get user data securely
-   */
-  getUserData() {
-    return this.getItem(STORAGE_CONFIG.keys.USER);
-  }
-
-  /**
-   * Set user data securely
-   */
-  setUserData(userData, options = {}) {
-    return this.setItem(STORAGE_CONFIG.keys.USER, userData, {
-      encrypt: true,
-      ...options
-    });
-  }
-
-  /**
-   * Security audit - check for suspicious activity
-   */
-  securityAudit() {
-    const audit = {
-      timestamp: Date.now(),
-      failedAttempts: this.failedAttempts,
-      isLockedOut: this.isLockedOut(),
-      storageIntegrity: this.checkStorageIntegrity(),
-      recommendations: []
-    };
-
-    if (this.failedAttempts > 2) {
-      audit.recommendations.push('Multiple decryption failures detected');
-    }
-
-    if (!audit.storageIntegrity) {
-      audit.recommendations.push('Storage integrity compromised - consider re-authentication');
-    }
-
-    return audit;
-  }
-
-  /**
-   * Check storage integrity
-   */
-  checkStorageIntegrity() {
+  cleanupExpiredData() {
     try {
-      const testKey = 'kelmah_integrity_test';
-      const testData = { test: 'integrity_check', timestamp: Date.now() };
+      const data = this.getSecureData();
+      let hasChanges = false;
+
+      Object.keys(data).forEach(key => {
+        if (key.startsWith('_')) return; // Skip metadata
+
+        const item = data[key];
+        if (item && item.timestamp && Date.now() - item.timestamp > this.maxAge) {
+          delete data[key];
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        this.setSecureData(data);
+      }
+    } catch (error) {
+      console.error('Failed to cleanup expired data:', error);
+    }
+  }
+
+  // Auth-specific methods
+  setAuthToken(token) {
+    return this.setItem('auth_token', token);
+  }
+
+  getAuthToken() {
+    return this.getItem('auth_token', 2 * 60 * 60 * 1000); // 2 hours for auth token
+  }
+
+  setRefreshToken(token) {
+    return this.setItem('refresh_token', token, 7 * 24 * 60 * 60 * 1000); // 7 days
+  }
+
+  getRefreshToken() {
+    return this.getItem('refresh_token', 7 * 24 * 60 * 60 * 1000); // 7 days
+  }
+
+  setUserData(userData) {
+    return this.setItem('user_data', userData);
+  }
+
+  getUserData() {
+    return this.getItem('user_data');
+  }
+
+  // Security methods
+  isSecureContext() {
+    return window.isSecureContext || location.protocol === 'https:';
+  }
+
+  getStorageInfo() {
+    const data = this.getSecureData();
+    return {
+      keys: Object.keys(data).filter(key => !key.startsWith('_')),
+      totalItems: Object.keys(data).filter(key => !key.startsWith('_')).length,
+      lastUpdated: data._timestamp,
+      version: data._version,
+      isSecureContext: this.isSecureContext()
+    };
+  }
+
+  // Validation methods
+  validateData() {
+    try {
+      const data = this.getSecureData();
       
-      this.setItem(testKey, testData);
+      // Check if data structure is valid
+      if (typeof data !== 'object') {
+        return false;
+      }
+
+      // Check if we can decrypt and re-encrypt
+      const testKey = 'validation_test';
+      const testValue = { test: true, timestamp: Date.now() };
+      
+      this.setItem(testKey, testValue);
       const retrieved = this.getItem(testKey);
       this.removeItem(testKey);
-      
-      return retrieved && retrieved.test === testData.test;
+
+      return retrieved && retrieved.test === true;
     } catch (error) {
-      console.error('🔒 Storage integrity check failed:', error);
+      console.error('Storage validation failed:', error);
       return false;
     }
+  }
+
+  // Migration methods (for future use)
+  migrate(fromVersion, toVersion) {
+    console.log(`Migrating secure storage from ${fromVersion} to ${toVersion}`);
+    // Future migration logic here
   }
 }
 
-// Export singleton instance
-export const secureStorage = new SecureStorage();
+// Create singleton instance
+const secureStorage = new SecureStorage();
+
+// Validate storage on initialization
+if (!secureStorage.validateData()) {
+  console.warn('Secure storage validation failed, clearing data');
+  secureStorage.clear();
+}
+
+export { secureStorage };
 export default secureStorage;

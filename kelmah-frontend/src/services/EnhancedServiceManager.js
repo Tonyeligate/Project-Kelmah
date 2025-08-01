@@ -1,323 +1,209 @@
 /**
  * Enhanced Service Manager
  * 
- * Provides centralized service management with security, retry logic,
- * offline capabilities, and graceful degradation.
+ * Manages service connectivity, automatic retries, circuit breaker pattern,
+ * and graceful degradation for all backend services.
  */
 
 import axios from 'axios';
-import { SERVICES } from '../config/environment';
 import { secureStorage } from '../utils/secureStorage';
+import { getServiceUrl } from '../config/environment';
 
 class EnhancedServiceManager {
   constructor() {
     this.services = new Map();
+    this.circuitBreakers = new Map();
+    this.retryQueues = new Map();
+    this.healthChecks = new Map();
     this.offlineQueue = [];
-    this.serviceStatus = new Map();
-    this.retryDelays = [1000, 3000, 5000, 10000]; // Progressive delays
-    this.maxRetries = 3;
+    this.isOnline = navigator.onLine;
     
+    // Configuration
+    this.config = {
+      maxRetries: 3,
+      retryDelay: 1000,
+      circuitBreakerThreshold: 5,
+      circuitBreakerTimeout: 30000,
+      healthCheckInterval: 60000,
+      requestTimeout: 30000
+    };
+
     this.initializeServices();
     this.setupNetworkMonitoring();
+    this.startHealthChecks();
   }
 
   /**
-   * Initialize all service clients with security and error handling
+   * Initialize all service clients
    */
   initializeServices() {
-    Object.entries(SERVICES).forEach(([serviceName, baseURL]) => {
-      const client = this.createSecureClient(serviceName, baseURL);
-      this.services.set(serviceName, client);
-      this.serviceStatus.set(serviceName, { 
-        isOnline: true, 
-        lastError: null,
-        errorCount: 0,
-        lastSuccess: Date.now()
-      });
+    const serviceNames = [
+      'AUTH_SERVICE',
+      'USER_SERVICE', 
+      'JOB_SERVICE',
+      'MESSAGING_SERVICE',
+      'PAYMENT_SERVICE'
+    ];
+
+    serviceNames.forEach(serviceName => {
+      this.createServiceClient(serviceName);
     });
   }
 
   /**
-   * Create a secure axios client with comprehensive error handling
+   * Create service client with enhanced configuration
    */
-  createSecureClient(serviceName, baseURL) {
+  createServiceClient(serviceName) {
+    const baseURL = getServiceUrl(serviceName);
+    
     const client = axios.create({
       baseURL,
-      timeout: 30000,
+      timeout: this.config.requestTimeout,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Client-Version': '1.0.0',
-        'X-Request-ID': () => this.generateRequestId()
-      },
-      withCredentials: false // Disable credentials for security
+        'X-Service-Client': 'kelmah-frontend',
+        'X-Client-Version': '1.0.0'
+      }
     });
 
-    // Request interceptor with security
+    // Add request interceptor
     client.interceptors.request.use(
       (config) => {
-        // Add security headers
-        config.headers['X-Request-ID'] = this.generateRequestId();
-        config.headers['X-Timestamp'] = Date.now().toString();
-        
-        // Add authentication token securely
+        // Add auth token
         const token = secureStorage.getAuthToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Log request for monitoring
-        console.log(`🔄 [${serviceName}] ${config.method?.toUpperCase()} ${config.url}`);
+        // Add request ID for tracing
+        config.headers['X-Request-ID'] = this.generateRequestId();
+        
+        // Add service name for routing
+        config.headers['X-Target-Service'] = serviceName;
         
         return config;
       },
-      (error) => {
-        console.error(`❌ [${serviceName}] Request setup failed:`, error);
+      (error) => Promise.reject(error)
+    );
+
+    // Add response interceptor
+    client.interceptors.response.use(
+      (response) => {
+        // Mark service as healthy
+        this.markServiceHealthy(serviceName);
+        return response;
+      },
+      async (error) => {
+        // Handle service errors
+        await this.handleServiceError(serviceName, error);
         return Promise.reject(error);
       }
     );
 
-    // Response interceptor with enhanced error handling
-    client.interceptors.response.use(
-      (response) => {
-        // Update service status on success
-        this.updateServiceStatus(serviceName, true);
-        
-        // Log successful response
-        console.log(`✅ [${serviceName}] ${response.status} ${response.config.url}`);
-        
-        return response;
-      },
-      async (error) => {
-        // Update service status on error
-        this.updateServiceStatus(serviceName, false, error);
-        
-        // Handle different error types
-        const enhancedError = this.enhanceError(error, serviceName);
-        
-        // Attempt token refresh for 401 errors
-        if (error.response?.status === 401 && !error.config._retry) {
-          const refreshed = await this.attemptTokenRefresh();
-          if (refreshed) {
-            error.config._retry = true;
-            const token = secureStorage.getAuthToken();
-            error.config.headers.Authorization = `Bearer ${token}`;
-            return client.request(error.config);
-          }
-        }
-
-        // Queue request for offline retry if network error
-        if (this.isNetworkError(error)) {
-          this.queueOfflineRequest(error.config, serviceName);
-        }
-
-        return Promise.reject(enhancedError);
-      }
-    );
+    this.services.set(serviceName, client);
+    this.circuitBreakers.set(serviceName, {
+      state: 'CLOSED', // CLOSED, OPEN, HALF_OPEN
+      failures: 0,
+      lastFailureTime: null,
+      lastSuccessTime: Date.now()
+    });
 
     return client;
   }
 
   /**
-   * Enhanced error object with context and user-friendly messages
+   * Get service client with circuit breaker protection
    */
-  enhanceError(error, serviceName) {
-    const enhanced = {
-      ...error,
-      serviceName,
-      timestamp: Date.now(),
-      userMessage: this.getUserFriendlyMessage(error),
-      retryable: this.isRetryableError(error),
-      severity: this.getErrorSeverity(error),
-      category: this.categorizeError(error)
-    };
+  getService(serviceName) {
+    const circuitBreaker = this.circuitBreakers.get(serviceName);
+    
+    if (circuitBreaker?.state === 'OPEN') {
+      const now = Date.now();
+      if (now - circuitBreaker.lastFailureTime > this.config.circuitBreakerTimeout) {
+        // Try to half-open the circuit
+        circuitBreaker.state = 'HALF_OPEN';
+        console.log(`Circuit breaker for ${serviceName} is now HALF_OPEN`);
+      } else {
+        throw new Error(`Circuit breaker is OPEN for ${serviceName}. Service temporarily unavailable.`);
+      }
+    }
 
-    // Log enhanced error
-    console.error(`❌ [${serviceName}] Error:`, {
-      status: error.response?.status,
-      message: error.message,
-      userMessage: enhanced.userMessage,
-      retryable: enhanced.retryable
-    });
-
-    return enhanced;
+    return this.services.get(serviceName);
   }
 
   /**
-   * Get user-friendly error messages
+   * Make resilient API call with automatic retries
    */
-  getUserFriendlyMessage(error) {
-    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      return 'Service is responding slowly. Please try again.';
-    }
+  async makeResilientCall(serviceName, requestConfig) {
+    let lastError;
     
-    if (error.response?.status === 401) {
-      return 'Please log in again to continue.';
-    }
-    
-    if (error.response?.status === 403) {
-      return 'You don\'t have permission to access this resource.';
-    }
-    
-    if (error.response?.status === 404) {
-      return 'The requested resource was not found.';
-    }
-    
-    if (error.response?.status >= 500) {
-      return 'Server is temporarily unavailable. We\'re working to fix this.';
-    }
-    
-    if (this.isNetworkError(error)) {
-      return 'No internet connection. Your request will be retried automatically.';
-    }
-    
-    return 'Something went wrong. Please try again.';
-  }
-
-  /**
-   * Determine if error is retryable
-   */
-  isRetryableError(error) {
-    const retryableStatuses = [408, 429, 500, 502, 503, 504];
-    const retryableCodes = ['ECONNABORTED', 'ENOTFOUND', 'ECONNRESET', 'ETIMEDOUT'];
-    
-    return (
-      retryableStatuses.includes(error.response?.status) ||
-      retryableCodes.includes(error.code) ||
-      this.isNetworkError(error)
-    );
-  }
-
-  /**
-   * Get error severity level
-   */
-  getErrorSeverity(error) {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      return 'high';
-    }
-    if (error.response?.status >= 500) {
-      return 'critical';
-    }
-    if (this.isNetworkError(error)) {
-      return 'medium';
-    }
-    return 'low';
-  }
-
-  /**
-   * Categorize error for monitoring
-   */
-  categorizeError(error) {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      return 'authentication';
-    }
-    if (error.response?.status === 404) {
-      return 'not_found';
-    }
-    if (error.response?.status >= 500) {
-      return 'server_error';
-    }
-    if (this.isNetworkError(error)) {
-      return 'network';
-    }
-    return 'client_error';
-  }
-
-  /**
-   * Check if error is network-related
-   */
-  isNetworkError(error) {
-    return !error.response && (
-      error.code === 'ENOTFOUND' ||
-      error.code === 'ECONNRESET' ||
-      error.code === 'ECONNREFUSED' ||
-      error.message.includes('Network Error')
-    );
-  }
-
-  /**
-   * Update service status
-   */
-  updateServiceStatus(serviceName, isSuccess, error = null) {
-    const status = this.serviceStatus.get(serviceName);
-    
-    if (isSuccess) {
-      status.isOnline = true;
-      status.lastSuccess = Date.now();
-      status.errorCount = 0;
-      status.lastError = null;
-    } else {
-      status.isOnline = false;
-      status.errorCount++;
-      status.lastError = error;
-    }
-    
-    this.serviceStatus.set(serviceName, status);
-  }
-
-  /**
-   * Attempt to refresh authentication token
-   */
-  async attemptTokenRefresh() {
-    try {
-      const refreshToken = secureStorage.getRefreshToken();
-      if (!refreshToken) return false;
-
-      const authClient = this.services.get('AUTH_SERVICE');
-      const response = await authClient.post('/api/auth/refresh', {
-        refreshToken
-      });
-
-      const { token, user } = response.data;
-      secureStorage.setAuthToken(token);
-      secureStorage.setUserData(user);
-
-      console.log('🔄 Token refreshed successfully');
-      return true;
-    } catch (error) {
-      console.error('❌ Token refresh failed:', error);
-      // Clear invalid tokens
-      secureStorage.removeItem('kelmah_auth_token');
-      secureStorage.removeItem('kelmah_refresh_token');
-      return false;
-    }
-  }
-
-  /**
-   * Queue request for offline retry
-   */
-  queueOfflineRequest(config, serviceName) {
-    this.offlineQueue.push({
-      config,
-      serviceName,
-      timestamp: Date.now(),
-      retryCount: 0
-    });
-
-    console.log(`📥 Queued offline request for ${serviceName}`);
-  }
-
-  /**
-   * Process offline queue when connection is restored
-   */
-  async processOfflineQueue() {
-    const queue = [...this.offlineQueue];
-    this.offlineQueue = [];
-
-    console.log(`🔄 Processing ${queue.length} offline requests`);
-
-    for (const item of queue) {
+    for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
       try {
-        const client = this.services.get(item.serviceName);
-        await client.request(item.config);
-        console.log(`✅ Offline request successful: ${item.serviceName}`);
+        const service = this.getService(serviceName);
+        const response = await service.request(requestConfig);
+        
+        // Mark success and return
+        this.markServiceHealthy(serviceName);
+        return response;
+        
       } catch (error) {
-        if (item.retryCount < this.maxRetries) {
-          item.retryCount++;
-          this.offlineQueue.push(item);
-        } else {
-          console.error(`❌ Offline request failed permanently: ${item.serviceName}`);
+        lastError = error;
+        
+        if (attempt < this.config.maxRetries && this.shouldRetry(error)) {
+          await this.delay(this.getRetryDelay(attempt));
+          continue;
         }
+        
+        // Mark failure
+        await this.handleServiceError(serviceName, error);
+        break;
+      }
+    }
+    
+    throw lastError;
+  }
+
+  /**
+   * Handle service errors and update circuit breaker
+   */
+  async handleServiceError(serviceName, error) {
+    const circuitBreaker = this.circuitBreakers.get(serviceName);
+    
+    if (circuitBreaker) {
+      circuitBreaker.failures++;
+      circuitBreaker.lastFailureTime = Date.now();
+      
+      // Open circuit breaker if threshold reached
+      if (circuitBreaker.failures >= this.config.circuitBreakerThreshold) {
+        circuitBreaker.state = 'OPEN';
+        console.warn(`Circuit breaker OPENED for ${serviceName} after ${circuitBreaker.failures} failures`);
+        
+        // Emit event for UI updates
+        this.emitServiceStatusEvent(serviceName, 'UNAVAILABLE');
+      }
+    }
+
+    // Queue for offline retry if network error
+    if (this.isNetworkError(error) && !this.isOnline) {
+      // Don't queue the same request multiple times
+      // This would need more sophisticated deduplication in a real implementation
+    }
+  }
+
+  /**
+   * Mark service as healthy
+   */
+  markServiceHealthy(serviceName) {
+    const circuitBreaker = this.circuitBreakers.get(serviceName);
+    
+    if (circuitBreaker) {
+      circuitBreaker.failures = 0;
+      circuitBreaker.lastSuccessTime = Date.now();
+      
+      if (circuitBreaker.state !== 'CLOSED') {
+        circuitBreaker.state = 'CLOSED';
+        console.log(`Circuit breaker CLOSED for ${serviceName} - service recovered`);
+        this.emitServiceStatusEvent(serviceName, 'AVAILABLE');
       }
     }
   }
@@ -327,94 +213,186 @@ class EnhancedServiceManager {
    */
   setupNetworkMonitoring() {
     window.addEventListener('online', () => {
-      console.log('🌐 Network connection restored');
+      this.isOnline = true;
+      console.log('Network connection restored');
       this.processOfflineQueue();
+      this.emitServiceStatusEvent('NETWORK', 'ONLINE');
     });
 
     window.addEventListener('offline', () => {
-      console.log('📴 Network connection lost');
+      this.isOnline = false;
+      console.log('Network connection lost');
+      this.emitServiceStatusEvent('NETWORK', 'OFFLINE');
     });
   }
 
   /**
-   * Generate unique request ID for tracking
+   * Start periodic health checks
    */
+  startHealthChecks() {
+    setInterval(() => {
+      this.performHealthChecks();
+    }, this.config.healthCheckInterval);
+  }
+
+  /**
+   * Perform health checks on all services
+   */
+  async performHealthChecks() {
+    const healthPromises = Array.from(this.services.keys()).map(serviceName => 
+      this.checkServiceHealth(serviceName)
+    );
+
+    try {
+      await Promise.allSettled(healthPromises);
+    } catch (error) {
+      console.error('Health check batch failed:', error);
+    }
+  }
+
+  /**
+   * Check individual service health
+   */
+  async checkServiceHealth(serviceName) {
+    try {
+      const service = this.services.get(serviceName);
+      const response = await service.get('/health', { 
+        timeout: 5000,
+        headers: { 'X-Health-Check': 'true' }
+      });
+      
+      this.healthChecks.set(serviceName, {
+        status: 'healthy',
+        lastCheck: Date.now(),
+        responseTime: response.headers['x-response-time'] || 'unknown'
+      });
+      
+      this.markServiceHealthy(serviceName);
+      
+    } catch (error) {
+      this.healthChecks.set(serviceName, {
+        status: 'unhealthy',
+        lastCheck: Date.now(),
+        error: error.message
+      });
+      
+      // Don't trigger circuit breaker for health checks
+    }
+  }
+
+  /**
+   * Process offline queue when network returns
+   */
+  async processOfflineQueue() {
+    while (this.offlineQueue.length > 0) {
+      const request = this.offlineQueue.shift();
+      try {
+        await this.makeResilientCall(request.serviceName, request.config);
+        console.log('Processed offline request:', request.config.url);
+      } catch (error) {
+        console.error('Failed to process offline request:', error);
+      }
+    }
+  }
+
+  /**
+   * Emit service status events for UI components
+   */
+  emitServiceStatusEvent(serviceName, status) {
+    const event = new CustomEvent('serviceStatusChange', {
+      detail: { serviceName, status, timestamp: Date.now() }
+    });
+    window.dispatchEvent(event);
+  }
+
+  /**
+   * Utility methods
+   */
+  shouldRetry(error) {
+    const retryableCodes = [408, 429, 500, 502, 503, 504];
+    const retryableNetworkErrors = ['ECONNABORTED', 'ENOTFOUND', 'ECONNRESET', 'ETIMEDOUT'];
+    
+    return (
+      retryableCodes.includes(error.response?.status) ||
+      retryableNetworkErrors.includes(error.code) ||
+      this.isNetworkError(error)
+    );
+  }
+
+  isNetworkError(error) {
+    return (
+      !error.response ||
+      error.code === 'NETWORK_ERROR' ||
+      error.message.includes('Network Error')
+    );
+  }
+
+  getRetryDelay(attempt) {
+    return Math.min(this.config.retryDelay * Math.pow(2, attempt), 10000);
+  }
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   generateRequestId() {
     return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   /**
-   * Get service client
-   */
-  getService(serviceName) {
-    return this.services.get(serviceName);
-  }
-
-  /**
-   * Get service status
+   * Get service status information
    */
   getServiceStatus(serviceName) {
-    return this.serviceStatus.get(serviceName);
+    const circuitBreaker = this.circuitBreakers.get(serviceName);
+    const healthCheck = this.healthChecks.get(serviceName);
+    
+    return {
+      serviceName,
+      circuitBreakerState: circuitBreaker?.state || 'UNKNOWN',
+      failures: circuitBreaker?.failures || 0,
+      lastSuccess: circuitBreaker?.lastSuccessTime,
+      lastFailure: circuitBreaker?.lastFailureTime,
+      health: healthCheck || { status: 'unknown' },
+      isOnline: this.isOnline
+    };
   }
 
   /**
-   * Get all service statuses
+   * Get all services status
    */
-  getAllServiceStatuses() {
+  getAllServicesStatus() {
     const statuses = {};
-    this.serviceStatus.forEach((status, serviceName) => {
-      statuses[serviceName] = status;
+    this.services.forEach((_, serviceName) => {
+      statuses[serviceName] = this.getServiceStatus(serviceName);
     });
     return statuses;
   }
 
   /**
-   * Perform service health check
+   * Reset circuit breaker for a service
    */
-  async healthCheck(serviceName) {
-    try {
-      const client = this.services.get(serviceName);
-      const response = await client.get('/health');
-      return {
-        serviceName,
-        status: 'healthy',
-        responseTime: response.headers['x-response-time'] || 'unknown',
-        timestamp: Date.now()
-      };
-    } catch (error) {
-      return {
-        serviceName,
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: Date.now()
-      };
+  resetCircuitBreaker(serviceName) {
+    const circuitBreaker = this.circuitBreakers.get(serviceName);
+    if (circuitBreaker) {
+      circuitBreaker.state = 'CLOSED';
+      circuitBreaker.failures = 0;
+      circuitBreaker.lastFailureTime = null;
+      console.log(`Circuit breaker reset for ${serviceName}`);
     }
   }
 
   /**
-   * Retry failed request with exponential backoff
+   * Reset all circuit breakers
    */
-  async retryRequest(serviceName, requestConfig, retryCount = 0) {
-    if (retryCount >= this.maxRetries) {
-      throw new Error(`Max retries exceeded for ${serviceName}`);
-    }
-
-    const delay = this.retryDelays[retryCount] || this.retryDelays[this.retryDelays.length - 1];
-    
-    await new Promise(resolve => setTimeout(resolve, delay));
-
-    try {
-      const client = this.services.get(serviceName);
-      return await client.request(requestConfig);
-    } catch (error) {
-      if (this.isRetryableError(error)) {
-        return this.retryRequest(serviceName, requestConfig, retryCount + 1);
-      }
-      throw error;
-    }
+  resetAllCircuitBreakers() {
+    this.circuitBreakers.forEach((_, serviceName) => {
+      this.resetCircuitBreaker(serviceName);
+    });
   }
 }
 
-// Export singleton instance
-export const serviceManager = new EnhancedServiceManager();
+// Create singleton instance
+const serviceManager = new EnhancedServiceManager();
+
+export { serviceManager };
 export default serviceManager;

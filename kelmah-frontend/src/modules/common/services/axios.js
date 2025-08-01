@@ -13,6 +13,7 @@ import {
   LOG_CONFIG,
   SERVICES,
 } from '../../../config/environment';
+import { secureStorage } from '../../../utils/secureStorage';
 
 // Create axios instance with default configuration
 const axiosInstance = axios.create({
@@ -28,11 +29,15 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+    // Add auth token securely
+    const token = secureStorage.getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add security headers
+    config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    config.headers['X-Client-Version'] = '1.0.0';
 
     // Add request timestamp for debugging
     config.metadata = { startTime: new Date() };
@@ -108,7 +113,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = localStorage.getItem(AUTH_CONFIG.refreshTokenKey);
+      const refreshToken = secureStorage.getRefreshToken();
 
       if (refreshToken) {
         try {
@@ -126,8 +131,8 @@ axiosInstance.interceptors.response.use(
             refreshResponse.data.data?.token || refreshResponse.data.token;
 
           if (newToken) {
-            // Update stored token
-            localStorage.setItem(AUTH_CONFIG.tokenKey, newToken);
+            // Update stored token securely
+            secureStorage.setAuthToken(newToken);
 
             // Update the failed request with new token
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -138,10 +143,8 @@ axiosInstance.interceptors.response.use(
         } catch (refreshError) {
           console.error('Token refresh failed:', refreshError);
 
-          // Clear auth data and redirect to login
-          localStorage.removeItem(AUTH_CONFIG.tokenKey);
-          localStorage.removeItem(AUTH_CONFIG.refreshTokenKey);
-          localStorage.removeItem(AUTH_CONFIG.userKey);
+          // Clear auth data securely
+          secureStorage.clear();
 
           // Redirect to login page
           if (typeof window !== 'undefined') {
@@ -302,8 +305,8 @@ export const schedulingClient = axios.create({
   // Request interceptor
   client.interceptors.request.use(
     (config) => {
-      // Add auth token if available
-      const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
+      // Add auth token securely
+      const token = secureStorage.getAuthToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -362,5 +365,10 @@ export const schedulingClient = axios.create({
     },
   );
 });
+
+// Get token from secure storage for external use
+export const getAuthToken = () => {
+  return secureStorage.getAuthToken();
+};
 
 export default axiosInstance;

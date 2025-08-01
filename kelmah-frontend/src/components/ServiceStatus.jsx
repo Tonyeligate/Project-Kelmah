@@ -1,260 +1,362 @@
 /**
  * Service Status Component
  * 
- * Displays real-time service availability with retry functionality
- * and graceful degradation for better user experience.
+ * Displays real-time status of backend services with visual indicators
+ * and provides manual retry capabilities for failed services.
  */
 
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Alert,
-  Button,
-  Chip,
-  Typography,
-  Collapse,
-  IconButton,
   Card,
   CardContent,
-  LinearProgress
+  Typography,
+  Chip,
+  IconButton,
+  Collapse,
+  Button,
+  Grid,
+  LinearProgress,
+  Tooltip,
+  Alert,
+  Divider
 } from '@mui/material';
 import {
-  Refresh as RefreshIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  CheckCircle as CheckCircleIcon,
+  Refresh as RefreshIcon,
+  CheckCircle as HealthyIcon,
   Error as ErrorIcon,
   Warning as WarningIcon,
-  Schedule as ScheduleIcon
+  CloudOff as OfflineIcon,
+  Timeline as TimelineIcon
 } from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
+import { serviceManager } from '../services/EnhancedServiceManager';
 
-const ServiceStatus = ({ 
-  error, 
-  onRetry, 
-  serviceName = 'Service',
-  showDetails = false,
-  autoRetry = true,
-  retryInterval = 30000,
-  severity = 'error'
-}) => {
-  const theme = useTheme();
+const ServiceStatus = ({ showDetails = false, compact = false }) => {
   const [expanded, setExpanded] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [autoRetryEnabled, setAutoRetryEnabled] = useState(autoRetry);
-  const [nextRetryIn, setNextRetryIn] = useState(null);
+  const [servicesStatus, setServicesStatus] = useState({});
+  const [networkStatus, setNetworkStatus] = useState(navigator.onLine);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-  // Auto-retry functionality
   useEffect(() => {
-    if (!autoRetryEnabled || !error || isRetrying) return;
+    // Initial status fetch
+    updateServicesStatus();
 
-    const timer = setTimeout(() => {
-      handleRetry(true);
-    }, retryInterval);
+    // Listen for service status changes
+    const handleServiceStatusChange = (event) => {
+      const { serviceName, status } = event.detail;
+      
+      if (serviceName === 'NETWORK') {
+        setNetworkStatus(status === 'ONLINE');
+      }
+      
+      // Refresh all statuses
+      updateServicesStatus();
+    };
 
-    // Countdown timer
-    setNextRetryIn(retryInterval / 1000);
-    const countdownTimer = setInterval(() => {
-      setNextRetryIn(prev => {
-        if (prev <= 1) {
-          clearInterval(countdownTimer);
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    window.addEventListener('serviceStatusChange', handleServiceStatusChange);
+
+    // Periodic status updates
+    const interval = setInterval(updateServicesStatus, 30000); // Every 30 seconds
 
     return () => {
-      clearTimeout(timer);
-      clearInterval(countdownTimer);
+      window.removeEventListener('serviceStatusChange', handleServiceStatusChange);
+      clearInterval(interval);
     };
-  }, [error, autoRetryEnabled, retryInterval, isRetrying]);
+  }, []);
 
-  const handleRetry = async (isAutoRetry = false) => {
-    setIsRetrying(true);
-    setNextRetryIn(null);
+  const updateServicesStatus = () => {
+    const allStatuses = serviceManager.getAllServicesStatus();
+    setServicesStatus(allStatuses);
+    setLastUpdate(Date.now());
+  };
+
+  const getStatusColor = (status) => {
+    switch (status.circuitBreakerState) {
+      case 'CLOSED':
+        return status.health?.status === 'healthy' ? 'success' : 'warning';
+      case 'HALF_OPEN':
+        return 'warning';
+      case 'OPEN':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status.circuitBreakerState) {
+      case 'CLOSED':
+        return status.health?.status === 'healthy' ? 
+          <HealthyIcon color="success" /> : 
+          <WarningIcon color="warning" />;
+      case 'HALF_OPEN':
+        return <WarningIcon color="warning" />;
+      case 'OPEN':
+        return <ErrorIcon color="error" />;
+      default:
+        return <WarningIcon color="disabled" />;
+    }
+  };
+
+  const getStatusText = (status) => {
+    if (!networkStatus) return 'Offline';
     
-    try {
-      await onRetry();
-      setRetryCount(0);
-    } catch (error) {
-      setRetryCount(prev => prev + 1);
-      
-      // Disable auto-retry after 3 failed attempts
-      if (isAutoRetry && retryCount >= 2) {
-        setAutoRetryEnabled(false);
-      }
-    } finally {
-      setIsRetrying(false);
+    switch (status.circuitBreakerState) {
+      case 'CLOSED':
+        return status.health?.status === 'healthy' ? 'Healthy' : 'Degraded';
+      case 'HALF_OPEN':
+        return 'Recovering';
+      case 'OPEN':
+        return 'Unavailable';
+      default:
+        return 'Unknown';
     }
   };
 
-  const getStatusColor = () => {
-    if (error) {
-      switch (severity) {
-        case 'warning': return 'warning';
-        case 'info': return 'info';
-        default: return 'error';
-      }
+  const handleRetryService = (serviceName) => {
+    serviceManager.resetCircuitBreaker(serviceName);
+    updateServicesStatus();
+  };
+
+  const handleRetryAll = () => {
+    serviceManager.resetAllCircuitBreakers();
+    updateServicesStatus();
+  };
+
+  const formatServiceName = (serviceName) => {
+    return serviceName.replace('_SERVICE', '').toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'Never';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString();
+  };
+
+  const getOverallHealth = () => {
+    if (!networkStatus) return { status: 'offline', message: 'No network connection' };
+    
+    const statuses = Object.values(servicesStatus);
+    const unhealthyCount = statuses.filter(s => s.circuitBreakerState === 'OPEN').length;
+    const degradedCount = statuses.filter(s => s.circuitBreakerState === 'HALF_OPEN').length;
+    
+    if (unhealthyCount === 0 && degradedCount === 0) {
+      return { status: 'healthy', message: 'All services operational' };
+    } else if (unhealthyCount === 0) {
+      return { status: 'degraded', message: `${degradedCount} service(s) recovering` };
+    } else {
+      return { status: 'unhealthy', message: `${unhealthyCount} service(s) unavailable` };
     }
-    return 'success';
   };
 
-  const getStatusIcon = () => {
-    if (isRetrying) return <ScheduleIcon />;
-    if (error) {
-      switch (severity) {
-        case 'warning': return <WarningIcon />;
-        case 'info': return <ErrorIcon />;
-        default: return <ErrorIcon />;
-      }
-    }
-    return <CheckCircleIcon />;
-  };
+  if (compact) {
+    const overall = getOverallHealth();
+    return (
+      <Tooltip title={`Services: ${overall.message} • Updated: ${formatTime(lastUpdate)}`}>
+        <Chip
+          icon={
+            !networkStatus ? <OfflineIcon /> :
+            overall.status === 'healthy' ? <HealthyIcon /> :
+            overall.status === 'degraded' ? <WarningIcon /> :
+            <ErrorIcon />
+          }
+          label={
+            !networkStatus ? 'Offline' :
+            overall.status === 'healthy' ? 'Healthy' :
+            overall.status === 'degraded' ? 'Degraded' :
+            'Issues'
+          }
+          color={
+            !networkStatus ? 'default' :
+            overall.status === 'healthy' ? 'success' :
+            overall.status === 'degraded' ? 'warning' :
+            'error'
+          }
+          size="small"
+          onClick={() => setExpanded(!expanded)}
+          clickable
+        />
+      </Tooltip>
+    );
+  }
 
-  const getStatusMessage = () => {
-    if (isRetrying) return `Reconnecting to ${serviceName}...`;
-    if (error) {
-      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        return `${serviceName} is responding slowly`;
-      }
-      if (error.response?.status === 401) {
-        return `Authentication required for ${serviceName}`;
-      }
-      if (error.response?.status === 404) {
-        return `${serviceName} endpoint not found`;
-      }
-      if (error.response?.status >= 500) {
-        return `${serviceName} is temporarily unavailable`;
-      }
-      return `${serviceName} connection failed`;
-    }
-    return `${serviceName} is operational`;
-  };
-
-  const getActionMessage = () => {
-    if (isRetrying) return 'Retrying...';
-    if (nextRetryIn) return `Auto-retry in ${nextRetryIn}s`;
-    if (error) return 'Retry now';
-    return '';
-  };
-
-  if (!error && !showDetails) return null;
+  const overall = getOverallHealth();
 
   return (
-    <Alert
-      severity={getStatusColor()}
-      icon={getStatusIcon()}
-      sx={{
-        mb: 2,
-        '& .MuiAlert-message': {
-          width: '100%'
-        }
-      }}
-      action={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {error && (
-            <>
+    <Card variant="outlined">
+      <CardContent>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center" gap={2}>
+            <TimelineIcon color="primary" />
+            <Typography variant="h6">
+              Service Status
+            </Typography>
+            {!networkStatus && (
               <Chip
+                icon={<OfflineIcon />}
+                label="Offline"
+                color="warning"
                 size="small"
-                label={getActionMessage()}
-                color={isRetrying ? 'primary' : 'default'}
-                sx={{ mr: 1 }}
               />
-              <Button
-                color="inherit"
-                size="small"
-                onClick={() => handleRetry(false)}
-                disabled={isRetrying}
-                startIcon={<RefreshIcon />}
-              >
-                Retry
-              </Button>
-            </>
-          )}
-          {showDetails && (
+            )}
+          </Box>
+          
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="caption" color="text.secondary">
+              Updated: {formatTime(lastUpdate)}
+            </Typography>
+            <IconButton size="small" onClick={updateServicesStatus}>
+              <RefreshIcon />
+            </IconButton>
             <IconButton
-              color="inherit"
               size="small"
               onClick={() => setExpanded(!expanded)}
             >
               {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
-          )}
+          </Box>
         </Box>
-      }
-    >
-      <Typography variant="body2" fontWeight="medium">
-        {getStatusMessage()}
-      </Typography>
-      
-      {isRetrying && (
-        <LinearProgress 
-          sx={{ mt: 1, borderRadius: 1 }}
-          color="inherit"
-        />
-      )}
 
-      <Collapse in={expanded && showDetails}>
-        <Card sx={{ mt: 2, bgcolor: 'background.paper' }}>
-          <CardContent>
-            <Typography variant="subtitle2" gutterBottom>
-              Service Details
-            </Typography>
-            
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Service:</strong> {serviceName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Status:</strong> {error ? 'Unavailable' : 'Available'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Retry Count:</strong> {retryCount}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                <strong>Auto-retry:</strong> {autoRetryEnabled ? 'Enabled' : 'Disabled'}
-              </Typography>
-            </Box>
+        <Box mt={2}>
+          <Alert 
+            severity={
+              !networkStatus ? 'error' :
+              overall.status === 'healthy' ? 'success' :
+              overall.status === 'degraded' ? 'warning' : 'error'
+            }
+            sx={{ mb: 2 }}
+          >
+            {overall.message}
+          </Alert>
 
-            {error && (
-              <Box>
-                <Typography variant="subtitle2" gutterBottom>
-                  Error Details
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Type:</strong> {error.name || 'Unknown Error'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Code:</strong> {error.code || error.response?.status || 'N/A'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
-                  <strong>Message:</strong> {error.message || 'No details available'}
-                </Typography>
-              </Box>
-            )}
+          <Grid container spacing={2}>
+            {Object.entries(servicesStatus).map(([serviceName, status]) => (
+              <Grid item xs={12} sm={6} md={4} key={serviceName}>
+                <Card variant="outlined" size="small">
+                  <CardContent sx={{ pb: 1 }}>
+                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {getStatusIcon(status)}
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatServiceName(serviceName)}
+                        </Typography>
+                      </Box>
+                      
+                      <Chip
+                        label={getStatusText(status)}
+                        color={getStatusColor(status)}
+                        size="small"
+                      />
+                    </Box>
+                    
+                    {status.failures > 0 && (
+                      <Typography variant="caption" color="error" display="block" mt={1}>
+                        {status.failures} failure(s)
+                      </Typography>
+                    )}
+                    
+                    {status.circuitBreakerState === 'OPEN' && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleRetryService(serviceName)}
+                        sx={{ mt: 1 }}
+                        fullWidth
+                      >
+                        Retry
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
 
-            <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => setAutoRetryEnabled(!autoRetryEnabled)}
-              >
-                {autoRetryEnabled ? 'Disable' : 'Enable'} Auto-retry
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => window.location.reload()}
-              >
-                Refresh Page
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-      </Collapse>
-    </Alert>
+        <Collapse in={expanded}>
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="subtitle2" gutterBottom>
+            Detailed Status
+          </Typography>
+          
+          <Grid container spacing={2}>
+            {Object.entries(servicesStatus).map(([serviceName, status]) => (
+              <Grid item xs={12} key={serviceName}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="body2" fontWeight="medium" gutterBottom>
+                      {formatServiceName(serviceName)}
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">
+                          Circuit Breaker
+                        </Typography>
+                        <Typography variant="body2">
+                          {status.circuitBreakerState}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">
+                          Health
+                        </Typography>
+                        <Typography variant="body2">
+                          {status.health?.status || 'Unknown'}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">
+                          Last Success
+                        </Typography>
+                        <Typography variant="body2">
+                          {formatTime(status.lastSuccess)}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">
+                          Failures
+                        </Typography>
+                        <Typography variant="body2">
+                          {status.failures}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                    
+                    {status.health?.responseTime && (
+                      <Box mt={1}>
+                        <Typography variant="caption" color="text.secondary">
+                          Response Time: {status.health.responseTime}
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+          
+          <Box mt={2} display="flex" justifyContent="center">
+            <Button
+              variant="contained"
+              startIcon={<RefreshIcon />}
+              onClick={handleRetryAll}
+            >
+              Reset All Circuit Breakers
+            </Button>
+          </Box>
+        </Collapse>
+      </CardContent>
+    </Card>
   );
 };
 

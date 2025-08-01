@@ -62,6 +62,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 import { useAuth } from '../../auth/contexts/AuthContext';
+import { useMessages } from '../contexts/MessageContext';
 import ConversationList from '../components/common/ConversationList';
 import Chatbox from '../components/common/Chatbox';
 
@@ -1436,7 +1437,7 @@ const EnhancedMessagingPage = () => {
                       backgroundColor: '#2a2926',
                     },
                   }}
-                  onClick={() => setSelectedConversation(conversation)}
+                  onClick={() => selectConversation(conversation)}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ position: 'relative' }}>
