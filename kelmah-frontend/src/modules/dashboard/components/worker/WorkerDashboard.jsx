@@ -302,60 +302,7 @@ const EnhancedWorkerDashboard = () => {
     },
   ], [data]);
 
-  // Enhanced quick actions
-  const quickActions = useMemo(
-    () => [
-      {
-        title: 'Find Jobs',
-        description: 'Browse available opportunities',
-        icon: <SearchIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/worker/find-work',
-        color: '#2196F3',
-        gradient: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
-        priority: 1,
-      },
-      {
-        title: 'Applications',
-        description: 'Manage job applications',
-        icon: <AssignmentIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/worker/applications',
-        color: '#4CAF50',
-        gradient: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)',
-        badgeContent: data?.metrics?.newApplications || 0,
-        priority: 1,
-      },
-      {
-        title: 'Messages',
-        description: 'Chat with clients',
-        icon: <MessageIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/messages',
-        color: '#FF9800',
-        gradient: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-        badgeContent: data?.metrics?.unreadMessages || 0,
-        priority: 1,
-      },
-      {
-        title: 'Schedule',
-        description: 'Manage appointments',
-        icon: <ScheduleIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/worker/schedule',
-        color: '#9C27B0',
-        gradient: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-        priority: 2,
-      },
-      {
-        title: 'Notifications',
-        description: 'View all updates',
-        icon: <NotificationsIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/notifications',
-        color: '#F44336',
-        gradient: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
-        badgeContent: data?.metrics?.unreadNotifications || 0,
-        priority: 3,
-      },
-    ],
-    [data],
-  );
+
 
   // Filter statistics for mobile view
   const visibleStats = useMemo(() => {
