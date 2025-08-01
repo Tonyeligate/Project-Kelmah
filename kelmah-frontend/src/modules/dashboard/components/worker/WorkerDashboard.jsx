@@ -48,6 +48,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
 import { useAuth } from '../../../auth/contexts/AuthContext';
+import { MAIN_API_URL } from '../../../config/environment';
 import StatisticsCard from '../common/StatisticsCard';
 import QuickActions from '../common/QuickActions';
 import Portfolio from './Portfolio';
@@ -107,7 +108,7 @@ const EnhancedWorkerDashboard = () => {
     
     setLoadingMatches(true);
     try {
-      const response = await fetch('/api/dashboard/job-matches', {
+      const response = await fetch(`${MAIN_API_URL}/api/dashboard/job-matches`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -128,7 +129,7 @@ const EnhancedWorkerDashboard = () => {
   // Load personalized recommendations
   const loadRecommendations = async () => {
     try {
-      const response = await fetch('/api/dashboard/recommendations', {
+      const response = await fetch(`${MAIN_API_URL}/api/dashboard/recommendations`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -148,7 +149,7 @@ const EnhancedWorkerDashboard = () => {
   const loadQuickActions = async () => {
     setLoadingActions(true);
     try {
-      const response = await fetch('/api/dashboard/quick-actions', {
+      const response = await fetch(`${MAIN_API_URL}/api/dashboard/quick-actions`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

@@ -59,6 +59,10 @@ export const SERVICES = {
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL || SERVICES.AUTH_SERVICE;
 
+// Main Backend API URL (for dashboard and other main features)
+export const MAIN_API_URL =
+  import.meta.env.VITE_MAIN_API_URL || 'http://localhost:5000';
+
 // ===============================================
 // APPLICATION CONFIGURATION
 // ===============================================

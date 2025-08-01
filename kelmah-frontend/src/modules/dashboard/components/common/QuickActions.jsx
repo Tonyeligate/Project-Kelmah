@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Grid,
@@ -17,9 +17,12 @@ import DashboardCard from './DashboardCard';
  * QuickActions component to display action buttons in the dashboard
  */
 const QuickActions = ({ actions = [] }) => {
-  const [actionStates, setActionStates] = useState(
-    actions.map(() => ({ loading: false })),
-  );
+  const [actionStates, setActionStates] = useState([]);
+
+  // Update actionStates when actions change
+  useEffect(() => {
+    setActionStates(actions.map(() => ({ loading: false })));
+  }, [actions]);
   const [feedback, setFeedback] = useState({
     open: false,
     message: '',
