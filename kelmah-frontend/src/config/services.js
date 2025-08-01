@@ -19,7 +19,7 @@ const PRODUCTION_SERVICES = {
 
 // Development URLs (through Vite proxy)
 const DEVELOPMENT_SERVICES = {
-  AUTH_SERVICE: '', // Uses main /api proxy to auth service
+  AUTH_SERVICE: '', // Uses /api/auth proxy to auth service
   USER_SERVICE: '', // Uses /api/users proxy to user service
   JOB_SERVICE: '', // Uses /api/jobs proxy to job service
   MESSAGING_SERVICE: '', // Uses /api/messages proxy to messaging service
@@ -35,7 +35,7 @@ const getServicePath = (service, path) => {
     // Development: use proxy paths
     switch (service) {
       case 'AUTH_SERVICE':
-        return `/api${path}`;
+        return `/api/auth${path}`;
       case 'USER_SERVICE':
         return `/api/users${path}`;
       case 'JOB_SERVICE':

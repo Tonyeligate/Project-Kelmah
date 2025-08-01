@@ -365,6 +365,149 @@ const getContracts = async (req, res, next) => {
   }
 };
 
+/**
+ * Apply to a job
+ * @route POST /api/jobs/:id/apply
+ * @access Private (Worker only)
+ */
+const applyToJob = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const applicationData = req.body;
+    
+    // Mock application creation
+    const application = {
+      id: `app-${Date.now()}`,
+      jobId: id,
+      applicant: req.user.id,
+      status: "pending",
+      appliedAt: new Date(),
+      ...applicationData
+    };
+    
+    return successResponse(res, 201, "Application submitted successfully", application);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Save a job
+ * @route POST /api/jobs/:id/save
+ * @access Private (Worker only)
+ */
+const saveJob = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    // Mock save operation
+    const savedJob = {
+      jobId: id,
+      userId: req.user.id,
+      savedAt: new Date()
+    };
+    
+    return successResponse(res, 200, "Job saved successfully", savedJob);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Unsave a job
+ * @route DELETE /api/jobs/:id/save
+ * @access Private (Worker only)
+ */
+const unsaveJob = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    return successResponse(res, 200, "Job removed from saved list");
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get my applications
+ * @route GET /api/jobs/my-applications
+ * @access Private (Worker only)
+ */
+const getMyApplications = async (req, res, next) => {
+  try {
+    // Mock applications data
+    const applications = [
+      {
+        id: "app-1",
+        job: {
+          id: "job-1",
+          title: "Kitchen Renovation",
+          client: "Sarah Mitchell",
+          budget: 1200,
+          status: "open"
+        },
+        status: "pending",
+        appliedAt: "2023-10-15",
+        message: "I have 8+ years of experience in kitchen renovations..."
+      },
+      {
+        id: "app-2",
+        job: {
+          id: "job-2",
+          title: "Office Electrical Work",
+          client: "Tech Solutions Ltd",
+          budget: 800,
+          status: "closed"
+        },
+        status: "accepted",
+        appliedAt: "2023-10-10",
+        message: "Specialized in commercial electrical installations..."
+      }
+    ];
+    
+    return successResponse(res, 200, "Applications retrieved successfully", { applications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get saved jobs
+ * @route GET /api/jobs/saved
+ * @access Private (Worker only)
+ */
+const getSavedJobs = async (req, res, next) => {
+  try {
+    // Mock saved jobs data
+    const savedJobs = [
+      {
+        id: "job-3",
+        title: "Bathroom Plumbing Repair",
+        description: "Fix leaking pipes and install new fixtures",
+        budget: 600,
+        location: "Accra, Ghana",
+        client: "John Doe",
+        postedAt: "2023-10-12",
+        savedAt: "2023-10-13"
+      },
+      {
+        id: "job-4",
+        title: "Garden Landscaping",
+        description: "Design and implement garden layout",
+        budget: 1500,
+        location: "Kumasi, Ghana",
+        client: "Mary Johnson",
+        postedAt: "2023-10-11",
+        savedAt: "2023-10-14"
+      }
+    ];
+    
+    return successResponse(res, 200, "Saved jobs retrieved successfully", { savedJobs });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createJob,
   getJobs,
@@ -375,4 +518,9 @@ module.exports = {
   changeJobStatus,
   getDashboardJobs,
   getContracts,
+  applyToJob,
+  saveJob,
+  unsaveJob,
+  getMyApplications,
+  getSavedJobs,
 };

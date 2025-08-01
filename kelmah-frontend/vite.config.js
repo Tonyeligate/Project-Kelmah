@@ -22,13 +22,67 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:5000',
+      // Auth service routes
+      '/api/auth': {
+        target: 'https://kelmah-auth-service.onrender.com',
         changeOrigin: true,
+        secure: true,
+        timeout: 10000,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('Auth proxy error:', err);
+          });
+        },
       },
+      // User service routes
+      '/api/users': {
+        target: 'https://kelmah-user-service.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        timeout: 10000,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('User proxy error:', err);
+          });
+        },
+      },
+      // Job service routes
+      '/api/jobs': {
+        target: 'https://kelmah-job-service.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        timeout: 10000,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('Job proxy error:', err);
+          });
+        },
+      },
+      // Messaging service routes
+      '/api/messages': {
+        target: 'https://kelmah-messaging-service.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        timeout: 10000,
+      },
+      '/api/conversations': {
+        target: 'https://kelmah-messaging-service.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        timeout: 10000,
+      },
+      // Payment service routes
+      '/api/payments': {
+        target: 'https://kelmah-payment-service.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        timeout: 10000,
+      },
+      // WebSocket for messaging
       '/socket.io': {
-        target: process.env.VITE_MESSAGING_URL || 'http://localhost:3003',
+        target: 'https://kelmah-messaging-service.onrender.com',
         ws: true,
+        changeOrigin: true,
       },
     },
   },

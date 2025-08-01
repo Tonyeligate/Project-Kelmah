@@ -20,4 +20,16 @@ services:
     startCommand: node server.js
     plan: free
     autoDeploy: true
+    version: 1
+
+  - name: job-service
+    type: web_service
+    env: docker
+    rootDirectory: kelmah-backend/services/job-service
+    dockerfilePath: Dockerfile
+    buildContextDirectory: .
+    buildCommand: npm ci --only=production
+    startCommand: node server.js
+    plan: free
+    autoDeploy: true
     version: 1 

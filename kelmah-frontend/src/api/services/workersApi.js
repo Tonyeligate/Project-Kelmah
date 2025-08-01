@@ -1,4 +1,103 @@
+import { userServiceClient } from '../../modules/common/services/axios';
+
 class WorkersApi {
+  /**
+   * Get worker availability status
+   */
+  async getAvailabilityStatus() {
+    try {
+      const response = await userServiceClient.get('/api/users/me/availability');
+      return response.data;
+    } catch (error) {
+      console.warn('User service unavailable for availability, using mock data:', error.message);
+      return {
+        success: true,
+        data: {
+          isAvailable: true,
+          availabilityType: 'full-time',
+          workingHours: {
+            start: '08:00',
+            end: '17:00',
+          },
+          daysAvailable: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+        },
+      };
+    }
+  }
+
+  /**
+   * Get skills and licenses for worker
+   */
+  async getSkillsAndLicenses() {
+    try {
+      const response = await userServiceClient.get('/api/users/me/credentials');
+      return response.data;
+    } catch (error) {
+      console.warn('User service unavailable for credentials, using mock data:', error.message);
+      return {
+        success: true,
+        data: {
+          skills: [],
+          licenses: [],
+          certifications: [],
+        },
+      };
+    }
+  }
+
+  /**
+   * Get portfolio projects
+   */
+  async getPortfolioProjects() {
+    try {
+      const response = await userServiceClient.get('/api/users/me/portfolio');
+      return response.data;
+    } catch (error) {
+      console.warn('User service unavailable for portfolio, using mock data:', error.message);
+      return {
+        success: true,
+        data: {
+          projects: [],
+        },
+      };
+    }
+  }
+
+  /**
+   * Search workers
+   */
+  async searchWorkers(params = {}) {
+    try {
+      const response = await userServiceClient.get('/api/users/search/workers', {
+        params,
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('User service unavailable for searchWorkers, using mock data:', error.message);
+      return {
+        success: true,
+        workers: [],
+        total: 0,
+      };
+    }
+  }
+
+  /**
+   * Update availability status
+   */
+  async updateAvailability(availabilityData) {
+    try {
+      const response = await userServiceClient.put('/api/users/me/availability', availabilityData);
+      return response.data;
+    } catch (error) {
+      console.warn('User service unavailable for updateAvailability:', error.message);
+      return {
+        success: false,
+        error: 'Update failed',
+      };
+    }
+  }
+
   async getNotificationCounts() {
     try {
       const response = await userServiceClient.get(

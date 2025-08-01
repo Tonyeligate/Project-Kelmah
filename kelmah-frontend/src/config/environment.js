@@ -26,7 +26,7 @@ const DEFAULT_SERVICES = {
   production: {
     AUTH_SERVICE: 'https://kelmah-auth-service.onrender.com',
     USER_SERVICE: 'https://kelmah-user-service.onrender.com',
-    JOB_SERVICE: 'https://kelmah-job-service.onrender.com',
+    JOB_SERVICE: 'https://kelmah-job-service.onrender.com', // Should now work properly
     MESSAGING_SERVICE: 'https://kelmah-messaging-service.onrender.com',
     PAYMENT_SERVICE: 'https://kelmah-payment-service.onrender.com',
   },

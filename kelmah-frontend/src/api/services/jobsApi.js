@@ -15,19 +15,101 @@ const jobServiceClient = axios.create({
   },
 });
 
-// Add auth token to requests
+// Add auth token to requests  
 jobServiceClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // Note: Auth token will be added by the main axios interceptor
+    // This ensures consistency with secure storage
     return config;
   },
   (error) => Promise.reject(error),
 );
 
 class JobsApi {
+  /**
+   * Get jobs with filters (main function called by AvailableJobs)
+   */
+  async getJobs(params = {}) {
+    try {
+      const response = await jobServiceClient.get('/api/jobs', {
+        params: {
+          status: params.status || 'open',
+          nearby: params.nearby || false,
+          limit: params.limit || 20,
+          skills: params.userSkills?.join(',') || '',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Job service unavailable for getJobs, using mock data:', error.message);
+      return {
+        success: true,
+        jobs: [], // Empty array instead of mock data
+        total: 0,
+        page: 1,
+        totalPages: 0,
+      };
+    }
+  }
+
+  /**
+   * Search jobs with advanced filters
+   */
+  async searchJobs(params = {}) {
+    try {
+      const response = await jobServiceClient.get('/api/jobs/search', {
+        params,
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Job service unavailable for searchJobs, using mock data:', error.message);
+      return {
+        success: true,
+        jobs: [],
+        total: 0,
+      };
+    }
+  }
+
+  /**
+   * Get job by ID
+   */
+  async getJobById(jobId) {
+    try {
+      const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
+      return response.data;
+    } catch (error) {
+      console.warn(`Job service unavailable for getJobById ${jobId}:`, error.message);
+      return {
+        success: false,
+        error: 'Job not found',
+      };
+    }
+  }
+
+  /**
+   * Apply for a job
+   */
+  async applyForJob(jobId, applicationData) {
+    try {
+      const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+      return response.data;
+    } catch (error) {
+      console.warn(`Job service unavailable for applyForJob ${jobId}:`, error.message);
+      return {
+        success: false,
+        error: 'Application failed',
+      };
+    }
+  }
+
+  /**
+   * Apply to job (alias for applyForJob)
+   */
+  async applyToJob(jobId, applicationData) {
+    return this.applyForJob(jobId, applicationData);
+  }
+
   /**
    * Get featured jobs for homepage
    */

@@ -581,10 +581,10 @@ const JobsPage = () => {
           transition={{ duration: 0.6 }}
         >
           <Box sx={{ mb: 6, textAlign: 'center' }}>
-            <Typography 
+                <Typography
               variant="h2" 
               component="h1" 
-              gutterBottom
+                  gutterBottom
               sx={{ 
                 fontWeight: 'bold',
                 background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
@@ -606,8 +606,8 @@ const JobsPage = () => {
               }}
             >
               Connect with Ghana's top employers and advance your skilled trades career
-            </Typography>
-            
+                </Typography>
+
             {/* Enhanced Search & Filter Section */}
             <Paper 
               elevation={8}
@@ -656,7 +656,7 @@ const JobsPage = () => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <FormControl fullWidth>
-                    <Select
+                  <Select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       displayEmpty
@@ -688,16 +688,16 @@ const JobsPage = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <Button
-                    fullWidth
-                    variant="contained"
+                    <Button
+                      fullWidth
+                      variant="contained"
                     size="large"
                     startIcon={<SearchIcon />}
-                    sx={{
+                      sx={{
                       bgcolor: '#D4AF37',
                       color: 'black',
                       fontWeight: 'bold',
-                      '&:hover': {
+                        '&:hover': {
                         bgcolor: '#B8941F',
                       },
                     }}
@@ -715,8 +715,8 @@ const JobsPage = () => {
                   sx={{ color: '#D4AF37' }}
                 >
                   {showFilters ? 'Hide' : 'Show'} Advanced Filters
-                </Button>
-              </Box>
+                    </Button>
+                  </Box>
               
               {/* Advanced Filters */}
               <Collapse in={showFilters}>
@@ -855,8 +855,8 @@ const JobsPage = () => {
                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                   Active Employers
                 </Typography>
-              </Paper>
-            </Grid>
+                    </Paper>
+                  </Grid>
             <Grid item xs={6} md={3}>
               <Paper 
                 sx={{ 
@@ -873,7 +873,7 @@ const JobsPage = () => {
                   Skilled Workers
                 </Typography>
               </Paper>
-            </Grid>
+              </Grid>
             <Grid item xs={6} md={3}>
               <Paper 
                 sx={{ 
@@ -907,7 +907,7 @@ const JobsPage = () => {
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Chip 
                 label={`${filteredJobs.length} Jobs Found`} 
-                sx={{ 
+                  sx={{
                   bgcolor: 'rgba(212,175,55,0.2)', 
                   color: '#D4AF37',
                   fontWeight: 'bold'
@@ -926,7 +926,7 @@ const JobsPage = () => {
                   whileHover={{ scale: 1.02 }}
                 >
                   <Card 
-                    sx={{ 
+                      sx={{
                       height: '100%', 
                       display: 'flex', 
                       flexDirection: 'column',
@@ -952,7 +952,7 @@ const JobsPage = () => {
                               {job.company}
                             </Typography>
                           </Box>
-                        </Box>
+                </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
                           {job.urgent && (
                             <Chip 
@@ -1001,8 +1001,8 @@ const JobsPage = () => {
                               bgcolor: 'rgba(212,175,55,0.2)', 
                               color: '#D4AF37' 
                             }} 
-                          />
-                        </Box>
+                />
+              </Box>
                         
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Star fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
@@ -1130,8 +1130,8 @@ const JobsPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <Paper 
-            sx={{ 
+          <Paper
+            sx={{
               mt: 8, 
               p: 4, 
               textAlign: 'center',
@@ -1147,41 +1147,41 @@ const JobsPage = () => {
               Get personalized job recommendations and connect directly with employers.
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button 
-                variant="contained" 
+                <Button
+                  variant="contained"
                 size="large"
-                sx={{
+                  sx={{
                   bgcolor: '#D4AF37',
                   color: 'black',
                   fontWeight: 'bold',
                   px: 4,
-                  '&:hover': {
+                    '&:hover': {
                     bgcolor: '#B8941F',
-                  },
-                }}
-              >
+                    },
+                  }}
+                >
                 Create Job Alert
-              </Button>
-              <Button 
+                </Button>
+                <Button
                 variant="outlined" 
                 size="large"
-                sx={{
+                  sx={{
                   borderColor: '#D4AF37',
                   color: '#D4AF37',
                   px: 4,
-                  '&:hover': {
+                    '&:hover': {
                     borderColor: '#B8941F',
                     bgcolor: 'rgba(212,175,55,0.1)',
-                  },
-                }}
-              >
+                    },
+                  }}
+                >
                 Upload CV
-              </Button>
-            </Box>
+                </Button>
+              </Box>
           </Paper>
         </motion.div>
       </Container>
-    </Box>
+        </Box>
   );
 };
 

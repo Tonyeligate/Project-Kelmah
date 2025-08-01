@@ -24,4 +24,8 @@ router.get('/jobs', dashboardController.getRecentJobs);
 router.get('/workers', dashboardController.getWorkers);
 router.get('/analytics', dashboardController.getAnalytics);
 
+// Job matching and recommendations
+router.get('/job-matches', dashboardController.getJobMatches);
+router.get('/recommendations', dashboardController.getRecommendations);
+
 module.exports = router; 

@@ -44,6 +44,15 @@ router.patch(
   jobController.changeJobStatus,
 );
 
+// Application routes
+router.post("/:id/apply", jobController.applyToJob);
+router.post("/:id/save", jobController.saveJob);
+router.delete("/:id/save", jobController.unsaveJob);
+
+// Worker routes
+router.get("/my-applications", authorizeRoles("worker"), jobController.getMyApplications);
+router.get("/saved", authorizeRoles("worker"), jobController.getSavedJobs);
+
 // Contract routes (jobs that have contracts)
 router.get("/contracts", jobController.getContracts);
 

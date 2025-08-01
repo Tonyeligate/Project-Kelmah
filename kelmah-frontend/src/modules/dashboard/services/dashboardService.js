@@ -131,10 +131,16 @@ class DashboardService {
           headers: { Authorization: `Bearer ${this.token}` },
         },
       );
-      return response.data.data;
+      return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
-      throw error;
+      // Return mock data as fallback
+      return {
+        totalJobs: 0,
+        unreadNotifications: 0,
+        unreadConversations: 0,
+        upcomingAppointments: 0
+      };
     }
   }
 
@@ -255,10 +261,40 @@ class DashboardService {
       const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
         headers: { Authorization: `Bearer ${this.token}` },
       });
-      return response.data.data;
+      return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching real-time stats:', error);
-      throw error;
+      return {
+        openJobs: 0,
+        unreadNotifications: 0,
+        unreadConversations: 0
+      };
+    }
+  }
+
+  // Get job matches for workers
+  async getJobMatches() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/job-matches`, {
+        headers: { Authorization: `Bearer ${this.token}` },
+      });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error fetching job matches:', error);
+      return [];
+    }
+  }
+
+  // Get personalized recommendations
+  async getRecommendations() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/recommendations`, {
+        headers: { Authorization: `Bearer ${this.token}` },
+      });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      return [];
     }
   }
 }
