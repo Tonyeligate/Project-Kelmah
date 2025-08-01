@@ -5,7 +5,7 @@
 const express = require("express");
 const { validate } = require("../middlewares/validator");
 const { authenticateUser, authorizeRoles } = require("../middlewares/auth");
-const jobValidation = require("../../../src/validations/job.validation");
+const jobValidation = require("../validations/job.validation");
 const jobController = require("../controllers/job.controller");
 
 const router = express.Router();

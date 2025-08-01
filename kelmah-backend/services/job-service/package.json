@@ -16,7 +16,9 @@
     "bcryptjs": "^2.4.3",
     "sequelize": "^6.37.0",
     "pg": "^8.11.3",
-    "pg-hstore": "^2.3.4"
+    "pg-hstore": "^2.3.4",
+    "joi": "^17.6.0",
+    "express-validator": "^6.15.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.0"
