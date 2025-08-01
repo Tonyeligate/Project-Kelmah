@@ -77,7 +77,14 @@ const EnhancedWorkerDashboard = () => {
   const isActualMobile = useMediaQuery('(max-width: 768px)');
 
   // Local state
-  const [];
+  const [activeTab, setActiveTab] = useState(0);
+  const [showQuickApply, setShowQuickApply] = useState(false);
+
+  // Effect to handle data loading
+  useEffect(() => {
+    if (data?.user) {
+      // Handle user data if needed
+    }
   }, [data, navigate]);
 
   // Enhanced quick actions

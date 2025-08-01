@@ -65,22 +65,7 @@ userServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Comprehensive mock worker data with completed jobs
-const mockWorkerData = [],
-  },
-  {
-    id: 'worker-2',
-    name: 'Sarah Williams',
-    avatar: '/api/placeholder/40/40',
-    skills: [],
-  },
-  {
-    id: 'worker-3',
-    name: 'Michael Asante',
-    avatar: '/api/placeholder/40/40',
-    skills: [],
-  },
-];
+// No mock data - using real API data only
 
 const WorkerReview = () => {
   const theme = useTheme();
@@ -88,7 +73,7 @@ const WorkerReview = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [workers, setWorkers] = useState(mockWorkerData);
+  const [workers, setWorkers] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -115,15 +100,15 @@ const WorkerReview = () => {
       const response = await userServiceClient.get(
         '/api/users/workers/completed-jobs',
       );
-      setWorkers(response.data || mockWorkerData);
+      setWorkers(response.data || []);
       setError(null);
     } catch (err) {
       console.warn(
-        'User service unavailable for worker reviews, using mock data:',
+        'User service unavailable for worker reviews:',
         err.message,
       );
-      setWorkers(mockWorkerData);
-      setError(null);
+      setWorkers([]);
+      setError('Unable to fetch worker reviews. Please try again later.');
     } finally {
       setLoading(false);
     }

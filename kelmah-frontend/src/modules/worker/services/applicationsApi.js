@@ -20,65 +20,7 @@ jobServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Mock applications data
-const mockApplications = [],
-  },
-  {
-    id: 'app-2',
-    jobId: 'job-4',
-    jobTitle: 'Interior House Painting',
-    jobDescription:
-      'Professional painting services needed for interior walls of a 2-bedroom apartment...',
-    company: 'Apartment Complex',
-    location: 'Tema, Greater Accra',
-    budget: 1200,
-    currency: "GHS",
-    status: 'accepted',
-    appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
-    coverLetter:
-      'I would be happy to help with your interior painting project. I have experience with residential painting and pay attention to detail.',
-    proposedRate: 1150,
-    estimatedDuration: '1-2 weeks',
-    clientResponse:
-      'Your portfolio looks great! We would like to proceed with your proposal.',
-    clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-    hirer: {
-      id: 'client-4',
-      name: 'Robert Johnson',
-      avatar: '/api/placeholder/50/50',
-      rating: 4.4,
-      reviewsCount: 7,
-    },
-    attachments: [],
-  },
-  {
-    id: 'app-4',
-    jobId: 'job-5',
-    jobTitle: 'Roof Repair and Maintenance',
-    jobDescription:
-      'Roof inspection and repair needed. Issues include loose tiles, minor leaks...',
-    company: 'Wilson Residence',
-    location: 'Cape Coast, Central Region',
-    budget: 950,
-    currency: "GHS",
-    status: 'pending',
-    appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-    coverLetter:
-      'While my main expertise is carpentry, I have experience with basic roof repairs and maintenance. I would be happy to assess the situation and provide an honest evaluation.',
-    proposedRate: 900,
-    estimatedDuration: '3-5 days',
-    clientResponse: null,
-    clientResponseAt: null,
-    hirer: {
-      id: 'client-6',
-      name: 'Mary Wilson',
-      avatar: '/api/placeholder/50/50',
-      rating: 4.7,
-      reviewsCount: 9,
-    },
-    attachments: [],
-  },
-];
+// No mock data - using real API data only
 
 const applicationsApi = {
   /**
@@ -131,11 +73,8 @@ const applicationsApi = {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Job service unavailable for application details, using mock data:',
-        error.message,
-      );
-      return mockApplications.find((app) => app.id === applicationId) || null;
+      console.warn('Job service unavailable for application details:', error.message);
+      return null;
     }
   },
 

@@ -1,5 +1,8 @@
 /* Kelmah Global Styles - Unified Theme System */
 
+/* Ensure consistent font loading */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
 /* CSS Reset and Base Styles */
 *,
 *::before,
@@ -362,9 +365,6 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 .MuiCssBaseline-root {
   /* Let our theme handle all styling */
 }
-
-/* Ensure consistent font loading */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
 
 /* Custom selection colors */
 ::selection {

@@ -20,13 +20,6 @@ jobServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Comprehensive mock jobs data
-const mockJobsData = {
-  jobs: [],
-  totalPages: 2,
-  totalJobs: 8,
-};
-
 // Data transformation helpers
 const transformJobListItem = (job) => {
   if (!job) return null;
@@ -45,6 +38,97 @@ const transformJobListItem = (job) => {
     skills: job.skills || [],
   };
 };
+
+// Jobs API service - using real backend data only
+const jobsApi = {
+  /**
+   * Get all jobs with filtering and pagination
+   */
+  async getJobs(params = {}) {
+    try {
+      const response = await jobServiceClient.get('/api/jobs', { params });
+      const jobs = response.data.data || response.data.jobs || [];
+      return {
+        jobs: jobs.map(transformJobListItem),
+        totalPages: response.data.totalPages || 1,
+        totalJobs: response.data.totalJobs || jobs.length,
+        currentPage: response.data.currentPage || 1,
+      };
+    } catch (error) {
+      console.warn('Job service unavailable for jobs list:', error.message);
+      return {
+        jobs: [],
+        totalPages: 1,
+        totalJobs: 0,
+        currentPage: 1,
+      };
+    }
+  },
+
+  /**
+   * Get a single job by ID
+   */
+  async getJobById(jobId) {
+    try {
+      const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.warn(`Job service unavailable for job ${jobId}:`, error.message);
+      return null;
+    }
+  },
+
+  /**
+   * Search jobs by criteria
+   */
+  async searchJobs(searchParams) {
+    try {
+      const response = await jobServiceClient.get('/api/jobs/search', {
+        params: searchParams,
+      });
+      const jobs = response.data.data || response.data.jobs || [];
+      return {
+        jobs: jobs.map(transformJobListItem),
+        totalPages: response.data.totalPages || 1,
+        totalJobs: response.data.totalJobs || jobs.length,
+        currentPage: response.data.currentPage || 1,
+      };
+    } catch (error) {
+      console.warn('Job service unavailable for job search:', error.message);
+      return {
+        jobs: [],
+        totalPages: 1,
+        totalJobs: 0,
+        currentPage: 1,
+      };
+    }
+  },
+
+  /**
+   * Apply to a job
+   */
+  async applyToJob(jobId, applicationData) {
+    try {
+      const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+      return response.data;
+    } catch (error) {
+      console.warn(`Job service unavailable for job application ${jobId}:`, error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Get job categories
+   */
+  async getJobCategories() {
+    try {
+      const response = await jobServiceClient.get('/api/jobs/categories');
+      return response.data.data || response.data;
+    } catch (error) {
+      console.warn('Job service unavailable for job categories:', error.message);
+      return [];
+    }
+  }
 };
 
 export default jobsApi;

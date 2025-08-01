@@ -223,29 +223,74 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
   );
 };
 
-const CompactLocationSearch = ({
-  searchType,
-  location,
-  setLocation,
-  keywords,
-  setKeywords,
-  distance,
-  setDistance,
-  category,
-  setCategory,
-  sortBy,
-  setSortBy,
-  categories,
-  skills,
-  loading,
-  onSearch,
-  onClearFilters,
-  suggestedLocations,
-  getCurrentLocation,
-}) => {
+// Main GeoLocationSearch component
+const GeoLocationSearch = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  
+  // Component state
+  const [searchType, setSearchType] = useState(0); // 0 for jobs, 1 for workers
+  const [location, setLocation] = useState('');
+  const [suggestedLocations, setSuggestedLocations] = useState([]);
+  const [coordinates, setCoordinates] = useState(null);
+  const [keywords, setKeywords] = useState('');
+  const [category, setCategory] = useState('');
+  const [sortBy, setSortBy] = useState('relevance');
+  const [distance, setDistance] = useState(50);
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [locationError, setLocationError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({});
+  const [searched, setSearched] = useState(false);
 
-  // Component uses getCurrentLocation passed as prop
+  // Job/Worker categories
+  const categories = [
+    'Construction', 'Plumbing', 'Electrical', 'Carpentry', 'Painting',
+    'Roofing', 'Landscaping', 'Cleaning', 'Moving', 'Repair Services',
+    'Technology', 'Design', 'Writing', 'Marketing', 'Consulting'
+  ];
+
+  const skills = [
+    'React', 'JavaScript', 'Python', 'Construction', 'Plumbing',
+    'Electrical Work', 'Carpentry', 'Painting', 'Design', 'Writing'
+  ];
+
+  // Get user's current location
+  const getCurrentLocation = () => {
+    if ('geolocation' in navigator) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCoordinates({ lat: latitude, lng: longitude });
+          // Reverse geocode to get location name
+          reverseGeocode(latitude, longitude);
+          setLocationError(false);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setLocationError(true);
+          setLoading(false);
+        }
+      );
+    } else {
+      setLocationError(true);
+    }
+  };
+
+  // Reverse geocoding function
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      // In a real app, you'd use a geocoding service like Google Maps or OpenStreetMap
+      setLocation('Current Location');
+    } catch (error) {
+      console.error('Reverse geocoding failed:', error);
+      setLocation('Current Location');
+    }
+  };
 
   // Handle location suggestions
   const fetchLocationSuggestions = useCallback(
@@ -254,15 +299,22 @@ const CompactLocationSearch = ({
         setSuggestedLocations([]);
         return;
       }
-      const mockSuggestions = [
-        'Accra, Ghana',
-        'Kumasi, Ghana',
-        'Tema, Ghana',
-        'Cape Coast, Ghana',
+      // Using real Ghana locations instead of mock
+      const ghanaLocations = [
+        'Accra, Greater Accra Region, Ghana',
+        'Kumasi, Ashanti Region, Ghana', 
+        'Tema, Greater Accra Region, Ghana',
+        'Cape Coast, Central Region, Ghana',
+        'Tamale, Northern Region, Ghana',
+        'Sekondi-Takoradi, Western Region, Ghana',
+        'Koforidua, Eastern Region, Ghana',
+        'Ho, Volta Region, Ghana',
+        'Sunyani, Bono Region, Ghana',
+        'Bolgatanga, Upper East Region, Ghana'
       ]
         .filter((loc) => loc.toLowerCase().includes(query.toLowerCase()))
         .map((loc) => ({ id: loc, description: loc }));
-      setSuggestedLocations(mockSuggestions);
+      setSuggestedLocations(ghanaLocations);
     }, 300),
     [],
   );
@@ -271,7 +323,7 @@ const CompactLocationSearch = ({
     fetchLocationSuggestions(location);
   }, [location, fetchLocationSuggestions]);
 
-  // Handle search for jobs or workers
+  // Handle search for jobs or workers using real API
   const handleSearch = async (page = 1) => {
     if (!location) {
       setError('Please enter a location to search.');
@@ -281,16 +333,39 @@ const CompactLocationSearch = ({
     setLoading(true);
     setError(null);
     setSearched(true);
+    
     try {
-      // Mocking API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      // In a real app, this would be an API call to the backend with all the search parameters
-      // For now, we return an empty array to show the empty state.
-      setSearchResults([]);
-      setPagination({ currentPage: 1, totalPages: 1, totalItems: 0 });
+      const searchParams = {
+        location,
+        keywords,
+        category: category || undefined,
+        sortBy,
+        distance,
+        page,
+        limit: 10
+      };
+
+      let response;
+      if (searchType === 0) {
+        // Search for jobs
+        response = await axios.get(`${API_URL}/jobs/search`, { params: searchParams });
+      } else {
+        // Search for workers/professionals
+        response = await axios.get(`${API_URL}/workers/search`, { params: searchParams });
+      }
+
+      const results = response.data.data || response.data.results || [];
+      setSearchResults(results);
+      setPagination({
+        currentPage: response.data.currentPage || page,
+        totalPages: response.data.totalPages || 1,
+        totalItems: response.data.totalItems || results.length
+      });
     } catch (err) {
       console.error('Error searching:', err);
-      setError('Something went wrong. Please try again.');
+      setError('Unable to fetch search results. Please try again later.');
+      setSearchResults([]);
+      setPagination({ currentPage: 1, totalPages: 1, totalItems: 0 });
     } finally {
       setLoading(false);
     }

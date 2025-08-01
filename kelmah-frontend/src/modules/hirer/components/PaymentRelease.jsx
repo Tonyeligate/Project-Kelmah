@@ -42,18 +42,7 @@ import {
 } from '@mui/icons-material';
 import { selectHirerJobs, selectHirerLoading } from '../services/hirerSlice';
 
-// Mock payment data with comprehensive financial information
-const mockPaymentData = {
-  summary: {
-    totalPaid: 87500,
-    pendingPayments: 23500,
-    escrowBalance: 45000,
-    thisMonthPaid: 23500,
-    averagePaymentTime: '2.3 days',
-    paymentMethods: [],
-
-  paymentHistory: [],
-};
+// No mock data - using real API data only
 
 const PaymentRelease = () => {
   const theme = useTheme();
@@ -169,7 +158,7 @@ const PaymentRelease = () => {
             >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
-                  {formatCurrency(mockPaymentData.summary.totalPaid)}
+                  {formatCurrency(paymentSummary?.totalPaid || 0)}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Total Paid Out
@@ -197,7 +186,7 @@ const PaymentRelease = () => {
             >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
-                  {formatCurrency(mockPaymentData.summary.pendingPayments)}
+                  {formatCurrency(paymentSummary?.pendingPayments || 0)}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Pending Payments
@@ -225,7 +214,7 @@ const PaymentRelease = () => {
             >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
-                  {formatCurrency(mockPaymentData.summary.escrowBalance)}
+                  {formatCurrency(paymentSummary?.escrowBalance || 0)}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Escrow Balance
@@ -253,7 +242,7 @@ const PaymentRelease = () => {
             >
               <Box>
                 <Typography variant="h5" fontWeight="bold">
-                  {mockPaymentData.summary.averagePaymentTime}
+                  {paymentSummary?.averagePaymentTime || 'N/A'}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Avg Payment Time
@@ -298,10 +287,10 @@ const PaymentRelease = () => {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Pending Payments ({mockPaymentData.pendingPayments.length})
+            Pending Payments ({(pendingPayments || []).length})
           </Typography>
 
-          {mockPaymentData.pendingPayments.length === 0 ? (
+          {!pendingPayments || pendingPayments.length === 0 ? (
             <Box textAlign="center" py={4}>
               <MoneyIcon
                 sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
@@ -339,7 +328,7 @@ const PaymentRelease = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {mockPaymentData.pendingPayments.map((payment) => (
+                  {(pendingPayments || []).map((payment) => (
                     <TableRow key={payment.id} hover>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
@@ -451,7 +440,7 @@ const PaymentRelease = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {mockPaymentData.paymentHistory.map((payment) => (
+                {(paymentHistory || []).map((payment) => (
                   <TableRow key={payment.id} hover>
                     <TableCell>
                       <Box display="flex" alignItems="center" gap={2}>

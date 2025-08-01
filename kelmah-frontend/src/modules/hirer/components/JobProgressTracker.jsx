@@ -44,31 +44,7 @@ import {
   selectHirerLoading,
 } from '../services/hirerSlice';
 
-// Mock active jobs with detailed progress tracking
-const mockActiveJobsProgress = [],
-    recentUpdates: [],
-  },
-  {
-    id: 'job-h2',
-    title: 'Office Interior Design & Setup',
-    worker: {
-      id: 'worker-2',
-      name: 'Sarah Williams',
-      avatar: '/api/placeholder/40/40',
-      rating: 4.9,
-      completedJobs: 31,
-    },
-    progress: 30,
-    status: 'in_progress',
-    budget: 15000,
-    paidAmount: 4500,
-    remainingAmount: 10500,
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-    expectedCompletion: new Date(Date.now() + 1000 * 60 * 60 * 24 * 16),
-    milestones: [],
-    recentUpdates: [],
-  },
-];
+// No mock data - using real API data only
 
 const JobProgressTracker = () => {
   const theme = useTheme();

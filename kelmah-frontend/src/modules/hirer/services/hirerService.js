@@ -21,15 +21,21 @@ const jobServiceClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Add auth tokens to requests
-[],
-      },
-    ],
-    completed: [],
-  },
+// Add auth tokens to all service clients
+[userServiceClient, jobServiceClient].forEach(client => {
+  client.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('kelmah_auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+});
 
-  savedWorkers: [],
-};
+// No mock data - using real API data only
 
 export const hirerService = {
   // Profile Management
@@ -38,11 +44,8 @@ export const hirerService = {
       const response = await userServiceClient.get('/api/users/me/profile');
       return response.data;
     } catch (error) {
-      console.warn(
-        'User service unavailable for hirer profile, using mock data:',
-        error.message,
-      );
-      return mockHirerData.profile;
+      console.warn('User service unavailable for hirer profile:', error.message);
+      throw error;
     }
   },
 
@@ -68,22 +71,22 @@ export const hirerService = {
       return response.data;
     } catch (error) {
       console.warn(
-        `Job service unavailable for hirer jobs (${status}), using mock data:`,
+        `Job service unavailable for hirer jobs (${status}):`,
         error.message,
       );
-      return mockHirerData.jobs[];
+      return [];
+    }
+  },
 
-      return {
-        workers: mockWorkers,
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          totalItems: mockWorkers.length,
-        },
-      };
+  searchWorkers: async (searchParams = {}) => {
+    try {
+      const response = await userServiceClient.get('/api/workers/search', {
+        params: searchParams,
+      });
+      return response.data;
     } catch (error) {
       console.warn(
-        'Worker search unavailable, using mock data:',
+        'Worker search unavailable:',
         error.message,
       );
       return {
@@ -95,21 +98,18 @@ export const hirerService = {
 
   async getSavedWorkers() {
     try {
-      // Mock saved workers for now
-      return mockHirerData.savedWorkers;
+      const response = await userServiceClient.get('/api/users/me/saved-workers');
+      return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Saved workers unavailable, using mock data:',
-        error.message,
-      );
-      return mockHirerData.savedWorkers;
+      console.warn('Saved workers unavailable:', error.message);
+      return [];
     }
   },
 
   async saveWorker(workerId) {
     try {
-      // Mock save worker for now
-      return { workerId, message: 'Worker saved successfully (mock)' };
+      const response = await userServiceClient.post('/api/users/me/saved-workers', { workerId });
+      return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
       throw error;
@@ -118,8 +118,8 @@ export const hirerService = {
 
   async unsaveWorker(workerId) {
     try {
-      // Mock unsave worker for now
-      return { workerId, message: 'Worker unsaved successfully (mock)' };
+      const response = await userServiceClient.delete(`/api/users/me/saved-workers/${workerId}`);
+      return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
       throw error;

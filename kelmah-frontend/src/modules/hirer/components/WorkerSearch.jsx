@@ -71,22 +71,7 @@ userServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Comprehensive mock worker data
-const mockWorkerData = {
-  workers: [],
-      certifications: [],
-      certifications: [],
-      certifications: [],
-      certifications: [],
-      certifications: ['Painting Certification'],
-      languages: ['English', 'Fanti'],
-      responseTime: '6 hours',
-      featured: false,
-    },
-  ],
-  totalPages: 2,
-  totalWorkers: 8,
-};
+// No mock data - using real API data only
 
 const WorkerSearch = () => {
   const theme = useTheme();
@@ -94,8 +79,8 @@ const WorkerSearch = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [workers, setWorkers] = useState(mockWorkerData.workers);
-  const [totalPages, setTotalPages] = useState(mockWorkerData.totalPages);
+  const [workers, setWorkers] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [savedWorkers, setSavedWorkers] = useState([]);
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -165,12 +150,11 @@ const WorkerSearch = () => {
       setError(null);
     } catch (err) {
       console.warn(
-        'User service unavailable for worker search, using mock data:',
+        'User service unavailable for worker search:',
         err.message,
       );
-
-      // Apply filters to mock data
-      let filteredWorkers = mockWorkerData.workers;
+      setError('Unable to fetch workers. Please try again later.');
+      setWorkers([]);
 
       if (searchQuery) {
         filteredWorkers = filteredWorkers.filter(

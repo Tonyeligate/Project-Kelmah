@@ -261,7 +261,7 @@ class PaymentsApi {
    * @returns {Promise<Object[]>} List of escrow objects
    */
   async getEscrows() {
-    const response = await this.client.get('/payments/escrows');
+    const response = await this.client.get('/api/payments/escrows');
     return response.data;
   }
 
@@ -273,7 +273,7 @@ class PaymentsApi {
    */
   async releaseEscrow(escrowId, payload = {}) {
     const response = await this.client.post(
-      `/payments/escrows/${escrowId}/release`,
+      `/api/payments/escrows/${escrowId}/release`,
       payload,
     );
     return response.data;

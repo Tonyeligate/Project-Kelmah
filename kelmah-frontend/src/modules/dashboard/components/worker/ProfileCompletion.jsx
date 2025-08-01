@@ -39,7 +39,16 @@ const ProfileCompletion = ({
   onComplete = () => {},
 }) => {
   const theme = useTheme();
-  const [];
+  
+  // Profile completion items
+  const profileItems = [
+    { id: 'basic', label: 'Basic Info', completed: !!profileData.name, weight: 20 },
+    { id: 'skills', label: 'Skills & Experience', completed: profileData.skills?.length > 0, weight: 25 },
+    { id: 'portfolio', label: 'Portfolio', completed: profileData.portfolio?.length > 0, weight: 20 },
+    { id: 'certifications', label: 'Certifications', completed: profileData.certifications?.length > 0, weight: 15 },
+    { id: 'availability', label: 'Availability', completed: !!profileData.availability, weight: 10 },
+    { id: 'contact', label: 'Contact Info', completed: !!profileData.phone, weight: 10 },
+  ];
 
   const completedItems = profileItems.filter((item) => item.completed);
   const actualCompletion = profileItems.reduce((acc, item) => {

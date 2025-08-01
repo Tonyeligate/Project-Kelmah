@@ -27,10 +27,7 @@ jobServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-return { data: [] };
-    }
-  }
-
+class JobsApi {
   /**
    * Get featured jobs for homepage
    */

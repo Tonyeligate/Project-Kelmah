@@ -63,18 +63,7 @@ jobServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Comprehensive mock proposal data
-const mockProposalData = [],
-    timeline: [],
-    timeline: [],
-    timeline: [
-      { phase: 'Demolition & Preparation', duration: '3 days' },
-      { phase: 'Plumbing & Electrical', duration: '4 days' },
-      { phase: 'Tiling & Fixtures', duration: '6 days' },
-      { phase: 'Finishing & Cleanup', duration: '3 days' },
-    ],
-  },
-];
+// No mock data - using real API data only
 
 const ProposalReview = () => {
   const theme = useTheme();
@@ -82,7 +71,7 @@ const ProposalReview = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [proposals, setProposals] = useState(mockProposalData);
+  const [proposals, setProposals] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -102,15 +91,15 @@ const ProposalReview = () => {
       setLoading(true);
       // Try to fetch from job service, fall back to mock data
       const response = await jobServiceClient.get('/api/jobs/proposals');
-      setProposals(response.data || mockProposalData);
+      setProposals(response.data || []);
       setError(null);
     } catch (err) {
       console.warn(
-        'Job service unavailable for proposals, using mock data:',
+        'Job service unavailable for proposals:',
         err.message,
       );
-      setProposals(mockProposalData);
-      setError(null);
+      setProposals([]);
+      setError('Unable to fetch proposals. Please try again later.');
     } finally {
       setLoading(false);
     }

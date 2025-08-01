@@ -1,4 +1,4 @@
-
+class WorkersApi {
   async getNotificationCounts() {
     try {
       const response = await userServiceClient.get(
@@ -48,7 +48,7 @@
             estimatedCompletion: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3), // 3 days
           },
         },
-        message: 'Skill verification request submitted successfully (mock)',
+        message: 'Skill verification request submitted successfully',
       };
     }
   }

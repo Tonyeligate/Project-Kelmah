@@ -29,8 +29,10 @@ const jobServiceClient = axios.create({
   );
 });
 
-// Mock data fallback
-const mockDashboardData = {
+// Initial state
+const initialState = {
+  loading: false,
+  error: null,
   metrics: {
     totalJobs: 0,
     activeJobs: 0,
@@ -75,26 +77,26 @@ export const fetchDashboardData = createAsyncThunk(
         userServiceClient.get('/api/users/dashboard/analytics'),
       ]);
 
-      // Extract successful responses or use mock data
+      // Extract successful responses or use fallback data
       const metrics =
         metricsResponse.status === 'fulfilled'
           ? metricsResponse.value.data
-          : mockDashboardData.metrics;
+          : initialState.metrics;
 
       const recentJobs =
         jobsResponse.status === 'fulfilled'
           ? jobsResponse.value.data
-          : mockDashboardData.recentJobs;
+          : initialState.recentJobs;
 
       const activeWorkers =
         workersResponse.status === 'fulfilled'
           ? workersResponse.value.data
-          : mockDashboardData.activeWorkers;
+          : initialState.activeWorkers;
 
       const analytics =
         analyticsResponse.status === 'fulfilled'
           ? analyticsResponse.value.data
-          : mockDashboardData.analytics;
+          : initialState.analytics;
 
       // Log which services are using mock data
       if (metricsResponse.status === 'rejected') {
@@ -117,10 +119,13 @@ export const fetchDashboardData = createAsyncThunk(
         analytics,
       };
     } catch (error) {
-      console.warn(
-        'All dashboard services unavailable, using complete mock data',
-      );
-      return mockDashboardData;
+      console.warn('All dashboard services unavailable:', error.message);
+      return {
+        metrics: initialState.metrics,
+        recentJobs: initialState.recentJobs,
+        activeWorkers: initialState.activeWorkers,
+        analytics: initialState.analytics,
+      };
     }
   },
 );

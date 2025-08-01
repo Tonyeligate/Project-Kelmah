@@ -26,6 +26,61 @@ authServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+// Async thunks for API operations
+export const fetchHirerProfile = createAsyncThunk(
+  'hirer/fetchProfile',
+  async () => {
+    try {
+      const response = await userServiceClient.get('/api/users/me/profile');
+      return response.data.data || response.data;
+    } catch (error) {
+      console.warn('User service unavailable for hirer profile:', error.message);
+      return getRealUserData();
+    }
+  }
+);
+
+export const fetchHirerJobs = createAsyncThunk(
+  'hirer/fetchJobs',
+  async (status = 'all') => {
+    try {
+      const response = await jobServiceClient.get('/api/jobs/my-jobs', {
+        params: { status, role: 'hirer' },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn(`Job service unavailable for hirer jobs (${status}):`, error.message);
+      return [];
+    }
+  }
+);
+
+export const createHirerJob = createAsyncThunk(
+  'hirer/createJob',
+  async (jobData) => {
+    try {
+      const response = await jobServiceClient.post('/api/jobs', jobData);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.warn('Job service unavailable for job creation:', error.message);
+      throw error;
+    }
+  }
+);
+
+export const updateHirerProfile = createAsyncThunk(
+  'hirer/updateProfile',
+  async (profileData) => {
+    try {
+      const response = await userServiceClient.put('/api/users/me/profile', profileData);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.warn('User service unavailable for profile update:', error.message);
+      throw error;
+    }
+  }
+);
+
 // Get real user data from localStorage
 const getRealUserData = () => {
   try {
@@ -37,7 +92,7 @@ const getRealUserData = () => {
   }
 };
 
-// Create hirer profile from real user data or fallback to mock
+// Create hirer profile from real user data only
 const createHirerProfile = () => {
   const realUser = getRealUserData();
 
@@ -280,7 +335,7 @@ const hirerSlice = createSlice({
         state.loading.profile = false;
         state.error.profile = action.payload || 'Failed to fetch profile';
         // Fallback to mock data even on rejection
-        state.profile = mockHirerData.profile;
+        state.profile = null;
       })
 
       // Update Hirer Profile
@@ -310,8 +365,7 @@ const hirerSlice = createSlice({
       .addCase(fetchHirerJobs.rejected, (state, action) => {
         state.loading.jobs = false;
         state.error.jobs = action.payload || 'Failed to fetch jobs';
-        // Fallback to mock data even on rejection
-        state.jobs = mockHirerData.jobs;
+        // No fallback data - user will see empty state
       })
 
       // Create Hirer Job
@@ -373,7 +427,7 @@ const hirerSlice = createSlice({
         state.error.applications =
           action.payload || 'Failed to fetch applications';
         // Fallback to mock data
-        state.applications = mockHirerData.applications;
+        state.applications = [];
       })
 
       // Fetch Hirer Analytics
@@ -389,7 +443,7 @@ const hirerSlice = createSlice({
         state.loading.analytics = false;
         state.error.analytics = action.payload || 'Failed to fetch analytics';
         // Fallback to mock data
-        state.analytics = mockHirerData.analytics;
+        state.analytics = { totalJobs: 0, activeJobs: 0, completedJobs: 0, totalSpent: 0 };
       })
 
       // Fetch Payment Summary
@@ -405,7 +459,7 @@ const hirerSlice = createSlice({
         state.loading.payments = false;
         state.error.payments = action.payload || 'Failed to fetch payments';
         // Fallback to mock data
-        state.payments = mockHirerData.payments;
+        state.payments = { transactions: [], summary: { totalPaid: 0, pendingPayments: 0, escrowBalance: 0 } };
       });
   },
 });
