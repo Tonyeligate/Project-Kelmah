@@ -48,7 +48,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
 import { useAuth } from '../../../auth/contexts/AuthContext';
-import { API_BASE_URL } from '../../../config/constants';
+import { API_BASE_URL } from '../../../../config/constants';
 import StatisticsCard from '../common/StatisticsCard';
 import QuickActions from '../common/QuickActions';
 import Portfolio from './Portfolio';
