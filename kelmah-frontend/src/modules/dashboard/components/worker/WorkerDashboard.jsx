@@ -82,21 +82,161 @@ const EnhancedWorkerDashboard = () => {
   const [showAllStats, setShowAllStats] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Local state for new features
+  const [jobMatches, setJobMatches] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [quickActions, setQuickActions] = useState([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [loadingActions, setLoadingActions] = useState(false);
+
   // Effect to handle data loading
   useEffect(() => {
     if (data?.user) {
       // Handle user data if needed
     }
-  }, [data, navigate]);
+    // Load initial dashboard data
+    dispatch(fetchDashboardData());
+    loadJobMatches();
+    loadRecommendations();
+    loadQuickActions();
+  }, [data, navigate, dispatch]);
+
+  // Load job matches for workers
+  const loadJobMatches = async () => {
+    if (user?.role !== 'worker') return;
+    
+    setLoadingMatches(true);
+    try {
+      const response = await fetch('/api/dashboard/job-matches', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setJobMatches(data.data || data || []);
+      }
+    } catch (error) {
+      console.error('Error loading job matches:', error);
+    } finally {
+      setLoadingMatches(false);
+    }
+  };
+
+  // Load personalized recommendations
+  const loadRecommendations = async () => {
+    try {
+      const response = await fetch('/api/dashboard/recommendations', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRecommendations(data.data || data || []);
+      }
+    } catch (error) {
+      console.error('Error loading recommendations:', error);
+    }
+  };
+
+  // Load quick actions from backend
+  const loadQuickActions = async () => {
+    setLoadingActions(true);
+    try {
+      const response = await fetch('/api/dashboard/quick-actions', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const actions = data.data || data || [];
+        
+        // Map backend actions to UI format
+        const uiActions = actions.map(action => ({
+          title: action.title,
+          description: action.description,
+          route: action.route,
+          icon: action.icon,
+          color: action.color,
+          badge: action.badge,
+          image: getActionImage(action.icon),
+          onClick: () => navigate(action.route),
+        }));
+        
+        setQuickActions(uiActions);
+      } else {
+        // Fallback to default actions
+        setDefaultQuickActions();
+      }
+    } catch (error) {
+      console.error('Error loading quick actions:', error);
+      setDefaultQuickActions();
+    } finally {
+      setLoadingActions(false);
+    }
+  };
+
+  // Get image for action based on icon
+  const getActionImage = (icon) => {
+    const imageMap = {
+      'work': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
+      'assignment': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&h=200&fit=crop',
+      'message': 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
+      'person': 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=200&fit=crop',
+    };
+    return imageMap[icon] || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop';
+  };
+
+  // Set default quick actions as fallback
+  const setDefaultQuickActions = () => {
+    setQuickActions([
+      {
+        title: 'Find Work',
+        description: 'Browse carpentry, plumbing & electrical jobs',
+        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
+        onClick: () => navigate('/worker/find-work'),
+      },
+      {
+        title: 'My Jobs',
+        description: 'Manage active projects and applications',
+        image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&h=200&fit=crop',
+        onClick: () => navigate('/worker/applications'),
+      },
+      {
+        title: 'Messages',
+        description: 'Chat with potential clients',
+        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
+        onClick: () => navigate('/messages'),
+      },
+      {
+        title: 'My Skills',
+        description: 'Update certifications & portfolio',
+        image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=200&fit=crop',
+        onClick: () => navigate('/worker/profile'),
+      }
+    ]);
+  };
 
   // Handle refresh functionality
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      // Simulate refresh delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // In a real app, this would dispatch actions to refresh data
-      console.log('Dashboard refreshed');
+      // Refresh all dashboard data
+      await Promise.all([
+        dispatch(fetchDashboardData()),
+        loadJobMatches(),
+        loadRecommendations(),
+        loadQuickActions()
+      ]);
+      console.log('Dashboard refreshed successfully');
     } catch (error) {
       console.error('Refresh failed:', error);
     } finally {
@@ -541,32 +681,38 @@ const EnhancedWorkerDashboard = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'stretch', p: 2, gap: 1.5 }}>
-            {[
-              {
-                title: 'Find Work',
-                description: 'Browse carpentry, plumbing & electrical jobs',
-                image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
-                onClick: () => navigate('/worker/find-work'),
-              },
-              {
-                title: 'My Jobs',
-                description: 'Manage active projects and applications',
-                image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&h=200&fit=crop',
-                onClick: () => navigate('/worker/applications'),
-              },
-              {
-                title: 'Messages',
-                description: 'Chat with potential clients',
-                image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
-                onClick: () => navigate('/messages'),
-              },
-              {
-                title: 'My Skills',
-                description: 'Update certifications & portfolio',
-                image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=200&fit=crop',
-                onClick: () => navigate('/worker/profile'),
-              },
-            ].map((action, index) => (
+            {loadingActions ? (
+              // Loading skeletons for quick actions
+              Array.from({ length: 4 }).map((_, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    height: 'full',
+                    flex: 1,
+                    cursor: 'pointer',
+                    minWidth: '240px',
+                  }}
+                >
+                  <Paper
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      flex: 1,
+                      backgroundColor: '#24231e',
+                    }}
+                  >
+                    <Skeleton variant="rectangular" height={120} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                    <Box sx={{ p: 1.5, flexGrow: 1 }}>
+                      <Skeleton variant="rectangular" width="80%" height={16} sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }} />
+                      <Skeleton variant="rectangular" width="60%" height={12} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                    </Box>
+                  </Paper>
+                </Box>
+              ))
+            ) : quickActions.map((action, index) => (
               <Box
                 key={index}
                 sx={{
@@ -592,10 +738,25 @@ const EnhancedWorkerDashboard = () => {
                     borderRadius: '12px',
                   }}
                 />
-                <Box>
-                  <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
-                    {action.title}
-                  </Typography>
+                <Box sx={{ position: 'relative' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
+                      {action.title}
+                    </Typography>
+                    {action.badge && action.badge > 0 && (
+                      <Chip
+                        label={action.badge}
+                        size="small"
+                        sx={{
+                          backgroundColor: '#ff5722',
+                          color: 'white',
+                          fontSize: '0.7rem',
+                          height: '18px',
+                          minWidth: '18px',
+                        }}
+                      />
+                    )}
+                  </Box>
                   <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
                     {action.description}
                   </Typography>
@@ -621,33 +782,34 @@ const EnhancedWorkerDashboard = () => {
           Top Job Matches
         </Typography>
 
-        {/* Job Cards */}
-        {[
-          {
-            title: 'Residential Carpenter',
-            company: 'Golden Gate Construction | Accra',
-            location: 'East Legon, Accra',
-            pay: 'GH₵150/day',
-            type: 'Full-time',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
-          },
-          {
-            title: 'Plumbing Technician',
-            company: 'AquaFlow Services | Kumasi',
-            location: 'Asokwa, Kumasi',
-            pay: 'GH₵120/day',
-            type: 'Contract',
-            image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
-          },
-          {
-            title: 'Electrical Installer',
-            company: 'PowerTech Ghana | Tema',
-            location: 'Industrial Area, Tema',
-            pay: 'GH₵180/day',
-            type: 'Full-time',
-            image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&h=200&fit=crop',
-          },
-        ].map((job, index) => (
+        {/* Job Cards - Dynamic Data */}
+        {loadingMatches ? (
+          // Loading skeletons
+          Array.from({ length: 3 }).map((_, index) => (
+            <Box key={index} sx={{ p: 2 }}>
+              <Paper
+                sx={{
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  borderRadius: '12px',
+                  backgroundColor: '#24231e',
+                  p: 2,
+                  boxShadow: '0 0 4px rgba(0,0,0,0.1)',
+                }}
+              >
+                <Box sx={{ display: 'flex', flex: '2 2 0px', flexDirection: 'column', gap: 2 }}>
+                  <Skeleton variant="rectangular" width="80%" height={20} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                  <Skeleton variant="rectangular" width="60%" height={16} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                  <Skeleton variant="rectangular" width="40%" height={14} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                </Box>
+                <Skeleton variant="rectangular" width={80} height={60} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+              </Paper>
+            </Box>
+          ))
+        ) : jobMatches.length > 0 ? (
+          jobMatches.slice(0, 3).map((job, index) => (
           <Box key={index} sx={{ p: 2 }}>
             <Paper
               sx={{
@@ -665,11 +827,23 @@ const EnhancedWorkerDashboard = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Typography sx={{ color: '#ffd700', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                      {job.type?.toUpperCase()}
+                      {job.type?.toUpperCase() || 'FULL-TIME'}
                     </Typography>
                     <Typography sx={{ color: '#4CAF50', fontSize: '0.875rem', fontWeight: 'bold' }}>
-                      {job.pay}
+                      GH₵{job.budget || '150'}/day
                     </Typography>
+                    {job.matchScore && (
+                      <Chip 
+                        label={`${job.matchScore}% match`}
+                        size="small"
+                        sx={{ 
+                          backgroundColor: '#2196F3', 
+                          color: 'white', 
+                          fontSize: '0.7rem',
+                          height: '20px'
+                        }} 
+                      />
+                    )}
                   </Box>
                   <Typography
                     sx={{ color: 'white', fontSize: '1rem', fontWeight: 'bold' }}
@@ -677,13 +851,19 @@ const EnhancedWorkerDashboard = () => {
                     {job.title}
                   </Typography>
                   <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
-                    {job.company}
+                    {job.hirer?.firstName} {job.hirer?.lastName} | {job.category}
                   </Typography>
                   <Typography sx={{ color: '#9e9e9e', fontSize: '0.75rem' }}>
-                    📍 {job.location}
+                    📍 {job.location?.city || job.location?.country || 'Remote'}
                   </Typography>
+                  {job.matchReasons && job.matchReasons.length > 0 && (
+                    <Typography sx={{ color: '#81C784', fontSize: '0.75rem' }}>
+                      ✓ {job.matchReasons[0]}
+                    </Typography>
+                  )}
                 </Box>
                 <Button
+                  onClick={() => navigate(`/worker/find-work?job=${job._id}`)}
                   sx={{
                     minWidth: '84px',
                     maxWidth: '480px',
@@ -713,7 +893,7 @@ const EnhancedWorkerDashboard = () => {
                 sx={{
                   width: '100%',
                   aspectRatio: '16/9',
-                  backgroundImage: `url(${job.image})`,
+                  backgroundImage: `url(${job.image || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop'})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
@@ -723,7 +903,43 @@ const EnhancedWorkerDashboard = () => {
               />
             </Paper>
           </Box>
-        ))}
+        ))) : (
+          // No job matches fallback
+          <Box sx={{ p: 2 }}>
+            <Paper
+              sx={{
+                p: 3,
+                borderRadius: '12px',
+                backgroundColor: '#24231e',
+                textAlign: 'center',
+              }}
+            >
+              <Typography sx={{ color: '#9e9e9e', fontSize: '0.875rem', mb: 1 }}>
+                No job matches found
+              </Typography>
+              <Typography sx={{ color: '#b2afa3', fontSize: '0.75rem', mb: 2 }}>
+                Complete your profile to get better matches
+              </Typography>
+              <Button
+                onClick={() => navigate('/profile')}
+                sx={{
+                  backgroundColor: '#35332c',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: '#3a3830',
+                  },
+                }}
+              >
+                Complete Profile
+              </Button>
+            </Paper>
+          </Box>
+        )}
 
         {/* Add bottom padding to account for bottom navigation */}
         <Box sx={{ height: '100px' }} />
