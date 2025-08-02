@@ -17,6 +17,8 @@ import {
   Fade,
   Container,
   Stack,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Visibility,
@@ -40,6 +42,8 @@ import {
 import { checkApiHealth } from '../../../common/utils/apiUtils';
 
 const Login = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -127,13 +131,15 @@ const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        maxHeight: '100vh',
+        maxHeight: { xs: 'none', sm: '100vh' },
         display: 'flex',
-        alignItems: 'center',
+        alignItems: { xs: 'flex-start', sm: 'center' },
         justifyContent: 'center',
-        px: { xs: 1, sm: 2 },
-        py: { xs: 1, sm: 2 },
-        overflow: 'hidden',
+        px: { xs: 0, sm: 2 },
+        py: { xs: 0, sm: 2 },
+        overflow: { xs: 'visible', sm: 'hidden' },
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <Box
@@ -143,8 +149,9 @@ const Login = () => {
           maxWidth: { xs: '100%', sm: '480px' },
           mx: 'auto',
           display: 'flex', 
-          alignItems: 'center',
-          px: { xs: 1, sm: 2 },
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          px: { xs: 0, sm: 2 },
+          py: { xs: 0, sm: 0 },
           boxSizing: 'border-box',
         }}
       >
@@ -159,23 +166,28 @@ const Login = () => {
             sx={{
               p: { xs: 2, sm: 3, md: 4 },
               width: '100%',
-              maxWidth: 420,
+              maxWidth: { xs: '100%', sm: 420 },
               mx: 'auto',
-              borderRadius: { xs: 3, sm: 4 },
-              background:
-                'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)',
+              borderRadius: { xs: 0, sm: 4 },
+              background: {
+                xs: 'transparent',
+                sm: 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)',
+              },
               boxShadow: {
-                xs: '0 6px 24px 0 rgba(0,0,0,0.25)',
+                xs: 'none',
                 sm: '0 8px 32px 0 rgba(0,0,0,0.3)',
               },
               border: {
-                xs: '1px solid rgba(255,215,0,0.2)',
+                xs: 'none',
                 sm: '2px solid rgba(255,215,0,0.3)',
               },
-              backdropFilter: 'blur(20px)',
+              backdropFilter: { xs: 'none', sm: 'blur(20px)' },
               position: 'relative',
-              overflow: 'hidden',
-              maxHeight: { xs: '95vh', sm: 'auto' },
+              overflow: 'visible',
+              minHeight: { xs: '100vh', sm: 'auto' },
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: { xs: 'center', sm: 'flex-start' },
               '&::before': {
                 content: '""',
                 position: 'absolute',
@@ -332,9 +344,10 @@ const Login = () => {
                     label="Email"
           variant="outlined"
           fullWidth
-          required
-                    size="small"
+                              required
+                    size={isMobile ? 'medium' : 'small'}
                     type="email"
+                    placeholder="Enter your email address"
                     autoComplete="email"
           error={Boolean(errors.email)}
           helperText={errors.email}
@@ -345,7 +358,7 @@ const Login = () => {
                         <InputAdornment position="start">
                           <EmailOutlined
                             sx={{
-                              color: 'rgba(255,215,0,0.7)',
+                              color: '#FFD700',
                               fontSize: { xs: 18, sm: 20 },
                             }}
                           />
@@ -354,49 +367,64 @@ const Login = () => {
                       sx: {
                         fontSize: { xs: '0.9rem', sm: '1rem' },
                         fontWeight: 500,
-                        color: 'white',
-                        background: 'rgba(255,255,255,0.04)',
+                        color: '#FFFFFF',
+                        background: 'rgba(255,255,255,0.08)',
                         borderRadius: 1.5,
-                        minHeight: { xs: '44px', sm: '48px' },
+                        minHeight: { xs: '56px', sm: '48px' },
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.25)',
-                          borderWidth: 1.5,
+                          borderColor: 'rgba(255,215,0,0.5)',
+                          borderWidth: 2,
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.4)',
+                          borderColor: 'rgba(255,215,0,0.7)',
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                           borderColor: '#FFD700',
-                          boxShadow: '0 0 0 2px rgba(255,215,0,0.1)',
+                          boxShadow: '0 0 0 2px rgba(255,215,0,0.3)',
+                        },
+                        '& .MuiInputBase-input': {
+                          color: '#FFFFFF',
+                          fontWeight: 500,
+                          fontSize: { xs: '1rem', sm: '1rem' },
+                        },
+                        '& .MuiInputBase-input::placeholder': {
+                          color: 'rgba(255,255,255,0.7)',
+                          opacity: 1,
                         },
                       },
                     }}
                     InputLabelProps={{
                       sx: {
-                        color: 'rgba(255,215,0,0.8)',
-              fontWeight: 600,
-                        fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                        color: '#FFD700',
+                        fontWeight: 700,
+                        fontSize: { xs: '0.9rem', sm: '0.9rem' },
                         '&.Mui-focused': {
-              color: '#FFD700',
-              },
-            },
+                          color: '#FFD700',
+                        },
+                        '&.Mui-filled': {
+                          color: '#FFD700',
+                        },
+                      },
           }}
                     FormHelperTextProps={{
                       sx: {
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        fontSize: { xs: '0.8rem', sm: '0.75rem' },
                         mt: 0.5,
+                        color: '#ff6b6b',
+                        fontWeight: 500,
                       },
                     }}
                   />
 
                   {/* Password Field */}
-        <TextField
-          label="Password"
+                          <TextField
+                    label="Password"
           variant="outlined"
           fullWidth
-          required
-                    size="small"
+                              required
+                    size={isMobile ? 'medium' : 'small'}
                     type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
                     autoComplete="current-password"
           error={Boolean(errors.password)}
           helperText={errors.password}
@@ -407,7 +435,7 @@ const Login = () => {
                         <InputAdornment position="start">
                           <LockOutlined
                             sx={{
-                              color: 'rgba(255,215,0,0.7)',
+                              color: '#FFD700',
                               fontSize: { xs: 18, sm: 20 },
                             }}
                           />
@@ -420,7 +448,7 @@ const Login = () => {
                   edge="end"
                             size="small"
                             sx={{
-                              color: 'rgba(255,215,0,0.7)',
+                              color: '#FFD700',
                               minWidth: '36px',
                               minHeight: '36px',
                             }}
@@ -436,48 +464,64 @@ const Login = () => {
             sx: {
                         fontSize: { xs: '0.9rem', sm: '1rem' },
                         fontWeight: 500,
-                        color: 'white',
-                        background: 'rgba(255,255,255,0.04)',
+                        color: '#FFFFFF',
+                        background: 'rgba(255,255,255,0.08)',
                         borderRadius: 1.5,
-                        minHeight: { xs: '44px', sm: '48px' },
+                        minHeight: { xs: '56px', sm: '48px' },
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.25)',
-                          borderWidth: 1.5,
+                          borderColor: 'rgba(255,215,0,0.5)',
+                          borderWidth: 2,
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.4)',
+                          borderColor: 'rgba(255,215,0,0.7)',
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                           borderColor: '#FFD700',
-                          boxShadow: '0 0 0 2px rgba(255,215,0,0.1)',
+                          boxShadow: '0 0 0 2px rgba(255,215,0,0.3)',
+                        },
+                        '& .MuiInputBase-input': {
+                          color: '#FFFFFF',
+                          fontWeight: 500,
+                          fontSize: { xs: '1rem', sm: '1rem' },
+                        },
+                        '& .MuiInputBase-input::placeholder': {
+                          color: 'rgba(255,255,255,0.7)',
+                          opacity: 1,
                         },
                       },
                     }}
                     InputLabelProps={{
                       sx: {
-                        color: 'rgba(255,215,0,0.8)',
-              fontWeight: 600,
-                        fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                        color: '#FFD700',
+                        fontWeight: 700,
+                        fontSize: { xs: '0.9rem', sm: '0.9rem' },
                         '&.Mui-focused': {
-              color: '#FFD700',
-              },
-            },
+                          color: '#FFD700',
+                        },
+                        '&.Mui-filled': {
+                          color: '#FFD700',
+                        },
+                      },
           }}
                     FormHelperTextProps={{
                       sx: {
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        fontSize: { xs: '0.8rem', sm: '0.75rem' },
                         mt: 0.5,
+                        color: '#ff6b6b',
+                        fontWeight: 500,
                       },
                     }}
                   />
 
                   {/* Compact Remember Me & Forgot Password */}
-        <Box
+                <Box
           sx={{
             display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between',
-            alignItems: 'center',
-                      py: 0.5,
+            alignItems: { xs: 'stretch', sm: 'center' },
+            py: { xs: 1, sm: 0.5 },
+            gap: { xs: 1.5, sm: 0 },
           }}
         >
           <FormControlLabel
@@ -504,17 +548,23 @@ const Login = () => {
                 Remember me
                         </Typography>
             }
-                      sx={{ m: 0 }}
+                      sx={{ 
+                        m: 0,
+                        width: { xs: '100%', sm: 'auto' },
+                        justifyContent: { xs: 'center', sm: 'flex-start' },
+                      }}
           />
           <Link
             component={RouterLink}
             to="/forgot-password"
             variant="body2"
-            sx={{
+                        sx={{
               color: '#FFD700',
-                        fontWeight: 600,
-                        textDecoration: 'none',
-                        fontSize: { xs: '0.8rem', sm: '0.85rem' },
+              fontWeight: 600,
+              textDecoration: 'none',
+              fontSize: { xs: '0.9rem', sm: '0.85rem' },
+              textAlign: { xs: 'center', sm: 'right' },
+              py: { xs: 1, sm: 0 },
               '&:hover': {
                 color: '#FFC000',
                 textDecoration: 'underline',
@@ -538,8 +588,8 @@ const Login = () => {
           sx={{
                         fontWeight: 700,
                         fontSize: { xs: '1rem', sm: '1.1rem' },
-                        py: { xs: 1.3, sm: 1.5 },
-                        minHeight: { xs: '44px', sm: '48px' },
+                                    py: { xs: 1.8, sm: 1.5 },
+            minHeight: { xs: '56px', sm: '48px' },
                         background:
                           'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         color: '#000',
@@ -639,8 +689,8 @@ const Login = () => {
           </Typography>
         </Divider>
 
-                {/* Compact Social Buttons */}
-                <Grid container spacing={1.5} sx={{ width: '100%' }}>
+                {/* Enhanced Mobile-Optimized Social Buttons */}
+                <Grid container spacing={{ xs: 2, sm: 1.5 }} sx={{ width: '100%' }}>
                   <Grid item xs={6}>
                     <motion.div
                       whileHover={{ scale: 1.01 }}
@@ -655,11 +705,11 @@ const Login = () => {
               onClick={() => {
                 window.location.href = `${API_BASE_URL}/api/auth/google`;
               }}
-              sx={{
-                          py: { xs: 1, sm: 1.2 },
-                          minHeight: { xs: '38px', sm: '42px' },
-                          fontWeight: 600,
-                          fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                            sx={{
+                py: { xs: 1.5, sm: 1.2 },
+                minHeight: { xs: '48px', sm: '42px' },
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', sm: '0.85rem' },
                           background: 'rgba(255,255,255,0.95)',
                 color: '#4285F4',
                 borderColor: '#4285F4',
@@ -692,11 +742,11 @@ const Login = () => {
               onClick={() => {
                 window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
               }}
-              sx={{
-                          py: { xs: 1, sm: 1.2 },
-                          minHeight: { xs: '38px', sm: '42px' },
-                          fontWeight: 600,
-                          fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                            sx={{
+                py: { xs: 1.5, sm: 1.2 },
+                minHeight: { xs: '48px', sm: '42px' },
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', sm: '0.85rem' },
                           background: 'rgba(255,255,255,0.95)',
                 color: '#0077B5',
                 borderColor: '#0077B5',

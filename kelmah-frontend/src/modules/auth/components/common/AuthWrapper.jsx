@@ -290,7 +290,7 @@ const AuthWrapper = ({ children }) => {
                       <Typography
                         variant="h6"
                         sx={{
-                          color: 'rgba(255,255,255,0.9)',
+                          color: '#FFFFFF',
                           fontWeight: 500,
                           fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                         }}
@@ -301,7 +301,7 @@ const AuthWrapper = ({ children }) => {
                       <Typography
                         variant="body1"
                         sx={{
-                          color: 'rgba(255,255,255,0.8)',
+                          color: '#FFFFFF',
                           maxWidth: { xs: 250, sm: 280, md: 320 },
                           lineHeight: 1.5,
                           fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
@@ -443,7 +443,7 @@ const AuthWrapper = ({ children }) => {
               <Typography
                               variant="caption"
                 sx={{
-                                color: 'rgba(255,255,255,0.8)',
+                                color: '#FFFFFF',
                                 fontSize: {
                                   xs: '0.7rem',
                                   sm: '0.75rem',
@@ -579,7 +579,7 @@ const AuthWrapper = ({ children }) => {
                     <Typography
                       variant="body2"
                       sx={{
-                        color: 'rgba(255,255,255,0.8)',
+                        color: '#FFFFFF',
                         fontSize: '0.85rem',
                       }}
                     >

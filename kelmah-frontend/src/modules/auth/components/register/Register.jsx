@@ -29,6 +29,7 @@ import {
   Stack,
   useTheme,
   useMediaQuery,
+  MobileStepper,
 } from '@mui/material';
 import {
   Visibility,
@@ -325,7 +326,7 @@ const Register = () => {
                             <Typography
                               variant="body1"
                               sx={{
-                                color: 'rgba(255,255,255,0.9)',
+                                color: '#FFFFFF',
                                 fontSize: { xs: '0.9rem', sm: '1rem' },
                                 lineHeight: 1.4,
                               }}
@@ -469,7 +470,7 @@ const Register = () => {
                             <Typography
                               variant="body1"
                               sx={{
-                                color: 'rgba(255,255,255,0.9)',
+                                color: '#FFFFFF',
                                 fontSize: { xs: '0.9rem', sm: '1rem' },
                                 lineHeight: 1.4,
                               }}
@@ -552,14 +553,15 @@ const Register = () => {
                 </Typography>
 
                 <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ width: '100%' }}>
-                  <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+                  <Grid container spacing={{ xs: 2, sm: 2 }}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="First Name"
                   variant="outlined"
                   fullWidth
                   required
-                        size="small"
+                  placeholder="Enter your first name"
+                        size={isMobile ? 'medium' : 'small'}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   InputProps={{
@@ -567,32 +569,50 @@ const Register = () => {
                       <InputAdornment position="start">
                               <PersonIcon
                                 sx={{
-                                  color: 'rgba(255,215,0,0.7)',
-                                  fontSize: { xs: 16, sm: 18 },
+                                  color: '#FFD700',
+                                  fontSize: { xs: 18, sm: 18 },
                                 }}
                               />
                       </InputAdornment>
                     ),
                           sx: {
-                            color: 'white',
-                            fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                            minHeight: { xs: '38px', sm: '42px' },
+                            color: '#FFFFFF',
+                            fontSize: { xs: '1rem', sm: '0.9rem' },
+                            fontWeight: 500,
+                            background: 'rgba(255,255,255,0.08)',
+                            minHeight: { xs: '56px', sm: '42px' },
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(255,215,0,0.3)',
-                              borderWidth: { xs: 1.5, sm: 2 },
+                              borderColor: 'rgba(255,215,0,0.5)',
+                              borderWidth: 2,
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(255,215,0,0.5)',
+                              borderColor: 'rgba(255,215,0,0.7)',
                             },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#FFD700',
+                              boxShadow: '0 0 0 2px rgba(255,215,0,0.3)',
+                            },
+                            '& .MuiInputBase-input': {
+                              color: '#FFFFFF',
+                              fontWeight: 500,
+                            },
+                            '& .MuiInputBase-input::placeholder': {
+                              color: 'rgba(255,255,255,0.9)',
+                              opacity: 1,
                             },
                           },
                         }}
                         InputLabelProps={{
                           sx: {
-                            color: 'rgba(255,215,0,0.8)',
+                            color: '#FFD700',
+                            fontWeight: 700,
                             fontSize: { xs: '0.9rem', sm: '1rem' },
+                            '&.Mui-focused': {
+                              color: '#FFD700',
+                            },
+                            '&.Mui-filled': {
+                              color: '#FFD700',
+                            },
                           },
                   }}
                 />
@@ -603,6 +623,7 @@ const Register = () => {
                   variant="outlined"
                   fullWidth
                   required
+                  placeholder="Enter your last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   InputProps={{
@@ -634,8 +655,15 @@ const Register = () => {
                         }}
                         InputLabelProps={{
                           sx: {
-                            color: 'rgba(255,215,0,0.8)',
+                            color: '#FFD700',
+                            fontWeight: 700,
                             fontSize: { xs: '0.9rem', sm: '1rem' },
+                            '&.Mui-focused': {
+                              color: '#FFD700',
+                            },
+                            '&.Mui-filled': {
+                              color: '#FFD700',
+                            },
                           },
                   }}
                 />
@@ -648,6 +676,7 @@ const Register = () => {
                   fullWidth
                   required
                   type="email"
+                  placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   InputProps={{
@@ -760,6 +789,7 @@ const Register = () => {
                     variant="outlined"
                     fullWidth
                     required
+                    placeholder="Enter company or organization name"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     InputProps={{
@@ -804,6 +834,7 @@ const Register = () => {
                   fullWidth
                   required
                   type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a strong password"
                   value={password}
                     onChange={(e) => handlePasswordChange(e.target.value)}
                   InputProps={{
@@ -858,7 +889,7 @@ const Register = () => {
                       <Typography
                         variant="caption"
                         sx={{
-                          color: 'rgba(255,255,255,0.7)',
+                          color: 'rgba(255,255,255,0.9)',
                           fontSize: { xs: '0.75rem', sm: '0.8rem' },
                         }}
                       >
@@ -939,7 +970,7 @@ const Register = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: 'rgba(255,255,255,0.9)',
+                          color: '#FFFFFF',
                           fontSize: { xs: '0.85rem', sm: '0.9rem' },
                           lineHeight: 1.4,
                         }}
@@ -1008,7 +1039,7 @@ const Register = () => {
                   <Typography
                     variant="body1"
                     sx={{
-                      color: 'rgba(255,255,255,0.9)',
+                      color: '#FFFFFF',
                       fontSize: { xs: '0.95rem', sm: '1rem' },
                       maxWidth: 400,
                     }}
@@ -1159,7 +1190,7 @@ const Register = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'rgba(255,255,255,0.8)',
+                      color: '#FFFFFF',
                       fontSize: { xs: '0.85rem', sm: '0.9rem' },
                       lineHeight: 1.5,
                     }}
@@ -1295,7 +1326,7 @@ const Register = () => {
         <Typography
                   variant="body2"
                   sx={{
-                    color: 'rgba(255,255,255,0.8)',
+                    color: '#FFFFFF',
                     fontWeight: 500,
                     fontSize: { xs: '0.75rem', sm: '0.8rem' },
                   }}
@@ -1305,46 +1336,79 @@ const Register = () => {
               </Stack>
             </Stack>
 
-            {/* Compact Stepper */}
-      <Stepper
-        activeStep={activeStep}
-              alternativeLabel={!isMobile}
-              orientation={isMobile ? 'horizontal' : 'horizontal'}
-        sx={{
-                mb: { xs: 1.5, sm: 2 },
-          '& .MuiStepLabel-label': {
-                  color: 'rgba(255,255,255,0.7)',
-                  fontWeight: 600,
-                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                  '&.Mui-active': {
-            color: '#FFD700',
-            fontWeight: 700,
+            {/* Enhanced Mobile/Desktop Stepper */}
+            {isMobile ? (
+              <MobileStepper
+                variant="progress"
+                steps={steps.length}
+                position="static"
+                activeStep={activeStep}
+                sx={{
+                  mb: 2,
+                  background: 'rgba(255,215,0,0.1)',
+                  borderRadius: 2,
+                  '& .MuiMobileStepper-progress': {
+                    width: '100%',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: '#FFD700',
+                    },
                   },
-                  '&.Mui-completed': {
-                    color: '#FFD700',
+                }}
+                nextButton={<div />} // Hide default buttons
+                backButton={<div />} // Hide default buttons
+              />
+            ) : (
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel
+                sx={{
+                  mb: 2,
+                  '& .MuiStepLabel-label': {
+                    color: 'rgba(255,255,255,0.9)',
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    '&.Mui-active': {
+                      color: '#FFD700',
+                      fontWeight: 700,
+                    },
+                    '&.Mui-completed': {
+                      color: '#FFD700',
+                    },
                   },
-                },
-                '& .MuiStepIcon-root': {
-                  color: 'rgba(255,255,255,0.3)',
-                  fontSize: { xs: '1rem', sm: '1.2rem' },
-                  '&.Mui-active': {
-                    color: '#FFD700',
+                  '& .MuiStepIcon-root': {
+                    color: 'rgba(255,255,255,0.3)',
+                    fontSize: '1.2rem',
+                    '&.Mui-active': {
+                      color: '#FFD700',
+                    },
+                    '&.Mui-completed': {
+                      color: '#FFD700',
+                    },
                   },
-                  '&.Mui-completed': {
-                    color: '#FFD700',
+                  '& .MuiStepConnector-line': {
+                    borderColor: 'rgba(255,215,0,0.3)',
                   },
-                },
-                '& .MuiStepConnector-line': {
-                  borderColor: 'rgba(255,215,0,0.3)',
-                },
-        }}
-      >
-        {steps.map((label) => (
-          <Step key={label}>
-                  <StepLabel>{isMobile ? '' : label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+                }}
+              >
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            )}
+
+            {/* Mobile Step Indicator */}
+            {isMobile && (
+              <Stack direction="row" justifyContent="center" spacing={2} sx={{ mb: 2 }}>
+                <Typography variant="caption" color="#FFD700" fontWeight={600}>
+                  Step {activeStep + 1} of {steps.length}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {steps[activeStep]}
+                </Typography>
+              </Stack>
+            )}
 
             {/* Compact Error Alert */}
       {error && (
@@ -1396,7 +1460,7 @@ const Register = () => {
           disabled={activeStep === 0}
           onClick={handleBack}
           variant="outlined"
-                size="small"
+                size={isMobile ? 'medium' : 'small'}
           sx={{
                   fontWeight: 600,
                   fontSize: { xs: '0.8rem', sm: '0.85rem' },
