@@ -8,7 +8,7 @@ import React, {
 import PropTypes from 'prop-types';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { Snackbar, Alert } from '@mui/material';
-import notificationsApi from '../../../api/services/notificationsApi';
+import notificationServiceUser from '../services/notificationService';
 import { USE_MOCK_DATA } from '../../../config';
 
 const NotificationContext = createContext(null);
@@ -84,7 +84,7 @@ export const NotificationProvider = ({ children }) => {
       }, 500);
     } else {
       try {
-        const resp = await notificationsApi.getNotifications();
+        const resp = await notificationServiceUser.getNotifications();
         setNotifications(resp.data);
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
@@ -103,7 +103,7 @@ export const NotificationProvider = ({ children }) => {
   const markAsRead = async (id) => {
     if (!USE_MOCK_DATA) {
       try {
-        await notificationsApi.markAsRead(id);
+        await notificationServiceUser.markAsRead(id);
       } catch (err) {
         console.error('Failed to mark notification as read:', err);
       }
@@ -116,7 +116,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllAsRead = async () => {
     if (!USE_MOCK_DATA) {
       try {
-        await notificationsApi.markAllAsRead();
+        await notificationServiceUser.markAllAsRead();
       } catch (err) {
         console.error('Failed to mark all notifications as read:', err);
       }
@@ -127,7 +127,7 @@ export const NotificationProvider = ({ children }) => {
   const clearAllNotifications = async () => {
     if (!USE_MOCK_DATA) {
       try {
-        await notificationsApi.deleteAllNotifications();
+        await notificationServiceUser.clearAllNotifications();
       } catch (err) {
         console.error('Failed to clear notifications:', err);
       }

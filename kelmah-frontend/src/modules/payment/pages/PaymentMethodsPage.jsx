@@ -30,7 +30,7 @@ import {
   AccountBalance as BankIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
-import paymentsApi from '../../../api/services/paymentsApi';
+import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
 
 // Demo payment methods for initial display
@@ -113,7 +113,7 @@ const PaymentMethodsPage = () => {
   const fetchMethods = async () => {
     setLoading(true);
     try {
-      const methods = await paymentsApi.getPaymentMethods();
+      const methods = await paymentService.getPaymentMethods();
       setPaymentMethods(methods);
     } catch (err) {
       setError(err.message || 'Failed to load payment methods');
@@ -131,7 +131,7 @@ const PaymentMethodsPage = () => {
   const handleAddCard = async () => {
     setLoading(true);
     try {
-      await paymentsApi.addPaymentMethod({
+      await paymentService.addPaymentMethod({
         type: 'credit_card',
         isDefault: paymentMethods.length === 0,
         cardDetails: {
@@ -163,7 +163,7 @@ const PaymentMethodsPage = () => {
   const handleAddMobile = async () => {
     setLoading(true);
     try {
-      await paymentsApi.addPaymentMethod({
+      await paymentService.addPaymentMethod({
         type: 'mobile_money',
         isDefault: paymentMethods.length === 0,
         mobileDetails: {
@@ -187,7 +187,7 @@ const PaymentMethodsPage = () => {
   const handleAddBank = async () => {
     setLoading(true);
     try {
-      await paymentsApi.addPaymentMethod({
+      await paymentService.addPaymentMethod({
         type: 'bank_account',
         isDefault: paymentMethods.length === 0,
         bankDetails: {
@@ -217,7 +217,7 @@ const PaymentMethodsPage = () => {
   const handleSetDefault = async (id) => {
     setLoading(true);
     try {
-      await paymentsApi.setDefaultPaymentMethod(id);
+      await paymentService.setDefaultPaymentMethod(id);
       await fetchMethods();
     } catch (err) {
       setError(err.message || 'Failed to set default payment method');
@@ -236,7 +236,7 @@ const PaymentMethodsPage = () => {
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      await paymentsApi.deletePaymentMethod(methodToDelete);
+      await paymentService.deletePaymentMethod(methodToDelete);
       setOpenConfirmDelete(false);
       setMethodToDelete(null);
       await fetchMethods();

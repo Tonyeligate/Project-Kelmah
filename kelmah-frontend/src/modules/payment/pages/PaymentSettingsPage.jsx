@@ -11,7 +11,7 @@ import {
   Grid,
   InputAdornment,
 } from '@mui/material';
-import paymentsApi from '../../../api/services/paymentsApi';
+import paymentService from '../services/paymentService';
 
 // Currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
@@ -29,7 +29,7 @@ const PaymentSettingsPage = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await paymentsApi.getPaymentSettings();
+        const res = await paymentService.getPaymentSettings();
         setSettings(res.data || res);
       } catch (err) {
         setError(err.message || 'Failed to load settings');
@@ -56,7 +56,7 @@ const PaymentSettingsPage = () => {
     setSuccess(false);
     setSaving(true);
     try {
-      await paymentsApi.updatePaymentSettings(settings);
+      await paymentService.updatePaymentSettings(settings);
       setSuccess(true);
     } catch (err) {
       setError(err.message || 'Failed to save settings');

@@ -4,6 +4,7 @@
  */
 
 import { authServiceClient } from '../../common/services/axios';
+import { API_BASE_URL } from '../../../config/constants';
 
 class NotificationService {
   constructor() {
@@ -16,27 +17,39 @@ class NotificationService {
     if (this.isConnected) return;
 
     try {
-      this.socket = io(`${API_BASE_URL}/notifications`, {
-        auth: {
-          token: localStorage.getItem('token'),
-        },
-        transports: [],
-        totalPages: 1,
-        currentPage: 1,
-        totalCount: 3,
-      };
+      // Socket connection will be implemented when needed
+      console.log('Notification socket connection not implemented yet');
+    } catch (error) {
+      console.error('Failed to connect to notification socket:', error);
+    }
+  }
+
+  // Disconnect from notification socket
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.isConnected = false;
+    }
+  }
+
+  // Get notifications
+  async getNotifications() {
+    try {
+      const response = await this.client.get('/notifications');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      throw error;
     }
   }
 
   // Mark notification as read
   async markAsRead(notificationId) {
     try {
-      const response = await this.client.put(
-        `/api/notifications/${notificationId}/read`,
-      );
+      const response = await this.client.patch(`/notifications/${notificationId}/read`);
       return response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      console.error('Failed to mark notification as read:', error);
       throw error;
     }
   }
@@ -44,65 +57,43 @@ class NotificationService {
   // Mark all notifications as read
   async markAllAsRead() {
     try {
-      const response = await this.client.put(
-        '/api/notifications/mark-all-read',
-      );
+      const response = await this.client.patch('/notifications/read-all');
       return response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      console.error('Failed to mark all notifications as read:', error);
       throw error;
     }
   }
 
-  // Delete notification
-  async deleteNotification(notificationId) {
+  // Clear all notifications
+  async clearAllNotifications() {
     try {
-      const response = await axiosInstance.delete(
-        `/api/notifications/${notificationId}`,
-      );
+      const response = await this.client.delete('/notifications/clear-all');
       return response.data;
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      console.error('Failed to clear all notifications:', error);
       throw error;
     }
   }
 
-  // Get notification preferences
-  async getNotificationPreferences() {
-    try {
-      const response = await axiosInstance.get(
-        '/api/notifications/preferences',
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching notification preferences:', error);
-      throw error;
-    }
-  }
-
-  // Update notification preferences
-  async updateNotificationPreferences(preferences) {
-    try {
-      const response = await axiosInstance.put(
-        '/api/notifications/preferences',
-        preferences,
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error updating notification preferences:', error);
-      throw error;
-    }
-  }
-
-  // Get unread notification count
+  // Get unread count
   async getUnreadCount() {
     try {
-      const response = await axiosInstance.get(
-        '/api/notifications/unread-count',
-      );
+      const response = await this.client.get('/notifications/unread/count');
       return response.data.count;
     } catch (error) {
-      console.error('Error fetching unread notification count:', error);
+      console.error('Failed to get unread count:', error);
+      throw error;
+    }
+  }
+
+  // Delete a specific notification
+  async deleteNotification(notificationId) {
+    try {
+      const response = await this.client.delete(`/notifications/${notificationId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
       throw error;
     }
   }
@@ -112,6 +103,7 @@ export const notificationService = new NotificationService();
 
 /**
  * Service for managing user notifications
+ * This is the main export that should be used by components
  */
 const notificationServiceUser = {
   /**
@@ -119,8 +111,7 @@ const notificationServiceUser = {
    * @returns {Promise<Array>} Array of notification objects
    */
   getNotifications: async () => {
-    const response = await axiosInstance.get(`${API_URL}/notifications`);
-    return response.data;
+    return await notificationService.getNotifications();
   },
 
   /**
@@ -128,10 +119,7 @@ const notificationServiceUser = {
    * @returns {Promise<number>} Count of unread notifications
    */
   getUnreadCount: async () => {
-    const response = await axiosInstance.get(
-      `${API_URL}/notifications/unread/count`,
-    );
-    return response.data.count;
+    return await notificationService.getUnreadCount();
   },
 
   /**
@@ -140,10 +128,7 @@ const notificationServiceUser = {
    * @returns {Promise<Object>} Updated notification
    */
   markAsRead: async (notificationId) => {
-    const response = await axiosInstance.patch(
-      `${API_URL}/notifications/${notificationId}/read`,
-    );
-    return response.data;
+    return await notificationService.markAsRead(notificationId);
   },
 
   /**
@@ -151,10 +136,7 @@ const notificationServiceUser = {
    * @returns {Promise<Object>} Response with success status
    */
   markAllAsRead: async () => {
-    const response = await axiosInstance.patch(
-      `${API_URL}/notifications/read-all`,
-    );
-    return response.data;
+    return await notificationService.markAllAsRead();
   },
 
   /**
@@ -163,18 +145,12 @@ const notificationServiceUser = {
    * @returns {Promise<Object>} Response with success status
    */
   deleteNotification: async (notificationId) => {
-    const response = await axiosInstance.delete(
-      `${API_URL}/notifications/${notificationId}`,
-    );
-    return response.data;
+    return await notificationService.deleteNotification(notificationId);
   },
 
   // Clear all notifications
   clearAllNotifications: async () => {
-    const response = await axiosInstance.delete(
-      `${API_URL}/notifications/clear-all`,
-    );
-    return response.data;
+    return await notificationService.clearAllNotifications();
   },
 };
 

@@ -54,7 +54,8 @@ import AppointmentForm from '../components/AppointmentForm';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import jobsService from '../../jobs/services/jobsApi';
-import { workersApi } from '../../../api';
+// Temporarily comment out API import until workers service is implemented
+// import { workersApi } from '../../../api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 

@@ -79,7 +79,7 @@ describe('Login Component', () => {
     render(
       <Provider store={store}>
         <MemoryRouter>
-            <Login />
+          <Login />
         </MemoryRouter>
       </Provider>,
     );

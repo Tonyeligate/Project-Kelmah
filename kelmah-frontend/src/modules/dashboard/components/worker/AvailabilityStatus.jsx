@@ -11,7 +11,8 @@ import {
 import DashboardCard from '../common/DashboardCard';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
-import workersApi from '../../../../api/services/workersApi';
+// Temporarily comment out API import until workers service is implemented
+// import workersApi from '../../../../api/services/workersApi';
 import mockWorkersApi from './mockWorkersApi';
 
 const AvailabilityStatus = () => {

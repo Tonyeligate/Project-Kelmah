@@ -275,6 +275,42 @@ const authService = {
       return null;
     }
   },
+
+  // MFA Setup (placeholder for future implementation)
+  setupMFA: async () => {
+    try {
+      // Placeholder - will be implemented when MFA service is ready
+      console.warn('MFA setup not yet implemented');
+      return { success: false, message: 'MFA setup not yet implemented' };
+    } catch (error) {
+      console.error('MFA setup error:', error);
+      throw error;
+    }
+  },
+
+  // Verify MFA (placeholder for future implementation)
+  verifyMFA: async (token) => {
+    try {
+      // Placeholder - will be implemented when MFA service is ready
+      console.warn('MFA verification not yet implemented');
+      return { success: false, message: 'MFA verification not yet implemented' };
+    } catch (error) {
+      console.error('MFA verification error:', error);
+      throw error;
+    }
+  },
+
+  // Disable MFA (placeholder for future implementation)
+  disableMFA: async (password, token) => {
+    try {
+      // Placeholder - will be implemented when MFA service is ready
+      console.warn('MFA disable not yet implemented');
+      return { success: false, message: 'MFA disable not yet implemented' };
+    } catch (error) {
+      console.error('MFA disable error:', error);
+      throw error;
+    }
+  },
 };
 
 export default authService;

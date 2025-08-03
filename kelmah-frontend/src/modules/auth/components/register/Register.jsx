@@ -49,13 +49,14 @@ import {
   Handyman as HandymanIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 
 const Register = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
 
   const steps = [
     'Choose Your Path',
@@ -80,6 +81,14 @@ const Register = () => {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Set account type from location state if available
+  React.useEffect(() => {
+    if (location.state?.selectedRole) {
+      setAccountType(location.state.selectedRole);
+    }
+  }, [location.state]);
 
   // Password strength checker
   const checkPasswordStrength = (password) => {
@@ -1209,6 +1218,507 @@ const Register = () => {
     }
   };
 
+  // Mobile-first registration views
+  if (isActualMobile) {
+    // Worker Registration Mobile View
+    if (accountType === 'worker') {
+  return (
+        <Box
+          sx={{
+            minHeight: '100vh',
+            backgroundColor: '#181611',
+            color: 'white',
+            fontFamily: 'Manrope, "Noto Sans", sans-serif',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Header */}
+          <Box sx={{ p: 2, pb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <IconButton
+                onClick={() => navigate('/login')}
+                sx={{ color: 'white', p: 0, mr: 2 }}
+              >
+                <svg width="24" height="24" viewBox="0 0 256 256" fill="currentColor">
+                  <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" />
+                </svg>
+              </IconButton>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  textAlign: 'center',
+                  flex: 1,
+                  pr: 6,
+                }}
+              >
+                Registration
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Main Content */}
+          <Box sx={{ flex: 1, px: 2, pb: 2 }}>
+            <Box component="form" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              {/* Full Name */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Full Name
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your full name"
+                  value={`${firstName} ${lastName}`}
+                  onChange={(e) => {
+                    const names = e.target.value.split(' ');
+                    setFirstName(names[0] || '');
+                    setLastName(names.slice(1).join(' ') || '');
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Email */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Email
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Phone Number */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Phone Number
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Trade/Skills */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Trade/Skills
+                </Typography>
+                <FormControl fullWidth>
+                  <select
+                    style={{
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      outline: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24px' height='24px' fill='rgb(185,178,157)' viewBox='0 0 256 256'%3e%3cpath d='M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z'%3e%3c/path%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 16px center',
+                      paddingRight: '48px',
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="" style={{ color: '#b9b29d' }}>Select your trade/skills</option>
+                    <option value="carpentry">Carpentry</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="masonry">Masonry</option>
+                    <option value="painting">Painting</option>
+                    <option value="roofing">Roofing</option>
+                  </select>
+                </FormControl>
+              </Box>
+
+              {/* Location */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Location
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your location"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                fullWidth
+                disabled={loading}
+                sx={{
+                  backgroundColor: '#deae10',
+                  color: '#181611',
+                  height: '48px',
+                  borderRadius: '24px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  mb: 3,
+                  '&:hover': {
+                    backgroundColor: '#c49a0e',
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'rgba(222, 174, 16, 0.5)',
+                    color: 'rgba(24, 22, 17, 0.7)',
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={20} sx={{ color: '#181611' }} />
+                ) : (
+                  'Complete Registration'
+                )}
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Bottom Spacer */}
+          <Box sx={{ height: '20px', backgroundColor: '#181611' }} />
+        </Box>
+      );
+    }
+
+    // Hirer Registration Mobile View
+    if (accountType === 'hirer') {
+      return (
+        <Box
+          sx={{
+            minHeight: '100vh',
+            backgroundColor: '#181611',
+            color: 'white',
+            fontFamily: 'Manrope, "Noto Sans", sans-serif',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Header */}
+          <Box sx={{ p: 2, pb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <IconButton
+                onClick={() => navigate('/login')}
+                sx={{ color: 'white', p: 0, mr: 2 }}
+              >
+                <svg width="24" height="24" viewBox="0 0 256 256" fill="currentColor">
+                  <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" />
+                </svg>
+              </IconButton>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  textAlign: 'center',
+                  flex: 1,
+                  pr: 6,
+                }}
+              >
+                Hirer Registration
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Main Content */}
+          <Box sx={{ flex: 1, px: 2, pb: 2 }}>
+            <Box component="form" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              {/* Full Name */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Full Name
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your full name"
+                  value={`${firstName} ${lastName}`}
+                  onChange={(e) => {
+                    const names = e.target.value.split(' ');
+                    setFirstName(names[0] || '');
+                    setLastName(names.slice(1).join(' ') || '');
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Company/Organization */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Company/Organization (Optional)
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter company name"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Contact Number */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Contact Number
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your contact number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Email Address */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Email Address
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      '& fieldset': { border: 'none' },
+                      '&:hover fieldset': { border: 'none' },
+                      '&.Mui-focused fieldset': { border: 'none' },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      '&::placeholder': {
+                        color: '#b9b29d',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* Location */}
+              <Box sx={{ mb: 3 }}>
+                <Typography sx={{ color: 'white', fontSize: '16px', fontWeight: 'medium', mb: 2 }}>
+                  Location
+                </Typography>
+                <FormControl fullWidth>
+                  <select
+                    style={{
+                      backgroundColor: '#393528',
+                      borderRadius: '12px',
+                      height: '56px',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '16px',
+                      padding: '16px',
+                      outline: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24px' height='24px' fill='rgb(185,178,157)' viewBox='0 0 256 256'%3e%3cpath d='M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z'%3e%3c/path%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 16px center',
+                      paddingRight: '48px',
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="" style={{ color: '#b9b29d' }}>Select your location</option>
+                    <option value="accra">Accra</option>
+                    <option value="kumasi">Kumasi</option>
+                    <option value="tamale">Tamale</option>
+                    <option value="cape-coast">Cape Coast</option>
+                  </select>
+                </FormControl>
+              </Box>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                fullWidth
+                disabled={loading}
+                sx={{
+                  backgroundColor: '#deae10',
+                  color: '#181611',
+                  height: '48px',
+                  borderRadius: '24px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  mb: 3,
+                  '&:hover': {
+                    backgroundColor: '#c49a0e',
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'rgba(222, 174, 16, 0.5)',
+                    color: 'rgba(24, 22, 17, 0.7)',
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={20} sx={{ color: '#181611' }} />
+                ) : (
+                  'Complete Registration'
+                )}
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Bottom Spacer */}
+          <Box sx={{ height: '20px', backgroundColor: '#181611' }} />
+        </Box>
+      );
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -1358,18 +1868,18 @@ const Register = () => {
                 backButton={<div />} // Hide default buttons
               />
             ) : (
-              <Stepper
-                activeStep={activeStep}
-                alternativeLabel
-                sx={{
+      <Stepper
+        activeStep={activeStep}
+        alternativeLabel
+        sx={{
                   mb: 2,
-                  '& .MuiStepLabel-label': {
+          '& .MuiStepLabel-label': {
                     color: 'rgba(255,255,255,0.9)',
                     fontWeight: 600,
                     fontSize: '0.75rem',
                     '&.Mui-active': {
-                      color: '#FFD700',
-                      fontWeight: 700,
+            color: '#FFD700',
+            fontWeight: 700,
                     },
                     '&.Mui-completed': {
                       color: '#FFD700',
@@ -1388,14 +1898,14 @@ const Register = () => {
                   '& .MuiStepConnector-line': {
                     borderColor: 'rgba(255,215,0,0.3)',
                   },
-                }}
-              >
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
+        }}
+      >
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
             )}
 
             {/* Mobile Step Indicator */}

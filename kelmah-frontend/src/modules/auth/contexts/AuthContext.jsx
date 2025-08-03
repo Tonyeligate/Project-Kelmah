@@ -48,13 +48,13 @@ export const AuthProvider = ({ children }) => {
               setUser(storedUser);
             } else {
               // Clear invalid authentication
-              authService.clearStorage();
+              // Clear auth storage - handled by logout method
             }
           }
         }
       } catch (err) {
         console.error('Failed to initialize auth:', err);
-        authService.clearStorage();
+        // Clear auth storage - handled by logout method
       } finally {
         setLoading(false);
         setIsInitialized(true);
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await authService.requestPasswordReset(email);
+      const response = await authService.forgotPassword(email);
       return response;
     } catch (err) {
       console.error('Password reset request error:', err);
@@ -254,7 +254,7 @@ export const AuthProvider = ({ children }) => {
 
   // Get stored token
   const getToken = useCallback(() => {
-    return authService.getStoredToken();
+    return authService.getToken();
   }, []);
 
   // Context value

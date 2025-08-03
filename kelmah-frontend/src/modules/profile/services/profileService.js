@@ -1,10 +1,10 @@
-import apiClient from '../../../api/index';
+import { authServiceClient } from '../../common/services/axios';
 
 class ProfileService {
   // Get user profile
   async getProfile() {
     try {
-      const response = await apiClient.get('/profile');
+      const response = await authServiceClient.get('/profile');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -15,7 +15,7 @@ class ProfileService {
   // Update user profile
   async updateProfile(profileData) {
     try {
-      const response = await apiClient.put('/profile', profileData);
+      const response = await authServiceClient.put('/profile', profileData);
       return response.data.data;
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -28,7 +28,7 @@ class ProfileService {
     try {
       const formData = new FormData();
       formData.append('profilePicture', file);
-      const response = await apiClient.post('/profile/picture', formData, {
+      const response = await authServiceClient.post('/profile/picture', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data.data;
@@ -41,7 +41,7 @@ class ProfileService {
   // Update user skills
   async updateSkills(skills) {
     try {
-      const response = await apiClient.put('/profile/skills', { skills });
+      const response = await authServiceClient.put('/profile/skills', { skills });
       return response.data.data;
     } catch (error) {
       console.error('Error updating skills:', error);
@@ -52,7 +52,7 @@ class ProfileService {
   // Update user education
   async updateEducation(education) {
     try {
-      const response = await apiClient.put('/profile/education', { education });
+      const response = await authServiceClient.put('/profile/education', { education });
       return response.data.data;
     } catch (error) {
       console.error('Error updating education:', error);
@@ -63,7 +63,7 @@ class ProfileService {
   // Update user experience
   async updateExperience(experience) {
     try {
-      const response = await apiClient.put('/profile/experience', {
+      const response = await authServiceClient.put('/profile/experience', {
         experience,
       });
       return response.data.data;
@@ -76,7 +76,7 @@ class ProfileService {
   // Update user preferences
   async updatePreferences(preferences) {
     try {
-      const response = await apiClient.put('/profile/preferences', {
+      const response = await authServiceClient.put('/profile/preferences', {
         preferences,
       });
       return response.data.data;
@@ -89,7 +89,7 @@ class ProfileService {
   // Get user statistics
   async getStatistics() {
     try {
-      const response = await apiClient.get('/profile/statistics');
+      const response = await authServiceClient.get('/profile/statistics');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching statistics:', error);
@@ -100,7 +100,7 @@ class ProfileService {
   // Get user activity
   async getActivity(filters = {}) {
     try {
-      const response = await apiClient.get('/profile/activity', {
+      const response = await authServiceClient.get('/profile/activity', {
         params: filters,
       });
       return response.data.data;

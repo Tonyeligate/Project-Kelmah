@@ -121,9 +121,9 @@ const Footer = () => {
 
   return (
     <Slide direction="up" in={showFooter} timeout={500}>
-      <Box
-        component="footer"
-        sx={{
+    <Box
+      component="footer"
+      sx={{
           position: 'fixed',
           bottom: 0,
           left: 0,
@@ -167,25 +167,25 @@ const Footer = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <Stack spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                    <Typography
+            <Typography
                       variant="h5"
-                      sx={{
+              sx={{
                         fontWeight: 800,
-                        background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
+                background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
                         textAlign: 'center',
-                      }}
-                    >
-                      KELMAH
-                    </Typography>
+              }}
+            >
+              KELMAH
+            </Typography>
                     <Typography 
                       variant="body2" 
                       color="text.secondary"
                       sx={{ textAlign: 'center', px: 2, lineHeight: 1.5 }}
                     >
                       Ghana's premier platform for skilled trades
-                    </Typography>
+            </Typography>
                   </Stack>
                 </motion.div>
 
@@ -198,11 +198,11 @@ const Footer = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
                     <Stack direction="row" spacing={1}>
                       {socialLinks.map((social) => (
-                        <IconButton
+              <IconButton
                           key={social.label}
                           size="large"
                           href={social.href}
-                          sx={{
+                sx={{
                             background: `rgba(${
                               social.color === '#1877F2' ? '24,119,242' : 
                               social.color === '#1DA1F2' ? '29,161,242' : 
@@ -231,7 +231,7 @@ const Footer = () => {
                           }}
                         >
                           <social.icon sx={{ fontSize: 20 }} />
-                        </IconButton>
+              </IconButton>
                       ))}
                     </Stack>
                   </Box>
@@ -248,7 +248,7 @@ const Footer = () => {
                       key={section.title}
                       expanded={expandedSection === index}
                       onChange={() => setExpandedSection(expandedSection === index ? null : index)}
-                      sx={{
+                sx={{
                         background: 'rgba(255,255,255,0.03)',
                         border: '1px solid rgba(255,215,0,0.1)',
                         borderRadius: 2,
@@ -263,7 +263,7 @@ const Footer = () => {
                     >
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon sx={{ color: '#FFD700' }} />}
-                        sx={{
+                sx={{
                           minHeight: 48,
                           '&.Mui-expanded': { minHeight: 48 },
                           '& .MuiAccordionSummary-content': {
@@ -272,8 +272,8 @@ const Footer = () => {
                           },
                         }}
                       >
-                        <Typography
-                          variant="subtitle1"
+            <Typography
+              variant="subtitle1"
                           sx={{
                             fontWeight: 700,
                             color: expandedSection === index ? '#FFD700' : 'text.primary',
@@ -281,14 +281,14 @@ const Footer = () => {
                           }}
                         >
                           {section.title}
-                        </Typography>
+            </Typography>
                       </AccordionSummary>
                       <AccordionDetails sx={{ pt: 0, pb: 2 }}>
                         <Stack spacing={1.5}>
                           {section.links.map((link) => (
-                            <Link
+            <Link
                               key={link.label}
-                              component={RouterLink}
+              component={RouterLink}
                               to={link.href}
                               sx={{
                                 color: 'text.secondary',
@@ -307,7 +307,7 @@ const Footer = () => {
                               }}
                             >
                               {link.label}
-                            </Link>
+            </Link>
                           ))}
                         </Stack>
                       </AccordionDetails>
@@ -365,9 +365,9 @@ const Footer = () => {
               >
                 <Grid container spacing={{ sm: 3, md: 4 }}>
                   {/* Company Info Column */}
-                  <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={2}>
-                      <Typography
+            <Typography
                         variant="h5"
                         sx={{
                           fontWeight: 800,
@@ -378,10 +378,10 @@ const Footer = () => {
                         }}
                       >
                         KELMAH
-                      </Typography>
+            </Typography>
                       <Typography 
                         variant="body2" 
-                        color="text.secondary"
+              color="text.secondary"
                         sx={{ lineHeight: 1.6, maxWidth: 280 }}
                       >
                         Your professional platform for skilled trades, connecting experts,
@@ -392,7 +392,7 @@ const Footer = () => {
                       <Box sx={{ mt: 2 }}>
                         <Typography 
                           variant="caption" 
-                          color="text.secondary"
+              color="text.secondary"
                           sx={{ fontWeight: 600, mb: 1, display: 'block' }}
                         >
                           FOLLOW US
@@ -432,7 +432,7 @@ const Footer = () => {
                       <Box sx={{ mt: 3 }}>
                         <Typography 
                           variant="caption" 
-                          color="text.secondary"
+              color="text.secondary"
                           sx={{ fontWeight: 600, mb: 1.5, display: 'block' }}
                         >
                           CONTACT INFO
@@ -453,13 +453,13 @@ const Footer = () => {
                         </Stack>
                       </Box>
                     </Stack>
-                  </Grid>
+          </Grid>
 
                   {/* Dynamic Sections */}
                   {footerSections.map((section) => (
                     <Grid key={section.title} item xs={12} sm={6} md={3}>
                       <Stack spacing={2}>
-                        <Typography
+            <Typography
                           variant="h6"
                           sx={{
                             fontWeight: 700,
@@ -469,12 +469,12 @@ const Footer = () => {
                           }}
                         >
                           {section.title}
-                        </Typography>
+            </Typography>
                         <Stack spacing={1}>
                           {section.links.map((link) => (
-                            <Link
+            <Link
                               key={link.label}
-                              component={RouterLink}
+              component={RouterLink}
                               to={link.href}
                               sx={{
                                 color: 'text.secondary',
@@ -495,7 +495,7 @@ const Footer = () => {
                               }}
                             >
                               {link.label}
-                            </Link>
+            </Link>
                           ))}
                         </Stack>
                       </Stack>
@@ -526,14 +526,14 @@ const Footer = () => {
               >
                 <Typography 
                   variant="body2" 
-                  color="text.secondary"
-                  sx={{ 
+              color="text.secondary"
+          sx={{
                     textAlign: { xs: 'center', sm: 'left' },
                     fontWeight: 500,
-                  }}
-                >
-                  © {currentYear} Kelmah. All rights reserved.
-                </Typography>
+          }}
+        >
+            © {currentYear} Kelmah. All rights reserved.
+          </Typography>
                 <Stack direction="row" spacing={2} alignItems="center">
                   <Typography 
                     variant="caption" 
@@ -556,7 +556,7 @@ const Footer = () => {
             </motion.div>
           </Container>
         </Box>
-      </Box>
+    </Box>
     </Slide>
   );
 };

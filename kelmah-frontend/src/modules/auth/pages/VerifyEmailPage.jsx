@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Box, Typography, Button, TextField, Alert } from '@mui/material';
-import authApi from '../../../api/services/authApi';
+import authService from '../services/authService';
 import { useParams, Link } from 'react-router-dom';
 
 const VerifyEmailPage = () => {

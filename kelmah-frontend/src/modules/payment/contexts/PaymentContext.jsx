@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import paymentsApi from '../../../api/services/paymentsApi';
+import paymentService from '../services/paymentService';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import { USE_MOCK_DATA } from '../../../config';
@@ -57,11 +57,11 @@ export const PaymentProvider = ({ children }) => {
     try {
       const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] =
         await Promise.all([
-          paymentsApi.getWallet(),
-          paymentsApi.getPaymentMethods(),
-          paymentsApi.getTransactionHistory(),
-          paymentsApi.getEscrows(),
-          paymentsApi.getBills(),
+                paymentService.getWallet(),
+      paymentService.getPaymentMethods(),
+      paymentService.getTransactionHistory(),
+      paymentService.getEscrows(),
+      paymentService.getBills(),
         ]);
       setWalletBalance(walletRes.balance);
       setPaymentMethods(methodsRes);
@@ -86,7 +86,7 @@ export const PaymentProvider = ({ children }) => {
       setLoading(true);
       try {
         // Create a deposit transaction
-        await paymentsApi.createTransaction({
+        await paymentService.createTransaction({
           amount,
           type: 'deposit',
           currency: "GHS",
@@ -114,7 +114,7 @@ export const PaymentProvider = ({ children }) => {
       setLoading(true);
       try {
         // Create a withdrawal transaction
-        await paymentsApi.createTransaction({
+        await paymentService.createTransaction({
           amount,
           type: 'withdrawal',
           currency: "GHS",
@@ -138,7 +138,7 @@ export const PaymentProvider = ({ children }) => {
     async (params = {}) => {
       setLoading(true);
       try {
-        const data = await paymentsApi.getTransactionHistory(params);
+        const data = await paymentService.getTransactionHistory(params);
         setTransactions(data.transactions || data);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);
@@ -161,7 +161,7 @@ export const PaymentProvider = ({ children }) => {
     async (billId) => {
       setActionLoading(billId);
       try {
-        await paymentsApi.payBill(billId);
+        await paymentService.payBill(billId);
         showToast('Bill paid successfully!', 'success');
         // Refresh bills data
         await fetchData();

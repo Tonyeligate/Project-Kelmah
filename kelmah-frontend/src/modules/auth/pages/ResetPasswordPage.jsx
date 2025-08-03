@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Box, TextField, Button, Typography, Alert } from '@mui/material';
-import authApi from '../../../api/services/authApi';
+import authService from '../services/authService';
 import { useParams, Link } from 'react-router-dom';
 
 const ResetPasswordPage = () => {

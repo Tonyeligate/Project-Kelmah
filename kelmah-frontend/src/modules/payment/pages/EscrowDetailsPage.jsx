@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { usePayments } from '../contexts/PaymentContext';
-import paymentsApi from '../../../api/services/paymentsApi';
+import paymentService from '../services/paymentService';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import {
   Container,
@@ -203,7 +203,7 @@ const EscrowDetailsPage = () => {
           <Button
             onClick={async () => {
               try {
-                await paymentsApi.releaseEscrow(escrow.id, {
+                await paymentService.releaseEscrow(escrow.id, {
                   paymentMethodId: selectedMethod,
                 });
                 showToast('Funds released successfully.', 'success');

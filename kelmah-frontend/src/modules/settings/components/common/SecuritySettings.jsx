@@ -8,7 +8,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import authApi from '../../../../api/services/authApi';
+import authService from '../../../auth/services/authService';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 import { Link as RouterLink } from 'react-router-dom';
 

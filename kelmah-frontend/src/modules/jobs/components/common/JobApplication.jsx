@@ -42,7 +42,8 @@ import {
   Paid,
   LocationOn,
 } from '@mui/icons-material';
-import jobsApi from '../../../../api/jobsApi';
+// Temporarily comment out API import until jobs service is implemented
+// import jobsApi from '../../../../api/jobsApi';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
 import axiosInstance from '../../../../common/services/axios';

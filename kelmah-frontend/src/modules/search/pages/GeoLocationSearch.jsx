@@ -263,12 +263,12 @@ const GeoLocationSearch = () => {
       setLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
-            const { latitude, longitude } = position.coords;
+          const { latitude, longitude } = position.coords;
           setCoordinates({ lat: latitude, lng: longitude });
           // Reverse geocode to get location name
           reverseGeocode(latitude, longitude);
           setLocationError(false);
-            setLoading(false);
+          setLoading(false);
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -333,15 +333,15 @@ const GeoLocationSearch = () => {
     setLoading(true);
     setError(null);
     setSearched(true);
-
+    
     try {
       const searchParams = {
-          location,
-          keywords,
+        location,
+        keywords,
         category: category || undefined,
-          sortBy,
+        sortBy,
         distance,
-          page,
+        page,
         limit: 10
       };
 
@@ -406,9 +406,9 @@ const GeoLocationSearch = () => {
       }}
     >
       <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Helmet>
-        <title>Location-based Search | Kelmah</title>
-      </Helmet>
+        <Helmet>
+          <title>Location-based Search | Kelmah</title>
+        </Helmet>
 
         {/* Header Section */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
@@ -425,7 +425,7 @@ const GeoLocationSearch = () => {
             }}
           >
             🌍 Find {searchType === 0 ? 'Jobs' : 'Talent'} Near You
-        </Typography>
+          </Typography>
           <Typography
             variant="h5"
             sx={{
@@ -439,8 +439,8 @@ const GeoLocationSearch = () => {
           >
             Connect with local opportunities and professionals. Distance matters
             - find work and talent that's convenient for everyone.
-        </Typography>
-      </Box>
+          </Typography>
+        </Box>
 
         {/* Search Type Tabs */}
         <Paper
@@ -452,20 +452,20 @@ const GeoLocationSearch = () => {
             backgroundColor: theme.palette.background.paper,
           }}
         >
-        <Tabs
-          value={searchType}
-          onChange={handleTabChange}
-          variant={isMobile ? 'fullWidth' : 'standard'}
+          <Tabs
+            value={searchType}
+            onChange={handleTabChange}
+            variant={isMobile ? 'fullWidth' : 'standard'}
             centered={!isMobile}
-          aria-label="search type tabs"
-                sx={{
+            aria-label="search type tabs"
+            sx={{
               backgroundColor: alpha(theme.palette.secondary.main, 0.1),
               '& .MuiTabs-indicator': {
                 backgroundColor: theme.palette.secondary.main,
                 height: 4,
-                  },
-                }}
-              >
+              },
+            }}
+          >
             <Tab
               icon={<WorkIcon />}
               label="Find Jobs"
@@ -512,15 +512,15 @@ const GeoLocationSearch = () => {
         />
 
         {/* Error Display */}
-      {error && (
+        {error && (
           <Alert
             severity="error"
             sx={{ mb: 3, borderRadius: 2 }}
             onClose={() => setError(null)}
           >
-          {error}
-        </Alert>
-      )}
+            {error}
+          </Alert>
+        )}
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -538,13 +538,13 @@ const GeoLocationSearch = () => {
           </TabPanel>
         ) : searchResults.length > 0 ? (
           <TabPanel value={searchType} index={searchType}>
-              <Box
-                sx={{
-                  mb: 3,
+            <Box
+              sx={{
+                mb: 3,
                 p: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
                 borderRadius: 3,
                 border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
@@ -553,12 +553,12 @@ const GeoLocationSearch = () => {
               <Typography variant="h6" fontWeight="bold">
                 {searchType === 0 ? '📍' : '👥'} {pagination.totalItems || 0}{' '}
                 result{pagination.totalItems !== 1 ? 's' : ''} found
-                </Typography>
+              </Typography>
               <Chip
                 label={`Page ${pagination.currentPage || 1}`}
                 variant="outlined"
               />
-              </Box>
+            </Box>
             <Grid container spacing={3}>
               {searchResults.map((item) => (
                 <Grid
@@ -585,10 +585,10 @@ const GeoLocationSearch = () => {
                   color="primary"
                 />
               </Box>
-        )}
-      </TabPanel>
+            )}
+          </TabPanel>
         ) : null}
-    </Container>
+      </Container>
     </Box>
   );
 };

@@ -59,7 +59,8 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
-import jobsApi from '../../../../api/services/jobsApi';
+// Temporarily comment out API import until jobs service is implemented
+// import jobsApi from '../../../../api/services/jobsApi';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 
 // Enhanced trade icon mapping

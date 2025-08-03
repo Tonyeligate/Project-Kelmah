@@ -29,7 +29,8 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import CloseIcon from '@mui/icons-material/Close';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { workersApi } from '../../../../api';
+// Temporarily comment out API import until workers service is implemented
+// import { workersApi } from '../../../../api';
 
 // Transition for dialog
 const Transition = React.forwardRef(function Transition(props, ref) {
