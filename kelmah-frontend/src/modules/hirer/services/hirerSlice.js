@@ -2,38 +2,29 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { SERVICES } from '../../../config/environment';
 
-// Create dedicated service clients for each microservice
+// Create dedicated service clients - temporarily using AUTH_SERVICE for all calls
+// until USER_SERVICE and JOB_SERVICE are deployed
 const authServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE,
   timeout: 5000, // Reduced timeout for better UX
   headers: { 'Content-Type': 'application/json' },
 });
 
-const userServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE,
-  timeout: 5000,
-  headers: { 'Content-Type': 'application/json' },
-});
+// For now, use auth service for both user and job operations
+const userServiceClient = authServiceClient;
+const jobServiceClient = authServiceClient;
 
-const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
-  timeout: 5000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth tokens to all service clients
-[authServiceClient, userServiceClient, jobServiceClient].forEach(client => {
-  client.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('kelmah_auth_token');
+// Add auth tokens to requests
+authServiceClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('kelmah_auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error),
-  );
-});
+);
 
 // Async thunks for API operations
 export const fetchHirerProfile = createAsyncThunk(

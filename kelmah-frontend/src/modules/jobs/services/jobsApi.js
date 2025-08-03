@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { SERVICES } from '../../../config/environment';
 
-// Create dedicated service client for Job Service
+// Create dedicated service client - temporarily using AUTH_SERVICE until JOB_SERVICE is deployed
 const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE, // Now using the correct JOB_SERVICE
+  baseURL: SERVICES.AUTH_SERVICE, // Will be SERVICES.JOB_SERVICE when deployed
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });

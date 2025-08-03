@@ -262,7 +262,7 @@ export const authServiceClient = axios.create({
 
 export const userServiceClient = axios.create({
   baseURL: SERVICES.USER_SERVICE,
-  timeout: 10000, // Increased timeout for better reliability
+  timeout: 5000, // Reduced timeout for better UX
   headers: {
     'Content-Type': 'application/json',
   },
@@ -270,7 +270,7 @@ export const userServiceClient = axios.create({
 
 export const jobServiceClient = axios.create({
   baseURL: SERVICES.JOB_SERVICE,
-  timeout: 10000, // Increased timeout for better reliability
+  timeout: 5000, // Reduced timeout for better UX
   headers: {
     'Content-Type': 'application/json',
   },

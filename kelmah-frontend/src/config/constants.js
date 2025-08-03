@@ -4,7 +4,7 @@ const isDevelopment = ENV === 'development';
 
 // API URLs for different environments
 const API_URLS = {
-  development: 'http://localhost:5000',
+  development: '', // Use empty string to leverage Vite proxy configuration
   test: 'http://localhost:5000',
   production: process.env.VITE_API_URL || 'https://api.kelmah.com',
 };
