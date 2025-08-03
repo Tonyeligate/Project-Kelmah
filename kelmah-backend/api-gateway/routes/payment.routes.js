@@ -1,0 +1,91 @@
+/**
+ * Payment Service Routes
+ * Proxy configuration for payment-service endpoints
+ */
+
+const express = require('express');
+const router = express.Router();
+const { createServiceProxy } = require('../proxy/serviceProxy');
+const authenticate = require('../middlewares/auth.middleware');
+
+// Get service URLs from app context
+const getServiceUrl = (req) => req.app.get('serviceUrls').PAYMENT_SERVICE;
+
+// Payment proxy middleware
+const paymentProxy = (req, res, next) => {
+  const proxy = createServiceProxy({
+    target: getServiceUrl(req),
+    pathPrefix: '/api/payments',
+    requireAuth: true
+  });
+  return proxy(req, res, next);
+};
+
+// All payment routes require authentication
+router.use(authenticate);
+
+// Wallet routes
+router.get('/wallet', paymentProxy); // Get user wallet
+router.get('/wallet/balance', paymentProxy); // Get wallet balance
+router.post('/wallet/deposit', paymentProxy); // Deposit to wallet
+router.post('/wallet/withdraw', paymentProxy); // Withdraw from wallet
+
+// Payment methods
+router.get('/methods', paymentProxy); // Get user's payment methods
+router.post('/methods', paymentProxy); // Add payment method
+router.put('/methods/:methodId', paymentProxy); // Update payment method
+router.delete('/methods/:methodId', paymentProxy); // Delete payment method
+router.put('/methods/:methodId/default', paymentProxy); // Set default payment method
+
+// Transaction routes
+router.get('/transactions', paymentProxy); // Get user transactions
+router.get('/transactions/:transactionId', paymentProxy); // Get specific transaction
+router.post('/transactions', paymentProxy); // Create transaction
+
+// Job payments
+router.post('/jobs/:jobId/pay', paymentProxy); // Pay for job
+router.post('/jobs/:jobId/escrow', paymentProxy); // Create escrow for job
+router.post('/jobs/:jobId/release', paymentProxy); // Release escrow payment
+router.post('/jobs/:jobId/refund', paymentProxy); // Refund job payment
+
+// Milestone payments
+router.post('/jobs/:jobId/milestones/:milestoneId/pay', paymentProxy); // Pay milestone
+router.post('/jobs/:jobId/milestones/:milestoneId/release', paymentProxy); // Release milestone payment
+
+// Stripe integration
+router.post('/stripe/payment-intent', paymentProxy); // Create Stripe payment intent
+router.post('/stripe/setup-intent', paymentProxy); // Create Stripe setup intent
+router.post('/stripe/webhook', paymentProxy); // Handle Stripe webhooks
+
+// PayPal integration
+router.post('/paypal/create-order', paymentProxy); // Create PayPal order
+router.post('/paypal/capture-order', paymentProxy); // Capture PayPal order
+router.post('/paypal/webhook', paymentProxy); // Handle PayPal webhooks
+
+// Escrow management
+router.get('/escrow', paymentProxy); // Get user's escrow transactions
+router.get('/escrow/:escrowId', paymentProxy); // Get specific escrow
+router.post('/escrow/:escrowId/dispute', paymentProxy); // Create dispute
+router.put('/escrow/:escrowId/resolve', paymentProxy); // Resolve dispute
+
+// Subscription payments
+router.get('/subscriptions', paymentProxy); // Get user subscriptions
+router.post('/subscriptions', paymentProxy); // Create subscription
+router.put('/subscriptions/:subscriptionId', paymentProxy); // Update subscription
+router.delete('/subscriptions/:subscriptionId', paymentProxy); // Cancel subscription
+
+// Payment analytics (for admins)
+router.get('/analytics/revenue', paymentProxy); // Get revenue analytics
+router.get('/analytics/transactions', paymentProxy); // Get transaction analytics
+
+// Fee management
+router.get('/fees', paymentProxy); // Get fee structure
+router.post('/fees/calculate', paymentProxy); // Calculate fees for amount
+
+// Payment disputes
+router.get('/disputes', paymentProxy); // Get user disputes
+router.post('/disputes', paymentProxy); // Create dispute
+router.put('/disputes/:disputeId', paymentProxy); // Update dispute
+router.get('/disputes/:disputeId', paymentProxy); // Get dispute details
+
+module.exports = router;

@@ -26,6 +26,9 @@ const serviceUrls = {
   MONOLITH_SERVICE: process.env.MONOLITH_SERVICE_URL || 'http://localhost:5000'
 };
 
+// Make service URLs available to routes
+app.set('serviceUrls', serviceUrls);
+
 // CORS middleware: whitelist frontend origins for cross-domain auth
 const corsOptions = {
   origin: function (origin, callback) {
@@ -67,6 +70,9 @@ app.use(express.json({
 
 // Parse URL-encoded requests
 app.use(express.urlencoded({ extended: true }));
+
+// Import routing configuration
+const routes = require('./routes');
 
 // Debug middleware
 app.use((req, res, next) => {
@@ -240,35 +246,17 @@ app.all('/api/hirers*', authenticate, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Kelmah Platform API Gateway',
-    services: ['auth', 'user', 'job', 'messaging'],
-    version: '1.0.0',
+    services: ['auth', 'user', 'job', 'messaging', 'payment'],
+    version: '2.0.0',
     mode: process.env.NODE_ENV || 'development'
   });
 });
 
-// Proxy job endpoints to job-service
-app.all('/api/jobs*', async (req, res) => {
-  try {
-    const url = `${serviceUrls.JOB_SERVICE}${req.path}`;
-    const response = await axios({
-      method: req.method,
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(req.headers.authorization && { Authorization: req.headers.authorization })
-      },
-      params: req.query,
-      data: req.body
-    });
-    res.status(response.status).json(response.data);
-  } catch (error) {
-    if (error.response) {
-      res.status(error.response.status).json(error.response.data);
-    } else {
-      res.status(500).json({ message: error.message });
-    }
-  }
-});
+// Apply structured routing
+app.use('/', routes);
+
+// Legacy proxy routes - REPLACED by structured routing above
+// Old proxy endpoints are now handled by the new routing structure
 
 // Proxy messaging-service endpoints
 app.all('/api/messages/*', authenticate, async (req, res) => {
