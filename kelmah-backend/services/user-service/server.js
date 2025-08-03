@@ -29,9 +29,28 @@ const profileRoutes = require("./routes/profile.routes");
 const settingsRoutes = require("./routes/settings.routes");
 
 // Initialize express app
+
+// Import centralized logger
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+
+// Create service logger
+const logger = createLogger('user-service');
+
+// Setup global error handlers
+setupGlobalErrorHandlers(logger);
+
+logger.info('user-service starting...', { 
+  nodeVersion: process.version,
+  environment: process.env.NODE_ENV || 'development'
+});
+
 const app = express();
 
 // Middleware
+
+// Add HTTP request logging
+app.use(createHttpLogger(logger));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -54,7 +73,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
+      logger.info(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -120,17 +139,21 @@ const PORT = process.env.USER_SERVICE_PORT || 5002;
 if (require.main === module) {
   sequelize.authenticate()
     .then(() => {
-      console.log("User Service SQL connection established");
+      logger.info("User Service SQL connection established");
       return sequelize.sync();
     })
     .then(() => {
-      console.log("User Service models synced");
-      app.listen(PORT, () => {
-        console.log(`User Service running on port ${PORT}`);
+      logger.info("User Service models synced");
+      
+// Error logging middleware (must be last)
+app.use(createErrorLogger(logger));
+
+app.listen(PORT, () => {
+        logger.info(`User Service running on port ${PORT}`);
       });
     })
     .catch((err) => {
-      console.error("User Service database error:", err);
+      logger.error("User Service database error:", err);
       process.exit(1);
     });
 }

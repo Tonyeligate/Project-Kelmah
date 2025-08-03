@@ -19,9 +19,28 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const authRoutes = require("./routes/auth.routes");
 
 // Initialize express app
+
+// Import centralized logger
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+
+// Create service logger
+const logger = createLogger('auth-service');
+
+// Setup global error handlers
+setupGlobalErrorHandlers(logger);
+
+logger.info('auth-service starting...', { 
+  nodeVersion: process.version,
+  environment: process.env.NODE_ENV || 'development'
+});
+
 const app = express();
 
 // Middleware
+
+// Add HTTP request logging
+app.use(createHttpLogger(logger));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -50,7 +69,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
+      logger.info(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -110,7 +129,7 @@ app.post("/api/admin/verify-user", async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Admin verify user error:', error);
+    logger.error('Admin verify user error:', error);
     return res.status(500).json({
       success: false,
       message: "Error verifying user",
@@ -174,7 +193,7 @@ app.post("/api/admin/verify-users-batch", async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Batch verify users error:', error);
+    logger.error('Batch verify users error:', error);
     return res.status(500).json({
       success: false,
       message: "Error verifying users",
@@ -453,8 +472,8 @@ const requiredEnvVars = ["JWT_SECRET", "JWT_REFRESH_SECRET", "MONGO_URI"];
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
-  console.error("Error: Missing required environment variables:");
-  missingEnvVars.forEach((envVar) => console.error(`- ${envVar}`));
+  logger.error("Error: Missing required environment variables:");
+  missingEnvVars.forEach((envVar) => logger.error(`- ${envVar}`));
   process.exit(1);
 }
 
@@ -464,18 +483,22 @@ Promise.all([
   sequelize.authenticate(), // Sequelize SQL
 ])
   .then(() => {
-    console.log("MongoDB and Sequelize connections established");
+    logger.info("MongoDB and Sequelize connections established");
     return sequelize.sync(); // Ensure SQL models are synced
   })
   .then(() => {
-    console.log("Sequelize models synced");
+    logger.info("Sequelize models synced");
     // Start the server after DBs are ready
-    app.listen(PORT, () => {
-      console.log(`Auth Service running on port ${PORT}`);
+    
+// Error logging middleware (must be last)
+app.use(createErrorLogger(logger));
+
+app.listen(PORT, () => {
+      logger.info(`Auth Service running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error("Database connection or sync error:", err);
+    logger.error("Database connection or sync error:", err);
     process.exit(1);
   });
 

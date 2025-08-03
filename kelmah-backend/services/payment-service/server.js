@@ -14,6 +14,21 @@ const billRoutes = require("./routes/bill.routes");
 const paymentsRoutes = require("./routes/payments.routes");
 
 // Create Express app
+
+// Import centralized logger
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+
+// Create service logger
+const logger = createLogger('payment-service');
+
+// Setup global error handlers
+setupGlobalErrorHandlers(logger);
+
+logger.info('payment-service starting...', { 
+  nodeVersion: process.version,
+  environment: process.env.NODE_ENV || 'development'
+});
+
 const app = express();
 
 // Middleware
@@ -33,7 +48,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
+      logger.info(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -44,6 +59,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(morgan("dev"));
+
+// Add HTTP request logging
+app.use(createHttpLogger(logger));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -61,7 +80,7 @@ app.get("/health", (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error(err.stack);
   res.status(500).json({
     message: "Internal Server Error",
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
@@ -77,22 +96,26 @@ mongoose
     serverSelectionTimeoutMS: 5000,
   })
   .then(() => {
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
 
     // Start server
     const PORT = process.env.PORT || 3004;
-    app.listen(PORT, () => {
-      console.log(`Payment service is running on port ${PORT}`);
+    
+// Error logging middleware (must be last)
+app.use(createErrorLogger(logger));
+
+app.listen(PORT, () => {
+      logger.info(`Payment service is running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error("MongoDB connection error:", error);
+    logger.error("MongoDB connection error:", error);
     process.exit(1);
   });
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Promise Rejection:", err);
+  logger.error("Unhandled Promise Rejection:", err);
   // Close server & exit process
   process.exit(1);
 });

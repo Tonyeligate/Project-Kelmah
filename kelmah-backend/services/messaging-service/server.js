@@ -12,6 +12,21 @@ const conversationRoutes = require("./routes/conversation.routes");
 const notificationRoutes = require("./routes/notification.routes");
 
 // Create Express app
+
+// Import centralized logger
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+
+// Create service logger
+const logger = createLogger('messaging-service');
+
+// Setup global error handlers
+setupGlobalErrorHandlers(logger);
+
+logger.info('messaging-service starting...', { 
+  nodeVersion: process.version,
+  environment: process.env.NODE_ENV || 'development'
+});
+
 const app = express();
 
 // Middleware
@@ -31,7 +46,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
+      logger.info(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -41,6 +56,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(morgan("dev"));
+
+// Add HTTP request logging
+app.use(createHttpLogger(logger));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -56,7 +75,7 @@ app.get("/health", (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error(err.stack);
   res.status(500).json({
     message: "Internal Server Error",
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
@@ -68,7 +87,7 @@ mongoose.set('strictQuery', false);
 
 // Connect to MongoDB
 const mongoUri = process.env.MESSAGING_MONGO_URI || process.env.MONGODB_URI;
-console.log("Attempting to connect to MongoDB...");
+logger.info("Attempting to connect to MongoDB...");
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
@@ -78,29 +97,33 @@ mongoose
     socketTimeoutMS: 30000,
   })
   .then(() => {
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
 
     // Start server
     const PORT = process.env.PORT || 3003;
-    app.listen(PORT, () => {
-      console.log(`Messaging service is running on port ${PORT}`);
+    
+// Error logging middleware (must be last)
+app.use(createErrorLogger(logger));
+
+app.listen(PORT, () => {
+      logger.info(`Messaging service is running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error("MongoDB connection error:", error.message);
+    logger.error("MongoDB connection error:", error.message);
     if (error.message.includes("IP") || error.message.includes("whitelist")) {
-      console.error("💡 SOLUTION: Add 0.0.0.0/0 to MongoDB Atlas Network Access whitelist for production deployment");
-      console.error("💡 Go to: MongoDB Atlas > Network Access > Add IP Address > Allow Access from Anywhere");
+      logger.error("💡 SOLUTION: Add 0.0.0.0/0 to MongoDB Atlas Network Access whitelist for production deployment");
+      logger.error("💡 Go to: MongoDB Atlas > Network Access > Add IP Address > Allow Access from Anywhere");
     }
-    console.error("Environment check:");
-    console.error("MESSAGING_MONGO_URI:", process.env.MESSAGING_MONGO_URI ? "✅ Set" : "❌ Not set");
-    console.error("MONGODB_URI:", process.env.MONGODB_URI ? "✅ Set" : "❌ Not set");
+    logger.error("Environment check:");
+    logger.error("MESSAGING_MONGO_URI:", process.env.MESSAGING_MONGO_URI ? "✅ Set" : "❌ Not set");
+    logger.error("MONGODB_URI:", process.env.MONGODB_URI ? "✅ Set" : "❌ Not set");
     process.exit(1);
   });
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Promise Rejection:", err);
+  logger.error("Unhandled Promise Rejection:", err);
   // Close server & exit process
   process.exit(1);
 });

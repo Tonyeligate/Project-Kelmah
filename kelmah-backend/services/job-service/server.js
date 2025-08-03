@@ -20,9 +20,28 @@ const { sequelize } = require("./models");
 const jobRoutes = require("./routes/job.routes");
 
 // Initialize express app
+
+// Import centralized logger
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+
+// Create service logger
+const logger = createLogger('job-service');
+
+// Setup global error handlers
+setupGlobalErrorHandlers(logger);
+
+logger.info('job-service starting...', { 
+  nodeVersion: process.version,
+  environment: process.env.NODE_ENV || 'development'
+});
+
 const app = express();
 
 // Middleware
+
+// Add HTTP request logging
+app.use(createHttpLogger(logger));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -50,7 +69,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
+      logger.info(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -116,17 +135,21 @@ const PORT = process.env.JOB_SERVICE_PORT || 5003;
 if (require.main === module) {
   sequelize.authenticate()
     .then(() => {
-      console.log('Job Service Postgres connection established');
+      logger.info('Job Service Postgres connection established');
       return sequelize.sync();
     })
     .then(() => {
-      console.log('Job Service models synced');
-  app.listen(PORT, () => {
-    console.log(`Job Service running on port ${PORT}`);
+      logger.info('Job Service models synced');
+  
+// Error logging middleware (must be last)
+app.use(createErrorLogger(logger));
+
+app.listen(PORT, () => {
+    logger.info(`Job Service running on port ${PORT}`);
       });
     })
     .catch((err) => {
-      console.error('Job Service database connection error:', err);
+      logger.error('Job Service database connection error:', err);
       process.exit(1);
   });
 }
