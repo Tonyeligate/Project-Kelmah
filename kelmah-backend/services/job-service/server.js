@@ -56,7 +56,7 @@ const corsOptions = {
   },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-User-ID", "X-User-Role", "X-Request-ID", "X-Client-Version", "X-Target-Service", "X-Service-Client"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   optionsSuccessStatus: 200 // for legacy browser support
 };
 
