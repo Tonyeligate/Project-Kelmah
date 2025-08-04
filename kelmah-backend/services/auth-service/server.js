@@ -21,7 +21,7 @@ const authRoutes = require("./routes/auth.routes");
 // Initialize express app
 
 // Import centralized logger
-const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/utils/logger');
 
 // Create service logger
 const logger = createLogger('auth-service');

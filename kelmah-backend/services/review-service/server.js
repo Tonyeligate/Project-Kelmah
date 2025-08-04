@@ -10,7 +10,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
 // Import centralized logger
-const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/logger');
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/utils/logger');
 
 // Load environment variables
 dotenv.config();
