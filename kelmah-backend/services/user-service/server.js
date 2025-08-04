@@ -13,15 +13,12 @@ const cookieParser = require("cookie-parser");
 const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
 
-// Database connection and model initialization
-const { sequelize } = require("./config/db");
-const initUserModel = require("./models/User");
-const initSettingModel = require("./models/Setting");
-const initNotificationModel = require("./models/Notification");
+// MongoDB connection 
+const { connectDB } = require("./config/db");
 
-const User = initUserModel(sequelize);
-const Setting = initSettingModel(sequelize);
-const Notification = initNotificationModel(sequelize);
+// Import Mongoose models
+const User = require("./models/User");
+// Note: Setting and Notification models need to be converted to Mongoose as well
 
 // Import routes
 const userRoutes = require("./routes/user.routes");
@@ -137,23 +134,22 @@ const PORT = process.env.USER_SERVICE_PORT || 5002;
 
 // Only start the server if this file is run directly
 if (require.main === module) {
-  sequelize.authenticate()
+  connectDB()
     .then(() => {
-      logger.info("User Service SQL connection established");
-      return sequelize.sync();
-    })
-    .then(() => {
-      logger.info("User Service models synced");
+      logger.info("✅ User Service connected to MongoDB");
       
-// Error logging middleware (must be last)
-app.use(createErrorLogger(logger));
+      // Error logging middleware (must be last)
+      app.use(createErrorLogger(logger));
 
-app.listen(PORT, () => {
-        logger.info(`User Service running on port ${PORT}`);
+      // Start the server after DB is ready
+      app.listen(PORT, () => {
+        logger.info(`🚀 User Service running on port ${PORT}`);
+        logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
+        logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
       });
     })
     .catch((err) => {
-      logger.error("User Service database error:", err);
+      logger.error("❌ User Service MongoDB connection error:", err);
       process.exit(1);
     });
 }

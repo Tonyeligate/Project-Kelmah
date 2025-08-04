@@ -13,8 +13,11 @@ const { notFound } = require('./utils/errorTypes');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-// Import MongoDB models and connection
-const { mongoose } = require("./models");
+// Import MongoDB connection
+const { connectDB } = require("./config/db");
+
+// Import MongoDB models
+const { Job, Application, Category } = require("./models");
 
 // Import routes
 const jobRoutes = require("./routes/job.routes");
@@ -133,25 +136,24 @@ const PORT = process.env.JOB_SERVICE_PORT || 5003;
 
 // Only start the server if this file is run directly
 if (require.main === module) {
-  sequelize.authenticate()
+  connectDB()
     .then(() => {
-      logger.info('Job Service Postgres connection established');
-      return sequelize.sync();
-    })
-    .then(() => {
-      logger.info('Job Service models synced');
-  
-// Error logging middleware (must be last)
-app.use(createErrorLogger(logger));
+      logger.info('✅ Job Service connected to MongoDB');
+      
+      // Error logging middleware (must be last)
+      app.use(createErrorLogger(logger));
 
-app.listen(PORT, () => {
-    logger.info(`Job Service running on port ${PORT}`);
+      // Start the server after DB is ready
+      app.listen(PORT, () => {
+        logger.info(`🚀 Job Service running on port ${PORT}`);
+        logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
+        logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
       });
     })
     .catch((err) => {
-      logger.error('Job Service database connection error:', err);
+      logger.error('❌ Job Service MongoDB connection error:', err);
       process.exit(1);
-  });
+    });
 }
 
 module.exports = app;
