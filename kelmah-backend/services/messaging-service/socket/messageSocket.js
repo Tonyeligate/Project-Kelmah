@@ -5,7 +5,7 @@
 
 const jwt = require('jsonwebtoken');
 const { Conversation, Message, User } = require('../models');
-const auditLogger = require('../../../shared/utils/audit-logger');
+const auditLogger = require('../utils/audit-logger');
 
 class MessageSocketHandler {
   constructor(io) {
@@ -35,9 +35,7 @@ class MessageSocketHandler {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Get user details
-        const user = await User.findByPk(decoded.sub || decoded.id, {
-          attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'isActive']
-        });
+        const user = await User.findById(decoded.sub || decoded.id).select('firstName lastName email role isActive');
 
         if (!user || !user.isActive) {
           return next(new Error('Invalid or inactive user'));
@@ -130,12 +128,8 @@ class MessageSocketHandler {
       socket.join(`user_${userId}`);
 
       // Get user's conversations and join them
-      const conversations = await Conversation.findAll({
-        where: {
-          participants: {
-            [require('sequelize').Op.contains]: [userId]
-          }
-        }
+      const conversations = await Conversation.find({
+        participants: { $in: [userId] }
       });
 
       conversations.forEach(conversation => {
@@ -150,10 +144,10 @@ class MessageSocketHandler {
         message: 'Successfully connected to messaging service',
         userId,
         conversations: conversations.map(conv => ({
-          id: conv.id,
-          type: conv.type,
+          id: conv._id,
           participants: conv.participants,
-          lastMessageAt: conv.lastMessageAt
+          status: conv.status,
+          updatedAt: conv.updatedAt
         }))
       });
 
@@ -205,12 +199,8 @@ class MessageSocketHandler {
 
       // Check if user is participant in conversation
       const conversation = await Conversation.findOne({
-        where: {
-          id: conversationId,
-          participants: {
-            [require('sequelize').Op.contains]: [userId]
-          }
-        }
+        _id: conversationId,
+        participants: { $in: [userId] }
       });
 
       if (!conversation) {
@@ -219,36 +209,31 @@ class MessageSocketHandler {
       }
 
       // Create message
-      const message = await Message.create({
-        conversationId,
-        senderId: userId,
-        content: content || null,
+      const message = new Message({
+        sender: userId,
+        recipient: conversation.participants.find(p => p.toString() !== userId.toString()),
+        content: content || '',
         messageType,
-        attachments: attachments.length > 0 ? attachments : null,
-        isRead: false
+        attachments: attachments.length > 0 ? attachments : [],
+        readStatus: {
+          isRead: false
+        }
       });
+      await message.save();
 
-      // Update conversation's last message timestamp
-      await conversation.update({
-        lastMessageAt: new Date()
-      });
+      // Update conversation's last message timestamp  
+      conversation.lastMessage = message._id;
+      await conversation.save();
 
       // Populate sender details
-      await message.reload({
-        include: [{
-          model: User,
-          as: 'sender',
-          attributes: ['id', 'firstName', 'lastName', 'profilePicture']
-        }]
-      });
+      await message.populate('sender', 'firstName lastName profilePicture');
 
       // Prepare message data for broadcast
       const messageData = {
-        id: message.id,
-        conversationId: message.conversationId,
-        senderId: message.senderId,
+        id: message._id,
+        senderId: message.sender._id,
         sender: {
-          id: message.sender.id,
+          id: message.sender._id,
           name: `${message.sender.firstName} ${message.sender.lastName}`,
           profilePicture: message.sender.profilePicture
         },
@@ -256,7 +241,7 @@ class MessageSocketHandler {
         messageType: message.messageType,
         attachments: message.attachments,
         createdAt: message.createdAt,
-        isRead: false
+        isRead: message.readStatus.isRead
       };
 
       // Broadcast message to all conversation participants
@@ -307,21 +292,20 @@ class MessageSocketHandler {
       }
 
       // Update messages as read
-      const whereClause = {
-        conversationId,
-        senderId: { [require('sequelize').Op.ne]: userId }, // Don't mark own messages as read
-        isRead: false
+      const query = {
+        sender: { $ne: userId }, // Don't mark own messages as read
+        'readStatus.isRead': false
       };
 
       if (messageIds && messageIds.length > 0) {
-        whereClause.id = { [require('sequelize').Op.in]: messageIds };
+        query._id = { $in: messageIds };
       }
 
-      const updatedMessages = await Message.update(
-        { isRead: true, readAt: new Date() },
+      const updatedMessages = await Message.updateMany(
+        query,
         { 
-          where: whereClause,
-          returning: true
+          'readStatus.isRead': true, 
+          'readStatus.readAt': new Date() 
         }
       );
 
@@ -420,12 +404,8 @@ class MessageSocketHandler {
 
       // Verify user has access to conversation
       const conversation = await Conversation.findOne({
-        where: {
-          id: conversationId,
-          participants: {
-            [require('sequelize').Op.contains]: [userId]
-          }
-        }
+        _id: conversationId,
+        participants: { $in: [userId] }
       });
 
       if (!conversation) {
@@ -436,33 +416,32 @@ class MessageSocketHandler {
       // Join conversation room
       socket.join(`conversation_${conversationId}`);
 
-      // Get recent messages
-      const messages = await Message.findAll({
-        where: { conversationId },
-        include: [{
-          model: User,
-          as: 'sender',
-          attributes: ['id', 'firstName', 'lastName', 'profilePicture']
-        }],
-        order: [['createdAt', 'DESC']],
-        limit: 50
-      });
+      // Get recent messages (Note: This needs to be adjusted based on your Message schema)
+      const messages = await Message.find({
+        $or: [
+          { sender: userId, recipient: { $in: conversation.participants } },
+          { recipient: userId, sender: { $in: conversation.participants } }
+        ]
+      })
+      .populate('sender', 'firstName lastName profilePicture')
+      .sort({ createdAt: -1 })
+      .limit(50);
 
       // Send conversation data to user
       socket.emit('conversation_joined', {
         conversationId,
         messages: messages.reverse().map(msg => ({
-          id: msg.id,
-          senderId: msg.senderId,
+          id: msg._id,
+          senderId: msg.sender._id,
           sender: {
-            id: msg.sender.id,
+            id: msg.sender._id,
             name: `${msg.sender.firstName} ${msg.sender.lastName}`,
             profilePicture: msg.sender.profilePicture
           },
           content: msg.content,
           messageType: msg.messageType,
           attachments: msg.attachments,
-          isRead: msg.isRead,
+          isRead: msg.readStatus.isRead,
           createdAt: msg.createdAt
         }))
       });
@@ -646,12 +625,8 @@ class MessageSocketHandler {
   broadcastUserStatus(userId, status) {
     try {
       // Get user's conversations to determine who should receive the status update
-      Conversation.findAll({
-        where: {
-          participants: {
-            [require('sequelize').Op.contains]: [userId]
-          }
-        }
+      Conversation.find({
+        participants: { $in: [userId] }
       }).then(conversations => {
         const notifyUsers = new Set();
         
