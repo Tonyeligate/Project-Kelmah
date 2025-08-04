@@ -13,12 +13,12 @@ const rateLimit = require('express-rate-limit');
 
 // Import components
 const MessageSocketHandler = require('./socket/messageSocket');
-const conversationRoutes = require('./routes/conversation.routes');
+// const conversationRoutes = require('./routes/conversation.routes'); // Temporarily disabled - uses Sequelize
 const messageRoutes = require('./routes/message.routes');
-const uploadRoutes = require('./routes/upload.routes');
+// const uploadRoutes = require('./routes/upload.routes'); // Check if exists
 
 // Import middleware
-const authMiddleware = require('./middleware/auth');
+const { authenticate: authMiddleware } = require('./middlewares/auth.middleware');
 const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 
 const app = express();
@@ -113,10 +113,10 @@ app.get('/health', (req, res) => {
   res.status(200).json(healthStatus);
 });
 
-// API Routes with authentication
-app.use('/api/conversations', authMiddleware, conversationRoutes);
+// API Routes with authentication  
+// app.use('/api/conversations', authMiddleware, conversationRoutes); // Temporarily disabled - uses Sequelize
 app.use('/api/messages', authMiddleware, messageRoutes);
-app.use('/api/upload', authMiddleware, uploadRoutes);
+// app.use('/api/upload', authMiddleware, uploadRoutes); // Check if exists
 
 // Socket.IO status endpoint
 app.get('/api/socket/status', authMiddleware, (req, res) => {
