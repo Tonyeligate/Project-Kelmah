@@ -11,9 +11,7 @@ import {
 import DashboardCard from '../common/DashboardCard';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
-// Temporarily comment out API import until workers service is implemented
-// import workersApi from '../../../../api/services/workersApi';
-import mockWorkersApi from './mockWorkersApi';
+import workersApi from '../../../../api/services/workersApi';
 
 const AvailabilityStatus = () => {
   const [isAvailable, setIsAvailable] = useState(true);
@@ -24,10 +22,7 @@ const AvailabilityStatus = () => {
     message: '',
     severity: 'success',
   });
-  const [useMockApi, setUseMockApi] = useState(false);
-
-  // Choose API based on availability
-  const api = useMockApi ? mockWorkersApi : workersApi;
+  // Use real workersApi only
 
   // Fetch initial availability status
   useEffect(() => {
@@ -53,16 +48,7 @@ const AvailabilityStatus = () => {
     setIsUpdating(true);
 
     try {
-      try {
-        await api.updateAvailability({ isAvailable: newStatus });
-      } catch (apiError) {
-        console.error('API error updating availability:', apiError);
-        // Try using mock API if not already
-        if (!useMockApi) {
-          setUseMockApi(true);
-          await mockWorkersApi.updateAvailability({ isAvailable: newStatus });
-        }
-      }
+      await workersApi.updateAvailability({ isAvailable: newStatus });
 
       setIsAvailable(newStatus);
       setFeedback({

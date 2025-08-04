@@ -59,11 +59,32 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
-// Temporarily comment out API import until jobs service is implemented
-// import jobsApi from '../../../../api/services/jobsApi';
+import jobsApi from '../../../jobs/services/jobsApi';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 
 // Enhanced trade icon mapping
+// Utility function to format budget/salary data
+const formatSalary = (salary) => {
+  if (!salary) return 'Not specified';
+  
+  // If salary is already a string, return it
+  if (typeof salary === 'string') return salary;
+  
+  // If salary is an object with budget information
+  if (typeof salary === 'object' && salary !== null) {
+    const { min, max, currency = 'GHS' } = salary;
+    if (min && max) {
+      return `${currency} ${min} - ${max}`;
+    } else if (min) {
+      return `${currency} ${min}+`;
+    } else if (max) {
+      return `Up to ${currency} ${max}`;
+    }
+  }
+  
+  return 'Not specified';
+};
+
 const tradeIconMap = {
   Plumbing: { icon: <PlumbingIcon />, color: '#2196F3' },
   Carpentry: { icon: <CarpenterIcon />, color: '#8D6E63' },
@@ -169,10 +190,7 @@ const EnhancedAvailableJobs = () => {
           ...getJobIconData(job),
           status: savedJobs.has(job.id) ? 'saved' : 'idle',
           distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
-          salary:
-            job.salary ||
-            job.budget ||
-            `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
+          salary: job.salary || job.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
           applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
           matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
         })) || [];
@@ -238,8 +256,16 @@ const EnhancedAvailableJobs = () => {
     switch (sortBy) {
       case 'salary':
         filtered.sort((a, b) => {
-          const salaryA = parseInt(a.salary?.match(/\d+/)?.[0] || '0');
-          const salaryB = parseInt(b.salary?.match(/\d+/)?.[0] || '0');
+          const getSalaryAmount = (salary) => {
+            if (typeof salary === 'string') {
+              return parseInt(salary.match(/\d+/)?.[0] || '0');
+            } else if (typeof salary === 'object' && salary !== null) {
+              return salary.max || salary.min || 0;
+            }
+            return 0;
+          };
+          const salaryA = getSalaryAmount(a.salary);
+          const salaryB = getSalaryAmount(b.salary);
           return salaryB - salaryA;
         });
         break;
@@ -490,7 +516,7 @@ const EnhancedAvailableJobs = () => {
                 />
                 <Chip
                   icon={<AttachMoneyIcon />}
-                  label={job.salary}
+                  label={formatSalary(job.salary)}
                   size="small"
                   sx={{
                     backgroundColor: alpha('#4CAF50', 0.2),
@@ -1041,7 +1067,7 @@ const EnhancedAvailableJobs = () => {
                         sx={{ color: 'rgba(255,255,255,0.5)' }}
                       />
                       <Typography sx={{ color: '#4CAF50', fontWeight: 600 }}>
-                        {selectedJob.salary}
+                        {formatSalary(selectedJob.salary)}
                       </Typography>
                     </Stack>
 

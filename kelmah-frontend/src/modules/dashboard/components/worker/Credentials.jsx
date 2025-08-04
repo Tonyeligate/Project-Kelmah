@@ -26,7 +26,7 @@ import AddTaskIcon from '@mui/icons-material/AddTask';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 // Temporarily comment out API import until workers service is implemented  
-// import workersApi from '../../../../api/services/workersApi';
+import workersApi from '../../../../api/services/workersApi';
 
 const Credentials = () => {
   const [skills, setSkills] = useState([]);

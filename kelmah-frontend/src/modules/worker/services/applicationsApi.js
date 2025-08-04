@@ -20,7 +20,7 @@ jobServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// No mock data - using real API data only
+// No mock data - using real API only
 
 const applicationsApi = {
   /**
@@ -34,32 +34,8 @@ const applicationsApi = {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Job service unavailable for applications, using mock data:',
-        error.message,
-      );
-
-      // Apply basic filtering if params provided
-      let filteredApplications = [...mockApplications];
-
-      if (params.status) {
-        filteredApplications = filteredApplications.filter(
-          (app) => app.status === params.status,
-        );
-      }
-
-      if (params.jobId) {
-        filteredApplications = filteredApplications.filter(
-          (app) => app.jobId === params.jobId,
-        );
-      }
-
-      // Sort by applied date (most recent first)
-      filteredApplications.sort(
-        (a, b) => new Date(b.appliedAt) - new Date(a.appliedAt),
-      );
-
-      return filteredApplications;
+      console.error('Failed to fetch applications:', error.message);
+      throw new Error(`Applications service unavailable: ${error.message}`);
     }
   },
 
@@ -147,35 +123,8 @@ const applicationsApi = {
       const response = await jobServiceClient.get('/api/applications/stats');
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Job service unavailable for application stats, using mock data:',
-        error.message,
-      );
-
-      const stats = {
-        total: mockApplications.length,
-        pending: mockApplications.filter((app) => app.status === 'pending')
-          .length,
-        accepted: mockApplications.filter((app) => app.status === 'accepted')
-          .length,
-        rejected: mockApplications.filter((app) => app.status === 'rejected')
-          .length,
-        completed: mockApplications.filter((app) => app.status === 'completed')
-          .length,
-        successRate: Math.round(
-          (mockApplications.filter((app) =>
-            ['accepted', 'completed'].includes(app.status),
-          ).length /
-            mockApplications.length) *
-            100,
-        ),
-        averageResponseTime: '2.5 days',
-        totalEarnings: mockApplications
-          .filter((app) => app.status === 'completed')
-          .reduce((sum, app) => sum + (app.finalPayment || 0), 0),
-      };
-
-      return stats;
+      console.error('Failed to fetch application statistics:', error.message);
+      throw new Error(`Application stats service unavailable: ${error.message}`);
     }
   },
 };

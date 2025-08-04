@@ -6,6 +6,7 @@ import {
   Divider,
   Paper,
   Grid,
+  Button,
   CircularProgress,
   Alert,
   useMediaQuery,
@@ -19,6 +20,10 @@ import JobSearchForm from '../components/common/JobSearchForm';
 import SearchResults from '../components/results/SearchResults';
 import JobMapView from '../components/map/JobMapView';
 import SearchSuggestions from '../components/suggestions/SearchSuggestions';
+import SmartJobRecommendations from '../components/SmartJobRecommendations';
+import AdvancedFilters from '../components/AdvancedFilters';
+import LocationBasedSearch from '../components/LocationBasedSearch';
+import SavedSearches from '../components/SavedSearches';
 import SEO from '../../common/components/common/SEO';
 
 // Constants
@@ -57,6 +62,10 @@ const SearchPage = () => {
   const [showMap, setShowMap] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  const [showSavedSearches, setShowSavedSearches] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(true);
 
   // Parse search parameters from URL on component mount
   useEffect(() => {
@@ -370,6 +379,40 @@ const SearchPage = () => {
       <Container maxWidth="lg">
         {/* Search Form */}
         <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
+        
+        {/* Quick Actions */}
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Box display="flex" gap={1} flexWrap="wrap">
+            <Button
+              variant={showAdvancedFilters ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              Advanced Filters
+            </Button>
+            <Button
+              variant={showLocationSearch ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => setShowLocationSearch(!showLocationSearch)}
+            >
+              Location Search
+            </Button>
+            <Button
+              variant={showSavedSearches ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => setShowSavedSearches(!showSavedSearches)}
+            >
+              Saved Searches
+            </Button>
+            <Button
+              variant={showRecommendations ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => setShowRecommendations(!showRecommendations)}
+            >
+              Recommendations
+            </Button>
+          </Box>
+        </Paper>
 
         {/* Search Suggestions */}
         {showSuggestions && searchSuggestions.length > 0 && (
@@ -392,6 +435,98 @@ const SearchPage = () => {
             onClose={() => setShowSuggestions(false)}
           />
         )}
+        
+        {/* Advanced Components */}
+        <Grid container spacing={3}>
+          {/* Left Column - Search Tools */}
+          <Grid item xs={12} md={showMap ? 12 : 4}>
+            {/* Smart Recommendations */}
+            {showRecommendations && (
+              <Box mb={3}>
+                <SmartJobRecommendations
+                  maxRecommendations={3}
+                  showHeader={true}
+                  compact={true}
+                  onJobSelect={(jobId, action) => {
+                    if (action === 'view') {
+                      navigate(`/jobs/${jobId}`);
+                    }
+                  }}
+                  filterCriteria={searchParams}
+                />
+              </Box>
+            )}
+            
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <Box mb={3}>
+                <AdvancedFilters
+                  onFiltersChange={handleSearch}
+                  initialFilters={searchParams}
+                  compact={isMobile}
+                />
+              </Box>
+            )}
+            
+            {/* Location Search */}
+            {showLocationSearch && (
+              <Box mb={3}>
+                <LocationBasedSearch
+                  onLocationSelect={(location, radius) => {
+                    handleSearch({
+                      ...searchParams,
+                      location: {
+                        address: location.name,
+                        coordinates: {
+                          latitude: location.coordinates[0],
+                          longitude: location.coordinates[1]
+                        }
+                      },
+                      distance: radius
+                    });
+                  }}
+                  initialLocation={searchParams.location}
+                  radius={searchParams.distance || 10}
+                  compact={isMobile}
+                />
+              </Box>
+            )}
+            
+            {/* Saved Searches */}
+            {showSavedSearches && (
+              <Box mb={3}>
+                <SavedSearches
+                  compact={isMobile}
+                  onSearchSelect={(search) => {
+                    const searchFilters = {
+                      keyword: search.query,
+                      ...search.filters
+                    };
+                    handleSearch(searchFilters);
+                  }}
+                />
+              </Box>
+            )}
+          </Grid>
+          
+          {/* Right Column - Search Results */}
+          {!showMap && (
+            <Grid item xs={12} md={8}>
+              <SearchResults
+                jobs={searchResults}
+                loading={loading}
+                filters={searchParams}
+                onRemoveFilter={handleRemoveFilter}
+                onSortChange={handleSortChange}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                showMap={showMap}
+                onToggleView={handleToggleView}
+                onSaveJob={handleSaveJob}
+              />
+            </Grid>
+          )}
+        </Grid>
 
         {/* Error Alert */}
         {error && (
@@ -400,27 +535,14 @@ const SearchPage = () => {
           </Alert>
         )}
 
-        {/* Search Results */}
-        {showMap ? (
+        {/* Map View (Full Width) */}
+        {showMap && (
           <JobMapView
             jobs={searchResults}
             centerLocation={searchParams.location?.coordinates || null}
             radius={searchParams.distance || 50}
             loading={loading}
             onToggleView={handleToggleView}
-          />
-        ) : (
-          <SearchResults
-            jobs={searchResults}
-            loading={loading}
-            filters={searchParams}
-            onRemoveFilter={handleRemoveFilter}
-            onSortChange={handleSortChange}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            showMap={showMap}
-            onToggleView={handleToggleView}
-            onSaveJob={handleSaveJob}
           />
         )}
       </Container>

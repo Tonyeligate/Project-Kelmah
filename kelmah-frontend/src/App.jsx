@@ -60,6 +60,62 @@ import ResetPasswordPage from './modules/auth/pages/ResetPasswordPage';
 import VerifyEmailPage from './modules/auth/pages/VerifyEmailPage';
 import MfaSetupPage from './modules/auth/pages/MfaSetupPage';
 
+// Dashboard redirect component that only redirects when necessary
+const DashboardRedirect = ({ user, isAuthenticated, loading }) => {
+  const location = useLocation();
+  
+  // Only log once when component mounts, not on every render
+  useEffect(() => {
+    if (location.pathname === '/dashboard') {
+      console.log('Dashboard redirect triggered for:', location.pathname);
+    }
+  }, [location.pathname]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Determine user role
+  const getUserRole = () => {
+    if (!user) return null;
+    return (
+      user.role ||
+      user.userType ||
+      user.userRole ||
+      (user.roles && user.roles[0])
+    );
+  };
+
+  const userRole = getUserRole();
+
+  // Redirect to appropriate dashboard
+  if (userRole === 'worker') {
+    return <Navigate to="/worker/dashboard" replace />;
+  } else if (userRole === 'hirer') {
+    return <Navigate to="/hirer/dashboard" replace />;
+  } else if (userRole === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  } else {
+    // Default fallback dashboard
+    return <Dashboard />;
+  }
+};
+
 // App content component that has access to theme context
 const AppContent = () => {
   const { mode, toggleTheme } = useThemeMode();
@@ -152,68 +208,7 @@ const AppContent = () => {
     );
   };
 
-  // Determine which dashboard to render based on user role
-  const getDashboardRoute = () => {
-    console.log('Dashboard route check - User:', user);
-    console.log('Dashboard route check - Auth state:', isAuthenticated, loading);
 
-    // Also check directly from localStorage for debugging
-    const storedUserData = localStorage.getItem('user');
-    if (storedUserData) {
-      const storedUser = JSON.parse(storedUserData);
-      console.log('User data from localStorage:', storedUser);
-    }
-
-    if (loading) {
-      return (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '80vh',
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      );
-    }
-
-    if (!isAuthenticated) {
-      console.log('User not authenticated, redirecting to login');
-      return <Navigate to="/login" />;
-    }
-
-    // Get user role using enhanced detection
-    const userRole = getUserRole();
-    console.log('Detected user role:', userRole);
-
-    if (userRole === 'worker') {
-      console.log('Worker role detected, redirecting to worker dashboard');
-      return <Navigate to="/worker/dashboard" />;
-    } else if (userRole === 'hirer') {
-      console.log('Hirer role detected, redirecting to hirer dashboard');
-      return <Navigate to="/hirer/dashboard" />;
-    } else if (userRole === 'admin') {
-      console.log('Admin role detected, redirecting to admin dashboard');
-      return <Navigate to="/admin/dashboard" />;
-    } else {
-      console.log('No specific role detected, showing generic dashboard. Role:', userRole);
-
-      // Check if there are any role-related properties on the user object
-      if (user) {
-        console.log('Available user properties:', Object.keys(user));
-      }
-
-      // In development mode, default to worker dashboard even if no role is detected
-      if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === 'true') {
-        console.log('Development mode: Defaulting to worker dashboard');
-        return <Navigate to="/worker/dashboard" />;
-      }
-
-      return <Dashboard />;
-    }
-  };
 
   // Helper function to check roles
   const hasRole = (user, role) => {
@@ -268,8 +263,17 @@ const AppContent = () => {
             }
           />
 
-          {/* Dashboard routes */}
-          <Route path="/dashboard" element={getDashboardRoute()} />
+          {/* Dashboard redirect - only when accessing /dashboard directly */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <DashboardRedirect 
+                user={user}
+                isAuthenticated={isAuthenticated}
+                loading={loading}
+              />
+            } 
+          />
 
           {/* Worker and Hirer routes */}
           <>
@@ -433,9 +437,45 @@ const AppContent = () => {
 };
 
 // Main App component with theme provider
+// Simple error fallback component
+const AppErrorFallback = ({ error }) => (
+  <div style={{ 
+    padding: '20px', 
+    textAlign: 'center', 
+    background: '#1a1a1a', 
+    color: 'white', 
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }}>
+    <h2>⚠️ Something went wrong</h2>
+    <p>We're sorry, but an error occurred while loading the application.</p>
+    <details style={{ marginTop: '20px', padding: '10px', background: '#333', borderRadius: '5px' }}>
+      <summary>Error Details</summary>
+      <pre style={{ marginTop: '10px', fontSize: '12px' }}>{error.message}</pre>
+    </details>
+    <button 
+      onClick={() => window.location.reload()} 
+      style={{ 
+        marginTop: '20px', 
+        padding: '10px 20px', 
+        background: '#007bff', 
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '5px',
+        cursor: 'pointer'
+      }}
+    >
+      Reload Application
+    </button>
+  </div>
+);
+
 function App() {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary FallbackComponent={AppErrorFallback}>
       <KelmahThemeProvider>
           <AppContent />
       </KelmahThemeProvider>

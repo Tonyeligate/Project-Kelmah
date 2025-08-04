@@ -13,8 +13,8 @@ const { notFound } = require('./utils/errorTypes');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-// Import Sequelize instance for DB connection
-const { sequelize } = require("./models");
+// Import MongoDB models and connection
+const { mongoose } = require("./models");
 
 // Import routes
 const jobRoutes = require("./routes/job.routes");
