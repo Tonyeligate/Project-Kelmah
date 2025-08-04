@@ -55,6 +55,7 @@ import publicRoutes from './routes/publicRoutes';
 import { ContractProvider } from './modules/contracts/contexts/ContractContext';
 import WorkerRoutes from './routes/workerRoutes';
 import HirerRoutes from './routes/hirerRoutes';
+import AdminRoutes from './routes/adminRoutes';
 import ForgotPasswordPage from './modules/auth/pages/ForgotPasswordPage';
 import ResetPasswordPage from './modules/auth/pages/ResetPasswordPage';
 import VerifyEmailPage from './modules/auth/pages/VerifyEmailPage';
@@ -275,25 +276,12 @@ const AppContent = () => {
             } 
           />
 
-          {/* Worker and Hirer routes */}
+          {/* Worker, Hirer, and Admin routes */}
           <>
             {WorkerRoutes()}
             {HirerRoutes()}
+            {AdminRoutes()}
           </>
-
-          {/* Admin routes */}
-            <Route 
-            path="/admin/skills"
-              element={
-              <ProtectedRoute
-                isAllowed={isAuthenticated && hasRole(user, 'admin')}
-                redirectPath="/login"
-                loading={loading}
-              >
-                <SkillsAssessmentPage />
-              </ProtectedRoute>
-            }
-          />
 
           {/* Contract routes */}
             <Route 
