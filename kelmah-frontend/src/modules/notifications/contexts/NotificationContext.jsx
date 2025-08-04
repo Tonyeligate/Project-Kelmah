@@ -74,25 +74,18 @@ export const NotificationProvider = ({ children }) => {
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const useMockData = USE_MOCK_DATA;
+    console.log('🔄 Fetching real notification data from API...');
 
-    if (useMockData) {
-      console.log('Using mock notification data.');
-      setTimeout(() => {
-        setNotifications(mockNotifications);
-        setLoading(false);
-      }, 500);
-    } else {
-      try {
-        const resp = await notificationServiceUser.getNotifications();
-        setNotifications(resp.data);
-      } catch (err) {
-        console.error('Failed to fetch notifications:', err);
-        setError('Could not load notifications.');
-        setNotifications(mockNotifications);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      const resp = await notificationServiceUser.getNotifications();
+      setNotifications(resp.data);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+      setError('Could not load notifications. Please check your connection.');
+      // Don't fall back to mock data - show actual error state
+      setNotifications([]);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
 
@@ -101,38 +94,35 @@ export const NotificationProvider = ({ children }) => {
   }, [fetchNotifications]);
 
   const markAsRead = async (id) => {
-    if (!USE_MOCK_DATA) {
-      try {
-        await notificationServiceUser.markAsRead(id);
-      } catch (err) {
-        console.error('Failed to mark notification as read:', err);
-      }
+    try {
+      await notificationServiceUser.markAsRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+      setError('Failed to update notification status.');
     }
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
   };
 
   const markAllAsRead = async () => {
-    if (!USE_MOCK_DATA) {
-      try {
-        await notificationServiceUser.markAllAsRead();
-      } catch (err) {
-        console.error('Failed to mark all notifications as read:', err);
-      }
+    try {
+      await notificationServiceUser.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+      setError('Failed to update notifications.');
     }
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const clearAllNotifications = async () => {
-    if (!USE_MOCK_DATA) {
-      try {
-        await notificationServiceUser.clearAllNotifications();
-      } catch (err) {
-        console.error('Failed to clear notifications:', err);
-      }
+    try {
+      await notificationServiceUser.clearAllNotifications();
+      setNotifications([]);
+    } catch (err) {
+      console.error('Failed to clear notifications:', err);
+      setError('Failed to clear notifications.');
     }
-    setNotifications([]);
   };
 
   const showToast = useCallback((message, severity = 'info') => {

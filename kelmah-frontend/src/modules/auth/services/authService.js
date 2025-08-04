@@ -8,13 +8,6 @@
 import axios from 'axios';
 import { SERVICES, AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
-import { enhancedTestUser } from '../../../data/enhancedTestUser';
-import { 
-  TEST_USERS_DATA, 
-  TEST_USER_PASSWORD, 
-  getTestUserByEmail, 
-  generateEnhancedUserProfile 
-} from '../../../data/realTestUsers';
 
 // Create dedicated auth service client
 const authServiceClient = axios.create({
@@ -30,7 +23,8 @@ authServiceClient.interceptors.request.use(
     if (
       token &&
       !config.url.includes('/login') &&
-      !config.url.includes('/register')
+      !config.url.includes('/register') &&
+      !config.url.includes('/refresh')
     ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,58 +33,76 @@ authServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+// Add response interceptor to handle token refresh on 401 errors
+authServiceClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If we get a 401 and haven't already tried to refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Attempt to refresh the token
+        const refreshResult = await authService.refreshToken();
+        
+        if (refreshResult.success) {
+          // Update the authorization header and retry the original request
+          originalRequest.headers.Authorization = `Bearer ${refreshResult.token}`;
+          return authServiceClient(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('Token refresh failed during request retry:', refreshError);
+        // Clear auth data and dispatch token expired event
+        secureStorage.clear();
+        window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Token refresh tracking
+let tokenRefreshTimeout = null;
+
 const authService = {
   // Login user
   login: async (credentials) => {
-    // First check if this is a test user login
-    const testUser = getTestUserByEmail(credentials.email);
-    if (testUser && credentials.password === TEST_USER_PASSWORD) {
-      console.log('🧪 Using real test user:', testUser.email);
-      
-      const enhancedUser = generateEnhancedUserProfile(testUser);
-      const mockToken = 'test-jwt-token-' + Date.now();
-      
-      secureStorage.setAuthToken(mockToken);
-      secureStorage.setUserData(enhancedUser);
-      
-      return { 
-        token: mockToken, 
-        user: enhancedUser, 
-        success: true,
-        isTestUser: true 
-      };
-    }
-
-    // Try actual API login
     try {
-      const response = await authServiceClient.post(
-        '/api/auth/login',
-        credentials,
-      );
-      const { token, user } = response.data.data || response.data;
+      const response = await authServiceClient.post('/api/auth/login', credentials);
+      
+      // Extract data from response (handle different response structures)
+      const responseData = response.data.data || response.data;
+      const { token, refreshToken, user } = responseData;
 
-      if (token) {
-        secureStorage.setAuthToken(token);
-      }
-      if (user) {
-        secureStorage.setUserData(user);
+      if (!token || !user) {
+        throw new Error('Invalid response from server - missing token or user data');
       }
 
-      return { token, user, success: true };
+      // Store authentication data securely
+      secureStorage.setAuthToken(token);
+      if (refreshToken) {
+        secureStorage.setRefreshToken(refreshToken);
+      }
+      secureStorage.setUserData(user);
+
+      // Setup automatic token refresh
+      authService.setupTokenRefresh(token);
+
+      console.log('Login successful for user:', user.email);
+      return { token, refreshToken, user, success: true };
     } catch (error) {
-      console.warn('Login API failed, checking for test users or using fallback:', error.message);
+      console.error('Login failed:', error);
       
-      // Fallback to enhanced test user for development
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      secureStorage.setAuthToken(mockToken);
-      secureStorage.setUserData(enhancedTestUser);
+      // Extract error message from different response formats
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Login failed. Please check your credentials.';
       
-      return { 
-        token: mockToken, 
-        user: enhancedTestUser, 
-        success: true,
-        isDevelopmentMode: true 
-      };
+      throw new Error(errorMessage);
     }
   },
 
@@ -124,13 +136,14 @@ const authService = {
       const { user } = response.data.data || response.data;
 
       if (user) {
-        localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+        secureStorage.setUserData(user);
       }
 
       return { user, success: true };
     } catch (error) {
       console.warn('Auth verification failed:', error.message);
-      // Don't throw error, just return failure
+      // Clear invalid authentication data
+      secureStorage.clear();
       return { success: false, error: error.message };
     }
   },
@@ -138,13 +151,24 @@ const authService = {
   // Logout user
   logout: async () => {
     try {
-      await authServiceClient.post('/api/auth/logout');
+      // Include refresh token in logout request if available
+      const refreshToken = secureStorage.getRefreshToken();
+      const logoutData = refreshToken ? { refreshToken } : {};
+      
+      await authServiceClient.post('/api/auth/logout', logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
     } finally {
+      // Clear token refresh timeout
+      if (tokenRefreshTimeout) {
+        clearTimeout(tokenRefreshTimeout);
+        tokenRefreshTimeout = null;
+      }
+      
       // Always clean up secure storage
       secureStorage.clear();
+      console.log('Logout completed - all auth data cleared');
     }
   },
 
@@ -168,16 +192,40 @@ const authService = {
   // Refresh token
   refreshToken: async () => {
     try {
-      const response = await authServiceClient.post('/api/auth/refresh');
-      const { token } = response.data.data || response.data;
-
-      if (token) {
-        secureStorage.setAuthToken(token);
+      const refreshToken = secureStorage.getRefreshToken();
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
       }
 
-      return { token, success: true };
+      const response = await authServiceClient.post('/api/auth/refresh', {
+        refreshToken
+      });
+      
+      const responseData = response.data.data || response.data;
+      const { token: newAccessToken, refreshToken: newRefreshToken } = responseData;
+
+      if (newAccessToken) {
+        secureStorage.setAuthToken(newAccessToken);
+        
+        // Setup next automatic refresh
+        authService.setupTokenRefresh(newAccessToken);
+      }
+      
+      if (newRefreshToken) {
+        secureStorage.setRefreshToken(newRefreshToken);
+      }
+
+      console.log('Token refreshed successfully');
+      return { token: newAccessToken, success: true };
     } catch (error) {
-      console.warn('Token refresh failed:', error.message);
+      console.error('Token refresh failed:', error);
+      
+      // If refresh fails, clear auth data and force re-login
+      secureStorage.clear();
+      
+      // Dispatch custom event for components to handle re-login
+      window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+      
       return { success: false, error: error.message };
     }
   },
@@ -213,14 +261,11 @@ const authService = {
   // Update profile
   updateProfile: async (profileData) => {
     try {
-      const response = await authServiceClient.put(
-        '/api/auth/profile',
-        profileData,
-      );
+      const response = await authServiceClient.put('/api/auth/profile', profileData);
       const { user } = response.data.data || response.data;
 
       if (user) {
-        localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+        secureStorage.setUserData(user);
       }
 
       return { user, success: true };
@@ -309,6 +354,78 @@ const authService = {
     } catch (error) {
       console.error('MFA disable error:', error);
       throw error;
+    }
+  },
+
+  // Setup automatic token refresh
+  setupTokenRefresh: (token) => {
+    try {
+      // Clear any existing timeout
+      if (tokenRefreshTimeout) {
+        clearTimeout(tokenRefreshTimeout);
+      }
+
+      // Decode JWT to get expiry time (basic decode, not verification)
+      const base64Url = token.split('.')[1];
+      if (!base64Url) return;
+
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+
+      const payload = JSON.parse(jsonPayload);
+      const expiry = payload.exp * 1000; // Convert to milliseconds
+      const now = Date.now();
+      
+      // Refresh 5 minutes before expiry, but not less than 1 minute from now
+      const refreshTime = Math.max(expiry - (5 * 60 * 1000), now + (1 * 60 * 1000));
+      const timeUntilRefresh = refreshTime - now;
+
+      if (timeUntilRefresh > 0) {
+        console.log(`Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
+        
+        tokenRefreshTimeout = setTimeout(async () => {
+          console.log('Attempting automatic token refresh...');
+          const result = await authService.refreshToken();
+          
+          if (!result.success) {
+            console.warn('Automatic token refresh failed, user may need to re-login');
+          }
+        }, timeUntilRefresh);
+      }
+    } catch (error) {
+      console.warn('Failed to setup token refresh:', error);
+    }
+  },
+
+  // Initialize authentication on app start
+  initializeAuth: async () => {
+    try {
+      const token = secureStorage.getAuthToken();
+      if (token) {
+        // Setup token refresh for existing token
+        authService.setupTokenRefresh(token);
+        
+        // Verify the token is still valid
+        const verifyResult = await authService.verifyAuth();
+        if (!verifyResult.success) {
+          console.warn('Stored token is invalid, clearing auth data');
+          secureStorage.clear();
+          return { authenticated: false };
+        }
+        
+        return { authenticated: true, user: verifyResult.user };
+      }
+      
+      return { authenticated: false };
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+      secureStorage.clear();
+      return { authenticated: false };
     }
   },
 };

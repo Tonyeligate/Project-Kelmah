@@ -36,18 +36,10 @@ export const ContractProvider = ({ children }) => {
   const [contracts, setContracts] = useState([]);
 
   const fetchContracts = useCallback(async () => {
-    // Determine whether to use mock data
-    const useMockData = USE_MOCK_DATA;
-    if (useMockData) {
-      console.log('Using mock contract data.');
-      setTimeout(() => {
-        setContracts(mockContracts);
-        setLoading(false);
-      }, 500);
-      return;
-    }
+    // Always use real API data - no mock data fallbacks
     if (!user) return;
     setLoading(true);
+    console.log('🔄 Fetching real contract data from API...');
 
     try {
       const fetchedContracts = await contractService.getContracts();

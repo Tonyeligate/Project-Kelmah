@@ -39,20 +39,8 @@ export const PaymentProvider = ({ children }) => {
     setLoading(true);
     setError(null);
 
-    const useMockData = USE_MOCK_DATA;
-
-    if (useMockData) {
-      console.log('Using mock payment data.');
-      setTimeout(() => {
-        setWalletBalance(2850.75);
-        setPaymentMethods(mockMethodsData);
-        setTransactions(mockTransactions);
-        setEscrows(mockEscrowsData);
-        setBills(mockBillsData);
-        setLoading(false);
-      }, 500);
-      return;
-    }
+    // Always use real API data - no mock data fallbacks
+    console.log('🔄 Fetching real payment data from API...');
 
     try {
       const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] =

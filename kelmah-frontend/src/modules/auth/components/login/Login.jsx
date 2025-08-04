@@ -33,12 +33,7 @@ import {
 import { motion } from 'framer-motion';
 import { API_BASE_URL } from '../../../../config/constants';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  login as loginThunk,
-  selectAuthLoading,
-  selectAuthError,
-} from '../../services/authSlice';
+import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
 
 const Login = () => {
@@ -67,10 +62,8 @@ const Login = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const reduxLoading = useSelector(selectAuthLoading);
-  const reduxError = useSelector(selectAuthError);
+  const { login, loading: authLoading, error: authError } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,21 +101,18 @@ const Login = () => {
     setSubmitting(true);
 
     try {
-      const resultAction = await dispatch(loginThunk({ email, password }));
-      if (loginThunk.fulfilled.match(resultAction)) {
-        navigate('/dashboard');
-      } else {
-        setLoginError(
-          resultAction.payload ||
-            resultAction.error.message ||
-            'Login failed. Please check your credentials.',
-        );
-      }
+      const user = await login({ 
+        email: email.trim(), 
+        password,
+        rememberMe 
+      });
+      
+      console.log('Login successful, redirecting to dashboard');
+      navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setLoginError(
-        'Login failed. Please check your credentials and try again.',
-      );
+      const errorMessage = err.message || 'Login failed. Please check your credentials.';
+      setLoginError(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +174,7 @@ const Login = () => {
           </Typography>
 
           {/* Error Alert */}
-          {(apiError || loginError) && (
+          {(apiError || loginError || authError) && (
             <Alert
               severity="error"
               sx={{
@@ -196,7 +186,7 @@ const Login = () => {
                 '& .MuiAlert-icon': { color: '#f44336' },
               }}
             >
-              {apiError || loginError}
+              {apiError || loginError || authError}
             </Alert>
           )}
 
@@ -312,7 +302,7 @@ const Login = () => {
             <Button
               type="submit"
               fullWidth
-              disabled={submitting}
+              disabled={submitting || authLoading}
               sx={{
                 backgroundColor: '#deae10',
                 color: '#181611',
@@ -331,7 +321,7 @@ const Login = () => {
                 },
               }}
             >
-              {submitting ? (
+              {(submitting || authLoading) ? (
                 <CircularProgress size={20} sx={{ color: '#181611' }} />
               ) : (
                 'Login'
@@ -576,7 +566,7 @@ const Login = () => {
             )}
 
             {/* Compact Error Alerts */}
-            {(apiError || loginError) && (
+            {(apiError || loginError || authError) && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -592,7 +582,7 @@ const Login = () => {
                     '& .MuiAlert-message': { fontWeight: 500 },
                   }}
                 >
-                  {apiError || loginError}
+                  {apiError || loginError || authError}
         </Alert>
               </motion.div>
             )}
@@ -850,7 +840,7 @@ const Login = () => {
           type="submit"
           fullWidth
           variant="contained"
-                      disabled={submitting}
+                      disabled={submitting || authLoading}
           sx={{
                         fontWeight: 700,
                         fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -873,7 +863,7 @@ const Login = () => {
                         },
                       }}
                     >
-                      {submitting ? (
+                      {(submitting || authLoading) ? (
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <CircularProgress size={16} sx={{ color: '#000' }} />
                           <Typography

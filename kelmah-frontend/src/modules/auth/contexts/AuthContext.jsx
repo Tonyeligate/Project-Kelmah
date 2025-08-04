@@ -33,36 +33,38 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       setLoading(true);
       try {
-        // Check if user is already authenticated
-        if (authService.isAuthenticated()) {
-          try {
-            const userData = await authService.getCurrentUser();
-            setUser(userData);
-          } catch (apiError) {
-            console.error('Failed to get current user:', apiError);
-
-            // If API fails but we have stored user data, use it (development mode)
-            const storedUser = authService.getStoredUser();
-            if (storedUser) {
-              console.log('Using stored user data');
-              setUser(storedUser);
-            } else {
-              // Clear invalid authentication
-              // Clear auth storage - handled by logout method
-            }
-          }
+        // Use the new initialization method from authService
+        const initResult = await authService.initializeAuth();
+        
+        if (initResult.authenticated && initResult.user) {
+          setUser(initResult.user);
+          console.log('Authentication initialized successfully');
+        } else {
+          console.log('No valid authentication found');
         }
       } catch (err) {
         console.error('Failed to initialize auth:', err);
-        // Clear auth storage - handled by logout method
+        setError('Failed to initialize authentication');
       } finally {
         setLoading(false);
         setIsInitialized(true);
       }
     };
 
+    // Listen for token expiry events
+    const handleTokenExpired = () => {
+      setUser(null);
+      setError('Session expired. Please login again.');
+      navigate('/login');
+    };
+
+    window.addEventListener('auth:tokenExpired', handleTokenExpired);
     initAuth();
-  }, []);
+
+    return () => {
+      window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+    };
+  }, [navigate]);
 
   // Login function
   const login = useCallback(async (credentials) => {
@@ -72,22 +74,18 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.login(credentials);
 
-      // Get user data from response
-      const userData = response.data?.user || response.user;
-
-      if (userData) {
-        setUser(userData);
-        console.log('Login successful. User:', userData);
-        return userData;
+      if (response.success && response.user) {
+        setUser(response.user);
+        console.log('Login successful for user:', response.user.email);
+        return response.user;
       } else {
-        throw new Error('No user data received from login');
+        throw new Error('Invalid response from login service');
       }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage =
-        err.message || 'Login failed. Please check your credentials.';
+      const errorMessage = err.message || 'Login failed. Please check your credentials.';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      throw err; // Re-throw the original error for better error handling
     } finally {
       setLoading(false);
     }

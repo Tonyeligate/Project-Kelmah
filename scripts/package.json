@@ -1,0 +1,18 @@
+{
+  "name": "kelmah-production-scripts",
+  "version": "1.0.0",
+  "description": "Production database and service management scripts for Kelmah",
+  "main": "fix-production-database.js",
+  "scripts": {
+    "fix-db": "node fix-production-database.js",
+    "test-real-data": "node test-real-data-connections.js",
+    "verify-platform": "npm run fix-db && npm run test-real-data"
+  },
+  "dependencies": {
+    "pg": "^8.11.0",
+    "axios": "^1.7.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
