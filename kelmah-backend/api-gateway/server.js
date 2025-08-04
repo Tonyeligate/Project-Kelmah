@@ -41,7 +41,8 @@ const services = {
   job: process.env.JOB_SERVICE_URL || 'https://kelmah-job-service.onrender.com',
   payment: process.env.PAYMENT_SERVICE_URL || 'https://kelmah-payment-service.onrender.com',
   messaging: process.env.MESSAGING_SERVICE_URL || 'https://kelmah-messaging-service.onrender.com',
-  notification: process.env.NOTIFICATION_SERVICE_URL || 'https://kelmah-notification-service.onrender.com'
+  notification: process.env.NOTIFICATION_SERVICE_URL || 'https://kelmah-notification-service.onrender.com',
+  review: process.env.REVIEW_SERVICE_URL || 'https://kelmah-review-service.onrender.com'
 };
 
 // Global middleware
@@ -177,6 +178,47 @@ app.use('/api/notifications',
   })
 );
 
+// Review routes (mixed protection)
+app.use('/api/reviews',
+  (req, res, next) => {
+    // Public routes: GET reviews for workers
+    if (req.method === 'GET' && (req.path.includes('/worker/') || req.path.includes('/analytics'))) {
+      return next();
+    }
+    // Protected routes: Submit, respond, moderate reviews
+    return authMiddleware.authenticate(req, res, next);
+  },
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }), // Review-specific rate limiting
+  createProxyMiddleware({
+    target: services.review,
+    changeOrigin: true,
+    pathRewrite: { '^/api/reviews': '/api/reviews' },
+    onProxyReq: (proxyReq, req) => {
+      if (req.user) {
+        proxyReq.setHeader('X-User-ID', req.user.id);
+        proxyReq.setHeader('X-User-Role', req.user.role);
+      }
+    },
+    onError: (err, req, res) => {
+      logger.error('Review service error:', err);
+      res.status(503).json({ error: 'Review service unavailable' });
+    }
+  })
+);
+
+// Rating routes (public)
+app.use('/api/ratings',
+  createProxyMiddleware({
+    target: services.review,
+    changeOrigin: true,
+    pathRewrite: { '^/api/ratings': '/api/ratings' },
+    onError: (err, req, res) => {
+      logger.error('Rating service error:', err);
+      res.status(503).json({ error: 'Rating service unavailable' });
+    }
+  })
+);
+
 // Admin routes (admin only)
 app.use('/api/admin',
   authMiddleware.authenticate,
@@ -202,7 +244,7 @@ app.use('/api/webhooks',
 app.get('/api/docs', (req, res) => {
   res.json({
     name: 'Kelmah API Gateway',
-    version: '1.0.0',
+    version: '2.0.0',
     endpoints: {
       auth: '/api/auth/*',
       users: '/api/users/*',
@@ -212,9 +254,22 @@ app.get('/api/docs', (req, res) => {
       payments: '/api/payments/*',
       messages: '/api/messages/*',
       notifications: '/api/notifications/*',
+      reviews: '/api/reviews/*',
+      ratings: '/api/ratings/*',
       admin: '/api/admin/*',
       webhooks: '/api/webhooks/*'
-    }
+    },
+    features: [
+      'Authentication & Authorization',
+      'User & Worker Management', 
+      'Job Posting & Applications',
+      'Payment Processing & Escrow',
+      'Real-time Messaging',
+      'Push Notifications',
+      'Review & Rating System',
+      'Admin Dashboard',
+      'API Gateway & Microservices'
+    ]
   });
 });
 

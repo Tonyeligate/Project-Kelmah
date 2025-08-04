@@ -33,13 +33,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Timeline,
-  TimelineItem,
-  TimelineContent,
-  TimelineDot,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineOppositeContent,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -77,6 +70,15 @@ import {
   PlayArrow as StartIcon,
   Stop as PauseIcon,
 } from '@mui/icons-material';
+import {
+  Timeline,
+  TimelineItem,
+  TimelineContent,
+  TimelineDot,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineOppositeContent,
+} from '@mui/lab';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 
 // Custom TabPanel component
