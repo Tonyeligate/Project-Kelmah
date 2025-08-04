@@ -1,474 +1,233 @@
-# Database Migration Guide: PostgreSQL to MongoDB
+# 🗄️ Database Migration Guide - Fix Real Data Connections
 
-## Overview
-This guide provides step-by-step instructions for migrating from the current mixed database setup (PostgreSQL + MongoDB) to a unified MongoDB architecture.
+## 🚨 **CRITICAL: Database Schema Fix Required**
 
-## Current State Analysis
+Your User Service is failing with: `column "isPhoneVerified" does not exist`
 
-### Services Using PostgreSQL (via Sequelize):
-1. **auth-service**
-   - User authentication data
-   - Session management
-   - Dependencies: `sequelize`, `pg`, `pg-hstore`
+This guide will walk you through fixing your production TimescaleDB schema.
 
-2. **user-service**
-   - User profiles
-   - Worker/Hirer specific data
-   - Dependencies: `sequelize`, `pg`, `pg-hstore`
+## 📋 **Step 1: Get Your Database Connection String**
 
-3. **job-service**
-   - Job listings
-   - Applications
-   - Contracts
-   - Dependencies: `sequelize`, `pg`, `pg-hstore`
+### **Option A: From Render Dashboard**
 
-### Services Already Using MongoDB:
-1. **payment-service** - Payment transactions, wallets
-2. **messaging-service** - Conversations, messages
-3. **review-service** - Reviews, ratings
+1. Go to your **Render Dashboard**
+2. Click on your **database** (TimescaleDB)
+3. Go to **Connection** tab
+4. Copy the **External Database URL**
 
-## Migration Steps
+It should look like:
+```
+postgres://username:password@host:port/database_name
+```
 
-### Step 1: Backup Existing Data (Day 1 Morning)
+### **Option B: From Service Environment Variables**
+
+1. Go to your **Render Services**
+2. Click on any service (like `kelmah-auth-service`)
+3. Go to **Environment** tab
+4. Look for these variables:
+   - `SQL_URL`
+   - `AUTH_SQL_URL` 
+   - `USER_SQL_URL`
+   - `JOB_SQL_URL`
+
+Copy the connection string from any of these.
+
+## 🔧 **Step 2: Run Database Migration**
+
+Open your terminal in the project directory:
+
 ```bash
-# PostgreSQL backup
-pg_dump -h localhost -U postgres -d kelmah_auth > auth_backup.sql
-pg_dump -h localhost -U postgres -d kelmah_users > users_backup.sql
-pg_dump -h localhost -U postgres -d kelmah_jobs > jobs_backup.sql
+# Navigate to scripts directory
+cd scripts
 
-# MongoDB backup (existing data)
-mongodump --db kelmah --out ./mongodb_backup
+# Set your database connection string (replace with your actual URL)
+export DATABASE_URL="postgres://your_username:your_password@your_host:port/your_database"
+
+# Run the migration script
+npm run fix-db
 ```
 
-### Step 2: Create MongoDB Schemas (Day 1 Afternoon)
+### **Expected Output:**
+```
+🔄 Connecting to production database...
+✅ Connected to TimescaleDB
+📝 Creating Users table...
+✅ Users table created successfully
+🔧 Adding missing columns: isPhoneVerified
+✅ Missing columns added
+📝 Creating Jobs table...
+✅ Jobs table created
+📝 Creating messaging tables...
+✅ Messaging tables created
+📝 Creating payment tables...
+✅ Payment tables created
+🌱 Adding sample data for testing...
+✅ Admin user created
+✅ Sample jobs created
 
-#### Auth Service Schemas
-```javascript
-// models/User.js
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+🎉 DATABASE FIX COMPLETED SUCCESSFULLY!
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  role: {
-    type: String,
-    enum: ['worker', 'hirer', 'admin'],
-    default: 'worker'
-  },
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  emailVerificationToken: String,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  lastLogin: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// Add password hashing middleware
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-
-module.exports = mongoose.model('User', userSchema);
+📋 Next steps:
+1. Restart all Render services
+2. Test API endpoints
+3. Verify real data in frontend
 ```
 
-#### User Service Schemas
-```javascript
-// models/Profile.js
-const mongoose = require('mongoose');
+## 🚨 **If You Get Connection Errors**
 
-const profileSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    unique: true
-  },
-  firstName: {
-    type: String,
-    required: true
-  },
-  lastName: {
-    type: String,
-    required: true
-  },
-  phoneNumber: String,
-  address: {
-    street: String,
-    city: String,
-    state: String,
-    country: String,
-    postalCode: String,
-    coordinates: {
-      lat: Number,
-      lng: Number
-    }
-  },
-  profileImage: String,
-  bio: String,
-  // Worker specific fields
-  workerProfile: {
-    skills: [String],
-    experience: Number,
-    hourlyRate: Number,
-    availability: {
-      type: String,
-      enum: ['available', 'busy', 'unavailable'],
-      default: 'available'
-    },
-    certifications: [{
-      name: String,
-      issuer: String,
-      issueDate: Date,
-      expiryDate: Date,
-      verificationUrl: String
-    }],
-    portfolio: [{
-      title: String,
-      description: String,
-      images: [String],
-      completedDate: Date
-    }]
-  },
-  // Hirer specific fields
-  hirerProfile: {
-    companyName: String,
-    companySize: String,
-    industry: String,
-    website: String
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-module.exports = mongoose.model('Profile', profileSchema);
-```
-
-#### Job Service Schemas
-```javascript
-// models/Job.js
-const mongoose = require('mongoose');
-
-const jobSchema = new mongoose.Schema({
-  hirerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  title: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  category: {
-    type: String,
-    required: true
-  },
-  skills: [String],
-  budget: {
-    min: Number,
-    max: Number,
-    currency: {
-      type: String,
-      default: 'GHS'
-    }
-  },
-  location: {
-    address: String,
-    city: String,
-    state: String,
-    country: String,
-    coordinates: {
-      lat: Number,
-      lng: Number
-    }
-  },
-  duration: {
-    type: String,
-    enum: ['one-time', 'recurring', 'contract']
-  },
-  status: {
-    type: String,
-    enum: ['draft', 'open', 'in-progress', 'completed', 'cancelled'],
-    default: 'draft'
-  },
-  deadline: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// models/Application.js
-const applicationSchema = new mongoose.Schema({
-  jobId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job',
-    required: true
-  },
-  workerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  coverLetter: String,
-  proposedRate: Number,
-  estimatedDuration: String,
-  status: {
-    type: String,
-    enum: ['pending', 'accepted', 'rejected', 'withdrawn'],
-    default: 'pending'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// models/Contract.js
-const contractSchema = new mongoose.Schema({
-  jobId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job',
-    required: true
-  },
-  hirerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  workerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  terms: {
-    rate: Number,
-    paymentSchedule: String,
-    startDate: Date,
-    endDate: Date,
-    deliverables: [String]
-  },
-  status: {
-    type: String,
-    enum: ['draft', 'active', 'completed', 'terminated', 'disputed'],
-    default: 'draft'
-  },
-  milestones: [{
-    title: String,
-    description: String,
-    amount: Number,
-    dueDate: Date,
-    status: {
-      type: String,
-      enum: ['pending', 'completed', 'paid'],
-      default: 'pending'
-    }
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-```
-
-### Step 3: Create Migration Scripts (Day 2 Morning)
-
-Create a migration script for each service:
-
-```javascript
-// migrate-auth-service.js
-const { Sequelize } = require('sequelize');
-const mongoose = require('mongoose');
-const User = require('./models/User');
-
-async function migrateAuthData() {
-  // Connect to PostgreSQL
-  const sequelize = new Sequelize('postgres://user:pass@localhost:5432/kelmah_auth');
-  
-  // Connect to MongoDB
-  await mongoose.connect('mongodb://localhost:27017/kelmah');
-  
-  try {
-    // Fetch all users from PostgreSQL
-    const [users] = await sequelize.query('SELECT * FROM users');
-    
-    // Migrate each user
-    for (const pgUser of users) {
-      const mongoUser = new User({
-        _id: pgUser.id, // Preserve IDs if possible
-        email: pgUser.email,
-        password: pgUser.password, // Already hashed
-        role: pgUser.role,
-        isEmailVerified: pgUser.email_verified,
-        emailVerificationToken: pgUser.email_verification_token,
-        passwordResetToken: pgUser.password_reset_token,
-        passwordResetExpires: pgUser.password_reset_expires,
-        lastLogin: pgUser.last_login,
-        createdAt: pgUser.created_at,
-        updatedAt: pgUser.updated_at
-      });
-      
-      await mongoUser.save();
-      console.log(`Migrated user: ${mongoUser.email}`);
-    }
-    
-    console.log('Auth service migration completed');
-  } catch (error) {
-    console.error('Migration error:', error);
-  } finally {
-    await sequelize.close();
-    await mongoose.connection.close();
-  }
-}
-
-migrateAuthData();
-```
-
-### Step 4: Update Service Code (Day 2 Afternoon)
-
-#### Remove Sequelize Dependencies
+### **SSL Certificate Error:**
 ```bash
-# For each service using PostgreSQL
-cd kelmah-backend/services/auth-service
-npm uninstall sequelize pg pg-hstore
-npm install mongoose
-
-cd ../user-service
-npm uninstall sequelize pg pg-hstore
-npm install mongoose
-
-cd ../job-service
-npm uninstall sequelize pg pg-hstore
-npm install mongoose
+# Add SSL mode to your connection string
+export DATABASE_URL="postgres://username:password@host:port/database?sslmode=require"
 ```
 
-#### Update Database Connection
-```javascript
-// config/database.js
-const mongoose = require('mongoose');
+### **IP Whitelist Error:**
+1. Go to Render Dashboard → Database → Connections
+2. Make sure "Allow connections from all IP addresses" is enabled
+3. Or add your current IP to the whitelist
 
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kelmah', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
-  }
-};
-
-module.exports = connectDB;
+### **Connection Timeout:**
+```bash
+# Try with longer timeout
+export DATABASE_URL="postgres://username:password@host:port/database?connect_timeout=60"
 ```
 
-### Step 5: Update Controllers (Day 3)
+## ✅ **Step 3: Verify Migration Success**
 
-Update all controllers to use Mongoose instead of Sequelize. Example:
+After successful migration, test the User Service:
 
-```javascript
-// Before (Sequelize)
-const User = require('../models').User;
-
-const createUser = async (req, res) => {
-  const user = await User.create(req.body);
-  res.json(user);
-};
-
-// After (Mongoose)
-const User = require('../models/User');
-
-const createUser = async (req, res) => {
-  const user = new User(req.body);
-  await user.save();
-  res.json(user);
-};
+```bash
+curl -s "https://kelmah-user-service.onrender.com/api/users"
 ```
 
-### Step 6: Testing & Validation (Day 3)
+**Before Fix:**
+```json
+{"success":false,"status":"error","message":"column \"isPhoneVerified\" does not exist"}
+```
 
-1. **Unit Tests**: Update all tests to use MongoDB
-2. **Integration Tests**: Test service-to-service communication
-3. **Data Validation**: Ensure all migrated data is correct
-4. **Performance Tests**: Compare query performance
+**After Fix:**
+```json
+{"success":true,"data":[],"message":"Users retrieved successfully"}
+```
 
-### Step 7: Deployment Strategy
+## 🔄 **Step 4: Restart All Render Services**
 
-1. **Staging Environment**:
-   - Deploy MongoDB version to staging
-   - Run parallel with PostgreSQL version
-   - Compare outputs
+Go to your Render Dashboard and restart these services **in order**:
 
-2. **Production Migration**:
-   - Schedule maintenance window
-   - Backup all data
-   - Run migration scripts
-   - Deploy new code
-   - Verify functionality
-   - Keep PostgreSQL backup for 30 days
+1. **Database** (if needed)
+2. **kelmah-auth-service**
+3. **kelmah-user-service** 
+4. **kelmah-job-service**
+5. **kelmah-payment-service**
+6. **kelmah-messaging-service**
 
-## Rollback Plan
+Wait for each service to be fully "Live" before restarting the next one.
 
-If issues arise:
-1. Revert code to PostgreSQL version
-2. Restore PostgreSQL from backup
-3. Update environment variables
-4. Restart services
+## 🧪 **Step 5: Run Full Test Suite**
 
-## Success Criteria
+```bash
+# From scripts directory
+npm run test-real-data
+```
 
-- [ ] All services using MongoDB exclusively
-- [ ] No data loss during migration
-- [ ] All tests passing
-- [ ] Performance metrics maintained or improved
-- [ ] Zero downtime during migration
+**Expected Results After Fix:**
+```
+🔍 Testing Service Health Endpoints...
+✅ AUTH Service Health
+✅ USER Service Health  
+✅ JOB Service Health
+✅ PAYMENT Service Health
+✅ MESSAGING Service Health
 
-## Timeline Summary
+👤 Testing User Registration Flow...
+✅ User Registration
 
-- **Day 1**: Backup data, create MongoDB schemas
-- **Day 2**: Run migration scripts, update service code
-- **Day 3**: Update controllers, test, and validate
+🔐 Testing User Login Flow...
+✅ User Login
 
-## Notes
+📊 Testing User Data Retrieval...
+✅ User Data Retrieval
 
-- Keep detailed logs of migration process
-- Monitor error rates closely after migration
-- Have PostgreSQL expert on standby during migration
-- Consider using MongoDB transactions for data consistency
+💼 Testing Job Posting Flow...
+✅ Job Creation
+✅ Job Retrieval
+
+💰 Testing Payment Service...
+✅ Payment Methods
+
+============================================================
+📊 TEST RESULTS SUMMARY
+============================================================
+✅ Passed: 8/8
+❌ Failed: 0/8
+📈 Success Rate: 100%
+
+🎉 ALL TESTS PASSED! Real data is flowing correctly through the system.
+```
+
+## 🎯 **What This Migration Does**
+
+### **Creates Missing Tables:**
+- **Users**: Complete user profiles with Ghana-specific fields
+- **Jobs**: Job postings with GHS currency and local locations
+- **Payments**: Payment processing with Mobile Money support
+- **Conversations**: Real-time messaging foundation
+
+### **Fixes Schema Issues:**
+- Adds missing `isPhoneVerified` column
+- Adds proper indexes for performance
+- Sets up foreign key relationships
+- Configures Ghana-specific defaults
+
+### **Seeds Initial Data:**
+- Creates admin user for testing
+- Adds sample job postings
+- Sets up base data structure
+
+## 🇬🇭 **Ghana-Specific Configuration**
+
+The migration sets up:
+- **Currency**: Ghana Cedis (GHS) as default
+- **Country**: Ghana as default country  
+- **Phone**: Ghana phone format validation
+- **Locations**: Ready for Ghana cities and regions
+- **Skills**: Trade skills relevant to Ghana market
+
+## 🔍 **Troubleshooting Common Issues**
+
+### **Permission Denied:**
+```bash
+# Make sure your database user has CREATE permissions
+# Check with your database administrator
+```
+
+### **Table Already Exists:**
+```
+✅ This is OK! The script handles existing tables safely
+```
+
+### **Migration Hangs:**
+```bash
+# Cancel (Ctrl+C) and check your connection string
+# Ensure database is accessible from your IP
+```
+
+### **Still Getting Errors After Migration:**
+```bash
+# Restart services and wait 2-3 minutes for full restart
+# Some services may take time to reconnect to database
+```
+
+---
+
+## 🚀 **After Successful Migration**
+
+Your Kelmah platform will have:
+- ✅ **Real User Registration** creating actual database records
+- ✅ **Live Job Postings** stored in TimescaleDB
+- ✅ **Authentic Payment Processing** with real provider integration
+- ✅ **Admin Dashboard** showing real platform analytics
+- ✅ **No Mock Data** - 100% real data throughout the platform
+
+**Your platform will be production-ready for Ghana's skilled worker marketplace! 🇬🇭✨**

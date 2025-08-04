@@ -6,9 +6,16 @@
   "scripts": {
     "fix-db": "node fix-production-database.js",
     "test-real-data": "node test-real-data-connections.js",
-    "verify-platform": "npm run fix-db && npm run test-real-data"
+    "verify-platform": "npm run fix-db && npm run test-real-data",
+    "migrate": "node fix-production-database.js",
+    "mongodb-migrate": "node mongodb-migration.js",
+    "mongodb-test": "node test-mongodb-connections.js",
+    "mongodb-setup": "npm run mongodb-migrate && npm run mongodb-test",
+    "setup": "npm install && echo 'Ready to migrate! Set MONGODB_URI and run: npm run mongodb-migrate'"
   },
   "dependencies": {
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.0.3",
     "pg": "^8.11.0",
     "axios": "^1.7.0"
   },

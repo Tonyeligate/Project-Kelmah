@@ -1,32 +1,42 @@
 /**
- * Database Configuration
+ * Database Configuration - MongoDB Only
+ * Updated to use MongoDB as the primary database for Kelmah Platform
  */
 
 const mongoose = require('mongoose');
-const { Sequelize } = require('sequelize');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // MongoDB connection options
 const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
+  retryWrites: true,
+  w: 'majority',
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  family: 4 // Use IPv4, skip trying IPv6
 };
 
-// Get connection string from environment variables
+// Get MongoDB connection string from environment variables
 const getConnectionString = () => {
-  // Use single connection URL if provided
+  // Priority order for MongoDB URI
+  if (process.env.MONGODB_URI) {
+    return process.env.MONGODB_URI;
+  }
   if (process.env.AUTH_MONGO_URI) {
     return process.env.AUTH_MONGO_URI;
   }
   if (process.env.MONGO_URI) {
     return process.env.MONGO_URI;
   }
-  // Fallback to legacy individual credentials
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('mongodb')) {
+    return process.env.DATABASE_URL;
+  }
+  
+  // Fallback to individual credentials (for local development)
   const dbHost = process.env.DB_HOST || 'localhost';
   const dbPort = process.env.DB_PORT || '27017';
-  const dbName = process.env.DB_NAME || 'kelmah';
+  const dbName = process.env.DB_NAME || 'kelmah_platform';
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
   
@@ -36,63 +46,11 @@ const getConnectionString = () => {
   }
   
   if (dbUser && dbPassword) {
-    return `${scheme}${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+    return `${scheme}${dbUser}:${dbPassword}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
   }
   
   return `${scheme}${dbHost}:${dbPort}/${dbName}`;
 };
-
-// Get MongoDB connection string
-const mongoConnString = getConnectionString();
-// Only log connection info in development mode
-if (process.env.NODE_ENV === 'development') {
-  console.log('MongoDB connection configured');
-}
-
-// Sequelize (SQL) database setup
-const sqlDialect = process.env.SQL_DIALECT || 'postgres';
-const sqlHost = process.env.SQL_DB_HOST || 'localhost';
-const sqlPort = process.env.SQL_DB_PORT || '5432';
-const sqlDbName = process.env.SQL_DB_NAME || 'kelmah';
-const sqlUser = process.env.SQL_DB_USER || '';
-const sqlPassword = process.env.SQL_DB_PASSWORD || '';
-const getSQLConnectionString = () => {
-  // Use single connection URL if provided
-  if (process.env.SQL_URL) {
-    return process.env.SQL_URL;
-  }
-  // Service-specific URLs
-  if (process.env.AUTH_SQL_URL) {
-    return process.env.AUTH_SQL_URL;
-  }
-  if (process.env.JOB_SQL_URL) {
-    return process.env.JOB_SQL_URL;
-  }
-  if (process.env.USER_SQL_URL) {
-    return process.env.USER_SQL_URL;
-  }
-  // Fallback to legacy individual credentials
-  if (sqlUser && sqlPassword) {
-    return `${sqlDialect}://${sqlUser}:${sqlPassword}@${sqlHost}:${sqlPort}/${sqlDbName}`;
-  }
-  return `${sqlDialect}://${sqlHost}:${sqlPort}/${sqlDbName}`;
-};
-// Get SQL connection string
-const sqlConnString = getSQLConnectionString();
-// Only log connection info in development mode
-if (process.env.NODE_ENV === 'development') {
-  console.log('SQL database connection configured');
-}
-const sequelize = new Sequelize(getSQLConnectionString(), {
-  dialect: sqlDialect,
-  logging: false,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false  // For self-signed certs on Render
-    }
-  }
-});
 
 /**
  * Connect to MongoDB
@@ -100,13 +58,69 @@ const sequelize = new Sequelize(getSQLConnectionString(), {
 const connectDB = async () => {
   try {
     const connectionString = getConnectionString();
-    const conn = await mongoose.connect(connectionString, options);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Connect to MongoDB with specific database name
+    const conn = await mongoose.connect(connectionString, {
+      ...options,
+      dbName: 'kelmah_platform' // Ensure we're using the correct database
+    });
+    
+    console.log(`✅ Auth Service connected to MongoDB: ${conn.connection.host}`);
+    console.log(`📊 Database: ${conn.connection.name}`);
+    
+    // Handle connection events
+    mongoose.connection.on('error', (error) => {
+      console.error('❌ MongoDB connection error:', error);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log('⚠️ MongoDB disconnected');
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      console.log('✅ MongoDB reconnected');
+    });
+    
     return conn;
   } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    console.log('Continuing without MongoDB connection. Some features may not work.');
+    console.error(`❌ Error connecting to MongoDB: ${error.message}`);
+    console.error('🔍 Connection string check - ensure MONGODB_URI is set correctly');
+    
+    // In production, we should exit if database connection fails
+    if (process.env.NODE_ENV === 'production') {
+      console.error('🚨 Production environment requires database connection');
+      process.exit(1);
+    }
+    
+    throw error;
   }
 };
 
-module.exports = { connectDB, sequelize }; 
+/**
+ * Close MongoDB connection
+ */
+const closeDB = async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('✅ MongoDB connection closed');
+  } catch (error) {
+    console.error('❌ Error closing MongoDB connection:', error);
+  }
+};
+
+// Handle process termination
+process.on('SIGINT', async () => {
+  await closeDB();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await closeDB();
+  process.exit(0);
+});
+
+module.exports = { 
+  connectDB, 
+  closeDB,
+  mongoose 
+}; 
