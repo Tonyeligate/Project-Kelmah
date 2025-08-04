@@ -70,7 +70,7 @@ app.use(rateLimit({
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({
+  res.json({ 
     status: 'healthy',
     timestamp: new Date().toISOString(),
     services: Object.keys(services)

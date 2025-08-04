@@ -163,17 +163,17 @@ class ConversationController {
 
       // For direct conversations, check if conversation already exists
       if (type === 'direct' && allParticipants.length === 2) {
-        const existingConversation = await Conversation.findOne({
+    const existingConversation = await Conversation.findOne({
           where: {
             type: 'direct',
             participants: {
               [Op.contains]: allParticipants
             }
           }
-        });
+    });
 
-        if (existingConversation) {
-          return res.status(200).json({
+    if (existingConversation) {
+      return res.status(200).json({
             success: true,
             message: 'Conversation already exists',
             data: { conversation: existingConversation }
@@ -317,7 +317,7 @@ class ConversationController {
         }
       });
 
-    } catch (error) {
+  } catch (error) {
       console.error('Get conversation error:', error);
       return res.status(500).json({
         success: false,
@@ -336,16 +336,16 @@ class ConversationController {
       const { title, participants } = req.body;
       const userId = req.user.id;
 
-      const conversation = await Conversation.findOne({
+    const conversation = await Conversation.findOne({
         where: {
           id,
           participants: {
             [Op.contains]: [userId]
           }
         }
-      });
+    });
 
-      if (!conversation) {
+    if (!conversation) {
         return res.status(404).json({
           success: false,
           message: 'Conversation not found or access denied',
@@ -404,7 +404,7 @@ class ConversationController {
         data: { conversation }
       });
 
-    } catch (error) {
+  } catch (error) {
       console.error('Update conversation error:', error);
       return res.status(500).json({
         success: false,
@@ -422,7 +422,7 @@ class ConversationController {
       const { id } = req.params;
       const userId = req.user.id;
 
-      const conversation = await Conversation.findOne({
+    const conversation = await Conversation.findOne({
         where: {
           id,
           participants: {
@@ -431,7 +431,7 @@ class ConversationController {
         }
       });
 
-      if (!conversation) {
+    if (!conversation) {
         return res.status(404).json({
           success: false,
           message: 'Conversation not found or access denied',
@@ -476,7 +476,7 @@ class ConversationController {
         message: 'Successfully left conversation'
       });
 
-    } catch (error) {
+  } catch (error) {
       console.error('Delete conversation error:', error);
       return res.status(500).json({
         success: false,
@@ -495,16 +495,16 @@ class ConversationController {
       const userId = req.user.id;
 
       // Verify user has access to conversation
-      const conversation = await Conversation.findOne({
+    const conversation = await Conversation.findOne({
         where: {
           id,
           participants: {
             [Op.contains]: [userId]
           }
         }
-      });
+    });
 
-      if (!conversation) {
+    if (!conversation) {
         return res.status(404).json({
           success: false,
           message: 'Conversation not found or access denied',
@@ -615,7 +615,7 @@ class ConversationController {
         }
       });
 
-    } catch (error) {
+  } catch (error) {
       console.error('Search conversations error:', error);
       return res.status(500).json({
         success: false,
