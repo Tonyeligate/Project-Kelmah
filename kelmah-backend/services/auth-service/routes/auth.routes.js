@@ -249,4 +249,7 @@ router.get("/health", (req, res) => {
   });
 });
 
+// Admin/monitoring routes
+router.get("/stats", authenticate, authController.getAuthStats);
+
 module.exports = router;

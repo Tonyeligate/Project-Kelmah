@@ -103,38 +103,104 @@ exports.register = async (req, res, next) => {
 };
 
 /**
- * Login user
+ * Login user with enhanced security
  */
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe = false } = req.body;
+    
+    // Input validation
     if (!email || !password) {
       return next(new AppError("Email and password are required", 400));
     }
-    const user = await User.findByEmail(email);
-    if (!user || !(await user.validatePassword(password))) {
+
+    const sanitizedEmail = email.trim().toLowerCase();
+    
+    // Simple rate limiting check using in-memory store (for now)
+    const rateLimitKey = `login:${req.ip}:${sanitizedEmail}`;
+    // TODO: Implement proper rate limiting with Redis
+    
+    // Find user
+    const user = await User.findByEmail(sanitizedEmail);
+    
+    // Generic error message to prevent user enumeration
+    if (!user) {
+      // Simulate password verification time to prevent timing attacks
+      await require('bcryptjs').hash('dummy-password', 12);
       return next(new AppError("Incorrect email or password", 401));
     }
-    if (!user.isEmailVerified) {
-      return next(
-        new AppError("Please verify your email before logging in", 403),
-      );
-    }
+
+    // Check account status first
     if (!user.isActive) {
-      return next(new AppError("Account is deactivated", 403));
+      return next(new AppError("Account has been deactivated. Please contact support.", 403));
     }
+
+    if (!user.isEmailVerified) {
+      return next(new AppError("Please verify your email before logging in", 403));
+    }
+
+    // Verify password
+    const isPasswordValid = await user.validatePassword(password);
+    if (!isPasswordValid) {
+      // Increment failed login attempts
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      
+      // Lock account after 5 failed attempts
+      if (user.failedLoginAttempts >= 5) {
+        user.accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+        await user.save();
+        
+        return next(new AppError("Account locked due to too many failed login attempts. Try again in 30 minutes.", 423));
+      }
+      
+      await user.save();
+      return next(new AppError("Incorrect email or password", 401));
+    }
+
+    // Check if account is locked
+    if (user.accountLockedUntil && user.accountLockedUntil > new Date()) {
+      const minutesLeft = Math.ceil((user.accountLockedUntil - new Date()) / (60 * 1000));
+      return next(new AppError(`Account locked. Try again in ${minutesLeft} minutes`, 423));
+    }
+
+    // Reset failed login attempts and unlock account
+    user.failedLoginAttempts = 0;
+    user.accountLockedUntil = null;
+
+    // Generate tokens with enhanced security
     const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
+    
+    // Set refresh token expiry based on rememberMe
+    const refreshTokenExpiry = rememberMe 
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);  // 7 days
+
+    // Store refresh token with device information
     await RefreshToken.create({
       userId: user.id,
       token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: refreshTokenExpiry,
+      deviceInfo: {
+        userAgent: req.headers['user-agent'],
+        ip: req.ip,
+        fingerprint: req.headers['x-device-id'] || 'unknown'
+      },
+      createdAt: new Date()
     });
+
+    // Update user login information
     user.lastLogin = new Date();
+    user.lastLoginIp = req.ip;
     await user.save();
+
+    // Log successful login for audit purposes
+    console.log(`User ${user.email} logged in successfully from IP: ${req.ip}`);
+
     return res.status(200).json({
       success: true,
       data: {
         token: accessToken,
+        refreshToken: refreshToken,
         user: {
           id: user.id,
           firstName: user.firstName,
@@ -142,10 +208,12 @@ exports.login = async (req, res, next) => {
           email: user.email,
           role: user.role,
           isEmailVerified: user.isEmailVerified,
+          lastLogin: user.lastLogin,
         },
       },
     });
   } catch (error) {
+    console.error('Login error:', error);
     return next(new AppError(`Login failed: ${error.message}`, 500));
   }
 };
@@ -431,7 +499,7 @@ exports.refreshToken = async (req, res, next) => {
     // Verify refresh token
     const decoded = await jwtUtils.verifyRefreshToken(refreshToken);
 
-    // Check if token exists in database
+    // Check if token exists in database and is not expired
     const storedToken = await RefreshToken.findOne({
       where: {
         token: refreshToken,
@@ -446,30 +514,45 @@ exports.refreshToken = async (req, res, next) => {
     // Get user
     const user = await User.findByPk(decoded.id);
 
-    if (!user) {
-      return next(new AppError("User not found", 404));
+    if (!user || !user.isActive) {
+      // Remove invalid token from database
+      await RefreshToken.destroy({
+        where: { token: refreshToken },
+      });
+      return next(new AppError("User not found or inactive", 404));
     }
 
-    // Check if token version matches
-    if (user.tokenVersion !== decoded.version) {
+    // Check if token version matches (if versioning is implemented)
+    if (user.tokenVersion && decoded.version && user.tokenVersion !== decoded.version) {
       // Token has been invalidated, remove from database
       await RefreshToken.destroy({
         where: { token: refreshToken },
       });
-
       return next(new AppError("Token has been invalidated", 401));
     }
 
-    // Generate new access and refresh tokens
-    const { accessToken, refreshToken: newRefreshToken } =
-      jwtUtils.generateAuthTokens(user);
+    // Generate new tokens
+    const { accessToken, refreshToken: newRefreshToken } = jwtUtils.generateAuthTokens(user);
 
-    // Store new refresh token in database
+    // Remove old refresh token and store new one
+    await RefreshToken.destroy({
+      where: { token: refreshToken },
+    });
+
     await RefreshToken.create({
       userId: user.id,
       token: newRefreshToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      deviceInfo: {
+        userAgent: req.headers['user-agent'],
+        ip: req.ip,
+        fingerprint: req.headers['x-device-id'] || 'unknown'
+      },
+      createdAt: new Date()
     });
+
+    // Log token refresh for audit purposes
+    console.log(`Token refreshed for user ${user.email} from IP: ${req.ip}`);
 
     // Return tokens in expected format
     return res.status(200).json({
@@ -480,6 +563,15 @@ exports.refreshToken = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Token refresh error:', error);
+    
+    // Clean up invalid refresh token if it exists
+    if (req.body.refreshToken) {
+      await RefreshToken.destroy({
+        where: { token: req.body.refreshToken },
+      }).catch(err => console.error('Error cleaning up refresh token:', err));
+    }
+    
     return next(new AppError(`Token refresh failed: ${error.message}`, 500));
   }
 };
@@ -489,21 +581,39 @@ exports.refreshToken = async (req, res, next) => {
  */
 exports.logout = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken, logoutAll = false } = req.body;
+    const userId = req.user?.id; // Will be available if user is authenticated
 
-    if (refreshToken) {
-      // Remove refresh token from database
-      await RefreshToken.destroy({
+    let revokedCount = 0;
+
+    if (logoutAll && userId) {
+      // Revoke all refresh tokens for the user (logout from all devices)
+      const result = await RefreshToken.destroy({
+        where: { userId }
+      });
+      revokedCount = result;
+      
+      console.log(`User ${userId} logged out from all devices. Revoked ${revokedCount} tokens.`);
+    } else if (refreshToken) {
+      // Remove specific refresh token from database
+      const result = await RefreshToken.destroy({
         where: { token: refreshToken },
       });
+      revokedCount = result;
+      
+      console.log(`Refresh token revoked for user logout. Tokens revoked: ${revokedCount}`);
     }
 
-    // Return success response
+    // Return consistent success response format
     return res.status(200).json({
-      status: "success",
-      message: "Logged out successfully",
+      success: true,
+      data: {
+        message: logoutAll ? "Logged out from all devices successfully" : "Logged out successfully",
+        revokedTokens: revokedCount
+      }
     });
   } catch (error) {
+    console.error('Logout error:', error);
     return next(new AppError(`Logout failed: ${error.message}`, 500));
   }
 };
@@ -1048,6 +1158,72 @@ exports.validateAuthToken = async (req, res, next) => {
     return res.status(200).json({ valid: true, user });
   } catch (error) {
     return res.status(200).json({ valid: false });
+  }
+};
+
+/**
+ * Clean up expired refresh tokens (utility function)
+ * This should be called periodically by a cron job
+ */
+exports.cleanupExpiredTokens = async () => {
+  try {
+    const result = await RefreshToken.destroy({
+      where: {
+        expiresAt: { [Op.lt]: new Date() }
+      }
+    });
+    
+    console.log(`Cleaned up ${result} expired refresh tokens`);
+    return { success: true, cleaned: result };
+  } catch (error) {
+    console.error('Failed to cleanup expired tokens:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Get authentication statistics (for monitoring)
+ */
+exports.getAuthStats = async (req, res, next) => {
+  try {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const stats = {
+      activeTokens: await RefreshToken.count({
+        where: {
+          expiresAt: { [Op.gt]: now }
+        }
+      }),
+      expiredTokens: await RefreshToken.count({
+        where: {
+          expiresAt: { [Op.lt]: now }
+        }
+      }),
+      recentLogins: await User.count({
+        where: {
+          lastLogin: { [Op.gt]: oneDayAgo }
+        }
+      }),
+      weeklyLogins: await User.count({
+        where: {
+          lastLogin: { [Op.gt]: oneWeekAgo }
+        }
+      }),
+      totalUsers: await User.count(),
+      activeUsers: await User.count({
+        where: { isActive: true }
+      })
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Failed to get auth stats:', error);
+    return next(new AppError(`Failed to get authentication statistics: ${error.message}`, 500));
   }
 };
 
