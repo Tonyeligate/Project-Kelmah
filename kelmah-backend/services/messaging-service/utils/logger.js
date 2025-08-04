@@ -1,5 +1,5 @@
 /**
- * Self-contained Logger Utility for Auth Service
+ * Self-contained Logger Utility for Messaging Service
  * Provides winston-based logging without external dependencies
  */
 
@@ -25,7 +25,7 @@ const logFormat = winston.format.combine(
       timestamp,
       level: level.toUpperCase(),
       message,
-      service: service || 'auth-service'
+      service: service || 'messaging-service'
     };
     
     if (userId) logObject.userId = userId;
@@ -45,7 +45,7 @@ const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: logFormat,
   defaultMeta: {
-    service: 'auth-service',
+    service: 'messaging-service',
     version: process.env.APP_VERSION || '1.0.0',
     environment: process.env.NODE_ENV || 'development'
   },
@@ -85,7 +85,7 @@ if (process.env.NODE_ENV !== 'production') {
 /**
  * Create a child logger with service-specific metadata
  */
-const createLogger = (serviceName = 'auth-service') => {
+const createLogger = (serviceName = 'messaging-service') => {
   return logger.child({ service: serviceName });
 };
 

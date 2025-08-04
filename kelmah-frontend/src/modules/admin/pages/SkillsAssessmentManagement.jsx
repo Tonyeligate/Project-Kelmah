@@ -80,12 +80,12 @@ const SkillsAssessmentManagement = () => {
       </Container>
     );
   }
-
+  
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Skills Assessment Management
-      </Typography>
+          Skills Assessment Management
+        </Typography>
       
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -109,7 +109,7 @@ const SkillsAssessmentManagement = () => {
 
         <Divider sx={{ my: 2 }} />
 
-        <TabPanel value={tabValue} index={0}>
+      <TabPanel value={tabValue} index={0}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Card>
@@ -138,40 +138,40 @@ const SkillsAssessmentManagement = () => {
                 </CardContent>
               </Card>
             </Grid>
-          </Grid>
+            </Grid>
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6">
               Manage Assessment Tests
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
               disabled={loading}
-            >
+          >
               Create New Test
-            </Button>
-          </Box>
-
-          {loading ? (
+          </Button>
+        </Box>
+        
+        {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
-            </Box>
-          ) : (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
                     <TableCell>Test Name</TableCell>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Questions</TableCell>
-                    <TableCell>Status</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Questions</TableCell>
+                  <TableCell>Status</TableCell>
                     <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                   {tests.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
@@ -182,19 +182,19 @@ const SkillsAssessmentManagement = () => {
                     </TableRow>
                   ) : (
                     tests.map((test) => (
-                      <TableRow key={test.id}>
-                        <TableCell>{test.title}</TableCell>
+                  <TableRow key={test.id}>
+                    <TableCell>{test.title}</TableCell>
                         <TableCell>
                           <Chip label={test.category} size="small" />
                         </TableCell>
                         <TableCell>{test.questions?.length || 0}</TableCell>
-                        <TableCell>
-                          <Chip 
+                    <TableCell>
+                      <Chip
                             label={test.status || 'Draft'} 
                             color={test.status === 'Active' ? 'success' : 'default'}
-                            size="small"
-                          />
-                        </TableCell>
+                        size="small"
+                      />
+                    </TableCell>
                         <TableCell align="center">
                           <IconButton size="small">
                             <ViewIcon />
@@ -205,62 +205,62 @@ const SkillsAssessmentManagement = () => {
                           <IconButton size="small" color="error">
                             <DeleteIcon />
                           </IconButton>
-                        </TableCell>
-                      </TableRow>
+                    </TableCell>
+                  </TableRow>
                     ))
                   )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={2}>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </TabPanel>
+      
+      <TabPanel value={tabValue} index={2}>
           <Typography variant="h6" gutterBottom>
             Assessment Analytics
           </Typography>
-          <Grid container spacing={3}>
+        <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
+            <Card>
+              <CardContent>
                   <Typography variant="h6" color="primary">
                     0
-                  </Typography>
+                </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Total Assessments Taken
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
             <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
+            <Card>
+              <CardContent>
                   <Typography variant="h6" color="primary">
                     0%
-                  </Typography>
+                </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Average Success Rate
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
             <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
+            <Card>
+              <CardContent>
                   <Typography variant="h6" color="primary">
                     0
-                  </Typography>
+                </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Active Users
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
-        </TabPanel>
-      </Paper>
+        </Grid>
+      </TabPanel>
+              </Paper>
     </Container>
   );
 };
 
-export default SkillsAssessmentManagement;
+export default SkillsAssessmentManagement; 

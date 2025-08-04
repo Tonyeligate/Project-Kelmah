@@ -334,7 +334,7 @@ const AnalyticsDashboard = () => {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
+    <Box>
                   <Typography color="textSecondary" gutterBottom variant="overline">
                     System Health
                   </Typography>

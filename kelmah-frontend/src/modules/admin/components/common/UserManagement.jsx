@@ -501,7 +501,7 @@ const UserManagement = () => {
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Box>
+    <Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                               <EmailIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
                               <Typography variant="body2">{userData.email}</Typography>

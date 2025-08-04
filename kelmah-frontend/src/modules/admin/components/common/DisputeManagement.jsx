@@ -69,7 +69,7 @@ import {
   Visibility as ViewIcon,
   Edit as EditIcon,
   ExpandMore as ExpandMoreIcon,
-  Priority as PriorityIcon,
+  PriorityHigh as PriorityIcon,
   FilterList as FilterIcon,
   Download as ExportIcon,
   Refresh as RefreshIcon,
@@ -756,7 +756,7 @@ const DisputeManagement = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Box>
+    <Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                             <Avatar sx={{ width: 20, height: 20, mr: 1, bgcolor: 'primary.main' }}>
                               {dispute.hirer.name[0]}

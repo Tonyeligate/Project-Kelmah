@@ -6,7 +6,7 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const speakeasy = require('speakeasy');
-const logger = require('../../../shared/utils/logger');
+const { logger } = require('./logger');
 
 class SecurityUtils {
   /**

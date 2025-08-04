@@ -18,9 +18,8 @@ const messageRoutes = require('./routes/message.routes');
 const uploadRoutes = require('./routes/upload.routes');
 
 // Import middleware
-const authMiddleware = require('../../shared/middleware/auth');
-const errorHandler = require('../../shared/middleware/error-handler');
-const loggingMiddleware = require('../../shared/middleware/logging');
+const authMiddleware = require('./middleware/auth');
+const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 
 const app = express();
 const server = http.createServer(app);
@@ -73,7 +72,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging middleware
-app.use(loggingMiddleware);
+app.use(createHttpLogger());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -270,7 +269,7 @@ app.use('*', (req, res) => {
 });
 
 // Global error handler
-app.use(errorHandler);
+app.use(createErrorLogger());
 
 // Socket.IO error handling
 io.engine.on('connection_error', (err) => {

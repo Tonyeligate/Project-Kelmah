@@ -540,7 +540,7 @@ const PaymentOverview = () => {
                   {analytics.failedPayments}
                 </Typography>
               </Box>
-              <Box>
+    <Box>
                 <Typography variant="body2" color="text.secondary">
                   Pending Payouts
                 </Typography>

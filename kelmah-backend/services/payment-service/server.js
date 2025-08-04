@@ -16,7 +16,7 @@ const paymentsRoutes = require("./routes/payments.routes");
 // Create Express app
 
 // Import centralized logger
-const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('../../shared/utils/logger');
+const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('./utils/logger');
 
 // Create service logger
 const logger = createLogger('payment-service');
