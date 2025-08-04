@@ -9,7 +9,7 @@ const { AppError } = require("../utils/errorTypes");
 const jwtUtils = require("../utils/jwt");
 const emailService = require("../services/email.service");
 const crypto = require("crypto");
-const { Op } = require("sequelize");
+// MongoDB operators used directly in queries (no Op import needed)
 const config = require("../config");
 const { generateOTP } = require("../utils/otp");
 const deviceUtil = require("../utils/device");
@@ -444,7 +444,7 @@ exports.changePassword = async (req, res, next) => {
     }
 
     // Find user
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -462,11 +462,9 @@ exports.changePassword = async (req, res, next) => {
     await user.save();
 
     // Invalidate all refresh tokens except current one
-    await RefreshToken.destroy({
-      where: {
-        userId: user.id,
-        token: { [Op.ne]: req.body.refreshToken },
-      },
+    await RefreshToken.deleteMany({
+      userId: user.id,
+      token: { $ne: req.body.refreshToken },
     });
 
     // Send password changed confirmation email
@@ -501,10 +499,8 @@ exports.refreshToken = async (req, res, next) => {
 
     // Check if token exists in database and is not expired
     const storedToken = await RefreshToken.findOne({
-      where: {
-        token: refreshToken,
-        expiresAt: { [Op.gt]: new Date() },
-      },
+      token: refreshToken,
+      expiresAt: { $gt: new Date() },
     });
 
     if (!storedToken) {
@@ -512,22 +508,18 @@ exports.refreshToken = async (req, res, next) => {
     }
 
     // Get user
-    const user = await User.findByPk(decoded.id);
+    const user = await User.findById(decoded.id);
 
     if (!user || !user.isActive) {
       // Remove invalid token from database
-      await RefreshToken.destroy({
-        where: { token: refreshToken },
-      });
+      await RefreshToken.deleteMany({ token: refreshToken });
       return next(new AppError("User not found or inactive", 404));
     }
 
     // Check if token version matches (if versioning is implemented)
     if (user.tokenVersion && decoded.version && user.tokenVersion !== decoded.version) {
       // Token has been invalidated, remove from database
-      await RefreshToken.destroy({
-        where: { token: refreshToken },
-      });
+      await RefreshToken.deleteMany({ token: refreshToken });
       return next(new AppError("Token has been invalidated", 401));
     }
 
@@ -535,9 +527,7 @@ exports.refreshToken = async (req, res, next) => {
     const { accessToken, refreshToken: newRefreshToken } = jwtUtils.generateAuthTokens(user);
 
     // Remove old refresh token and store new one
-    await RefreshToken.destroy({
-      where: { token: refreshToken },
-    });
+    await RefreshToken.deleteMany({ token: refreshToken });
 
     await RefreshToken.create({
       userId: user.id,
@@ -567,8 +557,7 @@ exports.refreshToken = async (req, res, next) => {
     
     // Clean up invalid refresh token if it exists
     if (req.body.refreshToken) {
-      await RefreshToken.destroy({
-        where: { token: req.body.refreshToken },
+      await RefreshToken.deleteMany({ { token: req.body.refreshToken },
       }).catch(err => console.error('Error cleaning up refresh token:', err));
     }
     
@@ -588,16 +577,14 @@ exports.logout = async (req, res, next) => {
 
     if (logoutAll && userId) {
       // Revoke all refresh tokens for the user (logout from all devices)
-      const result = await RefreshToken.destroy({
-        where: { userId }
+      const result = await RefreshToken.deleteMany({ { userId }
       });
       revokedCount = result;
       
       console.log(`User ${userId} logged out from all devices. Revoked ${revokedCount} tokens.`);
     } else if (refreshToken) {
       // Remove specific refresh token from database
-      const result = await RefreshToken.destroy({
-        where: { token: refreshToken },
+      const result = await RefreshToken.deleteMany({ { token: refreshToken },
       });
       revokedCount = result;
       
@@ -626,9 +613,7 @@ exports.getMe = async (req, res, next) => {
     const userId = req.user.id;
 
     // Find user
-    const user = await User.findByPk(userId, {
-      attributes: { exclude: ["password", "tokenVersion"] },
-    });
+    const user = await User.findById(userId).select("-password -tokenVersion");
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -656,7 +641,7 @@ exports.setupTwoFactor = async (req, res, next) => {
     const userId = req.user.id;
 
     // Find user
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -710,7 +695,7 @@ exports.verifyTwoFactor = async (req, res, next) => {
     }
 
     // Find user
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -760,7 +745,7 @@ exports.disableTwoFactor = async (req, res, next) => {
     }
 
     // Find user
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -1013,7 +998,7 @@ exports.deactivateAccount = async (req, res, next) => {
     }
 
     // Find user
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -1110,7 +1095,7 @@ exports.verifyAuth = async (req, res, next) => {
     const userId = req.user.id;
 
     // Find user in database with fresh data
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("User not found", 404));
@@ -1142,16 +1127,7 @@ exports.validateAuthToken = async (req, res, next) => {
       return res.status(200).json({ valid: false });
     }
     const decoded = jwtUtils.verifyAuthToken(token);
-    const user = await User.findByPk(decoded.id, {
-      attributes: [
-        "id",
-        "firstName",
-        "lastName",
-        "email",
-        "role",
-        "isEmailVerified",
-      ],
-    });
+    const user = await User.findById(decoded.id).select("id firstName lastName email role isEmailVerified");
     if (!user) {
       return res.status(200).json({ valid: false });
     }
@@ -1167,10 +1143,8 @@ exports.validateAuthToken = async (req, res, next) => {
  */
 exports.cleanupExpiredTokens = async () => {
   try {
-    const result = await RefreshToken.destroy({
-      where: {
-        expiresAt: { [Op.lt]: new Date() }
-      }
+    const result = await RefreshToken.deleteMany({
+      expiresAt: { $lt: new Date() }
     });
     
     console.log(`Cleaned up ${result} expired refresh tokens`);
@@ -1191,29 +1165,21 @@ exports.getAuthStats = async (req, res, next) => {
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const stats = {
-      activeTokens: await RefreshToken.count({
-        where: {
-          expiresAt: { [Op.gt]: now }
-        }
+      activeTokens: await RefreshToken.countDocuments({
+        expiresAt: { $gt: now }
       }),
-      expiredTokens: await RefreshToken.count({
-        where: {
-          expiresAt: { [Op.lt]: now }
-        }
+      expiredTokens: await RefreshToken.countDocuments({
+        expiresAt: { $lt: now }
       }),
-      recentLogins: await User.count({
-        where: {
-          lastLogin: { [Op.gt]: oneDayAgo }
-        }
+      recentLogins: await User.countDocuments({
+        lastLogin: { $gt: oneDayAgo }
       }),
-      weeklyLogins: await User.count({
-        where: {
-          lastLogin: { [Op.gt]: oneWeekAgo }
-        }
+      weeklyLogins: await User.countDocuments({
+        lastLogin: { $gt: oneWeekAgo }
       }),
-      totalUsers: await User.count(),
-      activeUsers: await User.count({
-        where: { isActive: true }
+      totalUsers: await User.countDocuments(),
+      activeUsers: await User.countDocuments({
+        isActive: true
       })
     };
 

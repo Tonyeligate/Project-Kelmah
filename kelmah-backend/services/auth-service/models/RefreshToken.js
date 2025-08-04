@@ -1,66 +1,98 @@
 /**
- * Refresh Token Model
+ * Refresh Token Model - MongoDB/Mongoose
+ * Updated for MongoDB migration
  */
 
-const { Model, DataTypes } = require("sequelize");
+const mongoose = require('mongoose');
 
-module.exports = (sequelize) => {
-  class RefreshToken extends Model {
-    static associate(models) {
-      RefreshToken.belongsTo(models.User, { foreignKey: "userId" });
-    }
+const refreshTokenSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  token: {
+    type: String,
+    required: true,
+    unique: true,
+    maxlength: 500
+  },
+  expiresAt: {
+    type: Date,
+    required: true,
+    index: true
+  },
+  isRevoked: {
+    type: Boolean,
+    default: false,
+    required: true
+  },
+  createdByIp: {
+    type: String,
+    required: false
+  },
+  revokedByIp: {
+    type: String,
+    required: false
+  },
+  revokedAt: {
+    type: Date,
+    required: false
+  },
+  deviceInfo: {
+    userAgent: String,
+    ip: String,
+    fingerprint: String,
+    deviceType: String,
+    browser: String,
+    os: String
   }
+}, {
+  timestamps: true, // Automatically adds createdAt and updatedAt
+  collection: 'refreshtokens'
+});
 
-  RefreshToken.init(
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      userId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: "Users",
-          key: "id",
-        },
-      },
-      token: {
-        type: DataTypes.STRING(500),
-        allowNull: false,
-        unique: true,
-      },
-      expiresAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
-      isRevoked: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-      createdByIp: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      revokedByIp: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      deviceInfo: {
-        type: DataTypes.JSON,
-        allowNull: true,
-      },
-    },
-    {
-      sequelize,
-      modelName: "RefreshToken",
-      tableName: "refresh_tokens",
-      timestamps: true,
-      paranoid: true,
-    },
-  );
+// Indexes for performance
+refreshTokenSchema.index({ userId: 1, expiresAt: 1 });
+refreshTokenSchema.index({ token: 1 }, { unique: true });
+refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 
-  return RefreshToken;
+// Instance methods
+refreshTokenSchema.methods.isExpired = function() {
+  return this.expiresAt < new Date();
 };
+
+refreshTokenSchema.methods.revoke = function(ip) {
+  this.isRevoked = true;
+  this.revokedAt = new Date();
+  this.revokedByIp = ip;
+  return this.save();
+};
+
+// Static methods
+refreshTokenSchema.statics.findValidToken = function(token) {
+  return this.findOne({
+    token: token,
+    isRevoked: false,
+    expiresAt: { $gt: new Date() }
+  }).populate('userId');
+};
+
+refreshTokenSchema.statics.revokeUserTokens = function(userId) {
+  return this.updateMany(
+    { userId: userId, isRevoked: false },
+    { $set: { isRevoked: true, revokedAt: new Date() } }
+  );
+};
+
+refreshTokenSchema.statics.cleanupExpired = function() {
+  return this.deleteMany({
+    $or: [
+      { expiresAt: { $lt: new Date() } },
+      { isRevoked: true, revokedAt: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } // 30 days old
+    ]
+  });
+};
+
+module.exports = mongoose.model('RefreshToken', refreshTokenSchema);

@@ -1,152 +1,301 @@
 /**
- * User Model (copied from user-service)
- * Defines the structure for user records in the auth-service scope so we don't rely
- * on sibling service code at runtime.  Uses bcryptjs and local config.
+ * User Model - MongoDB/Mongoose
+ * Updated for MongoDB migration - preserves all functionality from Sequelize version
  */
 
-const { DataTypes, Op } = require("sequelize");
-const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
-const config = require("../config");
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
-module.exports = (sequelize) => {
-  const User = sequelize.define(
-    "User",
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
+const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: [true, 'First name is required'],
+    trim: true,
+    maxlength: [50, 'First name cannot exceed 50 characters']
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Last name is required'],
+    trim: true,
+    maxlength: [50, 'Last name cannot exceed 50 characters']
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email']
+  },
+  phone: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows multiple null values
+    trim: true,
+    validate: {
+      validator: function(value) {
+        if (!value) return true; // Allow empty/null values
+        // Ghana phone number validation (supports international format)
+        const phoneRegex = /^(\+233|0)[2-9][0-9]{8}$/;
+        return phoneRegex.test(value.replace(/[\s\-\(\)]/g, ''));
       },
-      firstName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: { notEmpty: true },
-      },
-      lastName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: { notEmpty: true },
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: { isEmail: true, notEmpty: true },
-      },
-      phone: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: true, // Make phone optional to avoid validation errors
-        validate: { 
-          isValidPhone(value) {
-            if (value && value.length > 0) {
-              // More flexible phone validation - accepts various formats
-              const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,15}$/;
-              if (!phoneRegex.test(value)) {
-                throw new Error('Phone number must be 10-15 digits and may include +, spaces, hyphens, or parentheses');
-              }
-            }
-          }
-        },
-      },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: { notEmpty: true, len: [8, 100] },
-      },
-      role: {
-        type: DataTypes.ENUM("admin", "hirer", "worker", "staff"),
-        defaultValue: "worker",
-        allowNull: false,
-      },
-      isEmailVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
-      emailVerificationToken: { type: DataTypes.STRING },
-      emailVerificationExpires: { type: DataTypes.DATE },
-      // Token versioning for JWT invalidation
-      tokenVersion: { type: DataTypes.INTEGER, defaultValue: 0 },
-      isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
-      lastLogin: { type: DataTypes.DATE },
-      passwordResetToken: { type: DataTypes.STRING },
-      passwordResetExpires: { type: DataTypes.DATE },
-      deletedAt: { type: DataTypes.DATE },
+      message: 'Please provide a valid Ghana phone number'
+    }
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [8, 'Password must be at least 8 characters'],
+    maxlength: [100, 'Password cannot exceed 100 characters']
+  },
+  role: {
+    type: String,
+    enum: {
+      values: ['admin', 'hirer', 'worker', 'staff'],
+      message: 'Role must be one of: admin, hirer, worker, staff'
     },
-    {
-      paranoid: true,
-      getterMethods: {
-        fullName() {
-          return `${this.firstName} ${this.lastName}`;
-        },
-      },
-      hooks: {
-        beforeCreate: async (user) => {
-          if (user.password) {
-            user.password = await bcrypt.hash(
-              user.password,
-              config.bcrypt?.saltRounds || 10,
-            );
-          }
-        },
-        beforeUpdate: async (user) => {
-          if (user.changed("password")) {
-            user.password = await bcrypt.hash(
-              user.password,
-              config.bcrypt?.saltRounds || 10,
-            );
-          }
-        },
-      },
-    },
-  );
+    default: 'worker'
+  },
+  
+  // Email Verification
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
+  
+  // Phone Verification
+  isPhoneVerified: {
+    type: Boolean,
+    default: false
+  },
+  phoneVerificationToken: String,
+  phoneVerificationExpires: Date,
+  
+  // Password Reset
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+  
+  // Two-Factor Authentication
+  isTwoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: String,
+  
+  // Account Management
+  tokenVersion: {
+    type: Number,
+    default: 0
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastLogin: Date,
+  
+  // OAuth Integration
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  facebookId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  linkedinId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  
+  // Personal Information
+  dateOfBirth: Date,
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer_not_to_say']
+  },
+  
+  // Address Information (Ghana-specific)
+  address: String,
+  city: String,
+  region: String, // Ghana regions
+  country: {
+    type: String,
+    default: 'Ghana'
+  },
+  countryCode: {
+    type: String,
+    default: 'GH'
+  },
+  postalCode: String,
+  
+  // Profile
+  profilePicture: String,
+  bio: {
+    type: String,
+    maxlength: [500, 'Bio cannot exceed 500 characters']
+  },
+  
+  // Security
+  failedLoginAttempts: {
+    type: Number,
+    default: 0
+  },
+  accountLocked: {
+    type: Boolean,
+    default: false
+  },
+  accountLockedUntil: Date,
+  
+  // Soft delete
+  deletedAt: Date
+}, {
+  timestamps: true, // Adds createdAt and updatedAt
+  collection: 'users'
+});
 
-  // Instance methods
-  User.prototype.validatePassword = async function (password) {
-    return bcrypt.compare(password, this.password);
-  };
+// Indexes for performance
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ phone: 1 }, { unique: true, sparse: true });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
+userSchema.index({ createdAt: 1 });
+userSchema.index({ googleId: 1 }, { sparse: true });
+userSchema.index({ facebookId: 1 }, { sparse: true });
+userSchema.index({ linkedinId: 1 }, { sparse: true });
 
-  User.prototype.generateVerificationToken = function () {
-    const token = crypto.randomBytes(32).toString("hex");
-    this.emailVerificationToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-    this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
-    return token;
-  };
+// Virtual for full name
+userSchema.virtual('fullName').get(function() {
+  return `${this.firstName} ${this.lastName}`;
+});
 
-  User.prototype.generatePasswordResetToken = function () {
-    const token = crypto.randomBytes(32).toString("hex");
-    this.passwordResetToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-    this.passwordResetExpires = Date.now() + 60 * 60 * 1000;
-    return token;
-  };
+// Ensure virtual fields are serialized
+userSchema.set('toJSON', {
+  virtuals: true,
+  transform: function(doc, ret) {
+    delete ret.password;
+    delete ret.passwordResetToken;
+    delete ret.emailVerificationToken;
+    delete ret.phoneVerificationToken;
+    delete ret.twoFactorSecret;
+    return ret;
+  }
+});
 
-  User.findByEmail = async function (email) {
-    return this.findOne({ where: { email } });
-  };
+// Pre-save middleware for password hashing
+userSchema.pre('save', async function(next) {
+  // Only hash if password is modified
+  if (!this.isModified('password')) return next();
+  
+  try {
+    // Hash password with cost of 12
+    this.password = await bcrypt.hash(this.password, 12);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
-  User.findByVerificationToken = async function (token) {
-    const hashed = crypto.createHash("sha256").update(token).digest("hex");
-    return this.findOne({
-      where: {
-        emailVerificationToken: hashed,
-        emailVerificationExpires: { [Op.gt]: Date.now() },
-      },
-    });
-  };
+// Instance Methods
+userSchema.methods.validatePassword = async function(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
-  User.findByPasswordResetToken = async function (token) {
-    const hashed = crypto.createHash("sha256").update(token).digest("hex");
-    return this.findOne({
-      where: {
-        passwordResetToken: hashed,
-        passwordResetExpires: { [Op.gt]: Date.now() },
-      },
-    });
-  };
+userSchema.methods.generateVerificationToken = function() {
+  const token = crypto.randomBytes(32).toString('hex');
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  return token;
+};
 
-  return User;
-}; 
+userSchema.methods.generatePasswordResetToken = function() {
+  const token = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+  this.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  return token;
+};
+
+userSchema.methods.generatePhoneVerificationToken = function() {
+  const token = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  this.phoneVerificationToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+  this.phoneVerificationExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  return token;
+};
+
+userSchema.methods.incrementFailedLogins = function() {
+  this.failedLoginAttempts += 1;
+  
+  // Lock account after 5 failed attempts
+  if (this.failedLoginAttempts >= 5) {
+    this.accountLocked = true;
+    this.accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+  }
+  
+  return this.save();
+};
+
+userSchema.methods.resetFailedLogins = function() {
+  this.failedLoginAttempts = 0;
+  this.accountLocked = false;
+  this.accountLockedUntil = undefined;
+  return this.save();
+};
+
+userSchema.methods.incrementTokenVersion = function() {
+  this.tokenVersion += 1;
+  return this.save();
+};
+
+// Static Methods
+userSchema.statics.findByEmail = function(email) {
+  return this.findOne({ email: email.toLowerCase() });
+};
+
+userSchema.statics.findByVerificationToken = function(token) {
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  return this.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpires: { $gt: new Date() }
+  });
+};
+
+userSchema.statics.findByPasswordResetToken = function(token) {
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  return this.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() }
+  });
+};
+
+userSchema.statics.findByPhoneVerificationToken = function(token, phone) {
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  return this.findOne({
+    phone: phone,
+    phoneVerificationToken: hashedToken,
+    phoneVerificationExpires: { $gt: new Date() }
+  });
+};
+
+userSchema.statics.findActiveUsers = function() {
+  return this.find({ isActive: true, deletedAt: { $exists: false } });
+};
+
+userSchema.statics.findByRole = function(role) {
+  return this.find({ role: role, isActive: true, deletedAt: { $exists: false } });
+};
+
+module.exports = mongoose.model('User', userSchema);

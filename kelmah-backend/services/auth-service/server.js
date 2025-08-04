@@ -11,7 +11,7 @@ const cookieParser = require("cookie-parser");
 const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
 const mongoose = require("mongoose");
-const { connectDB, sequelize } = require("./config/db");
+const { connectDB } = require("./config/db");
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -468,7 +468,7 @@ process.env.JWT_REFRESH_SECRET =
 process.env.MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
 // Check for required environment variables
-const requiredEnvVars = ["JWT_SECRET", "JWT_REFRESH_SECRET", "MONGO_URI"];
+const requiredEnvVars = ["JWT_SECRET", "JWT_REFRESH_SECRET"];
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
@@ -477,28 +477,23 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Connect to databases (MongoDB + SQL)
-Promise.all([
-  connectDB(), // Mongoose MongoDB
-  sequelize.authenticate(), // Sequelize SQL
-])
+// Connect to MongoDB only
+connectDB()
   .then(() => {
-    logger.info("MongoDB and Sequelize connections established");
-    return sequelize.sync(); // Ensure SQL models are synced
-  })
-  .then(() => {
-    logger.info("Sequelize models synced");
-    // Start the server after DBs are ready
+    logger.info("✅ Auth Service connected to MongoDB");
     
-// Error logging middleware (must be last)
-app.use(createErrorLogger(logger));
+    // Error logging middleware (must be last)
+    app.use(createErrorLogger(logger));
 
-app.listen(PORT, () => {
-      logger.info(`Auth Service running on port ${PORT}`);
+    // Start the server after DB is ready
+    app.listen(PORT, () => {
+      logger.info(`🚀 Auth Service running on port ${PORT}`);
+      logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
+      logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
     });
   })
   .catch((err) => {
-    logger.error("Database connection or sync error:", err);
+    logger.error("❌ MongoDB connection error:", err);
     process.exit(1);
   });
 

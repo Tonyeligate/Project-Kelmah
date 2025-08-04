@@ -1,28 +1,19 @@
 /**
- * Auth Service Models Index
- * Exports all models and defines associations
+ * Auth Service Models Index - MongoDB/Mongoose
+ * Exports all Mongoose models for the auth service
+ * Updated for MongoDB migration
  */
 
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db").sequelize;
+// Import Mongoose models
+const User = require('./User');
+const RefreshToken = require('./RefreshToken');
 
-// Import models
-const RefreshToken = require("./RefreshToken")(sequelize);
-
-// Import User model from user-service
-// In a real microservice architecture, this would be handled differently
-// For now, we're sharing models between services for simplicity
-const User = require("./User")(sequelize);
-
-// Define associations
-User.hasMany(RefreshToken, { foreignKey: "userId" });
-RefreshToken.belongsTo(User, { foreignKey: "userId" });
-
-// Define model associate methods
-if (RefreshToken.associate) RefreshToken.associate({ User });
-
+// Export models
 module.exports = {
-  RefreshToken,
-  // Export User for convenience in auth service
   User,
+  RefreshToken
 };
+
+// Note: Mongoose handles relationships differently than Sequelize
+// The RefreshToken model already references User via ObjectId and populate()
+// No additional association setup is needed like in Sequelize
