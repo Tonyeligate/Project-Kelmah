@@ -13,13 +13,61 @@ class SecureStorage {
     this.encryptionKey = this.generateEncryptionKey();
     this.maxAge = 24 * 60 * 60 * 1000; // 24 hours
     
-    // Initialize storage cleanup
-    this.cleanupExpiredData();
+    // Initialize storage with error recovery
+    this.initializeStorage();
     
     // Set up periodic cleanup
     setInterval(() => {
       this.cleanupExpiredData();
     }, 60 * 60 * 1000); // Every hour
+  }
+
+  /**
+   * Initialize storage with error recovery
+   */
+  initializeStorage() {
+    try {
+      // Try to access storage to detect corruption early
+      this.cleanupExpiredData();
+    } catch (error) {
+      console.warn('Storage initialization failed, performing recovery:', error.message);
+      this.performStorageRecovery();
+    }
+  }
+
+  /**
+   * Recover from storage corruption
+   */
+  performStorageRecovery() {
+    try {
+      console.log('Performing storage recovery...');
+      
+      // Clear all Kelmah-related localStorage keys
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('kelmah') || key.includes('auth') || key.includes('token'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+        } catch (removeError) {
+          console.warn('Failed to remove key during recovery:', key, removeError);
+        }
+      });
+      
+      // Regenerate encryption key
+      this.encryptionKey = this.generateEncryptionKey();
+      
+      console.log('Storage recovery completed');
+      return true;
+    } catch (error) {
+      console.error('Storage recovery failed:', error);
+      return false;
+    }
   }
 
   /**
@@ -67,11 +115,28 @@ class SecureStorage {
    */
   decrypt(encryptedData) {
     try {
+      if (!encryptedData || encryptedData.trim() === '') {
+        console.warn('Empty or null encrypted data provided');
+        return null;
+      }
+
       const decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
       const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
+      
+      if (!jsonString || jsonString.trim() === '') {
+        console.warn('Decryption resulted in empty string - possibly wrong key or corrupted data');
+        return null;
+      }
+      
       return JSON.parse(jsonString);
     } catch (error) {
-      console.error('Decryption failed:', error);
+      console.warn('Decryption failed, clearing corrupted storage:', error.message);
+      // Clear the corrupted data immediately
+      try {
+        localStorage.removeItem(this.storageKey);
+      } catch (clearError) {
+        console.error('Failed to clear corrupted storage:', clearError);
+      }
       return null;
     }
   }
