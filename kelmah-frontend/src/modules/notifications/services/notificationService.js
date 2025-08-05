@@ -38,7 +38,13 @@ class NotificationService {
       const response = await this.client.get('/api/notifications');
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      // Enhanced error logging with proper message extraction
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          'Unknown error occurred';
+      
+      console.error('Failed to fetch notifications:', errorMessage);
       
       // Provide fallback empty notifications to prevent UI crashes
       console.log('🔔 Using empty notifications fallback during service timeout');

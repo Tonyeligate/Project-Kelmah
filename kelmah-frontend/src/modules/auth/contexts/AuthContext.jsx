@@ -32,6 +32,9 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize authentication state
   useEffect(() => {
+    // Prevent multiple initializations
+    if (isInitialized) return;
+
     const initAuth = async () => {
       setLoading(true);
       try {
@@ -77,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       window.removeEventListener('auth:tokenExpired', handleTokenExpired);
     };
-  }, [navigate, dispatch]);
+  }, [isInitialized, navigate, dispatch]);
 
   // Login function
   const login = useCallback(async (credentials) => {
