@@ -33,36 +33,8 @@ authServiceClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Add response interceptor to handle token refresh on 401 errors
-authServiceClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    
-    // If we get a 401 and haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        // Attempt to refresh the token
-        const refreshResult = await authService.refreshToken();
-        
-        if (refreshResult.success) {
-          // Update the authorization header and retry the original request
-          originalRequest.headers.Authorization = `Bearer ${refreshResult.token}`;
-          return authServiceClient(originalRequest);
-        }
-      } catch (refreshError) {
-        console.error('Token refresh failed during request retry:', refreshError);
-        // Clear auth data and dispatch token expired event
-        secureStorage.clear();
-        window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
+// Response interceptor will be set up after authService is defined
+// to avoid circular dependency issues
 
 // Token refresh tracking
 let tokenRefreshTimeout = null;
@@ -513,5 +485,37 @@ const authService = {
     }
   },
 };
+
+// Add response interceptor to handle token refresh on 401 errors
+// (Set up after authService is defined to avoid circular dependency)
+authServiceClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If we get a 401 and haven't already tried to refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Attempt to refresh the token
+        const refreshResult = await authService.refreshToken();
+        
+        if (refreshResult.success) {
+          // Update the authorization header and retry the original request
+          originalRequest.headers.Authorization = `Bearer ${refreshResult.token}`;
+          return authServiceClient(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('Token refresh failed during request retry:', refreshError);
+        // Clear auth data and dispatch token expired event
+        secureStorage.clear();
+        window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 export default authService;

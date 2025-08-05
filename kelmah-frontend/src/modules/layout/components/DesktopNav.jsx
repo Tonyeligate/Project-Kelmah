@@ -90,12 +90,22 @@ const DesktopNav = () => {
                       location.pathname.includes('/reset-password') ||
                       location.pathname.includes('/verify-email');
 
+  // 🚨 CRITICAL FIX: Robust authentication state checking
+  const isUserAuthenticated = React.useMemo(() => {
+    try {
+      return isAuthenticated && typeof isAuthenticated === 'function' ? isAuthenticated() : false;
+    } catch (error) {
+      console.error('Error checking authentication status in DesktopNav:', error);
+      return false;
+    }
+  }, [isAuthenticated]);
+
   // Only show authenticated features if user is actually authenticated and NOT on auth page
-  const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated && user;
+  const showUserFeatures = !isOnAuthPage && isInitialized && isUserAuthenticated && user;
   
   // 🚨 CRITICAL FIX: DesktopNav should NOT show auth buttons on auth pages
   // Header component handles auth buttons, DesktopNav handles navigation
-  const showAuthButtons = isInitialized && !isAuthenticated && !isOnAuthPage;
+  const showAuthButtons = isInitialized && !isUserAuthenticated && !isOnAuthPage;
 
   const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);

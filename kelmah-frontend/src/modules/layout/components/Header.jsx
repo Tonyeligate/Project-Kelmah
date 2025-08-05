@@ -44,6 +44,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DesktopNav from './DesktopNav';
 import MobileNav from './MobileNav';
 import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
 
 // Enhanced Styled Components
@@ -307,7 +308,8 @@ const Header = ({ toggleTheme, mode }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAuthenticated, loading, isInitialized } = useAuth();
+  const { logout } = useAuth();
+  const authState = useAuthCheck();
   
   // ✅ FIXED: Enable proper mobile responsiveness based on screen size
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -323,9 +325,22 @@ const Header = ({ toggleTheme, mode }) => {
                       location.pathname.includes('/reset-password') ||
                       location.pathname.includes('/verify-email');
   
-  // 🚨 CRITICAL FIX: Never show user features on auth pages, regardless of stored data
-  const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated() && user;
-  const showAuthButtons = isInitialized && (isOnAuthPage || !isAuthenticated());
+  // 🚨 CRITICAL FIX: Use robust authentication checking from custom hook
+  const { isAuthenticated, isInitialized, user, hasUser, canShowUserFeatures, shouldShowAuthButtons } = authState;
+  
+  const showUserFeatures = !isOnAuthPage && canShowUserFeatures;
+  const showAuthButtons = isInitialized && (isOnAuthPage || shouldShowAuthButtons);
+  
+  // 🚨 DEBUG: Log authentication state changes
+  React.useEffect(() => {
+    console.log('🔍 HEADER AUTH STATE:', {
+      pathname: location.pathname,
+      isOnAuthPage,
+      authState,
+      showUserFeatures,
+      showAuthButtons
+    });
+  }, [location.pathname, isOnAuthPage, authState, showUserFeatures, showAuthButtons]);
   
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {
@@ -441,13 +456,13 @@ const Header = ({ toggleTheme, mode }) => {
 
   const getUserInitials = () => {
     if (!user) return 'U';
-    const firstName = user.firstName || user.name?.split(' ')[0] || '';
-    const lastName = user.lastName || user.name?.split(' ')[1] || '';
+    const firstName = user.firstName || '';
+    const lastName = user.lastName || '';
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U';
   };
 
   const getUserRole = () => {
-    return user?.role || user?.userType || user?.userRole || 'user';
+    return user?.role || 'user';
   };
 
   const renderUserMenu = () => (
@@ -691,7 +706,7 @@ const Header = ({ toggleTheme, mode }) => {
     </Menu>
   );
 
-  if (loading) {
+  if (authState.isLoading || !authState.isReady) {
     return (
       <StyledAppBar position="static" elevation={0}>
         <Toolbar sx={{ minHeight: { xs: 70, sm: 80 } }}>
@@ -908,7 +923,7 @@ const Header = ({ toggleTheme, mode }) => {
           </Tooltip>
 
           {/* Show loading state during initialization */}
-          {!isInitialized ? (
+          {!authState.isReady ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CircularProgress size={20} />
             </Box>
