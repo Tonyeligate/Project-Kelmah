@@ -7,6 +7,10 @@
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
     try {
+      // 🚨 TEMPORARY: Disable SW until deployment issue is resolved
+      console.log('🚧 ServiceWorker temporarily disabled due to deployment issues');
+      return null;
+      
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
         updateViaCache: 'none' // Always check for updates

@@ -11,7 +11,7 @@ import {
   alpha,
   styled,
 } from '@mui/material';
-import { Link as RouterLink, NavLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Notifications as NotificationsIcon,
   AccountCircle as AccountCircleIcon,
@@ -69,6 +69,7 @@ const DesktopNav = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     user,
     isAuthenticated,
@@ -82,9 +83,16 @@ const DesktopNav = () => {
   const { unreadCount: messageUnreadCount } = useMessages();
   const [anchorEl, setAnchorEl] = useState(null);
 
-  // Only show authenticated features if user is actually authenticated and initialized
-  const showUserFeatures = isInitialized && isAuthenticated && user;
-  const showAuthButtons = isInitialized && !isAuthenticated;
+  // 🚨 CRITICAL FIX: Never show user features on auth pages, regardless of stored data
+  const isOnAuthPage = location.pathname.includes('/login') || 
+                      location.pathname.includes('/register') ||
+                      location.pathname.includes('/forgot-password') ||
+                      location.pathname.includes('/reset-password') ||
+                      location.pathname.includes('/verify-email');
+
+  // Only show authenticated features if user is actually authenticated and NOT on auth page
+  const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated && user;
+  const showAuthButtons = isInitialized && (isOnAuthPage || !isAuthenticated);
 
   const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);

@@ -323,9 +323,30 @@ const Header = ({ toggleTheme, mode }) => {
                       location.pathname.includes('/reset-password') ||
                       location.pathname.includes('/verify-email');
   
+  // 🚨 CRITICAL DEBUG: Log auth state for troubleshooting
+  React.useEffect(() => {
+    console.log('🔍 HEADER DEBUG:', {
+      pathname: location.pathname,
+      isOnAuthPage,
+      isInitialized,
+      isAuthenticated: isAuthenticated(),
+      hasUser: !!user,
+      userEmail: user?.email
+    });
+  }, [location.pathname, isOnAuthPage, isInitialized, user]);
+  
   // 🚨 CRITICAL FIX: Never show user features on auth pages, regardless of stored data
   const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated() && user;
   const showAuthButtons = isInitialized && (isOnAuthPage || !isAuthenticated());
+  
+  // 🚨 CRITICAL DEBUG: Log final UI state decisions
+  React.useEffect(() => {
+    console.log('🎯 HEADER UI STATE:', {
+      showUserFeatures,
+      showAuthButtons,
+      finalDecision: showUserFeatures ? 'SHOW_USER_FEATURES' : showAuthButtons ? 'SHOW_AUTH_BUTTONS' : 'SHOW_LOADING'
+    });
+  }, [showUserFeatures, showAuthButtons]);
   
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {
