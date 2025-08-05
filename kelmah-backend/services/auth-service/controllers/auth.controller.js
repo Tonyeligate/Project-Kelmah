@@ -557,8 +557,8 @@ exports.refreshToken = async (req, res, next) => {
     
     // Clean up invalid refresh token if it exists
     if (req.body.refreshToken) {
-      await RefreshToken.deleteMany({ { token: req.body.refreshToken },
-      }).catch(err => console.error('Error cleaning up refresh token:', err));
+      await RefreshToken.deleteMany({ token: req.body.refreshToken })
+        .catch(err => console.error('Error cleaning up refresh token:', err));
     }
     
     return next(new AppError(`Token refresh failed: ${error.message}`, 500));
@@ -577,15 +577,13 @@ exports.logout = async (req, res, next) => {
 
     if (logoutAll && userId) {
       // Revoke all refresh tokens for the user (logout from all devices)
-      const result = await RefreshToken.deleteMany({ { userId }
-      });
+      const result = await RefreshToken.deleteMany({ userId });
       revokedCount = result;
       
       console.log(`User ${userId} logged out from all devices. Revoked ${revokedCount} tokens.`);
     } else if (refreshToken) {
       // Remove specific refresh token from database
-      const result = await RefreshToken.deleteMany({ { token: refreshToken },
-      });
+      const result = await RefreshToken.deleteMany({ token: refreshToken });
       revokedCount = result;
       
       console.log(`Refresh token revoked for user logout. Tokens revoked: ${revokedCount}`);
