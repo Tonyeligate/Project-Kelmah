@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import authService from '../services/authService';
 import { AUTH_CONFIG } from '../../../config/environment';
 import PropTypes from 'prop-types';
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const dispatch = useDispatch();
 
   // Attempt to get navigate function; fallback to no-op if outside a Router
   let navigate = () => {};
@@ -38,7 +40,18 @@ export const AuthProvider = ({ children }) => {
         
         if (initResult.authenticated && initResult.user) {
           setUser(initResult.user);
-          console.log('Authentication initialized successfully');
+          
+          // ✅ SYNC WITH REDUX: If AuthContext finds valid auth, sync with Redux
+          dispatch({
+            type: 'auth/login/fulfilled',
+            payload: {
+              token: initResult.token,
+              user: initResult.user,
+              refreshToken: initResult.refreshToken,
+            },
+          });
+          
+          console.log('Authentication initialized successfully - Synced with Redux');
         } else {
           console.log('No valid authentication found');
         }
@@ -64,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       window.removeEventListener('auth:tokenExpired', handleTokenExpired);
     };
-  }, [navigate]);
+  }, [navigate, dispatch]);
 
   // Login function
   const login = useCallback(async (credentials) => {
@@ -76,7 +89,18 @@ export const AuthProvider = ({ children }) => {
 
       if (response.success && response.user) {
         setUser(response.user);
-        console.log('Login successful for user:', response.user.email);
+        
+        // ✅ SYNC WITH REDUX: Dispatch login success to Redux store
+        dispatch({
+          type: 'auth/login/fulfilled',
+          payload: {
+            token: response.token,
+            user: response.user,
+            refreshToken: response.refreshToken,
+          },
+        });
+        
+        console.log('Login successful for user:', response.user.email, '- Synced with Redux');
         return response.user;
       } else {
         throw new Error('Invalid response from login service');
@@ -89,7 +113,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   // Register function
   const register = useCallback(async (userData) => {
@@ -121,10 +145,13 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setError(null);
 
+      // ✅ SYNC WITH REDUX: Dispatch logout to Redux store
+      dispatch({ type: 'auth/logout' });
+
       // Redirect to login
       navigate('/login');
     }
-  }, [navigate]);
+  }, [navigate, dispatch]);
 
   // Password reset request
   const requestPasswordReset = useCallback(async (email) => {
