@@ -13,7 +13,12 @@ export const messagingService = {
       return response.data || [];
     } catch (error) {
       console.warn('Messaging service unavailable:', error.message);
-      // Return empty array instead of mock data - let user create real conversations
+      
+      // Enhanced fallback to prevent timeout errors
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        console.log('💬 Using empty conversations fallback during service timeout');
+      }
+      
       return [];
     }
   },

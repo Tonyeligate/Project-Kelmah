@@ -39,7 +39,16 @@ class NotificationService {
       return response.data;
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
-      throw error;
+      
+      // Provide fallback empty notifications to prevent UI crashes
+      console.log('🔔 Using empty notifications fallback during service timeout');
+      return {
+        data: [],
+        totalPages: 1,
+        currentPage: 1,
+        totalNotifications: 0,
+        unreadCount: 0
+      };
     }
   }
 
