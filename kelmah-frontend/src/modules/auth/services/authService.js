@@ -441,26 +441,74 @@ const authService = {
   // Initialize authentication on app start
   initializeAuth: async () => {
     try {
-      const token = secureStorage.getAuthToken();
+      // Try secureStorage first
+      let token = secureStorage.getAuthToken();
+      let userData = secureStorage.getUserData();
+      
+      // Fallback to localStorage if secureStorage fails (dual storage system compatibility)
+      if (!token) {
+        console.log('No token in secureStorage, checking localStorage fallback...');
+        token = localStorage.getItem('kelmah_auth_token');
+        const userString = localStorage.getItem('user');
+        
+        if (token && userString) {
+          try {
+            userData = JSON.parse(userString);
+            console.log('Found authentication data in localStorage fallback');
+            
+            // Sync to secureStorage for future use
+            secureStorage.setAuthToken(token);
+            secureStorage.setUserData(userData);
+            console.log('Synced localStorage data to secureStorage');
+          } catch (e) {
+            console.warn('Failed to parse user data from localStorage:', e);
+            userData = null;
+          }
+        }
+      }
+      
       if (token) {
         // Setup token refresh for existing token
         authService.setupTokenRefresh(token);
         
-        // Verify the token is still valid
-        const verifyResult = await authService.verifyAuth();
-        if (!verifyResult.success) {
-          console.warn('Stored token is invalid, clearing auth data');
-          secureStorage.clear();
-          return { authenticated: false };
+        // If we have user data from storage, use it directly (avoid API call)
+        if (userData && userData.email) {
+          console.log('Using stored user data for quick initialization');
+          return { authenticated: true, user: userData };
         }
         
-        return { authenticated: true, user: verifyResult.user };
+        // Otherwise verify the token with API
+        try {
+          const verifyResult = await authService.verifyAuth();
+          if (!verifyResult.success) {
+            console.warn('Stored token is invalid, clearing auth data');
+            secureStorage.clear();
+            localStorage.removeItem('kelmah_auth_token');
+            localStorage.removeItem('user');
+            return { authenticated: false };
+          }
+          
+          return { authenticated: true, user: verifyResult.user };
+        } catch (verifyError) {
+          // If verification fails but we have user data, still allow authentication
+          // (handles offline scenarios or API temporarily unavailable)
+          if (userData && userData.email) {
+            console.log('API verification failed, but using cached user data');
+            return { authenticated: true, user: userData };
+          }
+          
+          throw verifyError;
+        }
       }
       
+      console.log('No token found in storage');
       return { authenticated: false };
     } catch (error) {
       console.error('Auth initialization failed:', error);
+      // Clear both storage systems on error
       secureStorage.clear();
+      localStorage.removeItem('kelmah_auth_token');
+      localStorage.removeItem('user');
       return { authenticated: false };
     }
   },
