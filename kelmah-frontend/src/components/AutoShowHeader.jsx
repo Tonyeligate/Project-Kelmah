@@ -24,28 +24,37 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
     isMobile 
   } = useAutoShowHeader({ disabled });
 
-  // Check if we're on a dashboard page
-  const isDashboardPage = location.pathname.includes('/dashboard') ||
-                          location.pathname.startsWith('/worker') ||
-                          location.pathname.startsWith('/hirer');
+  // 🎯 ENHANCED: Comprehensive dashboard page detection (matches Layout.jsx)
+  const isDashboardPage =
+    location.pathname.includes('/dashboard') ||
+    location.pathname.startsWith('/worker') ||
+    location.pathname.startsWith('/hirer') ||
+    location.pathname === '/dashboard' ||
+    // Additional dashboard-related paths
+    location.pathname.includes('/profile/edit') ||
+    location.pathname.includes('/applications') ||
+    location.pathname.includes('/contracts') ||
+    location.pathname.includes('/payments') ||
+    location.pathname.includes('/wallet') ||
+    location.pathname.includes('/schedule') ||
+    location.pathname.includes('/reviews');
 
-  // DEBUG: Log dashboard page detection
+  // Debug logging for development (remove in production)
   React.useEffect(() => {
-    console.log('🎯 AutoShowHeader DEBUG:', {
-      pathname: location.pathname,
-      isDashboardPage,
-      disabled,
-      shouldRender: isDashboardPage && !disabled
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 AutoShowHeader:', {
+        pathname: location.pathname,
+        isDashboardPage,
+        disabled,
+        shouldRender: isDashboardPage && !disabled
+      });
+    }
   }, [location.pathname, isDashboardPage, disabled]);
 
   // Don't render if not on dashboard or disabled
   if (!isDashboardPage || disabled) {
-    console.log('🚫 AutoShowHeader not rendering:', { isDashboardPage, disabled });
     return null;
   }
-
-  console.log('✅ AutoShowHeader rendering on dashboard page');
 
   // Handle header interaction events
   const handleHeaderMouseEnter = () => {
@@ -58,7 +67,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
 
   return (
     <>
-      {/* DEBUG: Manual trigger button */}
+      {/* TESTING: Manual trigger button - remove after verification */}
       <Box
         sx={{
           position: 'fixed',
@@ -69,7 +78,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
       >
         <button 
           onClick={() => {
-            console.log('🔲 Manual trigger clicked - current isVisible:', isVisible);
+            console.log('🔲 Manual test - current isVisible:', isVisible);
             if (isVisible) {
               hideHeader();
             } else {
@@ -77,15 +86,17 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             }
           }}
           style={{
-            backgroundColor: isVisible ? 'red' : 'green',
+            backgroundColor: isVisible ? '#ff4444' : '#44ff44',
             color: 'white',
-            padding: '10px',
+            padding: '8px 12px',
             border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold'
           }}
         >
-          {isVisible ? 'HIDE HEADER' : 'SHOW HEADER'}
+          {isVisible ? '🙈 HIDE' : '👀 SHOW'} HEADER
         </button>
       </Box>
 
@@ -96,14 +107,14 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
           top: 0,
           left: 0,
           right: 0,
-          height: '20px',
+          height: '30px',
           zIndex: 9998,
           backgroundColor: 'transparent',
           pointerEvents: 'none',
         }}
       />
       
-      {/* Auto-show header */}
+      {/* 🚀 PRODUCTION AUTO-SHOW HEADER */}
       <Fade in={isVisible} timeout={{ enter: 300, exit: 200 }}>
         <Box
           sx={{
@@ -115,37 +126,18 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
             transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: isVisible 
-              ? '0 4px 20px rgba(0, 0, 0, 0.3)' 
+              ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
               : 'none',
             // Enhanced mobile visibility
             '@media (max-width: 768px)': {
               boxShadow: isVisible 
-                ? '0 2px 12px rgba(0, 0, 0, 0.4)' 
+                ? '0 4px 20px rgba(0, 0, 0, 0.5)' 
                 : 'none',
             },
-            // DEBUG: Make header more visible for testing
-            backgroundColor: isVisible ? 'rgba(255, 0, 0, 0.1)' : 'transparent',
-            border: isVisible ? '2px solid red' : 'none'
           }}
           onMouseEnter={handleHeaderMouseEnter}
           onMouseLeave={handleHeaderMouseLeave}
         >
-          {/* DEBUG: Show visibility state */}
-          {isVisible && (
-            <Box sx={{ 
-              position: 'absolute', 
-              top: 0, 
-              right: 0, 
-              zIndex: 10000, 
-              backgroundColor: 'green', 
-              color: 'white', 
-              p: 1, 
-              fontSize: '12px' 
-            }}>
-              AUTO-SHOW HEADER VISIBLE
-            </Box>
-          )}
-          
           <Header 
             toggleTheme={toggleTheme} 
             mode={mode}
@@ -156,8 +148,8 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
         </Box>
       </Fade>
 
-      {/* Mobile gesture hint (shows briefly on first visit) */}
-      {isMobile && (
+      {/* 🎯 USER HINT: How to access logout/header */}
+      {!isVisible && (
         <Box
           sx={{
             position: 'fixed',
@@ -165,7 +157,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10000,
-            opacity: isVisible ? 0 : 0.6,
+            opacity: 0.7,
             transition: 'opacity 0.3s ease',
             pointerEvents: 'none',
             display: 'flex',
@@ -175,21 +167,36 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             py: 0.5,
             borderRadius: 20,
             backgroundColor: theme.palette.mode === 'dark'
-              ? 'rgba(255, 255, 255, 0.1)'
-              : 'rgba(0, 0, 0, 0.1)',
+              ? 'rgba(255, 215, 0, 0.15)'
+              : 'rgba(0, 0, 0, 0.15)',
             backdropFilter: 'blur(10px)',
+            border: theme.palette.mode === 'dark'
+              ? '1px solid rgba(255, 215, 0, 0.3)'
+              : '1px solid rgba(0, 0, 0, 0.3)',
           }}
         >
           <Box
             sx={{
-              width: 30,
-              height: 4,
+              width: 20,
+              height: 3,
               borderRadius: 2,
               backgroundColor: theme.palette.mode === 'dark'
                 ? 'rgba(255, 215, 0, 0.8)'
                 : 'rgba(0, 0, 0, 0.8)',
             }}
           />
+          <Box
+            component="span"
+            sx={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: theme.palette.mode === 'dark'
+                ? 'rgba(255, 215, 0, 0.9)'
+                : 'rgba(0, 0, 0, 0.9)',
+            }}
+          >
+            {isMobile ? 'Touch top for menu' : 'Move mouse to top'}
+          </Box>
         </Box>
       )}
 

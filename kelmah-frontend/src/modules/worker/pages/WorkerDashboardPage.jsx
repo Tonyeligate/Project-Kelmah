@@ -32,10 +32,9 @@ const WorkerDashboardPage = () => {
     return '';
   };
 
-  // On mobile, render only the WorkerDashboard component (it has its own mobile header)
-  if (isActualMobile) {
-    return <WorkerDashboard user={displayUser} />;
-  }
+  // 🚨 CRITICAL FIX: Never bypass Layout component! 
+  // Layout component provides AutoShowHeader for logout access
+  // Removed mobile bypass - all users need header access for logout
 
   return (
     <>
