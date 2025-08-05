@@ -28,19 +28,6 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
   },
 }));
 
-const AuthButton = styled(Button)(({ theme }) => ({
-  borderRadius: '25px',
-  padding: '8px 24px',
-  fontWeight: 600,
-  textTransform: 'none',
-  fontSize: '0.95rem',
-  transition: 'all 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[8],
-  },
-}));
-
 const DesktopNav = () => {
   const location = useLocation();
   const { isInitialized } = useAuth();
