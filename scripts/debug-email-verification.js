@@ -32,7 +32,7 @@ async function debugEmailVerification() {
     console.log('   📧 Test email:', testEmail);
     
     // Step 1: Register user
-    const registerResponse = await axios.post(`${AUTH_SERVICE_URL}/register`, testUser);
+    const registerResponse = await axios.post(`${AUTH_SERVICE_URL}/api/auth/register`, testUser);
     console.log('   ✅ Registration Response:', registerResponse.status, registerResponse.data.message);
     
     console.log('\n2. 🔗 Testing route availability...');
@@ -41,7 +41,7 @@ async function debugEmailVerification() {
     const dummyToken = crypto.randomBytes(32).toString('hex');
     
     try {
-      await axios.get(`${AUTH_SERVICE_URL}/verify-email/${dummyToken}`);
+      await axios.get(`${AUTH_SERVICE_URL}/api/auth/verify-email/${dummyToken}`);
     } catch (routeError) {
       if (routeError.response?.status === 400) {
         console.log('   ✅ Route /verify-email/:token is available (400 = Invalid token expected)');
@@ -56,7 +56,7 @@ async function debugEmailVerification() {
     console.log('\n3. 📧 Testing resend verification email...');
     
     try {
-      const resendResponse = await axios.post(`${AUTH_SERVICE_URL}/resend-verification-email`, {
+      const resendResponse = await axios.post(`${AUTH_SERVICE_URL}/api/auth/resend-verification-email`, {
         email: testEmail
       });
       console.log('   ✅ Resend Response:', resendResponse.status, resendResponse.data.message);
@@ -66,7 +66,7 @@ async function debugEmailVerification() {
         console.log('   🔍 Checking alternative route /resend-verification...');
         
         try {
-          const altResendResponse = await axios.post(`${AUTH_SERVICE_URL}/resend-verification`, {
+          const altResendResponse = await axios.post(`${AUTH_SERVICE_URL}/api/auth/resend-verification`, {
             email: testEmail
           });
           console.log('   ✅ Alternative route works:', altResendResponse.status, altResendResponse.data.message);
@@ -115,14 +115,14 @@ async function discoverRoutes() {
   
   const commonRoutes = [
     '/health',
-    '/register',
-    '/login',
-    '/verify/:token',
-    '/verify-email/:token',
-    '/resend-verification',
-    '/resend-verification-email',
-    '/forgot-password',
-    '/reset-password'
+    '/api/auth/register',
+    '/api/auth/login',
+    '/api/auth/verify/:token',
+    '/api/auth/verify-email/:token',
+    '/api/auth/resend-verification',
+    '/api/auth/resend-verification-email',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password'
   ];
   
   for (const route of commonRoutes) {

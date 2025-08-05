@@ -324,7 +324,7 @@ const authService = {
   // Email Verification Methods
   verifyEmail: async (token) => {
     try {
-      const response = await authServiceClient.get(`/verify-email/${token}`);
+      const response = await authServiceClient.get(`/api/auth/verify-email/${token}`);
       return {
         success: true,
         message: response.data.message || 'Email verified successfully',
@@ -341,7 +341,7 @@ const authService = {
 
   resendVerificationEmail: async (email) => {
     try {
-      const response = await authServiceClient.post('/resend-verification-email', {
+      const response = await authServiceClient.post('/api/auth/resend-verification-email', {
         email,
       });
       return {
