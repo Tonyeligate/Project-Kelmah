@@ -304,7 +304,7 @@ const StatusIndicator = styled(Box, {
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
 }));
 
-const Header = ({ toggleTheme, mode }) => {
+const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = false }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -745,7 +745,7 @@ const Header = ({ toggleTheme, mode }) => {
         }
       }}>
         {/* Mobile Menu Button */}
-        {isMobile && isAuthenticated() && (
+        {isMobile && authState.isAuthenticated && (
           <ActionButton
             edge="start"
             aria-label="menu"

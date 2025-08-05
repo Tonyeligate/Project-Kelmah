@@ -139,6 +139,7 @@ import {
   selectJobsPagination,
 } from '../../jobs/services/jobSlice';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 // Enhanced Animations with Worker-focused Themes
 const float = keyframes`
@@ -379,7 +380,8 @@ const JobSearchPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isAuthenticated, isInitialized } = useAuth();
+  const { user, isInitialized } = useAuth();
+  const authState = useAuthCheck();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
@@ -430,7 +432,7 @@ const JobSearchPage = () => {
 
   // Get user location for personalized job matching
   useEffect(() => {
-    if (navigator.geolocation && isAuthenticated()) {
+    if (navigator.geolocation && authState.isAuthenticated) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserPosition([pos.coords.latitude, pos.coords.longitude]);
@@ -486,7 +488,7 @@ const JobSearchPage = () => {
       }
       
       // Personalized recommendations based on user profile
-      if (isAuthenticated() && user) {
+      if (authState.isAuthenticated && user) {
         generatePersonalizedRecommendations();
         analyzeCareerGrowth();
         identifySkillGaps();
@@ -572,7 +574,7 @@ const JobSearchPage = () => {
   }, [dispatch]);
 
   const toggleSaveJob = useCallback((jobId) => {
-    if (!isAuthenticated()) {
+    if (!authState.isAuthenticated) {
       navigate('/login', { state: { from: `/jobs/${jobId}` } });
       return;
     }
@@ -619,7 +621,7 @@ const JobSearchPage = () => {
 
   // Auto-save user preferences
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (authState.isAuthenticated) {
       const preferences = {
         viewMode,
         sortBy,
@@ -634,7 +636,7 @@ const JobSearchPage = () => {
 
   // Load saved preferences
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (authState.isAuthenticated) {
       try {
         const saved = localStorage.getItem('workerJobSearchPreferences');
         if (saved) {
@@ -650,16 +652,16 @@ const JobSearchPage = () => {
         console.error('Error loading preferences:', error);
       }
     }
-  }, [isAuthenticated, isMobile]);
+  }, [authState.isAuthenticated, isMobile]);
 
   // Initialize personalized features for authenticated users
   useEffect(() => {
-    if (isAuthenticated() && user && isInitialized) {
+    if (authState.isAuthenticated && user && isInitialized) {
       generatePersonalizedRecommendations();
       analyzeCareerGrowth();
       identifySkillGaps();
     }
-  }, [isAuthenticated, user, isInitialized, generatePersonalizedRecommendations, analyzeCareerGrowth, identifySkillGaps]);
+  }, [authState.isAuthenticated, user, isInitialized, generatePersonalizedRecommendations, analyzeCareerGrowth, identifySkillGaps]);
 
   const renderHeroSection = () => (
     <HeroGradientSection ref={heroRef}>
