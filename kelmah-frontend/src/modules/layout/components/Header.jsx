@@ -318,29 +318,57 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // ✅ ENHANCED: Smart auth state detection with auth page override
+  // 🎯 ENHANCED: Comprehensive page type detection
   const isOnAuthPage = location.pathname.includes('/login') || 
                       location.pathname.includes('/register') ||
                       location.pathname.includes('/forgot-password') ||
                       location.pathname.includes('/reset-password') ||
                       location.pathname.includes('/verify-email');
   
-  // 🚨 CRITICAL FIX: Use robust authentication checking from custom hook
+  const isOnDashboardPage = location.pathname.includes('/dashboard') ||
+                           location.pathname.startsWith('/worker') ||
+                           location.pathname.startsWith('/hirer');
+  
+  const isOnHomePage = location.pathname === '/' || location.pathname === '/home';
+  
+  // 🚨 CRITICAL FIX: Bulletproof authentication state logic
   const { isAuthenticated, isInitialized, user, hasUser, canShowUserFeatures, shouldShowAuthButtons } = authState;
   
-  const showUserFeatures = !isOnAuthPage && canShowUserFeatures;
-  const showAuthButtons = isInitialized && (isOnAuthPage || shouldShowAuthButtons);
+  // 🎯 SMART DISPLAY LOGIC: Context-aware element visibility
+  const showUserFeatures = React.useMemo(() => {
+    // Never show user features on auth pages
+    if (isOnAuthPage) return false;
+    
+    // Only show if properly authenticated with user data
+    if (!isInitialized || !isAuthenticated || !hasUser) return false;
+    
+    // Show user features on dashboard pages and other authenticated areas
+    return canShowUserFeatures;
+  }, [isOnAuthPage, isInitialized, isAuthenticated, hasUser, canShowUserFeatures]);
   
-  // 🚨 DEBUG: Log authentication state changes
+  const showAuthButtons = React.useMemo(() => {
+    // Show auth buttons on auth pages for clear UX
+    if (isOnAuthPage && isInitialized) return true;
+    
+    // Show auth buttons on home page and public pages if not authenticated
+    if ((isOnHomePage || !isOnDashboardPage) && isInitialized && !isAuthenticated) return true;
+    
+    return false;
+  }, [isOnAuthPage, isOnHomePage, isOnDashboardPage, isInitialized, isAuthenticated]);
+  
+  // 🔍 DEBUG: Authentication state logging (development only)
   React.useEffect(() => {
-    console.log('🔍 HEADER AUTH STATE:', {
-      pathname: location.pathname,
-      isOnAuthPage,
-      authState,
-      showUserFeatures,
-      showAuthButtons
-    });
-  }, [location.pathname, isOnAuthPage, authState, showUserFeatures, showAuthButtons]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 HEADER AUTH STATE:', {
+        pathname: location.pathname,
+        isOnAuthPage,
+        isAuthenticated,
+        hasUser,
+        showUserFeatures,
+        showAuthButtons
+      });
+    }
+  }, [location.pathname, isOnAuthPage, isAuthenticated, hasUser, showUserFeatures, showAuthButtons]);
   
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {
