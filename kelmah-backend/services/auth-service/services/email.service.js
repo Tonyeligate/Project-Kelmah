@@ -117,15 +117,29 @@ module.exports = {
       subject,
       text,
       html,
-      // Anti-spam headers
+      // Enhanced anti-spam headers
       headers: {
         'X-Mailer': 'Kelmah Platform v1.0',
         'X-Priority': '3',
         'X-MSMail-Priority': 'Normal',
         'Importance': 'Normal',
         'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply',
+        // Additional anti-spam headers
+        'Message-ID': `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@kelmah.com>`,
+        'X-Entity-ID': 'kelmah-platform',
+        'X-MC-Subaccount': 'kelmah-transactional',
+        'Reply-To': 'noreply@kelmah.com',
+        // Authentication headers guidance
+        'X-SES-CONFIGURATION-SET': 'kelmah-transactional',
+        'X-SES-MESSAGE-TAGS': 'campaign=email-verification'
+      },
+      // Additional options to improve deliverability
+      envelope: {
+        from: EMAIL_FROM,
+        to: email
+      },
+      messageId: `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@kelmah.com>`
     };
     
     await transporter.sendMail(mailOptions);

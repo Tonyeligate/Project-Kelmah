@@ -321,6 +321,42 @@ const authService = {
     }
   },
 
+  // Email Verification Methods
+  verifyEmail: async (token) => {
+    try {
+      const response = await authServiceClient.get(`/verify-email/${token}`);
+      return {
+        success: true,
+        message: response.data.message || 'Email verified successfully',
+        data: response.data.data,
+      };
+    } catch (error) {
+      console.error('Email verification failed:', error);
+      throw {
+        success: false,
+        message: error.response?.data?.message || 'Email verification failed',
+      };
+    }
+  },
+
+  resendVerificationEmail: async (email) => {
+    try {
+      const response = await authServiceClient.post('/resend-verification-email', {
+        email,
+      });
+      return {
+        success: true,
+        message: response.data.message || 'Verification email sent successfully',
+      };
+    } catch (error) {
+      console.error('Resend verification email failed:', error);
+      throw {
+        success: false,
+        message: error.response?.data?.message || 'Failed to send verification email',
+      };
+    }
+  },
+
   // MFA Setup (placeholder for future implementation)
   setupMFA: async () => {
     try {

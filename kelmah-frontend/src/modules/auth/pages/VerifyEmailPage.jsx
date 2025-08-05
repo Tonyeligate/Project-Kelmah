@@ -14,13 +14,13 @@ const VerifyEmailPage = () => {
   useEffect(() => {
     const verify = async () => {
       try {
-        const res = await authApi.verifyEmail(token);
+        const res = await authService.verifyEmail(token);
         setStatus(
           res.message || 'Email verified successfully. You can now login.',
         );
       } catch (err) {
         setStatus('');
-        setError(err.response?.data?.message || err.message);
+        setError(err.message || 'Email verification failed');
       }
     };
     verify();
@@ -29,10 +29,10 @@ const VerifyEmailPage = () => {
   const handleResend = async (e) => {
     e.preventDefault();
     try {
-      await authApi.resendVerificationEmail({ email });
+      await authService.resendVerificationEmail(email);
       setResendSent(true);
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      setError(err.message || 'Failed to send verification email');
     }
   };
 
