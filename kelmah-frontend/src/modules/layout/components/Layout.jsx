@@ -17,7 +17,7 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
-import AutoShowHeader from '../../components/AutoShowHeader';
+import AutoShowHeader from '../../../components/AutoShowHeader';
 
 /**
  * Main layout component that wraps the entire application

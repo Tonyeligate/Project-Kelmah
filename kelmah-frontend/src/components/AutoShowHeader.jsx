@@ -19,6 +19,8 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
     isLocked, 
     lockHeader, 
     unlockHeader,
+    showHeader,
+    hideHeader,
     isMobile 
   } = useAutoShowHeader({ disabled });
 
@@ -27,10 +29,23 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
                           location.pathname.startsWith('/worker') ||
                           location.pathname.startsWith('/hirer');
 
+  // DEBUG: Log dashboard page detection
+  React.useEffect(() => {
+    console.log('🎯 AutoShowHeader DEBUG:', {
+      pathname: location.pathname,
+      isDashboardPage,
+      disabled,
+      shouldRender: isDashboardPage && !disabled
+    });
+  }, [location.pathname, isDashboardPage, disabled]);
+
   // Don't render if not on dashboard or disabled
   if (!isDashboardPage || disabled) {
+    console.log('🚫 AutoShowHeader not rendering:', { isDashboardPage, disabled });
     return null;
   }
+
+  console.log('✅ AutoShowHeader rendering on dashboard page');
 
   // Handle header interaction events
   const handleHeaderMouseEnter = () => {
@@ -43,6 +58,37 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
 
   return (
     <>
+      {/* DEBUG: Manual trigger button */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          zIndex: 10000,
+        }}
+      >
+        <button 
+          onClick={() => {
+            console.log('🔲 Manual trigger clicked - current isVisible:', isVisible);
+            if (isVisible) {
+              hideHeader();
+            } else {
+              showHeader(true); // Show and lock
+            }
+          }}
+          style={{
+            backgroundColor: isVisible ? 'red' : 'green',
+            color: 'white',
+            padding: '10px',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          {isVisible ? 'HIDE HEADER' : 'SHOW HEADER'}
+        </button>
+      </Box>
+
       {/* Invisible trigger zone at top of screen */}
       <Box
         sx={{
@@ -76,11 +122,30 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
               boxShadow: isVisible 
                 ? '0 2px 12px rgba(0, 0, 0, 0.4)' 
                 : 'none',
-            }
+            },
+            // DEBUG: Make header more visible for testing
+            backgroundColor: isVisible ? 'rgba(255, 0, 0, 0.1)' : 'transparent',
+            border: isVisible ? '2px solid red' : 'none'
           }}
           onMouseEnter={handleHeaderMouseEnter}
           onMouseLeave={handleHeaderMouseLeave}
         >
+          {/* DEBUG: Show visibility state */}
+          {isVisible && (
+            <Box sx={{ 
+              position: 'absolute', 
+              top: 0, 
+              right: 0, 
+              zIndex: 10000, 
+              backgroundColor: 'green', 
+              color: 'white', 
+              p: 1, 
+              fontSize: '12px' 
+            }}>
+              AUTO-SHOW HEADER VISIBLE
+            </Box>
+          )}
+          
           <Header 
             toggleTheme={toggleTheme} 
             mode={mode}
