@@ -15,6 +15,7 @@ const rateLimit = require('express-rate-limit');
 const MessageSocketHandler = require('./socket/messageSocket');
 // const conversationRoutes = require('./routes/conversation.routes'); // Temporarily disabled - uses Sequelize
 const messageRoutes = require('./routes/message.routes');
+const notificationRoutes = require('./routes/notification.routes');
 // const uploadRoutes = require('./routes/upload.routes'); // Check if exists
 
 // Import middleware
@@ -24,10 +25,20 @@ const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 const app = express();
 const server = http.createServer(app);
 
+// CORS configuration for production and development
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://kelmah-frontend-cyan.vercel.app',
+  'https://kelmah-frontend.vercel.app',
+  'https://kelmah-frontend-mu.vercel.app',
+  'https://kelmah-frontend-ecru.vercel.app'
+];
+
 // Socket.IO setup with CORS
 const io = socketIo(server, {
   cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -62,10 +73,21 @@ app.use(helmet({
 app.use(compression());
 
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-ID'],
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -115,7 +137,26 @@ app.get('/health', (req, res) => {
 
 // API Routes with authentication  
 // app.use('/api/conversations', authMiddleware, conversationRoutes); // Temporarily disabled - uses Sequelize
+
+// Temporary conversation endpoint to prevent 404 errors
+app.get('/api/conversations', authMiddleware, (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Conversations endpoint temporarily unavailable during MongoDB migration',
+    data: {
+      conversations: [],
+      pagination: {
+        total: 0,
+        page: 1,
+        limit: 20,
+        pages: 0
+      }
+    }
+  });
+});
+
 app.use('/api/messages', authMiddleware, messageRoutes);
+app.use('/api/notifications', authMiddleware, notificationRoutes);
 // app.use('/api/upload', authMiddleware, uploadRoutes); // Check if exists
 
 // Socket.IO status endpoint

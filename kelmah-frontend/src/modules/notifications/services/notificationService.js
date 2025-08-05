@@ -3,13 +3,13 @@
  * Handles all notification-related API calls with proper service routing and fallbacks
  */
 
-import { authServiceClient } from '../../common/services/axios';
+import { messagingServiceClient } from '../../common/services/axios';
 import { API_BASE_URL } from '../../../config/constants';
 
 class NotificationService {
   constructor() {
-    // Temporarily use auth service for notifications until messaging service is deployed
-    this.client = authServiceClient;
+    // Use messaging service for notifications (now that CORS is fixed)
+    this.client = messagingServiceClient;
   }
 
   // Connect to notification socket
@@ -35,7 +35,7 @@ class NotificationService {
   // Get notifications
   async getNotifications() {
     try {
-      const response = await this.client.get('/notifications');
+      const response = await this.client.get('/api/notifications');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -46,7 +46,7 @@ class NotificationService {
   // Mark notification as read
   async markAsRead(notificationId) {
     try {
-      const response = await this.client.patch(`/notifications/${notificationId}/read`);
+      const response = await this.client.patch(`/api/notifications/${notificationId}/read`);
       return response.data;
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
@@ -57,7 +57,7 @@ class NotificationService {
   // Mark all notifications as read
   async markAllAsRead() {
     try {
-      const response = await this.client.patch('/notifications/read-all');
+      const response = await this.client.patch('/api/notifications/read-all');
       return response.data;
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
@@ -68,7 +68,7 @@ class NotificationService {
   // Clear all notifications
   async clearAllNotifications() {
     try {
-      const response = await this.client.delete('/notifications/clear-all');
+      const response = await this.client.delete('/api/notifications/clear-all');
       return response.data;
     } catch (error) {
       console.error('Failed to clear all notifications:', error);
@@ -79,7 +79,7 @@ class NotificationService {
   // Get unread count
   async getUnreadCount() {
     try {
-      const response = await this.client.get('/notifications/unread/count');
+      const response = await this.client.get('/api/notifications/unread/count');
       return response.data.count;
     } catch (error) {
       console.error('Failed to get unread count:', error);
@@ -90,7 +90,7 @@ class NotificationService {
   // Delete a specific notification
   async deleteNotification(notificationId) {
     try {
-      const response = await this.client.delete(`/notifications/${notificationId}`);
+      const response = await this.client.delete(`/api/notifications/${notificationId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to delete notification:', error);

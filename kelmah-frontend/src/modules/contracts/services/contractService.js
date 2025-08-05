@@ -9,7 +9,7 @@ export const contractService = {
   // Get contracts with filters
   async getContracts(filters = {}) {
     try {
-      const response = await jobServiceClient.get('/api/contracts', {
+      const response = await jobServiceClient.get('/api/jobs/contracts', {
         params: filters,
       });
       return response.data;
