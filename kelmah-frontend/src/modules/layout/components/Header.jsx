@@ -308,17 +308,83 @@ const Header = ({ toggleTheme, mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAuthenticated, loading, isInitialized } = useAuth();
-  const isMobile = false; // Force desktop view on all devices
+  
+  // ✅ FIXED: Enable proper mobile responsiveness based on screen size
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Only show authenticated features if user is actually authenticated and initialized
+  // ✅ ENHANCED: Smart auth state detection
   const showUserFeatures = isInitialized && isAuthenticated() && user;
   const showAuthButtons = isInitialized && !isAuthenticated();
   
-  // Mock data - replace with real data from API when authenticated
+  // ✅ NEW: Current page detection for responsive header content
+  const getCurrentPageInfo = () => {
+    const path = location.pathname;
+    
+    if (path.includes('/dashboard')) return { 
+      name: 'Dashboard', 
+      icon: DashboardIcon, 
+      showBackButton: false 
+    };
+    if (path.includes('/jobs')) return { 
+      name: 'Jobs', 
+      icon: WorkIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/contracts')) return { 
+      name: 'Contracts', 
+      icon: BusinessIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/messages')) return { 
+      name: 'Messages', 
+      icon: MessageIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/notifications')) return { 
+      name: 'Notifications', 
+      icon: NotificationsIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/profile')) return { 
+      name: 'Profile', 
+      icon: PersonIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/wallet')) return { 
+      name: 'Wallet', 
+      icon: WalletIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/settings')) return { 
+      name: 'Settings', 
+      icon: SettingsIcon, 
+      showBackButton: true 
+    };
+    if (path.includes('/login')) return { 
+      name: 'Sign In', 
+      icon: PersonIcon, 
+      showBackButton: false 
+    };
+    if (path.includes('/register')) return { 
+      name: 'Get Started', 
+      icon: PersonIcon, 
+      showBackButton: false 
+    };
+    
+    return { 
+      name: 'Kelmah', 
+      icon: EngineeringIcon, 
+      showBackButton: false 
+    };
+  };
+  
+  const currentPage = getCurrentPageInfo();
+  
+  // ✅ ENHANCED: Dynamic data based on user state and current page
   const unreadNotifications = showUserFeatures ? 3 : 0;
   const unreadMessages = showUserFeatures ? 2 : 0;
   const isUserOnline = showUserFeatures ? true : false;
@@ -436,21 +502,35 @@ const Header = ({ toggleTheme, mode }) => {
                 : user?.name || user?.email || 'User'}
         </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
-          {user?.email}
-        </Typography>
-            <Chip
-              label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
-              size="small"
-              sx={{
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(255, 215, 0, 0.15)' 
-                  : 'rgba(0, 0, 0, 0.1)',
-                color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                mt: 0.5,
-              }}
-            />
+              {user?.email}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+              <Chip
+                label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
+                size="small"
+                sx={{
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 215, 0, 0.15)' 
+                    : 'rgba(0, 0, 0, 0.1)',
+                  color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                }}
+              />
+              <Chip
+                label={`On ${currentPage.name}`}
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 215, 0, 0.3)' 
+                    : 'rgba(0, 0, 0, 0.3)',
+                  color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                  fontSize: '0.65rem',
+                  fontWeight: 500,
+                }}
+              />
+            </Box>
           </Box>
         </Stack>
       </Box>
@@ -650,24 +730,94 @@ const Header = ({ toggleTheme, mode }) => {
           </ActionButton>
         )}
 
-        {/* Brand Logo */}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
-          <BrandLogo component={RouterLink} to="/">
-            <LogoIcon>
-              <EngineeringIcon sx={{ fontSize: '1.2rem' }} />
-            </LogoIcon>
-            <Box>
-              <BrandText variant="h6">elmah</BrandText>
-              <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
-            </Box>
-          </BrandLogo>
-        </motion.div>
+        {/* ✅ ENHANCED: Smart Brand/Page Title Section */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+          {/* Back Button (Mobile Only) */}
+          {isMobile && currentPage.showBackButton && showUserFeatures && (
+            <ActionButton
+              onClick={() => navigate(-1)}
+              sx={{ 
+                mr: 1,
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255, 215, 0, 0.15)'
+                    : 'rgba(0, 0, 0, 0.15)',
+                }
+              }}
+            >
+              <motion.div
+                whileHover={{ x: -2 }}
+                whileTap={{ x: -4 }}
+              >
+                ←
+              </motion.div>
+            </ActionButton>
+          )}
 
-        <Box sx={{ flexGrow: 1 }} />
+          {/* Brand Logo or Page Title */}
+          <motion.div
+            whileHover={{ scale: isMobile ? 1 : 1.02 }}
+            whileTap={{ scale: isMobile ? 1 : 0.98 }}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            {isMobile && showUserFeatures ? (
+              // ✅ Mobile: Show current page info
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255, 215, 0, 0.1)'
+                    : 'rgba(0, 0, 0, 0.1)',
+                  borderRadius: 2,
+                  px: 1.5,
+                  py: 0.5,
+                  mr: 1
+                }}>
+                  <currentPage.icon sx={{ 
+                    fontSize: '1.2rem', 
+                    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                    mr: 0.5 
+                  }} />
+                  <Typography 
+                    variant="subtitle1" 
+                    fontWeight={600}
+                    color={theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}
+                    noWrap
+                  >
+                    {currentPage.name}
+                  </Typography>
+                </Box>
+                {user && (
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{ 
+                      display: { xs: 'none', sm: 'block' },
+                      maxWidth: 120,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {user.firstName || user.name?.split(' ')[0] || 'User'}
+                  </Typography>
+                )}
+              </Box>
+            ) : (
+              // ✅ Desktop: Show brand logo
+              <BrandLogo component={RouterLink} to="/">
+                <LogoIcon>
+                  <EngineeringIcon sx={{ fontSize: '1.2rem' }} />
+                </LogoIcon>
+                <Box>
+                  <BrandText variant="h6">elmah</BrandText>
+                  <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
+                </Box>
+              </BrandLogo>
+            )}
+          </motion.div>
+        </Box>
 
         {/* Desktop Navigation */}
         {!isMobile && <DesktopNav />}
