@@ -92,7 +92,10 @@ const DesktopNav = () => {
 
   // Only show authenticated features if user is actually authenticated and NOT on auth page
   const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated && user;
-  const showAuthButtons = isInitialized && (isOnAuthPage || !isAuthenticated);
+  
+  // 🚨 CRITICAL FIX: DesktopNav should NOT show auth buttons on auth pages
+  // Header component handles auth buttons, DesktopNav handles navigation
+  const showAuthButtons = isInitialized && !isAuthenticated && !isOnAuthPage;
 
   const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);

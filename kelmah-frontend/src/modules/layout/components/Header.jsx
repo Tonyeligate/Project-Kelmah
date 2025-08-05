@@ -323,30 +323,9 @@ const Header = ({ toggleTheme, mode }) => {
                       location.pathname.includes('/reset-password') ||
                       location.pathname.includes('/verify-email');
   
-  // 🚨 CRITICAL DEBUG: Log auth state for troubleshooting
-  React.useEffect(() => {
-    console.log('🔍 HEADER DEBUG:', {
-      pathname: location.pathname,
-      isOnAuthPage,
-      isInitialized,
-      isAuthenticated: isAuthenticated(),
-      hasUser: !!user,
-      userEmail: user?.email
-    });
-  }, [location.pathname, isOnAuthPage, isInitialized, user]);
-  
   // 🚨 CRITICAL FIX: Never show user features on auth pages, regardless of stored data
   const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated() && user;
   const showAuthButtons = isInitialized && (isOnAuthPage || !isAuthenticated());
-  
-  // 🚨 CRITICAL DEBUG: Log final UI state decisions
-  React.useEffect(() => {
-    console.log('🎯 HEADER UI STATE:', {
-      showUserFeatures,
-      showAuthButtons,
-      finalDecision: showUserFeatures ? 'SHOW_USER_FEATURES' : showAuthButtons ? 'SHOW_AUTH_BUTTONS' : 'SHOW_LOADING'
-    });
-  }, [showUserFeatures, showAuthButtons]);
   
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {
@@ -554,6 +533,18 @@ const Header = ({ toggleTheme, mode }) => {
                     ? 'rgba(255, 215, 0, 0.3)' 
                     : 'rgba(0, 0, 0, 0.3)',
                   color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                  fontSize: '0.65rem',
+                  fontWeight: 500,
+                }}
+              />
+              <Chip
+                label={isUserOnline ? 'Online' : 'Offline'}
+                size="small"
+                sx={{
+                  backgroundColor: isUserOnline 
+                    ? 'rgba(76, 175, 80, 0.1)' 
+                    : 'rgba(244, 67, 54, 0.1)',
+                  color: isUserOnline ? '#4caf50' : '#f44336',
                   fontSize: '0.65rem',
                   fontWeight: 500,
                 }}
@@ -789,7 +780,7 @@ const Header = ({ toggleTheme, mode }) => {
             style={{ display: 'flex', alignItems: 'center' }}
           >
             {isMobile && showUserFeatures ? (
-              // ✅ Mobile: Show current page info
+              // ✅ Mobile: Show current page info with user context
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Box sx={{ 
                   display: 'flex', 
@@ -817,20 +808,62 @@ const Header = ({ toggleTheme, mode }) => {
                   </Typography>
                 </Box>
                 {user && (
-                  <Typography 
-                    variant="caption" 
-                    color="text.secondary"
-                    sx={{ 
-                      display: { xs: 'none', sm: 'block' },
-                      maxWidth: 120,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {user.firstName || user.name?.split(' ')[0] || 'User'}
-                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary"
+                      sx={{ 
+                        display: { xs: 'none', sm: 'block' },
+                        maxWidth: 120,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.7rem'
+                      }}
+                    >
+                      {user.firstName || user.name?.split(' ')[0] || user.email?.split('@')[0] || 'User'}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      color="text.disabled"
+                      sx={{ 
+                        display: { xs: 'none', sm: 'block' },
+                        fontSize: '0.65rem',
+                        textTransform: 'capitalize'
+                      }}
+                    >
+                      {user.role || user.userType || 'User'}
+                    </Typography>
+                  </Box>
                 )}
+              </Box>
+            ) : isMobile && isOnAuthPage ? (
+              // ✅ Mobile: Show auth page context
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255, 215, 0, 0.1)'
+                    : 'rgba(0, 0, 0, 0.1)',
+                  borderRadius: 2,
+                  px: 1.5,
+                  py: 0.5,
+                }}>
+                  <currentPage.icon sx={{ 
+                    fontSize: '1.2rem', 
+                    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                    mr: 0.5 
+                  }} />
+                  <Typography 
+                    variant="subtitle1" 
+                    fontWeight={600}
+                    color={theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}
+                    noWrap
+                  >
+                    {currentPage.name}
+                  </Typography>
+                </Box>
               </Box>
             ) : (
               // ✅ Desktop: Show brand logo
