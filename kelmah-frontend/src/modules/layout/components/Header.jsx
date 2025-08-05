@@ -316,9 +316,16 @@ const Header = ({ toggleTheme, mode }) => {
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // ✅ ENHANCED: Smart auth state detection
-  const showUserFeatures = isInitialized && isAuthenticated() && user;
-  const showAuthButtons = isInitialized && !isAuthenticated();
+  // ✅ ENHANCED: Smart auth state detection with auth page override
+  const isOnAuthPage = location.pathname.includes('/login') || 
+                      location.pathname.includes('/register') ||
+                      location.pathname.includes('/forgot-password') ||
+                      location.pathname.includes('/reset-password') ||
+                      location.pathname.includes('/verify-email');
+  
+  // 🚨 CRITICAL FIX: Never show user features on auth pages, regardless of stored data
+  const showUserFeatures = !isOnAuthPage && isInitialized && isAuthenticated() && user;
+  const showAuthButtons = isInitialized && (isOnAuthPage || !isAuthenticated());
   
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {

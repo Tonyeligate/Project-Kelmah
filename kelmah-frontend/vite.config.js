@@ -50,6 +50,9 @@ export default defineConfig({
         },
       },
     },
+    // 🚨 CRITICAL FIX: Ensure public assets including sw.js are copied
+    copyPublicDir: true,
+    assetsInclude: ['**/*.js', '**/*.json'],
   },
   optimizeDeps: {
     include: [
