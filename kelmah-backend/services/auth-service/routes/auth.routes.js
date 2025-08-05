@@ -49,12 +49,12 @@ router.post(
   authController.login,
 );
 
-// Email verification route
-router.get("/verify/:token", authController.verifyEmail);
+// Email verification route (matches frontend call)
+router.get("/verify-email/:token", authController.verifyEmail);
 
-// Resend verification email
+// Resend verification email (matches frontend call)
 router.post(
-  "/resend-verification",
+  "/resend-verification-email",
   createLimiter("emailVerification"),
   [body("email").isEmail().withMessage("Please enter a valid email address")],
   validate,

@@ -61,7 +61,7 @@ exports.register = async (req, res, next) => {
     const frontendUrl = config.frontendUrl || 
                        config.FRONTEND_URL || 
                        process.env.FRONTEND_URL || 
-                       'https://kelmah-frontend-mu.vercel.app';
+                       'https://kelmah-frontend-cyan.vercel.app';
     
     const verificationUrl = `${frontendUrl}/verify-email/${rawToken}`;
     
@@ -87,15 +87,16 @@ exports.register = async (req, res, next) => {
   } catch (error) {
     console.error('Registration failed:', error);
     
-    // Handle specific Sequelize validation errors
-    if (error.name === 'SequelizeValidationError') {
-      const validationErrors = error.errors.map(err => err.message);
+    // Handle specific Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
       return next(new AppError(`Validation failed: ${validationErrors.join(', ')}`, 400));
     }
     
-    // Handle unique constraint errors
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return next(new AppError(error.errors[0].message || 'Duplicate value', 400));
+    // Handle unique constraint errors (MongoDB duplicate key)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return next(new AppError(`${field} already exists`, 400));
     }
     
     return next(new AppError(`Registration failed: ${error.message}`, 500));
@@ -299,8 +300,16 @@ exports.resendVerificationEmail = async (req, res, next) => {
     const verificationToken = user.generateVerificationToken(); // raw token
     await user.save();
 
-    // Send verification email
-    const verificationUrl = `${config.frontendUrl}/verify-email/${verificationToken}`; // raw token URL
+    // Send verification email - use same URL logic as registration
+    const frontendUrl = config.frontendUrl || 
+                       config.FRONTEND_URL || 
+                       process.env.FRONTEND_URL || 
+                       'https://kelmah-frontend-cyan.vercel.app';
+    
+    const verificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
+    
+    console.log('Resend - Frontend URL used:', frontendUrl);
+    console.log('Resend - Full verification URL:', verificationUrl);
 
     await emailService.sendVerificationEmail({
       name: user.fullName,
