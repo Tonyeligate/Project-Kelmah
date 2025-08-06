@@ -8,18 +8,7 @@ import React, {
 import paymentService from '../services/paymentService';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
-import { USE_MOCK_DATA } from '../../../config';
-
 const PaymentContext = createContext(null);
-
-const mockTransactions = [];
-
-const mockEscrowsData = [];
-
-const mockBillsData = [];
-
-// Mock payment methods for initial display in deposit/withdraw dialogs
-const mockMethodsData = [];
 
 export const PaymentProvider = ({ children }) => {
   const { user } = useAuth();

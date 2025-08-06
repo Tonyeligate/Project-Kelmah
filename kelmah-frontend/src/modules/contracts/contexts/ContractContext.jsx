@@ -8,22 +8,10 @@ import React, {
 import { contractService } from '../services/contractService';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
-import { USE_MOCK_DATA } from '../../../config/env';
-
 const ContractContext = createContext(null);
 
-const mockContracts = [];
-
 export const ContractProvider = ({ children }) => {
-  // Skip auth requirement when using mock data
-  let user = null;
-  if (!USE_MOCK_DATA) {
-    try {
-      user = useAuth().user;
-    } catch (e) {
-      user = null;
-    }
-  }
+  const { user } = useAuth();
   let showToast = () => {};
   try {
     showToast = useNotifications().showToast;
@@ -59,11 +47,7 @@ export const ContractProvider = ({ children }) => {
 
   const getContractById = useCallback(
     async (id) => {
-      // Also mock if configured
-      if (USE_MOCK_DATA) {
-        const contract = mockContracts.find((c) => c.id === id);
-        return contract || null;
-      }
+      
 
       setLoading(true);
       try {
@@ -80,11 +64,6 @@ export const ContractProvider = ({ children }) => {
 
   const approveMilestone = useCallback(
     async (contractId, milestoneId) => {
-      // Mock if configured
-      if (USE_MOCK_DATA) {
-        showToast('Milestone approved successfully! (Mock)', 'success');
-        return;
-      }
       try {
         const { success } = await contractService.approveMilestone(
           contractId,

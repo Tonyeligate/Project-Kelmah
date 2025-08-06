@@ -271,17 +271,7 @@ const portfolioService = {
         params: filters
       });
       return response.data;
-    } catch (error) {
-      console.warn('Portfolio search API not available, using mock filtering');
-      const mockData = await portfolioService.getWorkerPortfolio(workerId);
-      
-      let filteredData = mockData.data;
-      
-      if (filters.category) {
-        filteredData = filteredData.filter(item => 
-          item.category.toLowerCase().includes(filters.category.toLowerCase())
-        );
-      }
+    } 
       
       if (filters.search) {
         filteredData = filteredData.filter(item =>

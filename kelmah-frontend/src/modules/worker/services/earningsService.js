@@ -19,16 +19,7 @@ const earningsService = {
         { params: { timeRange } }
       );
       return response.data;
-    } catch (error) {
-      // Fallback with comprehensive mock data for development
-      console.warn('Earnings analytics API not available, using mock data');
-      
-      // Generate mock data based on time range
-      const mockData = generateMockEarningsData(timeRange);
-      
-      return {
-        data: mockData
-      };
+    } ;
     }
   },
 
