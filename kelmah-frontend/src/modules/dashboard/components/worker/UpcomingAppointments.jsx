@@ -374,6 +374,8 @@ const EnhancedUpcomingAppointments = () => {
                           </Stack>
                         </Stack>
                       }
+                      primaryTypographyProps={{ component: 'div' }}
+                      secondaryTypographyProps={{ component: 'div' }}
                     />
                     
                     <ListItemSecondaryAction>

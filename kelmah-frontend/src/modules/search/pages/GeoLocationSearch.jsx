@@ -227,6 +227,7 @@ const LocationErrorFallback = ({ onRetry, onManualEntry }) => {
 const GeoLocationSearch = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Fix: Added missing isMobile definition
   
   // Component state
   const [searchType, setSearchType] = useState(0); // 0 for jobs, 1 for workers

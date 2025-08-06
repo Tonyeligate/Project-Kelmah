@@ -42,15 +42,21 @@ const applicationsApi = {
         {
           id: 'fallback-app-1',
           jobId: 'job-123',
-          title: 'Kitchen Renovation Assistant',
+          job: {
+            title: 'Kitchen Renovation Assistant',
+            location: {
+              city: 'Accra',
+              country: 'Ghana'
+            },
+            salary: 'GH₵200-300/day',
+            type: 'Contract',
+            description: 'Assist with kitchen renovation project including tile installation and cabinet work.',
+            skills: ['Carpentry', 'Tiling', 'Measurements']
+          },
           company: 'Elite Renovations Ltd',
-          location: 'Accra, Greater Accra',
+          companyLogo: null,
           status: 'pending',
           appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-          salary: 'GH₵200-300/day',
-          type: 'Contract',
-          description: 'Assist with kitchen renovation project including tile installation and cabinet work.',
-          skills: ['Carpentry', 'Tiling', 'Measurements'],
           clientResponse: null,
           clientResponseAt: null,
           priority: 'medium'
@@ -58,15 +64,21 @@ const applicationsApi = {
         {
           id: 'fallback-app-2',
           jobId: 'job-124',
-          title: 'Plumbing Repairs - Residential',
+          job: {
+            title: 'Plumbing Repairs - Residential',
+            location: {
+              city: 'Kumasi',
+              country: 'Ghana'
+            },
+            salary: 'GH₵150-200/day',
+            type: 'Part-time',
+            description: 'Fix plumbing issues in residential complex including leak repairs and pipe installations.',
+            skills: ['Plumbing', 'Leak Detection', 'Pipe Installation']
+          },
           company: 'AquaFix Services',
-          location: 'Kumasi, Ashanti',
+          companyLogo: null,
           status: 'accepted',
           appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-          salary: 'GH₵150-200/day',
-          type: 'Part-time',
-          description: 'Fix plumbing issues in residential complex including leak repairs and pipe installations.',
-          skills: ['Plumbing', 'Leak Detection', 'Pipe Installation'],
           clientResponse: 'Great application! Looking forward to working with you.',
           clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
           priority: 'high',
@@ -75,15 +87,21 @@ const applicationsApi = {
         {
           id: 'fallback-app-3',
           jobId: 'job-125',
-          title: 'Electrical Maintenance Technician',
+          job: {
+            title: 'Electrical Maintenance Technician',
+            location: {
+              city: 'Takoradi',
+              country: 'Ghana'
+            },
+            salary: 'GH₵180-250/day',
+            type: 'Full-time',
+            description: 'Maintain electrical systems in commercial buildings.',
+            skills: ['Electrical Work', 'Maintenance', 'Safety Protocols']
+          },
           company: 'PowerGrid Ghana',
-          location: 'Takoradi, Western',
+          companyLogo: null,
           status: 'rejected',
           appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 1 week ago
-          salary: 'GH₵180-250/day',
-          type: 'Full-time',
-          description: 'Maintain electrical systems in commercial buildings.',
-          skills: ['Electrical Work', 'Maintenance', 'Safety Protocols'],
           clientResponse: 'Thank you for your application. We have selected another candidate.',
           clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4), // 4 days ago
           priority: 'low'
