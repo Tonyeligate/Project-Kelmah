@@ -92,6 +92,10 @@ const EnhancedMessagingPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
   
+  // Menu and dialog state
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null); // Fix: Added missing menu anchor state
+  const [newChatDialog, setNewChatDialog] = useState(false); // Fix: Added missing dialog state
+  
   // Refs
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);

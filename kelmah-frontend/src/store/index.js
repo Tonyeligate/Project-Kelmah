@@ -10,6 +10,7 @@ import contractReducer from '../modules/contracts/services/contractSlice';
 import appReducer from '../modules/common/services/appSlice';
 import reviewsReducer from '../modules/reviews/services/reviewsSlice';
 import settingsReducer from './slices/settingsSlice';
+import profileReducer from './slices/profileSlice'; // Fix: Added missing profile slice import
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 const store = configureStore({
@@ -25,6 +26,7 @@ const store = configureStore({
     app: appReducer,
     reviews: reviewsReducer,
     settings: settingsReducer,
+    profile: profileReducer, // Fix: Added missing profile reducer to store
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
