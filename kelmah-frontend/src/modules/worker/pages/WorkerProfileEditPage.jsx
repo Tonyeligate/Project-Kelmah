@@ -40,6 +40,7 @@ import {
   Language as LanguageIcon,
   Description as DescriptionIcon,
   Build as SkillsIcon,
+  Person as PersonIcon, // Fix: Added missing PersonIcon import
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import {

@@ -265,8 +265,10 @@ const JobApplicationPage = () => {
         };
 
         const response = await jobsApi.searchJobs(params);
-        setJobs(response.data.jobs || []);
-        setTotalItems(response.data.total || 0);
+        // Handle different response structures
+        const responseData = response.data || response;
+        setJobs(responseData.jobs || responseData.data || []);
+        setTotalItems(responseData.total || responseData.totalItems || 0);
 
         // Update URL params
         const newSearchParams = new URLSearchParams();

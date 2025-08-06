@@ -109,18 +109,18 @@ const ContractManagementPage = () => {
             },
           }}
         >
-          <Tab label={`All (${contracts.length})`} />
+          <Tab label={`All (${Array.isArray(contracts) ? contracts.length : 0})`} />
           <Tab
-            label={`Active (${contracts.filter((c) => c.status === 'active').length})`}
+            label={`Active (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'active').length : 0})`}
           />
           <Tab
-            label={`Pending (${contracts.filter((c) => c.status === 'pending').length})`}
+            label={`Pending (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'pending').length : 0})`}
           />
           <Tab
-            label={`Completed (${contracts.filter((c) => c.status === 'completed').length})`}
+            label={`Completed (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'completed').length : 0})`}
           />
           <Tab
-            label={`Disputes (${contracts.filter((c) => c.status === 'dispute').length})`}
+            label={`Disputes (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'dispute').length : 0})`}
           />
         </Tabs>
       </Paper>

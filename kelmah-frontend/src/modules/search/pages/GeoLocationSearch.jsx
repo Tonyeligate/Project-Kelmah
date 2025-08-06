@@ -490,27 +490,153 @@ const GeoLocationSearch = () => {
           />
         )}
 
-        {/* Compact Location Search */}
-        <CompactLocationSearch
-          searchType={searchType}
-          location={location}
-          setLocation={setLocation}
-          keywords={keywords}
-          setKeywords={setKeywords}
-          distance={distance}
-          setDistance={setDistance}
-          category={category}
-          setCategory={setCategory}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          categories={categories}
-          skills={skills}
-          loading={loading}
-          onSearch={handleSearch}
-          onClearFilters={clearFilters}
-          suggestedLocations={suggestedLocations}
-          getCurrentLocation={getCurrentLocation}
-        />
+        {/* Search Form */}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 3,
+            mb: 3,
+            borderRadius: 3,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          }}
+        >
+          <Grid container spacing={2}>
+            {/* Location Input */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter city or address"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LocationIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={getCurrentLocation} size="small">
+                        <MyLocationIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Keywords Input */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label={searchType === 0 ? "Job Keywords" : "Skills"}
+                value={keywords}
+                onChange={(e) => setKeywords(e.target.value)}
+                placeholder={searchType === 0 ? "e.g. carpenter, plumber" : "e.g. React, JavaScript"}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon color="primary" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Search Button */}
+            <Grid item xs={12} md={4}>
+              <Button
+                fullWidth
+                variant="contained"
+                size="large"
+                onClick={() => handleSearch()}
+                disabled={loading}
+                sx={{
+                  height: '56px',
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+                  },
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Search'}
+              </Button>
+            </Grid>
+          </Grid>
+
+          {/* Filters Row */}
+          <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  label="Category"
+                >
+                  <MenuItem value="">All Categories</MenuItem>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  label="Sort By"
+                >
+                  <MenuItem value="relevance">Relevance</MenuItem>
+                  <MenuItem value="date">Date Posted</MenuItem>
+                  <MenuItem value="distance">Distance</MenuItem>
+                  <MenuItem value="salary">Salary</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box sx={{ px: 2 }}>
+                <Typography variant="body2" gutterBottom>
+                  Distance: {distance}km
+                </Typography>
+                <Slider
+                  value={distance}
+                  onChange={(e, value) => setDistance(value)}
+                  min={5}
+                  max={100}
+                  step={5}
+                  marks={[
+                    { value: 5, label: '5km' },
+                    { value: 50, label: '50km' },
+                    { value: 100, label: '100km' }
+                  ]}
+                  size="small"
+                />
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={2}>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="small"
+                onClick={clearFilters}
+                startIcon={<ClearIcon />}
+                sx={{ height: '40px' }}
+              >
+                Clear
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
 
         {/* Error Display */}
         {error && (

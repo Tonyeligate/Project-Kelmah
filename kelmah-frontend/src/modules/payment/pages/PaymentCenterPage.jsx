@@ -549,11 +549,11 @@ const PaymentCenterPage = () => {
   // Pagination state and derived page items
   const [page, setPage] = useState(1);
   const perPage = 5;
-  const pageCount = Math.ceil(transactions.length / perPage);
-  const pagedTransactions = transactions.slice(
+  const pageCount = Math.ceil((Array.isArray(transactions) ? transactions.length : 0) / perPage);
+  const pagedTransactions = Array.isArray(transactions) ? transactions.slice(
     (page - 1) * perPage,
     page * perPage,
-  );
+  ) : [];
 
   // Bills filters & pagination
   const [billStartDate, setBillStartDate] = useState('');

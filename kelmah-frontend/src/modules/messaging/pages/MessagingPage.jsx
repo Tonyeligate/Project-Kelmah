@@ -84,6 +84,7 @@ const EnhancedMessagingPage = () => {
   const [filteredConversations, setFilteredConversations] = useState([]); // Fix: Added missing filteredConversations state
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [messages, setMessages] = useState([]); // Fix: Added missing messages state
 
   // Initialize messaging system  
   useEffect(() => {
