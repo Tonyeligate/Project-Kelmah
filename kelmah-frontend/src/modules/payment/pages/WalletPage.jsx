@@ -33,11 +33,11 @@ const WalletPage = () => {
   // Pagination state (moved above applyFilters so setPage is defined before use)
   const [page, setPage] = useState(1);
   const perPage = 5;
-  const pageCount = Math.ceil(transactions.length / perPage);
-  const pagedTransactions = transactions.slice(
+  const pageCount = Math.ceil((Array.isArray(transactions) ? transactions.length : 0) / perPage);
+  const pagedTransactions = Array.isArray(transactions) ? transactions.slice(
     (page - 1) * perPage,
     page * perPage,
-  );
+  ) : [];
   const applyFilters = () => {
     const params = {};
     if (startDate) params.startDate = startDate;

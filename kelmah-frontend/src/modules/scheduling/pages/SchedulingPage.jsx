@@ -797,7 +797,7 @@ const SchedulingPage = () => {
             setFormData={setFormData}
             onSubmit={handleSubmit}
             onCancel={handleCloseDialog}
-            jobs={jobs}
+            jobs={Array.isArray(jobs) ? jobs : []}
             users={users}
             loadingJobs={loadingJobs}
             loadingUsers={loadingUsers}

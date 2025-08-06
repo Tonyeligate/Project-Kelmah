@@ -30,10 +30,20 @@ const AppointmentCalendar = ({
 
   // Group appointments by date for easy lookup
   const appointmentsByDate = appointments.reduce((acc, app) => {
-    const dateKey = format(new Date(app.date), 'yyyy-MM-dd');
-    acc[dateKey] = acc[dateKey] || [];
-    acc[dateKey].push(app);
-    return acc;
+    try {
+      const appointmentDate = new Date(app.date);
+      if (isNaN(appointmentDate.getTime())) {
+        console.warn('Invalid appointment date in calendar:', app.date);
+        return acc;
+      }
+      const dateKey = format(appointmentDate, 'yyyy-MM-dd');
+      acc[dateKey] = acc[dateKey] || [];
+      acc[dateKey].push(app);
+      return acc;
+    } catch (error) {
+      console.warn('Error processing appointment date in calendar:', app.date, error);
+      return acc;
+    }
   }, {});
 
   // Custom day rendering with appointment indicators
@@ -121,7 +131,9 @@ const AppointmentCalendar = ({
         <DateCalendar
           value={selectedDate}
           onChange={onDateChange}
-          renderDay={renderDay}
+          slots={{
+            day: (props) => renderDay(props.day, null, props)
+          }}
           sx={{
             width: '100%',
             '& .MuiPickersCalendarHeader-root': {

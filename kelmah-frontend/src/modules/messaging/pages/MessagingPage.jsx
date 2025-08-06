@@ -80,11 +80,25 @@ const EnhancedMessagingPage = () => {
   
   // Local state for UI
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all'); // Fix: Added missing selectedFilter state
-  const [filteredConversations, setFilteredConversations] = useState([]); // Fix: Added missing filteredConversations state
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [filteredConversations, setFilteredConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [messages, setMessages] = useState([]); // Fix: Added missing messages state
+  const [messages, setMessages] = useState([]);
+  
+  // Message composition state
+  const [messageText, setMessageText] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
+  
+  // Refs
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  
+  // Mock data for fallback
+  const mockConversations = [];
+  const mockMessages = {};
 
   // Initialize messaging system  
   useEffect(() => {
@@ -121,8 +135,8 @@ const EnhancedMessagingPage = () => {
         (c) => c.id === conversationId,
       );
       if (conversation) {
-        setSelectedConversation(conversation);
-        setMessages(mockMessages[conversationId] || []);
+        selectConversation(conversation);
+        setMessages([]);
       }
     }
   }, [user, search]);
@@ -185,23 +199,18 @@ const EnhancedMessagingPage = () => {
   // Handle conversation selection
   const handleConversationSelect = useCallback(
     (conversation) => {
-      setSelectedConversation(conversation);
-      setMessages(mockMessages[conversation.id] || []);
+      selectConversation(conversation);
+      setMessages([]);
 
       // Mark as read
       if (conversation.unreadCount > 0) {
-        setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv,
-          ),
-        );
         setUnreadCount((prev) => prev - conversation.unreadCount);
       }
 
       // Update URL
       navigate(`/messages?conversation=${conversation.id}`, { replace: true });
     },
-    [navigate],
+    [navigate, selectConversation],
   );
 
   // Handle sending messages
@@ -229,22 +238,8 @@ const EnhancedMessagingPage = () => {
     setMessageText('');
     setSelectedFiles([]);
 
-    // Update conversation last message
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === selectedConversation.id
-          ? {
-              ...conv,
-              lastMessage: {
-                ...newMessage,
-                text:
-                  newMessage.text ||
-                  `Sent ${newMessage.attachments?.length} file(s)`,
-              },
-            }
-          : conv,
-      ),
-    );
+    // Update conversation last message would be handled by context
+    console.log('Message sent:', newMessage);
 
     try {
       // Simulate API call
