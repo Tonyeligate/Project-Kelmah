@@ -1,0 +1,47 @@
+{
+  "serviceHealth": {
+    "auth": {
+      "status": "unhealthy",
+      "error": "timeout of 10000ms exceeded",
+      "statusCode": "TIMEOUT"
+    },
+    "user": {
+      "status": "unhealthy",
+      "error": "timeout of 10000ms exceeded",
+      "statusCode": "TIMEOUT"
+    },
+    "job": {
+      "status": "unhealthy",
+      "error": "timeout of 10000ms exceeded",
+      "statusCode": "TIMEOUT"
+    },
+    "messaging": {
+      "status": "unhealthy",
+      "error": "timeout of 10000ms exceeded",
+      "statusCode": "TIMEOUT"
+    },
+    "payment": {
+      "status": "unhealthy",
+      "error": "timeout of 10000ms exceeded",
+      "statusCode": "TIMEOUT"
+    }
+  },
+  "authentication": {
+    "worker": {
+      "status": "failed",
+      "error": "Incorrect email or password"
+    }
+  },
+  "dataFlow": {},
+  "frontendIntegration": {
+    "accessibility": "failed",
+    "apiConnectivity": "manual_verification_required"
+  },
+  "summary": {
+    "serviceHealth": "0/5 services healthy",
+    "authentication": "Failed",
+    "dataFlow": "Failed",
+    "overallStatus": "NEEDS_ATTENTION",
+    "timestamp": "2025-08-06T01:16:22.866Z"
+  }
+}

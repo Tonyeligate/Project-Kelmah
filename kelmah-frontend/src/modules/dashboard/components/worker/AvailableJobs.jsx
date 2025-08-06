@@ -184,8 +184,16 @@ const EnhancedAvailableJobs = () => {
         userSkills: user?.skills || [],
       });
 
+      // Ensure response exists and has jobs array
+      if (!response || !Array.isArray(response.jobs)) {
+        console.warn('Invalid response from jobsApi.getJobs:', response);
+        setJobs([]);
+        setError(null);
+        return;
+      }
+
       const mappedJobs =
-        response.jobs?.map((job) => ({
+        response.jobs.map((job) => ({
           ...job,
           ...getJobIconData(job),
           status: savedJobs.has(job.id) ? 'saved' : 'idle',
@@ -193,7 +201,7 @@ const EnhancedAvailableJobs = () => {
           salary: job.salary || job.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
           applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
           matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
-        })) || [];
+        }));
 
       setJobs(mappedJobs);
       setError(null);
@@ -213,6 +221,10 @@ const EnhancedAvailableJobs = () => {
 
   // Filter and search jobs
   const applyFiltersAndSearch = useMemo(() => {
+    // Ensure jobs is an array before spreading
+    if (!Array.isArray(jobs)) {
+      return [];
+    }
     let filtered = [...jobs];
 
     // Apply search

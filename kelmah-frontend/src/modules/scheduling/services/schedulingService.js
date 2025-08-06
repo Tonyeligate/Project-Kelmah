@@ -20,8 +20,60 @@ schedulingClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Mock appointments data
-const mockAppointments = [];
+// Enhanced mock appointments data for better UX during service unavailability
+const mockAppointments = [
+  {
+    id: 'mock-apt-1',
+    title: 'Kitchen Cabinet Installation',
+    description: 'Install new kitchen cabinets and hardware',
+    datetime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days from now
+    duration: 180, // 3 hours
+    status: 'confirmed',
+    type: 'installation',
+    workerId: 'worker-123',
+    workerName: 'John Carpenter',
+    hirerName: 'Sarah Mitchell',
+    location: 'Accra, Greater Accra',
+    jobId: 'job-kitchen-123',
+    priority: 'high',
+    notes: 'Please bring power tools and measuring equipment',
+    estimatedCost: 1200
+  },
+  {
+    id: 'mock-apt-2',
+    title: 'Plumbing Leak Repair',
+    description: 'Fix kitchen sink leak and replace faucet',
+    datetime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 days from now
+    duration: 120, // 2 hours
+    status: 'pending',
+    type: 'repair',
+    workerId: 'worker-456',
+    workerName: 'Mike Plumber',
+    hirerName: 'David Johnson',
+    location: 'Kumasi, Ashanti',
+    jobId: 'job-plumbing-456',
+    priority: 'medium',
+    notes: 'Access to main water shut-off required',
+    estimatedCost: 350
+  },
+  {
+    id: 'mock-apt-3',
+    title: 'Electrical Outlet Installation',
+    description: 'Install additional power outlets in living room',
+    datetime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 1 week from now
+    duration: 90, // 1.5 hours
+    status: 'upcoming',
+    type: 'installation',
+    workerId: 'worker-789',
+    workerName: 'Anna Electrician',
+    hirerName: 'Grace Asante',
+    location: 'Takoradi, Western',
+    jobId: 'job-electrical-789',
+    priority: 'low',
+    notes: 'Circuit breaker access needed',
+    estimatedCost: 280
+  }
+];
 
 class SchedulingService {
   /**

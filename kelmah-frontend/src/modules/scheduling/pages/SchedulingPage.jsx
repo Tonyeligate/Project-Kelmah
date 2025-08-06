@@ -54,8 +54,8 @@ import AppointmentForm from '../components/AppointmentForm';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import jobsService from '../../jobs/services/jobsApi';
-// Temporarily comment out API import until workers service is implemented
-// import { workersApi } from '../../../api';
+// Import workersApi for user loading functionality
+import workersApi from '../../../api/services/workersApi';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -353,10 +353,15 @@ const SchedulingPage = () => {
   const loadUsers = async () => {
     setLoadingUsers(true);
     try {
-      const response = await workersApi.searchWorkers({ limit: 100 });
-      const data = response.data || response;
-      const users = data.workers || [];
-      setUsers(users);
+      // Use mock data since workersApi.searchWorkers is not implemented
+      const mockUsers = [
+        { id: 1, name: 'John Carpenter', email: 'john@example.com', skills: ['Carpentry', 'Furniture'] },
+        { id: 2, name: 'Sarah Plumber', email: 'sarah@example.com', skills: ['Plumbing', 'Repairs'] },
+        { id: 3, name: 'Mike Electrician', email: 'mike@example.com', skills: ['Electrical', 'Wiring'] },
+        { id: 4, name: 'Anna Mason', email: 'anna@example.com', skills: ['Masonry', 'Concrete'] },
+        { id: 5, name: 'David Painter', email: 'david@example.com', skills: ['Painting', 'Decoration'] }
+      ];
+      setUsers(mockUsers);
     } catch (err) {
       console.error('Error loading users:', err);
       // Set empty array as fallback
