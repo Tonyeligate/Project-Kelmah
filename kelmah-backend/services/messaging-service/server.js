@@ -10,6 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 
 // Import components
 const MessageSocketHandler = require('./socket/messageSocket');
@@ -51,6 +52,61 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.MESSAGING_SERVICE_PORT || 3005;
+
+// MongoDB Connection Setup
+const connectDB = async () => {
+  try {
+    const mongoUri = process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/kelmah-messaging';
+    
+    const conn = await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      bufferCommands: false,
+      bufferMaxEntries: 0,
+      serverSelectionTimeoutMS: 30000, // 30 seconds
+      socketTimeoutMS: 45000, // 45 seconds
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      maxIdleTimeMS: 30000,
+      waitQueueTimeoutMS: 10000,
+      retryWrites: true,
+      w: 'majority'
+    });
+
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`📊 Database: ${conn.connection.name}`);
+    console.log(`🔗 Connection State: ${conn.connection.readyState}`);
+    
+    return conn;
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error);
+    console.error('🔍 Connection details:', {
+      mongoUri: process.env.DATABASE_URL ? 'Set' : 'Not set',
+      nodeEnv: process.env.NODE_ENV,
+      service: 'messaging-service'
+    });
+    
+    // In production, exit on connection failure
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
+    
+    throw error;
+  }
+};
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('🔄 MongoDB reconnected');
+});
 
 // Middleware setup
 app.use(helmet({
@@ -116,12 +172,26 @@ const messageSocketHandler = new MessageSocketHandler(io);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  const mongoState = mongoose.connection.readyState;
+  const mongoStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+
   const healthStatus = {
-    status: 'healthy',
+    status: mongoState === 1 ? 'healthy' : 'degraded',
     service: 'messaging-service',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: process.env.APP_VERSION || '1.0.0',
+    database: {
+      status: mongoStates[mongoState] || 'unknown',
+      connected: mongoState === 1,
+      host: mongoose.connection.host || 'not connected',
+      name: mongoose.connection.name || 'not connected'
+    },
     websocket: {
       connected_users: messageSocketHandler.getOnlineUsersCount(),
       status: 'operational'
@@ -132,7 +202,8 @@ app.get('/health', (req, res) => {
     }
   };
 
-  res.status(200).json(healthStatus);
+  const statusCode = mongoState === 1 ? 200 : 503;
+  res.status(statusCode).json(healthStatus);
 });
 
 // API Routes with authentication  
@@ -358,15 +429,42 @@ process.on('uncaughtException', (error) => {
   gracefulShutdown('UNCAUGHT_EXCEPTION');
 });
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`🚀 Messaging Service running on port ${PORT}`);
-  console.log(`📡 Socket.IO enabled for real-time messaging`);
-  console.log(`💬 WebSocket endpoint: ws://localhost:${PORT}`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/health`);
-  console.log(`📊 Socket metrics: http://localhost:${PORT}/api/socket/metrics`);
-  console.log(`🔗 CORS origins: ${process.env.ALLOWED_ORIGINS || 'localhost:5173, localhost:3000'}`);
-});
+// Initialize MongoDB connection and start server
+const startServer = async () => {
+  try {
+    // Connect to MongoDB first
+    await connectDB();
+    console.log('📦 MongoDB connection established');
+    
+    // Start the server after successful DB connection
+    server.listen(PORT, () => {
+      console.log(`🚀 Messaging Service running on port ${PORT}`);
+      console.log(`📡 Socket.IO enabled for real-time messaging`);
+      console.log(`💬 WebSocket endpoint: ws://localhost:${PORT}`);
+      console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+      console.log(`📊 Socket metrics: http://localhost:${PORT}/api/socket/metrics`);
+      console.log(`🔗 CORS origins: ${process.env.ALLOWED_ORIGINS || 'localhost:5173, localhost:3000'}`);
+      console.log(`✅ Messaging Service fully initialized and ready!`);
+    });
+    
+  } catch (error) {
+    console.error('💥 Failed to start Messaging Service:', error);
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.error('🚨 Exiting due to startup failure in production');
+      process.exit(1);
+    } else {
+      console.warn('⚠️ Starting server without MongoDB in development mode');
+      server.listen(PORT, () => {
+        console.log(`🚀 Messaging Service running on port ${PORT} (MongoDB connection failed)`);
+        console.log(`⚠️ Some features may not work without database connection`);
+      });
+    }
+  }
+};
+
+// Start the server
+startServer();
 
 // Export for testing
 module.exports = { app, server, io, messageSocketHandler };

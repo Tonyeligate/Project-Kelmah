@@ -331,7 +331,16 @@ const getDashboardJobs = async (req, res, next) => {
  */
 const getContracts = async (req, res, next) => {
   try {
-    // Mock contracts data for now - in real implementation, this would come from a contracts table
+    console.log('📋 GET /api/jobs/contracts - Contracts endpoint called');
+    console.log('🔍 Request details:', {
+      method: req.method,
+      url: req.originalUrl,
+      userAgent: req.get('User-Agent'),
+      origin: req.get('Origin'),
+      service: 'job-service'
+    });
+
+    // Enhanced mock contracts data with more realistic details
     const contracts = [
       {
         id: "contract-1",
@@ -343,7 +352,24 @@ const getContracts = async (req, res, next) => {
         currency: "GHS",
         startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
         endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
-        progress: 65
+        progress: 65,
+        description: "Complete kitchen renovation including cabinets, countertops, and appliances",
+        milestones: [
+          {
+            id: "milestone-1",
+            title: "Demolition Complete",
+            amount: 1500,
+            status: "completed",
+            dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+          },
+          {
+            id: "milestone-2",
+            title: "Cabinet Installation", 
+            amount: 2500,
+            status: "in_progress",
+            dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
+          }
+        ]
       },
       {
         id: "contract-2",
@@ -355,12 +381,54 @@ const getContracts = async (req, res, next) => {
         currency: "GHS",
         startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
         endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 28),
-        progress: 0
+        progress: 0,
+        description: "Modern office interior design with ergonomic workspace solutions",
+        milestones: [
+          {
+            id: "milestone-3",
+            title: "Design Approval",
+            amount: 2000,
+            status: "pending",
+            dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5)
+          }
+        ]
+      },
+      {
+        id: "contract-3",
+        title: "Plumbing System Upgrade",
+        status: "completed",
+        client: "Residential Complex Ltd",
+        worker: "Expert Plumbers Co",
+        amount: 3200,
+        currency: "GHS",
+        startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+        endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+        progress: 100,
+        description: "Complete plumbing system upgrade for 10-unit residential building",
+        milestones: [
+          {
+            id: "milestone-4",
+            title: "System Installation",
+            amount: 3200,
+            status: "completed",
+            dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+          }
+        ]
       }
     ];
 
-    return successResponse(res, 200, "Contracts retrieved successfully", { contracts });
+    console.log(`✅ Returning ${contracts.length} contracts from Job Service`);
+    return successResponse(res, 200, "Contracts retrieved successfully", { 
+      contracts,
+      meta: {
+        total: contracts.length,
+        service: 'job-service',
+        timestamp: new Date().toISOString(),
+        source: 'mock-data' // Will be 'database' when real implementation is done
+      }
+    });
   } catch (error) {
+    console.error('❌ Error in getContracts:', error);
     next(error);
   }
 };

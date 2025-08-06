@@ -103,14 +103,30 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Root endpoint with API information
+// Deployment verification
+const { verifyDeployment } = require('./verify-deployment');
+
+// Root endpoint with API information and deployment verification
 app.get("/", (req, res) => {
+  const verification = verifyDeployment();
+  
   res.status(200).json({
     name: "Job Service API",
     version: "1.0.2", // Fixed build dependencies
     description: "Job management service for the Kelmah platform",
     health: "/health",
-    endpoints: ["/api/jobs", "/api/jobs/dashboard"],
+    endpoints: [
+      "/api/jobs",
+      "/api/jobs/contracts",
+      "/api/jobs/dashboard"
+    ],
+    deployment: {
+      service: verification.serviceName,
+      correctService: verification.isCorrectService,
+      contractsAvailable: verification.hasContracts,
+      status: verification.isCorrectService ? "✅ CORRECT DEPLOYMENT" : "❌ WRONG DEPLOYMENT"
+    },
+    timestamp: new Date().toISOString()
   });
 });
 
