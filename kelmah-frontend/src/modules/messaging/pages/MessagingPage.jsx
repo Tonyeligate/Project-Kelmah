@@ -80,6 +80,8 @@ const EnhancedMessagingPage = () => {
   
   // Local state for UI
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all'); // Fix: Added missing selectedFilter state
+  const [filteredConversations, setFilteredConversations] = useState([]); // Fix: Added missing filteredConversations state
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 

@@ -1234,7 +1234,7 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                     {item.type === 'job' ? 'Required Skills:' : 'Specializations:'}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {item.skills.slice(0, 3).map((skill, index) => (
+                    {(item.skills || []).slice(0, 3).map((skill, index) => (
                       <Chip 
                         key={index}
                         label={skill}
@@ -1251,9 +1251,9 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                         }}
                       />
                     ))}
-                    {item.skills.length > 3 && (
+                    {(item.skills || []).length > 3 && (
                       <Chip 
-                        label={`+${item.skills.length - 3}`}
+                        label={`+${(item.skills || []).length - 3}`}
                         size="small"
                         variant="filled"
                         sx={{ 

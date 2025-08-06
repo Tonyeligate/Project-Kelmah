@@ -223,7 +223,7 @@ const ReviewCard = ({
                         >
                           PROS
                         </Typography>
-                        {review.pros.slice(0, 2).map((pro, i) => (
+                        {(review.pros || []).slice(0, 2).map((pro, i) => (
                           <Typography 
                             key={i} 
                             variant="body2" 
@@ -242,7 +242,7 @@ const ReviewCard = ({
                         >
                           IMPROVEMENT AREAS
                         </Typography>
-                        {review.cons.slice(0, 2).map((con, i) => (
+                        {(review.cons || []).slice(0, 2).map((con, i) => (
                           <Typography 
                             key={i} 
                             variant="body2" 

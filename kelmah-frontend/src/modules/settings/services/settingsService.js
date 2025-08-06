@@ -3,8 +3,26 @@ import { authServiceClient } from '../../common/services/axios';
 class SettingsService {
   // Get user settings
   async getSettings() {
-    const response = await authServiceClient.get('/settings');
-    return response.data.data;
+    try {
+      const response = await authServiceClient.get('/settings');
+      return response.data.data;
+    } catch (error) {
+      console.warn('Settings service unavailable, using default settings:', error.message);
+      return {
+        theme: 'light',
+        language: 'en',
+        notifications: {
+          email: true,
+          push: true,
+          sms: false
+        },
+        privacy: {
+          profileVisibility: 'public',
+          showEmail: false,
+          showPhone: false
+        }
+      };
+    }
   }
 
   // Update user settings
@@ -42,14 +60,33 @@ class SettingsService {
 
   // Get available languages
   async getLanguages() {
-    const response = await authServiceClient.get('/settings/languages');
-    return response.data.data;
+    try {
+      const response = await authServiceClient.get('/settings/languages');
+      return response.data.data;
+    } catch (error) {
+      console.warn('Languages service unavailable, using default languages:', error.message);
+      return [
+        { code: 'en', name: 'English', flag: '🇺🇸' },
+        { code: 'tw', name: 'Twi', flag: '🇬🇭' },
+        { code: 'ga', name: 'Ga', flag: '🇬🇭' },
+        { code: 'fr', name: 'French', flag: '🇫🇷' }
+      ];
+    }
   }
 
   // Get available themes
   async getThemes() {
-    const response = await authServiceClient.get('/settings/themes');
-    return response.data.data;
+    try {
+      const response = await authServiceClient.get('/settings/themes');
+      return response.data.data;
+    } catch (error) {
+      console.warn('Themes service unavailable, using default themes:', error.message);
+      return [
+        { id: 'light', name: 'Light Mode', description: 'Clean and bright interface' },
+        { id: 'dark', name: 'Dark Mode', description: 'Easy on the eyes' },
+        { id: 'auto', name: 'Auto', description: 'Follows system preference' }
+      ];
+    }
   }
 
   // Reset settings to default

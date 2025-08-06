@@ -355,8 +355,14 @@ const workerService = {
    * Get saved jobs for current worker
    * @returns {Promise<Array>} - Array of saved jobs
    */
-  getSavedJobs: () => {
-    return userServiceClient.get('/api/workers/me/saved-jobs');
+  getSavedJobs: async () => {
+    try {
+      const response = await userServiceClient.get('/api/workers/me/saved-jobs');
+      return response.data;
+    } catch (error) {
+      console.warn('User Service unavailable for saved jobs, using fallback:', error.message);
+      return [];
+    }
   },
 
   /**
@@ -382,10 +388,16 @@ const workerService = {
    * @param {Object} filters - Application filters
    * @returns {Promise<Array>} - Array of job applications
    */
-  getApplications: (filters = {}) => {
-    return userServiceClient.get('/api/workers/me/applications', {
-      params: filters,
-    });
+  getApplications: async (filters = {}) => {
+    try {
+      const response = await userServiceClient.get('/api/workers/me/applications', {
+        params: filters,
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('User Service unavailable for applications, using fallback:', error.message);
+      return [];
+    }
   },
 
   /**

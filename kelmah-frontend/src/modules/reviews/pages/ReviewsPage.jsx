@@ -73,7 +73,13 @@ const EnhancedReviewsPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
-  const [];
+  const [reviews, setReviews] = useState([]);
+  const [filteredReviews, setFilteredReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all'); // Fix: Added missing selectedFilter state
+  const [selectedSort, setSelectedSort] = useState('newest'); // Fix: Added missing selectedSort state
 
   // Mock review statistics
   const mockStats = {

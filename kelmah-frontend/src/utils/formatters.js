@@ -392,9 +392,20 @@ export const formatTimeRange = (startTime, endTime) => {
   const start = new Date(startTime);
   const end = new Date(endTime);
 
+  // Validate that dates are valid
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    console.warn('Invalid date values in formatTimeRange:', { startTime, endTime });
+    return '';
+  }
+
   const timeOptions = { hour: '2-digit', minute: '2-digit' };
   
-  return `${start.toLocaleTimeString('en-US', timeOptions)} - ${end.toLocaleTimeString('en-US', timeOptions)}`;
+  try {
+    return `${start.toLocaleTimeString('en-US', timeOptions)} - ${end.toLocaleTimeString('en-US', timeOptions)}`;
+  } catch (error) {
+    console.warn('Error formatting time range:', error);
+    return '';
+  }
 };
 
 export default {
