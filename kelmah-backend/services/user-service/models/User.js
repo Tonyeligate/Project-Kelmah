@@ -155,15 +155,15 @@ const userSchema = new mongoose.Schema({
   collection: 'users'
 });
 
-// Indexes for performance
+// ✅ FIXED: Clean indexes without duplicates (removed unique: true from explicit indexes)
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ phone: 1 }, { unique: true, sparse: true });
+userSchema.index({ phone: 1 }, { sparse: true }); // Removed duplicate unique: true 
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 userSchema.index({ createdAt: 1 });
-userSchema.index({ googleId: 1 }, { sparse: true });
-userSchema.index({ facebookId: 1 }, { sparse: true });
-userSchema.index({ linkedinId: 1 }, { sparse: true });
+userSchema.index({ googleId: 1 }, { sparse: true }); // Already no unique: true
+userSchema.index({ facebookId: 1 }, { sparse: true }); // Already no unique: true  
+userSchema.index({ linkedinId: 1 }, { sparse: true }); // Already no unique: true
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {

@@ -54,7 +54,7 @@ app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
-// CORS configuration with multiple allowed origins
+// ✅ ENHANCED: CORS configuration with Vercel preview URL support
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
@@ -66,13 +66,32 @@ const corsOptions = {
       process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'
     ].filter(Boolean);
     
+    // Allow all Vercel preview and deployment URLs
+    const vercelPatterns = [
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
+      /^https:\/\/project-kelmah.*\.vercel\.app$/,
+      /^https:\/\/kelmah-frontend.*\.vercel\.app$/
+    ];
+    
     if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
+    
+    // Check exact matches first
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else {
-      logger.info(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+    
+    // Check Vercel patterns
+    const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
+    if (isVercelPreview) {
+      logger.info(`✅ User Service CORS allowed Vercel preview: ${origin}`);
+      callback(null, true);
+      return;
+    }
+    
+    logger.info(`🚨 User Service CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -93,6 +112,106 @@ app.use("/api/users", userRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
 
+// ✅ TEMPORARY FIX: Add contracts endpoint since job-service URL serves user-service
+app.get("/api/jobs/contracts", (req, res) => {
+  logger.info('📋 TEMP FIX: /api/jobs/contracts called on user-service (should be job-service)');
+  
+  // Enhanced mock contracts data matching job-service implementation
+  const contracts = [
+    {
+      id: "contract-1",
+      title: "Kitchen Renovation Contract",
+      status: "active",
+      client: "Sarah Mitchell",
+      worker: "John Contractor", 
+      amount: 5500,
+      currency: "GHS",
+      startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+      progress: 65,
+      description: "Complete kitchen renovation including cabinets, countertops, and appliances",
+      milestones: [
+        {
+          id: "milestone-1",
+          title: "Demolition Complete",
+          amount: 1500,
+          status: "completed",
+          dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+        },
+        {
+          id: "milestone-2", 
+          title: "Cabinet Installation",
+          amount: 2500,
+          status: "in_progress", 
+          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
+        }
+      ]
+    },
+    {
+      id: "contract-2",
+      title: "Office Interior Design",
+      status: "pending", 
+      client: "Tech Solutions Ltd",
+      worker: "Maria Designer",
+      amount: 8000,
+      currency: "GHS",
+      startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 28),
+      progress: 0,
+      description: "Modern office interior design with ergonomic workspace solutions",
+      milestones: [
+        {
+          id: "milestone-3",
+          title: "Design Approval", 
+          amount: 2000,
+          status: "pending",
+          dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5)
+        }
+      ]
+    },
+    {
+      id: "contract-3",
+      title: "Plumbing System Upgrade", 
+      status: "completed",
+      client: "Residential Complex Ltd",
+      worker: "Expert Plumbers Co", 
+      amount: 3200,
+      currency: "GHS",
+      startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+      endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+      progress: 100,
+      description: "Complete plumbing system upgrade for 10-unit residential building",
+      milestones: [
+        {
+          id: "milestone-4",
+          title: "System Installation",
+          amount: 3200,
+          status: "completed", 
+          dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+        }
+      ]
+    }
+  ];
+
+  logger.info(`✅ Returning ${contracts.length} contracts from User Service (TEMP FIX)`);
+  
+  res.status(200).json({
+    success: true,
+    message: "Contracts retrieved successfully", 
+    data: {
+      contracts,
+      meta: {
+        total: contracts.length,
+        service: 'user-service-temp-fix',
+        actualService: 'should-be-job-service',
+        timestamp: new Date().toISOString(),
+        source: 'mock-data',
+        note: 'DEPLOYMENT ISSUE: job-service URL serving user-service code'
+      }
+    }
+  });
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -102,13 +221,36 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Root endpoint with API information
+// Root endpoint with API information and deployment verification
 app.get("/", (req, res) => {
+  const actualService = 'user-service';
+  const expectedAtThisURL = process.env.SERVICE_NAME || 'unknown';
+  const isCorrectDeployment = actualService === expectedAtThisURL;
+  
   res.status(200).json({
     name: "User Service API",
-    version: "1.0.0",
+    version: "1.0.0", 
     description: "User management service for the Kelmah platform",
     health: "/health",
+    endpoints: [
+      "/api/users",
+      "/api/profile", 
+      "/api/settings",
+      "/api/jobs/contracts" // TEMP FIX for deployment mixup
+    ],
+    deployment: {
+      actualService: actualService,
+      expectedService: expectedAtThisURL,
+      isCorrectDeployment: isCorrectDeployment,
+      status: isCorrectDeployment ? "✅ CORRECT DEPLOYMENT" : "🚨 DEPLOYMENT MIXUP DETECTED",
+      warning: isCorrectDeployment ? null : "This URL should serve a different microservice"
+    },
+    temporaryFix: {
+      contractsEndpoint: "/api/jobs/contracts",
+      reason: "job-service URL serving user-service code",
+      solution: "Fix Render deployment configuration"
+    },
+    timestamp: new Date().toISOString()
   });
 });
 
