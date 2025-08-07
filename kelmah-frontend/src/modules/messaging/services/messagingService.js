@@ -1,11 +1,13 @@
 /**
  * Messaging Service
  * Handles messaging functionality including conversations and message sending
+ * Updated: 2025-01-07 - Fixed import/export issues
  */
 
 import { messagingServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
+// ✅ FIXED: Clear export to resolve import errors
 export const messagingService = {
   // Get all conversations for the current user
   async getConversations() {
@@ -73,3 +75,6 @@ export const messagingService = {
     }
   },
 };
+
+// ✅ ADDED: Default export for compatibility
+export default messagingService;

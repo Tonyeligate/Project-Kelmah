@@ -26,6 +26,10 @@ const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 const app = express();
 const server = http.createServer(app);
 
+// ✅ ADDED: Trust proxy for production deployment (Render, Heroku, etc.)
+// This fixes the "X-Forwarded-For header is set but trust proxy is false" error
+app.set('trust proxy', true);
+
 // CORS configuration for production and development
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:5173',
@@ -33,7 +37,11 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'https://kelmah-frontend-cyan.vercel.app',
   'https://kelmah-frontend.vercel.app',
   'https://kelmah-frontend-mu.vercel.app',
-  'https://kelmah-frontend-ecru.vercel.app'
+  'https://kelmah-frontend-ecru.vercel.app',
+  // ✅ ADDED: Current Vercel deployment URL from error logs
+  'https://kelmah-frontend-edcpfmus9-kelmahs-projects.vercel.app',
+  // ✅ ADDED: Wildcard pattern for any Vercel deployment
+  'https://kelmah-frontend-git-main-kelmahs-projects.vercel.app'
 ];
 
 // Socket.IO setup with CORS
@@ -62,7 +70,7 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       bufferCommands: false,
-      bufferMaxEntries: 0,
+      // bufferMaxEntries: 0, // ❌ REMOVED: This option is not supported in newer MongoDB drivers
       serverSelectionTimeoutMS: 30000, // 30 seconds
       socketTimeoutMS: 45000, // 45 seconds
       maxPoolSize: 10,
