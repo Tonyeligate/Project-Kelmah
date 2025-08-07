@@ -172,10 +172,16 @@ const EnhancedReviewsPage = () => {
     },
   };
 
+  // Utility functions
+  const showFeedback = (message, severity = 'info') => {
+    setFeedback({ open: true, message, severity });
+  };
+
   // Initialize data
   useEffect(() => {
     const loadReviews = async () => {
       setIsLoading(true);
+      setLoading(true);
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -186,6 +192,7 @@ const EnhancedReviewsPage = () => {
         showFeedback('Failed to load reviews', 'error');
       } finally {
         setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -258,11 +265,6 @@ const EnhancedReviewsPage = () => {
 
     setFilteredReviews(filtered);
   }, [reviews, searchQuery, selectedFilter, selectedSort]);
-
-  // Utility functions
-  const showFeedback = (message, severity = 'info') => {
-    setFeedback({ open: true, message, severity });
-  };
 
   const handleReply = async () => {
     if (!replyText.trim() || !selectedReview) return;

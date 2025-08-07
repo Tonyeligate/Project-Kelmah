@@ -353,7 +353,18 @@ const SchedulingPage = () => {
   const loadUsers = async () => {
     setLoadingUsers(true);
     try {
-      // Use mock data since workersApi.searchWorkers is not implemented
+      // Fix: Use workersApi safely with fallback
+      let workers = [];
+      try {
+        // Try to use workersApi if available
+        if (workersApi && workersApi.searchWorkers) {
+          workers = await workersApi.searchWorkers({ limit: 20 });
+        }
+      } catch (apiError) {
+        console.warn('workersApi.searchWorkers not available, using mock data:', apiError.message);
+      }
+      
+      // Use mock data as fallback
       const mockUsers = [
         { id: 1, name: 'John Carpenter', email: 'john@example.com', skills: ['Carpentry', 'Furniture'] },
         { id: 2, name: 'Sarah Plumber', email: 'sarah@example.com', skills: ['Plumbing', 'Repairs'] },
@@ -361,7 +372,8 @@ const SchedulingPage = () => {
         { id: 4, name: 'Anna Mason', email: 'anna@example.com', skills: ['Masonry', 'Concrete'] },
         { id: 5, name: 'David Painter', email: 'david@example.com', skills: ['Painting', 'Decoration'] }
       ];
-      setUsers(mockUsers);
+      
+      setUsers(workers.length > 0 ? workers : mockUsers);
     } catch (err) {
       console.error('Error loading users:', err);
       // Set empty array as fallback
