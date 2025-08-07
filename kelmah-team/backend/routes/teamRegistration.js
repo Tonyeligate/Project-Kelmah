@@ -4,6 +4,17 @@ const TeamRegistration = require('../models/TeamRegistration');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 
+// Test endpoint to verify API connectivity
+router.get('/test', (req, res) => {
+  console.log('🧪 Test endpoint hit');
+  res.json({
+    success: true,
+    message: 'Kelmah Team API is working!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Rate limiting for registration endpoints
 const registrationLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -87,9 +98,15 @@ const validateRegistration = [
 // @access  Public
 router.post('/register', registrationLimit, validateRegistration, async (req, res) => {
   try {
+    console.log('🚀 Registration request received');
+    console.log('Request body keys:', Object.keys(req.body));
+    console.log('Request headers:', req.headers);
+    console.log('Full request data:', JSON.stringify(req.body, null, 2));
+
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',

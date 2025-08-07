@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import { teamRegistrationApi } from '../services/teamApi'
 import '../styles/RegistrationPage.css'
 
 const RegistrationPage = () => {
@@ -74,18 +75,70 @@ const RegistrationPage = () => {
     setIsLoading(true)
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Prepare registration data for backend
+      const registrationData = {
+        // Personal Information
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        age: parseInt(data.age),
+        location: data.location,
+        education: data.education,
+        currentStatus: data.currentStatus,
+        
+        // Technical Background  
+        programmingLanguages: data.languages || [],
+        frameworks: data.frameworks || [],
+        experienceLevel: data.experience,
+        portfolioUrl: data.portfolio || '',
+        githubUrl: data.github || '',
+        previousProjects: data.projects ? data.projects.split(',').map(p => p.trim()).filter(Boolean) : [],
+        hasWebDevelopmentExperience: data.experience !== 'beginner',
+        hasAIExperience: data.aiExperience === 'yes',
+        
+        // Commitment and Motivation
+        availableHours: parseInt(data.availability?.split('-')[0]) || 15,
+        startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        motivationLetter: data.whySelect || '',
+        careerGoals: data.goals || '',
+        whyKelmah: data.whySelect || '',
+        canRelocate: data.relocate === 'yes',
+        hasTransportation: true,
+        
+        // Source info
+        source: data.howHeard || 'website'
+      }
+
+      console.log('Submitting registration data:', registrationData)
       
-      // Store registration data in localStorage for payment page
-      localStorage.setItem('registrationData', JSON.stringify(data))
+      // Call the actual backend API
+      const response = await teamRegistrationApi.submitRegistration(registrationData)
       
-      toast.success('Registration submitted successfully!')
+      console.log('Registration response:', response)
+      
+      // Store registration data and response for payment page
+      localStorage.setItem('registrationData', JSON.stringify({
+        ...data,
+        registrationId: response.id || response._id,
+        submissionDate: new Date().toISOString()
+      }))
+      
+      toast.success('Registration submitted successfully! Please proceed to payment.')
       navigate('/payment')
       
     } catch (error) {
-      toast.error('Registration failed. Please try again.')
       console.error('Registration error:', error)
+      
+      // Handle specific error messages
+      if (error.message?.includes('Email already registered')) {
+        toast.error('This email is already registered. Please use a different email or contact support.')
+      } else if (error.message?.includes('validation')) {
+        toast.error('Please check your information and try again.')
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        toast.error('Network error. Please check your connection and try again.')
+      } else {
+        toast.error(error.message || 'Registration failed. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }

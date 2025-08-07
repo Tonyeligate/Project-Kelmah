@@ -22,7 +22,7 @@ const PaymentPage = () => {
   const [paymentSubmitted, setPaymentSubmitted] = useState(false)
   const navigate = useNavigate()
 
-  const REGISTRATION_FEE = 500 // GHS 500
+  const REGISTRATION_FEE = 1000 // GHS 1,000
   const PROCESSING_FEE = 0 // No processing fee for local payments
   const TOTAL_AMOUNT = REGISTRATION_FEE + PROCESSING_FEE
 

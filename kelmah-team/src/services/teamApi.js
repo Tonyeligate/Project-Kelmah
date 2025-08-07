@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Base API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://api.kelmah.com' 
-  : 'http://localhost:5000';
+  ? (process.env.VITE_API_BASE_URL || 'https://kelmah-team-api.onrender.com')
+  : 'http://localhost:5001';
 
 // Create axios instance with default config
 const teamApi = axios.create({
