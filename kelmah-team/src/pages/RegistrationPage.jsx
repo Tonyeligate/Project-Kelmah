@@ -81,32 +81,32 @@ const RegistrationPage = () => {
         fullName: data.fullName,
         email: data.email,
         phone: data.phone,
-        age: parseInt(data.age),
-        location: data.location,
-        education: data.education,
-        currentStatus: data.currentStatus,
+        age: 25, // Default age since form doesn't collect it
+        location: data.country || 'Not specified', // Form uses 'country' field
+        education: data.education || 'Not specified',
+        currentStatus: data.currentStatus || 'student',
         
         // Technical Background  
-        programmingLanguages: data.languages || [],
-        frameworks: data.frameworks || [],
-        experienceLevel: data.experience,
+        programmingLanguages: data.skills ? [data.skills] : [], // Form uses 'skills' field
+        frameworks: [], // Form doesn't collect frameworks separately
+        experienceLevel: data.experience || 'beginner',
         portfolioUrl: data.portfolio || '',
         githubUrl: data.github || '',
-        previousProjects: data.projects ? data.projects.split(',').map(p => p.trim()).filter(Boolean) : [],
+        previousProjects: [], // Form doesn't collect this
         hasWebDevelopmentExperience: data.experience !== 'beginner',
-        hasAIExperience: data.aiExperience === 'yes',
+        hasAIExperience: false, // Form doesn't collect this specifically
         
         // Commitment and Motivation
         availableHours: parseInt(data.availability?.split('-')[0]) || 15,
         startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        motivationLetter: data.whySelect || '',
+        motivationLetter: data.motivation || '', // Form uses 'motivation' field
         careerGoals: data.goals || '',
-        whyKelmah: data.whySelect || '',
-        canRelocate: data.relocate === 'yes',
-        hasTransportation: true,
+        whyKelmah: data.motivation || '', // Use motivation for both fields
+        canRelocate: false, // Form doesn't collect this
+        hasTransportation: true, // Assume true
         
         // Source info
-        source: data.howHeard || 'website'
+        source: data.hearAbout || 'website' // Form uses 'hearAbout' field
       }
 
       console.log('Submitting registration data:', registrationData)

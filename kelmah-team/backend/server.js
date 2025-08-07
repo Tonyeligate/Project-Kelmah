@@ -26,6 +26,7 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
+      'https://kelmah-team.vercel.app',
       'https://kelmah-team-nantwz8sj-kelmahs-projects.vercel.app',
       process.env.FRONTEND_URL
     ].filter(Boolean);

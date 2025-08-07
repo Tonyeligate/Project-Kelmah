@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? (process.env.VITE_API_BASE_URL || 'https://kelmah-team-api.onrender.com')
+  ? (process.env.VITE_API_BASE_URL || 'https://kelmah-team-recruitment.onrender.com')
   : 'http://localhost:5001';
 
 // Create axios instance with default config

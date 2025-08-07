@@ -76,10 +76,74 @@ const EnhancedReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
   const [filteredReviews, setFilteredReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Fix: Added missing isLoading state
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all'); // Fix: Added missing selectedFilter state
-  const [selectedSort, setSelectedSort] = useState('newest'); // Fix: Added missing selectedSort state
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedSort, setSelectedSort] = useState('newest');
+  const [activeTab, setActiveTab] = useState(0); // Fix: Added missing activeTab state
+  const [reviewStats, setReviewStats] = useState({}); // Fix: Added missing reviewStats state
+  const [replyDialog, setReplyDialog] = useState(false); // Fix: Added missing replyDialog state
+  const [replyText, setReplyText] = useState(''); // Fix: Added missing replyText state
+  const [selectedReview, setSelectedReview] = useState(null); // Fix: Added missing selectedReview state
+  const [filterMenuAnchor, setFilterMenuAnchor] = useState(null); // Fix: Added missing filterMenuAnchor state
+  const [sortMenuAnchor, setSortMenuAnchor] = useState(null); // Fix: Added missing sortMenuAnchor state
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null); // Fix: Added missing moreMenuAnchor state
+  const [feedback, setFeedback] = useState({ // Fix: Added missing feedback state
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
+  // Mock reviews data - Fix: Added missing reviews data
+  const mockReviews = [
+    {
+      id: 'review_1',
+      title: 'Excellent Kitchen Renovation',
+      comment: 'John did an outstanding job renovating our kitchen. Professional, punctual, and attention to detail was superb.',
+      rating: 5,
+      reviewer: {
+        name: 'Sarah Johnson',
+        avatar: '',
+        isVerified: true,
+      },
+      job: {
+        title: 'Kitchen Cabinet Installation',
+        completedDate: '2024-01-15',
+        budget: 'GH₵3,500',
+      },
+      categories: ['Quality', 'Timeliness', 'Communication'],
+      createdAt: '2024-01-16T10:30:00Z',
+      hasReply: false,
+      helpfulVotes: 5,
+      unhelpfulVotes: 0,
+    },
+    {
+      id: 'review_2',
+      title: 'Great Plumbing Work',
+      comment: 'Fixed our bathroom plumbing issues quickly and efficiently. Very satisfied with the service.',
+      rating: 4,
+      reviewer: {
+        name: 'Michael Brown',
+        avatar: '',
+        isVerified: true,
+      },
+      job: {
+        title: 'Bathroom Plumbing Repair',
+        completedDate: '2024-01-10',
+        budget: 'GH₵800',
+      },
+      categories: ['Quality', 'Value'],
+      createdAt: '2024-01-11T14:20:00Z',
+      hasReply: true,
+      reply: {
+        text: 'Thank you for the positive review, Michael! It was a pleasure working with you.',
+        createdAt: '2024-01-11T16:45:00Z',
+      },
+      helpfulVotes: 3,
+      unhelpfulVotes: 0,
+    },
+  ];
 
   // Mock review statistics
   const mockStats = {
