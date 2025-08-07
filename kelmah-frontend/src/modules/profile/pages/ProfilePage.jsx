@@ -74,13 +74,14 @@ const ProfilePage = () => {
   };
 
   const handleEdit = () => {
+    // ✅ FIXED: Add null-safety check to prevent crashes when profile is null
     setFormData({
-      firstName: profile.firstName || '',
-      lastName: profile.lastName || '',
-      email: profile.email || '',
-      phone: profile.phone || '',
-      bio: profile.bio || '',
-      location: profile.location || '',
+      firstName: profile?.firstName || '',
+      lastName: profile?.lastName || '',
+      email: profile?.email || '',
+      phone: profile?.phone || '',
+      bio: profile?.bio || '',
+      location: profile?.location || '',
     });
     setEditing(true);
   };
@@ -123,6 +124,25 @@ const ProfilePage = () => {
             </Paper>
           </Grid>
         </Grid>
+      </Container>
+    );
+  }
+  
+  // ✅ ADDED: Handle case when profile data is completely missing
+  if (!loading && !profile) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Profile data is not available. Please check your connection or try refreshing the page.
+        </Alert>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            Profile Loading...
+          </Typography>
+          <Typography color="text.secondary">
+            We're setting up your profile. This should only take a moment.
+          </Typography>
+        </Paper>
       </Container>
     );
   }
@@ -213,16 +233,17 @@ const ProfilePage = () => {
                 ) : (
                   <>
                     <Typography variant="h4" gutterBottom>
-                      {profile.firstName} {profile.lastName}
+                      {/* ✅ FIXED: Add null-safety check to prevent crashes */}
+                      {profile?.firstName || 'First'} {profile?.lastName || 'Name'}
                     </Typography>
                     <Typography
                       variant="body1"
                       color="text.secondary"
                       gutterBottom
                     >
-                      {profile.email}
+                      {profile?.email || 'email@example.com'}
                     </Typography>
-                    {profile.phone && (
+                    {profile?.phone && (
                       <Typography
                         variant="body1"
                         color="text.secondary"
@@ -231,7 +252,7 @@ const ProfilePage = () => {
                         {profile.phone}
                       </Typography>
                     )}
-                    {profile.location && (
+                    {profile?.location && (
                       <Typography
                         variant="body1"
                         color="text.secondary"
@@ -240,7 +261,7 @@ const ProfilePage = () => {
                         {profile.location}
                       </Typography>
                     )}
-                    {profile.bio && (
+                    {profile?.bio && (
                       <Typography variant="body1" sx={{ mt: 2 }}>
                         {profile.bio}
                       </Typography>
