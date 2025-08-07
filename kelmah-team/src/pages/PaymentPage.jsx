@@ -8,21 +8,64 @@ import '../styles/PaymentPage.css'
 
 const PaymentPage = () => {
   const [registrationData, setRegistrationData] = useState(null)
-  const [paymentMethod, setPaymentMethod] = useState('card')
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('momo')
   const [paymentData, setPaymentData] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardholderName: '',
+    momoNumber: '',
+    networkProvider: 'mtn',
+    transactionReference: '',
+    name: '',
     email: '',
-    phone: ''
+    phone: '',
+    bankName: '',
+    accountNumber: ''
   })
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false)
   const navigate = useNavigate()
 
-  const REGISTRATION_FEE = 500
-  const PROCESSING_FEE = 15
+  const REGISTRATION_FEE = 500 // GHS 500
+  const PROCESSING_FEE = 0 // No processing fee for local payments
   const TOTAL_AMOUNT = REGISTRATION_FEE + PROCESSING_FEE
+
+  // Ghana Payment Methods
+  const paymentMethods = [
+    {
+      id: 'momo',
+      name: 'Mobile Money',
+      description: 'Pay with MTN, AirtelTigo, or Vodafone Mobile Money',
+      icon: '📱',
+      popular: true
+    },
+    {
+      id: 'bank',
+      name: 'Bank Transfer',
+      description: 'Direct bank transfer to our account',
+      icon: '🏦',
+      popular: false
+    },
+    {
+      id: 'bank_mobile',
+      name: 'Mobile Banking',
+      description: 'Use your bank\'s mobile app',
+      icon: '📲',
+      popular: true
+    }
+  ]
+
+  const networkProviders = [
+    { id: 'mtn', name: 'MTN Mobile Money', color: '#FFCC02' },
+    { id: 'vodafone', name: 'Vodafone Cash', color: '#E60000' },
+    { id: 'airteltigo', name: 'AirtelTigo Money', color: '#ED1C24' }
+  ]
+
+  const ghanaianBanks = [
+    'Access Bank', 'Absa Bank', 'Agricultural Development Bank',
+    'Bank of Africa', 'CAL Bank', 'Ecobank', 'Fidelity Bank',
+    'First National Bank', 'GCB Bank', 'Ghana Commercial Bank',
+    'GT Bank', 'National Investment Bank', 'OmniBank',
+    'Prudential Bank', 'Republic Bank', 'Societe Generale',
+    'Standard Chartered', 'Stanbic Bank', 'United Bank for Africa',
+    'Zenith Bank'
+  ]
 
   useEffect(() => {
     // Get registration data from localStorage
@@ -33,7 +76,8 @@ const PaymentPage = () => {
       setPaymentData(prev => ({
         ...prev,
         email: data.email || '',
-        phone: data.phone || ''
+        phone: data.phone || '',
+        name: data.fullName || ''
       }))
     } else {
       // Redirect to registration if no data
@@ -45,84 +89,133 @@ const PaymentPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     
-    // Format card number with spaces
-    if (name === 'cardNumber') {
-      const formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim()
-      setPaymentData(prev => ({ ...prev, [name]: formattedValue }))
-    } 
-    // Format expiry date
-    else if (name === 'expiryDate') {
-      const formattedValue = value.replace(/\D/g, '').replace(/(\d{2})(\d{2})/, '$1/$2')
-      setPaymentData(prev => ({ ...prev, [name]: formattedValue }))
-    }
-    // CVV restriction
-    else if (name === 'cvv') {
-      const formattedValue = value.replace(/\D/g, '').slice(0, 4)
-      setPaymentData(prev => ({ ...prev, [name]: formattedValue }))
-    }
-    else {
+    // Format phone numbers
+    if (name === 'momoNumber' || name === 'phone') {
+      // Remove non-digits and format for Ghana numbers
+      let formattedValue = value.replace(/\D/g, '')
+      if (formattedValue.startsWith('233')) {
+        formattedValue = formattedValue.slice(3)
+      }
+      if (formattedValue.length <= 9) {
+        setPaymentData(prev => ({ ...prev, [name]: formattedValue }))
+      }
+    } else {
       setPaymentData(prev => ({ ...prev, [name]: value }))
     }
   }
 
-  const validatePayment = () => {
+  const validatePaymentData = () => {
     const errors = []
-    
-    if (paymentMethod === 'card') {
-      if (!paymentData.cardholderName) errors.push('Cardholder name is required')
-      if (!paymentData.cardNumber || paymentData.cardNumber.replace(/\s/g, '').length < 16) {
-        errors.push('Valid card number is required')
+
+    if (!paymentData.name.trim()) {
+      errors.push('Full name is required')
+    }
+
+    if (!paymentData.email.trim() || !/\S+@\S+\.\S+/.test(paymentData.email)) {
+      errors.push('Valid email is required')
+    }
+
+    if (!paymentData.phone.trim() || paymentData.phone.length < 9) {
+      errors.push('Valid phone number is required (9 digits)')
+    }
+
+    if (paymentMethod === 'momo') {
+      if (!paymentData.momoNumber.trim() || paymentData.momoNumber.length < 9) {
+        errors.push('Valid Mobile Money number is required (9 digits)')
       }
-      if (!paymentData.expiryDate || !/^\d{2}\/\d{2}$/.test(paymentData.expiryDate)) {
-        errors.push('Valid expiry date is required (MM/YY)')
+      if (!paymentData.networkProvider) {
+        errors.push('Please select your network provider')
       }
-      if (!paymentData.cvv || paymentData.cvv.length < 3) {
-        errors.push('Valid CVV is required')
+    } else if (paymentMethod === 'bank' || paymentMethod === 'bank_mobile') {
+      if (!paymentData.bankName.trim()) {
+        errors.push('Bank name is required')
+      }
+      if (!paymentData.accountNumber.trim()) {
+        errors.push('Account number is required')
       }
     }
-    
-    if (!paymentData.email) errors.push('Email is required')
-    if (!paymentData.phone) errors.push('Phone number is required')
-    
+
     return errors
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmitPayment = async (e) => {
     e.preventDefault()
     
-    const errors = validatePayment()
+    const errors = validatePaymentData()
     if (errors.length > 0) {
       errors.forEach(error => toast.error(error))
       return
     }
-    
-    setIsProcessing(true)
-    
+
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      setPaymentSubmitted(true)
       
-      // Store payment confirmation
-      const paymentConfirmation = {
-        transactionId: `KLM_${Date.now()}`,
-        amount: TOTAL_AMOUNT,
-        paymentMethod,
-        timestamp: new Date().toISOString(),
+      // Store payment information for admin verification
+      const paymentInfo = {
+        id: `KLM_${Date.now()}`,
         registrationData,
-        paymentData
+        paymentData,
+        paymentMethod,
+        amount: TOTAL_AMOUNT,
+        currency: 'GHS',
+        status: 'pending_verification',
+        submissionDate: new Date().toISOString(),
+        paymentInstructions: getPaymentInstructions()
       }
       
-      localStorage.setItem('paymentConfirmation', JSON.stringify(paymentConfirmation))
-      localStorage.removeItem('registrationData') // Clean up
+      localStorage.setItem('paymentInfo', JSON.stringify(paymentInfo))
       
-      toast.success('Payment processed successfully!')
-      navigate('/success')
+      toast.success('Payment information submitted successfully!')
+      toast.info('Please complete the payment and wait for verification')
+      
+      // Navigate to success page after a short delay
+      setTimeout(() => {
+        navigate('/success')
+      }, 2000)
       
     } catch (error) {
-      toast.error('Payment failed. Please try again.')
-      console.error('Payment error:', error)
-    } finally {
-      setIsProcessing(false)
+      toast.error('Failed to submit payment information. Please try again.')
+      console.error('Payment submission error:', error)
+      setPaymentSubmitted(false)
+    }
+  }
+
+  const getPaymentInstructions = () => {
+    switch (paymentMethod) {
+      case 'momo':
+        return {
+          method: 'Mobile Money',
+          steps: [
+            `1. Open your ${networkProviders.find(p => p.id === paymentData.networkProvider)?.name || 'Mobile Money'} app`,
+            '2. Select "Send Money" or "Transfer"',
+            '3. Enter recipient number: 0249251305',
+            `4. Enter amount: GHS ${TOTAL_AMOUNT}`,
+            '5. Complete the transaction',
+            '6. Send the transaction reference to us for verification'
+          ],
+          recipientNumber: '0249251305',
+          recipientName: 'Kelmah Team Training Program'
+        }
+      case 'bank':
+      case 'bank_mobile':
+        return {
+          method: 'Bank Transfer',
+          steps: [
+            '1. Log into your bank account (online or mobile app)',
+            '2. Select "Transfer Money" or "Send Money"',
+            '3. Add recipient details below',
+            `4. Enter amount: GHS ${TOTAL_AMOUNT}`,
+            '5. Complete the transfer',
+            '6. Send transaction receipt for verification'
+          ],
+          accountDetails: {
+            accountName: 'Kelmah Team Training Program',
+            accountNumber: 'Will be provided after submission',
+            bank: 'Details will be sent via email'
+          }
+        }
+      default:
+        return {}
     }
   }
 
@@ -155,7 +248,7 @@ const PaymentPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="heading-primary">Complete Your Registration</h1>
+            <h1 className="heading-primary">Complete Your Payment</h1>
             <p className="payment-subtitle">
               Secure your spot in the Kelmah Team training program
             </p>
@@ -164,15 +257,15 @@ const PaymentPage = () => {
           <div className="payment-content">
             <div className="payment-layout">
               
-              {/* Registration Summary */}
+              {/* Payment Summary */}
               <motion.div 
-                className="registration-summary"
+                className="payment-summary"
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <div className="summary-header">
-                  <h2>Registration Summary</h2>
+                  <h2>Payment Summary</h2>
                   <div className="applicant-info">
                     <div className="applicant-avatar">
                       {registrationData.fullName?.charAt(0)?.toUpperCase() || '?'}
@@ -180,52 +273,30 @@ const PaymentPage = () => {
                     <div className="applicant-details">
                       <h3>{registrationData.fullName}</h3>
                       <p>{registrationData.email}</p>
-                      <p>{registrationData.country}</p>
                     </div>
                   </div>
                 </div>
-
-                <div className="summary-details">
-                  <div className="detail-row">
-                    <span className="detail-label">Program:</span>
-                    <span className="detail-value">Kelmah Team Training</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Duration:</span>
-                    <span className="detail-value">6 Months</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Experience Level:</span>
-                    <span className="detail-value">{registrationData.experience}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Commitment:</span>
-                    <span className="detail-value">{registrationData.availability}</span>
-                  </div>
-                </div>
-
-                <div className="price-breakdown">
-                  <h3>Payment Breakdown</h3>
-                  <div className="price-row">
+                
+                <div className="payment-breakdown">
+                  <div className="breakdown-item">
                     <span>Registration Fee</span>
-                    <span>${REGISTRATION_FEE}</span>
+                    <span className="amount">GHS {REGISTRATION_FEE}</span>
                   </div>
-                  <div className="price-row">
-                    <span>Processing Fee</span>
-                    <span>${PROCESSING_FEE}</span>
-                  </div>
-                  <div className="price-row total">
+                  {PROCESSING_FEE > 0 && (
+                    <div className="breakdown-item">
+                      <span>Processing Fee</span>
+                      <span className="amount">GHS {PROCESSING_FEE}</span>
+                    </div>
+                  )}
+                  <div className="breakdown-total">
                     <span>Total Amount</span>
-                    <span>${TOTAL_AMOUNT}</span>
+                    <span className="total-amount">GHS {TOTAL_AMOUNT}</span>
                   </div>
                 </div>
 
-                <div className="guarantee-notice">
-                  <div className="guarantee-icon">🛡️</div>
-                  <div className="guarantee-text">
-                    <strong>100% Job Placement Guarantee</strong>
-                    <p>Your investment is protected by our employment guarantee</p>
-                  </div>
+                <div className="payment-note">
+                  <h4>🇬🇭 Ghana Local Payments</h4>
+                  <p>We support all major Ghanaian payment methods including Mobile Money, Bank Transfers, and Mobile Banking.</p>
                 </div>
               </motion.div>
 
@@ -236,229 +307,231 @@ const PaymentPage = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <div className="payment-form-card">
-                  <div className="form-header">
-                    <h2>Payment Information</h2>
-                    <div className="security-badge">
-                      <span className="security-icon">🔒</span>
-                      <span>256-bit SSL Encrypted</span>
-                    </div>
-                  </div>
-
+                <form onSubmit={handleSubmitPayment} className="payment-form">
+                  
                   {/* Payment Method Selection */}
                   <div className="payment-methods">
-                    <h3>Select Payment Method</h3>
-                    <div className="method-options">
-                      <label className={`method-option ${paymentMethod === 'card' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          value="card"
-                          checked={paymentMethod === 'card'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <div className="method-content">
-                          <span className="method-icon">💳</span>
-                          <span className="method-text">Credit/Debit Card</span>
+                    <h3>Choose Payment Method</h3>
+                    <div className="method-grid">
+                      {paymentMethods.map((method) => (
+                        <div
+                          key={method.id}
+                          className={`method-card ${paymentMethod === method.id ? 'selected' : ''}`}
+                          onClick={() => setPaymentMethod(method.id)}
+                        >
+                          <div className="method-icon">{method.icon}</div>
+                          <div className="method-info">
+                            <h4>{method.name}</h4>
+                            <p>{method.description}</p>
+                            {method.popular && <span className="popular-badge">Popular</span>}
+                          </div>
+                          <div className="method-radio">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value={method.id}
+                              checked={paymentMethod === method.id}
+                              onChange={() => setPaymentMethod(method.id)}
+                            />
+                          </div>
                         </div>
-                      </label>
-                      
-                      <label className={`method-option ${paymentMethod === 'paypal' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          value="paypal"
-                          checked={paymentMethod === 'paypal'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <div className="method-content">
-                          <span className="method-icon">🏦</span>
-                          <span className="method-text">PayPal</span>
-                        </div>
-                      </label>
-
-                      <label className={`method-option ${paymentMethod === 'bank' ? 'active' : ''}`}>
-                        <input
-                          type="radio"
-                          value="bank"
-                          checked={paymentMethod === 'bank'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <div className="method-content">
-                          <span className="method-icon">🏛️</span>
-                          <span className="method-text">Bank Transfer</span>
-                        </div>
-                      </label>
+                      ))}
                     </div>
                   </div>
 
-                  <form onSubmit={handleSubmit} className="payment-form">
-                    {paymentMethod === 'card' && (
-                      <div className="card-details">
-                        <div className="form-group">
-                          <label className="form-label">Cardholder Name</label>
-                          <input
-                            type="text"
-                            name="cardholderName"
-                            value={paymentData.cardholderName}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            placeholder="John Doe"
-                            required
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <label className="form-label">Card Number</label>
-                          <input
-                            type="text"
-                            name="cardNumber"
-                            value={paymentData.cardNumber}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            placeholder="1234 5678 9012 3456"
-                            maxLength="19"
-                            required
-                          />
-                        </div>
-
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label className="form-label">Expiry Date</label>
-                            <input
-                              type="text"
-                              name="expiryDate"
-                              value={paymentData.expiryDate}
-                              onChange={handleInputChange}
-                              className="form-input"
-                              placeholder="MM/YY"
-                              maxLength="5"
-                              required
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">CVV</label>
-                            <input
-                              type="text"
-                              name="cvv"
-                              value={paymentData.cvv}
-                              onChange={handleInputChange}
-                              className="form-input"
-                              placeholder="123"
-                              maxLength="4"
-                              required
-                            />
-                          </div>
-                        </div>
+                  {/* Personal Information */}
+                  <div className="form-section">
+                    <h3>Contact Information</h3>
+                    <div className="form-group">
+                      <label htmlFor="name">Full Name *</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        className="form-input"
+                        value={paymentData.name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="email">Email Address *</label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          className="form-input"
+                          value={paymentData.email}
+                          onChange={handleInputChange}
+                          required
+                        />
                       </div>
-                    )}
-
-                    {paymentMethod === 'paypal' && (
-                      <div className="paypal-info">
-                        <div className="info-card">
-                          <h4>PayPal Payment</h4>
-                          <p>You will be redirected to PayPal to complete your payment securely.</p>
-                          <div className="paypal-amount">
-                            <span>Amount: ${TOTAL_AMOUNT} USD</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {paymentMethod === 'bank' && (
-                      <div className="bank-info">
-                        <div className="info-card">
-                          <h4>Bank Transfer Details</h4>
-                          <div className="bank-details">
-                            <div className="bank-row">
-                              <span>Bank Name:</span>
-                              <span>Kelmah Finance Bank</span>
-                            </div>
-                            <div className="bank-row">
-                              <span>Account Name:</span>
-                              <span>Kelmah Team Training</span>
-                            </div>
-                            <div className="bank-row">
-                              <span>Account Number:</span>
-                              <span>1234567890</span>
-                            </div>
-                            <div className="bank-row">
-                              <span>Reference:</span>
-                              <span>KLM_{registrationData.fullName?.replace(/\s+/g, '')}</span>
-                            </div>
-                          </div>
-                          <p className="bank-note">
-                            Please use the reference code when making your transfer.
-                            Send confirmation to: finance@kelmah.com
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="billing-info">
-                      <h3>Billing Information</h3>
-                      <div className="form-row">
-                        <div className="form-group">
-                          <label className="form-label">Email</label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={paymentData.email}
-                            onChange={handleInputChange}
-                            className="form-input"
-                            required
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Phone</label>
+                      <div className="form-group">
+                        <label htmlFor="phone">Phone Number *</label>
+                        <div className="phone-input-group">
+                          <span className="phone-prefix">+233</span>
                           <input
                             type="tel"
+                            id="phone"
                             name="phone"
+                            className="form-input"
+                            placeholder="XXXXXXXXX"
                             value={paymentData.phone}
                             onChange={handleInputChange}
-                            className="form-input"
+                            maxLength="9"
                             required
                           />
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="payment-actions">
-                      <motion.button
-                        type="button"
-                        onClick={() => navigate('/register')}
-                        className="btn btn-secondary"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        ← Back to Registration
-                      </motion.button>
-
-                      <motion.button
-                        type="submit"
-                        className="btn btn-primary btn--payment"
-                        disabled={isProcessing}
-                        whileHover={!isProcessing ? { scale: 1.02 } : {}}
-                        whileTap={!isProcessing ? { scale: 0.98 } : {}}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <div className="loading-spinner"></div>
-                            Processing Payment...
-                          </>
-                        ) : (
-                          <>
-                            🔒 Pay ${TOTAL_AMOUNT} Securely
-                          </>
-                        )}
-                      </motion.button>
+                  {/* Mobile Money Details */}
+                  {paymentMethod === 'momo' && (
+                    <div className="form-section">
+                      <h3>Mobile Money Details</h3>
+                      <div className="form-group">
+                        <label htmlFor="networkProvider">Network Provider *</label>
+                        <select
+                          id="networkProvider"
+                          name="networkProvider"
+                          className="form-select"
+                          value={paymentData.networkProvider}
+                          onChange={handleInputChange}
+                          required
+                        >
+                          {networkProviders.map((provider) => (
+                            <option key={provider.id} value={provider.id}>
+                              {provider.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="momoNumber">Mobile Money Number *</label>
+                        <div className="phone-input-group">
+                          <span className="phone-prefix">+233</span>
+                          <input
+                            type="tel"
+                            id="momoNumber"
+                            name="momoNumber"
+                            className="form-input"
+                            placeholder="XXXXXXXXX"
+                            value={paymentData.momoNumber}
+                            onChange={handleInputChange}
+                            maxLength="9"
+                            required
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </form>
-                </div>
+                  )}
+
+                  {/* Bank Transfer Details */}
+                  {(paymentMethod === 'bank' || paymentMethod === 'bank_mobile') && (
+                    <div className="form-section">
+                      <h3>Bank Details</h3>
+                      <div className="form-group">
+                        <label htmlFor="bankName">Bank Name *</label>
+                        <select
+                          id="bankName"
+                          name="bankName"
+                          className="form-select"
+                          value={paymentData.bankName}
+                          onChange={handleInputChange}
+                          required
+                        >
+                          <option value="">Select your bank</option>
+                          {ghanaianBanks.map((bank) => (
+                            <option key={bank} value={bank}>
+                              {bank}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="accountNumber">Account Number *</label>
+                        <input
+                          type="text"
+                          id="accountNumber"
+                          name="accountNumber"
+                          className="form-input"
+                          value={paymentData.accountNumber}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Instructions */}
+                  <div className="payment-instructions">
+                    <h3>Payment Instructions</h3>
+                    <div className="instruction-card">
+                      <h4>📋 How to Pay:</h4>
+                      {paymentMethod === 'momo' && (
+                        <div className="momo-instructions">
+                          <div className="recipient-info">
+                            <div className="recipient-detail">
+                              <span className="label">Send Money To:</span>
+                              <span className="value">0249251305</span>
+                            </div>
+                            <div className="recipient-detail">
+                              <span className="label">Amount:</span>
+                              <span className="value">GHS {TOTAL_AMOUNT}</span>
+                            </div>
+                            <div className="recipient-detail">
+                              <span className="label">Reference:</span>
+                              <span className="value">KELMAH-{registrationData.email?.split('@')[0]?.toUpperCase()}</span>
+                            </div>
+                          </div>
+                          <ol className="instruction-steps">
+                            <li>Dial your Mobile Money code (*170# for MTN, *110# for Vodafone, etc.)</li>
+                            <li>Select "Send Money"</li>
+                            <li>Enter recipient number: <strong>0249251305</strong></li>
+                            <li>Enter amount: <strong>GHS {TOTAL_AMOUNT}</strong></li>
+                            <li>Enter reference: <strong>KELMAH-{registrationData.email?.split('@')[0]?.toUpperCase()}</strong></li>
+                            <li>Confirm the transaction</li>
+                          </ol>
+                        </div>
+                      )}
+                      
+                      {(paymentMethod === 'bank' || paymentMethod === 'bank_mobile') && (
+                        <div className="bank-instructions">
+                          <div className="bank-info">
+                            <p><strong>Account details will be sent to your email after submission.</strong></p>
+                            <p>Complete the bank transfer and send us the transaction receipt for verification.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="form-actions">
+                    <motion.button
+                      type="submit"
+                      className="submit-btn"
+                      disabled={paymentSubmitted}
+                      whileHover={{ scale: paymentSubmitted ? 1 : 1.02 }}
+                      whileTap={{ scale: paymentSubmitted ? 1 : 0.98 }}
+                    >
+                      {paymentSubmitted ? 'Processing...' : 'Submit Payment Information'}
+                    </motion.button>
+                    
+                    <p className="payment-note">
+                      After submitting, you'll receive payment instructions and your registration will be processed within 24 hours of payment verification.
+                    </p>
+                  </div>
+
+                </form>
               </motion.div>
             </div>
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   )

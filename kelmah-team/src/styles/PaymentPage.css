@@ -593,3 +593,237 @@
     background: rgba(255, 255, 255, 0.1);
   }
 }
+
+/* Ghana Payment Methods Styles */
+.payment-methods {
+  margin-bottom: 2rem;
+}
+
+.payment-methods h3 {
+  color: var(--primary-gold);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.method-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.method-card {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.method-card:hover {
+  border-color: rgba(218, 165, 32, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.method-card.selected {
+  border-color: var(--primary-gold);
+  background: rgba(218, 165, 32, 0.1);
+}
+
+.method-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+.method-info {
+  flex: 1;
+}
+
+.method-info h4 {
+  color: var(--primary-gold);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.method-info p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.popular-badge {
+  background: var(--primary-gold);
+  color: #000;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+.method-radio {
+  margin-left: 1rem;
+}
+
+.method-radio input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary-gold);
+}
+
+/* Phone Input Group */
+.phone-input-group {
+  display: flex;
+  align-items: center;
+  border: 2px solid rgba(218, 165, 32, 0.6);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+}
+
+.phone-prefix {
+  background: var(--primary-gold);
+  color: #000;
+  padding: 1rem 1rem;
+  font-weight: bold;
+  font-size: 1rem;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.phone-input-group .form-input {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  flex: 1;
+}
+
+.phone-input-group .form-input:focus {
+  box-shadow: none;
+}
+
+/* Payment Instructions */
+.payment-instructions {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-instructions h3 {
+  color: var(--primary-gold);
+  margin-bottom: 1rem;
+}
+
+.instruction-card {
+  background: rgba(0, 100, 0, 0.1);
+  border: 2px solid rgba(0, 255, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.instruction-card h4 {
+  color: #00ff00;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.momo-instructions .recipient-info {
+  background: rgba(218, 165, 32, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.recipient-detail {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.recipient-detail:last-child {
+  margin-bottom: 0;
+}
+
+.recipient-detail .label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.recipient-detail .value {
+  color: var(--primary-gold);
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.instruction-steps {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.instruction-steps li {
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.instruction-steps strong {
+  color: var(--primary-gold);
+}
+
+.bank-instructions .bank-info {
+  padding: 1rem;
+  background: rgba(218, 165, 32, 0.1);
+  border-radius: 8px;
+}
+
+.bank-info p {
+  margin: 0 0 0.5rem 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.bank-info p:last-child {
+  margin-bottom: 0;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  color: var(--primary-gold);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Ghana Payment Responsive Updates */
+@media (max-width: 768px) {
+  .method-card {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .method-icon {
+    font-size: 1.5rem;
+    min-width: auto;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .phone-prefix {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+}
