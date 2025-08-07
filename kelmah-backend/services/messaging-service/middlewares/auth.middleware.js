@@ -53,9 +53,10 @@ const authenticate = async (req, res, next) => {
       exp: new Date(decoded.exp * 1000).toISOString()
     });
     
-    // Get user details
+    // Get user details with timeout to prevent buffering issues
     const user = await User.findById(decoded.sub || decoded.id || decoded.userId)
-      .select('firstName lastName email role isActive');
+      .select('firstName lastName email role isActive')
+      .maxTimeMS(8000); // 8 second timeout to prevent buffering issues
     
     if (!user || !user.isActive) {
       console.warn('❌ Auth Failed: User not found or inactive:', {

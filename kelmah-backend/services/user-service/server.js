@@ -109,6 +109,202 @@ if (process.env.NODE_ENV === "development") {
 
 // API routes
 app.use("/api/users", userRoutes);
+
+// Fix: Add missing profile endpoints
+app.get('/profile', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      id: 'user_123',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john.doe@example.com',
+      phone: '+233 20 123 4567',
+      profession: 'Professional Carpenter',
+      location: 'Accra, Ghana',
+      joinedDate: '2023-01-15',
+      profileImage: null,
+      bio: 'Experienced carpenter with over 8 years in the industry.',
+      skills: ['Carpentry', 'Plumbing', 'Electrical Work'],
+      rating: 4.8,
+      completedJobs: 45,
+      profileCompletion: 85,
+      verified: true,
+    },
+  });
+});
+
+app.get('/profile/statistics', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      totalJobs: 45,
+      completedJobs: 42,
+      activeJobs: 3,
+      totalEarnings: 12500,
+      monthlyEarnings: 2800,
+      rating: 4.8,
+      totalReviews: 38,
+      responseTime: '2 hours',
+      completionRate: 93,
+      repeatCustomers: 15,
+      averageJobValue: 850,
+      skillsEndorsed: 8,
+    },
+  });
+});
+
+app.get('/profile/activity', (req, res) => {
+  const activities = [
+    {
+      id: 'act_1',
+      type: 'job_completed',
+      title: 'Kitchen Cabinet Installation',
+      description: 'Completed job for Johnson Family',
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      amount: 3500,
+    },
+    {
+      id: 'act_2',
+      type: 'review_received',
+      title: 'New Review',
+      description: '5-star review from Sarah Johnson',
+      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      rating: 5,
+    },
+    {
+      id: 'act_3',
+      type: 'application_sent',
+      title: 'Job Application',
+      description: 'Applied for Bathroom Renovation project',
+      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+  
+  res.json({
+    success: true,
+    data: activities,
+  });
+});
+
+// Fix: Add missing worker endpoints
+app.get('/api/workers/me/applications', (req, res) => {
+  const applications = [
+    {
+      id: 'app_1',
+      jobId: 'job_123',
+      job: {
+        title: 'Kitchen Cabinet Installation',
+        location: 'Accra, Ghana',
+        salary: 'GH₵3,500',
+        type: 'Contract',
+        description: 'Custom kitchen cabinet installation and fitting',
+        skills: ['Carpentry', 'Measurement', 'Installation'],
+      },
+      status: 'pending',
+      appliedAt: '2024-01-15T10:30:00Z',
+      coverMessage: 'I have extensive experience in kitchen installations.',
+    },
+    {
+      id: 'app_2',
+      jobId: 'job_124',
+      job: {
+        title: 'Bathroom Plumbing Repair',
+        location: 'Tema, Ghana',
+        salary: 'GH₵800',
+        type: 'One-time',
+        description: 'Fix leaking pipes and install new fixtures',
+        skills: ['Plumbing', 'Repair', 'Installation'],
+      },
+      status: 'accepted',
+      appliedAt: '2024-01-10T14:20:00Z',
+      coverMessage: 'I can fix this issue quickly and efficiently.',
+    },
+  ];
+  
+  res.json({
+    success: true,
+    data: applications,
+  });
+});
+
+app.get('/api/workers/me/saved-jobs', (req, res) => {
+  const savedJobs = [
+    {
+      id: 'job_125',
+      title: 'Office Electrical Wiring',
+      company: 'TechCorp Ghana',
+      location: 'Kumasi, Ghana',
+      salary: 'GH₵2,200',
+      type: 'Contract',
+      description: 'Complete electrical wiring for new office building',
+      postedAt: '2024-01-12T08:00:00Z',
+      savedAt: '2024-01-13T09:15:00Z',
+      urgent: false,
+      skills: ['Electrical', 'Wiring', 'Commercial'],
+    },
+    {
+      id: 'job_126',
+      title: 'Home Renovation Project',
+      company: 'Private Client',
+      location: 'Cape Coast, Ghana',
+      salary: 'GH₵4,500',
+      type: 'Project',
+      description: 'Full home renovation including carpentry and painting',
+      postedAt: '2024-01-08T12:00:00Z',
+      savedAt: '2024-01-09T16:30:00Z',
+      urgent: true,
+      skills: ['Carpentry', 'Painting', 'Renovation'],
+    },
+  ];
+  
+  res.json({
+    success: true,
+    data: savedJobs,
+  });
+});
+
+// Fix: Add missing appointments endpoint
+app.get('/api/appointments', (req, res) => {
+  const appointments = [
+    {
+      id: 'apt_1',
+      jobId: 'job_123',
+      jobTitle: 'Kitchen Cabinet Installation',
+      hirer: 'Sarah Johnson',
+      hirerId: 'user_456',
+      hirerAvatar: null,
+      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      startTime: '09:00',
+      endTime: '17:00',
+      location: 'East Legon, Accra',
+      appointmentType: 'in-person',
+      status: 'confirmed',
+      notes: 'Please bring measuring tools',
+    },
+    {
+      id: 'apt_2',
+      jobId: 'job_124',
+      jobTitle: 'Plumbing Consultation',
+      hirer: 'Michael Brown',
+      hirerId: 'user_789',
+      hirerAvatar: null,
+      date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      startTime: '14:00',
+      endTime: '16:00',
+      location: 'Virtual Meeting',
+      appointmentType: 'virtual',
+      meetingLink: 'https://meet.google.com/abc-def-ghi',
+      status: 'pending',
+      notes: 'Initial consultation for bathroom renovation',
+    },
+  ];
+  
+  res.json({
+    success: true,
+    data: appointments,
+  });
+});
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
 

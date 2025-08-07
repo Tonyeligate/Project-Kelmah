@@ -75,38 +75,45 @@ const RegistrationPage = () => {
     setIsLoading(true)
     
     try {
-      // Prepare registration data for backend
+      // Prepare registration data for backend - send both formats
       const registrationData = {
-        // Personal Information
+        // Personal Information - send what backend expects
         fullName: data.fullName,
         email: data.email,
         phone: data.phone,
-        age: 25, // Default age since form doesn't collect it
-        location: data.country || 'Not specified', // Form uses 'country' field
+        age: 25,
+        
+        // Backend validation expects these exact field names:
+        country: data.country || 'Ghana', // Backend wants 'country'
+        experience: data.experience || 'beginner', // Backend wants 'experience'
+        skills: data.skills || 'JavaScript', // Backend wants 'skills'
+        goals: data.goals || data.motivation || '', // Backend wants 'goals'
+        availability: data.availability || '10-15', // Backend wants 'availability'
+        commitment: data.commitment || 'high', // Backend wants 'commitment'
+        hearAbout: data.hearAbout || 'Friend/Colleague', // Backend wants 'hearAbout'
+        motivation: data.motivation || '', // Backend wants 'motivation'
+        agreement: 'true', // Backend wants 'agreement'
+        
+        // Also send the mapped versions for the model
+        location: data.country || 'Ghana',
         education: data.education || 'Not specified',
         currentStatus: data.currentStatus || 'student',
-        
-        // Technical Background  
-        programmingLanguages: data.skills ? [data.skills] : [], // Form uses 'skills' field
-        frameworks: [], // Form doesn't collect frameworks separately
+        programmingLanguages: data.skills ? [data.skills] : ['JavaScript'],
+        frameworks: [],
         experienceLevel: data.experience || 'beginner',
         portfolioUrl: data.portfolio || '',
         githubUrl: data.github || '',
-        previousProjects: [], // Form doesn't collect this
+        previousProjects: [],
         hasWebDevelopmentExperience: data.experience !== 'beginner',
-        hasAIExperience: false, // Form doesn't collect this specifically
-        
-        // Commitment and Motivation
+        hasAIExperience: false,
         availableHours: parseInt(data.availability?.split('-')[0]) || 15,
-        startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        motivationLetter: data.motivation || '', // Form uses 'motivation' field
-        careerGoals: data.goals || '',
-        whyKelmah: data.motivation || '', // Use motivation for both fields
-        canRelocate: false, // Form doesn't collect this
-        hasTransportation: true, // Assume true
-        
-        // Source info
-        source: data.hearAbout || 'website' // Form uses 'hearAbout' field
+        startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        motivationLetter: data.motivation || '',
+        careerGoals: data.goals || data.motivation || '',
+        whyKelmah: data.motivation || '',
+        canRelocate: false,
+        hasTransportation: true,
+        source: data.hearAbout || 'website'
       }
 
       console.log('Submitting registration data:', registrationData)

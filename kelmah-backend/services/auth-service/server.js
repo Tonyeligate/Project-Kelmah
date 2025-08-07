@@ -91,6 +91,63 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/auth", authRoutes);
 
+// Fix: Add missing settings endpoints
+app.get('/settings', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      theme: 'dark',
+      language: 'en',
+      notifications: true,
+      emailUpdates: true,
+      smsNotifications: false,
+      twoFactorAuth: false,
+      profileVisibility: 'public',
+      dataSharing: false,
+    },
+  });
+});
+
+app.get('/settings/languages', (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { code: 'en', name: 'English', flag: '🇺🇸' },
+      { code: 'fr', name: 'Français', flag: '🇫🇷' },
+      { code: 'es', name: 'Español', flag: '🇪🇸' },
+      { code: 'pt', name: 'Português', flag: '🇵🇹' },
+      { code: 'tw', name: 'Twi', flag: '🇬🇭' },
+      { code: 'ha', name: 'Hausa', flag: '🇬🇭' },
+    ],
+  });
+});
+
+app.get('/settings/themes', (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      {
+        id: 'light',
+        name: 'Light Mode',
+        description: 'Clean and bright interface',
+        preview: '#ffffff',
+      },
+      {
+        id: 'dark',
+        name: 'Dark Mode',
+        description: 'Easy on the eyes',
+        preview: '#1a1a1a',
+      },
+      {
+        id: 'auto',
+        name: 'Auto',
+        description: 'Follows system preference',
+        preview: 'gradient',
+      },
+    ],
+  });
+});
+
 // Admin routes for development/testing
 app.post("/api/admin/verify-user", async (req, res) => {
   try {

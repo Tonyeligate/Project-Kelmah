@@ -70,15 +70,20 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       bufferCommands: false,
-      // bufferMaxEntries: 0, // ❌ REMOVED: This option is not supported in newer MongoDB drivers
-      serverSelectionTimeoutMS: 30000, // 30 seconds
-      socketTimeoutMS: 45000, // 45 seconds
-      maxPoolSize: 10,
-      minPoolSize: 2,
-      maxIdleTimeMS: 30000,
-      waitQueueTimeoutMS: 10000,
+      // Fix: Enhanced MongoDB connection settings to prevent buffering timeouts
+      serverSelectionTimeoutMS: 60000, // Increased to 60 seconds for Render cold starts
+      socketTimeoutMS: 120000, // Increased to 2 minutes
+      connectTimeoutMS: 60000, // 1 minute connection timeout
+      maxPoolSize: 15, // Increased pool size
+      minPoolSize: 3, // Higher minimum pool
+      maxIdleTimeMS: 60000, // Longer idle time
+      waitQueueTimeoutMS: 30000, // Increased wait time
       retryWrites: true,
-      w: 'majority'
+      w: 'majority',
+      // Fix: Additional settings to improve connection stability
+      heartbeatFrequencyMS: 10000, // More frequent heartbeat
+      maxStalenessSeconds: 90, // Allow slightly stale reads
+      readPreference: 'secondaryPreferred', // Distribute read load
     });
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
