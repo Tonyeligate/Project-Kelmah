@@ -28,7 +28,8 @@ export const NotificationProvider = ({ children }) => {
     severity: 'info',
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // ✅ FIXED: Add null-safety check to prevent crashes
+  const unreadCount = (notifications || []).filter((n) => !n.read).length;
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
@@ -37,11 +38,23 @@ export const NotificationProvider = ({ children }) => {
 
     try {
       const resp = await notificationServiceUser.getNotifications();
-      setNotifications(resp.data);
+      // ✅ FIXED: Ensure we always set a valid array, never undefined
+      const notificationData = Array.isArray(resp?.data) ? resp.data : 
+                              Array.isArray(resp) ? resp : [];
+      
+      console.log('📩 Notifications received:', {
+        responseType: typeof resp,
+        hasData: !!resp?.data,
+        isArray: Array.isArray(resp?.data || resp),
+        count: notificationData.length
+      });
+      
+      setNotifications(notificationData);
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
       setError('Could not load notifications. Please check your connection.');
-      // Don't fall back to mock data - show actual error state
+      // Ensure we always have a valid array, never undefined
       setNotifications([]);
     } finally {
       setLoading(false);
