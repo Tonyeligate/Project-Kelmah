@@ -14,6 +14,7 @@ import {
   SERVICES,
 } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
+import { handleServiceError, getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
 // Create axios instance with default configuration
 const axiosInstance = axios.create({
@@ -251,54 +252,135 @@ export const uploadFile = (url, file, onProgress = null) => {
   return apiPost(url, formData, config);
 };
 
-// Create service-specific clients with optimized configurations
+// Enhanced timeout configuration for different environments
+const getTimeoutConfig = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isLocal = window.location.hostname === 'localhost';
+  
+  // For Render services (production), use longer timeout to handle cold starts
+  if (!isDevelopment && !isLocal) {
+    return {
+      timeout: 60000, // 60 seconds for cold starts on Render
+      retries: 3,
+      retryDelay: 2000, // 2 seconds between retries
+    };
+  }
+  
+  // For local development or localhost
+  return {
+    timeout: 10000, // 10 seconds for local services
+    retries: 2,
+    retryDelay: 1000,
+  };
+};
+
+const timeoutConfig = getTimeoutConfig();
+
+// Enhanced retry interceptor for handling cold starts with service health context
+const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
+  client.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const { config } = error;
+      const serviceUrl = config.baseURL;
+      
+      // Don't retry if we've already retried or if it's not a timeout/network error
+      if (!config || config.__retryCount >= maxRetries) {
+        // Add service health context to final error
+        const enhancedError = handleServiceError(error, serviceUrl);
+        return Promise.reject(enhancedError);
+      }
+      
+      // Only retry on timeout or network errors (likely cold starts)
+      const shouldRetry = 
+        error.code === 'ECONNABORTED' || // timeout
+        error.code === 'NETWORK_ERROR' ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('Network Error') ||
+        !error.response; // No response usually means network/timeout issue
+      
+      if (!shouldRetry) {
+        const enhancedError = handleServiceError(error, serviceUrl);
+        return Promise.reject(enhancedError);
+      }
+      
+      config.__retryCount = (config.__retryCount || 0) + 1;
+      
+      // Exponential backoff delay
+      const delay = timeoutConfig.retryDelay * Math.pow(2, config.__retryCount - 1);
+      
+      // Get service status for better logging
+      const statusMsg = getServiceStatusMessage(serviceUrl);
+      
+      console.warn(`🔄 Retrying request (${config.__retryCount}/${maxRetries}) after ${delay}ms delay:`, {
+        url: config.url,
+        method: config.method,
+        error: error.message,
+        serviceStatus: statusMsg.status,
+        reason: statusMsg.message,
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      return client.request(config);
+    }
+  );
+};
+
+// Create service-specific clients with enhanced configurations for Render cold starts
 export const authServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE,
-  timeout: 5000, // Reduced timeout for better UX
+  timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+retryInterceptor(authServiceClient);
 
 export const userServiceClient = axios.create({
   baseURL: SERVICES.USER_SERVICE,
-  timeout: 5000, // Reduced timeout for better UX
+  timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+retryInterceptor(userServiceClient);
 
 export const jobServiceClient = axios.create({
   baseURL: SERVICES.JOB_SERVICE,
-  timeout: 5000, // Reduced timeout for better UX
+  timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+retryInterceptor(jobServiceClient);
 
 export const messagingServiceClient = axios.create({
   baseURL: SERVICES.MESSAGING_SERVICE,
-  timeout: 5000, // Reduced timeout for better UX
+  timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+retryInterceptor(messagingServiceClient);
 
 export const paymentServiceClient = axios.create({
   baseURL: SERVICES.PAYMENT_SERVICE,
-  timeout: 5000, // Reduced timeout for better UX
+  timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+retryInterceptor(paymentServiceClient);
 
 export const schedulingClient = axios.create({
   baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
-  timeout: 5000, // Reduced timeout for better UX
+  timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+retryInterceptor(schedulingClient);
 
 // Add auth interceptors to all service clients
 [authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, schedulingClient].forEach(client => {

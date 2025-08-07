@@ -4,6 +4,7 @@
  */
 
 import { jobServiceClient } from '../../common/services/axios';
+import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
 export const contractService = {
   // Get contracts with filters
@@ -14,10 +15,22 @@ export const contractService = {
       });
       return response.data;
     } catch (error) {
-      console.warn('Contract service unavailable:', error.message);
+      const serviceUrl = jobServiceClient.defaults.baseURL;
+      const statusMsg = getServiceStatusMessage(serviceUrl);
       
-      // Temporary fallback data while Job Service deployment fixes
-      console.log('🔄 Using temporary contract fallback data during service deployment fix...');
+      console.warn('Contract service unavailable:', {
+        error: error.message,
+        serviceStatus: statusMsg.status,
+        userMessage: statusMsg.message,
+        action: statusMsg.action,
+      });
+      
+      // Enhanced fallback messaging based on service status
+      if (statusMsg.status === 'cold') {
+        console.log('🔥 Job Service is cold starting - this is normal and will take 30-60 seconds...');
+      } else {
+        console.log('🔄 Using temporary contract fallback data during service issues...');
+      }
       return { 
         contracts: [
           {

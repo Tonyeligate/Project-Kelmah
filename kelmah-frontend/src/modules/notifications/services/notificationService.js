@@ -4,6 +4,7 @@
  */
 
 import { messagingServiceClient } from '../../common/services/axios';
+import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { API_BASE_URL } from '../../../config/constants';
 
 class NotificationService {
@@ -38,16 +39,28 @@ class NotificationService {
       const response = await this.client.get('/api/notifications');
       return response.data;
     } catch (error) {
-      // Enhanced error logging with proper message extraction
+      const serviceUrl = messagingServiceClient.defaults.baseURL;
+      const statusMsg = getServiceStatusMessage(serviceUrl);
+      
+      // Enhanced error logging with service health context
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.error || 
                           error.message || 
                           'Unknown error occurred';
       
-      console.error('Failed to fetch notifications:', errorMessage);
+      console.error('Failed to fetch notifications:', {
+        error: errorMessage,
+        serviceStatus: statusMsg.status,
+        userMessage: statusMsg.message,
+        action: statusMsg.action,
+      });
       
-      // Provide fallback empty notifications to prevent UI crashes
-      console.log('🔔 Using empty notifications fallback during service timeout');
+      // Enhanced fallback messaging based on service status
+      if (statusMsg.status === 'cold') {
+        console.log('🔥 Messaging Service is cold starting - this is normal and will take 30-60 seconds...');
+      } else {
+        console.log('🔔 Using empty notifications fallback during service timeout');
+      }
       return {
         data: [],
         totalPages: 1,
