@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const messageController = require("../controllers/message.controller");
-const { authenticate } = require("../middleware/auth");
-
-// Apply authentication middleware to all routes
-router.use(authenticate);
+// ✅ REMOVED: Authentication middleware is already applied in server.js
+// const { authenticate } = require("../middlewares/auth.middleware");
+// router.use(authenticate); // Authentication applied at server level
 
 // Message routes
 router.post("/", messageController.createMessage);
