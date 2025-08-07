@@ -44,13 +44,32 @@ const corsOptions = {
       process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'
     ].filter(Boolean);
     
+    // Allow all Vercel preview and deployment URLs
+    const vercelPatterns = [
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
+      /^https:\/\/project-kelmah.*\.vercel\.app$/,
+      /^https:\/\/kelmah-frontend.*\.vercel\.app$/
+    ];
+    
     if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
+    
+    // Check exact matches first
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else {
-      logger.info(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+    
+    // Check Vercel patterns
+    const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
+    if (isVercelPreview) {
+      logger.info(`✅ CORS allowed Vercel preview: ${origin}`);
+      callback(null, true);
+      return;
+    }
+    
+    logger.info(`🚨 CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

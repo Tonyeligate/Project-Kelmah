@@ -13,6 +13,7 @@ const router = express.Router();
 // Public routes
 router.get("/", jobController.getJobs);
 router.get("/dashboard", jobController.getDashboardJobs);
+router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
 router.get("/:id", jobController.getJobById);
 
 // Protected routes
@@ -43,8 +44,5 @@ router.patch(
   validate(jobValidation.changeJobStatus),
   jobController.changeJobStatus,
 );
-
-// Contract routes (jobs that have contracts)
-router.get("/contracts", jobController.getContracts);
 
 module.exports = router;

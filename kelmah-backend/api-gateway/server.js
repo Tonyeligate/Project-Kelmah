@@ -20,6 +20,9 @@ const requestValidator = require('./middleware/request-validator');
 const app = express();
 const PORT = process.env.API_GATEWAY_PORT || 3000;
 
+// ✅ FIXED: Configure Express to trust proxy headers (for rate limiting and IP detection)
+app.set('trust proxy', 1);
+
 // Logger setup
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -48,12 +51,41 @@ const services = {
 // Global middleware
 app.use(helmet());
 app.use(compression());
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || [
+// ✅ ENHANCED: Improved CORS with Vercel preview URL support
+const corsOriginHandler = (origin, callback) => {
+  const allowedOrigins = [
     'http://localhost:5173', 
     'http://localhost:3000',
-    'https://project-kelmah.vercel.app'
-  ],
+    'https://project-kelmah.vercel.app',
+    'https://kelmah-frontend-cyan.vercel.app'
+  ];
+
+  // Allow Vercel preview URLs
+  const vercelPatterns = [
+    /^https:\/\/.*\.vercel\.app$/,
+    /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
+    /^https:\/\/project-kelmah.*\.vercel\.app$/,
+    /^https:\/\/kelmah-frontend.*\.vercel\.app$/
+  ];
+
+  if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
+  
+  if (allowedOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+  
+  const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
+  if (isVercelPreview) {
+    logger.info(`✅ API Gateway CORS allowed Vercel preview: ${origin}`);
+    return callback(null, true);
+  }
+  
+  logger.warn(`🚨 API Gateway CORS blocked origin: ${origin}`);
+  callback(new Error('Not allowed by CORS'));
+};
+
+app.use(cors({
+  origin: corsOriginHandler,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
 }));

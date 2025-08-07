@@ -23,14 +23,12 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Email is required'],
-    unique: true,
     lowercase: true,
     trim: true,
     match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email']
   },
   phone: {
     type: String,
-    unique: true,
     sparse: true, // Allows multiple null values
     trim: true,
     validate: {
@@ -99,17 +97,14 @@ const userSchema = new mongoose.Schema({
   // OAuth Integration
   googleId: {
     type: String,
-    unique: true,
     sparse: true
   },
   facebookId: {
     type: String,
-    unique: true,
     sparse: true
   },
   linkedinId: {
     type: String,
-    unique: true,
     sparse: true
   },
   
