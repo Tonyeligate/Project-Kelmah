@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Kelmah Team Validation Test Suite</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(218, 165, 32, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(218, 165, 32, 0.3);
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .test-button {
+            background: linear-gradient(45deg, #DAA520, #FFD700);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(218, 165, 32, 0.3);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #DAA520;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { border-left-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+        .error { border-left-color: #ff4444; background: rgba(255, 68, 68, 0.1); }
+        .warning { border-left-color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
+        .form-test {
+            background: rgba(218, 165, 32, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #DAA520;
+            font-weight: bold;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(218, 165, 32, 0.6);
+            border-radius: 8px;
+            color: #000;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #DAA520;
+            background: rgba(255, 255, 255, 1);
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Kelmah Team Registration Test Suite</h1>
+            <p>Comprehensive testing for validation fixes and API connectivity</p>
+        </div>
+
+        <!-- API Connectivity Tests -->
+        <div class="test-section">
+            <h2>🔌 API Connectivity Tests</h2>
+            <button class="test-button" onclick="testHealthCheck()">Health Check</button>
+            <button class="test-button" onclick="testCORS()">CORS Test</button>
+            <button class="test-button" onclick="testRateLimit()">Rate Limit Test</button>
+            <div id="connectivity-results"></div>
+        </div>
+
+        <!-- Validation Tests -->
+        <div class="test-section">
+            <h2>✅ Validation Tests</h2>
+            <button class="test-button" onclick="testValidRegistration()">Valid Registration</button>
+            <button class="test-button" onclick="testInvalidRegistration()">Invalid Registration</button>
+            <button class="test-button" onclick="testMissingFields()">Missing Fields Test</button>
+            <div id="validation-results"></div>
+        </div>
+
+        <!-- Interactive Registration Form -->
+        <div class="test-section">
+            <h2>📝 Live Registration Test</h2>
+            <div class="form-test">
+                <form id="test-registration-form">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" class="form-input" value="Anthony Jioe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" class="form-input" value="anthonyjioeeli@gmail.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone *</label>
+                            <input type="tel" id="phone" class="form-input" value="+233597832202" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country *</label>
+                            <input type="text" id="country" class="form-input" value="Ghana" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="experience">Experience Level *</label>
+                            <select id="experience" class="form-select" required>
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="skills">Primary Skill *</label>
+                            <select id="skills" class="form-select" required>
+                                <option value="JavaScript">JavaScript</option>
+                                <option value="Python">Python</option>
+                                <option value="Mobile Development">Mobile Development</option>
+                                <option value="UI/UX Design">UI/UX Design</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="availability">Availability *</label>
+                            <select id="availability" class="form-select" required>
+                                <option value="10-15">10-15 hours/week</option>
+                                <option value="15-20">15-20 hours/week</option>
+                                <option value="20-25">20-25 hours/week</option>
+                                <option value="25+">25+ hours/week</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="commitment">Commitment Level *</label>
+                            <select id="commitment" class="form-select" required>
+                                <option value="high">High - Very committed</option>
+                                <option value="medium">Medium - Moderately committed</option>
+                                <option value="low">Low - Exploring options</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hearAbout">How did you hear about us? *</label>
+                            <select id="hearAbout" class="form-select" required>
+                                <option value="Friend/Colleague">Friend/Colleague</option>
+                                <option value="Social Media">Social Media</option>
+                                <option value="Website">Website</option>
+                                <option value="Advertisement">Advertisement</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="goals">Career Goals (20-1000 chars) *</label>
+                        <textarea id="goals" class="form-input" rows="3" required placeholder="Describe your career goals...">I hope to become one of the best tech personnel in Ghana and make a significant impact in the tech industry.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="motivation">Motivation (50-1000 chars) *</label>
+                        <textarea id="motivation" class="form-input" rows="4" required placeholder="Tell us why you want to join...">I am passionate about technology and eager to learn from experienced mentors. I believe this program will provide me with the skills and opportunities I need to advance my career and contribute meaningfully to innovative projects.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="agreement" required style="margin-right: 10px;">
+                            I agree to the terms and conditions *
+                        </label>
+                    </div>
+                    <button type="submit" class="test-button" style="width: 200px;">🚀 Submit Registration</button>
+                </form>
+            </div>
+            <div id="form-results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://kelmah-team-recruitment.onrender.com';
+        const TEAM_API_URL = API_BASE_URL + '/api/team';
+
+        function showResult(containerId, message, type = 'result') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(resultDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function testHealthCheck() {
+            showResult('connectivity-results', '🔍 Testing API health...', 'warning');
+            try {
+                const response = await fetch(`${TEAM_API_URL}/test`);
+                const data = await response.json();
+                showResult('connectivity-results', 
+                    `✅ Health Check SUCCESS!\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+            } catch (error) {
+                showResult('connectivity-results', 
+                    `❌ Health Check FAILED!\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testCORS() {
+            showResult('connectivity-results', '🔍 Testing CORS...', 'warning');
+            try {
+                const response = await fetch(`${TEAM_API_URL}/test`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    }
+                });
+                const data = await response.json();
+                showResult('connectivity-results', 
+                    `✅ CORS Test SUCCESS!\nOrigin: ${window.location.origin}\nStatus: ${response.status}`,
+                    'success'
+                );
+            } catch (error) {
+                showResult('connectivity-results', 
+                    `❌ CORS Test FAILED!\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testValidRegistration() {
+            showResult('validation-results', '🔍 Testing valid registration...', 'warning');
+            
+            const validData = {
+                fullName: "Test User",
+                email: "test@example.com",
+                phone: "+233123456789",
+                country: "Ghana",
+                experience: "beginner",
+                skills: "JavaScript",
+                goals: "I want to become a skilled developer and contribute to meaningful projects that make a difference.",
+                availability: "15-20",
+                commitment: "high",
+                hearAbout: "Friend/Colleague",
+                motivation: "I am passionate about technology and eager to learn from experienced mentors who can guide me.",
+                agreement: "true"
+            };
+
+            try {
+                const response = await fetch(`${TEAM_API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(validData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('validation-results', 
+                        `✅ VALID Registration SUCCESS!\nStatus: ${response.status}\nResponse: ${JSON.stringify(result, null, 2)}`,
+                        'success'
+                    );
+                } else {
+                    showResult('validation-results', 
+                        `❌ VALID Registration FAILED!\nStatus: ${response.status}\nErrors: ${JSON.stringify(result, null, 2)}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('validation-results', 
+                    `❌ VALID Registration ERROR!\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testInvalidRegistration() {
+            showResult('validation-results', '🔍 Testing invalid registration (should fail)...', 'warning');
+            
+            const invalidData = {
+                fullName: "",
+                email: "invalid-email",
+                phone: "123",
+                country: "",
+                experience: "invalid",
+                skills: "",
+                goals: "short",
+                availability: "",
+                commitment: "",
+                hearAbout: "",
+                motivation: "too short",
+                agreement: "false"
+            };
+
+            try {
+                const response = await fetch(`${TEAM_API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(invalidData)
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    showResult('validation-results', 
+                        `✅ INVALID Registration CORRECTLY FAILED!\nStatus: ${response.status}\nValidation Errors: ${result.errors?.length || 0}\nErrors: ${JSON.stringify(result.errors, null, 2)}`,
+                        'success'
+                    );
+                } else {
+                    showResult('validation-results', 
+                        `❌ INVALID Registration SHOULD HAVE FAILED!\nStatus: ${response.status}\nResponse: ${JSON.stringify(result, null, 2)}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('validation-results', 
+                    `❌ INVALID Registration TEST ERROR!\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testMissingFields() {
+            showResult('validation-results', '🔍 Testing missing required fields...', 'warning');
+            
+            const missingFieldsData = {
+                fullName: "Test User"
+                // Missing all other required fields
+            };
+
+            try {
+                const response = await fetch(`${TEAM_API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(missingFieldsData)
+                });
+                
+                const result = await response.json();
+                
+                showResult('validation-results', 
+                    `📝 Missing Fields Test Result:\nStatus: ${response.status}\nErrors Found: ${result.errors?.length || 0}\nResponse: ${JSON.stringify(result, null, 2)}`,
+                    response.ok ? 'error' : 'success'
+                );
+            } catch (error) {
+                showResult('validation-results', 
+                    `❌ Missing Fields Test ERROR!\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        // Interactive form submission
+        document.getElementById('test-registration-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            showResult('form-results', '🔍 Submitting live registration form...', 'warning');
+            
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            // Convert form data to object
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Add checkbox value manually
+            data.agreement = document.getElementById('agreement').checked ? 'true' : 'false';
+            
+            showResult('form-results', 
+                `📤 Sending Form Data:\n${JSON.stringify(data, null, 2)}`,
+                'warning'
+            );
+
+            try {
+                const response = await fetch(`${TEAM_API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('form-results', 
+                        `🎉 LIVE FORM SUCCESS!\nStatus: ${response.status}\nRegistration ID: ${result.id}\nMessage: ${result.message}`,
+                        'success'
+                    );
+                } else {
+                    showResult('form-results', 
+                        `❌ LIVE FORM VALIDATION FAILED!\nStatus: ${response.status}\nErrors (${result.errors?.length}):\n${JSON.stringify(result.errors, null, 2)}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('form-results', 
+                    `❌ LIVE FORM ERROR!\nError: ${error.message}`,
+                    'error'
+                );
+            }
+        });
+
+        // Auto-run basic connectivity tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testHealthCheck();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
