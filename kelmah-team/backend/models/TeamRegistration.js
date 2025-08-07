@@ -1,286 +1,334 @@
-const mongoose = require('mongoose');
+const { pool } = require('../config/database');
 
-const TeamRegistrationSchema = new mongoose.Schema({
-  // Personal Information
-  fullName: {
-    type: String,
-    required: true,
-    trim: true,
-    minlength: 2,
-    maxlength: 100
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
-  },
-  phone: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  country: {
-    type: String,
-    required: true,
-    trim: true
-  },
-
-  // Technical Background
-  currentStatus: {
-    type: String,
-    required: true,
-    enum: [
-      'student',
-      'recent-graduate', 
-      'employed-tech',
-      'employed-non-tech',
-      'unemployed',
-      'freelancer',
-      'entrepreneur',
-      'career-changer'
-    ]
-  },
-  experience: {
-    type: String,
-    required: true,
-    enum: ['beginner', 'basic', 'intermediate', 'advanced']
-  },
-  skills: [{
-    type: String,
-    required: true
-  }],
-  goals: {
-    type: String,
-    required: true,
-    minlength: 20,
-    maxlength: 1000
-  },
-
-  // Commitment & Motivation
-  availability: {
-    type: String,
-    required: true,
-    enum: ['10-15', '15-20', '20-25', '25+']
-  },
-  commitment: {
-    type: String,
-    required: true,
-    enum: ['full', 'high', 'moderate']
-  },
-  hearAbout: {
-    type: String,
-    required: true
-  },
-  motivation: {
-    type: String,
-    required: true,
-    minlength: 50,
-    maxlength: 1000
-  },
-
-  // Agreements
-  agreement: {
-    type: Boolean,
-    required: true,
-    validate: {
-      validator: function(v) {
-        return v === true;
-      },
-      message: 'Agreement to terms is required'
-    }
-  },
-  marketingConsent: {
-    type: Boolean,
-    default: false
-  },
-  portfolioConsent: {
-    type: Boolean,
-    default: false
-  },
-
-  // System Fields
-  registrationDate: {
-    type: Date,
-    default: Date.now
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'payment-required', 'confirmed', 'rejected', 'waitlist'],
-    default: 'payment-required'
-  },
-  cohortNumber: {
-    type: Number,
-    default: 1
-  },
-  isSelected: {
-    type: Boolean,
-    default: false
-  },
-  selectionRank: {
-    type: Number,
-    min: 1,
-    max: 10
-  },
-
-  // Payment Information
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'completed', 'failed', 'refunded'],
-    default: 'pending'
-  },
-  paymentId: {
-    type: String
-  },
-  amountPaid: {
-    type: Number,
-    default: 0
-  },
-  paymentDate: {
-    type: Date
-  },
-
-  // Metadata
-  source: {
-    type: String,
-    default: 'kelmah-team-portal'
-  },
-  ipAddress: {
-    type: String
-  },
-  userAgent: {
-    type: String
-  },
-  referralCode: {
-    type: String
-  },
-  notes: [{
-    content: String,
-    author: String,
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }]
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
-});
-
-// Indexes for better query performance
-TeamRegistrationSchema.index({ email: 1 });
-TeamRegistrationSchema.index({ registrationDate: -1 });
-TeamRegistrationSchema.index({ status: 1 });
-TeamRegistrationSchema.index({ isSelected: 1, selectionRank: 1 });
-TeamRegistrationSchema.index({ cohortNumber: 1 });
-
-// Virtual for full applicant info
-TeamRegistrationSchema.virtual('applicantInfo').get(function() {
-  return {
-    name: this.fullName,
-    email: this.email,
-    phone: this.phone,
-    country: this.country,
-    experience: this.experience,
-    commitment: this.commitment
-  };
-});
-
-// Virtual for application score (basic scoring algorithm)
-TeamRegistrationSchema.virtual('applicationScore').get(function() {
-  let score = 0;
-  
-  // Experience weight
-  const experienceWeight = { 
-    'beginner': 1, 
-    'basic': 2, 
-    'intermediate': 3, 
-    'advanced': 4 
-  };
-  score += (experienceWeight[this.experience] || 1) * 20;
-  
-  // Commitment weight
-  const commitmentWeight = { 
-    'moderate': 1, 
-    'high': 2, 
-    'full': 3 
-  };
-  score += (commitmentWeight[this.commitment] || 1) * 25;
-  
-  // Availability weight
-  const availabilityWeight = { 
-    '10-15': 1, 
-    '15-20': 2, 
-    '20-25': 3, 
-    '25+': 4 
-  };
-  score += (availabilityWeight[this.availability] || 1) * 15;
-  
-  // Motivation length bonus (longer = more detailed)
-  score += Math.min(this.motivation.length / 10, 20);
-  
-  // Goals length bonus
-  score += Math.min(this.goals.length / 10, 15);
-  
-  // Early registration bonus
-  const daysSinceOpen = Math.floor((Date.now() - new Date('2025-01-01')) / (1000 * 60 * 60 * 24));
-  score += Math.max(10 - daysSinceOpen, 0);
-  
-  return Math.round(score);
-});
-
-// Pre-save middleware
-TeamRegistrationSchema.pre('save', function(next) {
-  // Auto-generate referral code if not provided
-  if (!this.referralCode) {
-    this.referralCode = `KLM_${this.fullName.replace(/\s+/g, '').substring(0, 3).toUpperCase()}_${Date.now().toString().slice(-4)}`;
+class TeamRegistration {
+  constructor(data) {
+    this.id = data.id;
+    this.personalInfo = typeof data.personal_info === 'string' 
+      ? JSON.parse(data.personal_info) 
+      : data.personal_info;
+    this.technicalBackground = typeof data.technical_background === 'string' 
+      ? JSON.parse(data.technical_background) 
+      : data.technical_background;
+    this.commitment = typeof data.commitment === 'string' 
+      ? JSON.parse(data.commitment) 
+      : data.commitment;
+    this.paymentStatus = data.payment_status;
+    this.applicantScore = data.applicant_score;
+    this.isSelected = data.is_selected;
+    this.selectionRank = data.selection_rank;
+    this.registrationDate = data.registration_date;
+    this.updatedAt = data.updated_at;
+    this.email = data.email;
+    this.status = data.status;
   }
-  
-  next();
-});
 
-// Static methods
-TeamRegistrationSchema.statics.getSelectedApplicants = function() {
-  return this.find({ isSelected: true })
-    .sort({ selectionRank: 1 })
-    .limit(10);
-};
+  // Create a new team registration
+  static async create(registrationData) {
+    try {
+      // Extract email from personal info
+      const email = registrationData.fullName ? registrationData.email : registrationData.personalInfo?.email;
+      
+      // If we have the old flat structure, convert it
+      const personalInfo = registrationData.fullName ? {
+        fullName: registrationData.fullName,
+        email: registrationData.email,
+        phone: registrationData.phone,
+        age: registrationData.age,
+        location: registrationData.location,
+        education: registrationData.education,
+        currentStatus: registrationData.currentStatus
+      } : registrationData.personalInfo;
 
-TeamRegistrationSchema.statics.getRankedApplicants = function() {
-  return this.aggregate([
-    { $match: { status: { $in: ['confirmed', 'payment-required'] } } },
-    { $addFields: { 
-      score: {
-        // Add scoring logic here if needed for complex queries
-        $add: [
-          { $multiply: [
-            { $switch: {
-              branches: [
-                { case: { $eq: ['$experience', 'advanced'] }, then: 4 },
-                { case: { $eq: ['$experience', 'intermediate'] }, then: 3 },
-                { case: { $eq: ['$experience', 'basic'] }, then: 2 },
-                { case: { $eq: ['$experience', 'beginner'] }, then: 1 }
-              ],
-              default: 1
-            }}, 20
-          ]},
-          { $multiply: [
-            { $switch: {
-              branches: [
-                { case: { $eq: ['$commitment', 'full'] }, then: 3 },
-                { case: { $eq: ['$commitment', 'high'] }, then: 2 },
-                { case: { $eq: ['$commitment', 'moderate'] }, then: 1 }
-              ],
-              default: 1
-            }}, 25
-          ]}
-        ]
+      const technicalBackground = registrationData.programmingLanguages ? {
+        programmingLanguages: registrationData.programmingLanguages,
+        frameworks: registrationData.frameworks,
+        experienceLevel: registrationData.experienceLevel,
+        portfolioUrl: registrationData.portfolioUrl,
+        githubUrl: registrationData.githubUrl,
+        previousProjects: registrationData.previousProjects,
+        hasWebDevelopmentExperience: registrationData.hasWebDevelopmentExperience,
+        hasAIExperience: registrationData.hasAIExperience
+      } : registrationData.technicalBackground;
+
+      const commitment = registrationData.availableHours ? {
+        availableHours: registrationData.availableHours,
+        startDate: registrationData.startDate,
+        motivationLetter: registrationData.motivationLetter,
+        careerGoals: registrationData.careerGoals,
+        whyKelmah: registrationData.whyKelmah,
+        canRelocate: registrationData.canRelocate,
+        hasTransportation: registrationData.hasTransportation
+      } : registrationData.commitment;
+
+      const score = this.calculateApplicantScore({ personalInfo, technicalBackground, commitment });
+      
+      const query = `
+        INSERT INTO team_registrations 
+        (personal_info, technical_background, commitment, email, applicant_score)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `;
+      
+      const values = [
+        JSON.stringify(personalInfo),
+        JSON.stringify(technicalBackground),
+        JSON.stringify(commitment),
+        email.toLowerCase(),
+        score
+      ];
+
+      const result = await pool.query(query, values);
+      return new TeamRegistration(result.rows[0]);
+    } catch (error) {
+      if (error.code === '23505') { // Unique violation
+        throw new Error('Email already registered');
       }
-    }},
-    { $sort: { score: -1, registrationDate: 1 } }
-  ]);
-};
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
 
-module.exports = mongoose.model('TeamRegistration', TeamRegistrationSchema);
+  // Find registration by email
+  static async findByEmail(email) {
+    try {
+      const query = 'SELECT * FROM team_registrations WHERE email = $1';
+      const result = await pool.query(query, [email.toLowerCase()]);
+      
+      return result.rows.length > 0 ? new TeamRegistration(result.rows[0]) : null;
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Find registration by ID
+  static async findById(id) {
+    try {
+      const query = 'SELECT * FROM team_registrations WHERE id = $1';
+      const result = await pool.query(query, [id]);
+      
+      return result.rows.length > 0 ? new TeamRegistration(result.rows[0]) : null;
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Get all registrations with pagination
+  static async find(query = {}, options = {}) {
+    try {
+      const page = options.page || 1;
+      const limit = options.limit || 50;
+      const offset = (page - 1) * limit;
+      
+      let sqlQuery = 'SELECT * FROM team_registrations';
+      let whereConditions = [];
+      let values = [];
+      let paramCount = 0;
+
+      // Add WHERE conditions based on query
+      if (query.paymentStatus) {
+        whereConditions.push(`payment_status = $${++paramCount}`);
+        values.push(query.paymentStatus);
+      }
+      
+      if (query.isSelected !== undefined) {
+        whereConditions.push(`is_selected = $${++paramCount}`);
+        values.push(query.isSelected);
+      }
+
+      if (whereConditions.length > 0) {
+        sqlQuery += ' WHERE ' + whereConditions.join(' AND ');
+      }
+
+      sqlQuery += ` ORDER BY registration_date DESC LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+      values.push(limit, offset);
+      
+      const result = await pool.query(sqlQuery, values);
+      return result.rows.map(row => new TeamRegistration(row));
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Get top candidates for selection
+  static async getTopCandidates(limit = 10) {
+    try {
+      const query = `
+        SELECT * FROM team_registrations 
+        WHERE payment_status = 'paid' AND status = 'active'
+        ORDER BY applicant_score DESC, registration_date ASC
+        LIMIT $1
+      `;
+      
+      const result = await pool.query(query, [limit]);
+      return result.rows.map(row => new TeamRegistration(row));
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Count documents (for pagination)
+  static async countDocuments(query = {}) {
+    try {
+      let sqlQuery = 'SELECT COUNT(*) FROM team_registrations';
+      let whereConditions = [];
+      let values = [];
+      let paramCount = 0;
+
+      if (query.paymentStatus) {
+        whereConditions.push(`payment_status = $${++paramCount}`);
+        values.push(query.paymentStatus);
+      }
+
+      if (whereConditions.length > 0) {
+        sqlQuery += ' WHERE ' + whereConditions.join(' AND ');
+      }
+
+      const result = await pool.query(sqlQuery, values);
+      return parseInt(result.rows[0].count);
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Update payment status
+  async updatePaymentStatus(status) {
+    try {
+      const query = `
+        UPDATE team_registrations 
+        SET payment_status = $1, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [status, this.id]);
+      return new TeamRegistration(result.rows[0]);
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Update selection status
+  async updateSelection(isSelected, rank = null) {
+    try {
+      const query = `
+        UPDATE team_registrations 
+        SET is_selected = $1, selection_rank = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [isSelected, rank, this.id]);
+      return new TeamRegistration(result.rows[0]);
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Get registration statistics
+  static async getStats() {
+    try {
+      const query = `
+        SELECT 
+          COUNT(*) as total_applications,
+          COUNT(CASE WHEN payment_status = 'paid' THEN 1 END) as paid_applications,
+          COUNT(CASE WHEN is_selected = true THEN 1 END) as selected_candidates,
+          AVG(applicant_score) as avg_score,
+          MAX(applicant_score) as highest_score
+        FROM team_registrations
+        WHERE status = 'active' OR status IS NULL
+      `;
+      
+      const result = await pool.query(query);
+      const stats = result.rows[0];
+      return {
+        totalApplications: parseInt(stats.total_applications),
+        paidApplications: parseInt(stats.paid_applications),
+        selectedCandidates: parseInt(stats.selected_candidates),
+        avgScore: parseFloat(stats.avg_score) || 0,
+        highestScore: parseInt(stats.highest_score) || 0
+      };
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+  }
+
+  // Calculate applicant score
+  static calculateApplicantScore(applicant) {
+    let score = 0;
+
+    // Technical score (40 points)
+    const techBg = applicant.technicalBackground || {};
+    if (techBg.experienceLevel === 'expert') score += 15;
+    else if (techBg.experienceLevel === 'advanced') score += 12;
+    else if (techBg.experienceLevel === 'intermediate') score += 8;
+    else score += 4;
+
+    score += Math.min((techBg.programmingLanguages?.length || 0) * 2, 10);
+    score += Math.min((techBg.frameworks?.length || 0) * 1.5, 8);
+    if (techBg.hasWebDevelopmentExperience) score += 4;
+    if (techBg.hasAIExperience) score += 3;
+
+    // Commitment score (30 points)
+    const commitment = applicant.commitment || {};
+    score += Math.min((commitment.availableHours || 0) / 2, 15);
+    if ((commitment.motivationLetter?.length || 0) > 300) score += 5;
+    if (commitment.canRelocate) score += 3;
+    if (commitment.hasTransportation) score += 2;
+    if ((commitment.whyKelmah?.length || 0) > 100) score += 5;
+
+    // Experience score (20 points)
+    const personal = applicant.personalInfo || {};
+    const age = personal.age || 0;
+    if (age >= 20 && age <= 30) score += 5;
+    if (personal.currentStatus === 'employed') score += 4;
+    else if (personal.currentStatus === 'freelancer') score += 3;
+    else if (personal.currentStatus === 'student') score += 2;
+
+    if (techBg.portfolioUrl) score += 4;
+    if (techBg.githubUrl) score += 3;
+    score += Math.min((techBg.previousProjects?.length || 0) * 2, 4);
+
+    // Education score (10 points)
+    const education = (personal.education || '').toLowerCase();
+    if (education.includes('computer') || education.includes('software') || 
+        education.includes('engineering')) score += 6;
+    else if (education.includes('science') || education.includes('technology')) score += 4;
+    else score += 2;
+
+    return Math.min(Math.round(score), 100);
+  }
+
+  // Convert to JSON (Mongoose compatibility)
+  toJSON() {
+    return {
+      _id: this.id,
+      id: this.id,
+      personalInfo: this.personalInfo,
+      technicalBackground: this.technicalBackground,
+      commitment: this.commitment,
+      paymentStatus: this.paymentStatus,
+      applicantScore: this.applicantScore,
+      isSelected: this.isSelected,
+      selectionRank: this.selectionRank,
+      registrationDate: this.registrationDate,
+      updatedAt: this.updatedAt,
+      email: this.email,
+      status: this.status
+    };
+  }
+
+  // For backward compatibility with Mongoose
+  save() {
+    return this;
+  }
+}
+
+module.exports = TeamRegistration;

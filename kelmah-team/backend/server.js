@@ -1,8 +1,9 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const { initDatabase } = require('./config/database');
 const teamRoutes = require('./routes/teamRegistration');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -39,42 +40,39 @@ app.use((req, res, next) => {
   next();
 });
 
-// Database connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kelmah-team';
-
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('✅ Connected to MongoDB');
-  console.log('🌟 Kelmah Team Recruitment API is ready!');
-})
-.catch((error) => {
-  console.error('❌ MongoDB connection error:', error);
-  process.exit(1);
-});
-
-// Handle MongoDB connection events
-mongoose.connection.on('error', (error) => {
-  console.error('MongoDB connection error:', error);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
-});
+// Database initialization
+const initializeDatabase = async () => {
+  try {
+    await initDatabase();
+    console.log('🌟 Kelmah Team Recruitment API is ready!');
+  } catch (error) {
+    console.error('❌ Database initialization error:', error);
+    process.exit(1);
+  }
+};
 
 // Routes
 app.use('/api/team', teamRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  let dbStatus = 'Disconnected';
+  
+  try {
+    const { pool } = require('./config/database');
+    const result = await pool.query('SELECT 1');
+    dbStatus = 'Connected';
+  } catch (error) {
+    console.error('Health check database error:', error);
+    dbStatus = 'Error';
+  }
+  
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     service: 'Kelmah Team Recruitment API',
     version: '1.0.0',
-    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+    database: dbStatus
   });
 });
 
@@ -112,24 +110,21 @@ app.use('*', (req, res) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
-  mongoose.connection.close(() => {
-    console.log('MongoDB connection closed.');
-    process.exit(0);
-  });
+  process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('SIGINT received. Shutting down gracefully...');
-  mongoose.connection.close(() => {
-    console.log('MongoDB connection closed.');
-    process.exit(0);
-  });
+  process.exit(0);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 Kelmah Team API running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+  
+  // Initialize database
+  await initializeDatabase();
 });
 
 module.exports = app;

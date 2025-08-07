@@ -142,7 +142,7 @@ const Hero = ({ onJoinTeam }) => {
                     </div>
                     <div className="code-content">
                       <div className="code-line">
-                        <span className="code-keyword">const</span> <span className="code-variable">team</span> = {
+                        <span className="code-keyword">const</span> <span className="code-variable">team</span> = {'{'}
                       </div>
                       <div className="code-line">
                         &nbsp;&nbsp;<span className="code-property">size</span>: <span className="code-number">10</span>,
@@ -156,7 +156,7 @@ const Hero = ({ onJoinTeam }) => {
                       <div className="code-line">
                         &nbsp;&nbsp;<span className="code-property">growth</span>: <span className="code-string">'unlimited'</span>
                       </div>
-                      <div className="code-line">};</div>
+                      <div className="code-line">{'};'}</div>
                       <div className="code-line"></div>
                       <div className="code-line">
                         <span className="code-keyword">export</span> <span className="code-keyword">default</span> <span className="code-variable">team</span>;
