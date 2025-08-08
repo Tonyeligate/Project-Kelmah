@@ -27,7 +27,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/socket.io': {
-        target: process.env.VITE_MESSAGING_URL || 'http://localhost:3003',
+        target: process.env.VITE_MESSAGING_SERVICE_URL || 'http://localhost:3003',
         ws: true,
       },
     },

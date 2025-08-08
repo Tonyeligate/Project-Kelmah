@@ -21,7 +21,8 @@ class AdminAPI {
       baseURL,
       timeout: 30000,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-internal-key': process.env.INTERNAL_API_KEY || 'kelmah_internal_api_key_change_this'
       }
     });
   }
