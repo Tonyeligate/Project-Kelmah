@@ -25,8 +25,8 @@ exports.createTransaction = async (req, res) => {
       description,
     } = req.body;
 
-    // Create transaction record
-    const transaction = new Transaction({
+    // Create transaction record (persist immediately for history consistency)
+    const transaction = await new Transaction({
       transactionId: generateTransactionId(),
       amount,
       currency,
@@ -37,7 +37,7 @@ exports.createTransaction = async (req, res) => {
       relatedContract,
       relatedJob,
       description,
-    });
+    }).save();
 
     // Calculate fees
     await transaction.calculateFees();
