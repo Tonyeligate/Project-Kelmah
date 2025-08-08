@@ -37,6 +37,7 @@ import JobManagementPage from './modules/hirer/pages/JobManagementPage';
 import { verifyAuth } from './modules/auth/services/authSlice';
 import ProtectedRoute from './modules/auth/components/common/ProtectedRoute';
 import { TOKEN_KEY } from './config/constants';
+import { secureStorage } from './utils/secureStorage';
 import PaymentCenterPage from './modules/payment/pages/PaymentCenterPage';
 import PaymentsPage from './modules/payment/pages/PaymentsPage';
 import PaymentMethodsPage from './modules/payment/pages/PaymentMethodsPage';
@@ -144,7 +145,7 @@ const AppContent = () => {
 
       const checkAuth = () => {
         // Always use real authentication
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = secureStorage.getAuthToken() || localStorage.getItem(TOKEN_KEY);
 
       // Only verify auth if Redux state is currently unauthenticated.
       if (!isAuthenticated) {

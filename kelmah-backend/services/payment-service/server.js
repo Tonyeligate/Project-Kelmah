@@ -7,7 +7,8 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 
 // Import routes
-const transactionRoutes = require("./routes/transaction.routes");
+// Support both naming variants for compatibility
+const transactionRoutes = require("./routes/transactions.routes");
 const walletRoutes = require("./routes/wallet.routes");
 const paymentMethodRoutes = require("./routes/paymentMethod.routes");
 const billRoutes = require("./routes/bill.routes");

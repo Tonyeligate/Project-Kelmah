@@ -1,22 +1,20 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const conversationController = require("../controllers/conversation.controller");
-const { authenticate } = require("../middleware/auth");
+const ConversationController = require('../controllers/conversation.controller');
 
-// Apply authentication middleware to all routes
-router.use(authenticate);
+// NOTE: Authentication is applied in server.js at mount time
 
-// Conversation routes
-router.get("/", conversationController.getUserConversations);
-router.post("/", conversationController.createConversation);
-router.get("/:conversationId", conversationController.getConversationDetails);
-router.patch(
-  "/:conversationId/archive",
-  conversationController.archiveConversation,
-);
-router.patch(
-  "/:conversationId/metadata",
-  conversationController.updateConversationMetadata,
-);
+// Search must come before param routes
+router.get('/search', ConversationController.searchConversations);
+
+// List and create
+router.get('/', ConversationController.getUserConversations);
+router.post('/', ConversationController.createConversation);
+
+// Read, update, delete, mark read
+router.get('/:id', ConversationController.getConversationById);
+router.patch('/:id', ConversationController.updateConversation);
+router.delete('/:id', ConversationController.deleteConversation);
+router.post('/:id/read', ConversationController.markConversationAsRead);
 
 module.exports = router;

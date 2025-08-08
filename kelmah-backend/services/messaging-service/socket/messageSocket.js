@@ -85,7 +85,8 @@ class MessageSocketHandler {
       this.handleConnection(socket);
       
       // Message events
-      socket.on('send_message', (data) => this.handleSendMessage(socket, data));
+      // Support acknowledgements from client emit
+      socket.on('send_message', (data, ack) => this.handleSendMessage(socket, data, ack));
       socket.on('mark_read', (data) => this.handleMarkRead(socket, data));
       socket.on('typing_start', (data) => this.handleTypingStart(socket, data));
       socket.on('typing_stop', (data) => this.handleTypingStop(socket, data));
@@ -173,7 +174,7 @@ class MessageSocketHandler {
   /**
    * Handle sending message
    */
-  async handleSendMessage(socket, data) {
+  async handleSendMessage(socket, data, ack) {
     try {
       const { conversationId, content, messageType = 'text', attachments = [] } = data;
       const userId = socket.userId;
@@ -188,12 +189,14 @@ class MessageSocketHandler {
       
       if (socket.rateLimitData.messages.length > 60) {
         socket.emit('error', { message: 'Too many messages. Please slow down.' });
+        if (typeof ack === 'function') ack({ ok: false, error: 'rate_limited' });
         return;
       }
 
       // Validate input
       if (!conversationId || (!content && attachments.length === 0)) {
         socket.emit('error', { message: 'Invalid message data' });
+        if (typeof ack === 'function') ack({ ok: false, error: 'invalid' });
         return;
       }
 
@@ -205,6 +208,7 @@ class MessageSocketHandler {
 
       if (!conversation) {
         socket.emit('error', { message: 'Conversation not found or access denied' });
+        if (typeof ack === 'function') ack({ ok: false, error: 'not_found' });
         return;
       }
 
@@ -247,6 +251,9 @@ class MessageSocketHandler {
       // Broadcast message to all conversation participants
       this.io.to(`conversation_${conversationId}`).emit('new_message', messageData);
 
+      // Acknowledge to sender
+      if (typeof ack === 'function') ack({ ok: true, message: messageData });
+
       // Send push notifications to offline users
       const offlineParticipants = conversation.participants.filter(
         participantId => participantId !== userId && !this.connectedUsers.has(participantId)
@@ -275,6 +282,7 @@ class MessageSocketHandler {
     } catch (error) {
       console.error('Handle send message error:', error);
       socket.emit('error', { message: 'Failed to send message' });
+      if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
     }
   }
 

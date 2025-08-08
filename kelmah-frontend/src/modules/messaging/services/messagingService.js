@@ -13,7 +13,12 @@ export const messagingService = {
   async getConversations() {
     try {
       const response = await messagingServiceClient.get('/api/conversations');
-      return response.data || [];
+      // Normalize response shape
+      const payload = response.data;
+      if (Array.isArray(payload)) return payload;
+      if (payload?.data?.conversations) return payload.data.conversations;
+      if (payload?.conversations) return payload.conversations;
+      return [];
     } catch (error) {
       console.warn('Messaging service unavailable:', error.message);
       throw error;

@@ -32,25 +32,53 @@ export const PaymentProvider = ({ children }) => {
     console.log('🔄 Fetching real payment data from API...');
 
     try {
-      const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] =
-        await Promise.all([
-                paymentService.getWallet(),
-      paymentService.getPaymentMethods(),
-      paymentService.getTransactionHistory(),
-      paymentService.getEscrows(),
-      paymentService.getBills(),
-        ]);
-      setWalletBalance(walletRes.balance);
-      setPaymentMethods(methodsRes);
-      // Extract transactions array from response object, ensure it's always an array
-      const transactionsData = Array.isArray(transactionsRes) ? transactionsRes : transactionsRes?.transactions || [];
-      setTransactions(transactionsData);
-      setEscrows(escrowsRes || []);
-      setBills(billsRes);
+      const results = await Promise.allSettled([
+        paymentService.getWallet(),
+        paymentService.getPaymentMethods(),
+        paymentService.getTransactionHistory(),
+        paymentService.getEscrows(),
+        paymentService.getBills(),
+      ]);
+
+      const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] = results;
+
+      // Wallet (404 -> zero balance)
+      if (walletRes.status === 'fulfilled') {
+        setWalletBalance(walletRes.value.balance || 0);
+      } else if (walletRes.reason?.response?.status === 404) {
+        setWalletBalance(0);
+      }
+
+      // Methods
+      if (methodsRes.status === 'fulfilled') {
+        setPaymentMethods(methodsRes.value || []);
+      }
+
+      // Transactions (404 -> empty)
+      if (transactionsRes.status === 'fulfilled') {
+        const tr = transactionsRes.value;
+        const tx = Array.isArray(tr) ? tr : tr?.transactions || [];
+        setTransactions(tx);
+      } else if (transactionsRes.reason?.response?.status === 404) {
+        setTransactions([]);
+      }
+
+      // Escrows (501/404 -> empty)
+      if (escrowsRes.status === 'fulfilled') {
+        setEscrows(escrowsRes.value || []);
+      } else if ([404, 501].includes(escrowsRes.reason?.response?.status)) {
+        setEscrows([]);
+      }
+
+      // Bills
+      if (billsRes.status === 'fulfilled') {
+        setBills(billsRes.value || []);
+      }
+
+      setError(null);
     } catch (err) {
       console.error('Failed to fetch payment data:', err);
       setError('Could not load payment information. Please try again later.');
-      showToast('Failed to load payment information.', 'error');
     } finally {
       setLoading(false);
     }
