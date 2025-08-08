@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../middlewares/auth');
+const transactionController = require('../controllers/transaction.controller');
 
-// Temporary 200s to avoid frontend 404s while backend is implemented
-router.get('/history', async (req, res) => {
-  return res.json({ transactions: [] });
-});
+router.use(authenticate);
+
+// History (frontend uses this)
+router.get('/history', transactionController.getTransactionHistory);
 
 module.exports = router;
 
