@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 
-const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:3001/ws';
+const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:3005';
 
 export function useRealTimeAnalytics() {
   const [metrics, setMetrics] = useState(null);

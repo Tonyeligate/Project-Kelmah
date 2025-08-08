@@ -96,9 +96,19 @@ router.get('/admin/analytics', monolithProxy);
 router.get('/admin/reports', monolithProxy);
 
 // Legacy API routes that haven't been categorized yet
-router.use('*', (req, res, next) => {
-  console.warn(`Legacy route accessed: ${req.originalUrl} - Consider migrating to dedicated service`);
-  monolithProxy(req, res, next);
-});
+// Guard behind feature flag to avoid masking missing routes
+if (process.env.ENABLE_LEGACY_MONOLITH_PROXY === 'true') {
+  router.use('*', (req, res, next) => {
+    console.warn(`Legacy route accessed: ${req.originalUrl} - Consider migrating to dedicated service`);
+    monolithProxy(req, res, next);
+  });
+} else {
+  router.use('*', (req, res) => {
+    res.status(404).json({
+      message: 'Route not found. Legacy monolith proxy disabled. Use dedicated microservice routes via API Gateway.',
+      path: req.originalUrl,
+    });
+  });
+}
 
 module.exports = router;

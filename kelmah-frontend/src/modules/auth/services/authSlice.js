@@ -85,31 +85,7 @@ export const verifyAuth = createAsyncThunk(
     try {
       console.log('Verifying auth status...');
 
-      // In development mode, always use mock authentication
-      if (metaEnv.DEV || process.env.NODE_ENV === 'development') {
-        console.log('Development mode: Using mock authentication');
-        const storedUser = localStorage.getItem('user');
-
-        // If there's already user data in localStorage, use it
-        if (storedUser) {
-          console.log('Using stored user data in dev mode');
-          return {
-            user: JSON.parse(storedUser),
-            isAuthenticated: true,
-          };
-        }
-
-        // Otherwise, use the mock data from authService
-        console.log('No stored user, using default dev user');
-        const mockUser = await authService.getCurrentUser();
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        localStorage.setItem(TOKEN_KEY, 'dev-mode-fake-token-12345');
-
-        return {
-          user: mockUser,
-          isAuthenticated: true,
-        };
-      }
+      // Development mock authentication disabled – always verify via API
 
       // Production mode auth verification logic
       const token = localStorage.getItem(TOKEN_KEY);
@@ -125,29 +101,17 @@ export const verifyAuth = createAsyncThunk(
         storedUser ? JSON.parse(storedUser) : 'none',
       );
 
-      try {
-        const response = await authService.getCurrentUser();
-        console.log('User profile data received:', response);
+      const response = await authService.getCurrentUser();
+      console.log('User profile data received:', response);
 
-        if (response) {
-          // Update stored user data with fresh data from API
-          localStorage.setItem('user', JSON.stringify(response));
+      if (response) {
+        // Update stored user data with fresh data from API
+        localStorage.setItem('user', JSON.stringify(response));
 
-          return {
-            user: response,
-            isAuthenticated: true,
-          };
-        }
-      } catch (apiError) {
-        console.warn('API unreachable, using stored user data:', apiError);
-        // If API is unreachable but we have stored user data, use that
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          return {
-            user: userData,
-            isAuthenticated: true,
-          };
-        }
+        return {
+          user: response,
+          isAuthenticated: true,
+        };
       }
 
       throw new Error('Could not verify authentication');

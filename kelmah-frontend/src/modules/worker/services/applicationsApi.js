@@ -35,78 +35,7 @@ const applicationsApi = {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Failed to fetch applications:', error.message);
-      
-      // Provide fallback mock data during Job Service deployment issues
-      console.log('🔄 Using temporary applications fallback data during service deployment fix...');
-      return [
-        {
-          id: 'fallback-app-1',
-          jobId: 'job-123',
-          job: {
-            title: 'Kitchen Renovation Assistant',
-            location: {
-              city: 'Accra',
-              country: 'Ghana'
-            },
-            salary: 'GH₵200-300/day',
-            type: 'Contract',
-            description: 'Assist with kitchen renovation project including tile installation and cabinet work.',
-            skills: ['Carpentry', 'Tiling', 'Measurements']
-          },
-          company: 'Elite Renovations Ltd',
-          companyLogo: null,
-          status: 'pending',
-          appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-          clientResponse: null,
-          clientResponseAt: null,
-          priority: 'medium'
-        },
-        {
-          id: 'fallback-app-2',
-          jobId: 'job-124',
-          job: {
-            title: 'Plumbing Repairs - Residential',
-            location: {
-              city: 'Kumasi',
-              country: 'Ghana'
-            },
-            salary: 'GH₵150-200/day',
-            type: 'Part-time',
-            description: 'Fix plumbing issues in residential complex including leak repairs and pipe installations.',
-            skills: ['Plumbing', 'Leak Detection', 'Pipe Installation']
-          },
-          company: 'AquaFix Services',
-          companyLogo: null,
-          status: 'accepted',
-          appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-          clientResponse: 'Great application! Looking forward to working with you.',
-          clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-          priority: 'high',
-          startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2) // starts in 2 days
-        },
-        {
-          id: 'fallback-app-3',
-          jobId: 'job-125',
-          job: {
-            title: 'Electrical Maintenance Technician',
-            location: {
-              city: 'Takoradi',
-              country: 'Ghana'
-            },
-            salary: 'GH₵180-250/day',
-            type: 'Full-time',
-            description: 'Maintain electrical systems in commercial buildings.',
-            skills: ['Electrical Work', 'Maintenance', 'Safety Protocols']
-          },
-          company: 'PowerGrid Ghana',
-          companyLogo: null,
-          status: 'rejected',
-          appliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 1 week ago
-          clientResponse: 'Thank you for your application. We have selected another candidate.',
-          clientResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4), // 4 days ago
-          priority: 'low'
-        }
-      ];
+      throw error;
     }
   },
 
@@ -121,7 +50,7 @@ const applicationsApi = {
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Job service unavailable for application details:', error.message);
-      return null;
+      throw error;
     }
   },
 
@@ -136,22 +65,8 @@ const applicationsApi = {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Job service unavailable for application submission, simulating success:',
-        error.message,
-      );
-
-      const newApplication = {
-        id: `app-${Date.now()}`,
-        jobId,
-        ...applicationData,
-        status: 'pending',
-        appliedAt: new Date(),
-        clientResponse: null,
-        clientResponseAt: null,
-      };
-
-      return newApplication;
+      console.warn('Job service unavailable for application submission:', error.message);
+      throw error;
     }
   },
 

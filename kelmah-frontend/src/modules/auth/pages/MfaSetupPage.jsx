@@ -9,12 +9,12 @@ const MfaSetupPage = () => {
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const { mfaSetup, verifyTwoFactor } = useAuth();
+  const { setupMFA, verifyMFA } = useAuth();
 
   useEffect(() => {
     const init = async () => {
       try {
-        const data = await mfaSetup();
+        const data = await setupMFA();
         setSecret(data.secret);
         setQrCode(data.qrCode);
       } catch (err) {
@@ -22,14 +22,14 @@ const MfaSetupPage = () => {
       }
     };
     init();
-  }, [mfaSetup]);
+  }, [setupMFA]);
 
   const handleVerify = async (e) => {
     e.preventDefault();
     setError('');
     setStatus('');
     try {
-      await verifyTwoFactor(token);
+      await verifyMFA(token);
       setStatus('Two-factor authentication enabled successfully.');
     } catch (err) {
       setError(err.response?.data?.message || err.message);

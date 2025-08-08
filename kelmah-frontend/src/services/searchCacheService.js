@@ -459,29 +459,7 @@ class SearchCacheService {
    */
   async preloadCriticalData() {
     try {
-      console.log('🚀 Preloading critical search data...');
-      
-      // Preload popular Ghana locations
-      const ghanaLocations = [
-        'Accra', 'Kumasi', 'Tema', 'Tamale', 'Cape Coast',
-        'Sunyani', 'Koforidua', 'Ho', 'Wa', 'Bolgatanga'
-      ];
-      
-      // Preload popular job categories
-      const popularCategories = [
-        'plumbing', 'electrical', 'carpentry', 'painting', 'cleaning'
-      ];
-      
-      // Cache location-based searches
-      for (const location of ghanaLocations.slice(0, 3)) { // Top 3 cities
-        for (const category of popularCategories.slice(0, 2)) { // Top 2 categories
-          // This would normally make an API call
-          const mockData = this.generateMockSearchResults(category, location);
-          await this.setCached('jobs', { location, category }, mockData);
-        }
-      }
-      
-      console.log('✅ Critical data preloaded');
+      console.log('🚀 Preloading critical search data disabled: no mock generation');
       
     } catch (error) {
       console.error('Preload error:', error);
@@ -492,22 +470,8 @@ class SearchCacheService {
    * Generate mock search results for preloading
    */
   generateMockSearchResults(category, location) {
-    return {
-      results: [
-        {
-          id: `${category}_${location}_1`,
-          title: `${category.charAt(0).toUpperCase() + category.slice(1)} Expert`,
-          location: location,
-          category: category,
-          rating: 4.5 + Math.random() * 0.5,
-          price: Math.floor(Math.random() * 100) + 50,
-          cached: true
-        }
-      ],
-      total: 1,
-      cached: true,
-      generatedAt: Date.now()
-    };
+    // Removed mock result generation; return empty structure to avoid polluting cache
+    return { results: [], total: 0, cached: false, generatedAt: Date.now() };
   }
 
   /**

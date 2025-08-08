@@ -20,61 +20,6 @@ schedulingClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Enhanced mock appointments data for better UX during service unavailability
-const mockAppointments = [
-  {
-    id: 'mock-apt-1',
-    title: 'Kitchen Cabinet Installation',
-    description: 'Install new kitchen cabinets and hardware',
-    datetime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days from now
-    duration: 180, // 3 hours
-    status: 'confirmed',
-    type: 'installation',
-    workerId: 'worker-123',
-    workerName: 'John Carpenter',
-    hirerName: 'Sarah Mitchell',
-    location: 'Accra, Greater Accra',
-    jobId: 'job-kitchen-123',
-    priority: 'high',
-    notes: 'Please bring power tools and measuring equipment',
-    estimatedCost: 1200
-  },
-  {
-    id: 'mock-apt-2',
-    title: 'Plumbing Leak Repair',
-    description: 'Fix kitchen sink leak and replace faucet',
-    datetime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 days from now
-    duration: 120, // 2 hours
-    status: 'pending',
-    type: 'repair',
-    workerId: 'worker-456',
-    workerName: 'Mike Plumber',
-    hirerName: 'David Johnson',
-    location: 'Kumasi, Ashanti',
-    jobId: 'job-plumbing-456',
-    priority: 'medium',
-    notes: 'Access to main water shut-off required',
-    estimatedCost: 350
-  },
-  {
-    id: 'mock-apt-3',
-    title: 'Electrical Outlet Installation',
-    description: 'Install additional power outlets in living room',
-    datetime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 1 week from now
-    duration: 90, // 1.5 hours
-    status: 'upcoming',
-    type: 'installation',
-    workerId: 'worker-789',
-    workerName: 'Anna Electrician',
-    hirerName: 'Grace Asante',
-    location: 'Takoradi, Western',
-    jobId: 'job-electrical-789',
-    priority: 'low',
-    notes: 'Circuit breaker access needed',
-    estimatedCost: 280
-  }
-];
-
 class SchedulingService {
   /**
    * Fetch all appointments
@@ -86,33 +31,8 @@ class SchedulingService {
       });
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, using mock appointments:',
-        error.message,
-      );
-
-      // Apply basic filtering if params provided
-      let filteredAppointments = [...mockAppointments];
-
-      if (params.status) {
-        filteredAppointments = filteredAppointments.filter(
-          (apt) => apt.status === params.status,
-        );
-      }
-
-      if (params.type) {
-        filteredAppointments = filteredAppointments.filter(
-          (apt) => apt.type === params.type,
-        );
-      }
-
-      if (params.workerId) {
-        filteredAppointments = filteredAppointments.filter(
-          (apt) => apt.workerId === params.workerId,
-        );
-      }
-
-      return filteredAppointments;
+      console.warn('Scheduling service unavailable:', error.message);
+      return [];
     }
   }
 
@@ -127,11 +47,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        `Scheduling service unavailable for job ${jobId}, using mock data:`,
-        error.message,
-      );
-      return mockAppointments.filter((apt) => apt.jobId === jobId);
+      console.warn(`Scheduling service unavailable for job ${jobId}:`, error.message);
+      return [];
     }
   }
 
@@ -151,16 +68,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        `Scheduling service unavailable for user ${userId}, using mock data:`,
-        error.message,
-      );
-
-      return mockAppointments.filter((apt) => {
-        if (role === 'hirer') return apt.hirerId === userId;
-        if (role === 'worker') return apt.workerId === userId;
-        return apt.hirerId === userId || apt.workerId === userId;
-      });
+      console.warn(`Scheduling service unavailable for user ${userId}:`, error.message);
+      return [];
     }
   }
 
@@ -175,20 +84,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, simulating appointment creation:',
-        error.message,
-      );
-
-      const newAppointment = {
-        id: `apt-${Date.now()}`,
-        ...appointmentData,
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      return newAppointment;
+      console.warn('Scheduling service unavailable:', error.message);
+      throw error;
     }
   }
 
@@ -233,11 +130,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, using mock appointment:',
-        error.message,
-      );
-      return mockAppointments.find((apt) => apt.id === appointmentId) || null;
+      console.warn('Scheduling service unavailable:', error.message);
+      return null;
     }
   }
 
@@ -270,48 +164,8 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
-        'Scheduling service unavailable, using mock availability:',
-        error.message,
-      );
-
-      // Generate mock available time slots
-      const selectedDate = new Date(date);
-      const timeSlots = [];
-
-      for (let hour = 8; hour <= 17; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          const slotTime = new Date(selectedDate);
-          slotTime.setHours(hour, minute, 0, 0);
-
-          // Skip past times
-          if (slotTime <= new Date()) continue;
-
-          // Check if slot conflicts with existing appointments
-          const hasConflict = mockAppointments.some((apt) => {
-            const aptStart = new Date(apt.startTime);
-            const aptEnd = new Date(apt.endTime);
-            const slotEnd = new Date(slotTime.getTime() + duration * 60000);
-
-            return (
-              apt.workerId === workerId &&
-              apt.status !== 'cancelled' &&
-              ((slotTime >= aptStart && slotTime < aptEnd) ||
-                (slotEnd > aptStart && slotEnd <= aptEnd))
-            );
-          });
-
-          if (!hasConflict) {
-            timeSlots.push({
-              startTime: slotTime,
-              endTime: new Date(slotTime.getTime() + duration * 60000),
-              available: true,
-            });
-          }
-        }
-      }
-
-      return timeSlots.slice(0, 10); // Return first 10 available slots
+      console.warn('Scheduling service unavailable:', error.message);
+      return [];
     }
   }
 }

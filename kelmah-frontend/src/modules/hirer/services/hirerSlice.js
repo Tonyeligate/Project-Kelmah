@@ -135,40 +135,8 @@ const createHirerProfile = () => {
     };
   }
 
-  // Fallback mock data if no real user data
-  return {
-    id: 'default-hirer',
-    firstName: 'Guest',
-    lastName: 'Hirer',
-    email: 'guest@example.com',
-    phone: '',
-    company: '',
-    location: 'Accra, Ghana',
-    bio: '',
-    avatar: '/api/placeholder/150/150',
-    role: 'hirer',
-    rating: 0,
-    reviewsCount: 0,
-    totalJobsPosted: 0,
-    totalAmountSpent: 0,
-    currency: 'GH₵',
-    verified: false,
-    joinedAt: new Date(),
-    completionRate: 0,
-    responseTime: 'N/A',
-    preferences: {
-      communicationMethod: 'email',
-      jobNotifications: true,
-      marketingEmails: false,
-      currency: "GHS",
-    },
-    businessDetails: {
-      registrationNumber: '',
-      industry: '',
-      employees: '',
-      website: '',
-    },
-  };
+  // No fallback; return null to indicate absence of real user data
+  return null;
 };
 
 export const updateJobStatus = createAsyncThunk(
@@ -184,11 +152,7 @@ export const updateJobStatus = createAsyncThunk(
         'Job service unavailable for status update, simulating success:',
         error.message,
       );
-      return {
-        success: true,
-        data: { jobId, status, updatedAt: new Date() },
-        message: `Job status updated to ${status} (mock)`,
-      };
+      throw error;
     }
   },
 );
@@ -204,11 +168,7 @@ export const deleteHirerJob = createAsyncThunk(
         'Job service unavailable for job deletion, simulating success:',
         error.message,
       );
-      return {
-        success: true,
-        data: { jobId },
-        message: 'Job deleted successfully (mock)',
-      };
+      throw error;
     }
   },
 );
@@ -426,7 +386,7 @@ const hirerSlice = createSlice({
         state.loading.applications = false;
         state.error.applications =
           action.payload || 'Failed to fetch applications';
-        // Fallback to mock data
+        // No fallback data
         state.applications = [];
       })
 
@@ -442,8 +402,8 @@ const hirerSlice = createSlice({
       .addCase(fetchHirerAnalytics.rejected, (state, action) => {
         state.loading.analytics = false;
         state.error.analytics = action.payload || 'Failed to fetch analytics';
-        // Fallback to mock data
-        state.analytics = { totalJobs: 0, activeJobs: 0, completedJobs: 0, totalSpent: 0 };
+        // No fallback data
+        state.analytics = null;
       })
 
       // Fetch Payment Summary
@@ -458,8 +418,8 @@ const hirerSlice = createSlice({
       .addCase(fetchPaymentSummary.rejected, (state, action) => {
         state.loading.payments = false;
         state.error.payments = action.payload || 'Failed to fetch payments';
-        // Fallback to mock data
-        state.payments = { transactions: [], summary: { totalPaid: 0, pendingPayments: 0, escrowBalance: 0 } };
+        // No fallback data
+        state.payments = null;
       });
   },
 });

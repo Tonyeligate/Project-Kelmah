@@ -20,14 +20,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      // Fallback with comprehensive mock data for development
-      console.warn('Hirer analytics API not available, using mock data');
-      
-      const mockData = generateMockHirerAnalytics(timeRange);
-      
-      return {
-        data: mockData
-      };
+      throw error;
     }
   },
 
@@ -45,24 +38,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Spending analytics API not available, using mock data');
-      return {
-        data: {
-          totalSpending: 125000,
-          averageJobCost: 3500,
-          spendingByCategory: {
-            'Plumbing': 45000,
-            'Electrical': 35000,
-            'Carpentry': 25000,
-            'Painting': 15000,
-            'Other': 5000
-          },
-          monthlyTrend: generateMockSpendingTrend(),
-          budgetUtilization: 78,
-          costPerHire: 2800,
-          savingsFromNegotiation: 8500
-        }
-      };
+      throw error;
     }
   },
 
@@ -78,23 +54,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Worker performance API not available, using mock data');
-      return {
-        data: {
-          totalWorkersHired: 35,
-          repeatHires: 12,
-          averageWorkerRating: 4.6,
-          topPerformers: generateMockTopWorkers(),
-          categoryPerformance: {
-            'Plumbing': { rating: 4.8, jobs: 15, satisfaction: 92 },
-            'Electrical': { rating: 4.5, jobs: 12, satisfaction: 88 },
-            'Carpentry': { rating: 4.7, jobs: 10, satisfaction: 90 },
-            'Painting': { rating: 4.3, jobs: 8, satisfaction: 85 }
-          },
-          workerRetentionRate: 68,
-          timeToHire: 3.2 // days
-        }
-      };
+      throw error;
     }
   },
 
@@ -110,21 +70,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Job success metrics API not available, using mock data');
-      return {
-        data: {
-          totalJobsPosted: 42,
-          completedJobs: 38,
-          successRate: 90.5,
-          averageJobDuration: 12, // days
-          onTimeCompletionRate: 85,
-          budgetAdherenceRate: 82,
-          clientSatisfactionScore: 4.5,
-          disputeRate: 5,
-          repostRate: 8,
-          qualityScore: 87
-        }
-      };
+      throw error;
     }
   },
 
@@ -140,40 +86,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Market insights API not available, using mock data');
-      return {
-        data: {
-          marketPosition: 'Above Average',
-          spendingPercentile: 75,
-          efficiencyRank: 23, // out of 100
-          recommendations: [
-            {
-              type: 'cost_optimization',
-              title: 'Optimize Spending',
-              description: 'You spend 15% more than similar hirers. Consider negotiating rates.',
-              potential_savings: 2500
-            },
-            {
-              type: 'worker_retention',
-              title: 'Improve Worker Retention',
-              description: 'Building long-term relationships can reduce hiring costs by 30%.',
-              potential_savings: 3500
-            },
-            {
-              type: 'category_expansion',
-              title: 'Expand Service Categories',
-              description: 'Consider adding HVAC and Roofing to your regular services.',
-              potential_value: 8000
-            }
-          ],
-          industryBenchmarks: {
-            averageJobCost: 3200,
-            successRate: 85,
-            timeToCompletion: 14,
-            workerSatisfaction: 4.3
-          }
-        }
-      };
+      throw error;
     }
   },
 
@@ -194,8 +107,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Analytics export API not available, generating mock PDF');
-      return generateMockPDF();
+      throw error;
     }
   },
 
@@ -211,42 +123,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Cost savings API not available, using mock data');
-      return {
-        data: {
-          totalPotentialSavings: 12500,
-          opportunities: [
-            {
-              category: 'Bundle Jobs',
-              description: 'Combine similar jobs to negotiate better rates',
-              potentialSavings: 4500,
-              difficulty: 'Easy',
-              timeline: '1-2 weeks'
-            },
-            {
-              category: 'Long-term Contracts',
-              description: 'Establish ongoing relationships with top workers',
-              potentialSavings: 3500,
-              difficulty: 'Medium',
-              timeline: '1-3 months'
-            },
-            {
-              category: 'Off-peak Scheduling',
-              description: 'Schedule non-urgent work during slower periods',
-              potentialSavings: 2500,
-              difficulty: 'Easy',
-              timeline: 'Immediate'
-            },
-            {
-              category: 'Bulk Material Purchase',
-              description: 'Coordinate material purchases across jobs',
-              potentialSavings: 2000,
-              difficulty: 'Hard',
-              timeline: '3-6 months'
-            }
-          ]
-        }
-      };
+      throw error;
     }
   },
 
@@ -262,34 +139,7 @@ const hirerAnalyticsService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Hiring efficiency API not available, using mock data');
-      return {
-        data: {
-          averageTimeToHire: 3.2, // days
-          applicationResponseRate: 85,
-          interviewToHireRatio: 0.65,
-          offerAcceptanceRate: 92,
-          firstChoiceHireRate: 78,
-          processEfficiencyScore: 82,
-          bottlenecks: [
-            {
-              stage: 'Initial Response',
-              averageTime: 1.5,
-              improvement: 'Set up automated responses'
-            },
-            {
-              stage: 'Interview Scheduling',
-              averageTime: 0.8,
-              improvement: 'Use scheduling tools'
-            },
-            {
-              stage: 'Decision Making',
-              averageTime: 0.9,
-              improvement: 'Define clear criteria'
-            }
-          ]
-        }
-      };
+      throw error;
     }
   }
 };

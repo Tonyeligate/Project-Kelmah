@@ -12,6 +12,8 @@ const walletRoutes = require("./routes/wallet.routes");
 const paymentMethodRoutes = require("./routes/paymentMethod.routes");
 const billRoutes = require("./routes/bill.routes");
 const paymentsRoutes = require("./routes/payments.routes");
+const escrowRoutes = require("./routes/escrow.routes");
+// Escrow routes do not exist yet; transactions/escrows are handled by wallet controller for now
 
 // Create Express app
 
@@ -89,12 +91,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/payments/transactions", transactionRoutes);
 app.use("/api/payments/wallet", walletRoutes);
 app.use("/api/payments/methods", paymentMethodRoutes);
+app.use("/api/payments/escrows", escrowRoutes);
 app.use("/api/payments/bills", billRoutes);
 app.use("/api/payments", paymentsRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+  const dbReady = mongoose.connection?.readyState === 1;
+  res.status(200).json({ service: 'payment-service', status: dbReady ? 'healthy' : 'degraded', db: dbReady ? 'connected' : 'disconnected', timestamp: new Date().toISOString() });
+});
+
+app.get('/health/ready', (req, res) => {
+  const ready = mongoose.connection?.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
+app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware

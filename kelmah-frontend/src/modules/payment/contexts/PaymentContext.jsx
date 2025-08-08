@@ -133,9 +133,19 @@ export const PaymentProvider = ({ children }) => {
 
   const addPaymentMethod = useCallback(
     async (methodData) => {
-      showToast('Mock: Payment method added successfully.', 'success');
+      setLoading(true);
+      try {
+        await paymentService.addPaymentMethod(methodData);
+        showToast('Payment method added successfully.', 'success');
+        await fetchData();
+      } catch (err) {
+        console.error('Failed to add payment method:', err);
+        showToast('Failed to add payment method.', 'error');
+      } finally {
+        setLoading(false);
+      }
     },
-    [showToast],
+    [fetchData, showToast],
   );
 
   const payBill = useCallback(

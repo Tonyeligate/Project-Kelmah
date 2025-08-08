@@ -103,6 +103,16 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Readiness and liveness endpoints
+app.get('/health/ready', (req, res) => {
+  const isDbConnected = !!(require('mongoose').connection?.readyState === 1);
+  res.status(isDbConnected ? 200 : 503).json({ ready: isDbConnected, timestamp: new Date().toISOString() });
+});
+
+app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
 // Deployment verification
 const { verifyDeployment } = require('./verify-deployment');
 

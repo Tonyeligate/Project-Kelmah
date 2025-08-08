@@ -360,8 +360,7 @@ const workerService = {
       const response = await userServiceClient.get('/api/workers/me/saved-jobs');
       return response.data;
     } catch (error) {
-      console.warn('User Service unavailable for saved jobs, using fallback:', error.message);
-      return [];
+      throw error;
     }
   },
 
@@ -395,8 +394,7 @@ const workerService = {
       });
       return response.data;
     } catch (error) {
-      console.warn('User Service unavailable for applications, using fallback:', error.message);
-      return [];
+      throw error;
     }
   },
 

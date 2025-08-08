@@ -41,28 +41,6 @@ const ProtectedRoute = ({
 
   // Redirect if not authenticated or not authorized
   if (!isAllowed) {
-    // In development, simulate a one-time mock login without reloading the page
-    if (
-      import.meta.env.DEV &&
-      import.meta.env.VITE_BYPASS_AUTH === 'true' &&
-      !localStorage.getItem('mock_user_set')
-    ) {
-      console.log('Development mode: Simulating mock login without reload');
-      const mockUser = {
-        id: 'dev-user-123',
-        email: 'dev@example.com',
-        firstName: 'Dev',
-        lastName: 'User',
-        role: 'worker',
-        name: 'Dev User',
-      };
-      const mockToken = 'dev-mock-token-123';
-      dispatch(setOAuthLogin({ user: mockUser, token: mockToken }));
-      localStorage.setItem('mock_user_set', 'true');
-      // Render protected content immediately after setting mock auth
-      return children;
-    }
-    // Redirect unauthorized users
     return <Navigate to={redirectPath} replace />;
   }
 

@@ -3,243 +3,214 @@
  * Handles all payment-related API calls
  */
 
-import { authServiceClient } from '../../common/services/axios';
-
-// Mock data for development
-const MOCK_PAYMENT_METHODS = [
-  {
-    id: 'pm_1',
-    type: 'credit',
-    cardType: 'visa',
-    cardNumber: '•••• 4242',
-    expiryDate: '12/25',
-    isDefault: true,
-  },
-  {
-    id: 'pm_2',
-    type: 'debit',
-    cardType: 'mastercard',
-    cardNumber: '•••• 5555',
-    expiryDate: '08/26',
-    isDefault: false,
-  },
-];
-
-const MOCK_TRANSACTIONS = [
-  {
-    id: 'txn_1',
-    date: new Date().toISOString(),
-    amount: 250.00,
-    status: 'completed',
-    type: 'received',
-    description: 'Payment for Kitchen Renovation',
-    from: 'John Smith',
-  },
-  {
-    id: 'txn_2',
-    date: new Date(Date.now() - 86400000).toISOString(),
-    amount: 50.00,
-    status: 'completed',
-    type: 'sent',
-    description: 'Withdrawal to bank account',
-    to: 'Bank •••• 1234',
-  },
-];
-
-const MOCK_ESCROWS = [
-  {
-    id: 'esc_1',
-    jobId: 'job_1',
-    jobTitle: 'Kitchen Renovation',
-    amount: 500.00,
-    status: 'active',
-    releaseDate: null,
-  },
-];
-
-const MOCK_BILLS = [
-  {
-    id: 'bill_1',
-    title: 'Platform Fee',
-    amount: 25.00,
-    dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
-    status: 'pending',
-  },
-];
-
-const MOCK_WALLET = {
-  balance: 750.50,
-  currency: 'USD',
-  pendingBalance: 100.00,
-};
+import { paymentServiceClient } from '../../common/services/axios';
 
 const paymentService = {
-  // Simulate API delay for development
-  _simulateDelay: (ms = 500) => new Promise(resolve => setTimeout(resolve, ms)),
-
   // Wallet operations
   getWallet: async () => {
-    await paymentService._simulateDelay();
-    return MOCK_WALLET;
+    const { data } = await paymentServiceClient.get('/api/payments/wallet');
+    return data;
   },
 
   // Payment methods
   getPaymentMethods: async () => {
-    await paymentService._simulateDelay();
-    return MOCK_PAYMENT_METHODS;
+    const { data } = await paymentServiceClient.get('/api/payments/methods');
+    return data;
   },
 
   addPaymentMethod: async (methodData) => {
-    await paymentService._simulateDelay();
-    const newMethod = {
-      id: `pm_${Date.now()}`,
-      type: 'credit',
-      cardType: methodData.cardNumber.startsWith('4') ? 'visa' : 'mastercard',
-      cardNumber: `•••• ${methodData.cardNumber.slice(-4)}`,
-      expiryDate: `${methodData.expiryMonth}/${methodData.expiryYear.slice(-2)}`,
-      isDefault: false,
-    };
-    MOCK_PAYMENT_METHODS.push(newMethod);
-    return newMethod;
+    const { data } = await paymentServiceClient.post('/api/payments/methods', methodData);
+    return data;
   },
 
   setDefaultPaymentMethod: async (methodId) => {
-    await paymentService._simulateDelay();
-    MOCK_PAYMENT_METHODS.forEach(method => {
-      method.isDefault = method.id === methodId;
-    });
-    return { success: true };
+    const { data } = await paymentServiceClient.put(`/api/payments/methods/${methodId}/default`);
+    return data;
   },
 
   deletePaymentMethod: async (methodId) => {
-    await paymentService._simulateDelay();
-    const index = MOCK_PAYMENT_METHODS.findIndex(m => m.id === methodId);
-    if (index > -1) {
-      MOCK_PAYMENT_METHODS.splice(index, 1);
-    }
-    return { success: true };
+    const { data } = await paymentServiceClient.delete(`/api/payments/methods/${methodId}`);
+    return data;
   },
 
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
-    await paymentService._simulateDelay();
-    return {
-      data: MOCK_TRANSACTIONS,
-      pagination: {
-        page: 1,
-        totalPages: 1,
-        totalCount: MOCK_TRANSACTIONS.length,
-      },
-    };
+    const response = await paymentServiceClient.get('/api/payments/transactions/history', { params });
+    return response.data;
   },
 
   createTransaction: async (transactionData) => {
-    await paymentService._simulateDelay();
-    const newTransaction = {
-      id: `txn_${Date.now()}`,
-      date: new Date().toISOString(),
-      ...transactionData,
-      status: 'processing',
-    };
-    MOCK_TRANSACTIONS.unshift(newTransaction);
-    return newTransaction;
+    const { data } = await paymentServiceClient.post('/api/payments/transactions', transactionData);
+    return data;
   },
 
   // Escrow operations
   getEscrows: async () => {
-    await paymentService._simulateDelay();
-    return MOCK_ESCROWS;
+    const { data } = await paymentServiceClient.get('/api/payments/escrows');
+    return data;
   },
 
   getEscrowDetails: async (escrowId) => {
-    await paymentService._simulateDelay();
-    return MOCK_ESCROWS.find(e => e.id === escrowId);
+    const { data } = await paymentServiceClient.get(`/api/payments/escrows/${escrowId}`);
+    return data;
   },
 
   releaseEscrow: async (escrowId, releaseData) => {
-    await paymentService._simulateDelay();
-    const escrow = MOCK_ESCROWS.find(e => e.id === escrowId);
-    if (escrow) {
-      escrow.status = 'released';
-      escrow.releaseDate = new Date().toISOString();
-    }
-    return { success: true };
+    const { data } = await paymentServiceClient.post(`/api/payments/escrows/${escrowId}/release`, releaseData);
+    return data;
   },
 
   // Bills operations
   getBills: async () => {
-    await paymentService._simulateDelay();
-    return MOCK_BILLS;
+    const { data } = await paymentServiceClient.get('/api/payments/bills');
+    return data;
   },
 
   payBill: async (billId) => {
-    await paymentService._simulateDelay();
-    const bill = MOCK_BILLS.find(b => b.id === billId);
-    if (bill) {
-      bill.status = 'paid';
-      bill.paidDate = new Date().toISOString();
-    }
-    return { success: true };
+    const { data } = await paymentServiceClient.post(`/api/payments/bills/${billId}/pay`);
+    return data;
   },
 
   // Wallet fund operations
   withdrawFunds: async (amount, methodId) => {
-    await paymentService._simulateDelay(1000);
-    const newTransaction = {
-      id: `txn_${Date.now()}`,
-      date: new Date().toISOString(),
-      amount,
-      status: 'processing',
-      type: 'sent',
-      description: `Withdrawal to ${MOCK_PAYMENT_METHODS.find((p) => p.id === methodId)?.cardType || 'card'}`,
-      to: `•••• ${MOCK_PAYMENT_METHODS.find((p) => p.id === methodId)?.cardNumber.slice(-4)}`,
-    };
-    MOCK_TRANSACTIONS.unshift(newTransaction);
-    
-    // Simulate processing completion
-    setTimeout(() => {
-      const completedTx = MOCK_TRANSACTIONS.find(
-        (t) => t.id === newTransaction.id,
-      );
-      if (completedTx) completedTx.status = 'completed';
-    }, 5000);
-    
-    return { success: true, transaction: newTransaction };
+    const { data } = await paymentServiceClient.post('/api/payments/transactions', { amount, type: 'withdrawal', paymentMethodId: methodId });
+    return data;
   },
 
   addFunds: async (amount, methodId) => {
-    await paymentService._simulateDelay(1000);
-    const newTransaction = {
-      id: `txn_${Date.now()}`,
-      date: new Date().toISOString(),
-      amount,
-      status: 'completed',
-      type: 'received',
-      description: 'Funds added to wallet',
-      from: `Card •••• ${MOCK_PAYMENT_METHODS.find((p) => p.id === methodId)?.cardNumber.slice(-4)}`,
-    };
-    MOCK_TRANSACTIONS.unshift(newTransaction);
-    return { success: true, transaction: newTransaction };
+    const { data } = await paymentServiceClient.post('/api/payments/transactions', { amount, type: 'deposit', paymentMethodId: methodId });
+    return data;
   },
 
   // Payment settings
   getPaymentSettings: async () => {
-    await paymentService._simulateDelay();
-    return {
-      autoPayEnabled: true,
-      defaultPaymentMethod: 'pm_1',
-      currency: 'USD',
-      notifications: {
-        paymentReceived: true,
-        paymentSent: true,
-        lowBalance: true,
-      },
-    };
+    const { data } = await paymentServiceClient.get('/api/payments/settings');
+    return data;
   },
 
   updatePaymentSettings: async (settings) => {
-    await paymentService._simulateDelay();
-    return { success: true, settings };
+    const { data } = await paymentServiceClient.put('/api/payments/settings', settings);
+    return data;
+  },
+
+  // 🇬🇭 GHANA MOBILE MONEY INTEGRATION
+  
+  // MTN Mobile Money operations
+  processMtnMoMoPayment: async (paymentData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/mtn-momo/request-to-pay', paymentData);
+    return data;
+  },
+
+  getMtnMoMoTransactionStatus: async (referenceId) => {
+    const { data } = await paymentServiceClient.get(`/api/payments/mtn-momo/status/${referenceId}`);
+    return data;
+  },
+
+  validateMtnMoMoAccount: async (phoneNumber) => {
+    const { data } = await paymentServiceClient.post('/api/payments/mtn-momo/validate', { phoneNumber });
+    return data;
+  },
+
+  // Vodafone Cash operations
+  processVodafoneCashPayment: async (paymentData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/vodafone-cash/request-to-pay', paymentData);
+    return data;
+  },
+
+  getVodafoneCashTransactionStatus: async (referenceId) => {
+    const { data } = await paymentServiceClient.get(`/api/payments/vodafone-cash/status/${referenceId}`);
+    return data;
+  },
+
+  // AirtelTigo Money operations
+  processAirtelTigoPayment: async (paymentData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/airteltigo/request-to-pay', paymentData);
+    return data;
+  },
+
+  getAirtelTigoTransactionStatus: async (referenceId) => {
+    const { data } = await paymentServiceClient.get(`/api/payments/airteltigo/status/${referenceId}`);
+    return data;
+  },
+
+  // Unified Mobile Money payment processor
+  processMobileMoneyPayment: async (paymentData) => {
+    const { provider, phoneNumber, amount, currency = 'GHS', description } = paymentData;
+    
+    const payload = {
+      phoneNumber,
+      amount,
+      currency,
+      description,
+      externalId: `KLM_${Date.now()}`,
+      payerMessage: description || 'Kelmah platform payment',
+      payeeNote: 'Payment for services on Kelmah platform'
+    };
+
+    // Route to appropriate provider
+    switch (provider) {
+      case 'mtn':
+        return await paymentService.processMtnMoMoPayment(payload);
+      case 'vodafone':
+        return await paymentService.processVodafoneCashPayment(payload);
+      case 'airteltigo':
+        return await paymentService.processAirtelTigoPayment(payload);
+      default:
+        throw new Error(`Unsupported mobile money provider: ${provider}`);
+    }
+  },
+
+  // Check Mobile Money transaction status (unified)
+  getMobileMoneyTransactionStatus: async (provider, referenceId) => {
+    switch (provider) {
+      case 'mtn':
+        return await paymentService.getMtnMoMoTransactionStatus(referenceId);
+      case 'vodafone':
+        return await paymentService.getVodafoneCashTransactionStatus(referenceId);
+      case 'airteltigo':
+        return await paymentService.getAirtelTigoTransactionStatus(referenceId);
+      default:
+        throw new Error(`Unsupported mobile money provider: ${provider}`);
+    }
+  },
+
+  // Paystack Ghana integration
+  processPaystackPayment: async (paymentData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/paystack/initialize', paymentData);
+    return data;
+  },
+
+  verifyPaystackPayment: async (reference) => {
+    const { data } = await paymentServiceClient.get(`/api/payments/paystack/verify/${reference}`);
+    return data;
+  },
+
+  // Bank transfer operations (Ghana banks)
+  initiateBankTransfer: async (transferData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/bank-transfer/initiate', transferData);
+    return data;
+  },
+
+  getBankTransferStatus: async (transferId) => {
+    const { data } = await paymentServiceClient.get(`/api/payments/bank-transfer/status/${transferId}`);
+    return data;
+  },
+
+  // Get available Ghana payment methods
+  getGhanaPaymentMethods: async () => {
+    const { data } = await paymentServiceClient.get('/api/payments/ghana/methods');
+    return data;
+  },
+
+  // Worker payout operations (for paying workers)
+  processWorkerPayout: async (payoutData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/payout/worker', payoutData);
+    return data;
+  },
+
+  getPayoutStatus: async (payoutId) => {
+    const { data } = await paymentServiceClient.get(`/api/payments/payout/status/${payoutId}`);
+    return data;
   },
 };
 

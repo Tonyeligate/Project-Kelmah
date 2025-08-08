@@ -32,10 +32,10 @@ class WebSocketService {
         this.disconnect();
       }
 
-      // Determine WebSocket URL
+      // Determine WebSocket URL (fixed for messaging service)
       const wsUrl = process.env.NODE_ENV === 'production' 
-        ? 'wss://api.kelmah.com'
-        : 'ws://localhost:3001';
+        ? 'https://kelmah-messaging-service.onrender.com'
+        : 'http://localhost:3005';
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {

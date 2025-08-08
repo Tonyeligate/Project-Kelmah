@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { $1 } from '../services/authService';
+import authService from '../modules/auth/services/authService';
 
 export const useWebSocket = (
-  url = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:3000',
+  url = process.env.REACT_APP_WEBSOCKET_URL || 'http://localhost:3005',
 ) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
 
   const connect = useCallback(() => {
-    const token = getAuthToken();
+    const token = authService.getToken();
     if (!token) {
       setError(new Error('No authentication token found'));
       return;

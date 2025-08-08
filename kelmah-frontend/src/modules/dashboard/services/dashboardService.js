@@ -134,13 +134,7 @@ class DashboardService {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
-      // Return mock data as fallback
-      return {
-        totalJobs: 0,
-        unreadNotifications: 0,
-        unreadConversations: 0,
-        upcomingAppointments: 0
-      };
+      throw error;
     }
   }
 
@@ -264,11 +258,7 @@ class DashboardService {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching real-time stats:', error);
-      return {
-        openJobs: 0,
-        unreadNotifications: 0,
-        unreadConversations: 0
-      };
+      throw error;
     }
   }
 
@@ -281,7 +271,7 @@ class DashboardService {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching job matches:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -294,7 +284,7 @@ class DashboardService {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      return [];
+      throw error;
     }
   }
 }

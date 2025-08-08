@@ -142,50 +142,8 @@ const AppContent = () => {
       return;
     }
 
-    const checkAuth = () => {
-      // Force disable development mock authentication to use real auth
-      const isDevelopment = false; // Disabled to use real authentication
-      
-      if (isDevelopment) {
-        // Skip mock auth after manual logout
-        if (sessionStorage.getItem('dev-logout') === 'true') {
-          console.log('Dev-mode mock auth skipped due to manual logout');
-          return;
-        }
-        console.log('Development mode: Setting up mock authentication');
-
-        // Set up mock user if none exists
-        if (!localStorage.getItem('user') || !localStorage.getItem(TOKEN_KEY)) {
-          const mockUser = {
-            id: 'dev-user-123',
-            email: 'dev@example.com',
-            firstName: 'Development',
-            lastName: 'User',
-            name: 'Development User',
-            role: 'worker',
-            skills: ['Carpentry', 'Plumbing', 'Electrical'],
-            rating: 4.8,
-            profileImage: null,
-          };
-
-          localStorage.setItem('user', JSON.stringify(mockUser));
-          localStorage.setItem(TOKEN_KEY, 'dev-mode-fake-token-12345');
-        }
-
-        // Dispatch login action with mock user data
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        dispatch({
-          type: 'auth/login/fulfilled',
-          payload: {
-            user: storedUser,
-            token: 'dev-mode-fake-token-12345',
-          },
-        });
-
-        return;
-      }
-
-      // Production mode: Check if token exists before dispatching verification
+      const checkAuth = () => {
+        // Always use real authentication
       const token = localStorage.getItem(TOKEN_KEY);
 
       // Only verify auth if Redux state is currently unauthenticated.

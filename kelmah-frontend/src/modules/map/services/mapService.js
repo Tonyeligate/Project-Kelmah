@@ -120,11 +120,8 @@ class MapService {
 
       return this.transformJobsForMap(response.data.data || []);
     } catch (error) {
-      console.warn(
-        'Jobs API unavailable, using enhanced mock data:',
-        error.message,
-      );
-      return this.generateEnhancedJobMockData(params);
+      console.error('Jobs API unavailable:', error);
+      throw error;
     }
   }
 
@@ -164,11 +161,8 @@ class MapService {
 
       return this.transformWorkersForMap(response.data.data || []);
     } catch (error) {
-      console.warn(
-        'Workers API unavailable, using enhanced mock data:',
-        error.message,
-      );
-      return this.generateEnhancedWorkerMockData(params);
+      console.error('Workers API unavailable:', error);
+      throw error;
     }
   }
 

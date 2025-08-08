@@ -148,10 +148,14 @@ app.get('/settings/themes', (req, res) => {
   });
 });
 
-// Admin routes for development/testing
+// Admin routes for development/testing (guarded by INTERNAL_API_KEY)
 app.post("/api/admin/verify-user", async (req, res) => {
   try {
     const { email } = req.body;
+    const internalKey = req.headers['x-internal-key'] || req.query.key;
+    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
     
     if (!email) {
       return res.status(400).json({
@@ -159,10 +163,9 @@ app.post("/api/admin/verify-user", async (req, res) => {
         message: "Email is required"
       });
     }
-
-    // Find user by email
-    const User = require("./models").User;
-    const user = await User.findOne({ where: { email } });
+    // Find user by email (Mongoose)
+    const User = require("./models/User");
+    const user = await User.findOne({ email: email.toLowerCase() });
     
     if (!user) {
       return res.status(404).json({
@@ -173,7 +176,8 @@ app.post("/api/admin/verify-user", async (req, res) => {
 
     // Force verify the user
     user.isEmailVerified = true;
-    user.emailVerificationToken = null;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
     await user.save();
 
     return res.json({
@@ -199,6 +203,10 @@ app.post("/api/admin/verify-user", async (req, res) => {
 app.post("/api/admin/verify-users-batch", async (req, res) => {
   try {
     const { emails } = req.body;
+    const internalKey = req.headers['x-internal-key'] || req.query.key;
+    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
     
     if (!emails || !Array.isArray(emails)) {
       return res.status(400).json({
@@ -206,17 +214,17 @@ app.post("/api/admin/verify-users-batch", async (req, res) => {
         message: "Emails array is required"
       });
     }
-
-    const User = require("./models").User;
+    const User = require("./models/User");
     const results = [];
 
     for (const email of emails) {
       try {
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({ email: (email || '').toLowerCase() });
         
         if (user) {
           user.isEmailVerified = true;
-          user.emailVerificationToken = null;
+          user.emailVerificationToken = undefined;
+          user.emailVerificationExpires = undefined;
           await user.save();
           
           results.push({
@@ -259,212 +267,9 @@ app.post("/api/admin/verify-users-batch", async (req, res) => {
   }
 });
 
-// Temporary job proxy routes until proper deployment is fixed
-app.all("/api/jobs*", async (req, res) => {
-  try {
-    // Return mock job data for now
-    if (req.method === 'GET' && req.path === '/api/jobs') {
-      return res.json({
-        success: true,
-        message: "Jobs retrieved successfully",
-        data: [
-          {
-            id: '1',
-            title: 'Bathroom Renovation',
-            description: 'Need a full bathroom renovation including new tiles, toilet, sink, and shower installation.',
-            location: 'Accra, Ghana',
-            budget: { min: 3500, max: 5000, currency: 'GHS' },
-            postedDate: '2023-11-05',
-            deadline: '2023-11-20',
-            status: 'open',
-            skills: ['Plumbing', 'Tiling', 'Electrical'],
-            hirerRating: 4.7,
-            distance: 3.2
-          },
-          {
-            id: '2',
-            title: 'Kitchen Cabinet Installation',
-            description: 'Install new kitchen cabinets and countertops.',
-            location: 'Kumasi, Ghana',
-            budget: { min: 2000, max: 3000, currency: 'GHS' },
-            postedDate: '2023-11-06',
-            deadline: '2023-11-25',
-            status: 'open',
-            skills: ['Carpentry', 'Installation'],
-            hirerRating: 4.5,
-            distance: 5.1
-          }
-        ],
-        meta: {
-          pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            totalItems: 2,
-            itemsPerPage: 10
-          }
-        }
-      });
-    }
-    
-    // For other job endpoints, return appropriate responses
-    res.json({
-      success: true,
-      message: "Endpoint temporarily available with mock data - job service deployment in progress",
-      data: null
-    });
-    
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message
-    });
-  }
-});
+// Removed temporary job proxy routes; API Gateway should route to job-service
 
-// User/Dashboard endpoints
-app.all("/api/users*", async (req, res) => {
-  try {
-    // Dashboard metrics
-    if (req.method === 'GET' && req.path === '/api/users/dashboard/metrics') {
-      return res.json({
-        success: true,
-        data: {
-          totalJobs: 156,
-          activeWorkers: 89,
-          completedProjects: 67,
-          totalRevenue: 45000,
-          avgRating: 4.7,
-          responseTime: '2.3 hours'
-        }
-      });
-    }
-    
-    // Dashboard workers
-    if (req.method === 'GET' && req.path === '/api/users/dashboard/workers') {
-      return res.json({
-        success: true,
-        data: [
-          {
-            id: '1',
-            name: 'Kwame Asante',
-            skill: 'Plumbing',
-            rating: 4.8,
-            status: 'available',
-            location: 'Accra'
-          },
-          {
-            id: '2',
-            name: 'Akosua Mensah',
-            skill: 'Electrical',
-            rating: 4.9,
-            status: 'busy',
-            location: 'Kumasi'
-          }
-        ]
-      });
-    }
-    
-    // Dashboard analytics  
-    if (req.method === 'GET' && req.path === '/api/users/dashboard/analytics') {
-      return res.json({
-        success: true,
-        data: {
-          jobsThisMonth: 23,
-          revenueGrowth: 15.6,
-          workerGrowth: 8.2,
-          customerSatisfaction: 4.7
-        }
-      });
-    }
-    
-    // User credentials
-    if (req.method === 'GET' && req.path === '/api/users/me/credentials') {
-      return res.json({
-        success: true,
-        data: {
-          skills: [
-            { id: '1', name: 'Plumbing', level: 'Expert', verified: true },
-            { id: '2', name: 'Electrical', level: 'Intermediate', verified: false }
-          ],
-          licenses: [
-            { id: '1', name: 'Ghana Plumbing License', issuer: 'Ghana Standards Authority', verified: true }
-          ]
-        }
-      });
-    }
-    
-    // User availability
-    if (req.method === 'GET' && req.path === '/api/users/me/availability') {
-      return res.json({
-        success: true,
-        data: {
-          availability: {
-            status: 'available',
-            workingHours: {
-              monday: { start: '08:00', end: '17:00' },
-              tuesday: { start: '08:00', end: '17:00' },
-              wednesday: { start: '08:00', end: '17:00' },
-              thursday: { start: '08:00', end: '17:00' },
-              friday: { start: '08:00', end: '17:00' },
-              saturday: { start: '09:00', end: '15:00' },
-              sunday: { start: null, end: null }
-            }
-          }
-        }
-      });
-    }
-    
-    // User profile GET
-    if (req.method === 'GET' && req.path === '/api/users/profile' || req.path === '/api/users/me/profile') {
-      return res.json({
-        success: true,
-        data: {
-          id: 'temp-user-123',
-          firstName: 'Test',
-          lastName: 'User', 
-          email: 'test@example.com',
-          phone: '+233123456789',
-          role: 'worker',
-          bio: 'Experienced professional with multiple skills',
-          profilePicture: null,
-          skills: ['Plumbing', 'Electrical', 'Carpentry'],
-          city: 'Accra',
-          country: 'Ghana',
-          rating: 4.5,
-          completedProjects: 15,
-          isEmailVerified: true
-        }
-      });
-    }
-    
-    // User profile UPDATE
-    if (req.method === 'PUT' && (req.path === '/api/users/profile' || req.path === '/api/users/me/profile')) {
-      return res.json({
-        success: true,
-        message: 'Profile updated successfully',
-        data: {
-          ...req.body,
-          updatedAt: new Date().toISOString()
-        }
-      });
-    }
-    
-    // For other user endpoints, return appropriate responses
-    res.json({
-      success: true,
-      message: "Endpoint temporarily available with mock data - user service deployment in progress",
-      data: null
-    });
-    
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message
-    });
-  }
-});
+// Removed temporary user/dashboard endpoints; API Gateway should route to user-service
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -478,6 +283,16 @@ app.get("/health", (req, res) => {
       verify: "/api/auth/verify"
     }
   });
+});
+
+// Readiness and liveness endpoints
+app.get('/health/ready', (req, res) => {
+  const ready = mongoose.connection?.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
+app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 
 // Root endpoint with API information

@@ -14,7 +14,7 @@ const mongoose = require('mongoose');
 
 // Import components
 const MessageSocketHandler = require('./socket/messageSocket');
-// const conversationRoutes = require('./routes/conversation.routes'); // Temporarily disabled - uses Sequelize
+// const conversationRoutes = require('./routes/conversation.routes');
 const messageRoutes = require('./routes/message.routes');
 const notificationRoutes = require('./routes/notification.routes');
 // const uploadRoutes = require('./routes/upload.routes'); // Check if exists
@@ -219,24 +219,45 @@ app.get('/health', (req, res) => {
   res.status(statusCode).json(healthStatus);
 });
 
-// API Routes with authentication  
-// app.use('/api/conversations', authMiddleware, conversationRoutes); // Temporarily disabled - uses Sequelize
+// Readiness and liveness
+app.get('/health/ready', (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
 
-// Temporary conversation endpoint to prevent 404 errors
+app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+// API Routes with authentication  
+// app.use('/api/conversations', authMiddleware, conversationRoutes);
+
+// Temporary conversation endpoint to prevent 404 errors during migration to MongoDB controllers
 app.get('/api/conversations', authMiddleware, (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Conversations endpoint temporarily unavailable during MongoDB migration',
+    message: 'Conversations endpoint temporarily unavailable during MongoDB controller migration',
     data: {
       conversations: [],
-      pagination: {
-        total: 0,
-        page: 1,
-        limit: 20,
-        pages: 0
-      }
+      pagination: { total: 0, page: 1, limit: 20, pages: 0 }
     }
   });
+});
+
+// Minimal conversation creation to unblock frontend during migration
+app.post('/api/conversations', authMiddleware, (req, res) => {
+  const { participantId, jobId, applicationId } = req.body || {};
+  if (!participantId && !applicationId) {
+    return res.status(400).json({ success: false, message: 'participantId or applicationId is required' });
+  }
+  const conversation = {
+    id: `conv_${Date.now()}`,
+    participants: [req.user.id, participantId].filter(Boolean),
+    jobId: jobId || null,
+    applicationId: applicationId || null,
+    createdAt: new Date().toISOString(),
+  };
+  return res.status(201).json({ success: true, data: conversation });
 });
 
 app.use('/api/messages', authMiddleware, messageRoutes);

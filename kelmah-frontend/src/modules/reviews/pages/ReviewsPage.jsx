@@ -64,6 +64,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useAuth } from '../../auth/contexts/AuthContext';
+import reviewsApi from '../../../services/reviewsApi';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -95,82 +96,7 @@ const EnhancedReviewsPage = () => {
     severity: 'success',
   });
 
-  // Mock reviews data - Fix: Added missing reviews data
-  const mockReviews = [
-    {
-      id: 'review_1',
-      title: 'Excellent Kitchen Renovation',
-      comment: 'John did an outstanding job renovating our kitchen. Professional, punctual, and attention to detail was superb.',
-      rating: 5,
-      reviewer: {
-        name: 'Sarah Johnson',
-        avatar: '',
-        isVerified: true,
-      },
-      job: {
-        title: 'Kitchen Cabinet Installation',
-        completedDate: '2024-01-15',
-        budget: 'GH₵3,500',
-      },
-      categories: ['Quality', 'Timeliness', 'Communication'],
-      createdAt: '2024-01-16T10:30:00Z',
-      hasReply: false,
-      helpfulVotes: 5,
-      unhelpfulVotes: 0,
-    },
-    {
-      id: 'review_2',
-      title: 'Great Plumbing Work',
-      comment: 'Fixed our bathroom plumbing issues quickly and efficiently. Very satisfied with the service.',
-      rating: 4,
-      reviewer: {
-        name: 'Michael Brown',
-        avatar: '',
-        isVerified: true,
-      },
-      job: {
-        title: 'Bathroom Plumbing Repair',
-        completedDate: '2024-01-10',
-        budget: 'GH₵800',
-      },
-      categories: ['Quality', 'Value'],
-      createdAt: '2024-01-11T14:20:00Z',
-      hasReply: true,
-      reply: {
-        text: 'Thank you for the positive review, Michael! It was a pleasure working with you.',
-        createdAt: '2024-01-11T16:45:00Z',
-      },
-      helpfulVotes: 3,
-      unhelpfulVotes: 0,
-    },
-  ];
-
-  // Mock review statistics
-  const mockStats = {
-    overall: {
-      averageRating: 4.4,
-      totalReviews: 47,
-      ratingDistribution: {
-        5: 28,
-        4: 12,
-        3: 5,
-        2: 1,
-        1: 1,
-      },
-    },
-    recent: {
-      thisMonth: 8,
-      lastMonth: 12,
-      trend: 'up',
-    },
-    categories: {
-      Quality: 4.6,
-      Timeliness: 4.3,
-      Communication: 4.5,
-      Value: 4.2,
-      Professionalism: 4.7,
-    },
-  };
+  // Real review data will be fetched from backend; remove mocks
 
   // Utility functions
   const showFeedback = (message, severity = 'info') => {
@@ -183,10 +109,17 @@ const EnhancedReviewsPage = () => {
       setIsLoading(true);
       setLoading(true);
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setReviews(mockReviews);
-        setReviewStats(mockStats);
+        if (!user?.id) {
+          setReviews([]);
+          setReviewStats({});
+        } else {
+          const [stats, workerReviews] = await Promise.all([
+            reviewsApi.getWorkerRating(user.id),
+            reviewsApi.getWorkerReviews(user.id, { limit: 20, status: 'approved' })
+          ]);
+          setReviewStats({ overall: { averageRating: stats.averageRating, totalReviews: stats.totalReviews, ratingDistribution: stats.ratingDistribution }, categories: stats.categoryRatings || {}, recent: {} });
+          setReviews(workerReviews?.reviews || []);
+        }
       } catch (error) {
         console.error('Failed to load reviews:', error);
         showFeedback('Failed to load reviews', 'error');

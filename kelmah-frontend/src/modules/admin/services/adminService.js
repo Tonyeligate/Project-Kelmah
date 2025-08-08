@@ -145,18 +145,13 @@ export const adminService = {
       
       return {
         totalUsers: usersResponse.data.pagination?.total || 0,
-        activeUsers: 0, // Placeholder
-        newUsersThisMonth: 0, // Placeholder
-        systemHealth: 'good' // Placeholder
+        activeUsers: usersResponse.data.activeUsers ?? 0,
+        newUsersThisMonth: usersResponse.data.newUsersThisMonth ?? 0,
+        systemHealth: usersResponse.data.systemHealth ?? 'unknown'
       };
     } catch (error) {
       console.error('Error fetching system stats:', error);
-      return {
-        totalUsers: 0,
-        activeUsers: 0,
-        newUsersThisMonth: 0,
-        systemHealth: 'unknown'
-      };
+      throw error;
     }
   }
 };

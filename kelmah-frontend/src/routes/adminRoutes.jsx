@@ -13,6 +13,7 @@ import SystemSettings from '../modules/admin/components/common/SystemSettings';
 import ReviewModeration from '../modules/admin/components/common/ReviewModeration';
 import PaymentOverview from '../modules/admin/components/common/PaymentOverview';
 import DisputeManagement from '../modules/admin/components/common/DisputeManagement';
+import GhanaJobCategoriesManagement from '../modules/admin/components/common/GhanaJobCategoriesManagement';
 
 const AdminRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
@@ -59,6 +60,20 @@ const AdminRoutes = () => {
             loading={loading}
           >
             <SkillsAssessmentManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Ghana Job Categories Management */}
+      <Route
+        path="/admin/categories"
+        element={
+          <ProtectedRoute
+            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            redirectPath="/login"
+            loading={loading}
+          >
+            <GhanaJobCategoriesManagement />
           </ProtectedRoute>
         }
       />
