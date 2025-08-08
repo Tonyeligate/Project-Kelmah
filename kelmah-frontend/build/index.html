@@ -2,10 +2,65 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- 🇬🇭 PWA Configuration for Ghana Market -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, viewport-fit=cover" />
+    <meta name="description" content="Ghana's premier job marketplace connecting skilled vocational workers with hirers. Find carpenters, plumbers, electricians, masons, and more across Ghana." />
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="background-color" content="#1a1a1a" />
+    <meta name="color-scheme" content="dark light" />
+    
+    <!-- Mobile App Configuration -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kelmah" />
+    <meta name="application-name" content="Kelmah" />
+    <meta name="msapplication-TileColor" content="#1a1a1a" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Icons for various devices (using existing SVG) -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
-    <title>Kelma</title>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    
+    <!-- Microsoft Tiles (using existing SVG) -->
+    <meta name="msapplication-TileImage" content="/vite.svg" />
+    
+    <!-- SEO & Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kelmah - Ghana's Premier Job Marketplace" />
+    <meta property="og:description" content="Connect with skilled vocational workers across Ghana. Find trusted carpenters, plumbers, electricians, masons, and more." />
+    <meta property="og:image" content="/vite.svg" />
+    <meta property="og:url" content="https://kelmah.com" />
+    <meta property="og:site_name" content="Kelmah" />
+    <meta property="og:locale" content="en_GH" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kelmah - Ghana's Premier Job Marketplace" />
+    <meta name="twitter:description" content="Connect with skilled vocational workers across Ghana." />
+    <meta name="twitter:image" content="/vite.svg" />
+    
+    <!-- Ghana-specific optimizations -->
+    <meta name="geo.region" content="GH" />
+    <meta name="geo.country" content="Ghana" />
+    <meta name="language" content="English" />
+    <meta name="target-densitydpi" content="device-dpi" />
+    
+    <!-- Performance optimizations for Ghana networks -->
+    <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <title>Kelmah - Ghana's Premier Job Marketplace</title>
+    
+    <!-- Optimized font loading for Ghana networks -->
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script>
       // VERCEL BULLETPROOF FIX: Provide React immediately
       console.log('🔧 Bulletproof React fix loading...');
@@ -99,13 +154,185 @@
       console.log('✅ React.createContext immediately available:', typeof ReactMini.createContext);
       console.log('✅ Bulletproof React protection enabled');
     </script>
-    <script type="module" crossorigin src="/assets/index-XBtXxjiy.js"></script>
+    <script type="module" crossorigin src="/assets/index-VYUB4UER.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/react-vendor-1M4f3a6p.js">
-    <link rel="modulepreload" crossorigin href="/assets/mui-vendor-CLxcy0EE.js">
+    <link rel="modulepreload" crossorigin href="/assets/mui-vendor-BDRpLEUK.js">
     <link rel="modulepreload" crossorigin href="/assets/redux-vendor-C7gOLCje.js">
     <link rel="stylesheet" crossorigin href="/assets/index-D9NbeFAj.css">
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- 🇬🇭 Service Worker Registration for Ghana Networks -->
+    <script>
+      // Register service worker for offline functionality
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ Service Worker registered successfully:', registration.scope);
+              
+              // Handle updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // New update available
+                      console.log('🔄 New app version available');
+                      if (confirm('A new version of Kelmah is available. Refresh to update?')) {
+                        window.location.reload();
+                      }
+                    }
+                  });
+                }
+              });
+            })
+            .catch((error) => {
+              console.error('❌ Service Worker registration failed:', error);
+            });
+        });
+
+        // Listen for service worker messages
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'CACHE_UPDATED') {
+            console.log('📦 App cache updated');
+          }
+        });
+      }
+
+      // Handle app installation prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('📱 App install prompt available');
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show custom install button/banner
+        const installBanner = document.createElement('div');
+        installBanner.innerHTML = `
+          <div style="
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #FFD700, #DAA520);
+            color: #1a1a1a;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: Inter, sans-serif;
+            font-weight: 600;
+          ">
+            <div>
+              📱 Install Kelmah app for better offline experience!
+            </div>
+            <div>
+              <button onclick="installApp()" style="
+                background: #1a1a1a;
+                color: #FFD700;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                margin-right: 10px;
+                cursor: pointer;
+                font-weight: 600;
+              ">Install</button>
+              <button onclick="this.parentElement.parentElement.remove()" style="
+                background: transparent;
+                color: #1a1a1a;
+                border: 1px solid #1a1a1a;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+              ">Later</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(installBanner);
+      });
+
+      // Install app function
+      window.installApp = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`📱 App install outcome: ${outcome}`);
+          deferredPrompt = null;
+          
+          // Remove install banner
+          const banner = document.querySelector('[onclick="installApp()"]').closest('div');
+          if (banner) banner.remove();
+        }
+      };
+
+      // Handle app installed event
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('🎉 Kelmah app installed successfully!');
+        // Track installation analytics
+        if (window.gtag) {
+          gtag('event', 'app_installed', {
+            'custom_parameter': 'kelmah_pwa'
+          });
+        }
+      });
+
+      // Online/offline status handling for Ghana networks
+      function updateOnlineStatus() {
+        const statusIndicator = document.getElementById('network-status');
+        if (statusIndicator) {
+          if (navigator.onLine) {
+            statusIndicator.style.display = 'none';
+          } else {
+            statusIndicator.style.display = 'block';
+            statusIndicator.innerHTML = '📶 Offline - Some features limited';
+          }
+        }
+      }
+
+      window.addEventListener('online', () => {
+        console.log('🌐 Back online');
+        updateOnlineStatus();
+        // Trigger sync for offline actions
+        if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.sync.register('sync-offline-data');
+          });
+        }
+      });
+
+      window.addEventListener('offline', () => {
+        console.log('📱 Gone offline');
+        updateOnlineStatus();
+      });
+
+      // Create network status indicator
+      window.addEventListener('DOMContentLoaded', () => {
+        const statusDiv = document.createElement('div');
+        statusDiv.id = 'network-status';
+        statusDiv.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: #FF6B35;
+          color: white;
+          text-align: center;
+          padding: 8px;
+          font-size: 14px;
+          z-index: 9999;
+          display: none;
+        `;
+        document.body.appendChild(statusDiv);
+        updateOnlineStatus();
+      });
+
+      console.log('🇬🇭 Kelmah PWA initialized for Ghana market');
+    </script>
+    
   </body>
 </html>

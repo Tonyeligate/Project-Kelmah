@@ -105,7 +105,19 @@ export const MessageProvider = ({ children }) => {
       
       // Add to messages if it's for the current conversation
       if (selectedConversation && messageData.conversationId === selectedConversation.id) {
-        setMessages(prev => [...prev, messageData]);
+        setMessages(prev => {
+          // If an optimistic message exists with the same clientId, replace it
+          const clientId = messageData.clientId;
+          if (clientId) {
+            const index = prev.findIndex(m => m.id === clientId);
+            if (index !== -1) {
+              const updated = [...prev];
+              updated[index] = { ...messageData, status: 'sent' };
+              return updated;
+            }
+          }
+          return [...prev, messageData];
+        });
       }
       
       // Update conversation's last message
@@ -254,6 +266,24 @@ export const MessageProvider = ({ children }) => {
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
           console.log('📤 Sending message via WebSocket');
+          // Create optimistic message with clientId
+          const clientId = `${user.id}_${Date.now()}`;
+          const optimisticMessage = {
+            id: clientId,
+            conversationId: selectedConversation.id,
+            senderId: user.id,
+            sender: { id: user.id, name: user?.name || user?.firstName || 'You' },
+            content: content.trim(),
+            messageType,
+            attachments,
+            createdAt: new Date().toISOString(),
+            isRead: false,
+            status: 'sending',
+            optimistic: true,
+          };
+          setMessages(prev => [...prev, optimisticMessage]);
+          setConversations(prev => prev.map(c => c.id === selectedConversation.id ? { ...c, lastMessage: optimisticMessage } : c));
+
           // Use acknowledgement to verify delivery; fallback to REST if failed
           socket.emit(
             'send_message',
@@ -262,6 +292,7 @@ export const MessageProvider = ({ children }) => {
               content: content.trim(),
               messageType,
               attachments,
+              clientId,
             },
             async (ack) => {
               if (!ack || ack.ok !== true) {
@@ -273,12 +304,20 @@ export const MessageProvider = ({ children }) => {
                     recipient.id,
                     content,
                   );
-                  setMessages((prev) => [...prev, newMessage]);
+                  // Mark optimistic message as failed and append REST message
+                  setMessages((prev) => {
+                    const idx = prev.findIndex(m => m.id === clientId);
+                    const copy = [...prev];
+                    if (idx !== -1) copy[idx] = { ...copy[idx], status: 'failed' };
+                    return [...copy, newMessage];
+                  });
                   setConversations((prev) =>
                     prev.map((c) => (c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c)),
                   );
                 } catch (e) {
                   console.error('REST fallback failed:', e);
+                  // Mark optimistic message as failed
+                  setMessages(prev => prev.map(m => m.id === clientId ? { ...m, status: 'failed' } : m));
                 }
               }
             },

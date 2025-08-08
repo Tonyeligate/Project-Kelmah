@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from './authService';
 import { TOKEN_KEY } from '../../../config/constants';
+import { secureStorage } from '../../../utils/secureStorage';
 // Support import.meta.env in Vite and process.env in tests
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
