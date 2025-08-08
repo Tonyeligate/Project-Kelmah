@@ -6,14 +6,16 @@
  */
 
 const { Client } = require('pg');
-require('dotenv').config();
+// Make dotenv optional. If not installed, skip without error.
+try { require('dotenv').config(); } catch (_) {}
 
 const getDatabaseConfig = () => {
   const databaseUrl = process.env.DATABASE_URL || process.env.TIMESCALE_DATABASE_URL;
-  
+
+  // If no DB configured (project moved to MongoDB), skip gracefully
   if (!databaseUrl) {
-    console.error('❌ DATABASE_URL environment variable required');
-    process.exit(1);
+    console.log('ℹ️  Skipping TimescaleDB schema fix (no DATABASE_URL/TIMESCALE_DATABASE_URL set)');
+    return null;
   }
 
   return {
@@ -24,8 +26,14 @@ const getDatabaseConfig = () => {
 
 async function fixProductionDatabase() {
   console.log('🚨 STARTING CRITICAL DATABASE SCHEMA FIX');
-  
-  const client = new Client(getDatabaseConfig());
+
+  const config = getDatabaseConfig();
+  if (!config) {
+    console.log('✅ Nothing to do for TimescaleDB. Proceeding without schema changes.');
+    return;
+  }
+
+  const client = new Client(config);
 
   try {
     await client.connect();

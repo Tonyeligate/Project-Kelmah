@@ -1,35 +1,77 @@
 {
   "serviceHealth": {
     "auth": {
-      "status": "unhealthy",
-      "error": "timeout of 10000ms exceeded",
-      "statusCode": "TIMEOUT"
+      "status": "healthy",
+      "responseTime": "N/A",
+      "data": {
+        "service": "Auth Service",
+        "status": "OK",
+        "timestamp": "2025-08-08T21:06:50.684Z",
+        "endpoints": {
+          "login": "/api/auth/login",
+          "register": "/api/auth/register",
+          "verify": "/api/auth/verify"
+        }
+      }
     },
     "user": {
-      "status": "unhealthy",
-      "error": "timeout of 10000ms exceeded",
-      "statusCode": "TIMEOUT"
+      "status": "healthy",
+      "responseTime": "N/A",
+      "data": {
+        "service": "User Service",
+        "status": "OK",
+        "timestamp": "2025-08-08T21:06:51.223Z"
+      }
     },
     "job": {
-      "status": "unhealthy",
-      "error": "timeout of 10000ms exceeded",
-      "statusCode": "TIMEOUT"
+      "status": "healthy",
+      "responseTime": "N/A",
+      "data": {
+        "service": "Job Service",
+        "status": "OK",
+        "timestamp": "2025-08-08T21:06:52.282Z"
+      }
     },
     "messaging": {
-      "status": "unhealthy",
-      "error": "timeout of 10000ms exceeded",
-      "statusCode": "TIMEOUT"
+      "status": "healthy",
+      "responseTime": "N/A",
+      "data": {
+        "status": "healthy",
+        "service": "messaging-service",
+        "timestamp": "2025-08-08T21:06:53.383Z",
+        "uptime": 15774.019969422,
+        "version": "1.0.0",
+        "database": {
+          "status": "connected",
+          "connected": true,
+          "host": "ac-monrsuz-shard-00-01.xyqcurn.mongodb.net",
+          "name": "kelmah_platform"
+        },
+        "websocket": {
+          "connected_users": 0,
+          "status": "operational"
+        },
+        "memory": {
+          "used": "29 MB",
+          "total": "34 MB"
+        }
+      }
     },
     "payment": {
-      "status": "unhealthy",
-      "error": "timeout of 10000ms exceeded",
-      "statusCode": "TIMEOUT"
+      "status": "healthy",
+      "responseTime": "N/A",
+      "data": {
+        "service": "payment-service",
+        "status": "healthy",
+        "db": "connected",
+        "timestamp": "2025-08-08T21:06:53.907Z"
+      }
     }
   },
   "authentication": {
     "worker": {
       "status": "failed",
-      "error": "Incorrect email or password"
+      "error": "Please verify your email before logging in"
     }
   },
   "dataFlow": {},
@@ -38,10 +80,10 @@
     "apiConnectivity": "manual_verification_required"
   },
   "summary": {
-    "serviceHealth": "0/5 services healthy",
+    "serviceHealth": "5/5 services healthy",
     "authentication": "Failed",
     "dataFlow": "Failed",
     "overallStatus": "NEEDS_ATTENTION",
-    "timestamp": "2025-08-06T01:16:22.866Z"
+    "timestamp": "2025-08-08T21:06:55.063Z"
   }
 }
