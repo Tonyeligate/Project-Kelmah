@@ -98,6 +98,19 @@ exports.deleteNotification = async (req, res) => {
   }
 };
 
+// Clear all notifications for current user
+exports.clearAllNotifications = async (req, res) => {
+  try {
+    await Notification.deleteMany({
+      recipient: req.user._id,
+    });
+
+    res.json({ message: "All notifications cleared" });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
 // Get unread notification count
 exports.getUnreadCount = async (req, res) => {
   try {

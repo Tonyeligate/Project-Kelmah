@@ -85,7 +85,7 @@ class NotificationService {
   // Mark all notifications as read
   async markAllAsRead() {
     try {
-      const response = await this.client.patch('/api/notifications/read-all');
+      const response = await this.client.patch('/api/notifications/read/all');
       return response.data;
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
@@ -108,7 +108,7 @@ class NotificationService {
   async getUnreadCount() {
     try {
       const response = await this.client.get('/api/notifications/unread/count');
-      return response.data.count;
+      return response.data.unreadCount;
     } catch (error) {
       console.error('Failed to get unread count:', error);
       throw error;

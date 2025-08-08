@@ -38,9 +38,17 @@ export const NotificationProvider = ({ children }) => {
 
     try {
       const resp = await notificationServiceUser.getNotifications();
-      // ✅ FIXED: Ensure we always set a valid array, never undefined
-      const notificationData = Array.isArray(resp?.data) ? resp.data : 
-                              Array.isArray(resp) ? resp : [];
+      // Normalize backend shapes: controller returns { notifications, ... }
+      // but service may already unwrap .data
+      const list = Array.isArray(resp?.notifications)
+        ? resp.notifications
+        : Array.isArray(resp?.data?.notifications)
+          ? resp.data.notifications
+          : Array.isArray(resp?.data)
+            ? resp.data
+            : Array.isArray(resp)
+              ? resp
+              : [];
       
       console.log('📩 Notifications received:', {
         responseType: typeof resp,
@@ -49,7 +57,7 @@ export const NotificationProvider = ({ children }) => {
         count: notificationData.length
       });
       
-      setNotifications(notificationData);
+      setNotifications(list);
       setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
