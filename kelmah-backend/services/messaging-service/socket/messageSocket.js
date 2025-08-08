@@ -176,7 +176,7 @@ class MessageSocketHandler {
    */
   async handleSendMessage(socket, data, ack) {
     try {
-      const { conversationId, content, messageType = 'text', attachments = [] } = data;
+      const { conversationId, content, messageType = 'text', attachments = [], clientId } = data;
       const userId = socket.userId;
 
       // Rate limiting check
@@ -235,6 +235,7 @@ class MessageSocketHandler {
       // Prepare message data for broadcast
       const messageData = {
         id: message._id,
+        conversationId,
         senderId: message.sender._id,
         sender: {
           id: message.sender._id,
@@ -245,7 +246,9 @@ class MessageSocketHandler {
         messageType: message.messageType,
         attachments: message.attachments,
         createdAt: message.createdAt,
-        isRead: message.readStatus.isRead
+        isRead: message.readStatus.isRead,
+        status: 'sent',
+        clientId: clientId || null
       };
 
       // Broadcast message to all conversation participants
