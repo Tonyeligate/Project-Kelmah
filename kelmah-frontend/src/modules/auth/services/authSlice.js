@@ -87,10 +87,10 @@ export const verifyAuth = createAsyncThunk(
 
       // Development mock authentication disabled – always verify via API
 
-      // Production mode auth verification logic
-      const token = localStorage.getItem(TOKEN_KEY);
+      // Production mode auth verification logic - check both storage locations
+      const token = secureStorage.getAuthToken() || localStorage.getItem(TOKEN_KEY);
       if (!token) {
-        console.warn('No token found in localStorage');
+        console.warn('No token found in localStorage or secureStorage');
         throw new Error('No authentication token found');
       }
 

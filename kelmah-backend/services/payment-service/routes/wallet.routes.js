@@ -1,13 +1,3 @@
-const express = require('express');
-const router = express.Router();
-
-// Temporary 200s to avoid frontend 404s while backend is implemented
-router.get('/', async (req, res) => {
-  return res.json({ balance: 0, currency: 'GHS' });
-});
-
-module.exports = router;
-
 const express = require("express");
 const router = express.Router();
 const walletController = require("../controllers/wallet.controller");
