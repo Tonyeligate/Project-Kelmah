@@ -255,22 +255,24 @@ export const uploadFile = (url, file, onProgress = null) => {
 // Enhanced timeout configuration for different environments
 const getTimeoutConfig = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const isLocal = window.location.hostname === 'localhost';
+  const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   
   // For Render services (production), use longer timeout to handle cold starts
   if (!isDevelopment && !isLocal) {
     return {
-      timeout: 60000, // 60 seconds for cold starts on Render
-      retries: 3,
-      retryDelay: 2000, // 2 seconds between retries
+      timeout: 90000, // 90 seconds for cold starts on Render (increased)
+      retries: 5, // More retries for production
+      retryDelay: 3000, // 3 seconds between retries
+      maxRetryDelay: 30000, // Max 30 seconds
     };
   }
   
   // For local development or localhost
   return {
-    timeout: 10000, // 10 seconds for local services
-    retries: 2,
-    retryDelay: 1000,
+    timeout: 15000, // 15 seconds for local services (increased)
+    retries: 3,
+    retryDelay: 1500,
+    maxRetryDelay: 10000,
   };
 };
 
@@ -291,12 +293,15 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         return Promise.reject(enhancedError);
       }
       
-      // Only retry on timeout or network errors (likely cold starts)
+      // Enhanced retry logic - retry on timeouts, network errors, and 5xx errors
       const shouldRetry = 
         error.code === 'ECONNABORTED' || // timeout
         error.code === 'NETWORK_ERROR' ||
         error.message?.includes('timeout') ||
         error.message?.includes('Network Error') ||
+        error.response?.status >= 500 || // Server errors
+        error.response?.status === 429 || // Rate limiting
+        error.response?.status === 408 || // Request timeout
         !error.response; // No response usually means network/timeout issue
       
       if (!shouldRetry) {
@@ -306,8 +311,11 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
       
       config.__retryCount = (config.__retryCount || 0) + 1;
       
-      // Exponential backoff delay
-      const delay = timeoutConfig.retryDelay * Math.pow(2, config.__retryCount - 1);
+      // Enhanced exponential backoff with jitter and max delay
+      const baseDelay = timeoutConfig.retryDelay;
+      const exponentialDelay = baseDelay * Math.pow(2, config.__retryCount - 1);
+      const jitter = Math.random() * 1000; // Add up to 1 second jitter
+      const delay = Math.min(exponentialDelay + jitter, timeoutConfig.maxRetryDelay);
       
       // Get service status for better logging
       const statusMsg = getServiceStatusMessage(serviceUrl);

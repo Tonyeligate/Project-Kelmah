@@ -9,11 +9,23 @@ import axios from 'axios';
 import { SERVICES, AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
 
-// Create dedicated auth service client
+// Enhanced auth service client with better timeout handling
 const authServiceClient = axios.create({
   baseURL: SERVICES.AUTH_SERVICE,
-  timeout: 30000,
+  timeout: 60000, // Increased timeout for cold starts
   headers: { 'Content-Type': 'application/json' },
+  // Enhanced retry configuration
+  'axios-retry': {
+    retries: 3,
+    retryDelay: (retryCount) => {
+      return Math.min(1000 * Math.pow(2, retryCount), 10000); // Max 10 seconds
+    },
+    retryCondition: (error) => {
+      return error.code === 'ECONNABORTED' || 
+             error.response?.status >= 500 || 
+             !error.response;
+    },
+  },
 });
 
 // Add auth tokens to requests (except for login/register)
@@ -68,13 +80,37 @@ const authService = {
     } catch (error) {
       console.error('Login failed:', error);
       
-      // Extract error message from different response formats
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message || 
-                          'Login failed. Please check your credentials.';
+      // Enhanced error handling with user-friendly messages
+      let errorMessage = 'Login failed. Please try again.';
       
-      throw new Error(errorMessage);
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = 'Login is taking longer than usual. The service may be starting up. Please wait a moment and try again.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Your account has been temporarily disabled. Please contact support.';
+      } else if (error.response?.status === 429) {
+        errorMessage = 'Too many login attempts. Please wait a few minutes before trying again.';
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Our servers are experiencing issues. Please try again in a few minutes.';
+      } else if (!error.response) {
+        errorMessage = 'Unable to connect to our servers. Please check your internet connection and try again.';
+      } else {
+        // Use server message if available
+        errorMessage = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.message || 
+                      errorMessage;
+      }
+      
+      const enhancedError = new Error(errorMessage);
+      enhancedError.originalError = error;
+      enhancedError.status = error.response?.status;
+      enhancedError.isRetryable = error.code === 'ECONNABORTED' || 
+                                 error.response?.status >= 500 || 
+                                 !error.response;
+      
+      throw enhancedError;
     }
   },
 

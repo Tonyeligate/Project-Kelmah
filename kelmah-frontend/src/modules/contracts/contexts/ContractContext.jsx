@@ -30,7 +30,9 @@ export const ContractProvider = ({ children }) => {
     console.log('🔄 Fetching real contract data from API...');
 
     try {
-      const fetchedContracts = await contractService.getContracts();
+      const response = await contractService.getContracts();
+      // Extract contracts array from response object
+      const fetchedContracts = Array.isArray(response) ? response : response?.contracts || [];
       setContracts(fetchedContracts);
     } catch (err) {
       console.error('Failed to fetch contracts:', err);

@@ -68,11 +68,11 @@ const PaymentsPage = () => {
     if (filterType !== 'all') params.type = filterType;
     fetchTransactions(params);
   };
-  const pageCount = Math.ceil(transactions.length / perPage);
-  const pagedTransactions = transactions.slice(
+  const pageCount = Math.ceil((Array.isArray(transactions) ? transactions.length : 0) / perPage);
+  const pagedTransactions = Array.isArray(transactions) ? transactions.slice(
     (page - 1) * perPage,
     page * perPage,
-  );
+  ) : [];
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);

@@ -51,12 +51,18 @@ import {
 import { motion } from 'framer-motion';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../auth/contexts/AuthContext';
+import MobileRegister from '../mobile/MobileRegister';
 
 const Register = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
+
+  // Use enhanced mobile registration view for mobile devices
+  if (isActualMobile) {
+    return <MobileRegister />;
+  }
 
   const steps = [
     'Choose Your Path',

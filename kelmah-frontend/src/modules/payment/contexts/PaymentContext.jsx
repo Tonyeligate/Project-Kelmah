@@ -42,7 +42,9 @@ export const PaymentProvider = ({ children }) => {
         ]);
       setWalletBalance(walletRes.balance);
       setPaymentMethods(methodsRes);
-      setTransactions(transactionsRes.transactions || transactionsRes);
+      // Extract transactions array from response object, ensure it's always an array
+      const transactionsData = Array.isArray(transactionsRes) ? transactionsRes : transactionsRes?.transactions || [];
+      setTransactions(transactionsData);
       setEscrows(escrowsRes || []);
       setBills(billsRes);
     } catch (err) {
@@ -116,7 +118,9 @@ export const PaymentProvider = ({ children }) => {
       setLoading(true);
       try {
         const data = await paymentService.getTransactionHistory(params);
-        setTransactions(data.transactions || data);
+        // Extract transactions array from response object, ensure it's always an array
+        const transactionsData = Array.isArray(data) ? data : data?.transactions || [];
+        setTransactions(transactionsData);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);
         showToast('Failed to load transactions.', 'error');
