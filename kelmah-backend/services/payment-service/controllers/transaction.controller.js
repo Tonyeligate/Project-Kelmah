@@ -1,25 +1,4 @@
 const Transaction = require("../models/Transaction");
-const { handleError } = require("../utils/errorHandler");
-
-exports.getTransactionHistory = async (req, res) => {
-  try {
-    const { page = 1, limit = 20 } = req.query;
-
-    // Minimal implementation to unblock UI; TODO: implement real query
-    const transactions = [];
-    const total = 0;
-
-    res.json({
-      transactions,
-      totalPages: Math.ceil(total / limit),
-      currentPage: Number(page),
-    });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-const Transaction = require("../models/Transaction");
 const Wallet = require("../models/Wallet");
 const PaymentMethod = require("../models/PaymentMethod");
 const { handleError } = require("../utils/errorHandler");

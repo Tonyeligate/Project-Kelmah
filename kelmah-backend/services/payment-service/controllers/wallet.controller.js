@@ -6,7 +6,7 @@ const { validateWallet } = require("../utils/validation");
 // Get user's wallet
 exports.getWallet = async (req, res) => {
   try {
-    const wallet = await Wallet.findOne({ user: req.user._id })
+    let wallet = await Wallet.findOne({ user: req.user._id })
       .populate("paymentMethods")
       .populate({
         path: "transactionHistory.transaction",
@@ -17,7 +17,9 @@ exports.getWallet = async (req, res) => {
       });
 
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet not found" });
+      // Auto-provision an empty wallet on first access
+      wallet = new Wallet({ user: req.user._id, balance: 0 });
+      await wallet.save();
     }
 
     res.json(wallet);
