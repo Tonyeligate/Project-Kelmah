@@ -40,7 +40,12 @@ const paymentService = {
   },
 
   createTransaction: async (transactionData) => {
-    const { data } = await paymentServiceClient.post('/api/payments/transactions', transactionData);
+    // Normalize client payload to match backend expectation
+    const normalized = {
+      ...transactionData,
+      paymentMethod: transactionData.paymentMethod || transactionData.paymentMethodId,
+    };
+    const { data } = await paymentServiceClient.post('/api/payments/transactions', normalized);
     return data;
   },
 

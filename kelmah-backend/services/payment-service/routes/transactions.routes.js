@@ -7,8 +7,9 @@ router.use(authenticate);
 
 // Mirror of transaction.routes for naming compatibility
 router.post('/', transactionController.createTransaction);
-router.get('/:transactionId', transactionController.getTransaction);
+// IMPORTANT: define static routes before param routes to avoid shadowing
 router.get('/history', transactionController.getTransactionHistory);
+router.get('/:transactionId', transactionController.getTransaction);
 router.patch('/:transactionId/cancel', transactionController.cancelTransaction);
 
 module.exports = router;
