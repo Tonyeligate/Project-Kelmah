@@ -54,7 +54,7 @@ export const NotificationProvider = ({ children }) => {
         responseType: typeof resp,
         hasData: !!resp?.data,
         isArray: Array.isArray(resp?.data || resp),
-        count: notificationData.length
+        count: Array.isArray(list) ? list.length : 0
       });
       
       setNotifications(list);

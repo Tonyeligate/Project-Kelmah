@@ -6,7 +6,7 @@
       "data": {
         "service": "Auth Service",
         "status": "OK",
-        "timestamp": "2025-08-08T21:06:50.684Z",
+        "timestamp": "2025-08-08T21:15:45.500Z",
         "endpoints": {
           "login": "/api/auth/login",
           "register": "/api/auth/register",
@@ -20,7 +20,7 @@
       "data": {
         "service": "User Service",
         "status": "OK",
-        "timestamp": "2025-08-08T21:06:51.223Z"
+        "timestamp": "2025-08-08T21:15:46.223Z"
       }
     },
     "job": {
@@ -29,7 +29,7 @@
       "data": {
         "service": "Job Service",
         "status": "OK",
-        "timestamp": "2025-08-08T21:06:52.282Z"
+        "timestamp": "2025-08-08T21:15:47.151Z"
       }
     },
     "messaging": {
@@ -38,8 +38,8 @@
       "data": {
         "status": "healthy",
         "service": "messaging-service",
-        "timestamp": "2025-08-08T21:06:53.383Z",
-        "uptime": 15774.019969422,
+        "timestamp": "2025-08-08T21:15:48.230Z",
+        "uptime": 16308.867223571,
         "version": "1.0.0",
         "database": {
           "status": "connected",
@@ -52,7 +52,7 @@
           "status": "operational"
         },
         "memory": {
-          "used": "29 MB",
+          "used": "31 MB",
           "total": "34 MB"
         }
       }
@@ -64,7 +64,7 @@
         "service": "payment-service",
         "status": "healthy",
         "db": "connected",
-        "timestamp": "2025-08-08T21:06:53.907Z"
+        "timestamp": "2025-08-08T21:15:49.287Z"
       }
     }
   },
@@ -84,6 +84,6 @@
     "authentication": "Failed",
     "dataFlow": "Failed",
     "overallStatus": "NEEDS_ATTENTION",
-    "timestamp": "2025-08-08T21:06:55.063Z"
+    "timestamp": "2025-08-08T21:15:50.084Z"
   }
 }
