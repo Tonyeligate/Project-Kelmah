@@ -22,7 +22,10 @@ import {
   ContentCopy as CopyIcon,
   Reply as ReplyIcon,
   DeleteOutline as DeleteIcon,
-  CheckCircleOutline as ReadIcon,
+    CheckCircleOutline as ReadIcon,
+    AccessTime as PendingIcon,
+    ErrorOutline as ErrorIcon,
+    Check as SentIcon,
   LockOutlined as LockIcon,
   InsertDriveFile as FileIcon,
   Image as ImageIcon,
@@ -341,12 +344,25 @@ const Message = ({
 
           {isOwn && (
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
-              <Tooltip title={message.isRead ? 'Read' : 'Delivered'}>
-                <ReadIcon
-                  color={message.isRead ? 'primary' : 'action'}
-                  sx={{ fontSize: '0.8rem' }}
-                />
-              </Tooltip>
+              {message.status === 'sending' && (
+                <Tooltip title="Sending...">
+                  <PendingIcon color="action" sx={{ fontSize: '0.9rem' }} />
+                </Tooltip>
+              )}
+              {message.status === 'failed' && (
+                <Tooltip title="Failed to send">
+                  <ErrorIcon color="error" sx={{ fontSize: '0.9rem' }} />
+                </Tooltip>
+              )}
+              {!message.status && (
+                <Tooltip title={message.isRead ? 'Read' : 'Sent'}>
+                  {message.isRead ? (
+                    <ReadIcon color="primary" sx={{ fontSize: '0.9rem' }} />
+                  ) : (
+                    <SentIcon color="action" sx={{ fontSize: '0.9rem' }} />
+                  )}
+                </Tooltip>
+              )}
             </Box>
           )}
         </Box>
