@@ -14,7 +14,7 @@ const mongoose = require('mongoose');
 
 // Import components
 const MessageSocketHandler = require('./socket/messageSocket');
-// const conversationRoutes = require('./routes/conversation.routes');
+const conversationRoutes = require('./routes/conversation.routes');
 const messageRoutes = require('./routes/message.routes');
 const notificationRoutes = require('./routes/notification.routes');
 // const uploadRoutes = require('./routes/upload.routes'); // Check if exists
@@ -230,7 +230,7 @@ app.get('/health/live', (req, res) => {
 });
 
 // API Routes with authentication  
-// app.use('/api/conversations', authMiddleware, conversationRoutes);
+app.use('/api/conversations', authMiddleware, conversationRoutes);
 
 // Removed temporary conversation stubs; proper routes/controllers should handle these
 

@@ -60,9 +60,9 @@ export const MessageProvider = ({ children }) => {
     if (!token) return;
 
     // WebSocket URL based on environment
-    const wsUrl = process.env.NODE_ENV === 'production' 
+    const wsUrl = process.env.NODE_ENV === 'production'
       ? 'https://kelmah-messaging-service.onrender.com'
-      : 'http://localhost:3005';
+      : import.meta.env.VITE_MESSAGING_SERVICE_URL || 'http://localhost:3005';
 
     console.log('🔌 Connecting to messaging WebSocket:', wsUrl);
 

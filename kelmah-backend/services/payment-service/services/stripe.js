@@ -124,8 +124,8 @@ async function addBankAccount(bankDetails) {
  * @param {string} providerId
  */
 async function removePaymentMethod(providerId) {
-  // Stripe doesn't support detaching card tokens directly; no-op stub
-  return { success: true };
+  // Explicitly signal not implemented to avoid false positives
+  throw new Error("Stripe removePaymentMethod not implemented for tokenized sources");
 }
 
 /**
@@ -134,8 +134,8 @@ async function removePaymentMethod(providerId) {
  * @param {object} verificationData
  */
 async function verifyPaymentMethod(providerId, verificationData) {
-  // Implement verification logic as needed; stubbed to success
-  return { success: true, providerId };
+  // Explicitly signal not implemented until full verification flow is wired
+  throw new Error("Stripe verifyPaymentMethod not implemented");
 }
 
 module.exports = {

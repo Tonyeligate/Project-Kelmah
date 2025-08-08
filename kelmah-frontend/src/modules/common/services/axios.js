@@ -294,14 +294,21 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
       }
       
       // Enhanced retry logic - retry on timeouts, network errors, and 5xx errors
+      const status = error.response?.status;
+      // Do not retry on explicit Not Implemented (e.g., escrows stub)
+      if (status === 501) {
+        const enhancedError = handleServiceError(error, serviceUrl);
+        return Promise.reject(enhancedError);
+      }
+
       const shouldRetry = 
         error.code === 'ECONNABORTED' || // timeout
         error.code === 'NETWORK_ERROR' ||
         error.message?.includes('timeout') ||
         error.message?.includes('Network Error') ||
-        error.response?.status >= 500 || // Server errors
-        error.response?.status === 429 || // Rate limiting
-        error.response?.status === 408 || // Request timeout
+        status >= 500 || // Server errors
+        status === 429 || // Rate limiting
+        status === 408 || // Request timeout
         !error.response; // No response usually means network/timeout issue
       
       if (!shouldRetry) {
