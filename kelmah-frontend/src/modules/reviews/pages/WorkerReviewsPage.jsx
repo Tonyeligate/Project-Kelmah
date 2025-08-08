@@ -18,6 +18,7 @@ import useAuth from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
 import Pagination from '@mui/material/Pagination';
 import { alpha } from '@mui/material/styles';
+import { formatDistanceToNow } from 'date-fns';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
   <Box>
@@ -188,7 +189,7 @@ const WorkerReviewsPage = () => {
                     },
                     rating: r.rating,
                     content: r.comment,
-                    date: r.createdAt,
+                    date: formatDistanceToNow(new Date(r.createdAt), { addSuffix: true }),
                     jobTitle: `Job ${r.job}`,
                   }}
                 />

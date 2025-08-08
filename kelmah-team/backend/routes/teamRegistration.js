@@ -45,8 +45,26 @@ const validateRegistration = [
     .withMessage('Please provide a valid email address'),
   
   body('phone')
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number'),
+    .custom((value) => {
+      // Remove spaces and hyphens
+      const cleanPhone = value.replace(/[\s\-]/g, '');
+      
+      // Accept multiple formats for Ghana:
+      // 1. Local format: 0XXXXXXXXX (10 digits starting with 0)
+      // 2. International without +: 233XXXXXXXXX (12 digits starting with 233)
+      // 3. International with +: +233XXXXXXXXX (13 chars with +)
+      const localFormat = /^0[0-9]{9}$/;                    // 0257806985
+      const intlWithoutPlus = /^233[0-9]{9}$/;              // 233257806985
+      const intlWithPlus = /^\+233[0-9]{9}$/;               // +233257806985
+      
+      if (localFormat.test(cleanPhone) || 
+          intlWithoutPlus.test(cleanPhone) || 
+          intlWithPlus.test(cleanPhone)) {
+        return true;
+      }
+      
+      throw new Error('Please provide a valid Ghana phone number (e.g., 0257806985, 233257806985, or +233257806985)');
+    }),
   
   body('country')
     .trim()

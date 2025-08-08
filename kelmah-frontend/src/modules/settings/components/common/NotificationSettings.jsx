@@ -71,7 +71,7 @@ const NotificationSettings = () => {
         <FormControlLabel
           control={
             <Switch
-              checked={localSettings.email}
+              checked={Boolean(localSettings.email)}
               onChange={handleChange}
               name="email"
             />
@@ -81,7 +81,7 @@ const NotificationSettings = () => {
         <FormControlLabel
           control={
             <Switch
-              checked={localSettings.realtime}
+              checked={Boolean(localSettings.realtime)}
               onChange={handleChange}
               name="realtime"
             />

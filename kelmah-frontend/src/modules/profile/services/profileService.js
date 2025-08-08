@@ -57,7 +57,7 @@ class ProfileService {
     try {
       const formData = new FormData();
       formData.append('profilePicture', file);
-      const response = await authServiceClient.post('/profile/picture', formData, {
+      const response = await userServiceClient.post('/profile/picture', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data.data;
@@ -118,7 +118,7 @@ class ProfileService {
   // Get user statistics
   async getStatistics() {
     try {
-      const response = await authServiceClient.get('/profile/statistics');
+      const response = await userServiceClient.get('/profile/statistics');
       return response.data.data;
     } catch (error) {
       const serviceUrl = userServiceClient.defaults.baseURL;
@@ -158,7 +158,7 @@ class ProfileService {
   // Get user activity
   async getActivity(filters = {}) {
     try {
-      const response = await authServiceClient.get('/profile/activity', {
+      const response = await userServiceClient.get('/profile/activity', {
         params: filters,
       });
       return response.data.data;
