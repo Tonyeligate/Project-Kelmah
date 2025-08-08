@@ -3,7 +3,11 @@
 
 exports.getEscrows = async (req, res, next) => {
   try {
-    return res.json([]);
+    return res.status(501).json({
+      success: false,
+      message: 'Escrow listing not implemented. Connect to real datastore first.',
+      code: 'NOT_IMPLEMENTED'
+    });
   } catch (err) {
     next(err);
   }
@@ -11,7 +15,11 @@ exports.getEscrows = async (req, res, next) => {
 
 exports.getEscrowDetails = async (req, res, next) => {
   try {
-    return res.json(null);
+    return res.status(501).json({
+      success: false,
+      message: 'Escrow details not implemented. Connect to real datastore first.',
+      code: 'NOT_IMPLEMENTED'
+    });
   } catch (err) {
     next(err);
   }
@@ -19,11 +27,17 @@ exports.getEscrowDetails = async (req, res, next) => {
 
 exports.releaseEscrow = async (req, res, next) => {
   try {
-    return res.json({ success: true });
+    return res.status(501).json({
+      success: false,
+      message: 'Escrow release not implemented. Connect to real payment provider first.',
+      code: 'NOT_IMPLEMENTED'
+    });
   } catch (err) {
     next(err);
   }
 };
+
+
 
 
 

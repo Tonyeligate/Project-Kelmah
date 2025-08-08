@@ -902,12 +902,14 @@ function WorkerProfile() {
                     setPortfolioDialogOpen(true);
                   }}
                 >
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={item.image || '/api/placeholder/400/300'}
-                    alt={item.title}
-                  />
+                  {item.image ? (
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={item.image}
+                      alt={item.title}
+                    />
+                  ) : null}
                   <CardContent>
                     <Typography variant="h6" fontWeight={600}>
                       {item.title}
@@ -1216,13 +1218,13 @@ function WorkerProfile() {
               </DialogTitle>
               <DialogContent>
                 <Box sx={{ mb: 2 }}>
-                  <img
-                    src={
-                      selectedPortfolioItem.image || '/api/placeholder/600/400'
-                    }
-                    alt={selectedPortfolioItem.title}
-                    style={{ width: '100%', height: 'auto', borderRadius: 8 }}
-                  />
+                  {selectedPortfolioItem.image ? (
+                    <img
+                      src={selectedPortfolioItem.image}
+                      alt={selectedPortfolioItem.title}
+                      style={{ width: '100%', height: 'auto', borderRadius: 8 }}
+                    />
+                  ) : null}
                 </Box>
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   {selectedPortfolioItem.description}

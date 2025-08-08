@@ -106,10 +106,7 @@ const createHirerProfile = () => {
       company: realUser.company || realUser.companyName || '',
       location: realUser.location || realUser.address || '',
       bio: realUser.bio || realUser.description || '',
-      avatar:
-        realUser.avatar ||
-        realUser.profilePicture ||
-        '/api/placeholder/150/150',
+      avatar: realUser.avatar || realUser.profilePicture || '',
       role: realUser.role || realUser.userType || 'hirer',
       rating: realUser.rating || 0,
       reviewsCount: realUser.reviewsCount || 0,
