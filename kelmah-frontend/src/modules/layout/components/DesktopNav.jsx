@@ -50,7 +50,7 @@ const DesktopNav = () => {
           {label}
         </StyledNavLink>
       ))}
-      
+
       {/* 🚨 REMOVED: All duplicate elements (messages, notifications, user avatar, auth buttons)
           These are now handled exclusively by Header component to prevent duplication */}
     </Box>

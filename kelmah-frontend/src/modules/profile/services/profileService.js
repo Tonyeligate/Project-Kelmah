@@ -1,14 +1,14 @@
-import { authServiceClient } from '../../common/services/axios';
+import { userServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
 class ProfileService {
   // Get user profile
   async getProfile() {
     try {
-      const response = await authServiceClient.get('/profile');
+      const response = await userServiceClient.get('/profile');
       return response.data.data;
     } catch (error) {
-      const serviceUrl = authServiceClient.defaults.baseURL;
+      const serviceUrl = userServiceClient.defaults.baseURL;
       const statusMsg = getServiceStatusMessage(serviceUrl);
       
       console.warn('Profile service unavailable:', {
@@ -121,7 +121,7 @@ class ProfileService {
       const response = await authServiceClient.get('/profile/statistics');
       return response.data.data;
     } catch (error) {
-      const serviceUrl = authServiceClient.defaults.baseURL;
+      const serviceUrl = userServiceClient.defaults.baseURL;
       const statusMsg = getServiceStatusMessage(serviceUrl);
       
       console.warn('Statistics service unavailable:', {
@@ -163,7 +163,7 @@ class ProfileService {
       });
       return response.data.data;
     } catch (error) {
-      const serviceUrl = authServiceClient.defaults.baseURL;
+      const serviceUrl = userServiceClient.defaults.baseURL;
       const statusMsg = getServiceStatusMessage(serviceUrl);
       
       console.warn('Activity service unavailable:', {

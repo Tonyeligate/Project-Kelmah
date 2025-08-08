@@ -115,22 +115,19 @@ router.post('/register', registrationLimit, validateRegistration, async (req, re
     }
 
     // Check if email already exists
-    const existingRegistration = await TeamRegistration.findOne({ 
-      email: req.body.email 
-    });
+    const existingRegistration = await TeamRegistration.findByEmail(req.body.email);
     
     if (existingRegistration) {
       return res.status(409).json({
         success: false,
         message: 'An application with this email already exists',
-        registrationId: existingRegistration._id
+        registrationId: existingRegistration.id
       });
     }
 
     // Check if we've reached the maximum number of applications
-    const totalApplications = await TeamRegistration.countDocuments({
-      status: { $in: ['confirmed', 'payment-required'] }
-    });
+    const stats = await TeamRegistration.getStats();
+    const totalApplications = stats.totalApplications;
 
     if (totalApplications >= 50) { // Allow 50 applications for selection of 10
       return res.status(409).json({
@@ -148,25 +145,24 @@ router.post('/register', registrationLimit, validateRegistration, async (req, re
       source: 'kelmah-team-portal'
     };
 
-    const registration = new TeamRegistration(registrationData);
-    await registration.save();
+    const registration = await TeamRegistration.create(registrationData);
 
     // Generate application score
-    const applicationScore = registration.applicationScore;
+    const applicationScore = registration.applicantScore;
 
     // Send success response
     res.status(201).json({
       success: true,
       message: 'Registration submitted successfully',
       data: {
-        registrationId: registration._id,
-        email: registration.email,
-        fullName: registration.fullName,
-        status: registration.status,
+        registrationId: registration.id,
+        email: registration.personalInfo?.email || registration.email,
+        fullName: registration.personalInfo?.fullName || req.body.fullName,
+        status: registration.status || 'pending',
         applicationScore: applicationScore,
         nextSteps: {
           paymentRequired: true,
-          paymentAmount: 500,
+          paymentAmount: 1000, // GHS 1,000
           paymentDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
         }
       }
@@ -229,10 +225,10 @@ router.post('/payment', paymentLimit, async (req, res) => {
     }
 
     // Validate amount
-    if (amount !== 500) {
+    if (amount !== 1000) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid payment amount'
+        message: 'Invalid payment amount. Expected GHS 1,000'
       });
     }
 
@@ -262,16 +258,10 @@ router.post('/payment', paymentLimit, async (req, res) => {
     }
 
     // Update registration with payment info
-    registration.paymentStatus = 'completed';
-    registration.paymentId = paymentResult.transactionId;
-    registration.amountPaid = amount;
-    registration.paymentDate = new Date();
-    registration.status = 'confirmed';
-
-    await registration.save();
+    await registration.updatePaymentStatus('completed');
 
     // Generate transaction ID
-    const transactionId = `KLM_${Date.now()}_${registration._id.toString().slice(-6)}`;
+    const transactionId = `KLM_${Date.now()}_${registration.id.toString().slice(-6)}`;
 
     // Send success response
     res.status(200).json({
@@ -279,7 +269,7 @@ router.post('/payment', paymentLimit, async (req, res) => {
       message: 'Payment processed successfully',
       data: {
         transactionId: transactionId,
-        registrationId: registration._id,
+        registrationId: registration.id,
         amount: amount,
         paymentMethod: paymentMethod,
         paymentDate: registration.paymentDate,
@@ -318,14 +308,14 @@ router.get('/status/:registrationId', async (req, res) => {
     res.json({
       success: true,
       data: {
-        registrationId: registration._id,
-        fullName: registration.fullName,
+        registrationId: registration.id,
+        fullName: registration.personalInfo?.fullName,
         email: registration.email,
         status: registration.status,
         paymentStatus: registration.paymentStatus,
         isSelected: registration.isSelected,
         selectionRank: registration.selectionRank,
-        applicationScore: registration.applicationScore,
+        applicationScore: registration.applicantScore,
         registrationDate: registration.registrationDate,
         paymentDate: registration.paymentDate
       }
@@ -347,28 +337,17 @@ router.get('/stats', async (req, res) => {
   try {
     // TODO: Add admin authentication middleware
     
-    const stats = await TeamRegistration.aggregate([
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 },
-          avgScore: { $avg: '$applicationScore' }
-        }
-      }
-    ]);
-
-    const totalApplications = await TeamRegistration.countDocuments();
-    const confirmedApplications = await TeamRegistration.countDocuments({ status: 'confirmed' });
-    const selectedApplications = await TeamRegistration.countDocuments({ isSelected: true });
+    const stats = await TeamRegistration.getStats();
 
     res.json({
       success: true,
       data: {
-        totalApplications,
-        confirmedApplications,
-        selectedApplications,
-        availableSpots: Math.max(0, 10 - selectedApplications),
-        statusBreakdown: stats,
+        totalApplications: stats.totalApplications,
+        confirmedApplications: stats.paidApplications,
+        selectedApplications: stats.selectedCandidates,
+        availableSpots: Math.max(0, 10 - stats.selectedCandidates),
+        avgScore: stats.avgScore,
+        highestScore: stats.highestScore,
         lastUpdated: new Date()
       }
     });

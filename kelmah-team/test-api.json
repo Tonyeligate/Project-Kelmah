@@ -1,0 +1,15 @@
+{
+  "fullName": "Test User",
+  "email": "test@example.com", 
+  "phone": "+233123456789",
+  "country": "Ghana",
+  "experience": "beginner",
+  "skills": "JavaScript",
+  "goals": "I want to become a skilled developer and contribute to meaningful projects.",
+  "availability": "15-20",
+  "commitment": "high",
+  "hearAbout": "Friend/Colleague", 
+  "motivation": "I am passionate about technology and eager to learn from experienced mentors.",
+  "agreement": "true"
+}
+
