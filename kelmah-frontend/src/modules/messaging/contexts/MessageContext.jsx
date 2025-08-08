@@ -59,8 +59,12 @@ export const MessageProvider = ({ children }) => {
     const token = getToken();
     if (!token) return;
 
-    // WebSocket URL based on environment
-    const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || 'https://kelmah-messaging-service.onrender.com';
+    // WebSocket URL based on environment with robust fallbacks
+    const wsUrl =
+      import.meta.env.VITE_MESSAGING_SERVICE_URL ||
+      (window.location.hostname === 'localhost'
+        ? 'http://localhost:3005'
+        : 'https://kelmah-messaging-service.onrender.com');
 
     console.log('🔌 Connecting to messaging WebSocket:', wsUrl);
 
@@ -179,6 +183,7 @@ export const MessageProvider = ({ children }) => {
   const disconnectWebSocket = useCallback(() => {
     if (socket) {
       console.log('🔌 Disconnecting WebSocket');
+      try { socket.removeAllListeners && socket.removeAllListeners(); } catch {}
       socket.disconnect();
       setSocket(null);
       setIsConnected(false);
@@ -251,12 +256,35 @@ export const MessageProvider = ({ children }) => {
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
           console.log('📤 Sending message via WebSocket');
-          socket.emit('send_message', {
-            conversationId: selectedConversation.id,
-            content: content.trim(),
-            messageType,
-            attachments
-          });
+          // Use acknowledgement to verify delivery; fallback to REST if failed
+          socket.emit(
+            'send_message',
+            {
+              conversationId: selectedConversation.id,
+              content: content.trim(),
+              messageType,
+              attachments,
+            },
+            async (ack) => {
+              if (!ack || ack.ok !== true) {
+                console.warn('WebSocket send failed, falling back to REST', ack);
+                try {
+                  const recipient = selectedConversation.participants.find((p) => p.id !== user.id);
+                  const newMessage = await messagingService.sendMessage(
+                    user.id,
+                    recipient.id,
+                    content,
+                  );
+                  setMessages((prev) => [...prev, newMessage]);
+                  setConversations((prev) =>
+                    prev.map((c) => (c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c)),
+                  );
+                } catch (e) {
+                  console.error('REST fallback failed:', e);
+                }
+              }
+            },
+          );
           // Message will be added to UI via 'new_message' event
         } else {
           // Fallback to REST API
