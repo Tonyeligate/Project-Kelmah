@@ -26,6 +26,7 @@ export const MessageProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  // Map<conversationId, Map<userId, userInfo>>
   const [typingUsers, setTypingUsers] = useState(new Map());
   
   // Messaging state
@@ -132,20 +133,21 @@ export const MessageProvider = ({ children }) => {
 
     // Typing indicators
     newSocket.on('user_typing', (data) => {
-      const { conversationId, userId, isTyping } = data;
+      const { conversationId, userId, isTyping, user: typingUser } = data;
       setTypingUsers(prev => {
         const newMap = new Map(prev);
+        const convMap = newMap.get(conversationId) || new Map();
         if (isTyping) {
-          if (!newMap.has(conversationId)) {
-            newMap.set(conversationId, new Set());
-          }
-          newMap.get(conversationId).add(userId);
+          convMap.set(userId, typingUser || { id: userId });
+          newMap.set(conversationId, convMap);
         } else {
-          if (newMap.has(conversationId)) {
-            newMap.get(conversationId).delete(userId);
-            if (newMap.get(conversationId).size === 0) {
-              newMap.delete(conversationId);
-            }
+          if (convMap.has(userId)) {
+            convMap.delete(userId);
+          }
+          if (convMap.size === 0) {
+            newMap.delete(conversationId);
+          } else {
+            newMap.set(conversationId, convMap);
           }
         }
         return newMap;
@@ -408,8 +410,8 @@ export const MessageProvider = ({ children }) => {
   // Get typing users for current conversation
   const getTypingUsers = useCallback(() => {
     if (!selectedConversation) return [];
-    const typingSet = typingUsers.get(selectedConversation.id);
-    return typingSet ? Array.from(typingSet) : [];
+    const convMap = typingUsers.get(selectedConversation.id);
+    return convMap ? Array.from(convMap.values()) : [];
   }, [selectedConversation, typingUsers]);
 
   // Check if user is online

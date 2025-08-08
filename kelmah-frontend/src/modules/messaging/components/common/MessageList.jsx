@@ -158,6 +158,7 @@ const MessageList = ({
   onMessageRead,
 }) => {
   const { user } = useAuth();
+  const { getTypingUsers } = useMessages();
   const messagesEndRef = useRef(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -528,10 +529,10 @@ const MessageList = ({
           ))}
 
           {/* Typing indicators */}
-          {typingUsers.length > 0 && (
+          {getTypingUsers().length > 0 && (
             <Box sx={{ mb: 2 }}>
-              {typingUsers.map((user) => (
-                <TypingIndicator key={user.id} user={user} />
+              {getTypingUsers().map((u) => (
+                <TypingIndicator key={u.id} user={u} />
               ))}
             </Box>
           )}

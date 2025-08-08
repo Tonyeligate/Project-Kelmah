@@ -89,6 +89,7 @@ const Message = ({
   onDelete,
   onCopy,
   onVisibilityChange,
+  onResend,
 }) => {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -350,8 +351,10 @@ const Message = ({
                 </Tooltip>
               )}
               {message.status === 'failed' && (
-                <Tooltip title="Failed to send">
-                  <ErrorIcon color="error" sx={{ fontSize: '0.9rem' }} />
+                <Tooltip title="Failed to send. Click to resend.">
+                  <IconButton size="small" onClick={() => onResend && onResend(message)}>
+                    <ErrorIcon color="error" sx={{ fontSize: '1rem' }} />
+                  </IconButton>
                 </Tooltip>
               )}
               {!message.status && (
@@ -426,6 +429,7 @@ Message.propTypes = {
   onDelete: PropTypes.func,
   onCopy: PropTypes.func,
   onVisibilityChange: PropTypes.func,
+  onResend: PropTypes.func,
 };
 
 Message.defaultProps = {
