@@ -181,10 +181,7 @@ const Portfolio = () => {
                 <CardMedia
                   component="img"
                   height="200"
-                  image={
-                    featuredProject?.imageUrl ||
-                    'https://via.placeholder.com/400x200?text=Featured+Project'
-                  }
+                  image={featuredProject?.imageUrl || ''}
                   alt={featuredProject?.title}
                   sx={{ objectFit: 'cover' }}
                 />
@@ -221,10 +218,7 @@ const Portfolio = () => {
                       <CardMedia
                         component="img"
                         height="140"
-                        image={
-                          project?.imageUrl ||
-                          `https://via.placeholder.com/300x140?text=Project+${index + 2}`
-                        }
+                        image={project?.imageUrl || ''}
                         alt={project?.title}
                       />
                       <CardContent sx={{ flexGrow: 1 }}>
@@ -278,10 +272,7 @@ const Portfolio = () => {
               <CardMedia
                 component="img"
                 height="400"
-                image={
-                  selectedProject.imageUrl ||
-                  'https://via.placeholder.com/800x400?text=Project+Image'
-                }
+                image={selectedProject.imageUrl || ''}
                 alt={selectedProject.title}
                 sx={{ borderRadius: 1, mb: 2 }}
               />
