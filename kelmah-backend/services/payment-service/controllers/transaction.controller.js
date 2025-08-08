@@ -100,16 +100,16 @@ exports.getTransactionHistory = async (req, res) => {
 
     const transactions = await Transaction.find(query)
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
       .populate("sender recipient relatedContract relatedJob");
 
     const total = await Transaction.countDocuments(query);
 
     res.json({
       transactions,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
+      totalPages: Math.ceil(total / Number(limit)) || 0,
+      currentPage: Number(page),
     });
   } catch (error) {
     handleError(res, error);
