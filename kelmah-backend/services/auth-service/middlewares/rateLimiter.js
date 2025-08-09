@@ -4,42 +4,67 @@ const { createClient } = require('redis');
 
 let redisClient;
 let redisConnected = false;
+let redisInitialized = false;
+let redisConnectionAttempts = 0;
+const MAX_REDIS_ATTEMPTS = 3;
 
 function getRedisClient() {
   if (redisClient && redisConnected) return redisClient;
+  if (redisInitialized && redisConnectionAttempts >= MAX_REDIS_ATTEMPTS) {
+    // Stop spamming logs after max attempts
+    return null;
+  }
   
   try {
-    redisClient = createClient({
-      url: process.env.REDIS_URL || process.env.REDIS_URI || 'redis://localhost:6379',
-      socket: { 
-        reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
-        connectTimeout: 10000
-      }
-    });
+    if (!redisInitialized) {
+      redisClient = createClient({
+        url: process.env.REDIS_URL || process.env.REDIS_URI || 'redis://localhost:6379',
+        socket: { 
+          reconnectStrategy: (retries) => {
+            if (retries > MAX_REDIS_ATTEMPTS) return false; // Stop retrying
+            return Math.min(retries * 1000, 5000);
+          },
+          connectTimeout: 5000
+        }
+      });
+      
+      redisClient.on('error', (err) => {
+        if (redisConnectionAttempts < MAX_REDIS_ATTEMPTS) {
+          console.warn('Redis connection unavailable, using memory store for rate limiting');
+          redisConnectionAttempts++;
+        }
+        redisConnected = false;
+      });
+      
+      redisClient.on('connect', () => {
+        console.log('✅ Redis connected successfully - using distributed rate limiting');
+        redisConnected = true;
+        redisConnectionAttempts = 0;
+      });
+      
+      redisClient.on('disconnect', () => {
+        if (redisConnected) {
+          console.log('⚠️ Redis disconnected - falling back to memory store');
+        }
+        redisConnected = false;
+      });
+      
+      redisInitialized = true;
+    }
     
-    redisClient.on('error', (err) => {
-      console.error('Redis error:', err.message);
-      redisConnected = false;
-    });
+    if (!redisConnected && redisConnectionAttempts < MAX_REDIS_ATTEMPTS) {
+      redisClient.connect().catch(() => {
+        redisConnected = false;
+        redisConnectionAttempts++;
+      });
+    }
     
-    redisClient.on('connect', () => {
-      console.log('Redis connected successfully');
-      redisConnected = true;
-    });
-    
-    redisClient.on('disconnect', () => {
-      console.log('Redis disconnected');
-      redisConnected = false;
-    });
-    
-    redisClient.connect().catch((err) => {
-      console.error('Redis connect failed:', err.message);
-      redisConnected = false;
-    });
-    
-    return redisClient;
+    return redisConnected ? redisClient : null;
   } catch (error) {
-    console.error('Failed to create Redis client:', error.message);
+    if (redisConnectionAttempts < MAX_REDIS_ATTEMPTS) {
+      console.warn('Redis not available in production environment - using memory store');
+      redisConnectionAttempts = MAX_REDIS_ATTEMPTS; // Stop further attempts
+    }
     redisConnected = false;
     return null;
   }
