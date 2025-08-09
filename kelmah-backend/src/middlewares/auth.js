@@ -28,6 +28,9 @@ exports.authenticate = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     
     // Verify token
+    if (!config.JWT_SECRET) {
+      return next(new AppError('Server configuration error', 500));
+    }
     const decoded = jwt.verify(token, config.JWT_SECRET);
     
     // Find user by id

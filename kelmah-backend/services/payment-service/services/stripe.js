@@ -10,11 +10,19 @@ const stripeClient = Stripe(process.env.STRIPE_SECRET_KEY);
  * @returns {Promise<object>}
  */
 async function createPaymentIntent(amount, currency = "usd", options = {}) {
-  return stripeClient.paymentIntents.create({
+  const { idempotencyKey, ...rest } = options || {};
+  const params = {
     amount,
     currency,
-    ...options,
-  });
+    ...rest,
+    metadata: {
+      ...(rest.metadata || {}),
+      source: 'kelmah-platform',
+      escrowReference: rest.metadata?.escrowReference || rest.escrowReference
+    }
+  };
+  const requestOptions = idempotencyKey ? { idempotencyKey } : undefined;
+  return stripeClient.paymentIntents.create(params, requestOptions);
 }
 
 /**

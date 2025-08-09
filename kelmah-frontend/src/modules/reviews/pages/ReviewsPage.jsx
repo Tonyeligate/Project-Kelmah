@@ -96,7 +96,7 @@ const EnhancedReviewsPage = () => {
     severity: 'success',
   });
 
-  // Real review data will be fetched from backend; remove mocks
+  // Real review data is fetched from backend (mocks disabled in production)
 
   // Utility functions
   const showFeedback = (message, severity = 'info') => {

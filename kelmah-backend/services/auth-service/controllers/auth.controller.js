@@ -186,7 +186,9 @@ exports.login = async (req, res, next) => {
         ip: req.ip,
         fingerprint: req.headers['x-device-id'] || 'unknown'
       },
-      createdAt: new Date()
+      createdAt: new Date(),
+      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      version: user.tokenVersion || 0
     });
 
     // Update user login information
@@ -248,6 +250,8 @@ exports.verifyEmail = async (req, res, next) => {
       userId: user.id,
       token: refreshToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      version: user.tokenVersion || 0
     });
 
     // Return success response
@@ -547,7 +551,9 @@ exports.refreshToken = async (req, res, next) => {
         ip: req.ip,
         fingerprint: req.headers['x-device-id'] || 'unknown'
       },
-      createdAt: new Date()
+      createdAt: new Date(),
+      jti: jwtUtils.verifyRefreshToken(newRefreshToken).jti,
+      version: user.tokenVersion || 0
     });
 
     // Log token refresh for audit purposes
@@ -817,6 +823,8 @@ exports.googleCallback = async (req, res, next) => {
       userId: user.id,
       token: refreshToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      version: user.tokenVersion || 0
     });
 
     // Redirect to frontend with tokens

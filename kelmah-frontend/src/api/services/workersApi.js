@@ -96,8 +96,9 @@ const workersApi = {
    */
   async getPortfolioProjects() {
     try {
-      const response = await workersServiceClient.get('/api/workers/me/portfolio');
-      return response.data.data || response.data;
+      // Align with user-service profile routes
+      const response = await workersServiceClient.get('/api/profile/portfolio/search');
+      return response.data?.data || response.data;
     } catch (error) {
       console.warn('Portfolio service unavailable:', error.message);
       // Return comprehensive mock portfolio data

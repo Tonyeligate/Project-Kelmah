@@ -122,6 +122,14 @@ const WorkerSearch = () => {
 
   useEffect(() => {
     fetchWorkers();
+    // Hydrate saved bookmarks
+    (async () => {
+      try {
+        const res = await userServiceClient.get('/api/users/bookmarks');
+        const ids = res?.data?.data?.workerIds || [];
+        setSavedWorkers(ids);
+      } catch (_) {}
+    })();
   }, [page, filters, searchQuery]);
 
   const fetchWorkers = async () => {
@@ -137,12 +145,15 @@ const WorkerSearch = () => {
       });
 
       const response = await userServiceClient.get(
-        `/api/workers/search?${queryParams}`,
+        `/api/users/workers/search?${queryParams}`,
       );
 
       if (response.data) {
-        setWorkers(response.data.workers || []);
-        setTotalPages(response.data.totalPages || 1);
+        const workersData = response.data.data?.workers || response.data.workers || [];
+        const pagination = response.data.data?.pagination || {};
+        setWorkers(workersData);
+        setTotalPages(pagination.pages || response.data.totalPages || 1);
+        try { localStorage.setItem('worker_search_cache', JSON.stringify(workersData)); } catch (_) {}
       } else {
         throw new Error('No data received');
       }
@@ -154,51 +165,60 @@ const WorkerSearch = () => {
         err.message,
       );
       setError('Unable to fetch workers. Please try again later.');
-      setWorkers([]);
+      // Provide a safe fallback list for offline/unavailable service
+      let fallback = [];
+      try {
+        // Optionally load a cached list from localStorage
+        const cached = localStorage.getItem('worker_search_cache');
+        if (cached) fallback = JSON.parse(cached);
+      } catch (_) {}
 
-      if (searchQuery) {
+      let filteredWorkers = Array.isArray(fallback) ? [...fallback] : [];
+
+      if (searchQuery && filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter(
           (worker) =>
-            worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            worker.skills.some((skill) =>
-              skill.toLowerCase().includes(searchQuery.toLowerCase()),
-            ) ||
-            worker.title.toLowerCase().includes(searchQuery.toLowerCase()),
+            worker.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (Array.isArray(worker.skills) && worker.skills.some((skill) =>
+              String(skill).toLowerCase().includes(searchQuery.toLowerCase()),
+            )) ||
+            worker.title?.toLowerCase().includes(searchQuery.toLowerCase()),
         );
       }
 
-      if (filters.skills.length > 0) {
+      if (filters.skills.length > 0 && filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter((worker) =>
-          filters.skills.some((skill) => worker.skills.includes(skill)),
+          Array.isArray(worker.skills) && filters.skills.some((skill) => worker.skills.includes(skill)),
         );
       }
 
-      if (filters.location) {
+      if (filters.location && filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter((worker) =>
-          worker.location.includes(filters.location),
+          (worker.location || '').includes(filters.location),
         );
       }
 
-      if (filters.availability !== 'all') {
+      if (filters.availability !== 'all' && filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter(
           (worker) => worker.availability === filters.availability,
         );
       }
 
-      if (filters.minRating > 0) {
+      if (filters.minRating > 0 && filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter(
-          (worker) => worker.rating >= filters.minRating,
+          (worker) => (worker.rating || 0) >= filters.minRating,
         );
       }
 
-      filteredWorkers = filteredWorkers.filter(
-        (worker) =>
-          worker.hourlyRate >= 0 && worker.hourlyRate <= filters.maxRate,
-      );
+      if (filteredWorkers.length) {
+        filteredWorkers = filteredWorkers.filter(
+          (worker) =>
+            (worker.hourlyRate || 0) >= 0 && (worker.hourlyRate || 0) <= filters.maxRate,
+        );
+      }
 
       setWorkers(filteredWorkers);
-      setTotalPages(Math.ceil(filteredWorkers.length / 6));
-      setError(null);
+      setTotalPages(Math.ceil((filteredWorkers.length || 0) / 6) || 1);
     } finally {
       setLoading(false);
     }
@@ -241,14 +261,14 @@ const WorkerSearch = () => {
 
   const handleSaveWorker = async (workerId) => {
     try {
-      // Mock save worker
-      console.log('Saving worker:', workerId);
-
-      if (savedWorkers.includes(workerId)) {
-        setSavedWorkers((prev) => prev.filter((id) => id !== workerId));
-      } else {
-        setSavedWorkers((prev) => [...prev, workerId]);
-      }
+      const res = await userServiceClient.post(`/api/users/workers/${workerId}/bookmark`);
+      const bookmarked = res?.data?.data?.bookmarked ?? !savedWorkers.includes(workerId);
+      setSavedWorkers((prev) => {
+        const has = prev.includes(workerId);
+        if (bookmarked && !has) return [...prev, workerId];
+        if (!bookmarked && has) return prev.filter((id) => id !== workerId);
+        return prev;
+      });
     } catch (error) {
       console.error('Error saving worker:', error);
       setError('Failed to save worker');

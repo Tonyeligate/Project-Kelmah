@@ -19,6 +19,8 @@
     "test:profiles": "jest --testPathPattern=profile"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.637.0",
+    "@aws-sdk/s3-request-presigner": "^3.637.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

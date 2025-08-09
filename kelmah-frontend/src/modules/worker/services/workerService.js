@@ -119,7 +119,8 @@ const workerService = {
    * @returns {Promise<Array>} - Array of portfolio items
    */
   getWorkerPortfolio: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/portfolio`);
+    // Route via user-service profile routes
+    return userServiceClient.get(`/api/profile/workers/${workerId}/portfolio`);
   },
 
   /**

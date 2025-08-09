@@ -192,11 +192,12 @@ const reviewsApi = {
    */
   async moderateReview(reviewId, status, moderationNote = '') {
     try {
-      const response = await reviewsServiceClient.put(`/${reviewId}/moderate`, {
+      // Use admin endpoint via API Gateway
+      const response = await axios.post(`${API_BASE_URL}/api/admin/reviews/${reviewId}/moderate`, {
         status,
-        moderationNote
+        note: moderationNote
       });
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error moderating review:', error);
       throw new Error(`Failed to moderate review: ${error.message}`);
@@ -204,25 +205,26 @@ const reviewsApi = {
   },
 
   /**
-   * Get reviews for moderation queue (admin only)
+   * Admin moderation queue
    */
   async getModerationQueue(params = {}) {
     try {
       const queryParams = new URLSearchParams({
         page: params.page || 1,
         limit: params.limit || 20,
-        status: params.status || 'pending',
-        ...(params.sortBy && { sortBy: params.sortBy }),
-        ...(params.order && { order: params.order })
+        ...(params.status && { status: params.status }),
+        ...(params.category && { category: params.category }),
+        ...(params.minRating && { minRating: params.minRating })
       });
-
-      const response = await reviewsServiceClient.get(`?${queryParams}`);
-      return response.data;
+      const response = await axios.get(`${API_BASE_URL}/api/admin/reviews/queue?${queryParams}`);
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching moderation queue:', error);
       throw new Error(`Failed to fetch moderation queue: ${error.message}`);
     }
   },
+
+  
 
   /**
    * Get top-rated workers by category

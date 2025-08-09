@@ -440,6 +440,9 @@ app.post('/api/reviews', reviewRateLimit, extractUserInfo, async (req, res) => {
   }
 });
 
+// Admin moderation routes (protected upstream by API Gateway)
+app.use('/api/admin', extractUserInfo, require('./routes/admin.routes'));
+
 // Get reviews for a specific worker
 app.get('/api/reviews/worker/:workerId', async (req, res) => {
   try {

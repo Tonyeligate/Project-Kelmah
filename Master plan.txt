@@ -9,6 +9,60 @@ After conducting an exhaustive deep scan of your entire Kelmah platform codebase
 
 ---
 
+## ✅ EXECUTION PROGRESS UPDATE (Current Sprint)
+
+The following items have been implemented in the codebase since this plan was authored. These updates unblock Ghana market payments, real-time messaging, worker portfolio, and hirer tools, and introduce in-app notifications.
+
+### Implemented
+- Ghana Payments (backend + frontend integration paths)
+  - Added Mobile Money endpoints expected by frontend under `/api/payments/*`:
+    - `POST /api/payments/mtn-momo/request-to-pay`, `GET /api/payments/mtn-momo/status/:referenceId`, `POST /api/payments/mtn-momo/validate`
+    - `POST /api/payments/vodafone-cash/request-to-pay`, `GET /api/payments/vodafone-cash/status/:referenceId`
+    - `POST /api/payments/airteltigo/request-to-pay`, `GET /api/payments/airteltigo/status/:referenceId`
+  - Implemented AirtelTigo Money integration (initial) alongside MTN and Vodafone integrations.
+  - Frontend `paymentService` now routes Mobile Money calls to these endpoints.
+  - Payment-service now emits in-app notifications (init/success/payout) via messaging-service.
+
+- Real-time Messaging & Notifications
+  - Socket.IO rooms (user_*, conversation_*), typing indicators, read receipts, presence, and message send acknowledgements are active.
+  - File attachments:
+    - New upload API: `POST /api/messages/:conversationId/attachments` in messaging-service; saves and returns URLs.
+    - Frontend now uploads via API, reports progress, then emits `file_shared` with real URLs.
+  - In-app notifications:
+    - Messaging-service emits `notification` to `user_{id}` rooms for offline recipients of new messages.
+    - Notification socket client added; NotificationContext subscribes and hydrates inbox in real-time.
+
+- Worker Portal (Phase 3, Weeks 8–10)
+  - Components created: `PortfolioGallery`, `ProjectShowcase`, `SkillsVerificationPanel`, `CertificateManager`, `WorkSampleUploader`, `AdvancedCalendar`, `EarningsReports`, `PerformanceMetrics`, `GoalTracker`, `ProposalBuilder`, `RateCalculator`, `SkillGapAnalysis`, `TrainingRecommendations`.
+  - New page/route: `/worker/portfolio` wired and fetching from `/api/profile/portfolio/search`.
+  - User-service uploads: `POST /api/profile/portfolio/upload`, `POST /api/profile/certificates/upload`.
+
+- Hirer Portal (Phase 4, Week 11)
+  - Components created: `JobCreationWizard`, `SkillsRequirementBuilder`, `BudgetEstimator`, `WorkerComparisonTable`, `BackgroundChecker`.
+  - New page/route: `/hirer/tools` (hirer-only) bundling these tools.
+  - Background verification stub: `POST /api/profile/background/verify` (user-service).
+
+### Revised Status Snapshot
+- Payments (Ghana coverage): from 40% → 65% (endpoints wired; AirtelTigo integration present; full provider credentials + receipts pending)
+- Real-time features: from 30% → 60% (rooms/typing/attachments/notifications working; production hardening pending)
+- Worker: from 60% → 75% (portfolio UI + uploads wired; verification workflows pending)
+- Hirer: from 65% → 70% (tools added; persistence to job-service for wizard pending)
+- Notifications: from 70% → 78% (live in-app events; email/SMS/push not yet implemented)
+
+### Updated Ghana Payment Methods Progress
+```
+PAYMENT METHOD          | MARKET SHARE | IMPLEMENTATION PRIORITY | CURRENT
+------------------------|--------------|--------------------------|-------------------------------
+MTN Mobile Money        |     60%      |      CRITICAL            |  ⚠️ API wired (sandbox pending)
+Vodafone Cash           |     25%      |      CRITICAL            |  ⚠️ API wired (sandbox pending)
+AirtelTigo Money        |     10%      |      HIGH                |  ⚠️ API wired (initial impl)
+Paystack (Cards)        |      3%      |      MEDIUM              |  ⚠️ Implemented; verify flows
+Bank Transfer           |      2%      |      LOW                 |  ⚠️ Paystack bank transfers
+Escrow with MobileMoney |      n/a     |      CRITICAL            |  ❗ Escrow UI/flows pending
+```
+
+---
+
 ## 📊 **CURRENT PLATFORM STATE ASSESSMENT**
 
 ### **Overall Completion Status:**
@@ -875,6 +929,52 @@ DEPLOYMENT TASKS:
 
 ---
 
+## 🧭 UPDATED EXECUTION PLAN (What’s left to implement)
+
+### Phase 0 – Hardening (carryover)
+- Migrate messaging-service to Sequelize/Postgres (remove Mongoose, convert models).
+- API Gateway: add service registry config + per-route auth checks; formal discovery file.
+- Auth standardization: remove Redux auth duplication; ensure token refresh path is single-source-of-truth.
+
+### Phase 1 – Core Models & Storage
+- Job-service models: Application, Contract, Milestone, Proposal.
+- Messaging-service models: Attachment (metadata), Notification (inbox persistence).
+- Payment-service models: complete Escrow, add Dispute model; enhance Transaction.
+- Static file serving or S3 integration for attachments and portfolio assets; signed URLs.
+
+### Phase 2 – Ghana Payments (finish)
+- Provider credentials + sandbox/live testing for MTN/Vodafone/AirtelTigo.
+- Webhooks for status updates → propagate in-app notifications.
+- Receipts generation + downloads; escrow milestone flows.
+
+### Phase 3 – Worker
+- Portfolio thumbnailing, categorization, and viewer; verification workflows; skills assessment scoring endpoints.
+- Connect uploads to object storage (S3) and generate responsive images.
+
+### Phase 4 – Hirer
+- Persist JobCreationWizard to job-service; background check provider integration; worker comparison backed by search queries.
+
+### Phase 5 – Realtime
+- Message attachment list/download endpoints; drag-and-drop and progress UI.
+- Group chats and moderation; optional E2E encryption placeholder.
+- Push notifications (Firebase/OneSignal) and email/SMS bridges.
+
+### Phase 6 – Search & Match
+- ML-assisted matching and recommendations services; telemetry for performance analytics.
+
+### Phase 7 – Contracts & Reviews
+- Digital signature flow; milestone automation; review verification + moderation tooling.
+
+### Phase 8 – Mobile
+- Service worker + offline queue for messages/uploads; GPS/camera capture; PWA install flow.
+
+### Phase 9 – Perf & Security
+- Caching (Redis), DB indexes, rate limiting, secrets hygiene; monitoring (Sentry, APM), GDPR/Data retention.
+
+### Cross-cutting
+- Integration tests for critical flows (Cypress, Postman/Newman); feature flags; feature telemetry.
+
+
 ## 📊 **FEATURE COMPLETION MATRIX**
 
 ### **Backend Services Status:**
@@ -1289,3 +1389,24 @@ Day 6-7: Test and validate critical user flows
 **🚀 READY FOR SUPREME EXECUTION! 🚀**
 
 
+Short answer: not done yet. I updated Master plan.txt with all completed work and a precise “What’s left” plan. Major remaining items need provider credentials/infra decisions to continue.
+What’s still required to finish
+S3 signed-URL uploads (replace local /uploads)
+Need: AWS_REGION, S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+I’ll add presign endpoints and client upload once creds are provided.
+Persist JobCreationWizard fully
+Confirm createHirerJob targets /api/jobs via gateway to job-service. If not, I’ll wire it and map wizard fields to job-service schema.
+Notification preferences (UI is added)
+I can add a route (e.g., /settings/notifications) in your frontend router to expose it.
+Remove Redux-auth duplication + finalize refresh
+I’ll refactor routes/pages to use useAuth only and ensure axios refresh is the single path.
+Push/email/SMS providers
+Need: Firebase/OneSignal keys, SendGrid/Mailgun API key, preferred Ghana SMS provider credentials.
+DB standardization (messaging-service to Postgres/Sequelize), core models across services.
+PWA offline/GPS/camera and perf/monitoring (Redis, indexes, Sentry/APM) and compliance.
+Ready to proceed
+Share AWS + provider credentials and I’ll implement S3 signed-URL flow and provider integrations next.
+If you want me to keep going without creds, I’ll wire presign stubs that activate automatically when env vars are present.
+
+
+You

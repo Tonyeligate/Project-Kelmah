@@ -7,6 +7,7 @@ import ApplicationManagementPage from '../modules/hirer/pages/ApplicationManagem
 import JobPostingPage from '../modules/hirer/pages/JobPostingPage';
 import JobManagementPage from '../modules/hirer/pages/JobManagementPage';
 import WorkerSearchPage from '../modules/hirer/pages/WorkerSearchPage';
+import HirerToolsPage from '../modules/hirer/pages/HirerToolsPage';
 
 const HirerRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
@@ -72,6 +73,18 @@ const HirerRoutes = () => {
             loading={loading}
           >
             <WorkerSearchPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/hirer/tools"
+        element={
+          <ProtectedRoute
+            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            redirectPath="/login"
+            loading={loading}
+          >
+            <HirerToolsPage />
           </ProtectedRoute>
         }
       />

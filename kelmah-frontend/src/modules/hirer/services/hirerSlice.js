@@ -10,12 +10,12 @@ const authServiceClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// For now, use auth service for both user and job operations
-const userServiceClient = authServiceClient;
-const jobServiceClient = authServiceClient;
+// Route to correct services
+const userServiceClient = axios.create({ baseURL: SERVICES.USER_SERVICE, timeout: 15000, headers: { 'Content-Type': 'application/json' } });
+const jobServiceClient = axios.create({ baseURL: SERVICES.JOB_SERVICE, timeout: 15000, headers: { 'Content-Type': 'application/json' } });
 
 // Add auth tokens to requests
-authServiceClient.interceptors.request.use(
+[authServiceClient, userServiceClient, jobServiceClient].forEach((client) => client.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('kelmah_auth_token');
     if (token) {
@@ -24,7 +24,7 @@ authServiceClient.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error),
-);
+));
 
 // Async thunks for API operations
 export const fetchHirerProfile = createAsyncThunk(
@@ -47,10 +47,11 @@ export const fetchHirerJobs = createAsyncThunk(
       const response = await jobServiceClient.get('/api/jobs/my-jobs', {
         params: { status, role: 'hirer' },
       });
-      return response.data;
+      const jobs = response.data?.data || response.data?.jobs || response.data || [];
+      return { status, jobs };
     } catch (error) {
       console.warn(`Job service unavailable for hirer jobs (${status}):`, error.message);
-      return [];
+      return { status, jobs: [] };
     }
   }
 );

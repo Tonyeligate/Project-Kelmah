@@ -233,6 +233,22 @@ const handleCors = (req, res, next) => {
   next();
 };
 
+/**
+ * Per-user tier rate limiter shim – expects upstream Redis limiter for enforcement
+ */
+const enforceTierLimits = (limits = { basic: 100, premium: 500, enterprise: 1000 }) => {
+  return (req, res, next) => {
+    // When combined with Redis, this would check counters by req.user.id and tier
+    // Here we just tag the request for downstream limiters/metrics
+    if (req.user) {
+      const userTier = req.user.tier || 'basic';
+      req.userTier = userTier;
+      req.tierLimit = limits[userTier] || limits.basic;
+    }
+    next();
+  };
+};
+
 module.exports = {
   validatePayment,
   validateWebhook,
@@ -240,5 +256,6 @@ module.exports = {
   validateApiVersion,
   validateUserTier,
   sanitizeRequest,
-  handleCors
+  handleCors,
+  enforceTierLimits
 };

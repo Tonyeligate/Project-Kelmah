@@ -60,7 +60,11 @@ export default defineConfig({
       'react-dom', 
       'use-sync-external-store/shim',
       '@reduxjs/toolkit',
-      'react-redux'
+      'react-redux',
+      '@emotion/react',
+      '@emotion/styled',
+      '@mui/material',
+      '@mui/icons-material'
     ],
     force: true,
   },

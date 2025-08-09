@@ -43,6 +43,7 @@ class MessageSocketHandler {
 
         socket.userId = user.id;
         socket.user = user;
+        socket.tokenVersion = decoded.version;
         
         next();
       } catch (error) {
@@ -684,6 +685,19 @@ class MessageSocketHandler {
       //   body: messageData.content || 'Sent an attachment',
       //   data: { conversationId: messageData.conversationId }
       // });
+
+      // Minimal in-app notification emitter to user_{id} rooms
+      userIds.forEach((uid) => {
+        this.io.to(`user_${uid}`).emit('notification', {
+          id: `msg_${messageData.id}`,
+          type: 'message',
+          title: `New message from ${messageData.sender?.name || 'Contact'}`,
+          body: messageData.content || 'Sent an attachment',
+          data: { conversationId: messageData.conversationId },
+          timestamp: new Date().toISOString(),
+          read: false,
+        });
+      });
 
     } catch (error) {
       console.error('Queue push notifications error:', error);

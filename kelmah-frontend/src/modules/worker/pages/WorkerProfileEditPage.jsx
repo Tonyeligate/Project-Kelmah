@@ -59,6 +59,7 @@ const WorkerProfileEditPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { user } = useSelector((state) => state.auth);
+  // loading and error are objects with domain keys; access specific flags to avoid passing objects into UI props
   const { profile, loading, error } = useSelector((state) => state.worker);
 
   const [snackbar, setSnackbar] = useState({
@@ -364,9 +365,9 @@ const WorkerProfileEditPage = () => {
         </Alert>
       </Snackbar>
 
-      {error && (
+      {error?.profile && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {String(error.profile)}
         </Alert>
       )}
 
@@ -962,9 +963,9 @@ const WorkerProfileEditPage = () => {
             color="primary"
             startIcon={<SaveIcon />}
             size="large"
-            disabled={loading}
+            disabled={!!loading?.profile}
           >
-            {loading ? 'Saving...' : 'Save Profile'}
+            {loading?.profile ? 'Saving...' : 'Save Profile'}
           </Button>
         </Box>
       </form>

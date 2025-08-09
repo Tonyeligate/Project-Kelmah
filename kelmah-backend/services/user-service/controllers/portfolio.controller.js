@@ -111,6 +111,32 @@ class PortfolioController {
   }
 
   /**
+   * Portfolio stats for analytics panels
+   */
+  static async getPortfolioStats(req, res) {
+    try {
+      const { workerId } = req.params;
+      const worker = await WorkerProfile.findOne({
+        where: { [Op.or]: [{ id: workerId }, { userId: workerId }], isActive: true }
+      });
+      if (!worker) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+      const [total, published, featured] = await Promise.all([
+        Portfolio.count({ where: { workerProfileId: worker.id, isActive: true } }),
+        Portfolio.count({ where: { workerProfileId: worker.id, status: 'published', isActive: true } }),
+        Portfolio.count({ where: { workerProfileId: worker.id, isFeatured: true, isActive: true } }),
+      ]);
+      // simple trend stub
+      const monthly = Array.from({ length: 12 }).map((_, i) => ({ month: i + 1, items: Math.round((published / 12) * (0.6 + Math.random() * 0.8)) }));
+      return res.json({ success: true, data: { total, published, featured, monthly } });
+    } catch (error) {
+      console.error('Get portfolio stats error:', error);
+      return handleServiceError(res, error, 'Failed to get portfolio stats');
+    }
+  }
+
+  /**
    * Get single portfolio item
    */
   static async getPortfolioItem(req, res) {

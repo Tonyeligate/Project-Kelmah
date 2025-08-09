@@ -6,10 +6,18 @@ class ProfileService {
   async getProfile() {
     try {
       const response = await userServiceClient.get('/profile');
-      return response.data.data;
+      return response.data?.data || response.data;
     } catch (error) {
       console.warn('Profile service unavailable:', { error: error.message });
-      throw error;
+      // Fallback minimal profile to prevent UI crashes
+      return {
+        firstName: '',
+        lastName: '',
+        bio: '',
+        skills: [],
+        education: [],
+        languages: [],
+      };
     }
   }
 
@@ -91,10 +99,10 @@ class ProfileService {
   async getStatistics() {
     try {
       const response = await userServiceClient.get('/profile/statistics');
-      return response.data.data;
+      return response.data?.data || response.data || { jobsCompleted: 0, successRate: 0 };
     } catch (error) {
       console.warn('Statistics service unavailable:', { error: error.message });
-      throw error;
+      return { jobsCompleted: 0, successRate: 0 };
     }
   }
 
@@ -104,10 +112,10 @@ class ProfileService {
       const response = await userServiceClient.get('/profile/activity', {
         params: filters,
       });
-      return response.data.data;
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.warn('Activity service unavailable:', { error: error.message });
-      throw error;
+      return [];
     }
   }
 }

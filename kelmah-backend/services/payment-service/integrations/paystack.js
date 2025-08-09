@@ -41,7 +41,8 @@ class PaystackService {
         callback_url: callback_url || `${process.env.FRONTEND_URL}/payment/callback`,
         metadata: {
           ...metadata,
-          source: 'kelmah-platform'
+          source: 'kelmah-platform',
+          escrowReference: metadata.escrowReference || paymentData.escrowReference
         },
         channels
       };

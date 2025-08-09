@@ -447,15 +447,15 @@ const contractSlice = createSlice({
 });
 
 // Selectors
-export const selectContracts = (state) => state.contracts.contracts;
-export const selectCurrentContract = (state) => state.contracts.currentContract;
+export const selectContracts = (state) => state.contract.contracts;
+export const selectCurrentContract = (state) => state.contract.currentContract;
 export const selectContractMilestones = (state, contractId) =>
-  state.contracts.contractMilestones[contractId] || [];
+  state.contract.contractMilestones[contractId] || [];
 export const selectContractTemplates = (state) =>
-  state.contracts.contractTemplates;
-export const selectDisputes = (state) => state.contracts.disputes;
-export const selectContractsLoading = (state) => state.contracts.loading;
-export const selectContractsError = (state) => state.contracts.error;
+  state.contract.contractTemplates;
+export const selectDisputes = (state) => state.contract.disputes;
+export const selectContractsLoading = (state) => state.contract.loading;
+export const selectContractsError = (state) => state.contract.error;
 
 // Actions
 export const { resetContractErrors, clearCurrentContract } =

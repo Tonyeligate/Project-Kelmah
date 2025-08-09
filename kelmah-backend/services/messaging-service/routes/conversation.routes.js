@@ -16,5 +16,7 @@ router.get('/:id', ConversationController.getConversationById);
 router.patch('/:id', ConversationController.updateConversation);
 router.delete('/:id', ConversationController.deleteConversation);
 router.post('/:id/read', ConversationController.markConversationAsRead);
+// Bulk mark read endpoint alias (PUT for idempotence)
+router.put('/:id/read', ConversationController.markConversationAsRead);
 
 module.exports = router;

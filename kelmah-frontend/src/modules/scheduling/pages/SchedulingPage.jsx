@@ -56,6 +56,7 @@ import { useSnackbar } from 'notistack';
 import jobsService from '../../jobs/services/jobsApi';
 // Import workersApi for user loading functionality
 import workersApi from '../../../api/services/workersApi';
+import { FEATURES } from '../../../config/environment';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -364,16 +365,21 @@ const SchedulingPage = () => {
         console.warn('workersApi.searchWorkers not available, using mock data:', apiError.message);
       }
       
-      // Use mock data as fallback
-      const mockUsers = [
-        { id: 1, name: 'John Carpenter', email: 'john@example.com', skills: ['Carpentry', 'Furniture'] },
-        { id: 2, name: 'Sarah Plumber', email: 'sarah@example.com', skills: ['Plumbing', 'Repairs'] },
-        { id: 3, name: 'Mike Electrician', email: 'mike@example.com', skills: ['Electrical', 'Wiring'] },
-        { id: 4, name: 'Anna Mason', email: 'anna@example.com', skills: ['Masonry', 'Concrete'] },
-        { id: 5, name: 'David Painter', email: 'david@example.com', skills: ['Painting', 'Decoration'] }
-      ];
-      
-      setUsers(workers.length > 0 ? workers : mockUsers);
+      // Use mock data only if explicitly enabled in development
+      if (workers.length > 0) {
+        setUsers(workers);
+      } else if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
+        const mockUsers = [
+          { id: 1, name: 'John Carpenter', email: 'john@example.com', skills: ['Carpentry', 'Furniture'] },
+          { id: 2, name: 'Sarah Plumber', email: 'sarah@example.com', skills: ['Plumbing', 'Repairs'] },
+          { id: 3, name: 'Mike Electrician', email: 'mike@example.com', skills: ['Electrical', 'Wiring'] },
+          { id: 4, name: 'Anna Mason', email: 'anna@example.com', skills: ['Masonry', 'Concrete'] },
+          { id: 5, name: 'David Painter', email: 'david@example.com', skills: ['Painting', 'Decoration'] }
+        ];
+        setUsers(mockUsers);
+      } else {
+        setUsers([]);
+      }
     } catch (err) {
       console.error('Error loading users:', err);
       // Set empty array as fallback

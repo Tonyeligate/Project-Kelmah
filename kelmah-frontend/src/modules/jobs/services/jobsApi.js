@@ -129,7 +129,8 @@ const jobsApi = {
    */
   async searchJobs(searchParams) {
     try {
-      const response = await jobServiceClient.get('/api/jobs/search', {
+      // Backend supports filtering and text search via /api/jobs with ?search=
+      const response = await jobServiceClient.get('/api/jobs', {
         params: searchParams,
       });
       const jobs = response.data.data || response.data.jobs || [];

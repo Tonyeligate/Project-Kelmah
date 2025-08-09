@@ -93,6 +93,13 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(loggingMiddleware(logger));
+// Correlate request ID across services
+app.use((req, res, next) => {
+  if (req.id) {
+    res.setHeader('X-Request-ID', req.id);
+  }
+  next();
+});
 
 // Global rate limiting
 app.use(rateLimit({
@@ -137,6 +144,26 @@ app.use('/api/users',
   })
 );
 
+// Profile routes (protected) → user-service
+app.use('/api/profile',
+  authMiddleware.authenticate,
+  createProxyMiddleware({
+    target: services.user,
+    changeOrigin: true,
+    pathRewrite: { '^/api/profile': '/api/profile' }
+  })
+);
+
+// Settings routes (protected) → user-service
+app.use('/api/settings',
+  authMiddleware.authenticate,
+  createProxyMiddleware({
+    target: services.user,
+    changeOrigin: true,
+    pathRewrite: { '^/api/settings': '/api/settings' }
+  })
+);
+
 // Worker routes (public read, protected write)
 app.use('/api/workers',
   (req, res, next) => {
@@ -176,6 +203,7 @@ app.use('/api/search', createProxyMiddleware({
 app.use('/api/payments',
   rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }),
   authMiddleware.authenticate,
+  requestValidator.enforceTierLimits(),
   requestValidator.validatePayment,
   createProxyMiddleware({
     target: services.payment,
@@ -185,17 +213,19 @@ app.use('/api/payments',
       if (req.user) {
         proxyReq.setHeader('X-User-ID', req.user.id);
         proxyReq.setHeader('X-Payment-Source', 'api-gateway');
+        proxyReq.setHeader('X-User-Tier', req.userTier || 'basic');
       }
     }
   })
 );
 
-// Messaging routes (protected)
+// Messaging routes (protected) with WebSocket support
 app.use('/api/messages',
   authMiddleware.authenticate,
   createProxyMiddleware({
     target: services.messaging,
     changeOrigin: true,
+    ws: true,
     pathRewrite: { '^/api/messages': '/api/messages' }
   })
 );
@@ -207,6 +237,17 @@ app.use('/api/notifications',
     target: services.notification,
     changeOrigin: true,
     pathRewrite: { '^/api/notifications': '/api/notifications' }
+  })
+);
+
+// Admin review moderation (admin only) → route to review-service
+app.use('/api/admin/reviews',
+  authMiddleware.authenticate,
+  authMiddleware.authorize('admin'),
+  createProxyMiddleware({
+    target: services.review,
+    changeOrigin: true,
+    pathRewrite: { '^/api/admin/reviews': '/api/admin/reviews' }
   })
 );
 

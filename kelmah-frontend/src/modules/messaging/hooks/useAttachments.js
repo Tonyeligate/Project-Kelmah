@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import messagesApi from '../../../api/services/messagesApi';
+import fileUploadService from '../../common/services/fileUploadService';
 
 const useAttachments = (conversationId) => {
   const [attachments, setAttachments] = useState([]);
@@ -39,36 +39,12 @@ const useAttachments = (conversationId) => {
         setUploading(true);
         setUploadProgress(0);
 
-        const formData = new FormData();
-        formData.append('file', file);
-
         if (!conversationId) {
           throw new Error('Conversation ID is required for file upload');
         }
-
-        const response = await messagesApi.uploadAttachment(
-          conversationId,
-          formData,
-          {
-            onUploadProgress: (progressEvent) => {
-              const progress = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total,
-              );
-              setUploadProgress(progress);
-            },
-          },
-        );
-
+        const result = await fileUploadService.uploadFile(file, `attachments/${conversationId}`, 'messaging');
         setUploadProgress(100);
-
-        // Return the uploaded file data from the response
-        return {
-          id: response.id,
-          url: response.url,
-          filename: file.name,
-          contentType: file.type,
-          size: file.size,
-        };
+        return { id: result.url, url: result.url, filename: file.name, contentType: file.type, size: file.size };
       } catch (error) {
         console.error('Error uploading file:', error);
         throw error;

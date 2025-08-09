@@ -91,6 +91,7 @@ exports.getConversationMessages = async (req, res) => {
       return res.status(404).json({ message: "Conversation not found" });
     }
 
+    // Fetch strictly within the conversation participants, sorted desc
     const messages = await Message.find({
       $or: [
         { sender: req.user._id, recipient: { $in: conversation.participants } },
@@ -98,8 +99,8 @@ exports.getConversationMessages = async (req, res) => {
       ],
     })
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
+      .skip((Math.max(1, parseInt(page)) - 1) * Math.min(100, Math.max(1, parseInt(limit))))
+      .limit(Math.min(100, Math.max(1, parseInt(limit))))
       .populate("sender", "name profilePicture")
       .populate("recipient", "name profilePicture");
 
@@ -107,7 +108,7 @@ exports.getConversationMessages = async (req, res) => {
     await Message.updateMany(
       {
         recipient: req.user._id,
-        readStatus: { isRead: false },
+        'readStatus.isRead': false,
       },
       {
         $set: {
@@ -121,9 +122,15 @@ exports.getConversationMessages = async (req, res) => {
     await conversation.resetUnreadCount(req.user._id);
 
     res.json({
-      messages,
-      totalPages: Math.ceil(messages.length / limit),
-      currentPage: page,
+      success: true,
+      data: {
+        messages,
+        pagination: {
+          page: Math.max(1, parseInt(page)),
+          limit: Math.min(100, Math.max(1, parseInt(limit))),
+          returned: messages.length
+        }
+      }
     });
   } catch (error) {
     handleError(res, error);

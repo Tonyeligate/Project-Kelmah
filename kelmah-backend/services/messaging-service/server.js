@@ -4,6 +4,7 @@
  */
 
 const express = require('express');
+const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
@@ -151,6 +152,8 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Static serving for uploads (Note: replace with S3 in production)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Logging middleware
 app.use(createHttpLogger());
@@ -226,7 +229,10 @@ app.use('/api/conversations', authMiddleware, conversationRoutes);
 
 app.use('/api/messages', authMiddleware, messageRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
-// app.use('/api/upload', authMiddleware, uploadRoutes); // Check if exists
+try {
+  const attachmentsRoutes = require('./routes/attachments.routes');
+  app.use('/', attachmentsRoutes);
+} catch (_) {}
 
 // Socket.IO status endpoint
 app.get('/api/socket/status', authMiddleware, (req, res) => {
@@ -463,6 +469,17 @@ const startServer = async () => {
 
 // Start the server
 startServer();
+
+// Enable WebSocket upgrade handling when behind proxies/gateways
+server.on('upgrade', (req, socket, head) => {
+  try {
+    io.engine.handleUpgrade(req, socket, head, (ws) => {
+      io.engine.emit('connection', ws, req);
+    });
+  } catch (err) {
+    console.error('WebSocket upgrade error:', err);
+  }
+});
 
 // Export for testing
 module.exports = { app, server, io, messageSocketHandler };

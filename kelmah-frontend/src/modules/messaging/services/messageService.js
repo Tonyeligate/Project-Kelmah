@@ -1,4 +1,4 @@
-import { apiService } from '../../../common/utils/apiUtils';
+import { apiService } from '../../common/utils/apiUtils';
 import { MESSAGE_TYPES } from '../config/constants';
 
 // Token handling

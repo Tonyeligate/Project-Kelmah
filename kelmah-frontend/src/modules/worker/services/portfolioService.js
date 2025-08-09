@@ -11,13 +11,9 @@ const portfolioService = {
    * @param {string} workerId - Worker ID
    * @returns {Promise<Object>} - Response with portfolio items
    */
-  getWorkerPortfolio: async (workerId) => {
-    try {
-      const response = await userServiceClient.get(`${API_URL}/${workerId}/portfolio`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+  getWorkerPortfolio: async (workerId, params = {}) => {
+    const response = await userServiceClient.get(`/api/profile/workers/${workerId}/portfolio`, { params });
+    return response.data?.data || response.data;
   },
 
   /**
@@ -26,15 +22,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Created portfolio item
    */
   createPortfolioItem: async (portfolioData) => {
-    try {
-      const response = await userServiceClient.post(
-        `${API_URL}/${portfolioData.workerId}/portfolio`,
-        portfolioData
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.post(`/api/profile/portfolio`, portfolioData);
+    return response.data?.data || response.data;
   },
 
   /**
@@ -44,15 +33,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   updatePortfolioItem: async (itemId, portfolioData) => {
-    try {
-      const response = await userServiceClient.put(
-        `${API_URL}/portfolio/${itemId}`,
-        portfolioData
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.put(`/api/profile/portfolio/${itemId}`, portfolioData);
+    return response.data?.data || response.data;
   },
 
   /**
@@ -61,12 +43,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Deletion confirmation
    */
   deletePortfolioItem: async (itemId) => {
-    try {
-      const response = await userServiceClient.delete(`${API_URL}/portfolio/${itemId}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.delete(`/api/profile/portfolio/${itemId}`);
+    return response.data?.data || response.data;
   },
 
   /**
@@ -75,20 +53,12 @@ const portfolioService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadPortfolioImage: async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('type', 'portfolio');
-
-      const response = await userServiceClient.post('/api/upload/image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.post('/api/profile/uploads/presign', {
+      folder: 'portfolio',
+      filename: file.name,
+      contentType: file.type,
+    });
+    return response.data?.data || response.data;
   },
 
   /**
@@ -97,12 +67,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Portfolio statistics
    */
   getPortfolioStats: async (workerId) => {
-    try {
-      const response = await userServiceClient.get(`${API_URL}/${workerId}/portfolio/stats`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.get(`/api/profile/workers/${workerId}/portfolio/stats`);
+    return response.data?.data || response.data;
   },
 
   /**
@@ -112,14 +78,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   toggleFeatured: async (itemId, featured) => {
-    try {
-      const response = await userServiceClient.patch(`${API_URL}/portfolio/${itemId}`, {
-        featured
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.patch(`/api/profile/portfolio/${itemId}`, { featured });
+    return response.data?.data || response.data;
   },
 
   /**
@@ -128,12 +88,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Shareable link data
    */
   sharePortfolioItem: async (itemId) => {
-    try {
-      const response = await userServiceClient.post(`${API_URL}/portfolio/${itemId}/share`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.post(`/api/profile/portfolio/${itemId}/share`);
+    return response.data?.data || response.data;
   },
 
   /**
@@ -143,14 +99,8 @@ const portfolioService = {
    * @returns {Promise<Object>} - Filtered portfolio items
    */
   searchPortfolio: async (workerId, filters = {}) => {
-    try {
-      const response = await userServiceClient.get(`${API_URL}/${workerId}/portfolio/search`, {
-        params: filters
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await userServiceClient.get(`/api/profile/portfolio/search`, { params: { ...filters, workerId } });
+    return response.data?.data || response.data;
   }
 };
 

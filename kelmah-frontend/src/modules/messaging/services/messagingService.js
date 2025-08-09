@@ -12,7 +12,16 @@ export const messagingService = {
   // Get all conversations for the current user
   async getConversations() {
     try {
-      const response = await messagingServiceClient.get('/api/conversations');
+      // Use API Gateway mounted at /api/conversations (proxied to messaging-service)
+      // Some deployments may mount messaging under /api/messages namespace
+      let response;
+      try {
+        // Gateway path
+        response = await messagingServiceClient.get('/api/messages/conversations');
+      } catch (err) {
+        // Direct service path
+        response = await messagingServiceClient.get('/api/conversations');
+      }
       // Normalize response shape
       const payload = response.data;
       if (Array.isArray(payload)) return payload;
@@ -56,9 +65,18 @@ export const messagingService = {
   // Get messages for a conversation (REST fallback or initial load)
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
-      const response = await messagingServiceClient.get(`/api/messages/conversation/${conversationId}`, {
-        params: { page, limit },
-      });
+      let response;
+      try {
+        // Gateway path
+        response = await messagingServiceClient.get(`/api/messages/conversations/${conversationId}/messages`, {
+          params: { page, limit },
+        });
+      } catch (err) {
+        // Direct service path
+        response = await messagingServiceClient.get(`/api/messages/conversation/${conversationId}`, {
+          params: { page, limit },
+        });
+      }
       const payload = response.data;
       if (Array.isArray(payload?.messages)) return payload.messages;
       if (Array.isArray(payload)) return payload;

@@ -4,13 +4,14 @@ const isDevelopment = ENV === 'development';
 
 // API URLs for different environments
 const API_URLS = {
-  development: '', // Use empty string to leverage Vite proxy configuration
+  development: '/api', // Use proxy; ensure base includes /api for modules using API_URL
   test: 'http://localhost:5000',
   production: process.env.VITE_API_URL || 'https://api.kelmah.com',
 };
 
 // Determine API_BASE_URL: use VITE_API_URL if provided, otherwise fallback to environment-specific defaults
 export const API_BASE_URL = process.env.VITE_API_URL || API_URLS[ENV];
+// Keep API_URL aligned with API_BASE_URL; most services build full paths by appending resource paths
 export const API_URL = API_BASE_URL;
 export const SOCKET_URL = isDevelopment
   ? 'http://localhost:3003'

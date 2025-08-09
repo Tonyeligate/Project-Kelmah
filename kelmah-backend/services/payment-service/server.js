@@ -95,6 +95,8 @@ app.use("/api/payments/methods", paymentMethodRoutes);
 app.use("/api/payments/escrows", escrowRoutes);
 app.use("/api/payments/bills", billRoutes);
 app.use("/api/payments", paymentsRoutes);
+// Webhooks (raw body parsers are mounted in the routes file)
+app.use('/api/webhooks', require('./routes/webhooks.routes'));
 
 // Health check endpoint
 app.get("/health", (req, res) => {

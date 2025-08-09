@@ -49,9 +49,7 @@ const createServiceProxy = (options) => {
     onProxyRes: (proxyRes, req, res) => {
       // Log the proxy response
       console.log(`Proxy response from ${target}: ${proxyRes.statusCode}`);
-      
-      // Add CORS headers if needed
-      proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+      // Do not override CORS here; rely on gateway-level CORS
     },
     onError: (err, req, res) => {
       console.error(`Proxy error to ${target}:`, err);

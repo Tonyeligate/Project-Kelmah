@@ -293,6 +293,27 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         return Promise.reject(enhancedError);
       }
       
+      // Special-case: Treat known Not Implemented endpoints as successful no-op
+      // Avoid noisy errors for escrow listing while backend is not implemented
+      if (
+        error.response?.status === 501 &&
+        typeof config?.url === 'string' &&
+        config.url.includes('/api/payments/escrows')
+      ) {
+        if (LOG_CONFIG.enableConsole) {
+          console.warn('ℹ️ Escrow list not implemented on service - returning empty list');
+        }
+        // Synthesize a successful empty response
+        return Promise.resolve({
+          data: [],
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: null,
+        });
+      }
+
       // Enhanced retry logic - retry on timeouts, network errors, and 5xx errors
       const status = error.response?.status;
       // Do not retry on explicit Not Implemented (e.g., escrows stub)

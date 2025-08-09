@@ -129,8 +129,43 @@ const JobProgressTracker = () => {
     handleDialogClose();
   };
 
-  // Use mock data for now
-  const jobsWithProgress = mockActiveJobsProgress;
+  // Build progress model from active jobs
+  const jobsWithProgress = Array.isArray(activeJobs)
+    ? activeJobs.map((job) => ({
+        id: job.id || job._id,
+        title: job.title || 'Untitled Job',
+        worker: {
+          id: job.worker?.id || job.workerId || 'unknown',
+          name: job.worker?.name || job.workerName || 'Assigned Worker',
+          avatar: job.worker?.avatar || job.workerAvatar || '',
+          rating: job.worker?.rating || 0,
+          completedJobs: job.worker?.completedJobs || 0,
+        },
+        status: job.status || 'in_progress',
+        progress: job.progress || 0,
+        startDate: job.startDate || job.createdAt || Date.now(),
+        expectedCompletion: job.expectedCompletion || job.dueDate || Date.now(),
+        budget: job.budget || 0,
+        paidAmount: job.paidAmount || 0,
+        remainingAmount:
+          (job.budget || 0) - (job.paidAmount || 0) > 0
+            ? (job.budget || 0) - (job.paidAmount || 0)
+            : 0,
+        milestones: Array.isArray(job.milestones)
+          ? job.milestones.map((m) => ({
+              id: m.id || m._id,
+              title: m.title || 'Milestone',
+              description: m.description || '',
+              amount: m.amount || 0,
+              status: m.status || 'pending',
+              expectedDate: m.expectedDate || job.dueDate || Date.now(),
+              completedDate: m.completedDate || null,
+              paid: Boolean(m.paid),
+            }))
+          : [],
+        recentUpdates: Array.isArray(job.updates) ? job.updates : [],
+      }))
+    : [];
 
   if (loading) {
     return (

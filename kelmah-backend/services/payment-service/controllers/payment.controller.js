@@ -7,6 +7,7 @@ const MTNMoMoService = require('../integrations/mtn-momo');
 const VodafoneCashService = require('../integrations/vodafone-cash');
 const PaystackService = require('../integrations/paystack');
 const { Payment, Transaction, Wallet, Escrow } = require('../models');
+const { notifyPaymentEvent } = require('../utils/notifier');
 const { v4: uuidv4 } = require('uuid');
 const auditLogger = require('../../../shared/utils/audit-logger');
 
@@ -179,6 +180,9 @@ class PaymentController {
         }
       });
 
+      // Notify user
+      notifyPaymentEvent(userId, 'payment_init', 'Payment Initiated', `Your payment of ${amount} ${currency} is being processed.`, { paymentId, method });
+
       res.status(200).json({
         success: true,
         message: 'Payment initialized successfully',
@@ -264,6 +268,8 @@ class PaymentController {
           // Create transaction record for successful payments
           if (newStatus === 'COMPLETED') {
             await this.createTransactionRecord(payment, statusResult.data);
+            // Notify user on completion
+            notifyPaymentEvent(userId, 'payment_success', 'Payment Successful', `Your payment of ${payment.amount} ${payment.currency} was successful.`, { paymentId: payment.id });
           }
 
           // Log status change
@@ -492,6 +498,9 @@ class PaymentController {
           provider: this.getProviderName(method)
         }
       });
+
+      // Notify user for payout request
+      notifyPaymentEvent(userId, 'payout_init', 'Payout Requested', `Your payout of ${amount} GHS has been initiated.`, { payoutId });
 
       res.status(200).json({
         success: true,

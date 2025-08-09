@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setOAuthLogin } from '../../services/authSlice';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * A route wrapper that redirects unauthenticated users
@@ -17,11 +18,25 @@ const ProtectedRoute = ({
   loading = false,
 }) => {
   const dispatch = useDispatch();
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  // Prefer AuthContext when available to avoid Redux/AuthContext conflicts
+  let ctxUser = null;
+  let ctxIsAuthenticated = false;
+  try {
+    const auth = useAuth();
+    ctxUser = auth?.user || null;
+    ctxIsAuthenticated = typeof auth?.isAuthenticated === 'function' ? auth.isAuthenticated() : !!auth?.user;
+  } catch (_) {
+    // Context not available; fallback to Redux below
+  }
+
+  const { user: reduxUser, isAuthenticated: reduxIsAuthenticated } = useSelector((state) => state.auth);
+  const user = ctxUser || reduxUser;
+  const isAuthenticated = ctxIsAuthenticated || reduxIsAuthenticated;
+
   // Determine if the route is allowed based on roles or directly from prop
   const isAllowed = Array.isArray(roles)
     ? isAuthenticated && user && roles.includes(user.role)
-    : isAllowedProp;
+    : (typeof isAllowedProp === 'boolean' ? isAllowedProp : isAuthenticated);
 
   // Show loading indicator while authentication is being checked
   if (loading) {
@@ -49,7 +64,7 @@ const ProtectedRoute = ({
 };
 
 ProtectedRoute.propTypes = {
-  isAllowed: PropTypes.bool.isRequired,
+  isAllowed: PropTypes.bool,
   roles: PropTypes.arrayOf(PropTypes.string),
   redirectPath: PropTypes.string,
   children: PropTypes.node.isRequired,

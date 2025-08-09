@@ -500,7 +500,7 @@ const HirerDashboardPage = () => {
                     >
                       {summaryData.activeJobs}
                     </Typography>
-                    <Typography variant="body2" color="text.primary">
+                    <Typography variant="subtitle2" color="text.primary">
                       Active Jobs
                     </Typography>
                   </Box>
@@ -529,7 +529,7 @@ const HirerDashboardPage = () => {
                     >
                       {summaryData.activeWorkers?.length || 0}
                     </Typography>
-                    <Typography variant="body2" color="text.primary">
+                    <Typography variant="subtitle2" color="text.primary">
                       Active Workers
                     </Typography>
                   </Box>
@@ -558,7 +558,7 @@ const HirerDashboardPage = () => {
                     >
                       ${summaryData.totalSpent?.toLocaleString() || 0}
                     </Typography>
-                    <Typography variant="body2" color="text.primary">
+                    <Typography variant="subtitle2" color="text.primary">
                       Total Spent
                     </Typography>
                   </Box>

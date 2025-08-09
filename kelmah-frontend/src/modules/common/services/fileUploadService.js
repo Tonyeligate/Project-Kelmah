@@ -1,8 +1,6 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../config/constants';
-import { getAuthToken } from './authService';
+import { userServiceClient, messagingServiceClient } from './axios';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = (Number(import.meta.env.VITE_S3_MAX_SIZE_MB || 25)) * 1024 * 1024;
 const ALLOWED_FILE_TYPES = {
   images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   documents: [
@@ -58,26 +56,26 @@ const validateFile = (file) => {
 };
 
 const fileUploadService = {
-  // Upload a single file
-  uploadFile: async (file, folder = 'messages') => {
+  // Upload a single file via S3 presign
+  uploadFile: async (file, folder = 'messages', service = 'messaging') => {
     const validation = validateFile(file);
     if (!validation.valid) {
       throw new Error(validation.error);
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('folder', folder);
-
     try {
-      const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${getAuthToken()}`,
-        },
+      const client = service === 'user' ? userServiceClient : messagingServiceClient;
+      const presignPath = service === 'user' ? '/api/profile/uploads/presign' : '/api/uploads/presign';
+      const { data } = await client.post(presignPath, {
+        folder,
+        filename: file.name,
+        contentType: file.type
       });
-
-      return response.data;
+      const { putUrl, getUrl, maxSizeMb } = data.data || data;
+      if (file.size > (maxSizeMb * 1024 * 1024)) {
+        throw new Error(`File exceeds max size ${maxSizeMb}MB`);
+      }
+      await fetch(putUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+      return { url: getUrl, name: file.name, size: file.size, type: file.type };
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
@@ -85,12 +83,12 @@ const fileUploadService = {
   },
 
   // Upload multiple files
-  uploadFiles: async (files, folder = 'messages') => {
+  uploadFiles: async (files, folder = 'messages', service = 'messaging') => {
     const uploads = [];
 
     for (const file of files) {
       try {
-        const result = await fileUploadService.uploadFile(file, folder);
+        const result = await fileUploadService.uploadFile(file, folder, service);
         uploads.push(result);
       } catch (error) {
         uploads.push({ error: error.message, filename: file.name });

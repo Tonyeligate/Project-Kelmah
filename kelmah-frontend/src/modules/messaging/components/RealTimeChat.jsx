@@ -51,6 +51,8 @@ import {
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import websocketService from '../../../services/websocketService';
+import useRealtimeMessaging from '../hooks/useRealtimeMessaging';
+import fileUploadService from '../../common/services/fileUploadService';
 import {
   selectActiveConversation,
   selectConversationById,
@@ -97,6 +99,11 @@ const RealTimeChat = ({
   const [messageMenu, setMessageMenu] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [loading, setLoading] = useState(!conversation);
+  // Hook to emit realtime events via socket service (if exposed) or replace with your socket instance
+  const socket = websocketService.socket;
+  const isConnected = !!socket && socket.connected;
+  const { startTyping, stopTyping, shareFile, reportUploadProgress } = useRealtimeMessaging(socket, isConnected, conversationId);
+
   
   // Message states
   const [messages, setMessages] = useState(conversation?.messages || []);
@@ -219,6 +226,7 @@ const RealTimeChat = ({
     // Clear input and stop typing indicator
     setMessage('');
     handleStopTyping();
+    stopTyping();
   };
   
   // Handle typing indicator
@@ -228,6 +236,7 @@ const RealTimeChat = ({
     if (!isTyping && value.trim()) {
       setIsTyping(true);
       websocketService.sendTypingIndicator(conversationId, true);
+      startTyping();
     }
     
     // Reset typing timeout
@@ -244,6 +253,7 @@ const RealTimeChat = ({
     if (isTyping) {
       setIsTyping(false);
       websocketService.sendTypingIndicator(conversationId, false);
+      stopTyping();
     }
     
     if (typingTimeoutRef.current) {
@@ -315,12 +325,25 @@ const RealTimeChat = ({
   };
   
   // Handle file selection
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      // Process file attachments
-      console.log('Selected files:', files);
-      // TODO: Upload files and send as message
+      try {
+        for (const file of files) {
+          const result = await fileUploadService.uploadFile(file, `attachments/${conversationId}`, 'messaging');
+          reportUploadProgress('single', 100, file.name);
+          const fileData = {
+            fileId: `${Date.now()}`,
+            fileName: file.name,
+            url: result.url,
+            type: file.type,
+            size: file.size,
+          };
+          shareFile(fileData);
+        }
+      } catch (err) {
+        console.error('Attachment upload failed', err);
+      }
     }
   };
   

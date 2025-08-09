@@ -68,6 +68,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import reviewsApi from '../../../../services/reviewsApi';
+import { FEATURES } from '../../../../config/environment';
 
 /**
  * Comprehensive Review Analytics Dashboard
@@ -112,13 +113,41 @@ const ReviewAnalyticsDashboard = () => {
     chart: ['#FFD700', '#4CAF50', '#2196F3', '#FF9800', '#F44336', '#9C27B0', '#00BCD4']
   };
 
-  // Mock API for development (replace with actual API calls)
+  // Adapter: Fetch real analytics; only fallback to mock in dev when allowed
   const analyticsApi = {
     async getReviewAnalytics(timeRange = '30d') {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      return {
+      try {
+        const data = await reviewsApi.getReviewAnalytics(timeRange);
+        return data;
+      } catch (e) {
+        if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
+          await new Promise(resolve => setTimeout(resolve, 400));
+          return {
+            overview: {
+              totalReviews: 0,
+              averageRating: 0,
+              reviewsThisMonth: 0,
+              averageResponseTime: 0,
+              moderationBacklog: 0,
+              qualityScore: 0
+            },
+            trends: [],
+            categoryBreakdown: [],
+            moderationStats: [],
+            topWorkers: [],
+            ratingDistribution: [],
+            qualityMetrics: { authenticity: 0, helpfulness: 0, completeness: 0, timeliness: 0 },
+            recentActivity: []
+          };
+        }
+        throw e;
+      }
+    }
+  };
+
+  // Legacy mock removed below; keeping a compact example when needed during dev only
+  /*
+  return {
         overview: {
           totalReviews: 1247,
           averageRating: 4.3,
@@ -216,8 +245,7 @@ const ReviewAnalyticsDashboard = () => {
           { type: 'escalated', reviewer: 'System', count: 2, timestamp: '12 hours ago' }
         ]
       };
-    }
-  };
+  */
 
   // Fetch analytics data
   useEffect(() => {

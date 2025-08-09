@@ -7,6 +7,10 @@ const User = require('../models').User;
  */
 const authenticate = async (req, res, next) => {
   try {
+    // Enforce JWT secret presence
+    if (!process.env.JWT_SECRET) {
+      return next(new AppError('Server configuration error', 500));
+    }
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
     
@@ -23,7 +27,7 @@ const authenticate = async (req, res, next) => {
     // Verify token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'kelmah_jwt_secret_key_2024_secure');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return next(new AppError('Token has expired. Please login again.', 401));
@@ -80,7 +84,10 @@ const optionalAuth = async (req, res, next) => {
     }
     
     // Try to verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'kelmah_jwt_secret_key_2024_secure');
+    if (!process.env.JWT_SECRET) {
+      return next();
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     
     if (user && user.isActive) {

@@ -71,7 +71,19 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [fetchNotifications]);
+    if (user) {
+      try {
+        const token = typeof getToken === 'function' ? getToken() : null;
+        notificationServiceUser.onNotification = (payload) => {
+          setNotifications((prev) => [{ ...payload, read: false }, ...prev]);
+        };
+        notificationServiceUser.connect(token);
+      } catch {}
+    }
+    return () => {
+      try { notificationServiceUser.disconnect(); } catch {}
+    };
+  }, [fetchNotifications, user]);
 
   const markAsRead = async (id) => {
     try {

@@ -6,6 +6,7 @@
 import { messagingServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { API_BASE_URL } from '../../../config/constants';
+import { SERVICES } from '../../../config/environment';
 
 class NotificationService {
   constructor() {
@@ -14,12 +15,28 @@ class NotificationService {
   }
 
   // Connect to notification socket
-  connect() {
+  async connect(token) {
     if (this.isConnected) return;
-
     try {
-      // Socket connection will be implemented when needed
-      console.log('Notification socket connection not implemented yet');
+      const wsUrl =
+        import.meta.env.VITE_MESSAGING_SERVICE_URL ||
+        (import.meta.env.DEV ? window.location.origin : SERVICES.MESSAGING_SERVICE);
+      const { io } = await import('socket.io-client');
+      this.socket = io(wsUrl, {
+        auth: { token },
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+      });
+      this.socket.on('connect', () => { this.isConnected = true; });
+      this.socket.on('disconnect', () => { this.isConnected = false; });
+      this.socket.on('notification', (payload) => {
+        // Bubble up via callback if set
+        this.onNotification && this.onNotification(payload);
+      });
     } catch (error) {
       console.error('Failed to connect to notification socket:', error);
     }

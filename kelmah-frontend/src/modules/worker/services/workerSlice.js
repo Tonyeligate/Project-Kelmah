@@ -6,8 +6,9 @@ export const fetchWorkerProfile = createAsyncThunk(
   'worker/fetchProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/worker/profile');
-      return response.data;
+      // Align with backend user-service routes under /api/profile
+      const response = await api.get('/api/profile');
+      return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker profile',
@@ -20,8 +21,8 @@ export const updateWorkerProfile = createAsyncThunk(
   'worker/updateProfile',
   async (profileData, { rejectWithValue }) => {
     try {
-      const response = await api.put('/api/worker/profile', profileData);
-      return response.data;
+      const response = await api.put('/api/profile', profileData);
+      return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to update worker profile',

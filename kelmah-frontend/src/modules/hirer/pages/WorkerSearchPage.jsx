@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
+import WorkerSearch from '../components/WorkerSearch';
 import { Helmet } from 'react-helmet';
 
 const WorkerSearchPage = () => {
@@ -33,6 +34,9 @@ const WorkerSearchPage = () => {
         >
           Connect with verified professionals across all skilled trades
         </Typography>
+        <Box sx={{ mt: 4 }}>
+          <WorkerSearch />
+        </Box>
       </Container>
     </Box>
   );

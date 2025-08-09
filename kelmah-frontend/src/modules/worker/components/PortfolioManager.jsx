@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import portfolioService from '../services/portfolioService';
+import fileUploadService from '../../common/services/fileUploadService';
 import {
   Box,
   Paper,
@@ -100,8 +101,9 @@ const PortfolioManager = () => {
   const loadPortfolioItems = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await portfolioService.getWorkerPortfolio(user.id);
-      setPortfolioItems(response.data || []);
+      const payload = await portfolioService.getWorkerPortfolio(user.id);
+      const items = payload?.portfolioItems || payload?.items || [];
+      setPortfolioItems(items);
       setError(null);
     } catch (err) {
       setError('Failed to load portfolio items');
@@ -203,12 +205,9 @@ const PortfolioManager = () => {
   // Handle image upload
   const handleImageUpload = async (files) => {
     try {
-      const uploadPromises = Array.from(files).map(file => 
-        portfolioService.uploadPortfolioImage(file)
-      );
-      
+      const uploadPromises = Array.from(files).map(file => fileUploadService.uploadFile(file, 'portfolio', 'user'));
       const uploadResults = await Promise.all(uploadPromises);
-      const imageUrls = uploadResults.map(result => result.data.url);
+      const imageUrls = uploadResults.map(result => result.url);
       
       setFormData(prev => ({
         ...prev,

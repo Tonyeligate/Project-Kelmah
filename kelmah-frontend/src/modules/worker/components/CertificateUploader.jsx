@@ -47,6 +47,7 @@ import {
   School as CertificateIcon,
   WorkOutline as LicenseIcon,
   Security as BadgeIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { useDropzone } from 'react-dropzone';

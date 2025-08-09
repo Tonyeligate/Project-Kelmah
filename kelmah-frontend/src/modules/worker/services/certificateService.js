@@ -1,9 +1,11 @@
 import { userServiceClient } from '../../common/services/axios';
 
-const API_URL = '/api/workers';
+// Helper to consistently unwrap backend responses
+const unwrap = (res) => res?.data?.data ?? res?.data ?? res;
 
 /**
- * Service for managing worker certificates and licenses
+ * Service for managing worker certificates and licenses (normalized returns)
+ * All methods return primitives (arrays/objects) instead of raw axios responses.
  */
 const certificateService = {
   /**
@@ -12,12 +14,10 @@ const certificateService = {
    * @returns {Promise<Object>} - Response with certificates
    */
   getWorkerCertificates: async (workerId) => {
-    try {
-      const response = await userServiceClient.get(`${API_URL}/${workerId}/certificates`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.get(`/api/profile/${workerId}/certificates`);
+    const unwrapped = unwrap(res);
+    // Support both { certificates: [] } and []
+    return Array.isArray(unwrapped?.certificates) ? unwrapped.certificates : Array.isArray(unwrapped) ? unwrapped : [];
   },
 
   /**
@@ -26,15 +26,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Created certificate
    */
   createCertificate: async (certificateData) => {
-    try {
-      const response = await userServiceClient.post(
-        `${API_URL}/${certificateData.workerId}/certificates`,
-        certificateData
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.post(`/api/profile/${certificateData.workerId}/certificates`, certificateData);
+    const unwrapped = unwrap(res);
+    return unwrapped?.certificate ?? unwrapped;
   },
 
   /**
@@ -44,15 +38,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Updated certificate
    */
   updateCertificate: async (certificateId, certificateData) => {
-    try {
-      const response = await userServiceClient.put(
-        `${API_URL}/certificates/${certificateId}`,
-        certificateData
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.put(`/api/profile/certificates/${certificateId}`, certificateData);
+    const unwrapped = unwrap(res);
+    return unwrapped?.certificate ?? unwrapped;
   },
 
   /**
@@ -61,12 +49,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Deletion confirmation
    */
   deleteCertificate: async (certificateId) => {
-    try {
-      const response = await userServiceClient.delete(`${API_URL}/certificates/${certificateId}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.delete(`/api/profile/certificates/${certificateId}`);
+    const unwrapped = unwrap(res);
+    return unwrapped?.success ?? true;
   },
 
   /**
@@ -76,26 +61,16 @@ const certificateService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadCertificateFile: async (file, onProgress) => {
-    try {
-      const formData = new FormData();
-      formData.append('certificate', file);
-      formData.append('type', 'certificate');
-
-      const response = await userServiceClient.post('/api/upload/certificate', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          if (onProgress) {
-            onProgress(progress);
-          }
-        },
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const presignRes = await userServiceClient.post('/api/profile/uploads/presign', {
+      folder: 'certificates',
+      filename: file.name,
+      contentType: file.type,
+    });
+    const { putUrl, getUrl } = unwrap(presignRes) ?? {};
+    if (!putUrl || !getUrl) throw new Error('Upload presign failed');
+    await fetch(putUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+    if (onProgress) onProgress(100);
+    return { url: getUrl, fileName: file.name, fileSize: file.size };
   },
 
   /**
@@ -104,14 +79,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Verification request response
    */
   requestVerification: async (certificateId) => {
-    try {
-      const response = await userServiceClient.post(
-        `${API_URL}/certificates/${certificateId}/verify`
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.post(`/api/profile/certificates/${certificateId}/verify`);
+    const unwrapped = unwrap(res);
+    return unwrapped?.certificate ?? unwrapped;
   },
 
   /**
@@ -120,14 +90,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Verification status
    */
   getVerificationStatus: async (certificateId) => {
-    try {
-      const response = await userServiceClient.get(
-        `${API_URL}/certificates/${certificateId}/verification`
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.get(`/api/profile/certificates/${certificateId}/verification`);
+    return unwrap(res);
   },
 
   /**
@@ -136,12 +100,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Certificate statistics
    */
   getCertificateStats: async (workerId) => {
-    try {
-      const response = await userServiceClient.get(`${API_URL}/${workerId}/certificates/stats`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.get(`/api/profile/${workerId}/certificates/stats`);
+    return unwrap(res);
   },
 
   /**
@@ -150,14 +110,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Shareable link data
    */
   shareCertificate: async (certificateId) => {
-    try {
-      const response = await userServiceClient.post(
-        `${API_URL}/certificates/${certificateId}/share`
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.post(`/api/profile/certificates/${certificateId}/share`);
+    return unwrap(res);
   },
 
   /**
@@ -167,15 +121,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Validation result
    */
   validateCertificate: async (certificateId, credentialId) => {
-    try {
-      const response = await userServiceClient.post(
-        `${API_URL}/certificates/${certificateId}/validate`,
-        { credentialId }
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.post(`/api/profile/certificates/${certificateId}/validate`, { credentialId });
+    return unwrap(res);
   },
 
   /**
@@ -185,15 +132,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Expiring certificates
    */
   getExpiringCertificates: async (workerId, daysAhead = 30) => {
-    try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${workerId}/certificates/expiring`,
-        { params: { daysAhead } }
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.get(`/api/profile/${workerId}/certificates/expiring`, { params: { daysAhead } });
+    const unwrapped = unwrap(res);
+    return Array.isArray(unwrapped?.certificates) ? unwrapped.certificates : Array.isArray(unwrapped) ? unwrapped : [];
   },
 
   /**
@@ -203,15 +144,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Filtered certificates
    */
   searchCertificates: async (workerId, filters = {}) => {
-    try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${workerId}/certificates/search`,
-        { params: filters }
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await userServiceClient.get(`/api/profile/${workerId}/certificates/search`, { params: filters });
+    const unwrapped = unwrap(res);
+    return Array.isArray(unwrapped?.certificates) ? unwrapped.certificates : Array.isArray(unwrapped) ? unwrapped : [];
   }
 };
 

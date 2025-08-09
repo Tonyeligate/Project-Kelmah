@@ -10,6 +10,13 @@ Contracts Endpoint: 404 Not Found
 
 **💡 ROOT CAUSE:** The Render deployment for `kelmah-job-service.onrender.com` is pointing to the **User Service codebase** instead of the Job Service!
 
+Also ensure JWT secrets are set (no fallbacks allowed):
+```
+JWT_SECRET=<64+ random>
+JWT_REFRESH_SECRET=<64+ random, different>
+```
+And confirm API Gateway has WS proxy enabled for messaging.
+
 ---
 
 ## **🚀 IMMEDIATE ACTION REQUIRED ON RENDER:**

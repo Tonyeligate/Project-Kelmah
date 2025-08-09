@@ -40,7 +40,7 @@ import {
   AccountBalance as BankIcon,
   Visibility as ViewIcon,
 } from '@mui/icons-material';
-import { selectHirerJobs, selectHirerLoading } from '../services/hirerSlice';
+import { selectHirerJobs, selectHirerLoading, selectHirerPayments } from '../services/hirerSlice';
 
 // No mock data - using real API data only
 
@@ -59,6 +59,13 @@ const PaymentRelease = () => {
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
   const jobsLoading = useSelector(selectHirerLoading('jobs'));
+  const paymentSummary = useSelector(selectHirerPayments);
+  const pendingPayments = Array.isArray(paymentSummary?.pending)
+    ? paymentSummary.pending
+    : [];
+  const paymentHistory = Array.isArray(paymentSummary?.history)
+    ? paymentSummary.history
+    : [];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {

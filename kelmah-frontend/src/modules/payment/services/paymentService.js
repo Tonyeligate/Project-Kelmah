@@ -174,6 +174,16 @@ const paymentService = {
     }
   },
 
+  fundEscrow: async (payload) => {
+    const { data } = await paymentServiceClient.post('/api/payments/escrows/fund', payload);
+    return data;
+  },
+
+  refundEscrow: async (escrowId) => {
+    const { data } = await paymentServiceClient.post(`/api/payments/escrows/${escrowId}/refund`);
+    return data;
+  },
+
   getEscrowDetails: async (escrowId) => {
     const { data } = await paymentServiceClient.get(`/api/payments/escrows/${escrowId}`);
     return data;

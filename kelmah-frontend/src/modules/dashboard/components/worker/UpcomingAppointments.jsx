@@ -50,6 +50,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
 import { useAuth } from '../../../auth/contexts/AuthContext';
+import schedulingService from '../../../../modules/scheduling/services/schedulingService';
+import { FEATURES } from '../../../../config/environment';
 
 const EnhancedUpcomingAppointments = () => {
   const theme = useTheme();
@@ -63,7 +65,7 @@ const EnhancedUpcomingAppointments = () => {
   const [selectedForMenu, setSelectedForMenu] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Generate mock appointment data
+  // Generate mock appointment data (dev-only)
   const generateAppointments = () => {
     const appointmentTypes = ['Client Meeting', 'Project Start', 'Inspection', 'Consultation', 'Material Delivery'];
     const locations = ['Accra', 'Kumasi', 'Tamale', 'Cape Coast', 'Tema'];
@@ -107,14 +109,40 @@ const EnhancedUpcomingAppointments = () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        const appointmentsData = generateAppointments();
-        setAppointments(appointmentsData);
+        // Use real API; only fallback to mock if explicitly enabled in dev
+        const data = await schedulingService.getAppointments();
+        if (Array.isArray(data) && data.length > 0) {
+          // Map to component shape if necessary
+          const mapped = data.map((a, idx) => ({
+            id: a.id || `apt_${idx + 1}`,
+            title: a.jobTitle || a.title || 'Appointment',
+            type: (a.appointmentType || 'in-person').replace(' ', '_'),
+            client: a.hirer || a.client || 'Client',
+            datetime: new Date(a.date || a.startTime || Date.now()),
+            location: a.location || 'Unknown',
+            duration: a.duration || 1,
+            status: a.status || 'pending',
+            priority: a.priority || 'low',
+            description: a.notes || 'Scheduled appointment',
+            clientContact: { phone: a.clientPhone || '', email: a.clientEmail || '' },
+            reminders: a.reminders || [],
+            canReschedule: true,
+            canCancel: true,
+          }));
+          setAppointments(mapped.sort((x, y) => x.datetime - y.datetime));
+        } else if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
+          const appointmentsData = generateAppointments();
+          setAppointments(appointmentsData);
+        } else {
+          setAppointments([]);
+        }
       } catch (err) {
         console.error('Error fetching appointments:', err);
-        setError('Failed to load appointments');
+        if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
+          setAppointments(generateAppointments());
+        } else {
+          setError('Failed to load appointments');
+        }
       } finally {
         setLoading(false);
       }
@@ -126,9 +154,28 @@ const EnhancedUpcomingAppointments = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const appointmentsData = generateAppointments();
-      setAppointments(appointmentsData);
+      const data = await schedulingService.getAppointments();
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped = data.map((a, idx) => ({
+          id: a.id || `apt_${idx + 1}`,
+          title: a.jobTitle || a.title || 'Appointment',
+          type: (a.appointmentType || 'in-person').replace(' ', '_'),
+          client: a.hirer || a.client || 'Client',
+          datetime: new Date(a.date || a.startTime || Date.now()),
+          location: a.location || 'Unknown',
+          duration: a.duration || 1,
+          status: a.status || 'pending',
+          priority: a.priority || 'low',
+          description: a.notes || 'Scheduled appointment',
+          clientContact: { phone: a.clientPhone || '', email: a.clientEmail || '' },
+          reminders: a.reminders || [],
+          canReschedule: true,
+          canCancel: true,
+        }));
+        setAppointments(mapped.sort((x, y) => x.datetime - y.datetime));
+      } else if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
+        setAppointments(generateAppointments());
+      }
     } catch (err) {
       setError('Failed to refresh appointments');
     } finally {
