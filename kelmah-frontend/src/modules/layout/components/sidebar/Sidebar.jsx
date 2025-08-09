@@ -104,7 +104,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       : navRole === 'hirer'
         ? [
             { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
-            { text: 'Post a Job', icon: <PaymentIcon />, path: '/jobs/post' },
+            { text: 'Post a Job', icon: <PaymentIcon />, path: '/hirer/jobs/post' },
             { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
             {
               text: 'Applications',

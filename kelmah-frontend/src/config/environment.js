@@ -235,21 +235,21 @@ export const API_ENDPOINTS = {
     BASE: buildEndpoint(SERVICES.MESSAGING_SERVICE, ''),
     CONVERSATIONS: buildEndpoint(
       SERVICES.MESSAGING_SERVICE,
-      '/messages/conversations',
+      '/conversations',
     ),
     MESSAGES: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/messages'),
-    SEND: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/messages/send'),
-    UPLOAD: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/messages/upload'),
+    SEND: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/messages'),
+    UPLOAD: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/attachments/upload'),
   },
 
   // Payment Service Endpoints
   PAYMENT: {
     BASE: buildEndpoint(SERVICES.PAYMENT_SERVICE, ''),
     METHODS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/methods'),
-    PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/process'),
-    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/history'),
+    PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions'),
+    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions/history'),
     WALLET: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/wallet'),
-    ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrow'),
+    ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrows'),
   },
 };
 

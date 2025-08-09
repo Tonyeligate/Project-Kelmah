@@ -60,7 +60,7 @@ function MessageSystem() {
 
   const fetchConversations = async () => {
     try {
-      const response = await axiosInstance.get('/api/messages/conversations');
+      const response = await axiosInstance.get('/api/conversations');
       setConversations(response.data);
     } catch (err) {
       setError('Failed to load conversations');
@@ -71,9 +71,7 @@ function MessageSystem() {
   const fetchMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(
-        `/api/messages/${conversationId}`,
-      );
+      const response = await axiosInstance.get(`/api/messages/conversation/${conversationId}`);
       setMessages(response.data);
       scrollToBottom();
     } catch (err) {
@@ -89,8 +87,9 @@ function MessageSystem() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      await axiosInstance.post(`/api/messages/${selectedConversation.id}`, {
+      await axiosInstance.post(`/api/messages`, {
         content: newMessage,
+        conversationId: selectedConversation.id,
       });
       setNewMessage('');
       fetchMessages(selectedConversation.id);

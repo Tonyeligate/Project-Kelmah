@@ -12,16 +12,8 @@ export const messagingService = {
   // Get all conversations for the current user
   async getConversations() {
     try {
-      // Use API Gateway mounted at /api/conversations (proxied to messaging-service)
-      // Some deployments may mount messaging under /api/messages namespace
-      let response;
-      try {
-        // Gateway path
-        response = await messagingServiceClient.get('/api/messages/conversations');
-      } catch (err) {
-        // Direct service path
-        response = await messagingServiceClient.get('/api/conversations');
-      }
+      // Direct service path (matches messaging-service server.js)
+      const response = await messagingServiceClient.get('/api/conversations');
       // Normalize response shape
       const payload = response.data;
       if (Array.isArray(payload)) return payload;
@@ -65,18 +57,9 @@ export const messagingService = {
   // Get messages for a conversation (REST fallback or initial load)
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
-      let response;
-      try {
-        // Gateway path
-        response = await messagingServiceClient.get(`/api/messages/conversations/${conversationId}/messages`, {
-          params: { page, limit },
-        });
-      } catch (err) {
-        // Direct service path
-        response = await messagingServiceClient.get(`/api/messages/conversation/${conversationId}`, {
-          params: { page, limit },
-        });
-      }
+      const response = await messagingServiceClient.get(`/api/messages/conversation/${conversationId}`, {
+        params: { page, limit },
+      });
       const payload = response.data;
       if (Array.isArray(payload?.messages)) return payload.messages;
       if (Array.isArray(payload)) return payload;
@@ -101,6 +84,20 @@ export const messagingService = {
       return response.data?.data || response.data;
     } catch (error) {
       console.warn('Failed to send message via REST:', error.message);
+      throw error;
+    }
+  },
+
+  // Create a direct conversation with a single participant
+  async createDirectConversation(participantId) {
+    try {
+      const response = await messagingServiceClient.post('/api/conversations', {
+        participantIds: [participantId],
+        type: 'direct',
+      });
+      return response.data?.data?.conversation || response.data;
+    } catch (error) {
+      console.warn('Messaging service unavailable for creating direct conversation:', error.message);
       throw error;
     }
   },

@@ -41,7 +41,7 @@ export const hirerService = {
   // Profile Management
   async getProfile() {
     try {
-      const response = await userServiceClient.get('/api/users/me/profile');
+      const response = await userServiceClient.get('/api/users/me/credentials');
       return response.data;
     } catch (error) {
       console.warn('User service unavailable for hirer profile:', error.message);
@@ -51,10 +51,8 @@ export const hirerService = {
 
   async updateProfile(profileData) {
     try {
-      const response = await userServiceClient.put(
-        '/api/users/me/profile',
-        profileData,
-      );
+      // TODO: Implement real profile update endpoint in user-service; placeholder
+      const response = await userServiceClient.put('/api/profile', profileData);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -80,7 +78,7 @@ export const hirerService = {
 
   searchWorkers: async (searchParams = {}) => {
     try {
-      const response = await userServiceClient.get('/api/workers/search', {
+      const response = await userServiceClient.get('/api/users/workers/search', {
         params: searchParams,
       });
       return response.data;

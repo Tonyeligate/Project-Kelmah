@@ -87,12 +87,9 @@ function Messages() {
 
   const fetchConversations = async () => {
     try {
-      const response = await axios.get(
-        'http://localhost:3000/api/messages/conversations',
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await axios.get('/api/conversations', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setConversations(response.data);
       setError(null);
     } catch (err) {
@@ -106,12 +103,9 @@ function Messages() {
   const fetchMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:3000/api/messages/conversation/${conversationId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await axios.get(`/api/messages/conversation/${conversationId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setMessages(response.data);
       scrollToBottom();
     } catch (err) {

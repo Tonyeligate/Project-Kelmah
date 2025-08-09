@@ -9,6 +9,7 @@ const paymentService = {
   // Wallet operations
   getWallet: async () => {
     try {
+      // Backend exposes wallet at /api/payments/wallet (mounted router returns data at "/")
       const { data } = await paymentServiceClient.get('/api/payments/wallet');
       return data;
     } catch (error) {

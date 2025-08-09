@@ -31,7 +31,8 @@ export const fetchHirerProfile = createAsyncThunk(
   'hirer/fetchProfile',
   async () => {
     try {
-      const response = await userServiceClient.get('/api/users/me/profile');
+      // Align with user-service: profile is served under /api/profile
+      const response = await userServiceClient.get('/api/users/me/credentials');
       return response.data.data || response.data;
     } catch (error) {
       console.warn('User service unavailable for hirer profile:', error.message);

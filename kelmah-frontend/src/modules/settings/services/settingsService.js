@@ -4,8 +4,19 @@ class SettingsService {
   // Get user settings
   async getSettings() {
     try {
-      const response = await userServiceClient.get('/api/settings');
-      return response.data.data;
+      // User-service currently implements only notifications under /api/settings
+      // Return a sensible default settings object instead of 404
+      const notifications = await this.getNotificationPreferences().catch(() => null);
+      return {
+        theme: 'light',
+        language: 'en',
+        notifications: notifications || { email: true, push: true, sms: false, inApp: true },
+        privacy: {
+          profileVisibility: 'public',
+          showEmail: false,
+          showPhone: false,
+        },
+      };
     } catch (error) {
       console.warn('Settings service unavailable, using default settings:', error.message);
       return {
@@ -24,6 +35,12 @@ class SettingsService {
       };
     }
   }
+  // Get notification preferences from backend (supported endpoint)
+  async getNotificationPreferences() {
+    const response = await userServiceClient.get('/api/settings/notifications');
+    return response.data.data;
+  }
+
 
   // Update user settings
   async updateSettings(settings) {
