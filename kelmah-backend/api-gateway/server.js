@@ -108,14 +108,46 @@ app.use(rateLimit({
   message: { error: 'Too many requests' }
 }));
 
-// Health check
-app.get('/health', (req, res) => {
+// Root route - API welcome and information
+app.get('/', (req, res) => {
+  res.json({
+    welcome: 'Welcome to Kelmah API Gateway',
+    version: '2.0.0',
+    status: 'operational',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health or /api/health',
+      documentation: '/api/docs',
+      authentication: '/api/auth/*',
+      main_services: ['/api/users', '/api/jobs', '/api/payments', '/api/messages']
+    },
+    services: {
+      total: Object.keys(services).length,
+      available: Object.keys(services)
+    },
+    features: [
+      'Microservices Architecture',
+      'Authentication & Authorization', 
+      'CORS & Security',
+      'Rate Limiting & Monitoring',
+      'Real-time Messaging Support'
+    ]
+  });
+});
+
+// Health check endpoints (both /health and /api/health for compatibility)
+const healthResponse = (req, res) => {
   res.json({ 
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    services: Object.keys(services)
+    services: Object.keys(services),
+    version: '2.0.0',
+    uptime: process.uptime()
   });
-});
+};
+
+app.get('/health', healthResponse);
+app.get('/api/health', healthResponse);
 
 // Authentication routes (public)
 app.use('/api/auth', createProxyMiddleware({
@@ -313,36 +345,130 @@ app.use('/api/webhooks',
   })
 );
 
-// API docs
+// API documentation endpoint  
 app.get('/api/docs', (req, res) => {
   res.json({
     name: 'Kelmah API Gateway',
+    description: 'Centralized API Gateway for Kelmah Platform',
     version: '2.0.0',
-    endpoints: {
-      auth: '/api/auth/*',
-      users: '/api/users/*',
-      workers: '/api/workers/*',
-      jobs: '/api/jobs/*',
-      search: '/api/search/*',
-      payments: '/api/payments/*',
-      messages: '/api/messages/*',
-      notifications: '/api/notifications/*',
-      reviews: '/api/reviews/*',
-      ratings: '/api/ratings/*',
-      admin: '/api/admin/*',
-      webhooks: '/api/webhooks/*'
+    timestamp: new Date().toISOString(),
+    
+    // Essential endpoints
+    system: {
+      health: {
+        endpoints: ['/health', '/api/health'],
+        description: 'System health check',
+        method: 'GET',
+        authentication: 'None'
+      },
+      docs: {
+        endpoint: '/api/docs',
+        description: 'API documentation',
+        method: 'GET',
+        authentication: 'None'
+      }
     },
+    
+    // Main API endpoints
+    endpoints: {
+      auth: {
+        path: '/api/auth/*',
+        description: 'User authentication & registration',
+        methods: ['POST', 'GET'],
+        authentication: 'None (for login/register)',
+        examples: ['/api/auth/login', '/api/auth/register', '/api/auth/verify']
+      },
+      users: {
+        path: '/api/users/*', 
+        description: 'User management',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        authentication: 'Required',
+        examples: ['/api/users/profile', '/api/users/settings']
+      },
+      workers: {
+        path: '/api/workers/*',
+        description: 'Worker profiles & skills',
+        methods: ['GET', 'POST', 'PUT'],
+        authentication: 'GET: None, POST/PUT: Required',
+        examples: ['/api/workers', '/api/workers/{id}']
+      },
+      jobs: {
+        path: '/api/jobs/*',
+        description: 'Job postings & applications',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        authentication: 'GET: None, Others: Required', 
+        examples: ['/api/jobs', '/api/jobs/{id}/apply']
+      },
+      search: {
+        path: '/api/search/*',
+        description: 'Search jobs & workers',
+        methods: ['GET'],
+        authentication: 'None',
+        examples: ['/api/search/jobs?q=developer', '/api/search/workers?skills=js']
+      },
+      payments: {
+        path: '/api/payments/*',
+        description: 'Payment processing & escrow',
+        methods: ['GET', 'POST'],
+        authentication: 'Required',
+        examples: ['/api/payments/create', '/api/payments/history']
+      },
+      messages: {
+        path: '/api/messages/*',
+        description: 'Real-time messaging',
+        methods: ['GET', 'POST', 'DELETE'],
+        authentication: 'Required',
+        features: ['WebSocket Support', 'File Sharing']
+      },
+      reviews: {
+        path: '/api/reviews/*',
+        description: 'Review & rating system',
+        methods: ['GET', 'POST', 'PUT'],
+        authentication: 'GET: None, POST/PUT: Required',
+        examples: ['/api/reviews/worker/{id}', '/api/reviews/submit']
+      }
+    },
+
+    // Microservices status
+    services: {
+      total: Object.keys(services).length,
+      configured: Object.keys(services),
+      urls: services
+    },
+    
+    // Platform features
     features: [
+      'Microservices Architecture',
       'Authentication & Authorization',
       'User & Worker Management', 
       'Job Posting & Applications',
       'Payment Processing & Escrow',
-      'Real-time Messaging',
+      'Real-time Messaging & WebSocket',
       'Push Notifications',
       'Review & Rating System',
-      'Admin Dashboard',
-      'API Gateway & Microservices'
-    ]
+      'Advanced Search & Filtering',
+      'Admin Dashboard & Moderation',
+      'CORS & Security Headers',
+      'Rate Limiting & DDoS Protection',
+      'Request/Response Logging',
+      'Error Handling & Monitoring'
+    ],
+    
+    // Usage information
+    usage: {
+      cors: 'Configured for Vercel deployments and localhost',
+      rateLimit: '1000 requests per 15 minutes (global)',
+      headers: {
+        'X-Request-ID': 'Unique request identifier', 
+        'X-User-ID': 'User ID (for authenticated requests)',
+        'X-User-Role': 'User role (for authorized requests)'
+      }
+    },
+    
+    contact: {
+      platform: 'Kelmah - Professional Services Marketplace',
+      support: 'For API support, contact the development team'
+    }
   });
 });
 
