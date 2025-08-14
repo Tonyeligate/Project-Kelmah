@@ -27,9 +27,25 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Normalize url when baseURL already includes /api but url also begins with /api
+const normalizeUrlForGateway = (config) => {
+  try {
+    const base = typeof config.baseURL === 'string' ? config.baseURL : '';
+    const url = typeof config.url === 'string' ? config.url : '';
+    const baseEndsWithApi = base === '/api' || base.endsWith('/api');
+    const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
+    if (baseEndsWithApi && urlStartsWithApi) {
+      config.url = url.replace(/^\/api\/?/, '/');
+    }
+  } catch (_) {}
+  return config;
+};
+
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Normalize to avoid /api/api duplication
+    config = normalizeUrlForGateway(config);
     // Add auth token securely
     const token = secureStorage.getAuthToken();
     if (token) {
@@ -455,6 +471,8 @@ retryInterceptor(schedulingClient);
   // Request interceptor
   client.interceptors.request.use(
     (config) => {
+      // Normalize to avoid /api/api duplication
+      config = normalizeUrlForGateway(config);
       // Add auth token securely
       const token = secureStorage.getAuthToken();
       if (token) {
