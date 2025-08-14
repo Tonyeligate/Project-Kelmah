@@ -39,7 +39,7 @@ import {
   Add,
   Save,
 } from '@mui/icons-material';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import {
   createHirerJob,
   selectHirerLoading,
@@ -152,7 +152,36 @@ const JobPostingPage = () => {
     setFormData((prev) => ({ ...prev, skills: newSkills }));
   };
   const handleSubmit = (asDraft = false) => {
-    dispatch(createHirerJob({ ...formData, draft: asDraft }))
+    // Map UI form to canonical API payload
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      skills: formData.skills,
+      paymentType: formData.paymentType,
+      budget:
+        formData.paymentType === 'hourly'
+          ? Number(formData.budget.max || formData.budget.min || 0)
+          : Number(formData.budget.fixed || 0),
+      currency: 'GHS',
+      duration: (() => {
+        const match = String(formData.duration || '').match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
+        if (match) {
+          let unit = match[2].toLowerCase();
+          if (unit.endsWith('s')) unit = unit.slice(0, -1);
+          return { value: Number(match[1]), unit };
+        }
+        return { value: 1, unit: 'week' };
+      })(),
+      location: {
+        type: formData.locationType,
+        address: formData.location,
+      },
+      visibility: 'public',
+      status: asDraft ? 'draft' : 'open',
+    };
+
+    dispatch(createHirerJob(payload))
       .unwrap()
       .then(() => setSubmitSuccess(true))
       .catch(() => {});

@@ -12,6 +12,7 @@ import DashboardCard from '../common/DashboardCard';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import workersApi from '../../../../api/services/workersApi';
+import { useSelector } from 'react-redux';
 
 const AvailabilityStatus = () => {
   const [isAvailable, setIsAvailable] = useState(true);
@@ -22,6 +23,19 @@ const AvailabilityStatus = () => {
     message: '',
     severity: 'success',
   });
+  const user = useSelector((state) => state.auth.user);
+  const getUserId = () => {
+    if (user?.id || user?._id || user?.userId) return user.id || user._id || user.userId;
+    try {
+      // dynamic import to avoid SSR pitfalls
+      return import('../../../../utils/secureStorage').then(({ secureStorage }) => {
+        const u = secureStorage.getUserData();
+        return u?.id || u?._id || u?.userId || null;
+      });
+    } catch (_) {
+      return null;
+    }
+  };
   // Use real workersApi only
 
   // Fetch initial availability status
@@ -29,8 +43,10 @@ const AvailabilityStatus = () => {
     const fetchAvailabilityStatus = async () => {
       try {
         setIsLoading(true);
-        const response = await workersApi.getAvailabilityStatus();
-        setIsAvailable(response.isAvailable);
+        const id = await getUserId();
+        if (!id) throw new Error('Missing user id');
+        const response = await workersApi.getAvailabilityStatus(id);
+        setIsAvailable(!!response.isAvailable);
       } catch (error) {
         console.error('Error fetching availability status:', error);
         // Fall back to default state
@@ -41,14 +57,15 @@ const AvailabilityStatus = () => {
     };
 
     fetchAvailabilityStatus();
-  }, []);
+  }, [user]);
 
   const handleChange = async (event) => {
     const newStatus = event.target.checked;
     setIsUpdating(true);
 
     try {
-      await workersApi.updateAvailability({ isAvailable: newStatus });
+      const id = await getUserId();
+      await workersApi.updateAvailability(id, { isAvailable: newStatus });
 
       setIsAvailable(newStatus);
       setFeedback({

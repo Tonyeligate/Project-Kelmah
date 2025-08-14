@@ -1,5 +1,4 @@
 import axiosInstance from '../services/axios';
-import { API_BASE_URL } from '../../../config/constants';
 
 // Use Node.js environment variables for tests
 const metaEnv = process.env;

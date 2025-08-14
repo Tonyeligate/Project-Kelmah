@@ -4,7 +4,7 @@
 
 const Joi = require('joi');
 
-// Create job validation schema
+// Create job validation schema (aligned to model)
 const createJob = Joi.object({
   title: Joi.string().trim().min(5).max(100).required()
     .messages({
@@ -25,18 +25,14 @@ const createJob = Joi.object({
       'string.empty': 'Job category is required',
       'any.required': 'Job category is required'
     }),
-  budget: Joi.object({
-    type: Joi.string().valid('fixed', 'hourly').required(),
-    amount: Joi.number().positive().required(),
-    currency: Joi.string().default('GHS')
-  }).required(),
+  paymentType: Joi.string().valid('fixed', 'hourly').required(),
+  budget: Joi.number().positive().required(),
+  currency: Joi.string().trim().uppercase().default('GHS'),
   location: Joi.object({
     type: Joi.string().valid('remote', 'onsite', 'hybrid').required(),
-    address: Joi.string().when('type', {
-      is: Joi.valid('onsite', 'hybrid'),
-      then: Joi.required(),
-      otherwise: Joi.optional()
-    }),
+    country: Joi.string().optional(),
+    city: Joi.string().optional(),
+    address: Joi.string().optional(),
     coordinates: Joi.object({
       lat: Joi.number(),
       lng: Joi.number()
@@ -47,21 +43,26 @@ const createJob = Joi.object({
       'array.min': 'At least one skill is required'
     }),
   duration: Joi.object({
-    type: Joi.string().valid('days', 'weeks', 'months').required(),
-    value: Joi.number().positive().required()
+    value: Joi.number().positive().required(),
+    unit: Joi.string().valid('hour', 'day', 'week', 'month').required()
   }).required(),
-  requirements: Joi.array().items(Joi.string()).optional(),
-  deadline: Joi.date().greater('now').optional()
+  visibility: Joi.string().valid('public', 'private', 'invite-only').default('public'),
+  attachments: Joi.array().items(Joi.object({
+    name: Joi.string(),
+    url: Joi.string().uri(),
+    type: Joi.string(),
+    size: Joi.number()
+  })).optional()
 });
 
 // Update job validation schema
-const updateJob = createJob.fork(['title', 'description', 'category', 'budget', 'location', 'skills', 'duration'], 
+const updateJob = createJob.fork(['title', 'description', 'category', 'paymentType', 'budget', 'currency', 'location', 'skills', 'duration', 'visibility', 'attachments'], 
   (schema) => schema.optional()
 );
 
-// Change job status validation
+// Change job status validation (canonical statuses)
 const changeJobStatus = Joi.object({
-  status: Joi.string().valid('active', 'paused', 'closed', 'cancelled').required()
+  status: Joi.string().valid('draft', 'open', 'in-progress', 'completed', 'cancelled').required()
 });
 
 // Job search/filter validation

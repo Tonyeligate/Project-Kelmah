@@ -5,35 +5,9 @@
  * and comprehensive mock data fallbacks.
  */
 
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
+import { userServiceClient, jobServiceClient } from '../../common/services/axios';
 
-// Create dedicated service clients
-const userServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth tokens to all service clients
-[userServiceClient, jobServiceClient].forEach(client => {
-  client.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('kelmah_auth_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
-});
+// Clients come preconfigured with auth and retries
 
 // No mock data - using real API data only
 
@@ -51,8 +25,7 @@ export const hirerService = {
 
   async updateProfile(profileData) {
     try {
-      // TODO: Implement real profile update endpoint in user-service; placeholder
-      const response = await userServiceClient.put('/api/profile', profileData);
+      const response = await userServiceClient.put('/api/users/me/profile', profileData);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);

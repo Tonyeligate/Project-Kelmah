@@ -12,6 +12,7 @@ import AnalyticsDashboard from '../modules/admin/components/common/AnalyticsDash
 import SystemSettings from '../modules/admin/components/common/SystemSettings';
 import ReviewModeration from '../modules/admin/components/common/ReviewModeration';
 import PaymentOverview from '../modules/admin/components/common/PaymentOverview';
+import PayoutQueuePage from '../modules/admin/pages/PayoutQueuePage';
 import DisputeManagement from '../modules/admin/components/common/DisputeManagement';
 import GhanaJobCategoriesManagement from '../modules/admin/components/common/GhanaJobCategoriesManagement';
 
@@ -102,6 +103,20 @@ const AdminRoutes = () => {
             loading={loading}
           >
             <PaymentOverview />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Payout Queue */}
+      <Route
+        path="/admin/payouts"
+        element={
+          <ProtectedRoute
+            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            redirectPath="/login"
+            loading={loading}
+          >
+            <PayoutQueuePage />
           </ProtectedRoute>
         }
       />

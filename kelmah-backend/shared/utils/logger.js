@@ -1,3 +1,80 @@
+const { createLogger: createWinstonLogger, format, transports } = require('winston');
+const { v4: uuidv4 } = require('uuid');
+
+function createLogger(serviceName) {
+  const level = process.env.LOG_LEVEL || 'info';
+  const jsonFormat = format.combine(
+    format.timestamp(),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json()
+  );
+  const logger = createWinstonLogger({
+    level,
+    defaultMeta: { service: serviceName },
+    format: jsonFormat,
+    transports: [new transports.Console()],
+  });
+  return logger;
+}
+
+function requestIdMiddleware(req, res, next) {
+  const id = req.headers['x-request-id'] || uuidv4();
+  req.requestId = id;
+  res.setHeader('X-Request-ID', id);
+  next();
+}
+
+function createHttpLogger(logger) {
+  return (req, res, next) => {
+    const start = Date.now();
+    const id = req.requestId || req.headers['x-request-id'];
+    res.on('finish', () => {
+      logger.info('http_request', {
+        requestId: id,
+        method: req.method,
+        url: req.originalUrl || req.url,
+        status: res.statusCode,
+        durationMs: Date.now() - start,
+        userId: req.user?.id,
+      });
+    });
+    next();
+  };
+}
+
+function createErrorLogger(logger) {
+  return (err, req, res, next) => {
+    logger.error('http_error', {
+      requestId: req.requestId || req.headers['x-request-id'],
+      method: req.method,
+      url: req.originalUrl || req.url,
+      status: res.statusCode,
+      userId: req.user?.id,
+      message: err.message,
+      stack: err.stack,
+    });
+    next(err);
+  };
+}
+
+function setupGlobalErrorHandlers(logger) {
+  process.on('unhandledRejection', (reason) => {
+    logger.error('unhandled_rejection', { reason: reason?.message || String(reason) });
+  });
+  process.on('uncaughtException', (err) => {
+    logger.error('uncaught_exception', { message: err.message, stack: err.stack });
+  });
+}
+
+module.exports = {
+  createLogger,
+  requestIdMiddleware,
+  createHttpLogger,
+  createErrorLogger,
+  setupGlobalErrorHandlers,
+};
+
 /**
  * Centralized Logger Utility
  * Structured logging for Kelmah platform

@@ -1,11 +1,14 @@
 # Use Node.js LTS as the base image
-FROM node:16-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 
 RUN npm install --only=production
+
+# Ensure wget is available for ECS health checks
+RUN apk add --no-cache wget
 
 COPY . .
 
@@ -16,6 +19,6 @@ USER appuser
 
 ENV NODE_ENV=production
 
-EXPOSE 3006
+EXPOSE 5006
 
-CMD ["node", "services/review-service/server.js"] 
+CMD ["node", "server.js"]

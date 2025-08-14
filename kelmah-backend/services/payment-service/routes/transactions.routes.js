@@ -9,6 +9,7 @@ router.use(authenticate);
 router.post('/', transactionController.createTransaction);
 // IMPORTANT: define static routes before param routes to avoid shadowing
 router.get('/history', transactionController.getTransactionHistory);
+router.post('/reconcile', transactionController.reconcile);
 router.get('/:transactionId', transactionController.getTransaction);
 router.patch('/:transactionId/cancel', transactionController.cancelTransaction);
 

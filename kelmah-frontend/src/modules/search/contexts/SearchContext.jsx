@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import PropTypes from 'prop-types';
 import axios from '../../common/services/axios';
-import { API_URL } from '../../../config/constants';
 import searchService from '../services/searchService';
 
 // Create Search Context

@@ -1,3 +1,10 @@
+module.exports = {
+  testEnvironment: 'node',
+  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
+  testTimeout: 30000,
+  roots: ['<rootDir>'],
+  moduleFileExtensions: ['js', 'jsx', 'json'],
+};
 const path = require('path');
 
 module.exports = {
@@ -15,7 +22,8 @@ module.exports = {
       testMatch: ['<rootDir>/kelmah-frontend/src/**/*.test.{js,jsx,ts,tsx}'],
       moduleNameMapper: {
         // Handle module aliases and CSS/asset imports
-        '^@/(.*)$': '<rootDir>/frontend/src/$1',
+        '^@/(.*)$': '<rootDir>/kelmah-frontend/src/$1',
+        '^../../auth/hooks/useAuth$': '<rootDir>/test-setup/mocks/useAuth.js',
         '\\.(css|less|scss|sass)$': '<rootDir>/test-setup/mocks/styleMock.js',
         '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/test-setup/mocks/fileMock.js'
       },
@@ -43,7 +51,10 @@ module.exports = {
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/**/*.test.{js,ts}'],
       moduleNameMapper: {
-        '^@\/(.*)$': '<rootDir>/src/$1'
+        '^@\/(.*)$': '<rootDir>/src/$1',
+        '^\.{2}\/\.\.\/shared\/test-utils$': '<rootDir>/../shared/test-utils.js',
+        '^\.\.\/\.\.\/shared\/test-utils$': '<rootDir>/../shared/test-utils.js',
+        '^\.\.\/shared\/test-utils$': '<rootDir>/../shared/test-utils.js'
       },
       setupFilesAfterEnv: ['<rootDir>/../test-setup/backend-setup.js'],
       collectCoverageFrom: [

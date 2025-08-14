@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: (parseInt(process.env.MAX_UPLOAD_MB || '25', 10)) * 1024 * 1024 } });
 const path = require('path');
 const fs = require('fs');
 
@@ -11,9 +11,21 @@ const authenticate = (req, res, next) => {
   next();
 };
 
-// Basic server-side validation. For production, move to S3 presigned URLs.
-router.post('/api/messages/:conversationId/attachments', authenticate, upload.array('files', 10), async (req, res) => {
+// Rate limiter
+let uploadLimiter = null;
+try {
+  const { createLimiter } = require('../../auth-service/middlewares/rateLimiter');
+  uploadLimiter = createLimiter('uploads');
+} catch (_) {
+  uploadLimiter = (req, res, next) => next();
+}
+
+// Basic server-side validation. In production, direct uploads are disabled.
+router.post('/api/messages/:conversationId/attachments', authenticate, uploadLimiter, upload.array('files', 10), async (req, res) => {
   try {
+    if (process.env.NODE_ENV === 'production' || process.env.ENABLE_S3_UPLOADS === 'true') {
+      return res.status(400).json({ success: false, message: 'Direct uploads disabled in this environment. Use presigned URLs.' });
+    }
     const { conversationId } = req.params;
     if (!conversationId) return res.status(400).json({ success: false, message: 'conversationId required' });
     // Validate files
@@ -38,10 +50,7 @@ router.post('/api/messages/:conversationId/attachments', authenticate, upload.ar
       }
     }
 
-    // If S3 presign mode enabled, disallow local store
-    if (process.env.ENABLE_S3_UPLOADS === 'true') {
-      return res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' });
-    }
+    // Local-only storage (non-production) below
     const base = path.join(__dirname, '..', 'uploads', 'attachments', conversationId);
     if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true });
     const saved = [];
@@ -66,7 +75,7 @@ router.post('/api/messages/:conversationId/attachments', authenticate, upload.ar
 
 // Presign endpoint for messaging attachments (AWS S3 v3)
 // POST presign (body)
-router.post('/api/uploads/presign', authenticate, async (req, res) => {
+router.post('/api/uploads/presign', authenticate, uploadLimiter, async (req, res) => {
   try {
     const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
     const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
@@ -98,7 +107,7 @@ router.post('/api/uploads/presign', authenticate, async (req, res) => {
 });
 
 // GET presign (query)
-router.get('/api/uploads/presign', authenticate, async (req, res) => {
+router.get('/api/uploads/presign', authenticate, uploadLimiter, async (req, res) => {
   try {
     const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
     const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');

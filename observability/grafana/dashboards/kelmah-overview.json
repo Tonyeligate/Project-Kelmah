@@ -1,0 +1,11 @@
+{
+  "title": "Kelmah Overview",
+  "panels": [
+    { "type": "stat", "title": "HTTP 5xx (gateway)", "targets": [{ "expr": "sum(rate(http_server_errors_total{service=\"api-gateway\"}[5m]))" }] },
+    { "type": "stat", "title": "Payment Errors", "targets": [{ "expr": "sum(rate(http_server_errors_total{service=\"payment-service\"}[5m]))" }] },
+    { "type": "graph", "title": "Latency p95 (gateway)", "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service=\"api-gateway\"}[5m])) by (le))" }] }
+  ],
+  "time": { "from": "now-6h", "to": "now" }
+}
+
+

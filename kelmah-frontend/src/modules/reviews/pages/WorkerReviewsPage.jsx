@@ -65,7 +65,7 @@ const WorkerReviewsPage = () => {
     if (!user?.id) return;
     setLoading(true);
     reviewService
-      .getUserReviews(user.id, page, limit)
+      .getUserReviews(user.id, page, limit, { status: 'approved' })
       .then(({ reviews, pagination }) => {
         setReviews(reviews);
         setPagination(pagination);

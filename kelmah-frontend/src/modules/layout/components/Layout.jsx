@@ -64,6 +64,13 @@ const Layout = ({ children, toggleTheme, mode }) => {
     
     // Desktop: permanent sidebar + auto-show header
     if (isMdUp) {
+      // Session expired banner state
+      const [sessionExpired, setSessionExpired] = useState(false);
+      React.useEffect(() => {
+        const handler = () => setSessionExpired(true);
+        window.addEventListener('auth:tokenExpired', handler);
+        return () => window.removeEventListener('auth:tokenExpired', handler);
+      }, []);
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
           <AutoShowHeader toggleTheme={toggleTheme} mode={mode} />
@@ -77,6 +84,12 @@ const Layout = ({ children, toggleTheme, mode }) => {
               p: { xs: 1, sm: 2, md: 3 },
             }}
           >
+            {sessionExpired && (
+              <Box sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'warning.light', color: 'black', border: '1px solid', borderColor: 'warning.main' }}>
+                <Typography variant="body2" fontWeight="bold">Session expired</Typography>
+                <Typography variant="caption">Please log in again to continue.</Typography>
+              </Box>
+            )}
             {children}
           </Box>
         </Box>

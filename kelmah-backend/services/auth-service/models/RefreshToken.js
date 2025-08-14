@@ -1,98 +1,56 @@
 /**
- * Refresh Token Model - MongoDB/Mongoose
- * Updated for MongoDB migration
+ * Refresh Token Model - MongoDB/Mongoose (secure)
+ * Stores only tokenHash + tokenId (jti) and version, never the raw token
  */
 
 const mongoose = require('mongoose');
 
-const refreshTokenSchema = new mongoose.Schema({
+const RefreshTokenSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    index: true
+    index: true,
   },
-  token: {
-    type: String,
-    required: true,
-    unique: true,
-    maxlength: 500
-  },
-  expiresAt: {
-    type: Date,
-    required: true,
-    index: true
-  },
-  isRevoked: {
-    type: Boolean,
-    default: false,
-    required: true
-  },
-  createdByIp: {
-    type: String,
-    required: false
-  },
-  revokedByIp: {
-    type: String,
-    required: false
-  },
-  revokedAt: {
-    type: Date,
-    required: false
-  },
+  tokenId: { type: String, required: true, index: true }, // JWT jti
+  tokenHash: { type: String, required: true, unique: true }, // sha256 of raw part
+  version: { type: Number, default: 0 },
+  expiresAt: { type: Date, required: true, index: true },
+  isRevoked: { type: Boolean, default: false, index: true },
+  createdByIp: { type: String },
+  revokedByIp: { type: String },
+  revokedAt: { type: Date },
   deviceInfo: {
     userAgent: String,
     ip: String,
     fingerprint: String,
     deviceType: String,
     browser: String,
-    os: String
-  }
-}, {
-  timestamps: true, // Automatically adds createdAt and updatedAt
-  collection: 'refreshtokens'
-});
+    os: String,
+  },
+}, { timestamps: true, collection: 'refreshtokens' });
 
-// Indexes for performance
-refreshTokenSchema.index({ userId: 1, expiresAt: 1 });
-refreshTokenSchema.index({ token: 1 }, { unique: true });
-refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
+RefreshTokenSchema.index({ userId: 1, tokenId: 1 }, { unique: true });
+RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Instance methods
-refreshTokenSchema.methods.isExpired = function() {
+RefreshTokenSchema.methods.isExpired = function() {
   return this.expiresAt < new Date();
 };
 
-refreshTokenSchema.methods.revoke = function(ip) {
+RefreshTokenSchema.methods.revoke = function(ip) {
   this.isRevoked = true;
   this.revokedAt = new Date();
   this.revokedByIp = ip;
   return this.save();
 };
 
-// Static methods
-refreshTokenSchema.statics.findValidToken = function(token) {
-  return this.findOne({
-    token: token,
-    isRevoked: false,
-    expiresAt: { $gt: new Date() }
-  }).populate('userId');
-};
-
-refreshTokenSchema.statics.revokeUserTokens = function(userId) {
-  return this.updateMany(
-    { userId: userId, isRevoked: false },
-    { $set: { isRevoked: true, revokedAt: new Date() } }
-  );
-};
-
-refreshTokenSchema.statics.cleanupExpired = function() {
+RefreshTokenSchema.statics.cleanupExpired = function() {
   return this.deleteMany({
     $or: [
       { expiresAt: { $lt: new Date() } },
-      { isRevoked: true, revokedAt: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } // 30 days old
-    ]
+      { isRevoked: true, revokedAt: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+    ],
   });
 };
 
-module.exports = mongoose.model('RefreshToken', refreshTokenSchema);
+module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);

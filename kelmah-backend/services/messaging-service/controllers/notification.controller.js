@@ -1,10 +1,11 @@
 const Notification = require("../models/Notification");
+const NotificationPreference = require('../models/NotificationPreference');
 const { handleError } = require("../utils/errorHandler");
 
 // Get user notifications
 exports.getUserNotifications = async (req, res) => {
   try {
-    const { page = 1, limit = 20, unreadOnly = false } = req.query;
+    const { page = 1, limit = 20, unreadOnly = false, type } = req.query;
 
     const query = {
       recipient: req.user._id,
@@ -13,19 +14,26 @@ exports.getUserNotifications = async (req, res) => {
     if (unreadOnly === "true") {
       query["readStatus.isRead"] = false;
     }
+    if (type && typeof type === 'string' && type !== 'all') {
+      query.type = type;
+    }
 
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .populate("relatedEntity.id");
+      .skip((Math.max(1, parseInt(page)) - 1) * Math.min(100, Math.max(1, parseInt(limit))))
+      .limit(Math.min(100, Math.max(1, parseInt(limit))))
+      .populate({ path: 'relatedEntity.id', select: 'firstName lastName profilePicture title' });
 
     const totalNotifications = await Notification.countDocuments(query);
 
     res.json({
-      notifications,
-      totalPages: Math.ceil(totalNotifications / limit),
-      currentPage: page,
+      data: notifications,
+      pagination: {
+        page: Math.max(1, parseInt(page)),
+        limit: Math.min(100, Math.max(1, parseInt(limit))),
+        total: totalNotifications,
+        pages: Math.ceil(totalNotifications / Math.min(100, Math.max(1, parseInt(limit))))
+      }
     });
   } catch (error) {
     handleError(res, error);
@@ -120,6 +128,34 @@ exports.getUnreadCount = async (req, res) => {
     });
 
     res.json({ unreadCount: count });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+// Get or initialize notification preferences for current user
+exports.getPreferences = async (req, res) => {
+  try {
+    let prefs = await NotificationPreference.findOne({ user: req.user._id });
+    if (!prefs) {
+      prefs = await NotificationPreference.create({ user: req.user._id });
+    }
+    res.json({ success: true, data: prefs });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+// Update notification preferences
+exports.updatePreferences = async (req, res) => {
+  try {
+    const updates = req.body || {};
+    const prefs = await NotificationPreference.findOneAndUpdate(
+      { user: req.user._id },
+      { $set: updates },
+      { new: true, upsert: true }
+    );
+    res.json({ success: true, data: prefs });
   } catch (error) {
     handleError(res, error);
   }

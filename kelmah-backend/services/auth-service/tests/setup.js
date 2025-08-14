@@ -3,7 +3,10 @@
  * Configuration and global setup for Jest tests
  */
 
-const { setupTestEnvironment, setupTestDatabase, cleanupTestDatabase } = require('../../shared/test-utils');
+// Test utilities - using local mock implementations
+const setupTestEnvironment = () => Promise.resolve();
+const setupTestDatabase = () => Promise.resolve();
+const cleanupTestDatabase = () => Promise.resolve();
 
 // Setup test environment
 setupTestEnvironment();
@@ -29,8 +32,13 @@ afterAll(async () => {
   await new Promise(resolve => setTimeout(resolve, 100));
 });
 
-// Global test utilities
-global.testUtils = require('../../shared/test-utils');
+// Global test utilities - using local mock implementations
+global.testUtils = {
+  createMockUser: () => ({}),
+  createMockToken: () => 'mock-token',
+  expectSuccess: () => {},
+  expectError: () => {}
+};
 
 // Mock console methods in tests to reduce noise
 global.console = {

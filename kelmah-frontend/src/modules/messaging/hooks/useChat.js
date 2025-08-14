@@ -19,10 +19,13 @@ export const useChat = () => {
 
   // Initialize chat service with token from localStorage
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      chatService.initialize(token);
-    }
+    (async () => {
+      try {
+        const { secureStorage } = await import('../../../utils/secureStorage');
+        const token = secureStorage.getAuthToken();
+        if (token) chatService.initialize(token);
+      } catch {}
+    })();
   }, []);
 
   const loadConversations = useCallback(async () => {

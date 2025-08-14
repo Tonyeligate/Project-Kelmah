@@ -1,0 +1,40 @@
+{
+  "family": "payment-service-task",
+  "taskRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+      "name": "payment-service",
+      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-payment-service:20250814-184745",
+      "essential": true,
+      "portMappings": [ { "containerPort": 3004, "hostPort": 3004, "protocol": "tcp" } ],
+      "environment": [
+        {"name":"NODE_ENV","value":"production"},
+        {"name":"JWT_SECRET","value":"kelmah-ultra-secure-access-token-secret-2024-production-v1"},
+        {"name":"MONGODB_URI","value":"mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/?retryWrites=true&w=majority&appName=Kelmah-messaging"},
+        {"name":"PORT","value":"3004"},
+        {"name":"PAYSTACK_SECRET_KEY","value":"placeholder"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/payment-service",
+          "awslogs-region": "eu-north-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL","wget -q --spider http://localhost:3004/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
+

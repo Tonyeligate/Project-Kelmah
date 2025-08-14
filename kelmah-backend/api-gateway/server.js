@@ -8,6 +8,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const { celebrate, Joi, errors: celebrateErrors, Segments } = require('celebrate');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const winston = require('winston');
 
@@ -48,17 +49,41 @@ const services = {
   review: process.env.REVIEW_SERVICE_URL || 'https://kelmah-review-service.onrender.com'
 };
 
+// Fail-fast: ensure critical environment variables are present
+(() => {
+  const requiredEnv = ['JWT_SECRET'];
+  const missing = requiredEnv.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    logger.error('API Gateway missing required environment variables', { missing });
+    process.exit(1);
+  }
+  // In production, INTERNAL_API_KEY must be set for internal calls
+  if (process.env.NODE_ENV === 'production' && !process.env.INTERNAL_API_KEY) {
+    logger.error('API Gateway missing INTERNAL_API_KEY in production');
+    process.exit(1);
+  }
+})();
+
 // Global middleware
 app.use(helmet());
 app.use(compression());
-// ✅ ENHANCED: Improved CORS with Vercel preview URL support
+// ✅ ENHANCED: Improved CORS with Vercel preview URL support and env allowlist
 const corsOriginHandler = (origin, callback) => {
+  const envAllow = (process.env.CORS_ALLOWLIST || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   const allowedOrigins = [
-    'http://localhost:5173', 
+    'http://localhost:5173',
     'http://localhost:3000',
     'https://project-kelmah.vercel.app',
-    'https://kelmah-frontend-cyan.vercel.app'
+    'https://kelmah-frontend-cyan.vercel.app',
+    ...envAllow,
   ];
+  if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
+    logger.error('CORS_ALLOWLIST must not be empty in production');
+    return callback(new Error('CORS not configured'));
+  }
 
   // Allow Vercel preview URLs
   const vercelPatterns = [
@@ -97,6 +122,16 @@ app.use(loggingMiddleware(logger));
 app.use((req, res, next) => {
   if (req.id) {
     res.setHeader('X-Request-ID', req.id);
+  }
+  next();
+});
+
+// Inject internal key for downstream services (defense-in-depth)
+app.use((req, res, next) => {
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (internalKey) {
+    req.headers['x-internal-key'] = internalKey;
+    req.headers['x-internal-request'] = internalKey;
   }
   next();
 });
@@ -149,6 +184,42 @@ const healthResponse = (req, res) => {
 app.get('/health', healthResponse);
 app.get('/api/health', healthResponse);
 
+// Aggregated health (services + providers)
+app.get('/api/health/aggregate', async (req, res) => {
+  try {
+    const axios = require('axios');
+    const token = req.headers.authorization;
+    const headers = token ? { Authorization: token } : undefined;
+    const baseTargets = [
+      { name: 'auth', url: `${services.auth}/health` },
+      { name: 'user', url: `${services.user}/health` },
+      { name: 'job', url: `${services.job}/health` },
+      { name: 'payment', url: `${services.payment}/health` },
+      { name: 'messaging', url: `${services.messaging}/health` },
+      { name: 'review', url: `${services.review}/health` },
+    ];
+    const results = await Promise.all(baseTargets.map(async (t) => {
+      try {
+        const r = await axios.get(t.url, { timeout: 5000, headers });
+        return { service: t.name, ok: true, data: r.data };
+      } catch (e) {
+        return { service: t.name, ok: false, error: e?.message };
+      }
+    }));
+    // Provider health from payment service
+    let providers;
+    try {
+      const r = await axios.get(`${services.payment}/health/providers`, { timeout: 4000, headers });
+      providers = r.data;
+    } catch (e) {
+      providers = { success: false, error: e?.message };
+    }
+    res.json({ success: true, services: results, providers });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e?.message });
+  }
+});
+
 // Authentication routes (public)
 app.use('/api/auth', createProxyMiddleware({
   target: services.auth,
@@ -160,9 +231,16 @@ app.use('/api/auth', createProxyMiddleware({
   }
 }));
 
-// User routes (protected)
-app.use('/api/users', 
+// User routes (protected) with validation
+app.use(
+  '/api/users',
   authMiddleware.authenticate,
+  celebrate({
+    [Segments.QUERY]: Joi.object({
+      page: Joi.number().integer().min(1).default(1),
+      limit: Joi.number().integer().min(1).max(100).default(20),
+    }).unknown(true),
+  }),
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
@@ -172,17 +250,41 @@ app.use('/api/users',
         proxyReq.setHeader('X-User-ID', req.user.id);
         proxyReq.setHeader('X-User-Role', req.user.role);
       }
-    }
+    },
   })
 );
 
-// Profile routes (protected) → user-service
+// Profile routes → user-service
+// Allow public GET access for portfolio reads; protect all other routes
 app.use('/api/profile',
-  authMiddleware.authenticate,
+  (req, res, next) => {
+    if (req.method === 'GET') {
+      const p = req.path || '';
+      const publicPatterns = [
+        /^\/workers\/[^/]+\/portfolio$/, // worker portfolio list
+        /^\/portfolio\/[^/]+$/,           // single portfolio item
+        /^\/workers\/[^/]+\/portfolio\/stats$/ // portfolio stats
+      ];
+      if (publicPatterns.some((re) => re.test(p))) {
+        return next();
+      }
+    }
+    return authMiddleware.authenticate(req, res, next);
+  },
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
     pathRewrite: { '^/api/profile': '/api/profile' }
+  })
+);
+
+// Profile upload & presign routes (protected) → user-service
+app.use('/api/profile/uploads',
+  authMiddleware.authenticate,
+  createProxyMiddleware({
+    target: services.user,
+    changeOrigin: true,
+    pathRewrite: { '^/api/profile/uploads': '/api/profile/uploads' }
   })
 );
 
@@ -196,16 +298,55 @@ app.use('/api/settings',
   })
 );
 
-// Worker routes (public read, protected write)
-app.use('/api/workers',
+// Worker routes (public read, protected write) with validation
+app.use(
+  '/api/workers',
   (req, res, next) => {
     if (req.method === 'GET') return next();
     return authMiddleware.authenticate(req, res, next);
   },
+  (req, res, next) => {
+    if (req.method !== 'GET') return next();
+    return celebrate({
+      [Segments.QUERY]: Joi.object({
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(100).default(20),
+        location: Joi.string().max(255).optional(),
+        skills: Joi.string().optional(),
+        rating: Joi.number().min(0).max(5).optional(),
+        availability: Joi.string().valid('available', 'busy', 'unavailable', 'vacation').optional(),
+        maxRate: Joi.number().min(0).optional(),
+        verified: Joi.string().valid('true', 'false').optional(),
+        search: Joi.string().max(255).optional(),
+      }).unknown(true),
+    })(req, res, next);
+  },
+  // Validate worker availability updates at gateway level as well
+  (req, res, next) => {
+    if (!(req.method === 'PUT' && /\/workers\/[^/]+\/availability$/.test(req.path))) {
+      return next();
+    }
+    return celebrate({
+      [Segments.BODY]: Joi.object({
+        availabilityStatus: Joi.string().valid('available','busy','unavailable','vacation').optional(),
+        pausedUntil: Joi.string().isoDate().optional(),
+        availableHours: Joi.object()
+          .pattern(
+            Joi.string().valid('monday','tuesday','wednesday','thursday','friday','saturday','sunday'),
+            Joi.object({
+              available: Joi.boolean().required(),
+              start: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d$/).when('available', { is: true, then: Joi.required() }),
+              end: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d$/).when('available', { is: true, then: Joi.required() }),
+            }).unknown(false)
+          )
+          .optional(),
+      }).unknown(false),
+    })(req, res, next);
+  },
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
-    pathRewrite: { '^/api/workers': '/api/workers' }
+    pathRewrite: { '^/api/workers': '/api/workers' },
   })
 );
 
@@ -216,6 +357,13 @@ app.use('/api/jobs',
       return next();
     }
     return authMiddleware.authenticate(req, res, next);
+  },
+  (req, res, next) => {
+    const page = parseInt(req.query.page, 10);
+    const limit = parseInt(req.query.limit, 10);
+    if (!Number.isNaN(page) && page < 1) req.query.page = 1;
+    if (!Number.isNaN(limit)) req.query.limit = Math.min(Math.max(limit, 1), 100);
+    next();
   },
   createProxyMiddleware({
     target: services.job,
@@ -251,22 +399,69 @@ app.use('/api/payments',
   })
 );
 
-// Messaging routes (protected) with WebSocket support
-app.use('/api/messages',
+// Messaging routes (protected) with WebSocket support and validation
+app.use(
+  '/api/messages',
   authMiddleware.authenticate,
+  celebrate({
+    [Segments.QUERY]: Joi.object({
+      page: Joi.number().integer().min(1).default(1),
+      limit: Joi.number().integer().min(1).max(100).default(20),
+      q: Joi.string().max(255).optional(),
+    }).unknown(true),
+  }),
   createProxyMiddleware({
     target: services.messaging,
     changeOrigin: true,
     ws: true,
-    pathRewrite: { '^/api/messages': '/api/messages' }
+    pathRewrite: { '^/api/messages': '/api/messages' },
   })
 );
 
-// Notification routes (protected)
+// Conversations routes (protected) → messaging-service
+app.use('/api/conversations',
+  authMiddleware.authenticate,
+  createProxyMiddleware({
+    target: services.messaging,
+    changeOrigin: true,
+    pathRewrite: { '^/api/conversations': '/api/conversations' }
+  })
+);
+
+// Upload routes for messaging (protected) → messaging-service
+app.use('/api/uploads',
+  authMiddleware.authenticate,
+  createProxyMiddleware({
+    target: services.messaging,
+    changeOrigin: true,
+    pathRewrite: { '^/api/uploads': '/api/uploads' }
+  })
+);
+
+// Socket.IO WebSocket proxy to messaging-service
+const socketIoProxy = createProxyMiddleware('/socket.io', {
+  target: services.messaging,
+  changeOrigin: true,
+  ws: true
+});
+app.use(socketIoProxy);
+
+// Socket metrics passthrough (admin validated upstream)
+app.use('/api/socket/metrics',
+  authMiddleware.authenticate,
+  authMiddleware.authorize('admin'),
+  createProxyMiddleware({
+    target: services.messaging,
+    changeOrigin: true,
+    pathRewrite: { '^/api/socket/metrics': '/api/socket/metrics' }
+  })
+);
+
+// Notification routes (protected) → messaging-service (hosts notifications API)
 app.use('/api/notifications',
   authMiddleware.authenticate,
   createProxyMiddleware({
-    target: services.notification,
+    target: services.messaging,
     changeOrigin: true,
     pathRewrite: { '^/api/notifications': '/api/notifications' }
   })
@@ -286,11 +481,17 @@ app.use('/api/admin/reviews',
 // Review routes (mixed protection)
 app.use('/api/reviews',
   (req, res, next) => {
-    // Public routes: GET reviews for workers
-    if (req.method === 'GET' && (req.path.includes('/worker/') || req.path.includes('/analytics'))) {
+    // Public routes: GET reviews for workers and public analytics/user profiles
+    if (
+      req.method === 'GET' && (
+        req.path.includes('/worker/') ||
+        req.path.includes('/analytics') ||
+        req.path.includes('/user/')
+      )
+    ) {
       return next();
     }
-    // Protected routes: Submit, respond, moderate reviews
+    // Protected routes: Submit, respond, helpful/report, can-review (requires identity)
     return authMiddleware.authenticate(req, res, next);
   },
   rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }), // Review-specific rate limiting
@@ -481,7 +682,8 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handler
+// Celebrate validation errors then general error handler
+app.use(celebrateErrors());
 app.use(errorHandler(logger));
 
 // Start server
@@ -490,5 +692,8 @@ const server = app.listen(PORT, () => {
   logger.info(`📋 Health: http://localhost:${PORT}/health`);
   logger.info(`📚 Docs: http://localhost:${PORT}/api/docs`);
 });
+
+// Enable WebSocket upgrade handling for Socket.IO proxy
+server.on('upgrade', socketIoProxy.upgrade);
 
 module.exports = app;

@@ -3,27 +3,11 @@
  * Handles all review and rating related API calls
  */
 
-import axios from 'axios';
-import { API_BASE_URL } from '../config/environment';
+import { userServiceClient, reviewsServiceClient } from '../modules/common/services/axios';
 
-// Create reviews service client
-const reviewsServiceClient = axios.create({
-  baseURL: `${API_BASE_URL}/api/reviews`,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
+const REVIEWS_BASE = '/api/reviews';
 
-// Add auth token to requests
-reviewsServiceClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Auth handled by centralized axios when using apiGet/apiPost; kept for direct calls
 
 // Response interceptor for error handling
 reviewsServiceClient.interceptors.response.use(
@@ -40,7 +24,7 @@ const reviewsApi = {
    */
   async submitReview(reviewData) {
     try {
-      const response = await reviewsServiceClient.post('/', {
+      const response = await userServiceClient.post(`${REVIEWS_BASE}/`, {
         workerId: reviewData.workerId,
         jobId: reviewData.jobId,
         ratings: reviewData.ratings,
@@ -53,7 +37,8 @@ const reviewsApi = {
         projectDuration: reviewData.projectDuration,
         wouldRecommend: reviewData.wouldRecommend
       });
-      return response;
+      // Backend wraps payload as { success, message, data }
+      return response.data || response;
     } catch (error) {
       console.error('Error submitting review:', error);
       throw new Error(`Failed to submit review: ${error.message}`);
@@ -75,8 +60,15 @@ const reviewsApi = {
         ...(params.order && { order: params.order })
       });
 
-      const response = await reviewsServiceClient.get(`/worker/${workerId}?${queryParams}`);
-      return response.data;
+      const response = await userServiceClient.get(`${REVIEWS_BASE}/worker/${workerId}?${queryParams}`);
+      const payload = response.data || response;
+      if (payload?.data?.reviews) {
+        return payload.data;
+      }
+      if (payload?.reviews) {
+        return { reviews: payload.reviews, pagination: payload.pagination };
+      }
+      return { reviews: [], pagination: { page: params.page || 1, limit: params.limit || 10, total: 0, pages: 1 } };
     } catch (error) {
       console.error('Error fetching worker reviews:', error);
       throw new Error(`Failed to fetch reviews: ${error.message}`);
@@ -88,8 +80,8 @@ const reviewsApi = {
    */
   async getWorkerRating(workerId) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/ratings/worker/${workerId}`);
-      return response.data.data;
+      const response = await userServiceClient.get(`/api/ratings/worker/${workerId}`);
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Error fetching worker rating:', error);
       // Return default empty rating if not found
@@ -123,8 +115,8 @@ const reviewsApi = {
    */
   async getReview(reviewId) {
     try {
-      const response = await reviewsServiceClient.get(`/${reviewId}`);
-      return response.data;
+      const response = await userServiceClient.get(`${REVIEWS_BASE}/${reviewId}`);
+      return response.data || response;
     } catch (error) {
       console.error('Error fetching review:', error);
       throw new Error(`Failed to fetch review: ${error.message}`);
@@ -136,10 +128,10 @@ const reviewsApi = {
    */
   async addWorkerResponse(reviewId, comment) {
     try {
-      const response = await reviewsServiceClient.put(`/${reviewId}/response`, {
+      const response = await userServiceClient.put(`${REVIEWS_BASE}/${reviewId}/response`, {
         comment: comment.trim()
       });
-      return response;
+      return response.data || response;
     } catch (error) {
       console.error('Error adding worker response:', error);
       throw new Error(`Failed to add response: ${error.message}`);
@@ -151,8 +143,8 @@ const reviewsApi = {
    */
   async voteHelpful(reviewId) {
     try {
-      const response = await reviewsServiceClient.post(`/${reviewId}/helpful`);
-      return response;
+      const response = await userServiceClient.post(`${REVIEWS_BASE}/${reviewId}/helpful`);
+      return response.data || response;
     } catch (error) {
       console.error('Error voting review helpful:', error);
       throw new Error(`Failed to vote: ${error.message}`);
@@ -164,10 +156,10 @@ const reviewsApi = {
    */
   async reportReview(reviewId, reason) {
     try {
-      const response = await reviewsServiceClient.post(`/${reviewId}/report`, {
+      const response = await userServiceClient.post(`${REVIEWS_BASE}/${reviewId}/report`, {
         reason
       });
-      return response;
+      return response.data || response;
     } catch (error) {
       console.error('Error reporting review:', error);
       throw new Error(`Failed to report review: ${error.message}`);
@@ -179,8 +171,8 @@ const reviewsApi = {
    */
   async getReviewAnalytics() {
     try {
-      const response = await reviewsServiceClient.get('/analytics');
-      return response.data;
+      const response = await userServiceClient.get(`${REVIEWS_BASE}/analytics`);
+      return response.data || response;
     } catch (error) {
       console.error('Error fetching review analytics:', error);
       throw new Error(`Failed to fetch analytics: ${error.message}`);
@@ -193,11 +185,11 @@ const reviewsApi = {
   async moderateReview(reviewId, status, moderationNote = '') {
     try {
       // Use admin endpoint via API Gateway
-      const response = await axios.post(`${API_BASE_URL}/api/admin/reviews/${reviewId}/moderate`, {
+      const response = await userServiceClient.post(`/api/admin/reviews/${reviewId}/moderate`, {
         status,
         note: moderationNote
       });
-      return response.data;
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Error moderating review:', error);
       throw new Error(`Failed to moderate review: ${error.message}`);
@@ -216,8 +208,8 @@ const reviewsApi = {
         ...(params.category && { category: params.category }),
         ...(params.minRating && { minRating: params.minRating })
       });
-      const response = await axios.get(`${API_BASE_URL}/api/admin/reviews/queue?${queryParams}`);
-      return response.data.data;
+      const response = await userServiceClient.get(`/api/admin/reviews/queue?${queryParams}`);
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Error fetching moderation queue:', error);
       throw new Error(`Failed to fetch moderation queue: ${error.message}`);
@@ -246,8 +238,8 @@ const reviewsApi = {
    */
   async getReviewTrends(timeRange = '30d') {
     try {
-      const response = await reviewsServiceClient.get(`/trends?timeRange=${timeRange}`);
-      return response.data;
+      const response = await userServiceClient.get(`${REVIEWS_BASE}/trends?timeRange=${timeRange}`);
+      return response.data || response;
     } catch (error) {
       console.error('Error fetching review trends:', error);
       throw new Error(`Failed to fetch trends: ${error.message}`);
@@ -269,8 +261,8 @@ const reviewsApi = {
         ...(filters.verified && { verified: filters.verified })
       });
 
-      const response = await reviewsServiceClient.get(`/search?${params}`);
-      return response.data;
+      const response = await userServiceClient.get(`${REVIEWS_BASE}/search?${params}`);
+      return response.data || response;
     } catch (error) {
       console.error('Error searching reviews:', error);
       throw new Error(`Failed to search reviews: ${error.message}`);
@@ -309,10 +301,11 @@ const reviewsApi = {
    */
   async canReviewWorker(workerId, jobId = null) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/reviews/can-review`, {
+      const response = await userServiceClient.get(`${REVIEWS_BASE}/can-review`, {
         params: { workerId, jobId }
       });
-      return response.data.data;
+      const payload = response.data || response;
+      return payload?.data || payload;
     } catch (error) {
       console.error('Error checking review eligibility:', error);
       return { canReview: false, reason: 'Unable to verify eligibility' };

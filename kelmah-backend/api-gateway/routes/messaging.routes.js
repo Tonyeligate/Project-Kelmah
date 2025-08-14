@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
-const authenticate = require('../middlewares/auth.middleware');
+const { authenticate } = require('../middleware/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').MESSAGING_SERVICE;
@@ -34,20 +34,40 @@ const conversationProxy = (req, res, next) => {
 // All messaging routes require authentication
 router.use(authenticate);
 
-// Conversation routes
-router.get('/conversations', conversationProxy); // Get user's conversations
-router.post('/conversations', conversationProxy); // Create new conversation
-router.get('/conversations/:conversationId', conversationProxy); // Get specific conversation
-router.put('/conversations/:conversationId', conversationProxy); // Update conversation
-router.delete('/conversations/:conversationId', conversationProxy); // Delete conversation
+// Conversation routes (rooted to support mount at /api/conversations)
+router.get('/', conversationProxy); // List conversations
+router.post('/', conversationProxy); // Create conversation
+router.get('/:conversationId', conversationProxy); // Get specific conversation
+router.put('/:conversationId', conversationProxy); // Update conversation
+router.delete('/:conversationId', conversationProxy); // Delete conversation
 
 // Conversation participants
 router.post('/conversations/:conversationId/participants', conversationProxy); // Add participant
 router.delete('/conversations/:conversationId/participants/:userId', conversationProxy); // Remove participant
 
-// Message routes
-router.get('/conversations/:conversationId/messages', messagingProxy); // Get conversation messages
-router.post('/conversations/:conversationId/messages', messagingProxy); // Send message
+// Message routes: map FE path to service path /api/messages/conversation/:id
+router.get('/conversations/:conversationId/messages', (req, res, next) => {
+  const proxy = createServiceProxy({
+    target: getServiceUrl(req),
+    pathPrefix: '/api/messages',
+    requireAuth: true,
+    pathRewrite: {
+      '^/api/messages/conversations/([^/]+)/messages': '/api/messages/conversation/$1',
+    },
+  });
+  return proxy(req, res, next);
+});
+router.post('/conversations/:conversationId/messages', (req, res, next) => {
+  const proxy = createServiceProxy({
+    target: getServiceUrl(req),
+    pathPrefix: '/api/messages',
+    requireAuth: true,
+    pathRewrite: {
+      '^/api/messages/conversations/([^/]+)/messages': '/api/messages/conversation/$1',
+    },
+  });
+  return proxy(req, res, next);
+});
 router.get('/messages/:messageId', messagingProxy); // Get specific message
 router.put('/messages/:messageId', messagingProxy); // Edit message
 router.delete('/messages/:messageId', messagingProxy); // Delete message
@@ -56,9 +76,10 @@ router.delete('/messages/:messageId', messagingProxy); // Delete message
 router.put('/messages/:messageId/read', messagingProxy); // Mark message as read
 router.put('/conversations/:conversationId/read', messagingProxy); // Mark all messages as read
 
-// File attachments
-router.post('/messages/upload', messagingProxy); // Upload message attachment
-router.get('/messages/files/:fileId', messagingProxy); // Download attachment
+// File attachments (aliases)
+router.post('/attachments/upload', messagingProxy); // Alias for dev uploads
+router.post('/:conversationId/attachments', messagingProxy); // Canonical dev upload path
+router.get('/files/:fileId', messagingProxy); // Download attachment
 
 // Message search
 router.get('/search', messagingProxy); // Search messages

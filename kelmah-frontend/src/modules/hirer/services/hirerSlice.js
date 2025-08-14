@@ -1,30 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
+import { authServiceClient, userServiceClient, jobServiceClient, paymentServiceClient } from '../../common/services/axios';
 
-// Create dedicated service clients - temporarily using AUTH_SERVICE for all calls
-// until USER_SERVICE and JOB_SERVICE are deployed
-const authServiceClient = axios.create({
-  baseURL: SERVICES.AUTH_SERVICE,
-  timeout: 5000, // Reduced timeout for better UX
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Route to correct services
-const userServiceClient = axios.create({ baseURL: SERVICES.USER_SERVICE, timeout: 15000, headers: { 'Content-Type': 'application/json' } });
-const jobServiceClient = axios.create({ baseURL: SERVICES.JOB_SERVICE, timeout: 15000, headers: { 'Content-Type': 'application/json' } });
-
-// Add auth tokens to requests
-[authServiceClient, userServiceClient, jobServiceClient].forEach((client) => client.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-));
+// Clients are centralized in modules/common/services/axios.js with auth interceptors
 
 // Async thunks for API operations
 export const fetchHirerProfile = createAsyncThunk(
@@ -142,7 +119,7 @@ export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.put(`/api/jobs/${jobId}/status`, {
+      const response = await jobServiceClient.patch(`/api/jobs/${jobId}/status`, {
         status,
       });
       return response.data;
@@ -207,8 +184,70 @@ export const fetchPaymentSummary = createAsyncThunk(
   'hirer/fetchPaymentSummary',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await userServiceClient.get('/api/payments/summary');
-      return response.data;
+      // Compose summary from wallet, escrows, and transactions
+      const [walletResp, escrowsResp, txResp] = await Promise.all([
+        paymentServiceClient.get('/api/payments/wallet').catch(() => ({ data: null })),
+        paymentServiceClient.get('/api/payments/escrows').catch(() => ({ data: [] })),
+        paymentServiceClient.get('/api/payments/transactions/history').catch(() => ({ data: [] })),
+      ]);
+
+      const wallet = walletResp?.data || {};
+      const escrows = Array.isArray(escrowsResp?.data) ? escrowsResp.data : (escrowsResp?.data?.escrows || []);
+      const history = Array.isArray(txResp?.data?.data) ? txResp.data.data : (Array.isArray(txResp?.data) ? txResp.data : []);
+
+      // Compute escrow balance
+      const escrowBalance = Array.isArray(wallet?.accounts)
+        ? (wallet.accounts.find(a => a.type === 'escrow')?.balance || 0)
+        : escrows.reduce((sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0), 0);
+
+      // Build pending payments from escrows' pending milestones
+      const pending = [];
+      escrows.forEach((e) => {
+        const milestones = Array.isArray(e.milestones) ? e.milestones : [];
+        milestones.forEach((m) => {
+          if (m.status === 'pending' || m.status === 'ready_for_release') {
+            pending.push({
+              id: `${e.id}_${m.id}`,
+              escrowId: e.id,
+              milestoneId: m.id,
+              jobTitle: e.jobTitle || e.jobId,
+              worker: e.worker || {},
+              amount: m.amount || 0,
+              milestone: m.description || m.name || 'Milestone',
+              dueDate: m.dueDate || null,
+              status: m.status === 'ready_for_release' ? 'ready_for_release' : 'pending_approval',
+            });
+          }
+        });
+      });
+
+      // Compute totals
+      const totalPaid = history
+        .filter((t) => (t.type === 'payout' || t.type === 'payment') && (t.status === 'completed' || t.status === 'success'))
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      // Average payment time (basic heuristic)
+      const payoutDurations = history
+        .filter((t) => (t.type === 'payout' || t.type === 'payment') && t.createdAt && (t.completedAt || t.updatedAt))
+        .map((t) => new Date(t.completedAt || t.updatedAt).getTime() - new Date(t.createdAt).getTime())
+        .filter((d) => Number.isFinite(d) && d > 0);
+      const avgMs = payoutDurations.length
+        ? Math.round(payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length)
+        : null;
+      const averagePaymentTime = avgMs
+        ? `${Math.max(1, Math.round(avgMs / (1000 * 60))) } min`
+        : 'N/A';
+
+      return {
+        wallet,
+        escrows,
+        history,
+        pending,
+        escrowBalance,
+        totalPaid,
+        pendingPayments: pending.length,
+        averagePaymentTime,
+      };
     } catch (error) {
       console.warn('Service unavailable:', error.message);
       throw error;
@@ -218,28 +257,30 @@ export const fetchPaymentSummary = createAsyncThunk(
 
 // Initial state
 const initialState = {
-    profile: null,
-    jobs: {
-      active: [],
+  profile: null,
+  jobs: {
+    open: [],
+    'in-progress': [],
     completed: [],
-      draft: [],
+    cancelled: [],
+    draft: [],
   },
   applications: [],
   analytics: null,
   payments: null,
-    loading: {
-      profile: false,
-      jobs: false,
-      applications: false,
+  loading: {
+    profile: false,
+    jobs: false,
+    applications: false,
     analytics: false,
-      payments: false,
-    },
-    error: {
-      profile: null,
-      jobs: null,
-      applications: null,
+    payments: false,
+  },
+  error: {
+    profile: null,
+    jobs: null,
+    applications: null,
     analytics: null,
-      payments: null,
+    payments: null,
   },
 };
 

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { API_URL } from '../../../config/constants';
 
 /**
  * Professional Map Service for Vocational Job Platform
@@ -305,8 +304,16 @@ class MapService {
    * Get authentication headers for API calls
    */
   getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    try {
+      // lazy access to avoid static require in ESM
+      const token = JSON.parse(localStorage.getItem('kelmah_secure_data') || 'null');
+      // secureStorage is already used widely; keeping lightweight fallback here
+      if (token) {
+        // cannot decrypt here; rely on axios interceptors for auth in most cases
+        return {};
+      }
+    } catch {}
+    return {};
   }
 
   /**

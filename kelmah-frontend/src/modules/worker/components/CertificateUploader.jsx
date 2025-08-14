@@ -374,7 +374,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           {certificate.skills && (
             <Box mt={2}>
               <Stack direction="row" spacing={1} flexWrap="wrap">
-                {certificate.skills.split(',').slice(0, 3).map((skill, index) => (
+                {certificate.skills?.split(',').slice(0, 3).map((skill, index) => (
                   <Chip
                     key={index}
                     label={skill.trim()}
@@ -382,9 +382,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                     variant="outlined"
                   />
                 ))}
-                {certificate.skills.split(',').length > 3 && (
+                {certificate.skills?.split(',').length > 3 && (
                   <Chip
-                    label={`+${certificate.skills.split(',').length - 3} more`}
+                    label={`+${(certificate.skills?.split(',').length || 0) - 3} more`}
                     size="small"
                     variant="outlined"
                     color="primary"

@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
-const authenticate = require('../middlewares/auth.middleware');
+const { authenticate } = require('../middleware/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').JOB_SERVICE;
@@ -48,7 +48,8 @@ router.put('/:jobId', jobProxy); // Update job
 router.delete('/:jobId', jobProxy); // Delete job
 
 // Job status management
-router.put('/:jobId/status', jobProxy); // Update job status
+router.put('/:jobId/status', jobProxy); // Backward-compat: Update job status
+router.patch('/:jobId/status', jobProxy); // Canonical: Update job status
 router.post('/:jobId/publish', jobProxy); // Publish job
 router.post('/:jobId/close', jobProxy); // Close job
 router.post('/:jobId/reopen', jobProxy); // Reopen job
@@ -68,6 +69,11 @@ router.get('/:jobId/milestones', jobProxy); // Get job milestones
 router.post('/:jobId/milestones', jobProxy); // Create milestone
 router.put('/:jobId/milestones/:milestoneId', jobProxy); // Update milestone
 router.delete('/:jobId/milestones/:milestoneId', jobProxy); // Delete milestone
+
+// Contracts (ensure present for hirer flow)
+router.get('/:jobId/contract', jobProxy);
+router.post('/:jobId/contract', jobProxy);
+router.put('/:jobId/contract', jobProxy);
 
 // Job contracts
 router.get('/:jobId/contract', jobProxy); // Get job contract

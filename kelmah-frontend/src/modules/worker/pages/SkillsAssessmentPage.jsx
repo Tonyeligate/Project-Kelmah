@@ -97,7 +97,7 @@ import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import { styled, keyframes } from '@mui/material/styles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import {
   RadialBarChart,
   RadialBar,

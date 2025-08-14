@@ -1,33 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
+import { userServiceClient, jobServiceClient } from '../../common/services/axios';
 
-// Create dedicated service clients
-const userServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth tokens to requests
-[userServiceClient, jobServiceClient].forEach(client => {
-  client.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
-});
+// Use centralized clients with auth/retries
 
 // Initial state
 const initialState = {

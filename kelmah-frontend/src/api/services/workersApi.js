@@ -3,52 +3,48 @@
  * Handles worker-specific operations like availability, dashboard stats, etc.
  */
 
-import axios from 'axios';
-import { SERVICES } from '../../config/environment';
+import { userServiceClient as workersServiceClient } from '../../modules/common/services/axios';
 
-// Create workers service client - using USER_SERVICE for worker-specific endpoints
-const workersServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE, // Fixed: Using user service for worker endpoints
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth token to requests
-workersServiceClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Use centralized client with auth/retry
 
 const workersApi = {
   /**
-   * Get worker availability status - Enhanced with localStorage persistence
+   * Get worker availability status from user-service
    */
-  async getAvailabilityStatus() {
-    const saved = localStorage.getItem('worker_availability');
-    return saved ? JSON.parse(saved) : { 
-      isAvailable: true, 
-      status: 'available',
-      lastUpdated: new Date().toISOString()
+  async getAvailabilityStatus(userId) {
+    const id = userId;
+    const resp = await workersServiceClient.get(`/api/users/workers/${id}/availability`);
+    const data = resp.data?.data || resp.data;
+    const status = data?.availabilityStatus || 'available';
+    return {
+      isAvailable: status === 'available',
+      status,
+      schedule: data?.availableHours || {},
+      pausedUntil: data?.pausedUntil || null,
+      lastUpdated: new Date().toISOString(),
     };
   },
 
   /**
-   * Update worker availability - Enhanced with localStorage persistence
+   * Update worker availability in user-service
    */
-  async updateAvailability(availabilityData) {
-    const updatedStatus = {
-      ...availabilityData,
-      lastUpdated: new Date().toISOString()
+  async updateAvailability(userId, availabilityData) {
+    const id = userId;
+    const payload = { ...availabilityData };
+    if (typeof availabilityData.isAvailable === 'boolean') {
+      payload.availabilityStatus = availabilityData.isAvailable ? 'available' : 'busy';
+      delete payload.isAvailable;
+    }
+    const resp = await workersServiceClient.put(`/api/users/workers/${id}/availability`, payload);
+    const data = resp.data?.data || resp.data;
+    const status = data?.availabilityStatus || payload.availabilityStatus || 'available';
+    return {
+      isAvailable: status === 'available',
+      status,
+      schedule: data?.availableHours || payload.availableHours || {},
+      pausedUntil: data?.pausedUntil || payload.pausedUntil || null,
+      lastUpdated: new Date().toISOString(),
     };
-    localStorage.setItem('worker_availability', JSON.stringify(updatedStatus));
-    console.log('Worker availability updated:', updatedStatus);
-    return updatedStatus;
   },
 
   /**
@@ -228,28 +224,11 @@ const workersApi = {
    * Get profile completion status - New method
    */
   async getProfileCompletion() {
-    const profile = await this.getWorkerProfile();
-    const credentials = await this.getSkillsAndLicenses();
-    
-    const completionItems = [
-      { name: 'Basic Information', completed: !!(profile.firstName && profile.email), weight: 30 },
-      { name: 'Professional Details', completed: !!(profile.profession && profile.location), weight: 25 },
-      { name: 'Contact Information', completed: !!profile.phone, weight: 15 },
-      { name: 'Skills/Credentials', completed: (credentials.skills?.length || 0) > 0 || (credentials.licenses?.length || 0) > 0, weight: 30 }
-    ];
-    
-    const completedWeight = completionItems
-      .filter(item => item.completed)
-      .reduce((sum, item) => sum + item.weight, 0);
-    
-    return {
-      percentage: completedWeight,
-      items: completionItems,
-      nextSteps: completionItems
-        .filter(item => !item.completed)
-        .sort((a, b) => b.weight - a.weight)
-        .slice(0, 3)
-    };
+    const user = secureStorage.getUserData();
+    const id = user?.id || user?._id || user?.userId;
+    if (!id) throw new Error('Missing user id');
+    const resp = await workersServiceClient.get(`/api/users/workers/${id}/completeness`);
+    return resp.data?.data || resp.data;
   }
 };
 

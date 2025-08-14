@@ -5,45 +5,11 @@
  * using the new environment configuration system.
  */
 
-import axios from 'axios';
-import { SERVICES, AUTH_CONFIG } from '../../../config/environment';
+import { AUTH_CONFIG } from '../../../config/environment';
+import { authServiceClient } from '../../common/services/axios';
 import { secureStorage } from '../../../utils/secureStorage';
 
-// Enhanced auth service client with better timeout handling
-const authServiceClient = axios.create({
-  baseURL: SERVICES.AUTH_SERVICE,
-  timeout: 60000, // Increased timeout for cold starts
-  headers: { 'Content-Type': 'application/json' },
-  // Enhanced retry configuration
-  'axios-retry': {
-    retries: 3,
-    retryDelay: (retryCount) => {
-      return Math.min(1000 * Math.pow(2, retryCount), 10000); // Max 10 seconds
-    },
-    retryCondition: (error) => {
-      return error.code === 'ECONNABORTED' || 
-             error.response?.status >= 500 || 
-             !error.response;
-    },
-  },
-});
-
-// Add auth tokens to requests (except for login/register)
-authServiceClient.interceptors.request.use(
-  (config) => {
-    const token = secureStorage.getAuthToken();
-    if (
-      token &&
-      !config.url.includes('/login') &&
-      !config.url.includes('/register') &&
-      !config.url.includes('/refresh')
-    ) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Use centralized authServiceClient with standard interceptors
 
 // Response interceptor will be set up after authService is defined
 // to avoid circular dependency issues
@@ -205,7 +171,7 @@ const authService = {
         throw new Error('No refresh token available');
       }
 
-      const response = await authServiceClient.post('/api/auth/refresh', {
+      const response = await authServiceClient.post('/api/auth/refresh-token', {
         refreshToken
       });
       
@@ -259,7 +225,7 @@ const authService = {
         '/api/auth/reset-password',
         { token, password },
       );
-    return response.data;
+      return response.data;
     } catch (error) {
       console.error('Reset password error:', error);
       throw error;
@@ -286,7 +252,7 @@ const authService = {
   // Change password
   changePassword: async (currentPassword, newPassword) => {
     try {
-      const response = await authServiceClient.put(
+      const response = await authServiceClient.post(
         '/api/auth/change-password',
         {
           currentPassword,
@@ -368,36 +334,40 @@ const authService = {
   // MFA Setup (placeholder for future implementation)
   setupMFA: async () => {
     try {
-      // Placeholder - will be implemented when MFA service is ready
-      console.warn('MFA setup not yet implemented');
-      return { success: false, message: 'MFA setup not yet implemented' };
+      const response = await authServiceClient.post('/api/auth/setup-mfa');
+      // Expect { success, data: { secret, otpauthUrl, qrCode? } }
+      const payload = response.data?.data || response.data;
+      return { success: true, ...payload };
     } catch (error) {
       console.error('MFA setup error:', error);
-      throw error;
+      const message = error.response?.data?.message || 'Failed to initialize MFA';
+      return { success: false, message };
     }
   },
 
   // Verify MFA (placeholder for future implementation)
   verifyMFA: async (token) => {
     try {
-      // Placeholder - will be implemented when MFA service is ready
-      console.warn('MFA verification not yet implemented');
-      return { success: false, message: 'MFA verification not yet implemented' };
+      const response = await authServiceClient.post('/api/auth/verify-mfa', { token });
+      const payload = response.data?.data || response.data;
+      return { success: true, ...payload };
     } catch (error) {
       console.error('MFA verification error:', error);
-      throw error;
+      const message = error.response?.data?.message || 'Failed to verify MFA';
+      return { success: false, message };
     }
   },
 
   // Disable MFA (placeholder for future implementation)
   disableMFA: async (password, token) => {
     try {
-      // Placeholder - will be implemented when MFA service is ready
-      console.warn('MFA disable not yet implemented');
-      return { success: false, message: 'MFA disable not yet implemented' };
+      const response = await authServiceClient.post('/api/auth/disable-mfa', { password, token });
+      const payload = response.data?.data || response.data;
+      return { success: true, ...payload };
     } catch (error) {
       console.error('MFA disable error:', error);
-      throw error;
+      const message = error.response?.data?.message || 'Failed to disable MFA';
+      return { success: false, message };
     }
   },
 
@@ -456,7 +426,7 @@ const authService = {
       // Fallback to localStorage if secureStorage fails (dual storage system compatibility)
       if (!token) {
         console.log('No token in secureStorage, checking localStorage fallback...');
-        token = localStorage.getItem('kelmah_auth_token');
+        token = secureStorage.getAuthToken();
         const userString = localStorage.getItem('user');
         
         if (token && userString) {

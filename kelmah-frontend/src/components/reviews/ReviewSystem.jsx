@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -51,6 +51,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../modules/auth/contexts/AuthContext';
+import reviewsApi from '../../services/reviewsApi';
 
 /**
  * Comprehensive Review & Rating System Component
@@ -108,166 +109,61 @@ const ReviewSystem = ({
     projectDuration: ''
   });
 
-  // Mock API functions (replace with actual API calls)
-  const reviewsApi = {
-    async getWorkerReviews(workerId, params = {}) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockReviews = Array.from({ length: 15 }, (_, index) => ({
-        _id: `review_${index + 1}`,
-        workerId,
-        hirerId: {
-          _id: `hirer_${index + 1}`,
-          firstName: ['John', 'Sarah', 'Michael', 'Emma', 'David'][index % 5],
-          lastName: ['Smith', 'Johnson', 'Brown', 'Davis', 'Wilson'][index % 5],
-          profilePicture: `https://images.unsplash.com/photo-${1500000000000 + index}?w=100&h=100&fit=crop&crop=face`
-        },
-        ratings: {
-          overall: Math.floor(Math.random() * 2) + 4, // 4-5 stars
-          quality: Math.floor(Math.random() * 2) + 4,
-          communication: Math.floor(Math.random() * 2) + 4,
-          timeliness: Math.floor(Math.random() * 2) + 4,
-          professionalism: Math.floor(Math.random() * 2) + 4,
-        },
-        title: [
-          'Excellent work quality',
-          'Professional and reliable',
-          'Great communication throughout',
-          'Delivered on time',
-          'Would definitely hire again'
-        ][index % 5],
-        comment: [
-          'The work was completed to a very high standard. Highly professional and would recommend to others.',
-          'Great communication throughout the project. Work was completed on schedule and within budget.',
-          'Professional approach and excellent quality of work. Very satisfied with the results.',
-          'Exceeded expectations. The attention to detail was impressive and the final result was outstanding.',
-          'Reliable and trustworthy. Completed the work efficiently and with great attention to detail.'
-        ][index % 5],
-        pros: [
-          ['High quality work', 'Professional attitude'],
-          ['Great communication', 'On-time delivery'],
-          ['Attention to detail', 'Fair pricing'],
-          ['Reliable', 'Clean work area'],
-          ['Skilled craftsmanship', 'Friendly service']
-        ][index % 5],
-        cons: index % 7 === 0 ? ['Could improve cleanup'] : [],
-        jobCategory: ['Carpentry', 'Plumbing', 'Electrical', 'Painting', 'General Repairs'][index % 5],
-        wouldRecommend: Math.random() > 0.1,
-        status: 'approved',
-        isVerified: Math.random() > 0.3,
-        helpfulVotes: Math.floor(Math.random() * 20),
-        response: index % 3 === 0 ? {
-          comment: 'Thank you for the positive feedback! It was a pleasure working with you.',
-          timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
-        } : null,
-        createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000)
-      }));
-
-      return {
-        reviews: mockReviews.slice((params.page - 1) * 10, params.page * 10),
-        pagination: {
-          page: params.page || 1,
-          limit: 10,
-          total: mockReviews.length,
-          pages: Math.ceil(mockReviews.length / 10)
-        }
-      };
-    },
-
-    async getWorkerRating(workerId) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      return {
-        workerId,
-        totalReviews: 47,
-        averageRating: 4.6,
-        ratings: {
-          overall: 4.6,
-          quality: 4.7,
-          communication: 4.5,
-          timeliness: 4.6,
-          professionalism: 4.8
-        },
-        ratingDistribution: {
-          5: 32,
-          4: 12,
-          3: 2,
-          2: 1,
-          1: 0
-        },
-        categoryRatings: [
-          { category: 'Carpentry', averageRating: 4.8, reviewCount: 25 },
-          { category: 'Plumbing', averageRating: 4.4, reviewCount: 15 },
-          { category: 'Electrical', averageRating: 4.6, reviewCount: 7 }
-        ],
-        recommendationRate: 94,
-        verifiedReviewsCount: 35,
-        responseRate: 78,
-        recentRating: 4.7,
-        trendDirection: 'up'
-      };
-    },
-
-    async submitReview(reviewData) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      return { success: true, message: 'Review submitted successfully and is pending moderation' };
-    },
-
-    async addResponse(reviewId, responseData) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { success: true, message: 'Response added successfully' };
-    },
-
-    async voteHelpful(reviewId) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return { success: true };
-    },
-
-    async reportReview(reviewId, reason) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      return { success: true, message: 'Review reported for moderation' };
-    }
-  };
+  // Eligibility state
+  const [eligibility, setEligibility] = useState({ canReview: false, reason: '' });
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
 
   // Fetch reviews and rating data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        const [reviewsResponse, ratingResponse] = await Promise.all([
-          reviewsApi.getWorkerReviews(workerId, {
-            page,
-            status: filters.status,
-            category: filters.category,
-            minRating: filters.minRating,
-            sortBy,
-            order: sortOrder
-          }),
-          reviewsApi.getWorkerRating(workerId)
-        ]);
+  const fetchReviewData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [reviewsResponse, ratingResponse] = await Promise.all([
+        reviewsApi.getWorkerReviews(workerId, {
+          page,
+          limit: 10,
+          status: filters.status,
+          ...(filters.category && { category: filters.category }),
+          ...(filters.minRating && { minRating: filters.minRating }),
+          sortBy,
+          order: sortOrder
+        }),
+        reviewsApi.getWorkerRating(workerId)
+      ]);
 
-        setReviews(reviewsResponse.reviews);
-        setTotalPages(reviewsResponse.pagination.pages);
-        setWorkerRating(ratingResponse);
-      } catch (error) {
-        console.error('Error fetching review data:', error);
-        showFeedback('Failed to load reviews', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (workerId) {
-      fetchData();
+      setReviews(reviewsResponse.reviews || []);
+      setTotalPages(reviewsResponse.pagination?.pages || 1);
+      setWorkerRating(ratingResponse);
+    } catch (error) {
+      console.error('Error fetching review data:', error);
+      showFeedback('Failed to load reviews', 'error');
+    } finally {
+      setLoading(false);
     }
   }, [workerId, page, filters, sortBy, sortOrder]);
+
+  useEffect(() => {
+    if (workerId) {
+      fetchReviewData();
+    }
+  }, [workerId, fetchReviewData]);
+
+  // Check review eligibility
+  useEffect(() => {
+    const check = async () => {
+      try {
+        setCheckingEligibility(true);
+        const result = await reviewsApi.canReviewWorker(workerId, jobId || null);
+        setEligibility(result || { canReview: false, reason: 'Not eligible' });
+      } catch (e) {
+        setEligibility({ canReview: false, reason: 'Unable to verify eligibility' });
+      } finally {
+        setCheckingEligibility(false);
+      }
+    };
+    if (user && user.id && user.id !== workerId) {
+      check();
+    }
+  }, [workerId, jobId, user]);
 
   // Helper functions
   const showFeedback = (message, severity = 'success') => {
@@ -281,8 +177,8 @@ const ReviewSystem = ({
         jobId,
         ...reviewForm
       });
-      
-      showFeedback(result.message, 'success');
+
+      showFeedback(result.message || 'Review submitted', 'success');
       setSubmissionOpen(false);
       
       // Reset form
@@ -297,8 +193,8 @@ const ReviewSystem = ({
         projectDuration: ''
       });
       
-      // Refresh reviews
-      // fetchData(); // Would call the fetch function again
+      // Refresh reviews and rating summary
+      fetchReviewData();
     } catch (error) {
       showFeedback('Failed to submit review', 'error');
     }
@@ -306,7 +202,7 @@ const ReviewSystem = ({
 
   const handleAddResponse = async (reviewId, comment) => {
     try {
-      await reviewsApi.addResponse(reviewId, { comment });
+      await reviewsApi.addWorkerResponse(reviewId, comment);
       showFeedback('Response added successfully', 'success');
       setResponseDialogOpen(false);
       // Refresh reviews
@@ -732,18 +628,23 @@ const ReviewSystem = ({
           Reviews ({workerRating?.totalReviews || 0})
         </Typography>
         
-        {showSubmissionForm && (
-          <Button
-            variant="contained"
-            onClick={() => setSubmissionOpen(true)}
-            sx={{
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-              color: '#000',
-              fontWeight: 700,
-            }}
-          >
-            Write Review
-          </Button>
+        {showSubmissionForm && user && user.id !== workerId && (
+          <Tooltip title={eligibility.canReview ? 'Write a review' : (eligibility.reason || 'You can review only after a completed job')}>
+            <span>
+              <Button
+                variant="contained"
+                disabled={!eligibility.canReview || checkingEligibility}
+                onClick={() => setSubmissionOpen(true)}
+                sx={{
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                  color: '#000',
+                  fontWeight: 700,
+                }}
+              >
+                {checkingEligibility ? 'Checking…' : 'Write Review'}
+              </Button>
+            </span>
+          </Tooltip>
         )}
       </Stack>
 

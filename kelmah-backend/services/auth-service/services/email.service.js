@@ -8,13 +8,11 @@ const SMTP_PORT = config.SMTP_PORT || 465;
 const SMTP_USER = config.SMTP_USER;
 const SMTP_PASS = config.SMTP_PASSWORD || config.SMTP_PASS;
 
-// Debug logging for SMTP configuration
+// Safe debug logging for SMTP configuration (avoid printing secrets)
 console.log('SMTP config → host:', SMTP_HOST, 'port:', SMTP_PORT);
 console.log('EMAIL_FROM:', EMAIL_FROM);
-console.log('SMTP_USER:', SMTP_USER);
-console.log('SMTP_PASS:', SMTP_PASS ? '******' : 'undefined');
-console.log('Direct env access → SMTP_HOST:', process.env.SMTP_HOST);
-console.log('Direct env access → SMTP_PORT:', process.env.SMTP_PORT);
+console.log('SMTP_USER:', SMTP_USER ? '[set]' : '[unset]');
+console.log('SMTP_PASS:', SMTP_PASS ? '[set]' : '[unset]');
 
 const smtpConfig = {
   host: SMTP_HOST || 'smtp.gmail.com',
@@ -42,8 +40,8 @@ console.log('Using SMTP config:', {
   host: smtpConfig.host,
   port: smtpConfig.port,
   secure: smtpConfig.secure,
-  user: smtpConfig.auth.user,
-  pass: smtpConfig.auth.pass ? '******' : 'undefined'
+  user: smtpConfig.auth.user ? '[set]' : '[unset]',
+  pass: smtpConfig.auth.pass ? '[set]' : '[unset]'
 });
 
 const transporter = nodemailer.createTransport(smtpConfig);

@@ -71,17 +71,17 @@ class SecureStorage {
   }
 
   /**
-   * Generate encryption key based on browser fingerprint
+   * Generate encryption key based on browser fingerprint + persistent secret
    */
   generateEncryptionKey() {
+    const secret = this.getOrCreatePersistentSecret();
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
       screen.width + 'x' + screen.height,
       new Date().getTimezoneOffset(),
       navigator.platform,
-      // Add session-specific component for extra security
-      sessionStorage.getItem('session_id') || this.generateSessionId()
+      secret,
     ].join('|');
 
     return CryptoJS.SHA256(fingerprint).toString();
@@ -94,6 +94,24 @@ class SecureStorage {
     const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     sessionStorage.setItem('session_id', sessionId);
     return sessionId;
+  }
+
+  /**
+   * Get or create a persistent secret stored in localStorage to keep keys stable across sessions
+   */
+  getOrCreatePersistentSecret() {
+    try {
+      const keyName = 'kelmah_encryption_secret';
+      let secret = localStorage.getItem(keyName);
+      if (!secret) {
+        secret = 'ksec_' + CryptoJS.lib.WordArray.random(32).toString();
+        localStorage.setItem(keyName, secret);
+      }
+      return secret;
+    } catch (error) {
+      // Fallback to session-scoped value if localStorage is unavailable
+      return sessionStorage.getItem('session_id') || this.generateSessionId();
+    }
   }
 
   /**

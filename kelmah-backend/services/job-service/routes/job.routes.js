@@ -5,6 +5,13 @@
 const express = require("express");
 const { validate } = require("../middlewares/validator");
 const { authenticateUser, authorizeRoles } = require("../middlewares/auth");
+let createLimiter;
+try {
+  ({ createLimiter } = require('../../auth-service/middlewares/rateLimiter'));
+} catch (_) {
+  // Fallback: no-op limiter to avoid crashing when shared limiter isn't available in the image
+  createLimiter = () => (req, res, next) => next();
+}
 const jobValidation = require("../validations/job.validation");
 const jobController = require("../controllers/job.controller");
 
@@ -12,8 +19,12 @@ const router = express.Router();
 
 // Public routes
 router.get("/", jobController.getJobs);
+router.get("/search", jobController.advancedJobSearch);
 router.get("/dashboard", jobController.getDashboardJobs);
+router.get("/categories", jobController.getJobCategories);
 router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
+router.get("/contracts/:id", jobController.getContractById);
+router.post("/contracts/:id/disputes", authenticateUser, jobController.createContractDispute);
 router.get("/:id", jobController.getJobById);
 
 // Protected routes
@@ -23,6 +34,7 @@ router.use(authenticateUser);
 router.post(
   "/",
   authorizeRoles("hirer"),
+  createLimiter('payments'),
   validate(jobValidation.createJob),
   jobController.createJob,
 );
@@ -32,17 +44,41 @@ router.get("/my-jobs", authorizeRoles("hirer"), jobController.getMyJobs);
 router.put(
   "/:id",
   authorizeRoles("hirer"),
+  createLimiter('payments'),
   validate(jobValidation.updateJob),
   jobController.updateJob,
 );
 
-router.delete("/:id", authorizeRoles("hirer"), jobController.deleteJob);
+router.delete("/:id", authorizeRoles("hirer"), createLimiter('payments'), jobController.deleteJob);
 
 router.patch(
   "/:id/status",
   authorizeRoles("hirer"),
+  createLimiter('payments'),
   validate(jobValidation.changeJobStatus),
   jobController.changeJobStatus,
 );
+
+// Job matching routes
+router.get("/recommendations", authorizeRoles("worker"), jobController.getJobRecommendations);
+router.get("/:id/worker-matches", authorizeRoles("hirer"), jobController.getWorkerMatches);
+
+// Applications
+router.post('/:id/apply', authorizeRoles('worker'), createLimiter('default'), jobController.applyToJob);
+router.get('/:id/applications', authorizeRoles('hirer'), jobController.getJobApplications);
+router.put('/:id/applications/:applicationId', authorizeRoles('hirer'), jobController.updateApplicationStatus);
+router.delete('/:id/applications/:applicationId', authorizeRoles('worker'), jobController.withdrawApplication);
+
+// Saved jobs
+router.get('/saved', jobController.getSavedJobs);
+router.post('/:id/save', jobController.saveJob);
+router.delete('/:id/save', jobController.unsaveJob);
+
+// Analytics routes (admin only)
+router.get("/analytics", authorizeRoles("admin"), jobController.getJobAnalytics);
+
+// Worker-centric routes
+router.get('/assigned', authorizeRoles('worker'), jobController.getMyAssignedJobs);
+router.get('/applications/me', authorizeRoles('worker'), jobController.getMyApplications);
 
 module.exports = router;

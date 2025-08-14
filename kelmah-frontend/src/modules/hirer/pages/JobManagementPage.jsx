@@ -83,18 +83,18 @@ function TabPanel(props) {
   );
 }
 
-// Status chip component
+// Status chip component (canonical statuses)
 const StatusChip = ({ status }) => {
   const getStatusConfig = (status) => {
     switch (status) {
-      case 'active':
-        return { label: 'Active', color: 'success', icon: <ActiveIcon /> };
-      case 'paused':
-        return { label: 'Paused', color: 'warning', icon: <PausedIcon /> };
-      case 'expired':
-        return { label: 'Expired', color: 'error', icon: <ExpiredIcon /> };
-      case 'closed':
-        return { label: 'Closed', color: 'error', icon: <ClosedIcon /> };
+      case 'open':
+        return { label: 'Open', color: 'success', icon: <ActiveIcon /> };
+      case 'in-progress':
+        return { label: 'In Progress', color: 'warning', icon: <ExpiredIcon /> };
+      case 'completed':
+        return { label: 'Completed', color: 'success', icon: <ActiveIcon /> };
+      case 'cancelled':
+        return { label: 'Cancelled', color: 'error', icon: <ClosedIcon /> };
       case 'draft':
         return { label: 'Draft', color: 'default', icon: <DraftIcon /> };
       default:
@@ -140,17 +140,17 @@ const JobManagementPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Fetch jobs by status on mount
+  // Fetch jobs by status on mount (canonical statuses)
   useEffect(() => {
-    ['active', 'draft', 'completed', 'cancelled', 'paused'].forEach(
+    ['open', 'in-progress', 'completed', 'cancelled', 'draft'].forEach(
       (status) => {
         dispatch(fetchHirerJobs(status));
       },
     );
   }, [dispatch]);
 
-  // Tab statuses
-  const tabStatuses = ['all', 'active', 'paused', 'expired', 'closed', 'draft'];
+  // Tab statuses (canonical)
+  const tabStatuses = ['all', 'open', 'in-progress', 'completed', 'cancelled', 'draft'];
 
   // Filter jobs based on tab and search
   const filteredJobs = jobs.filter((job) => {
@@ -358,10 +358,10 @@ const JobManagementPage = () => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Active
-                {jobs.filter((job) => job.status === 'active').length > 0 && (
+                Open
+                {jobs.filter((job) => job.status === 'open').length > 0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'active').length}
+                    label={jobs.filter((job) => job.status === 'open').length}
                     size="small"
                     color="success"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
@@ -373,10 +373,10 @@ const JobManagementPage = () => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Paused
-                {jobs.filter((job) => job.status === 'paused').length > 0 && (
+                In Progress
+                {jobs.filter((job) => job.status === 'in-progress').length > 0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'paused').length}
+                    label={jobs.filter((job) => job.status === 'in-progress').length}
                     size="small"
                     color="warning"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
@@ -388,14 +388,12 @@ const JobManagementPage = () => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Expired
-                {jobs.filter((job) => job.status === 'expired').length > 0 && (
+                Completed
+                {jobs.filter((job) => job.status === 'completed').length > 0 && (
                   <Chip
-                    label={
-                      jobs.filter((job) => job.status === 'expired').length
-                    }
+                    label={jobs.filter((job) => job.status === 'completed').length}
                     size="small"
-                    color="error"
+                    color="success"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
                   />
                 )}
@@ -405,10 +403,10 @@ const JobManagementPage = () => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Closed
-                {jobs.filter((job) => job.status === 'closed').length > 0 && (
+                Cancelled
+                {jobs.filter((job) => job.status === 'cancelled').length > 0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'closed').length}
+                    label={jobs.filter((job) => job.status === 'cancelled').length}
                     size="small"
                     color="error"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
@@ -639,30 +637,37 @@ const JobManagementPage = () => {
 
         <Divider />
 
-        {selectedJob?.status !== 'active' && (
-          <MenuItem onClick={() => handleStatusChange('active')}>
+        {selectedJob?.status !== 'open' && (
+          <MenuItem onClick={() => handleStatusChange('open')}>
             <ActiveIcon
               fontSize="small"
               sx={{ mr: 1, color: 'success.main' }}
             />
-            Set as Active
+            Set as Open
           </MenuItem>
         )}
-
-        {selectedJob?.status !== 'paused' && (
-          <MenuItem onClick={() => handleStatusChange('paused')}>
-            <PausedIcon
+        {selectedJob?.status !== 'in-progress' && (
+          <MenuItem onClick={() => handleStatusChange('in-progress')}>
+            <ExpiredIcon
               fontSize="small"
               sx={{ mr: 1, color: 'warning.main' }}
             />
-            Pause Job
+            Mark In Progress
           </MenuItem>
         )}
-
-        {selectedJob?.status !== 'closed' && (
-          <MenuItem onClick={() => handleStatusChange('closed')}>
+        {selectedJob?.status !== 'completed' && (
+          <MenuItem onClick={() => handleStatusChange('completed')}>
+            <ActiveIcon
+              fontSize="small"
+              sx={{ mr: 1, color: 'success.main' }}
+            />
+            Mark Completed
+          </MenuItem>
+        )}
+        {selectedJob?.status !== 'cancelled' && (
+          <MenuItem onClick={() => handleStatusChange('cancelled')}>
             <ClosedIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} />
-            Close Job
+            Cancel Job
           </MenuItem>
         )}
 

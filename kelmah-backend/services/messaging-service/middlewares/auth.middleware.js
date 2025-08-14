@@ -54,13 +54,14 @@ const authenticate = async (req, res, next) => {
     });
     
     // Get user details with timeout to prevent buffering issues
-    const user = await User.findById(decoded.sub || decoded.id || decoded.userId)
+    const userId = decoded.sub || decoded.id || decoded.userId;
+    const user = await User.findById(userId)
       .select('firstName lastName email role isActive')
       .maxTimeMS(8000); // 8 second timeout to prevent buffering issues
     
     if (!user || !user.isActive) {
       console.warn('❌ Auth Failed: User not found or inactive:', {
-        userId: decoded.sub || decoded.id || decoded.userId,
+      userId,
         userFound: !!user,
         userActive: user?.isActive
       });

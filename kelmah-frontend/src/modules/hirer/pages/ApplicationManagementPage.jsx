@@ -35,7 +35,7 @@ import {
   Star,
 } from '@mui/icons-material';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
 import { useSelector } from 'react-redux';
 import { selectHirerJobs } from '../services/hirerSlice';

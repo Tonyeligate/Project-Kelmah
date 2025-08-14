@@ -13,7 +13,11 @@ exports.authenticate = async (req, res, next) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
+      req.user = {
+        id: decoded.id || decoded.sub,
+        email: decoded.email,
+        role: decoded.role
+      };
       next();
     } catch (error) {
       throw new MessagingServiceError("Invalid token", 401);

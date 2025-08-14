@@ -34,6 +34,11 @@ const JobSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Budget is required"],
     },
+    currency: {
+      type: String,
+      default: 'GHS',
+      trim: true
+    },
     duration: {
       value: {
         type: Number,
@@ -148,6 +153,9 @@ JobSchema.index({
   category: "text",
   skills: "text",
 });
+
+// Optional geo index if location coordinates are added later
+// JobSchema.index({ locationCoordinates: '2dsphere' });
 
 // Export model, reusing existing definition if present to avoid overwrite
 const JobModel = mongoose.models.Job || mongoose.model("Job", JobSchema);

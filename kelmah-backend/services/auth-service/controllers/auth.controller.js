@@ -4,23 +4,33 @@
  */
 
 const models = require("../models");
-const { User, RefreshToken } = models;
+const { User, RefreshToken, RevokedToken } = models;
 const { AppError } = require("../utils/errorTypes");
 const jwtUtils = require("../utils/jwt");
 const emailService = require("../services/email.service");
 const crypto = require("crypto");
+const secure = require('../utils/jwt-secure');
 // MongoDB operators used directly in queries (no Op import needed)
 const config = require("../config");
 const { generateOTP } = require("../utils/otp");
 const deviceUtil = require("../utils/device");
 const sessionUtil = require("../utils/session");
 const logger = require("../utils/logger");
+// MFA dependencies
+let speakeasy, QRCode;
+try {
+  speakeasy = require('speakeasy');
+  QRCode = require('qrcode');
+} catch (_) {
+  // Optional; controller methods will guard usage
+}
 
 /**
  * Register a new user
  */
 exports.register = async (req, res, next) => {
-  console.log('Register payload:', req.body);
+  // Avoid logging full payloads; log minimal info
+  logger.info('Register attempt', { email: req.body?.email });
   try {
     const { firstName, lastName, email, phone, password, role } = req.body;
     
@@ -65,8 +75,7 @@ exports.register = async (req, res, next) => {
     
     const verificationUrl = `${frontendUrl}/verify-email/${rawToken}`;
     
-    console.log('Frontend URL used for verification:', frontendUrl);
-    console.log('Full verification URL:', verificationUrl);
+    logger.info('Email verification link generated', { frontendUrl });
     
     // Send verification email (don't fail registration if email fails)
     try {
@@ -76,7 +85,7 @@ exports.register = async (req, res, next) => {
         verificationUrl,
       });
     } catch (mailErr) {
-      console.error('Verification email failed:', mailErr.message);
+      logger.warn('Verification email failed', { error: mailErr.message });
       // Continue with registration even if email fails
     }
     
@@ -85,7 +94,7 @@ exports.register = async (req, res, next) => {
       message: "Registration successful, please check your email to verify your account.",
     });
   } catch (error) {
-    console.error('Registration failed:', error);
+    logger.error('Registration failed', { error: error.message, stack: error.stack });
     
     // Handle specific Mongoose validation errors
     if (error.name === 'ValidationError') {
@@ -168,27 +177,33 @@ exports.login = async (req, res, next) => {
     user.failedLoginAttempts = 0;
     user.accountLockedUntil = null;
 
-    // Generate tokens with enhanced security
-    const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
-    
-    // Set refresh token expiry based on rememberMe
-    const refreshTokenExpiry = rememberMe 
-      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);  // 7 days
+    // Generate access token via local JWT utils
+    const accessToken = jwtUtils.signAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      version: user.tokenVersion || 0,
+    });
 
-    // Store refresh token with device information
-    await RefreshToken.create({
-      userId: user.id,
-      token: refreshToken,
-      expiresAt: refreshTokenExpiry,
+    // Generate secure composite refresh token (signed_jwt.raw)
+    const refreshData = await secure.generateRefreshToken(user, {
+      ipAddress: req.ip,
       deviceInfo: {
         userAgent: req.headers['user-agent'],
-        ip: req.ip,
         fingerprint: req.headers['x-device-id'] || 'unknown'
-      },
+      }
+    });
+
+    // Store only hashed part + tokenId
+    await RefreshToken.create({
+      userId: user.id,
+      tokenId: refreshData.tokenId,
+      tokenHash: refreshData.tokenHash,
+      version: user.tokenVersion || 0,
+      expiresAt: refreshData.expiresAt,
+      deviceInfo: refreshData.deviceInfo,
+      createdByIp: req.ip,
       createdAt: new Date(),
-      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
-      version: user.tokenVersion || 0
     });
 
     // Update user login information
@@ -197,13 +212,13 @@ exports.login = async (req, res, next) => {
     await user.save();
 
     // Log successful login for audit purposes
-    console.log(`User ${user.email} logged in successfully from IP: ${req.ip}`);
+    logger.info('User logged in', { email: user.email, ip: req.ip });
 
     return res.status(200).json({
       success: true,
       data: {
         token: accessToken,
-        refreshToken: refreshToken,
+        refreshToken: refreshData.token,
         user: {
           id: user.id,
           firstName: user.firstName,
@@ -216,7 +231,7 @@ exports.login = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error', { error: error.message, stack: error.stack });
     return next(new AppError(`Login failed: ${error.message}`, 500));
   }
 };
@@ -242,16 +257,19 @@ exports.verifyEmail = async (req, res, next) => {
 
     await user.save();
 
-    // Generate tokens now that email is verified
-    const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
+    // Generate access + secure refresh token
+    const accessToken = jwtUtils.signAccessToken({ id: user.id, email: user.email, role: user.role, version: user.tokenVersion || 0 });
+    const refreshData = await secure.generateRefreshToken(user, { ipAddress: req.ip, deviceInfo: { userAgent: req.headers['user-agent'] } });
 
-    // Store refresh token in database
+    // Store hashed refresh token
     await RefreshToken.create({
       userId: user.id,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
-      version: user.tokenVersion || 0
+      tokenId: refreshData.tokenId,
+      tokenHash: refreshData.tokenHash,
+      version: user.tokenVersion || 0,
+      expiresAt: refreshData.expiresAt,
+      deviceInfo: refreshData.deviceInfo,
+      createdByIp: req.ip,
     });
 
     // Return success response
@@ -268,7 +286,7 @@ exports.verifyEmail = async (req, res, next) => {
           isEmailVerified: user.isEmailVerified,
         },
         accessToken,
-        refreshToken,
+        refreshToken: refreshData.token,
       },
     });
   } catch (error) {
@@ -312,8 +330,7 @@ exports.resendVerificationEmail = async (req, res, next) => {
     
     const verificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
     
-    console.log('Resend - Frontend URL used:', frontendUrl);
-    console.log('Resend - Full verification URL:', verificationUrl);
+    logger.info('Resent verification email', { frontendUrl });
 
     await emailService.sendVerificationEmail({
       name: user.fullName,
@@ -507,21 +524,24 @@ exports.refreshToken = async (req, res, next) => {
       return next(new AppError("Refresh token is required", 400));
     }
 
-    // Verify refresh token
-    const decoded = await jwtUtils.verifyRefreshToken(refreshToken);
-
-    // Check if token exists in database and is not expired
-    const storedToken = await RefreshToken.findOne({
-      token: refreshToken,
-      expiresAt: { $gt: new Date() },
-    });
-
-    if (!storedToken) {
-      return next(new AppError("Invalid or expired refresh token", 401));
+    // Verify secure composite refresh token (signed_jwt.raw)
+    const tokenStr = refreshToken;
+    const parts = tokenStr.split('.');
+    if (parts.length !== 4) return next(new AppError('Invalid refresh token format', 400));
+    const signedPart = parts.slice(0,3).join('.');
+    let parsed;
+    try {
+      parsed = jwtUtils.verifyRefreshToken(signedPart);
+    } catch (e) {
+      return next(new AppError('Invalid or expired refresh token', 401));
     }
+    const stored = await RefreshToken.findOne({ tokenId: parsed.jti, isRevoked: false, expiresAt: { $gt: new Date() } });
+    if (!stored) return next(new AppError('Invalid or expired refresh token', 401));
+    const verifyRes = await secure.verifyRefreshToken(tokenStr, { tokenHash: stored.tokenHash, version: stored.version });
+    if (!verifyRes.valid) return next(new AppError(verifyRes.error || 'Invalid refresh token', 401));
 
     // Get user
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(String(stored.userId));
 
     if (!user || !user.isActive) {
       // Remove invalid token from database
@@ -530,50 +550,47 @@ exports.refreshToken = async (req, res, next) => {
     }
 
     // Check if token version matches (if versioning is implemented)
-    if (user.tokenVersion && decoded.version && user.tokenVersion !== decoded.version) {
+    if (user.tokenVersion && stored.version && user.tokenVersion !== stored.version) {
       // Token has been invalidated, remove from database
-      await RefreshToken.deleteMany({ token: refreshToken });
+      await RefreshToken.updateMany({ tokenId: parsed.jti }, { $set: { isRevoked: true, revokedAt: new Date(), revokedByIp: req.ip } });
       return next(new AppError("Token has been invalidated", 401));
     }
 
     // Generate new tokens
-    const { accessToken, refreshToken: newRefreshToken } = jwtUtils.generateAuthTokens(user);
+    const accessToken = jwtUtils.signAccessToken({ id: user.id, email: user.email, role: user.role, version: user.tokenVersion || 0 });
+    const newRefreshData = await secure.generateRefreshToken(user, { ipAddress: req.ip, deviceInfo: { userAgent: req.headers['user-agent'], fingerprint: req.headers['x-device-id'] || 'unknown' } });
 
-    // Remove old refresh token and store new one
-    await RefreshToken.deleteMany({ token: refreshToken });
-
+    // Rotate: revoke old row by tokenId, insert new hashed row
+    await RefreshToken.updateMany({ tokenId: parsed.jti }, { $set: { isRevoked: true, revokedAt: new Date(), revokedByIp: req.ip } });
     await RefreshToken.create({
       userId: user.id,
-      token: newRefreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      deviceInfo: {
-        userAgent: req.headers['user-agent'],
-        ip: req.ip,
-        fingerprint: req.headers['x-device-id'] || 'unknown'
-      },
+      tokenId: newRefreshData.tokenId,
+      tokenHash: newRefreshData.tokenHash,
+      version: user.tokenVersion || 0,
+      expiresAt: newRefreshData.expiresAt,
+      deviceInfo: newRefreshData.deviceInfo,
+      createdByIp: req.ip,
       createdAt: new Date(),
-      jti: jwtUtils.verifyRefreshToken(newRefreshToken).jti,
-      version: user.tokenVersion || 0
     });
 
     // Log token refresh for audit purposes
-    console.log(`Token refreshed for user ${user.email} from IP: ${req.ip}`);
+    logger.info('Token refreshed', { email: user.email, ip: req.ip });
 
     // Return tokens in expected format
     return res.status(200).json({
       success: true,
       data: {
         token: accessToken,
-        refreshToken: newRefreshToken,
+        refreshToken: newRefreshData.token,
       },
     });
   } catch (error) {
-    console.error('Token refresh error:', error);
+    logger.error('Token refresh error', { error: error.message, stack: error.stack });
     
     // Clean up invalid refresh token if it exists
     if (req.body.refreshToken) {
       await RefreshToken.deleteMany({ token: req.body.refreshToken })
-        .catch(err => console.error('Error cleaning up refresh token:', err));
+        .catch(err => logger.warn('Error cleaning up refresh token', { error: err?.message }));
     }
     
     return next(new AppError(`Token refresh failed: ${error.message}`, 500));
@@ -593,15 +610,20 @@ exports.logout = async (req, res, next) => {
     if (logoutAll && userId) {
       // Revoke all refresh tokens for the user (logout from all devices)
       const result = await RefreshToken.deleteMany({ userId });
-      revokedCount = result;
-      
-      console.log(`User ${userId} logged out from all devices. Revoked ${revokedCount} tokens.`);
+      revokedCount = result?.deletedCount || 0;
+      logger.info('User logged out from all devices', { userId, revokedCount });
     } else if (refreshToken) {
-      // Remove specific refresh token from database
-      const result = await RefreshToken.deleteMany({ token: refreshToken });
-      revokedCount = result;
-      
-      console.log(`Refresh token revoked for user logout. Tokens revoked: ${revokedCount}`);
+      // Revoke specific refresh token by tokenId (from composite)
+      try {
+        const parts = refreshToken.split('.');
+        const signed = parts.slice(0,3).join('.');
+        const parsed = jwtUtils.verifyRefreshToken(signed);
+        const result = await RefreshToken.deleteMany({ tokenId: parsed.jti });
+        revokedCount = result?.deletedCount || 0;
+        logger.info('Refresh token revoked on logout', { revokedCount });
+      } catch (_) {
+        // ignore invalid token
+      }
     }
 
     // Return consistent success response format
@@ -613,7 +635,7 @@ exports.logout = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout error', { error: error.message, stack: error.stack });
     return next(new AppError(`Logout failed: ${error.message}`, 500));
   }
 };
@@ -1162,10 +1184,10 @@ exports.cleanupExpiredTokens = async () => {
       expiresAt: { $lt: new Date() }
     });
     
-    console.log(`Cleaned up ${result} expired refresh tokens`);
+    logger.info('Cleaned up expired refresh tokens', { result });
     return { success: true, cleaned: result };
   } catch (error) {
-    console.error('Failed to cleanup expired tokens:', error);
+    logger.error('Failed to cleanup expired tokens', { error: error.message });
     return { success: false, error: error.message };
   }
 };
@@ -1203,7 +1225,7 @@ exports.getAuthStats = async (req, res, next) => {
       data: stats
     });
   } catch (error) {
-    console.error('Failed to get auth stats:', error);
+    logger.error('Failed to get auth stats', { error: error.message });
     return next(new AppError(`Failed to get authentication statistics: ${error.message}`, 500));
   }
 };

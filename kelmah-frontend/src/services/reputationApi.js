@@ -13,17 +13,7 @@ const reputationServiceClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Add auth token to requests
-reputationServiceClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Auth is handled by gateway middleware; keep lightweight client here
 
 // Response interceptor for error handling
 reputationServiceClient.interceptors.response.use(

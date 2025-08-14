@@ -18,6 +18,7 @@ import {
   Alert,
   Card,
   CardContent,
+  CardMedia,
   Chip,
   IconButton,
   LinearProgress,
@@ -41,6 +42,9 @@ import {
   SpeedDialIcon,
   Breadcrumbs,
   Link,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -84,7 +88,10 @@ import {
 } from '@mui/icons-material';
 import { styled, useTheme } from '@mui/material/styles';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
+import TextField from '@mui/material/TextField';
+import ReviewSystem from '../../../components/reviews/ReviewSystem';
+import reviewsApi from '../../../services/reviewsApi';
 
 const Input = styled('input')({
   display: 'none',
@@ -165,9 +172,11 @@ function WorkerProfile() {
   const [portfolio, setPortfolio] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [ratingSummary, setRatingSummary] = useState(null);
   const [workHistory, setWorkHistory] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [stats, setStats] = useState({});
+  const [earnings, setEarnings] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -177,6 +186,8 @@ function WorkerProfile() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [portfolioDialogOpen, setPortfolioDialogOpen] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState(null);
+  const [editingAvailability, setEditingAvailability] = useState(false);
+  const [availabilityDraft, setAvailabilityDraft] = useState(null);
 
   const isOwner = authUser?.userId === workerId;
 
@@ -185,33 +196,53 @@ function WorkerProfile() {
     setError(null);
     try {
       const profileRes = await workerService.getWorkerById(workerId);
-      setProfile(profileRes.data);
+      const worker = profileRes?.data?.data?.worker || profileRes?.data?.worker || profileRes?.data;
+      const normalizedProfile = worker ? {
+        ...worker,
+        user: worker.user,
+        // UI expects these keys
+        hourly_rate: worker.hourlyRate?.min ?? worker.hourlyRate ?? worker.hourlyRateMin ?? 0,
+        is_verified: worker.verification?.isVerified ?? worker.isVerified ?? false,
+        profile_picture: worker.profile?.picture ?? worker.profilePicture,
+        is_online: false,
+      } : null;
+      setProfile(normalizedProfile);
 
       const [
         skillsRes,
         portfolioRes,
         certsRes,
-        reviewsRes,
         historyRes,
         availabilityRes,
         statsRes,
+        ratingRes,
+        earningsRes,
       ] = await Promise.all([
-          workerService.getWorkerSkills(workerId),
-          workerService.getWorkerPortfolio(workerId),
-          workerService.getWorkerCertificates(workerId),
-          workerService.getWorkerReviews(workerId),
-          workerService.getWorkHistory(workerId),
+        workerService.getWorkerSkills(workerId),
+        workerService.getWorkerPortfolio(workerId),
+        workerService.getWorkerCertificates(workerId),
+        workerService.getWorkHistory(workerId),
         workerService.getWorkerAvailability(workerId),
         workerService.getWorkerStats(workerId),
+        reviewsApi.getWorkerRating(workerId),
+        workerService.getWorkerEarnings(workerId),
       ]);
 
-      setSkills(skillsRes.data || []);
-      setPortfolio(portfolioRes.data || []);
-      setCertificates(certsRes.data || []);
-      setReviews(reviewsRes.data || []);
-      setWorkHistory(historyRes.data || []);
-      setAvailability(availabilityRes.data || null);
-      setStats(statsRes.data || {});
+      const rawSkills = skillsRes?.data?.data || skillsRes?.data || [];
+      const normalizedSkills = Array.isArray(rawSkills)
+        ? rawSkills.map((s) => ({ name: s.name || s.skillName || s?.skill?.name || '' }))
+        : [];
+      setSkills(normalizedSkills);
+
+      setPortfolio(portfolioRes?.data?.data || portfolioRes?.data || []);
+      setCertificates(certsRes?.data?.data || certsRes?.data || []);
+      // Review list comes from ReviewSystem; keep count from rating summary
+      setReviews([]);
+      setRatingSummary(ratingRes);
+      setWorkHistory(historyRes?.data?.data || historyRes?.data || []);
+      setAvailability(availabilityRes?.data?.data || null);
+      setStats(statsRes?.data?.data || {});
+      setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
       setError(
         'Failed to load profile data. The worker may not exist or there was a network error.',
@@ -225,6 +256,14 @@ function WorkerProfile() {
   useEffect(() => {
     if (workerId) {
       fetchAllData();
+      // Fetch current user's bookmarks to set initial bookmark state
+      workerService
+        .getBookmarks()
+        .then((res) => {
+          const ids = res?.data?.data?.workerIds || [];
+          setIsBookmarked(ids.includes(workerId));
+        })
+        .catch(() => {});
     }
   }, [workerId, fetchAllData]);
 
@@ -240,9 +279,14 @@ function WorkerProfile() {
     navigate(`/messages?recipient=${workerId}`);
   };
 
-  const handleBookmarkToggle = () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: Implement bookmark API call
+  const handleBookmarkToggle = async () => {
+    try {
+      setIsBookmarked((prev) => !prev);
+      await workerService.bookmarkWorker(workerId);
+    } catch (_) {
+      // revert on error
+      setIsBookmarked((prev) => !prev);
+    }
   };
 
   const handleShare = async () => {
@@ -525,6 +569,15 @@ function WorkerProfile() {
 
   const renderMetrics = () => {
     const isActualMobile = useMediaQuery('(max-width: 768px)');
+    const statsData = stats || {};
+    const totalAllTime = statsData.totalEarnings || earnings?.totals?.allTime || 0;
+    const last30 = earnings?.totals?.last30Days || 0;
+    const last7 = earnings?.totals?.last7Days || 0;
+    const jobsCompleted = statsData.totalJobsCompleted || statsData.jobsCompleted || 0;
+    const jobsCancelled = statsData.jobsCancelled || 0;
+    const completionRate = statsData.completionRate ?? (jobsCompleted + jobsCancelled > 0
+      ? Math.round((jobsCompleted / (jobsCompleted + jobsCancelled)) * 100)
+      : 0);
     
     return (
       <motion.div
@@ -558,7 +611,7 @@ function WorkerProfile() {
                   }}
                 >
                   <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
-                    Earnings
+                    Earnings (30d)
                   </Typography>
                   <Typography
                     sx={{
@@ -567,10 +620,10 @@ function WorkerProfile() {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    ${stats.total_earnings || '2,400'}
+                    ${last30}
                   </Typography>
                   <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
-                    +15%
+                    7d: ${last7}
                   </Typography>
                 </Paper>
               </Grid>
@@ -791,6 +844,23 @@ function WorkerProfile() {
             </MetricCard>
           </Grid>
         </Grid>
+
+        {Array.isArray(earnings?.breakdown?.byMonth) && earnings.breakdown.byMonth.length > 0 && (
+          <GlassCard sx={{ mb: 4 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>Earnings (last 12 months)</Typography>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 120 }}>
+                {earnings.breakdown.byMonth.map((m, idx) => {
+                  const max = Math.max(...earnings.breakdown.byMonth.map(x => x.amount || 0)) || 1;
+                  const h = Math.max(4, Math.round(((m.amount || 0) / max) * 100));
+                  return (
+                    <Box key={idx} sx={{ width: 10, height: h, backgroundColor: theme.palette.primary.main, borderRadius: 1 }} title={`M${m.month}: $${m.amount}`} />
+                  );
+                })}
+              </Box>
+            </CardContent>
+          </GlassCard>
+        )}
       </motion.div>
     );
   };
@@ -949,60 +1019,7 @@ function WorkerProfile() {
           <StarIcon color="primary" />
           Client Reviews
         </Typography>
-
-        {reviews.length > 0 ? (
-            <List>
-            {reviews.slice(0, 5).map((review, index) => (
-              <React.Fragment key={index}>
-                  <ListItem alignItems="flex-start">
-                    <ListItemAvatar>
-                    <Avatar>{review.client_name?.charAt(0) || 'C'}</Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          mb: 1,
-                        }}
-                      >
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          {review.client_name || 'Anonymous Client'}
-                          </Typography>
-                        <Rating value={review.rating} size="small" readOnly />
-                        </Box>
-                      }
-                      secondary={
-                      <>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                          {review.comment}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {new Date(review.created_at).toLocaleDateString()}
-                        </Typography>
-                      </>
-                      }
-                    />
-                  </ListItem>
-                {index < reviews.length - 1 && (
-                  <Divider variant="inset" component="li" />
-                )}
-                </React.Fragment>
-              ))}
-            </List>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <StarIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No reviews yet
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-              Be the first to work with this professional and leave a review
-                        </Typography>
-          </Box>
-                      )}
+        <ReviewSystem workerId={workerId} showSubmissionForm />
                     </CardContent>
     </GlassCard>
   );
@@ -1026,9 +1043,9 @@ function WorkerProfile() {
               Current Status
             </Typography>
             <Chip
-              label={availability?.status || 'Available'}
+              label={(availability?.availabilityStatus || 'available').toString().replace(/\b\w/g, (c) => c.toUpperCase())}
               color={
-                availability?.status === 'Available' ? 'success' : 'warning'
+                (availability?.availabilityStatus || 'available') === 'available' ? 'success' : 'warning'
               }
               size="large"
               sx={{ mb: 2 }}
@@ -1036,12 +1053,24 @@ function WorkerProfile() {
 
             <Typography variant="body1" gutterBottom>
               <strong>Response Time:</strong>{' '}
-              {availability?.response_time || 'Within 2 hours'}
+              {'Within 2 hours'}
             </Typography>
             <Typography variant="body1">
               <strong>Next Available:</strong>{' '}
-              {availability?.next_available || 'Immediately'}
+              {availability?.pausedUntil ? new Date(availability.pausedUntil).toLocaleString() : 'Immediately'}
             </Typography>
+            {!isOwner ? null : (
+              <Box sx={{ mt: 2 }}>
+                <Button size="small" variant="outlined" onClick={() => {
+                  setEditingAvailability(true);
+                  setAvailabilityDraft({
+                    availabilityStatus: availability?.availabilityStatus || 'available',
+                    availableHours: availability?.availableHours || {},
+                    pausedUntil: availability?.pausedUntil || null,
+                  });
+                }}>Edit Availability</Button>
+              </Box>
+            )}
                 </Grid>
 
           <Grid item xs={12} md={6}>
@@ -1049,26 +1078,120 @@ function WorkerProfile() {
               Working Hours
             </Typography>
             <List dense>
-              {(
-                availability?.working_hours || [
-                  'Monday: 8:00 AM - 6:00 PM',
-                  'Tuesday: 8:00 AM - 6:00 PM',
-                  'Wednesday: 8:00 AM - 6:00 PM',
-                  'Thursday: 8:00 AM - 6:00 PM',
-                  'Friday: 8:00 AM - 6:00 PM',
-                  'Weekend: By appointment',
-                ]
-              ).map((hours, index) => (
-                <ListItem key={index}>
-                  <ListItemText primary={hours} />
-                </ListItem>
-              ))}
+              {(() => {
+                const hours = availability?.availableHours || {};
+                const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+                const lines = days.map((d) => {
+                  const h = hours[d];
+                  if (!h) return `${d[0].toUpperCase()}${d.slice(1)}: Unspecified`;
+                  if (!h.available) return `${d[0].toUpperCase()}${d.slice(1)}: Unavailable`;
+                  return `${d[0].toUpperCase()}${d.slice(1)}: ${h.start} - ${h.end}`;
+                });
+                return lines.map((text, idx) => (
+                  <ListItem key={idx}>
+                    <ListItemText primary={text} />
+                  </ListItem>
+                ));
+              })()}
             </List>
             </Grid>
         </Grid>
       </CardContent>
     </GlassCard>
   );
+
+  const renderAvailabilityEditor = () => {
+    if (!editingAvailability || !isOwner) return null;
+    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const draft = availabilityDraft || { availabilityStatus: 'available', availableHours: {} };
+    const setDay = (day, patch) => {
+      setAvailabilityDraft((prev) => ({
+        ...prev,
+        availableHours: {
+          ...(prev?.availableHours || {}),
+          [day]: { ...(prev?.availableHours?.[day] || { available: false, start: '08:00', end: '17:00' }), ...patch },
+        },
+      }));
+    };
+    const save = async () => {
+      try {
+        await workerService.updateWorkerAvailability(workerId, draft);
+        setAvailability({
+          availabilityStatus: draft.availabilityStatus,
+          availableHours: draft.availableHours,
+          pausedUntil: draft.pausedUntil || null,
+        });
+        setEditingAvailability(false);
+      } catch (_) {}
+    };
+    return (
+      <GlassCard sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>Edit Availability</Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+            <TextField
+              select
+              label="Status"
+              value={draft.availabilityStatus}
+              onChange={(e) => setAvailabilityDraft((p) => ({ ...p, availabilityStatus: e.target.value }))}
+              SelectProps={{ native: true }}
+            >
+              <option value="available">Available</option>
+              <option value="busy">Busy</option>
+              <option value="unavailable">Unavailable</option>
+              <option value="vacation">Vacation</option>
+            </TextField>
+            <TextField
+              label="Paused Until (ISO)"
+              placeholder="YYYY-MM-DDTHH:mm:ssZ"
+              value={draft.pausedUntil || ''}
+              onChange={(e) => setAvailabilityDraft((p) => ({ ...p, pausedUntil: e.target.value }))}
+              sx={{ minWidth: 320 }}
+            />
+          </Box>
+          <Grid container spacing={2}>
+            {days.map((day) => {
+              const d = draft.availableHours?.[day] || { available: false, start: '08:00', end: '17:00' };
+              return (
+                <Grid item xs={12} md={6} key={day}>
+                  <Paper sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>{day[0].toUpperCase() + day.slice(1)}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Button
+                        size="small"
+                        variant={d.available ? 'contained' : 'outlined'}
+                        onClick={() => setDay(day, { available: !d.available })}
+                      >{d.available ? 'Available' : 'Unavailable'}</Button>
+                      <TextField
+                        size="small"
+                        label="Start"
+                        placeholder="HH:mm"
+                        value={d.start}
+                        onChange={(e) => setDay(day, { start: e.target.value })}
+                        disabled={!d.available}
+                      />
+                      <TextField
+                        size="small"
+                        label="End"
+                        placeholder="HH:mm"
+                        value={d.end}
+                        onChange={(e) => setDay(day, { end: e.target.value })}
+                        disabled={!d.available}
+                      />
+                    </Box>
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <Button variant="contained" onClick={save}>Save</Button>
+            <Button variant="text" onClick={() => setEditingAvailability(false)}>Cancel</Button>
+          </Box>
+        </CardContent>
+      </GlassCard>
+    );
+  };
 
   const renderCertifications = () => (
     <GlassCard sx={{ mb: 4 }}>

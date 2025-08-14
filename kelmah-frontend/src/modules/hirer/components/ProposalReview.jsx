@@ -41,27 +41,9 @@ import {
   Schedule as ScheduleIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
+import { jobServiceClient } from '../../common/services/axios';
 
-// Create dedicated service client for job service
-const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth tokens to requests
-jobServiceClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Use centralized client with auth/retry
 
 // No mock data - using real API data only
 

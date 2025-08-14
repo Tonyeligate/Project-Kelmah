@@ -2,18 +2,19 @@ import axiosInstance from '../../common/services/axios';
 
 class ReviewService {
   // Get reviews for a specific user
-  async getUserReviews(userId, page = 1, limit = 10) {
+  async getUserReviews(userId, page = 1, limit = 10, filters = {}) {
     try {
       // Call backend for reviews of a worker
       const response = await axiosInstance.get(
         `/api/reviews/worker/${userId}`,
         {
-          params: { page, limit },
+          params: { page, limit, ...filters },
         },
       );
+      // Normalize backend response to { reviews, pagination }
       const raw = response.data;
-      const reviews = raw.data || [];
-      const pagination = raw.meta?.pagination || {};
+      const reviews = raw?.data?.reviews || raw?.data || raw?.reviews || [];
+      const pagination = raw?.data?.pagination || raw?.pagination || { page, limit, total: reviews.length, pages: 1 };
       return { reviews, pagination };
     } catch (error) {
       console.error('Error fetching user reviews:', error);
@@ -43,8 +44,8 @@ class ReviewService {
   // Create a new review
   async createReview(reviewData) {
     try {
-      const response = await axiosInstance.post('/reviews', reviewData);
-      return response.data.data;
+      const response = await axiosInstance.post('/api/reviews', reviewData);
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Error creating review:', error);
       throw error;

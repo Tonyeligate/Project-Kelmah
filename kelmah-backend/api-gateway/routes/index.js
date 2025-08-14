@@ -11,6 +11,7 @@ const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const jobRoutes = require('./job.routes');
 const messagingRoutes = require('./messaging.routes');
+const reviewRoutes = require('./review.routes');
 const paymentRoutes = require('./payment.routes');
 const monolithRoutes = require('./monolith.routes');
 
@@ -62,6 +63,7 @@ router.use('/api/jobs', jobRoutes);
 router.use('/api/messages', messagingRoutes);
 router.use('/api/conversations', messagingRoutes);
 router.use('/api/payments', paymentRoutes);
+router.use('/api/reviews', reviewRoutes);
 
 // Monolith service routes (legacy endpoints)
 router.use('/notifications', monolithRoutes);

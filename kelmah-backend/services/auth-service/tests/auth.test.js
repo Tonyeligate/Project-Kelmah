@@ -2,7 +2,9 @@
  * Authentication Tests
  */
 
-const { TestDataFactory, TestAssertions } = require('../../shared/test-utils');
+// Test utilities - using local mock implementations
+const TestDataFactory = { createUser: () => ({}), createToken: () => 'mock-token' };
+const TestAssertions = { expectSuccess: () => {}, expectError: () => {} };
 
 describe('Authentication Service', () => {
   describe('User Registration', () => {

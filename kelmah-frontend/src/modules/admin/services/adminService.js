@@ -5,28 +5,7 @@
  * system monitoring, and administrative tasks.
  */
 
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-// Create axios instance for admin operations
-const adminClient = axios.create({
-  baseURL: API_URL,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth tokens to requests
-adminClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token') || localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import { authServiceClient as adminClient } from '../../common/services/axios';
 
 export const adminService = {
   // User Management
@@ -43,6 +22,59 @@ export const adminService = {
       return response.data;
     } catch (error) {
       console.error('Error fetching users:', error);
+      throw error;
+    }
+  },
+
+  // Payout queue
+  async listPayouts(params = {}) {
+    try {
+      const response = await adminClient.get('/payments/admin/payouts', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error listing payouts:', error);
+      throw error;
+    }
+  },
+
+  async enqueuePayout(data) {
+    try {
+      const response = await adminClient.post('/payments/admin/payouts/queue', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error enqueueing payout:', error);
+      throw error;
+    }
+  },
+
+  async processPayoutBatch(limit = 10) {
+    try {
+      const response = await adminClient.post('/payments/admin/payouts/process', { limit });
+      return response.data;
+    } catch (error) {
+      console.error('Error processing payout batch:', error);
+      throw error;
+    }
+  },
+
+  // Provider status and aggregate health
+  async getProviderStatus() {
+    try {
+      const response = await adminClient.get('/health/aggregate');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching provider status:', error);
+      throw error;
+    }
+  },
+
+  // Worker analytics
+  async getWorkerAnalytics(workerId, params = {}) {
+    try {
+      const response = await adminClient.get(`/users/analytics/worker/${workerId}`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching worker analytics:', error);
       throw error;
     }
   },

@@ -86,6 +86,27 @@ router.post(
   authController.resetPassword,
 );
 
+// Backward-compatible reset route that accepts token in body
+router.post(
+  "/reset-password",
+  [
+    body("token").notEmpty().withMessage("Reset token is required"),
+    body("password")
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters long")
+      .matches(/\d/)
+      .withMessage("Password must contain at least one number")
+      .matches(/[A-Z]/)
+      .withMessage("Password must contain at least one uppercase letter"),
+  ],
+  validate,
+  (req, res, next) => {
+    // Map body token to params to reuse controller logic
+    req.params.token = req.body.token;
+    return authController.resetPassword(req, res, next);
+  }
+);
+
 // Logout route
 router.post("/logout", authController.logout);
 
@@ -138,7 +159,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.authenticate("google", {
       failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`,
     }),
-    authController.oauthCallback,
+    authController.googleCallback,
   );
 } else {
   // Add a route to inform users that Google auth is not configured
@@ -171,7 +192,7 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
     passport.authenticate("facebook", {
       failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`,
     }),
-    authController.oauthCallback,
+    authController.facebookCallback,
   );
 } else {
   // Add a route to inform users that Facebook auth is not configured
@@ -204,7 +225,7 @@ if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
     passport.authenticate("linkedin", {
       failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`,
     }),
-    authController.oauthCallback,
+    authController.linkedinCallback,
   );
 } else {
   // Add a route to inform users that LinkedIn auth is not configured

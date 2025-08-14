@@ -22,6 +22,7 @@ const DEFAULT_SERVICES = {
     JOB_SERVICE: 'http://localhost:5003',
     MESSAGING_SERVICE: 'http://localhost:5004',
     PAYMENT_SERVICE: 'http://localhost:5005',
+    REVIEW_SERVICE: 'http://localhost:5006',
   },
   production: {
     AUTH_SERVICE: 'https://kelmah-auth-service.onrender.com',
@@ -29,6 +30,7 @@ const DEFAULT_SERVICES = {
     JOB_SERVICE: 'https://kelmah-job-service.onrender.com', // Should now work properly
     MESSAGING_SERVICE: 'https://kelmah-messaging-service.onrender.com',
     PAYMENT_SERVICE: 'https://kelmah-payment-service.onrender.com',
+    REVIEW_SERVICE: 'https://kelmah-review-service.onrender.com',
   },
 };
 
@@ -41,8 +43,11 @@ const getServiceUrl = (serviceName) => {
     return envValue;
   }
 
-  // Always use production services for real data (no localhost dependencies)
-  // Use development services only if explicitly configured via environment variables
+  // Prefer gateway proxy in development unless explicitly overridden
+  if (import.meta.env.DEV) {
+    // Let the gateway route to the right service via /api
+    return '';
+  }
   return DEFAULT_SERVICES.production[serviceName];
 };
 
@@ -53,11 +58,12 @@ export const SERVICES = {
   JOB_SERVICE: getServiceUrl('JOB_SERVICE'),
   MESSAGING_SERVICE: getServiceUrl('MESSAGING_SERVICE'),
   PAYMENT_SERVICE: getServiceUrl('PAYMENT_SERVICE'),
+  REVIEW_SERVICE: getServiceUrl('REVIEW_SERVICE'),
 };
 
 // Primary API URL (defaults to Auth Service)
 export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || SERVICES.AUTH_SERVICE;
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : SERVICES.AUTH_SERVICE);
 
 // ===============================================
 // APPLICATION CONFIGURATION
@@ -181,8 +187,8 @@ export const LOG_CONFIG = {
 // Helper function to build API endpoints
 const buildEndpoint = (serviceUrl, path) => {
   return isDevelopment
-    ? `/api${path}` // Use proxy in development
-    : `${serviceUrl}/api${path}`; // Direct service URL in production
+    ? `/api${path}` // Use API gateway proxy in development
+    : `${serviceUrl || ''}/api${path}`; // Direct service URL in production (ALB domain via VITE_*_URL)
 };
 
 export const API_ENDPOINTS = {

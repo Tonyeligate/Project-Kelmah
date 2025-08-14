@@ -1,0 +1,58 @@
+{
+    "family": "kelmah-auth-service-test",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "256",
+    "memory": "512",
+    "executionRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "name": "auth-service-test",
+            "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-auth-service:project-fix",
+            "portMappings": [
+                {
+                    "containerPort": 5001,
+                    "hostPort": 5001,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "JWT_SECRET",
+                    "value": "test-secret-123"
+                },
+                {
+                    "name": "JWT_REFRESH_SECRET", 
+                    "value": "test-refresh-123"
+                },
+                {
+                    "name": "USE_REDIS_RATE_LIMIT",
+                    "value": "false"
+                },
+                {
+                    "name": "NODE_ENV",
+                    "value": "development"
+                },
+                {
+                    "name": "PORT",
+                    "value": "5001"
+                },
+                {
+                    "name": "ENABLE_RATE_LIMITING",
+                    "value": "false"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/kelmah-auth-service-test",
+                    "awslogs-region": "eu-north-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "command": ["node", "-e", "console.log('JWT_SECRET:', process.env.JWT_SECRET); console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET); try { require('./utils/jwt-secure.js'); console.log('✅ JWT WORKS'); } catch(e) { console.log('❌ JWT ERROR:', e.message); } setTimeout(() => process.exit(0), 5000);"]
+        }
+    ]
+}
+

@@ -144,7 +144,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import useAuth from '../../auth/hooks/useAuth';
 import { useDispatch, useSelector } from 'react-redux';
 import {

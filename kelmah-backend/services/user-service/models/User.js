@@ -129,6 +129,19 @@ const userSchema = new mongoose.Schema({
     default: 'GH'
   },
   postalCode: String,
+
+  // Geo location for user (worker/hirer). Stored as GeoJSON Point [lng, lat]
+  locationCoordinates: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],
+      default: undefined
+    }
+  },
   
   // Profile
   profilePicture: String,
@@ -164,6 +177,8 @@ userSchema.index({ createdAt: 1 });
 userSchema.index({ googleId: 1 }, { sparse: true }); // Already no unique: true
 userSchema.index({ facebookId: 1 }, { sparse: true }); // Already no unique: true  
 userSchema.index({ linkedinId: 1 }, { sparse: true }); // Already no unique: true
+// Optional geo index for location if coordinates included elsewhere
+userSchema.index({ locationCoordinates: '2dsphere' });
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {

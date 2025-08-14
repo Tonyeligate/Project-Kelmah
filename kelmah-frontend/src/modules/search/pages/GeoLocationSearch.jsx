@@ -65,7 +65,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import axios from 'axios';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import { useSelector } from 'react-redux';
 import JobCard from '../../jobs/components/listing/JobCard';
 import WorkerCard from '../../worker/components/WorkerCard';

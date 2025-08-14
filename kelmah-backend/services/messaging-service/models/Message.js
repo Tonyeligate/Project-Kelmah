@@ -27,9 +27,16 @@ const MessageSchema = new Schema(
       {
         name: String,
         fileUrl: String,
+        s3Key: String,
         fileType: String,
         fileSize: Number,
         uploadDate: Date,
+        virusScan: {
+          status: { type: String, enum: ['pending','clean','infected','failed'], default: 'pending' },
+          scannedAt: Date,
+          engine: String,
+          details: String,
+        },
       },
     ],
     readStatus: {
@@ -51,6 +58,23 @@ const MessageSchema = new Schema(
       deviceInfo: String,
       ipAddress: String,
     },
+    // Optional E2E envelope storage
+    encryptedBody: { type: String },
+    encryption: {
+      scheme: { type: String },
+      version: { type: String },
+      senderKeyId: { type: String },
+      recipientKeyId: { type: String },
+      nonce: { type: String },
+    },
+    editedAt: { type: Date },
+    reactions: [
+      {
+        emoji: String,
+        user: { type: Schema.Types.ObjectId, ref: 'User' },
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true },
 );

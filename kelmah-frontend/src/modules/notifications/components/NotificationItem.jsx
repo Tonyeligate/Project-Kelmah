@@ -42,7 +42,12 @@ const NotificationItem = ({ notification, sx = {} }) => {
 
   if (!notification) return null;
 
-  const { id, title, message, createdAt, read, type } = notification;
+  const id = notification.id || notification._id;
+  const title = notification.title || notification.content || notification.message;
+  const message = notification.content || notification.message || '';
+  const createdAt = notification.createdAt || notification.date || Date.now();
+  const read = notification.read ?? notification.readStatus?.isRead ?? false;
+  const type = notification.type;
 
   const handleItemClick = useCallback(() => {
     if (!read) {

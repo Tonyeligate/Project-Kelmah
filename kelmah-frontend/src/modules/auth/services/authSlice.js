@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from './authService';
-import { TOKEN_KEY } from '../../../config/constants';
+import { AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
 // Support import.meta.env in Vite and process.env in tests
 // Use Node.js environment variables for tests
@@ -15,8 +15,8 @@ export const register = createAsyncThunk(
 
       // Store auth data
       if (response.token) {
-        localStorage.setItem(TOKEN_KEY, response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        secureStorage.setAuthToken(response.token);
+        secureStorage.setUserData(response.user);
       }
 
       return response;
@@ -49,12 +49,11 @@ export const login = createAsyncThunk(
         // Log the user data we're storing for debugging
         console.log('Storing user data with role in authSlice:', user);
 
-        // Store token and user data in localStorage
-        localStorage.setItem(TOKEN_KEY, token);
-        localStorage.setItem('user', JSON.stringify(user));
-
+        // Store token and user data securely
+        secureStorage.setAuthToken(token);
+        secureStorage.setUserData(user);
         if (refreshToken) {
-          localStorage.setItem('refreshToken', refreshToken);
+          secureStorage.setRefreshToken(refreshToken);
         }
 
         // Return structured data for the reducer
@@ -89,28 +88,29 @@ export const verifyAuth = createAsyncThunk(
       // Development mock authentication disabled – always verify via API
 
       // Production mode auth verification logic - check both storage locations
-      const token = secureStorage.getAuthToken() || localStorage.getItem(TOKEN_KEY);
+      const token = secureStorage.getAuthToken();
       if (!token) {
         console.warn('No token found in localStorage or secureStorage');
         throw new Error('No authentication token found');
       }
 
       // Check if there's user data in localStorage
-      const storedUser = localStorage.getItem('user');
+      const storedUser = JSON.stringify(secureStorage.getUserData());
       console.log(
         'Currently stored user:',
         storedUser ? JSON.parse(storedUser) : 'none',
       );
 
-      const response = await authService.getCurrentUser();
-      console.log('User profile data received:', response);
+      // Verify against backend
+      const verify = await authService.verifyAuth();
+      console.log('Auth verify response:', verify);
 
-      if (response) {
+      if (verify?.user) {
         // Update stored user data with fresh data from API
-        localStorage.setItem('user', JSON.stringify(response));
+        secureStorage.setUserData(verify.user);
 
         return {
-          user: response,
+          user: verify.user,
           isAuthenticated: true,
         };
       }
@@ -118,8 +118,7 @@ export const verifyAuth = createAsyncThunk(
       throw new Error('Could not verify authentication');
     } catch (error) {
       console.error('Auth verification failed:', error);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('user');
+      secureStorage.clear();
       return rejectWithValue(
         error.message || 'Authentication verification failed',
       );
@@ -133,12 +132,11 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await authService.logout();
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('user');
+      secureStorage.clear();
       return { success: true };
     } catch (error) {
       // Regardless of API call success/failure, we remove local data
-      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(AUTH_CONFIG.tokenKey);
       localStorage.removeItem('user');
       return rejectWithValue(error.message || 'Logout failed');
     }
@@ -146,12 +144,9 @@ export const logoutUser = createAsyncThunk(
 );
 
 const initialState = {
-  user: (() => {
-    const u = localStorage.getItem('user');
-    return u ? JSON.parse(u) : null;
-  })(),
-  token: localStorage.getItem(TOKEN_KEY) || null,
-  isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
+  user: secureStorage.getUserData() || null,
+  token: secureStorage.getAuthToken() || null,
+  isAuthenticated: !!secureStorage.getAuthToken(),
   loading: false,
   error: null,
 };
@@ -161,8 +156,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('user');
+      secureStorage.clear();
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
@@ -182,9 +176,9 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
 
-      // Save to localStorage
-      localStorage.setItem(TOKEN_KEY, token);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Save securely
+      secureStorage.setAuthToken(token);
+      secureStorage.setUserData(user);
     },
   },
   extraReducers: (builder) => {

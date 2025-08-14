@@ -61,107 +61,15 @@
     <!-- Optimized font loading for Ghana networks -->
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <script>
-      // VERCEL BULLETPROOF FIX: Provide React immediately
-      console.log('🔧 Bulletproof React fix loading...');
-      
-      // Create a minimal React implementation that provides createContext
-      const ReactMini = {
-        version: '18.3.1-vercel-patched',
-        createElement: function(type, props, ...children) { 
-          return { type, props: props || {}, children };
-        },
-        createContext: function(defaultValue) { 
-          console.log('✅ React.createContext called');
-          return { 
-            Provider: function(props) { return props.children; },
-            Consumer: function(props) { return props.children(defaultValue); },
-            defaultValue: defaultValue,
-            _currentValue: defaultValue,
-            _currentValue2: defaultValue,
-            _threadCount: 0
-          };
-        },
-        useState: function(initial) { 
-          console.log('✅ React.useState called');
-          return [initial, function(newVal) { 
-            if (typeof newVal === 'function') return newVal(initial);
-            return newVal;
-          }]; 
-        },
-        useEffect: function(effect, deps) { 
-          console.log('✅ React.useEffect called');
-          if (typeof effect === 'function') {
-            try { effect(); } catch(e) { console.warn('useEffect error:', e); }
-          }
-        },
-        useContext: function(context) { 
-          console.log('✅ React.useContext called');
-          return context ? context.defaultValue : null; 
-        },
-        useReducer: function(reducer, initial) { 
-          console.log('✅ React.useReducer called');
-          return [initial, function(action) { 
-            try { return reducer(initial, action); } catch(e) { return initial; }
-          }]; 
-        },
-        useCallback: function(fn, deps) { 
-          console.log('✅ React.useCallback called');
-          return fn; 
-        },
-        useMemo: function(fn, deps) { 
-          console.log('✅ React.useMemo called');
-          try { return fn(); } catch(e) { return null; }
-        },
-        useRef: function(initial) { 
-          console.log('✅ React.useRef called');
-          return { current: initial }; 
-        },
-        Fragment: function(props) { return props.children; },
-        Component: function() {},
-        PureComponent: function() {},
-        memo: function(component) { return component; },
-        forwardRef: function(render) { return render; },
-        lazy: function(fn) { return fn; },
-        Suspense: function(props) { return props.children; }
-      };
-
-      // Set React IMMEDIATELY and SYNCHRONOUSLY
-      window.React = ReactMini;
-      globalThis.React = ReactMini;
-      
-      // Intercept ANY attempts to overwrite React
-      let reactSet = false;
-      Object.defineProperty(window, 'React', {
-        get: function() { return ReactMini; },
-        set: function(value) { 
-          if (!reactSet) {
-            console.log('🔧 Allowing first React assignment');
-            Object.defineProperty(window, 'React', {
-              value: { ...ReactMini, ...value },
-              writable: true,
-              configurable: true
-            });
-            reactSet = true;
-          } else {
-            console.log('🔧 React assignment intercepted, merging...');
-            window.React = { ...ReactMini, ...value };
-          }
-        },
-        configurable: true
-      });
-
-      console.log('✅ React.createContext immediately available:', typeof ReactMini.createContext);
-      console.log('✅ Bulletproof React protection enabled');
-    </script>
   </head>
   <body>
     <div id="root"></div>
     
     <!-- 🇬🇭 Service Worker Registration for Ghana Networks -->
     <script>
-      // Register service worker for offline functionality
-      if ('serviceWorker' in navigator) {
+      // Register service worker for offline functionality (disabled on localhost)
+      const shouldRegisterSW = !/localhost|127\.0\.0\.1/.test(location.hostname);
+      if ('serviceWorker' in navigator && shouldRegisterSW) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
             .then((registration) => {
@@ -194,6 +102,8 @@
             console.log('📦 App cache updated');
           }
         });
+      } else {
+        console.log('⚠️ Service Worker disabled in development');
       }
 
       // Handle app installation prompt

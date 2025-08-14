@@ -3,7 +3,8 @@
  * Paystack API implementation for card payments and other methods
  */
 
-const axios = require('axios');
+const { http } = require('../../../shared/utils/http');
+const { CircuitBreaker } = require('../../../shared/utils/circuitBreaker');
 const crypto = require('crypto');
 
 class PaystackService {
@@ -47,7 +48,7 @@ class PaystackService {
         channels
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/transaction/initialize`,
         requestData,
         {
@@ -57,6 +58,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -81,7 +84,7 @@ class PaystackService {
    */
   async verifyPayment(reference) {
     try {
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/transaction/verify/${reference}`,
         {
           headers: {
@@ -89,6 +92,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       const transaction = response.data.data;
 
@@ -144,7 +149,7 @@ class PaystackService {
       if (to) queryParams.append('to', to);
       if (amount) queryParams.append('amount', (amount * 100).toString());
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/transaction?${queryParams}`,
         {
           headers: {
@@ -152,6 +157,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -196,7 +203,7 @@ class PaystackService {
         }
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/customer`,
         requestData,
         {
@@ -206,6 +213,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -230,7 +239,7 @@ class PaystackService {
    */
   async getCustomer(customerCode) {
     try {
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/customer/${customerCode}`,
         {
           headers: {
@@ -238,6 +247,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -278,7 +289,7 @@ class PaystackService {
         }
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/transferrecipient`,
         requestData,
         {
@@ -288,6 +299,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -336,7 +349,7 @@ class PaystackService {
         }
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/transfer`,
         requestData,
         {
@@ -346,6 +359,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -372,7 +387,7 @@ class PaystackService {
    */
   async verifyTransfer(transferCode) {
     try {
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/transfer/verify/${transferCode}`,
         {
           headers: {
@@ -380,6 +395,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -413,7 +430,7 @@ class PaystackService {
         currency
       });
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/bank?${queryParams}`,
         {
           headers: {
@@ -421,6 +438,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -457,7 +476,7 @@ class PaystackService {
         bank_code: bankCode
       });
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/bank/resolve?${queryParams}`,
         {
           headers: {
@@ -465,6 +484,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -510,7 +531,7 @@ class PaystackService {
         send_sms
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/plan`,
         requestData,
         {
@@ -520,6 +541,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -565,7 +588,7 @@ class PaystackService {
         }
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/subscription`,
         requestData,
         {
@@ -575,6 +598,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -660,7 +685,7 @@ class PaystackService {
    */
   async getBalance() {
     try {
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/balance`,
         {
           headers: {
@@ -668,6 +693,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -734,7 +761,7 @@ class PaystackService {
         bearer_subaccount
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/split`,
         requestData,
         {
@@ -744,6 +771,8 @@ class PaystackService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,

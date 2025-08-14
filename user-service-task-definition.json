@@ -1,0 +1,54 @@
+{
+  "family": "user-service-task",
+  "taskRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+      "name": "user-service",
+      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-user-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3002,
+          "hostPort": 3002,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {"name": "DATABASE_URL", "value": "mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform"},
+        {"name": "FRONTEND_URL", "value": "https://kelmah-frontend-cyan.vercel.app"},
+        {"name": "JWT_REFRESH_SECRET", "value": "Tony_Deladem"},
+        {"name": "JWT_SECRET", "value": "Deladem_Tony"},
+        {"name": "MESSAGING_MONGO_URI", "value": "mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/?retryWrites=true&w=majority&appName=Kelmah-messaging"},
+        {"name": "MONGODB_URI", "value": "mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/?retryWrites=true&w=majority&appName=Kelmah-messaging"},
+        {"name": "NODE_ENV", "value": "production"},
+        {"name": "PORT", "value": "3002"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/user-service",
+          "awslogs-region": "eu-north-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3002/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
+
+
+
+
+
+

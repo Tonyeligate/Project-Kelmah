@@ -1,0 +1,187 @@
+Master Plan: Kelmah Frontend/Hirer/Worker Completion and Wiring Roadmap (v1)
+
+Executive Summary
+- The frontend is rich in modules and routes, but there are critical API mismatches and missing endpoints between the frontend, the API Gateway, and microservices.
+- The most urgent issues are in authentication (token refresh/verify routes), job-service (applications, saved jobs, categories), payment-service routes (escrows/bills/history pluralization), gateway middleware path errors, and worker flows using non-existent endpoints.
+- This plan sequences fixes into weeks with CI gating, integration tests, and a minimum viable “Worker + Hirer” experience locked down first.
+
+Critical Issues Identified (Fix First)
+- Auth route mismatches and weak verification
+  - FE calls `/api/auth/refresh-token` and `/api/auth/verify`, but gateway exposes `/api/auth/refresh` and lacks `/verify`.
+  - FE `verifyAuth` thunk uses local storage only (no server verification), enabling invalid sessions.
+- API Gateway middleware path errors
+  - Multiple gateway routers import `../middlewares/auth.middleware` but only `middleware/auth.js` exists.
+- Job-service gaps vs FE expectations
+  - Missing endpoints: `POST /api/jobs/:id/apply`, `GET/PUT/DELETE /api/jobs/:id/applications`, `GET /api/jobs/categories`, `GET /api/jobs/saved`, `POST/DELETE /api/jobs/:jobId/save`.
+  - FE `jobsApi` lacks implementations used by `jobSlice` (createJob, saved jobs APIs), causing runtime errors.
+- Worker flows hitting non-existent endpoints
+  - FE uses `/api/worker/jobs` and `/api/worker/applications` (not implemented anywhere).
+- Payment-service route mismatches
+  - FE uses `/api/payments/escrows` (plural), `/transactions/history`, `/bills` while gateway uses singular `/escrow` and lacks `/bills` and `/transactions/history` endpoints.
+- Messaging attachment/upload route mismatch
+  - FE expects `/api/messages/attachments` or `/attachments/upload`; gateway provides `/api/messages/upload`; service exposes `/api/messages/:conversationId/attachments`. Not aligned.
+- Messaging read route doubled segment
+  - Service defines `POST /api/messages/messages/:messageId/read` (doubled `messages`) due to route mounting.
+- Dev proxy assumptions
+  - FE assumes a dev proxy to forward `/api` to the API gateway, but no Vite proxy config is present.
+- Duplicate/conflicting service configs
+  - `src/config/environment.js` and `src/config/services.js` both define service endpoints; consolidate to a single source of truth.
+
+High-Level Architecture Alignment
+- Gateway should provide a stable, canonical public API under `/api/*` that exactly matches FE.
+- FE should only call `/api/*` endpoints (no direct service URLs in dev) and should use a single `environment` config.
+- Services should implement all routes the gateway exposes; gateway should also provide aliases where needed for backward compatibility (e.g., plural/singular paths).
+
+Detailed Fix Plan by Area
+
+1) Authentication (Security, Stability)
+- Gateway:
+  - Add routes:
+    - `POST /api/auth/refresh-token` → proxy to auth-service token refresh
+    - `GET /api/auth/verify` → proxy to auth-service verify
+    - `POST /api/auth/resend-verification-email` → proxy
+    - Maintain existing `/refresh` as backward-compat alias.
+- Frontend:
+  - Update auth thunk `verifyAuth` to call the backend verify endpoint, not local storage.
+  - Keep storage as cache-only fallback during offline.
+  - Ensure axios refresh interceptor uses `/api/auth/refresh-token` and gracefully retries.
+- Auth-service:
+  - Ensure the verify and refresh handlers exist; return consistent `{ success, data: { user, token? } }`.
+  - Enforce issuer/audience on JWT and integrate revocation checks (JTI blacklist or token store) if enabled.
+
+2) API Gateway (Routing and Middleware)
+- Fix imports from `../middlewares/...` to `../middleware/auth.js` for all service routers.
+- Add canonical + alias routes to harmonize with FE:
+  - Payments: add `/escrows` alongside `/escrow`; add `/transactions/history`; add `/bills` and `/bills/:id/pay` proxies.
+  - Messaging: add `/attachments/upload` alias and proxy to service implementation; ensure `/messages/conversation/:id` path works.
+  - Jobs: expose `/categories`, `/saved`, `/:jobId/save`, `/:jobId/apply`, `/:jobId/applications` routes to match FE.
+
+3) Job-service (Worker/Hirer Core)
+- Implement missing controllers and routes:
+  - Applications:
+    - `POST /api/jobs/:id/apply` (worker apply)
+    - `GET /api/jobs/:id/applications?status=` (hirer review)
+    - `PUT /api/jobs/:id/applications/:applicationId` (update status)
+    - `DELETE /api/jobs/:id/applications/:applicationId` (withdraw)
+  - Saved jobs:
+    - `GET /api/jobs/saved`
+    - `POST /api/jobs/:jobId/save`
+    - `DELETE /api/jobs/:jobId/save`
+  - Job categories:
+    - `GET /api/jobs/categories` (static or aggregated from jobs)
+- Data model alignment: ensure `Application`, `SavedJob` models used; indexes on `hirer`, `worker`, `job`, and unique composite for (user, job) saved.
+- Validation and authorization: hirer-only updates; worker-only apply/withdraw.
+
+4) Worker Sector (Frontend + API)
+- Frontend:
+  - Update `workerSlice` to use real endpoints:
+    - Replace `/api/worker/jobs` → `/api/jobs?assignedTo=me&status=` or implement `/api/users/workers/:id/jobs` in user-service
+    - Replace `/api/worker/applications` → `/api/users/workers/:id/applications` or `/api/jobs/applications?applicant=me`
+  - Ensure pages: `WorkerDashboard`, `JobSearch`, `MyApplications`, `Portfolio`, `Certificates`, `Earnings`, `Availability` function with real data.
+- Backend:
+  - Prefer placing worker-specific lists in user-service (analytics, earnings, profile) and job-service (applications for worker).
+  - Add `/api/users/workers/:id/earnings` if not present.
+
+5) Hirer Sector (Frontend + API)
+- Ensure the following are wired and return correct data:
+  - Job posting: `POST /api/jobs` (already exists; validate budgets, durations, location mapping).
+  - Job management: `GET /api/jobs/my-jobs?status=`.
+  - Application management: `GET /api/jobs/:jobId/applications` + status update endpoints.
+  - Payments summary: `/api/payments/wallet`, `/api/payments/escrows`, `/api/payments/transactions/history`.
+
+6) Payment-service (Routes + FE harmonization)
+- Gateway: provide plural alias `/escrows` + `/transactions/history` + `/bills` endpoints.
+- Service: ensure these endpoints exist or add aggregator controllers; unify response shapes (always `{ data, pagination? }`).
+- FE: keep mock fallbacks but prefer real data; add empty-state UX.
+
+7) Messaging (REST + WS)
+- Service:
+  - Fix read route to `POST /api/messages/:messageId/read` (remove duplicated `messages`).
+  - Normalize attachments to: `POST /api/messages/:conversationId/attachments` (dev) and `/api/uploads/presign` (prod), both proxied by gateway.
+- Gateway:
+  - Add `/attachments/upload` alias → service dev upload; expose `/uploads/presign`.
+- FE:
+  - Ensure `messagingService` uses one of the canonical paths above; keep WS fallback.
+
+8) Frontend Config and Dev Proxy
+- Consolidate `src/config/services.js` into `src/config/environment.js`; remove duplication.
+- Add Vite proxy config so `/api` → local API gateway during development.
+- Enforce a single source of truth for endpoints and feature flags.
+
+9) Theming, Animations, and UX Polish
+- Validate the black/gold/white theme across pages (light/dark variants in `ThemeProvider`).
+- Add subtle motion (framer-motion/MUI transitions) to key flows: Job posting wizard, Worker profile edits, Messaging send/read.
+- Ensure mobile responsiveness for Ghanaian market devices; test on low bandwidth with skeletons and optimistic UI.
+
+10) Security Hardening
+- Enforce HTTPS-only cookies for refresh tokens if applicable, same-site strict.
+- CSRF protection for state-changing endpoints (if cookies used).
+- Rate-limit sensitive routes (login, message send, uploads) already partially present; verify limits.
+- Validate and sanitize all file uploads; switch to presigned URLs in prod.
+
+11) Testing Strategy
+- Unit tests: reducers, slices, and utility functions.
+- Integration tests: FE ↔ Gateway ↔ Services for core flows (auth, job post/apply, messaging, payments fetch).
+- E2E (Playwright/Cypress):
+  - Worker: Register → login → complete profile → search → apply → message → view earnings.
+  - Hirer: Register → login → post job → review applications → fund escrow (mock) → message → close job → review worker.
+- Contract tests for gateway proxies and auth middleware.
+
+12) Observability & Ops
+- Standardize health checks: `/health`, `/health/live`, `/health/ready` for all services.
+- Add tracing headers passthrough via gateway; correlate logs by `X-Request-ID`.
+- Set up alerts on 5xx rates and auth failures.
+
+Delivery Phases & Milestones
+- Phase 0 (Day 0–1): Hotfixes
+  - Fix gateway imports to `middleware/*`.
+  - Add missing auth routes (`/verify`, `/refresh-token`, `/resend-verification-email`).
+  - Fix messaging read route duplication.
+  - Add Vite dev proxy for `/api`.
+
+- Phase 1 (Days 2–4): Jobs & Applications
+  - Implement job applications and saved-jobs endpoints in job-service; expose categories.
+  - Update FE `jobsApi` to include `createJob`, `getSavedJobs`, `saveJob`, `unsaveJob`.
+  - Update `workerSlice` endpoints to valid paths.
+  - Write integration tests for job posting, applying, and saved jobs.
+
+- Phase 2 (Days 5–7): Payments & Messaging Alignments
+  - Add payments pluralization endpoints & `/transactions/history`, `/bills`.
+  - Align messaging uploads and presign flows across FE/gateway/service.
+  - Add escrow list/detail UI refinements; empty states; mock fallback only when 501.
+
+- Phase 3 (Days 8–10): Auth Hardening + UI Polish
+  - Switch `verifyAuth` thunk to call backend; add logout-on-revocation flow.
+  - Add MFA placeholders wired to backend once available.
+  - Theme/animation polish; Lighthouse pass (PWA basics).
+
+- Phase 4 (Days 11–14): Test Coverage & Observability
+  - E2E coverage for worker and hirer happy paths.
+  - Add gateway status endpoint assertions; deploy readiness checks.
+
+Acceptance Criteria
+- FE can log in/out, refresh tokens, and verify sessions via backend.
+- Hirer can post jobs, view/manage applications, and see payment summary.
+- Worker can search/apply, manage saved jobs, view basic earnings, and message hirers.
+- Messaging works via REST and WS fallback; attachments aligned.
+- Payments endpoints return consistent shapes; FE loads wallet, escrows (even empty), and history.
+- All `/api` calls function in dev via Vite proxy and in prod via Render URLs.
+
+Risks & Mitigations
+- Cold-start timeouts on Render: retain extended timeouts/retries in axios; prefer gateway keep-alive pings.
+- Mixed endpoint shapes: standardize `{ success, data, message }` responses; add normalizers in FE services.
+- Back-and-forth renames: add alias routes in gateway for a full release cycle.
+
+Immediate Action Items (Next 24–48h)
+- Fix gateway middleware imports and add missing auth routes.
+- Add Vite dev proxy and consolidate FE config to `environment.js`.
+- Implement job applications, saved jobs, categories in job-service and wire FE APIs.
+- Align payment and messaging routes (add aliases in gateway; one canonical in FE). Ship a small release behind feature flags.
+
+Key Code References (for implementers)
+- FE axios refresh calls `/api/auth/refresh-token` but gateway only has `/refresh`.
+- FE verify calls `/api/auth/verify` which gateway lacks.
+- Gateway routers import non-existent `../middlewares/auth.middleware`.
+- FE `jobsApi` is missing functions used by `jobSlice`.
+
+

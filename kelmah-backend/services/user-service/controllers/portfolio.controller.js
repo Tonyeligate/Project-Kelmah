@@ -718,6 +718,47 @@ class PortfolioController {
       return handleServiceError(res, error, 'Failed to update like status');
     }
   }
+
+  /**
+   * Share portfolio item (increments share count and returns a shareable link)
+   */
+  static async sharePortfolioItem(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      const item = await Portfolio.findOne({
+        where: { id, isActive: true },
+        include: [{
+          model: WorkerProfile,
+          as: 'workerProfile',
+          where: { userId }
+        }]
+      });
+
+      if (!item) {
+        return res.status(404).json({
+          success: false,
+          message: 'Portfolio item not found or access denied'
+        });
+      }
+
+      await Portfolio.incrementShare(item.id);
+      const baseUrl = process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app';
+      const shareUrl = `${baseUrl}/portfolio/${item.id}`;
+
+      await auditLogger.log({
+        userId,
+        action: 'PORTFOLIO_ITEM_SHARED',
+        details: { portfolioItemId: item.id }
+      });
+
+      return res.status(200).json({ success: true, data: { shareUrl } });
+    } catch (error) {
+      console.error('Share portfolio item error:', error);
+      return handleServiceError(res, error, 'Failed to share portfolio item');
+    }
+  }
 }
 
 module.exports = PortfolioController;

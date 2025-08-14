@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const jwtUtils = require('../utils/jwt');
 const { AppError } = require('../utils/errorTypes');
 const User = require('../models').User;
 
@@ -27,7 +27,7 @@ const authenticate = async (req, res, next) => {
     // Verify token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      decoded = await jwtUtils.verifyAuthToken(token);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return next(new AppError('Token has expired. Please login again.', 401));
@@ -87,7 +87,7 @@ const optionalAuth = async (req, res, next) => {
     if (!process.env.JWT_SECRET) {
       return next();
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwtUtils.verifyAccessToken(token);
     const user = await User.findById(decoded.id);
     
     if (user && user.isActive) {

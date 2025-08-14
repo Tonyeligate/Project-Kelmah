@@ -3,7 +3,8 @@
  * Official MTN MoMo API implementation for Ghana
  */
 
-const axios = require('axios');
+const { http } = require('../../../shared/utils/http');
+const { CircuitBreaker } = require('../../../shared/utils/circuitBreaker');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 
@@ -32,7 +33,7 @@ class MTNMoMoService {
     try {
       const referenceId = uuidv4();
       
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/v1_0/apiuser`,
         {
           providerCallbackHost: this.callbackHost
@@ -45,6 +46,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -67,7 +70,7 @@ class MTNMoMoService {
    */
   async getApiUser(referenceId) {
     try {
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/v1_0/apiuser/${referenceId}`,
         {
           headers: {
@@ -75,6 +78,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -94,7 +99,7 @@ class MTNMoMoService {
    */
   async createApiKey(referenceId) {
     try {
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/v1_0/apiuser/${referenceId}/apikey`,
         {},
         {
@@ -103,6 +108,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -124,7 +131,7 @@ class MTNMoMoService {
     try {
       const credentials = Buffer.from(`${this.collectionApiUserId}:${this.collectionPrimaryKey}`).toString('base64');
       
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/collection/token/`,
         {},
         {
@@ -134,6 +141,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -175,7 +184,7 @@ class MTNMoMoService {
         payeeNote: payeeNote || 'Kelmah platform payment'
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/collection/v1_0/requesttopay`,
         requestData,
         {
@@ -188,6 +197,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -217,7 +228,7 @@ class MTNMoMoService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/collection/v1_0/requesttopay/${referenceId}`,
         {
           headers: {
@@ -227,6 +238,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -259,7 +272,7 @@ class MTNMoMoService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/collection/v1_0/account/balance`,
         {
           headers: {
@@ -269,6 +282,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -290,7 +305,7 @@ class MTNMoMoService {
     try {
       const credentials = Buffer.from(`${this.disbursementApiUserId}:${this.disbursementPrimaryKey}`).toString('base64');
       
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/disbursement/token/`,
         {},
         {
@@ -300,6 +315,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -341,7 +358,7 @@ class MTNMoMoService {
         payeeNote: payeeNote || 'Kelmah platform payout'
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/disbursement/v1_0/transfer`,
         requestData,
         {
@@ -354,6 +371,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -382,7 +401,7 @@ class MTNMoMoService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/disbursement/v1_0/transfer/${referenceId}`,
         {
           headers: {
@@ -392,6 +411,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -424,7 +445,7 @@ class MTNMoMoService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/collection/v1_0/accountholder/${accountHolderType}/${this.formatPhoneNumber(phoneNumber)}/active`,
         {
           headers: {
@@ -434,6 +455,8 @@ class MTNMoMoService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,

@@ -33,9 +33,14 @@ class MessageSocketHandler {
 
         // Verify JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const claims = {
+          id: decoded.id || decoded.sub,
+          email: decoded.email,
+          role: decoded.role
+        };
         
         // Get user details
-        const user = await User.findById(decoded.sub || decoded.id).select('firstName lastName email role isActive');
+        const user = await User.findById(claims.id).select('firstName lastName email role isActive');
 
         if (!user || !user.isActive) {
           return next(new Error('Invalid or inactive user'));
@@ -43,7 +48,7 @@ class MessageSocketHandler {
 
         socket.userId = user.id;
         socket.user = user;
-        socket.tokenVersion = decoded.version;
+        socket.tokenVersion = claims.version;
         
         next();
       } catch (error) {
@@ -88,6 +93,7 @@ class MessageSocketHandler {
       // Message events
       // Support acknowledgements from client emit
       socket.on('send_message', (data, ack) => this.handleSendMessage(socket, data, ack));
+      socket.on('send_encrypted', (data, ack) => this.handleSendEncrypted(socket, data, ack));
       socket.on('mark_read', (data) => this.handleMarkRead(socket, data));
       socket.on('typing_start', (data) => this.handleTypingStart(socket, data));
       socket.on('typing_stop', (data) => this.handleTypingStop(socket, data));
@@ -264,8 +270,22 @@ class MessageSocketHandler {
       );
 
       if (offlineParticipants.length > 0) {
-        // Queue push notifications (implement with notification service)
+        // Queue push notifications and persist lightweight in-app notifications
         this.queuePushNotifications(offlineParticipants, messageData);
+        try {
+          const Notification = require('../models/Notification');
+          const docs = offlineParticipants.map((uid) => ({
+            recipient: uid,
+            type: 'message_received',
+            title: `New message from ${messageData.sender?.name || 'Contact'}`,
+            content: messageData.content || 'Sent an attachment',
+            actionUrl: `/messages/${conversationId}`,
+            relatedEntity: { type: 'message', id: messageData.id },
+            priority: 'low',
+            metadata: { icon: 'message', color: 'info' }
+          }));
+          if (docs.length > 0) await Notification.insertMany(docs);
+        } catch (_) {}
       }
 
       // Stop typing indicator for sender
@@ -286,6 +306,61 @@ class MessageSocketHandler {
     } catch (error) {
       console.error('Handle send message error:', error);
       socket.emit('error', { message: 'Failed to send message' });
+      if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
+    }
+  }
+
+  /**
+   * Handle sending encrypted message (envelope)
+   */
+  async handleSendEncrypted(socket, data, ack) {
+    try {
+      if ((process.env.ENABLE_E2E_ENVELOPE || 'false') !== 'true') {
+        return this.handleSendMessage(socket, data, ack);
+      }
+      const { conversationId, encryptedBody, encryption, messageType = 'text', attachments = [], clientId } = data || {};
+      const userId = socket.userId;
+      if (!conversationId || !encryptedBody || !encryption) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'invalid_envelope' });
+        return;
+      }
+      const conversation = await Conversation.findOne({ _id: conversationId, participants: { $in: [userId] } });
+      if (!conversation) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'not_found' });
+        return;
+      }
+      const message = new Message({
+        sender: userId,
+        recipient: conversation.participants.find(p => p.toString() !== userId.toString()),
+        content: '',
+        messageType,
+        attachments: attachments.length > 0 ? attachments : [],
+        readStatus: { isRead: false },
+        encryptedBody,
+        encryption,
+      });
+      await message.save();
+      conversation.lastMessage = message._id;
+      await conversation.save();
+      await message.populate('sender', 'firstName lastName profilePicture');
+      const messageData = {
+        id: message._id,
+        conversationId,
+        senderId: message.sender._id,
+        sender: { id: message.sender._id, name: `${message.sender.firstName} ${message.sender.lastName}`, profilePicture: message.sender.profilePicture },
+        content: '',
+        encrypted: true,
+        messageType,
+        attachments: message.attachments,
+        createdAt: message.createdAt,
+        isRead: message.readStatus.isRead,
+        status: 'sent',
+        clientId: clientId || null
+      };
+      this.io.to(`conversation_${conversationId}`).emit('new_message', messageData);
+      if (typeof ack === 'function') ack({ ok: true, message: messageData });
+    } catch (error) {
+      console.error('Handle send encrypted error:', error);
       if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
     }
   }

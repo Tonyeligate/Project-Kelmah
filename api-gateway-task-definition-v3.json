@@ -1,0 +1,65 @@
+{
+  "taskDefinitionArn": "arn:aws:ecs:eu-north-1:992350137489:task-definition/api-gateway-task:3",
+  "containerDefinitions": [
+    {
+      "name": "api-gateway",
+      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/api-gateway:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        { "name": "JWT_REFRESH_SECRET", "value": "Tony_Deladem" },
+        { "name": "PAYMENT_SERVICE_URL", "value": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com:3005" },
+        { "name": "USER_SERVICE_URL", "value": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com:3002" },
+        { "name": "AUTH_SERVICE_URL", "value": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com:5001" },
+        { "name": "NOTIFICATION_SERVICE_URL", "value": "https://kelmah-notification-service.onrender.com" },
+        { "name": "JOB_SERVICE_URL", "value": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com:3004" },
+        { "name": "CORS_ALLOWLIST", "value": "https://project-kelmah.vercel.app,https://kelmah-frontend-cyan.vercel.app" },
+        { "name": "FRONTEND_URL", "value": "https://kelmah-frontend-cyan.vercel.app" },
+        { "name": "MESSAGING_SERVICE_URL", "value": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com:3003" },
+        { "name": "API_GATEWAY_PORT", "value": "3000" },
+        { "name": "JWT_SECRET", "value": "Deladem_Tony" },
+        { "name": "INTERNAL_API_KEY", "value": "1620768f6453a161531bd4150c0f17cd4dc5ccd46b12332639fe7bd3930da16e" },
+        { "name": "REVIEW_SERVICE_URL", "value": "https://kelmah-review-service.onrender.com" },
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "LOG_LEVEL", "value": "info" }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/api-gateway",
+          "awslogs-region": "eu-north-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "api-gateway-task",
+  "taskRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512"
+}
+
+
+
+
+
+

@@ -69,7 +69,7 @@ const HirerRoutes = () => {
         element={
           <ProtectedRoute
             isAllowed={isAuthenticated && hasRole(user, 'hirer')}
-            redirectPath="/find-talents"
+            redirectPath="/login"
             loading={loading}
           >
             <WorkerSearchPage />

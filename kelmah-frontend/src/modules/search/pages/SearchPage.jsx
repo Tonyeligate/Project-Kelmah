@@ -26,8 +26,6 @@ import LocationBasedSearch from '../components/LocationBasedSearch';
 import SavedSearches from '../components/SavedSearches';
 import SEO from '../../common/components/common/SEO';
 
-// Constants
-import { API_URL } from '../../../config/constants';
 
 // Styled components
 const PageWrapper = styled(Box)(({ theme }) => ({
@@ -342,9 +340,13 @@ const SearchPage = () => {
         `${API_URL}/jobs/${jobId}/save`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: await (async () => {
+            try {
+              const { secureStorage } = await import('../../../utils/secureStorage');
+              const token = secureStorage.getAuthToken();
+              return token ? { Authorization: `Bearer ${token}` } : {};
+            } catch { return {}; }
+          })(),
         },
       );
 

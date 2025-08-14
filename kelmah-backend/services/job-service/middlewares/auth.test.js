@@ -1,5 +1,5 @@
 const { authenticateUser, authorizeRoles } = require('./auth');
-const jwt = require('jsonwebtoken');
+const jwtUtils = require('../../../shared/utils/jwt');
 
 describe('authenticateUser middleware', () => {
   let req, res, next;
@@ -23,7 +23,7 @@ describe('authenticateUser middleware', () => {
 
   it('should return 401 if token is invalid', () => {
     req.headers.authorization = 'Bearer invalidtoken';
-    jest.spyOn(jwt, 'verify').mockImplementation(() => { throw new Error('fail'); });
+    jest.spyOn(jwtUtils, 'verifyAccessToken').mockImplementation(() => { const e = new Error('invalid'); e.name = 'JsonWebTokenError'; throw e; });
 
     authenticateUser(req, res, next);
     expect(res.status).toHaveBeenCalledWith(401);
@@ -32,12 +32,13 @@ describe('authenticateUser middleware', () => {
   });
 
   it('should set req.user and call next for valid token', () => {
-    const decoded = { userId: '123' };
+    const claims = { sub: '123', email: 'e@e.com', role: 'user', version: 0 };
     req.headers.authorization = 'Bearer validtoken';
-    jest.spyOn(jwt, 'verify').mockReturnValue(decoded);
+    jest.spyOn(jwtUtils, 'verifyAccessToken').mockReturnValue(claims);
+    jest.spyOn(jwtUtils, 'decodeUserFromClaims').mockReturnValue({ id: '123', email: 'e@e.com', role: 'user', version: 0 });
 
     authenticateUser(req, res, next);
-    expect(req.user).toEqual(decoded);
+    expect(req.user).toEqual({ id: '123', email: 'e@e.com', role: 'user', version: 0 });
     expect(next).toHaveBeenCalled();
   });
 });

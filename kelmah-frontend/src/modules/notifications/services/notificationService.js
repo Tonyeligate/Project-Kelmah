@@ -5,7 +5,6 @@
 
 import { messagingServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
-import { API_BASE_URL } from '../../../config/constants';
 import { SERVICES } from '../../../config/environment';
 
 class NotificationService {
@@ -18,9 +17,8 @@ class NotificationService {
   async connect(token) {
     if (this.isConnected) return;
     try {
-      const wsUrl =
-        import.meta.env.VITE_MESSAGING_SERVICE_URL ||
-        (import.meta.env.DEV ? window.location.origin : SERVICES.MESSAGING_SERVICE);
+      const base = SERVICES?.MESSAGING_SERVICE || '';
+      const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || base || window.location.origin;
       const { io } = await import('socket.io-client');
       this.socket = io(wsUrl, {
         auth: { token },
@@ -51,10 +49,24 @@ class NotificationService {
   }
 
   // Get notifications
-  async getNotifications() {
+  async getNotifications(params = {}) {
     try {
-      const response = await this.client.get('/api/notifications');
-      return response.data;
+      const response = await this.client.get('/api/notifications', { params });
+      // Normalize to { notifications, pagination }
+      const data = response.data;
+      if (Array.isArray(data)) {
+        return { notifications: data, pagination: { page: 1, limit: data.length, total: data.length, pages: 1 } };
+      }
+      if (data?.data && Array.isArray(data.data)) {
+        return { notifications: data.data, pagination: data.pagination };
+      }
+      if (data?.data?.notifications) {
+        return { notifications: data.data.notifications, pagination: data.data.pagination || data.pagination };
+      }
+      if (data?.notifications) {
+        return { notifications: data.notifications, pagination: data.pagination };
+      }
+      return data;
     } catch (error) {
       const serviceUrl = messagingServiceClient.defaults.baseURL;
       const statusMsg = getServiceStatusMessage(serviceUrl);
@@ -78,13 +90,7 @@ class NotificationService {
       } else {
         console.log('🔔 Using empty notifications fallback during service timeout');
       }
-      return {
-        data: [],
-        totalPages: 1,
-        currentPage: 1,
-        totalNotifications: 0,
-        unreadCount: 0
-      };
+      return { notifications: [], pagination: { page: 1, limit: 20, total: 0, pages: 0 } };
     }
   }
 
@@ -142,6 +148,28 @@ class NotificationService {
       throw error;
     }
   }
+
+  // Get notification preferences (channels and types)
+  async getPreferences() {
+    try {
+      const response = await this.client.get('/api/notifications/preferences');
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.error('Failed to load notification preferences:', error);
+      throw error;
+    }
+  }
+
+  // Update notification preferences
+  async updatePreferences(preferences) {
+    try {
+      const response = await this.client.put('/api/notifications/preferences', preferences);
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.error('Failed to update notification preferences:', error);
+      throw error;
+    }
+  }
 }
 
 export const notificationService = new NotificationService();
@@ -155,8 +183,8 @@ const notificationServiceUser = {
    * Get all notifications for the current user
    * @returns {Promise<Array>} Array of notification objects
    */
-  getNotifications: async () => {
-    return await notificationService.getNotifications();
+  getNotifications: async (params = {}) => {
+    return await notificationService.getNotifications(params);
   },
 
   /**
@@ -196,6 +224,14 @@ const notificationServiceUser = {
   // Clear all notifications
   clearAllNotifications: async () => {
     return await notificationService.clearAllNotifications();
+  },
+
+  // Preferences
+  getPreferences: async () => {
+    return await notificationService.getPreferences();
+  },
+  updatePreferences: async (preferences) => {
+    return await notificationService.updatePreferences(preferences);
   },
 };
 

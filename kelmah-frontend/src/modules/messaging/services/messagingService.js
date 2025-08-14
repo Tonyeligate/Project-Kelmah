@@ -57,10 +57,12 @@ export const messagingService = {
   // Get messages for a conversation (REST fallback or initial load)
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
-      const response = await messagingServiceClient.get(`/api/messages/conversation/${conversationId}`, {
+      const response = await messagingServiceClient.get(`/api/messages/conversations/${conversationId}/messages`, {
         params: { page, limit },
       });
       const payload = response.data;
+      // Support shapes: { success, data: { messages, pagination } } or raw array
+      if (payload?.data?.messages) return payload.data.messages;
       if (Array.isArray(payload?.messages)) return payload.messages;
       if (Array.isArray(payload)) return payload;
       return [];
@@ -73,13 +75,7 @@ export const messagingService = {
   // Send a message via REST (used as websocket fallback)
   async sendMessage(senderId, recipientId, content, messageType = 'text', attachments = []) {
     try {
-      const response = await messagingServiceClient.post('/api/messages', {
-        sender: senderId,
-        recipient: recipientId,
-        content,
-        messageType,
-        attachments,
-      });
+      const response = await messagingServiceClient.post('/api/messages', { sender: senderId, recipient: recipientId, content, messageType, attachments });
       // Controller responds with { message: '...', data: message }
       return response.data?.data || response.data;
     } catch (error) {
@@ -99,6 +95,21 @@ export const messagingService = {
     } catch (error) {
       console.warn('Messaging service unavailable for creating direct conversation:', error.message);
       throw error;
+    }
+  },
+
+  // Search messages with filters used by MessageSearch.jsx
+  async searchMessages(query, { attachments = false, period, sender } = {}) {
+    try {
+      const params = { q: query, attachments, period, sender };
+      const response = await messagingServiceClient.get('/api/messages/search', { params });
+      const payload = response.data;
+      if (payload?.data?.messages) return payload.data;
+      if (Array.isArray(payload?.messages)) return { messages: payload.messages };
+      return { messages: [] };
+    } catch (error) {
+      console.warn('Failed to search messages:', error.message);
+      return { messages: [] };
     }
   },
 };

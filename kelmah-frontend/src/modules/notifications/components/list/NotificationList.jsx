@@ -75,7 +75,7 @@ const NotificationList = () => {
         <List sx={{ maxHeight: 400, overflow: 'auto' }}>
           {notifications.map((notification) => (
             <NotificationItem
-              key={notification.id}
+              key={notification.id || notification._id}
               notification={notification}
             />
           ))}

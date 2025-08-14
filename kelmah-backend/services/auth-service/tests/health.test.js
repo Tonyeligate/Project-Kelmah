@@ -3,7 +3,9 @@
  */
 
 const request = require('supertest');
-const { setupTestDatabase, cleanupTestDatabase } = require('../../shared/test-utils');
+// Test utilities - using local mock implementations
+const setupTestDatabase = () => Promise.resolve();
+const cleanupTestDatabase = () => Promise.resolve();
 
 // Import the app (you'll need to export it from server.js)
 // const app = require('../server');

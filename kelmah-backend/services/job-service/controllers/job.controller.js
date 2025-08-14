@@ -4,6 +4,11 @@
 
 const Job = require("../models/Job");
 const User = require("../models/User");
+const Contract = require("../models/Contract");
+const ContractDispute = require("../models/ContractDispute");
+const Application = require("../models/Application");
+const SavedJob = require("../models/SavedJob");
+const Category = require("../models/Category");
 const { AppError } = require("../middlewares/error");
 const {
   successResponse,
@@ -18,13 +23,91 @@ const {
  */
 const createJob = async (req, res, next) => {
   try {
-    // Add hirer ID to job data
-    req.body.hirer = req.user.id;
+    // Normalize incoming payload from legacy UI fields
+    const body = { ...req.body };
+    body.hirer = req.user.id;
+
+    // Map legacy fields to canonical model
+    // paymentType + budget.{min,max,fixed} → budget (number) + currency
+    if (typeof body.budget === 'object') {
+      const b = body.budget || {};
+      const type = body.paymentType || b.type;
+      const amount = type === 'hourly' ? Number(b.max || b.min || b.amount) : Number(b.fixed || b.amount);
+      body.paymentType = type || 'fixed';
+      body.budget = isFinite(amount) ? amount : undefined;
+      body.currency = body.currency || b.currency || 'GHS';
+    } else if (typeof body.budget === 'string') {
+      body.budget = Number(body.budget);
+    }
+
+    // duration string like "2 weeks" → { value, unit }
+    if (typeof body.duration === 'string') {
+      const match = body.duration.match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
+      if (match) {
+        const val = Number(match[1]);
+        let unit = match[2].toLowerCase();
+        if (unit.endsWith('s')) unit = unit.slice(0, -1);
+        body.duration = { value: val, unit };
+      }
+    }
+
+    // locationType + location string → location object
+    if (!body.location || typeof body.location === 'string' || body.locationType) {
+      const type = body.locationType || body.location?.type || 'remote';
+      const address = typeof body.location === 'string' ? body.location : body.location?.address;
+      body.location = { type, address };
+    }
+
+    // Ensure skills is array of strings
+    if (Array.isArray(body.skills)) {
+      body.skills = body.skills.map(String);
+    }
 
     // Create job
-    const job = await Job.create(req.body);
+    const job = await Job.create(body);
 
     return successResponse(res, 201, "Job created successfully", job);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get single contract by id
+ * @route GET /api/jobs/contracts/:id
+ * @access Public
+ */
+const getContractById = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.id)
+      .populate('job', 'title category')
+      .populate('hirer', 'firstName lastName')
+      .populate('worker', 'firstName lastName');
+    if (!contract) return errorResponse(res, 404, 'Contract not found');
+    return successResponse(res, 200, 'Contract retrieved', contract);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Create a contract dispute
+ * @route POST /api/jobs/contracts/:id/disputes
+ * @access Private (Hirer or Worker on contract)
+ */
+const createContractDispute = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason, description } = req.body || {};
+    const userId = req.user?.id;
+    if (!reason || !description) return errorResponse(res, 400, 'reason and description are required');
+    const contract = await Contract.findById(id);
+    if (!contract) return errorResponse(res, 404, 'Contract not found');
+    if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
+      return errorResponse(res, 403, 'Only contract parties can open disputes');
+    }
+    const dispute = await ContractDispute.create({ contract: id, user: userId, reason, description, status: 'open' });
+    return successResponse(res, 201, 'Dispute created', dispute);
   } catch (error) {
     next(error);
   }
@@ -61,13 +144,82 @@ const getJobs = async (req, res, next) => {
       if (max) query.budget.$lte = parseInt(max);
     }
 
+    // Enhanced location filtering
     if (req.query.location) {
-      query["location.country"] = req.query.location;
+      if (req.query.location.includes(',')) {
+        // Multiple locations
+        const locations = req.query.location.split(',').map(loc => loc.trim());
+        query.$or = [
+          { "location.city": { $in: locations } },
+          { "location.region": { $in: locations } },
+          { "location.country": { $in: locations } }
+        ];
+      } else {
+        // Single location - search across city, region, country
+        query.$or = [
+          { "location.city": { $regex: req.query.location, $options: "i" } },
+          { "location.region": { $regex: req.query.location, $options: "i" } },
+          { "location.country": { $regex: req.query.location, $options: "i" } }
+        ];
+      }
     }
 
-    // Search
+    // Geographic search (latitude/longitude with radius)
+    if (req.query.latitude && req.query.longitude && req.query.radius) {
+      const lat = parseFloat(req.query.latitude);
+      const lng = parseFloat(req.query.longitude);
+      const radius = parseFloat(req.query.radius) || 50; // km
+
+      query["location.coordinates"] = {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius / 6378.1] // Earth radius in km
+        }
+      };
+    }
+
+    // Job type filter
+    if (req.query.type) {
+      query.type = req.query.type;
+    }
+
+    // Urgency filter
+    if (req.query.urgent === 'true') {
+      query.urgency = { $in: ['high', 'urgent'] };
+    }
+
+    // Remote work filter
+    if (req.query.remote === 'true') {
+      query.remote = true;
+    }
+
+    // Experience level filter
+    if (req.query.experience) {
+      query.experienceLevel = req.query.experience;
+    }
+
+    // Date range filter
+    if (req.query.dateFrom || req.query.dateTo) {
+      query.createdAt = {};
+      if (req.query.dateFrom) query.createdAt.$gte = new Date(req.query.dateFrom);
+      if (req.query.dateTo) query.createdAt.$lte = new Date(req.query.dateTo);
+    }
+
+    // Hirer rating filter
+    if (req.query.minHirerRating) {
+      // This would require a join with User collection to filter by hirer rating
+      // For now, we'll add it to the aggregation pipeline later
+    }
+
+    // Search with advanced text search
     if (req.query.search) {
-      query.$text = { $search: req.query.search };
+      const searchTerms = req.query.search.trim().split(' ');
+      query.$or = [
+        { $text: { $search: req.query.search } },
+        { title: { $regex: req.query.search, $options: "i" } },
+        { description: { $regex: req.query.search, $options: "i" } },
+        { skills: { $in: searchTerms.map(term => new RegExp(term, 'i')) } },
+        { category: { $regex: req.query.search, $options: "i" } }
+      ];
     }
 
     // Execute query with pagination
@@ -146,8 +298,38 @@ const updateJob = async (req, res, next) => {
       );
     }
 
+    // Normalize incoming payload similarly to create
+    const body = { ...req.body };
+    if (typeof body.budget === 'object') {
+      const b = body.budget || {};
+      const type = body.paymentType || b.type;
+      const amount = type === 'hourly' ? Number(b.max || b.min || b.amount) : Number(b.fixed || b.amount);
+      body.paymentType = type || job.paymentType;
+      body.budget = isFinite(amount) ? amount : job.budget;
+      body.currency = body.currency || b.currency || job.currency || 'GHS';
+    } else if (typeof body.budget === 'string') {
+      body.budget = Number(body.budget);
+    }
+    if (typeof body.duration === 'string') {
+      const match = body.duration.match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
+      if (match) {
+        const val = Number(match[1]);
+        let unit = match[2].toLowerCase();
+        if (unit.endsWith('s')) unit = unit.slice(0, -1);
+        body.duration = { value: val, unit };
+      }
+    }
+    if (!body.location || typeof body.location === 'string' || body.locationType) {
+      const type = body.locationType || body.location?.type || job.location?.type || 'remote';
+      const address = typeof body.location === 'string' ? body.location : body.location?.address;
+      body.location = { type, address };
+    }
+    if (Array.isArray(body.skills)) {
+      body.skills = body.skills.map(String);
+    }
+
     // Update job
-    job = await Job.findByIdAndUpdate(req.params.id, req.body, {
+    job = await Job.findByIdAndUpdate(req.params.id, body, {
       new: true,
       runValidators: true,
     });
@@ -433,6 +615,835 @@ const getContracts = async (req, res, next) => {
   }
 };
 
+/**
+ * Get job recommendations for a worker based on their profile
+ * @route GET /api/jobs/recommendations
+ * @access Private (Worker only)
+ */
+const getJobRecommendations = async (req, res, next) => {
+  try {
+    const workerId = req.user.id;
+    const { limit = 20, minScore = 40 } = req.query;
+    
+    // Get worker profile (assuming it's available via user service)
+    const worker = await User.findById(workerId);
+    if (!worker || worker.role !== 'worker') {
+      return errorResponse(res, 403, 'Only workers can access job recommendations');
+    }
+
+    // Build base query for available jobs
+    let query = { 
+      status: 'open', 
+      visibility: 'public',
+      // Don't show jobs user already applied to
+      'applications.applicant': { $ne: workerId }
+    };
+
+    // Get all available jobs
+    const jobs = await Job.find(query)
+      .populate('hirer', 'firstName lastName profileImage rating totalJobsPosted')
+      .sort('-createdAt')
+      .limit(parseInt(limit) * 2); // Get more to allow for filtering
+
+    // Calculate match scores for each job
+    const jobsWithScores = jobs.map(job => {
+      const matchScore = calculateJobMatchScore(job, worker);
+      
+      return {
+        ...job.toObject(),
+        matchScore: matchScore.totalScore,
+        matchDetails: matchScore.breakdown,
+        matchReasons: matchScore.reasons
+      };
+    });
+
+    // Filter by minimum score and sort by match score
+    const recommendedJobs = jobsWithScores
+      .filter(job => job.matchScore >= parseInt(minScore))
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, parseInt(limit));
+
+    return successResponse(res, 200, 'Job recommendations retrieved successfully', {
+      jobs: recommendedJobs,
+      totalRecommendations: recommendedJobs.length,
+      averageMatchScore: recommendedJobs.reduce((sum, job) => sum + job.matchScore, 0) / recommendedJobs.length || 0
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get worker matches for a specific job
+ * @route GET /api/jobs/:id/worker-matches
+ * @access Private (Hirer only)
+ */
+const getWorkerMatches = async (req, res, next) => {
+  try {
+    const jobId = req.params.id;
+    const hirerId = req.user.id;
+    const { limit = 20, minScore = 40 } = req.query;
+
+    // Get job and verify ownership
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return errorResponse(res, 404, 'Job not found');
+    }
+    if (job.hirer.toString() !== hirerId) {
+      return errorResponse(res, 403, 'Access denied');
+    }
+
+    // Get available workers (this would typically call user-service)
+    // For now, we'll use a basic query - in production this would be a service call
+    const workers = await User.find({ 
+      role: 'worker',
+      isActive: true,
+      'workerProfile.availabilityStatus': { $in: ['available', 'partially_available'] }
+    }).limit(parseInt(limit) * 2);
+
+    // Calculate match scores for each worker
+    const workersWithScores = workers.map(worker => {
+      const matchScore = calculateWorkerMatchScore(job, worker);
+      
+      return {
+        id: worker._id,
+        name: `${worker.firstName} ${worker.lastName}`,
+        profileImage: worker.profileImage,
+        rating: worker.rating || 0,
+        completedJobs: worker.completedJobs || 0,
+        skills: worker.skills || [],
+        hourlyRate: worker.workerProfile?.hourlyRate || 0,
+        location: worker.location,
+        matchScore: matchScore.totalScore,
+        matchDetails: matchScore.breakdown,
+        matchReasons: matchScore.reasons
+      };
+    });
+
+    // Filter by minimum score and sort by match score
+    const matchedWorkers = workersWithScores
+      .filter(worker => worker.matchScore >= parseInt(minScore))
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, parseInt(limit));
+
+    return successResponse(res, 200, 'Worker matches retrieved successfully', {
+      workers: matchedWorkers,
+      totalMatches: matchedWorkers.length,
+      averageMatchScore: matchedWorkers.reduce((sum, worker) => sum + worker.matchScore, 0) / matchedWorkers.length || 0
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Calculate job match score for a worker
+ */
+function calculateJobMatchScore(job, worker) {
+  let totalScore = 0;
+  const breakdown = {};
+  const reasons = [];
+
+  // Skills matching (40% weight)
+  const jobSkills = job.skills || [];
+  const workerSkills = worker.skills || [];
+  
+  const skillMatches = jobSkills.filter(jobSkill =>
+    workerSkills.some(workerSkill => 
+      jobSkill.toLowerCase().includes(workerSkill.toLowerCase()) ||
+      workerSkill.toLowerCase().includes(jobSkill.toLowerCase())
+    )
+  );
+  
+  const skillScore = jobSkills.length > 0 ? (skillMatches.length / jobSkills.length) * 40 : 0;
+  breakdown.skills = skillScore;
+  totalScore += skillScore;
+  
+  if (skillMatches.length > 0) {
+    reasons.push(`${skillMatches.length}/${jobSkills.length} skill matches`);
+  }
+
+  // Location matching (25% weight)
+  let locationScore = 0;
+  if (job.location && worker.location) {
+    if (job.location.city === worker.location.city) {
+      locationScore = 25;
+      reasons.push('Same city');
+    } else if (job.location.region === worker.location.region) {
+      locationScore = 15;
+      reasons.push('Same region');
+    } else if (job.location.country === worker.location.country) {
+      locationScore = 5;
+      reasons.push('Same country');
+    }
+  }
+  breakdown.location = locationScore;
+  totalScore += locationScore;
+
+  // Budget compatibility (20% weight)
+  let budgetScore = 0;
+  if (job.budget && worker.workerProfile?.hourlyRate) {
+    const expectedHours = job.estimatedHours || 40;
+    const totalBudget = worker.workerProfile.hourlyRate * expectedHours;
+    
+    if (totalBudget <= job.budget) {
+      budgetScore = 20;
+      reasons.push('Budget compatible');
+    } else if (totalBudget <= job.budget * 1.2) {
+      budgetScore = 10;
+      reasons.push('Budget close match');
+    }
+  } else if (!worker.workerProfile?.hourlyRate) {
+    budgetScore = 10; // Neutral score if no rate specified
+  }
+  breakdown.budget = budgetScore;
+  totalScore += budgetScore;
+
+  // Worker rating (10% weight)
+  const ratingScore = ((worker.rating || 0) / 5) * 10;
+  breakdown.rating = ratingScore;
+  totalScore += ratingScore;
+  
+  if (worker.rating >= 4.5) {
+    reasons.push('Highly rated worker');
+  }
+
+  // Experience level (5% weight)
+  let experienceScore = 0;
+  const completedJobs = worker.completedJobs || 0;
+  if (completedJobs >= 50) experienceScore = 5;
+  else if (completedJobs >= 20) experienceScore = 4;
+  else if (completedJobs >= 10) experienceScore = 3;
+  else if (completedJobs >= 5) experienceScore = 2;
+  else if (completedJobs >= 1) experienceScore = 1;
+  
+  breakdown.experience = experienceScore;
+  totalScore += experienceScore;
+  
+  if (completedJobs >= 20) {
+    reasons.push('Experienced worker');
+  }
+
+  return {
+    totalScore: Math.round(totalScore),
+    breakdown,
+    reasons
+  };
+}
+
+/**
+ * Calculate worker match score for a job (inverse of above)
+ */
+function calculateWorkerMatchScore(job, worker) {
+  // This is essentially the same logic as calculateJobMatchScore
+  // but from the perspective of matching workers to a job
+  return calculateJobMatchScore(job, worker);
+}
+
+/**
+ * Advanced job search with multiple filters and sorting options
+ * @route GET /api/jobs/search
+ * @access Public
+ */
+const advancedJobSearch = async (req, res, next) => {
+  try {
+    const {
+      q: query = '',
+      location,
+      category,
+      skills,
+      minBudget,
+      maxBudget,
+      jobType,
+      experienceLevel,
+      remote,
+      urgent,
+      latitude,
+      longitude,
+      radius = 50,
+      sortBy = 'relevance',
+      page = 1,
+      limit = 20,
+      dateFrom,
+      dateTo,
+      minHirerRating
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSize = Math.min(50, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * pageSize;
+
+    // Build aggregation pipeline for advanced search
+    const pipeline = [];
+
+    // Match stage - basic filters
+    const matchStage = { 
+      status: 'open', 
+      visibility: 'public' 
+    };
+
+    // Category filter
+    if (category) {
+      matchStage.category = category;
+    }
+
+    // Skills filter
+    if (skills) {
+      const skillsArray = skills.split(',').map(s => s.trim());
+      matchStage.skills = { $in: skillsArray };
+    }
+
+    // Budget range filter
+    if (minBudget || maxBudget) {
+      matchStage.budget = {};
+      if (minBudget) matchStage.budget.$gte = parseInt(minBudget);
+      if (maxBudget) matchStage.budget.$lte = parseInt(maxBudget);
+    }
+
+    // Job type filter
+    if (jobType) {
+      matchStage.type = jobType;
+    }
+
+    // Experience level filter
+    if (experienceLevel) {
+      matchStage.experienceLevel = experienceLevel;
+    }
+
+    // Remote work filter
+    if (remote === 'true') {
+      matchStage.remote = true;
+    }
+
+    // Urgency filter
+    if (urgent === 'true') {
+      matchStage.urgency = { $in: ['high', 'urgent'] };
+    }
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      matchStage.createdAt = {};
+      if (dateFrom) matchStage.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) matchStage.createdAt.$lte = new Date(dateTo);
+    }
+
+    // Location and geographic filters
+    if (location) {
+      const locationRegex = new RegExp(location, 'i');
+      matchStage.$or = [
+        { 'location.city': locationRegex },
+        { 'location.region': locationRegex },
+        { 'location.country': locationRegex }
+      ];
+    }
+
+    // Geographic search
+    if (latitude && longitude) {
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      const radiusKm = parseFloat(radius);
+
+      matchStage['location.coordinates'] = {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radiusKm / 6378.1]
+        }
+      };
+    }
+
+    // Text search
+    if (query) {
+      const searchTerms = query.trim().split(' ');
+      matchStage.$or = [
+        { $text: { $search: query } },
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { skills: { $in: searchTerms.map(term => new RegExp(term, 'i')) } },
+        { category: { $regex: query, $options: 'i' } }
+      ];
+    }
+
+    pipeline.push({ $match: matchStage });
+
+    // Lookup hirer information
+    pipeline.push({
+      $lookup: {
+        from: 'users',
+        localField: 'hirer',
+        foreignField: '_id',
+        as: 'hirerInfo'
+      }
+    });
+
+    pipeline.push({
+      $unwind: '$hirerInfo'
+    });
+
+    // Filter by hirer rating if specified
+    if (minHirerRating) {
+      pipeline.push({
+        $match: {
+          'hirerInfo.rating': { $gte: parseFloat(minHirerRating) }
+        }
+      });
+    }
+
+    // Add computed fields for sorting
+    pipeline.push({
+      $addFields: {
+        relevanceScore: {
+          $add: [
+            { $cond: [{ $ne: ['$featured', null] }, 10, 0] },
+            { $multiply: [{ $ifNull: ['$hirerInfo.rating', 0] }, 2] },
+            { $cond: [{ $eq: ['$urgency', 'high'] }, 5, 0] },
+            { $cond: [{ $gte: ['$budget', 1000] }, 3, 0] }
+          ]
+        },
+        distanceScore: {
+          $cond: [
+            { $and: [{ $ne: ['$location.coordinates', null] }, latitude, longitude] },
+            { $literal: 0 }, // Would calculate actual distance here
+            { $literal: 0 }
+          ]
+        }
+      }
+    });
+
+    // Sorting
+    let sortStage = {};
+    switch (sortBy) {
+      case 'newest':
+        sortStage = { createdAt: -1 };
+        break;
+      case 'oldest':
+        sortStage = { createdAt: 1 };
+        break;
+      case 'budget_high':
+        sortStage = { budget: -1, createdAt: -1 };
+        break;
+      case 'budget_low':
+        sortStage = { budget: 1, createdAt: -1 };
+        break;
+      case 'rating':
+        sortStage = { 'hirerInfo.rating': -1, createdAt: -1 };
+        break;
+      case 'distance':
+        sortStage = { distanceScore: 1, relevanceScore: -1 };
+        break;
+      case 'relevance':
+      default:
+        sortStage = { relevanceScore: -1, createdAt: -1 };
+        break;
+    }
+
+    pipeline.push({ $sort: sortStage });
+
+    // Pagination
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: pageSize });
+
+    // Project final fields
+    pipeline.push({
+      $project: {
+        _id: 1,
+        title: 1,
+        description: 1,
+        category: 1,
+        skills: 1,
+        budget: 1,
+        type: 1,
+        experienceLevel: 1,
+        location: 1,
+        remote: 1,
+        urgency: 1,
+        featured: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        relevanceScore: 1,
+        hirer: {
+          _id: '$hirerInfo._id',
+          firstName: '$hirerInfo.firstName',
+          lastName: '$hirerInfo.lastName',
+          profileImage: '$hirerInfo.profileImage',
+          rating: '$hirerInfo.rating',
+          totalJobsPosted: '$hirerInfo.totalJobsPosted'
+        }
+      }
+    });
+
+    // Execute aggregation
+    const jobs = await Job.aggregate(pipeline);
+
+    // Get total count for pagination (separate query for performance)
+    const countPipeline = pipeline.slice(0, -3); // Remove skip, limit, project
+    countPipeline.push({ $count: 'total' });
+    const countResult = await Job.aggregate(countPipeline);
+    const total = countResult.length > 0 ? countResult[0].total : 0;
+
+    return paginatedResponse(
+      res,
+      200,
+      'Advanced job search completed',
+      jobs,
+      pageNum,
+      pageSize,
+      total
+    );
+
+  } catch (error) {
+    console.error('Advanced search error:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get job analytics for admin dashboard
+ * @route GET /api/jobs/analytics
+ * @access Private (Admin only)
+ */
+const getJobAnalytics = async (req, res, next) => {
+  try {
+    const { timeRange = '30d' } = req.query;
+    const userRole = req.user?.role;
+
+    if (userRole !== 'admin') {
+      return errorResponse(res, 403, 'Admin access required');
+    }
+
+    const now = new Date();
+    let startDate;
+    switch (timeRange) {
+      case '24h':
+        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case '7d':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    const [
+      totalJobs,
+      activeJobs,
+      completedJobs,
+      newJobs,
+      jobsByCategory,
+      jobsByLocation,
+      budgetDistribution,
+      jobTrends,
+      avgJobBudget,
+      topSkills
+    ] = await Promise.all([
+      Job.countDocuments({ visibility: 'public' }),
+      Job.countDocuments({ status: 'open', visibility: 'public' }),
+      Job.countDocuments({ status: 'completed', visibility: 'public' }),
+      Job.countDocuments({ 
+        createdAt: { $gte: startDate },
+        visibility: 'public'
+      }),
+      
+      // Jobs by category
+      Job.aggregate([
+        { $match: { visibility: 'public' } },
+        { $group: { _id: '$category', count: { $sum: 1 }, avgBudget: { $avg: '$budget' } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ]),
+      
+      // Jobs by location
+      Job.aggregate([
+        { $match: { visibility: 'public', 'location.city': { $exists: true } } },
+        { $group: { _id: '$location.city', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ]),
+      
+      // Budget distribution
+      Job.aggregate([
+        { $match: { visibility: 'public', budget: { $exists: true, $gt: 0 } } },
+        {
+          $group: {
+            _id: {
+              $switch: {
+                branches: [
+                  { case: { $lte: ['$budget', 500] }, then: '0-500' },
+                  { case: { $lte: ['$budget', 1000] }, then: '501-1000' },
+                  { case: { $lte: ['$budget', 2500] }, then: '1001-2500' },
+                  { case: { $lte: ['$budget', 5000] }, then: '2501-5000' },
+                  { case: { $gt: ['$budget', 5000] }, then: '5000+' }
+                ],
+                default: 'Unknown'
+              }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]),
+      
+      // Job trends (last 30 days)
+      Job.aggregate([
+        { 
+          $match: { 
+            createdAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+            visibility: 'public'
+          } 
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            count: { $sum: 1 },
+            totalBudget: { $sum: '$budget' }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]),
+      
+      // Average job budget
+      Job.aggregate([
+        { $match: { visibility: 'public', budget: { $exists: true, $gt: 0 } } },
+        { $group: { _id: null, avgBudget: { $avg: '$budget' } } }
+      ]),
+      
+      // Top skills in demand
+      Job.aggregate([
+        { $match: { visibility: 'public', skills: { $exists: true, $ne: [] } } },
+        { $unwind: '$skills' },
+        { $group: { _id: '$skills', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 15 }
+      ])
+    ]);
+
+    const analytics = {
+      overview: {
+        totalJobs,
+        activeJobs,
+        completedJobs,
+        newJobs,
+        completionRate: totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0,
+        avgBudget: avgJobBudget[0]?.avgBudget || 0
+      },
+      categories: jobsByCategory,
+      locations: jobsByLocation,
+      budgetDistribution,
+      trends: jobTrends,
+      topSkills,
+      timeRange,
+      generatedAt: new Date().toISOString()
+    };
+
+    return successResponse(res, 200, 'Job analytics retrieved successfully', analytics);
+
+  } catch (error) {
+    console.error('Job analytics error:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get jobs assigned to current worker
+ * @route GET /api/jobs/assigned
+ * @access Private (Worker only)
+ */
+const getMyAssignedJobs = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    const query = { worker: req.user.id };
+    if (req.query.status) query.status = req.query.status;
+    const jobs = await Job.find(query)
+      .populate('hirer', 'firstName lastName profileImage')
+      .skip(startIndex)
+      .limit(limit)
+      .sort(req.query.sort || '-createdAt');
+    const total = await Job.countDocuments(query);
+    return paginatedResponse(res, 200, 'Assigned jobs retrieved', jobs, page, limit, total);
+  } catch (error) { next(error); }
+};
+
+/**
+ * Get applications of current worker
+ * @route GET /api/jobs/applications/me
+ * @access Private (Worker only)
+ */
+const getMyApplications = async (req, res, next) => {
+  try {
+    const { status } = req.query;
+    const q = { worker: req.user.id };
+    if (status) q.status = status;
+    const apps = await Application.find(q)
+      .populate('job', 'title category budget location status')
+      .sort('-createdAt');
+    return successResponse(res, 200, 'Applications retrieved', apps);
+  } catch (error) { next(error); }
+};
+
+/**
+ * Apply to a job
+ * @route POST /api/jobs/:id/apply
+ * @access Private (Worker only)
+ */
+const applyToJob = async (req, res, next) => {
+  try {
+    const jobId = req.params.id;
+    const workerId = req.user.id;
+    const { proposedRate, coverLetter, estimatedDuration, attachments, availabilityStartDate, questionResponses } = req.body || {};
+
+    const job = await Job.findById(jobId);
+    if (!job) return errorResponse(res, 404, 'Job not found');
+
+    // Only allow applying to open/public jobs
+    if (job.status !== 'open' || job.visibility === 'private') {
+      return errorResponse(res, 400, 'Job is not open for applications');
+    }
+
+    const app = await Application.create({
+      job: jobId,
+      worker: workerId,
+      proposedRate,
+      coverLetter,
+      estimatedDuration,
+      attachments,
+      availabilityStartDate,
+      questionResponses,
+      status: 'pending',
+    });
+
+    return successResponse(res, 201, 'Application submitted', app);
+  } catch (error) {
+    if (error?.code === 11000) {
+      return errorResponse(res, 409, 'You already applied to this job');
+    }
+    next(error);
+  }
+};
+
+/**
+ * Get applications for a job (hirer)
+ * @route GET /api/jobs/:id/applications
+ * @access Private (Hirer only)
+ */
+const getJobApplications = async (req, res, next) => {
+  try {
+    const jobId = req.params.id;
+    const job = await Job.findById(jobId);
+    if (!job) return errorResponse(res, 404, 'Job not found');
+    if (String(job.hirer) !== String(req.user.id)) {
+      return errorResponse(res, 403, 'Not authorized');
+    }
+    const { status } = req.query;
+    const query = { job: jobId };
+    if (status) query.status = status;
+    const apps = await Application.find(query)
+      .populate('worker', 'firstName lastName profileImage rating')
+      .sort('-createdAt');
+    return successResponse(res, 200, 'Applications retrieved', apps);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update application status (hirer)
+ * @route PUT /api/jobs/:id/applications/:applicationId
+ * @access Private (Hirer only)
+ */
+const updateApplicationStatus = async (req, res, next) => {
+  try {
+    const { id: jobId, applicationId } = req.params;
+    const { status, notes } = req.body || {};
+    const job = await Job.findById(jobId);
+    if (!job) return errorResponse(res, 404, 'Job not found');
+    if (String(job.hirer) !== String(req.user.id)) {
+      return errorResponse(res, 403, 'Not authorized');
+    }
+    const valid = ['pending','under_review','accepted','rejected','withdrawn'];
+    if (!valid.includes(status)) return errorResponse(res, 400, 'Invalid status');
+    const app = await Application.findOne({ _id: applicationId, job: jobId });
+    if (!app) return errorResponse(res, 404, 'Application not found');
+    app.status = status;
+    if (notes) app.notes = notes;
+    await app.save();
+    return successResponse(res, 200, 'Application updated', app);
+  } catch (error) { next(error); }
+};
+
+/**
+ * Withdraw application (worker)
+ * @route DELETE /api/jobs/:id/applications/:applicationId
+ * @access Private (Worker only)
+ */
+const withdrawApplication = async (req, res, next) => {
+  try {
+    const { id: jobId, applicationId } = req.params;
+    const app = await Application.findOne({ _id: applicationId, job: jobId });
+    if (!app) return errorResponse(res, 404, 'Application not found');
+    if (String(app.worker) !== String(req.user.id)) {
+      return errorResponse(res, 403, 'Not authorized');
+    }
+    app.status = 'withdrawn';
+    await app.save();
+    return successResponse(res, 200, 'Application withdrawn', app);
+  } catch (error) { next(error); }
+};
+
+/**
+ * Saved jobs
+ */
+const getSavedJobs = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const saves = await SavedJob.find({ user: userId })
+      .populate('job')
+      .sort('-createdAt');
+    const jobs = saves.map((s) => s.job).filter(Boolean);
+    return successResponse(res, 200, 'Saved jobs retrieved', { jobs });
+  } catch (error) { next(error); }
+};
+
+const saveJob = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const jobId = req.params.id;
+    const job = await Job.findById(jobId);
+    if (!job) return errorResponse(res, 404, 'Job not found');
+    await SavedJob.create({ user: userId, job: jobId });
+    return successResponse(res, 201, 'Job saved');
+  } catch (error) {
+    if (error?.code === 11000) return successResponse(res, 200, 'Job already saved');
+    next(error);
+  }
+};
+
+const unsaveJob = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const jobId = req.params.id;
+    await SavedJob.deleteOne({ user: userId, job: jobId });
+    return successResponse(res, 200, 'Job unsaved');
+  } catch (error) { next(error); }
+};
+
+/**
+ * Job categories
+ */
+const getJobCategories = async (req, res, next) => {
+  try {
+    const categories = await Category.find({ isActive: true }).sort({ displayOrder: 1, name: 1 });
+    return successResponse(res, 200, 'Categories retrieved', categories);
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   createJob,
   getJobs,
@@ -443,4 +1454,20 @@ module.exports = {
   changeJobStatus,
   getDashboardJobs,
   getContracts,
+  getContractById,
+  createContractDispute,
+  getJobRecommendations,
+  getWorkerMatches,
+  advancedJobSearch,
+  getJobAnalytics,
+  applyToJob,
+  getJobApplications,
+  updateApplicationStatus,
+  withdrawApplication,
+  getSavedJobs,
+  saveJob,
+  unsaveJob,
+  getJobCategories,
+  getMyAssignedJobs,
+  getMyApplications,
 };

@@ -31,7 +31,7 @@ import {
   SecurityOutlined,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { API_BASE_URL } from '../../../../config/constants';
+import { FEATURES, API_BASE_URL } from '../../../../config/environment';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
@@ -700,6 +700,11 @@ const Login = () => {
                           <GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
               onClick={() => {
+                if (!FEATURES.analytics) {
+                  // Gate social login behind a feature flag for now
+                  alert('Google login is temporarily disabled');
+                  return;
+                }
                 window.location.href = `${API_BASE_URL}/api/auth/google`;
               }}
                             sx={{
@@ -737,6 +742,10 @@ const Login = () => {
                           <LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
               onClick={() => {
+                if (!FEATURES.analytics) {
+                  alert('LinkedIn login is temporarily disabled');
+                  return;
+                }
                 window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
               }}
                             sx={{

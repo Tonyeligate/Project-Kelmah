@@ -36,6 +36,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const ProfileCompletion = ({
   completion = 75,
   profileData = {},
+  suggestions = [],
   onComplete = () => {},
 }) => {
   const theme = useTheme();
@@ -52,9 +53,10 @@ const ProfileCompletion = ({
   ];
 
   const completedItems = profileItems.filter((item) => item.completed);
-  const actualCompletion = profileItems.reduce((acc, item) => {
+  const computedCompletion = profileItems.reduce((acc, item) => {
     return acc + (item.completed ? item.weight : 0);
   }, 0);
+  const actualCompletion = typeof completion === 'number' ? completion : computedCompletion;
 
   const getCompletionColor = (percentage) => {
     if (percentage >= 90) return '#4CAF50';
@@ -171,7 +173,7 @@ const ProfileCompletion = ({
               />
           </Box>
 
-            <Typography
+              <Typography
               variant="body2"
               sx={{
                 color: 'rgba(255,255,255,0.7)',
@@ -306,8 +308,8 @@ const ProfileCompletion = ({
             {actualCompletion >= 90 ? 'View Profile' : 'Complete Profile'}
         </Button>
 
-          {/* Quick Tips */}
-          {actualCompletion < 70 && (
+          {/* Suggestions from backend */}
+          {Array.isArray(suggestions) && suggestions.length > 0 && (
             <Box
               sx={{
                 mt: 2,
@@ -327,18 +329,13 @@ const ProfileCompletion = ({
                   mb: 0.5,
                 }}
               >
-                💡 Quick Tip:
+                Suggested next steps
               </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  fontSize: '0.7rem',
-                  lineHeight: 1.3,
-                }}
-              >
-                Profiles with 80%+ completion get 3x more job invitations!
-              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {suggestions.slice(0, 6).map((s, idx) => (
+                  <Chip key={idx} label={s} size="small" sx={{ color: '#FFD700', borderColor: 'rgba(255,215,0,0.3)' }} variant="outlined" />
+                ))}
+              </Stack>
             </Box>
           )}
       </CardContent>

@@ -5,6 +5,10 @@ console.log = jest.fn();
 
 // Mock browser objects
 if (typeof window !== 'undefined') {
+  // Shim import.meta.env for Vite-style code paths
+  global.import = { meta: { env: { MODE: 'test' } } };
+  globalThis.import = global.import;
+  
   // Mock localStorage
   const localStorageMock = {
     getItem: jest.fn(),
@@ -127,6 +131,12 @@ jest.mock('react-router-dom', () => {
   };
 });
 
+// Stub useAuth hook path used in tests
+jest.mock('../kelmah-frontend/src/modules/auth/hooks/useAuth', () => ({
+  __esModule: true,
+  default: () => ({ isAuthenticated: true, user: { id: 'test-user', role: 'admin' } }),
+}));
+
 // Stub MUI icons to avoid icon import errors
 jest.mock('@mui/icons-material', () => {
   const React = require('react');
@@ -143,6 +153,13 @@ jest.mock('@mui/icons-material', () => {
     Close: () => React.createElement('span'),
     Image: () => React.createElement('span'),
     InsertDriveFile: () => React.createElement('span'),
+    // Add common icons used in dashboards/tests
+    Search: () => React.createElement('span'),
+    Refresh: () => React.createElement('span'),
+    Warning: () => React.createElement('span'),
+    AccountBalance: () => React.createElement('span'),
+    CreditCard: () => React.createElement('span'),
+    Phone: () => React.createElement('span'),
   };
 });
 

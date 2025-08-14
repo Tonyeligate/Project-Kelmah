@@ -25,25 +25,26 @@ const { authenticate: authMiddleware } = require('./middlewares/auth.middleware'
 const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 
 const app = express();
+// Optional tracing
+try { require('./utils/tracing').initTracing('messaging-service'); } catch {}
+try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('messaging-service'); monitoring.initTracing('messaging-service'); } catch {}
 const server = http.createServer(app);
 
 // ✅ ADDED: Trust proxy for production deployment (Render, Heroku, etc.)
 // This fixes the "X-Forwarded-For header is set but trust proxy is false" error
 app.set('trust proxy', true);
 
-// CORS configuration for production and development
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+// CORS configuration (env-driven allowlist + Vercel previews)
+const envAllow = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://kelmah-frontend-cyan.vercel.app',
-  'https://kelmah-frontend.vercel.app',
-  'https://kelmah-frontend-mu.vercel.app',
-  'https://kelmah-frontend-ecru.vercel.app',
-  // ✅ ADDED: Current Vercel deployment URL from error logs
-  'https://kelmah-frontend-edcpfmus9-kelmahs-projects.vercel.app',
-  // ✅ ADDED: Wildcard pattern for any Vercel deployment
-  'https://kelmah-frontend-git-main-kelmahs-projects.vercel.app'
-];
+  process.env.FRONTEND_URL,
+  ...envAllow,
+].filter(Boolean);
 
 // Socket.IO setup with CORS
 const io = socketIo(server, {
@@ -59,6 +60,17 @@ const io = socketIo(server, {
   maxHttpBufferSize: 1e6, // 1MB
   allowEIO3: true
 });
+
+// Fail-fast for required secrets
+try {
+  const { requireEnv } = require('../../shared/utils/envValidator');
+  if (process.env.NODE_ENV === 'production') {
+    requireEnv(['JWT_SECRET', 'MONGODB_URI'], 'messaging-service');
+  } else if (!process.env.JWT_SECRET) {
+    console.error('Messaging Service missing JWT_SECRET. Exiting.');
+    process.exit(1);
+  }
+} catch {}
 
 const PORT = process.env.MESSAGING_SERVICE_PORT || 3005;
 
@@ -87,18 +99,11 @@ const connectDB = async () => {
       readPreference: 'secondaryPreferred', // Distribute read load
     });
 
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
-    console.log(`🔗 Connection State: ${conn.connection.readyState}`);
+    console.info('MongoDB connected', { host: conn.connection.host, name: conn.connection.name, state: conn.connection.readyState });
     
     return conn;
   } catch (error) {
-    console.error('❌ MongoDB connection failed:', error);
-    console.error('🔍 Connection details:', {
-      mongoUri: process.env.DATABASE_URL ? 'Set' : 'Not set',
-      nodeEnv: process.env.NODE_ENV,
-      service: 'messaging-service'
-    });
+    console.error('MongoDB connection failed', { message: error.message, mongoUriSet: !!process.env.DATABASE_URL, nodeEnv: process.env.NODE_ENV, service: 'messaging-service' });
     
     // In production, exit on connection failure
     if (process.env.NODE_ENV === 'production') {
@@ -111,15 +116,15 @@ const connectDB = async () => {
 
 // Handle MongoDB connection events
 mongoose.connection.on('error', (err) => {
-  console.error('❌ MongoDB connection error:', err);
+  console.error('MongoDB connection error', { message: err.message });
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️ MongoDB disconnected');
+  console.warn('MongoDB disconnected');
 });
 
 mongoose.connection.on('reconnected', () => {
-  console.log('🔄 MongoDB reconnected');
+  console.info('MongoDB reconnected');
 });
 
 // Middleware setup
@@ -143,7 +148,19 @@ app.use(helmet({
 app.use(compression());
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    const vercelPatterns = [
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
+      /^https:\/\/project-kelmah.*\.vercel\.app$/,
+      /^https:\/\/kelmah-frontend.*\.vercel\.app$/,
+    ];
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-ID'],
@@ -155,23 +172,23 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static serving for uploads (Note: replace with S3 in production)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Logging middleware
-app.use(createHttpLogger());
+// Logging middleware (service-scoped)
+app.use(createHttpLogger(require('./utils/logger').createLogger('messaging-service')));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again later.',
-    code: 'RATE_LIMIT_EXCEEDED'
-  },
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-app.use(limiter);
+// Rate limiting (prefer Redis store if available via shared limiter)
+try {
+  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  app.use(createLimiter('default'));
+} catch (_) {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    message: { success: false, message: 'Too many requests from this IP, please try again later.', code: 'RATE_LIMIT_EXCEEDED' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
+}
 
 // Initialize Socket.IO message handler
 const messageSocketHandler = new MessageSocketHandler(io);

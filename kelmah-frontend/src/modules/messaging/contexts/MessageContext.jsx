@@ -287,15 +287,28 @@ export const MessageProvider = ({ children }) => {
           setConversations(prev => prev.map(c => c.id === selectedConversation.id ? { ...c, lastMessage: optimisticMessage } : c));
 
           // Use acknowledgement to verify delivery; fallback to REST if failed
+          const useEncrypted = import.meta.env.VITE_ENABLE_E2E_ENVELOPE === 'true';
+          const eventName = useEncrypted ? 'send_encrypted' : 'send_message';
+          const payload = useEncrypted
+            ? {
+                conversationId: selectedConversation.id,
+                encryptedBody: content.trim(),
+                encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
+                messageType,
+                attachments,
+                clientId,
+              }
+            : {
+                conversationId: selectedConversation.id,
+                content: content.trim(),
+                messageType,
+                attachments,
+                clientId,
+              };
+
           socket.emit(
-            'send_message',
-            {
-              conversationId: selectedConversation.id,
-              content: content.trim(),
-              messageType,
-              attachments,
-              clientId,
-            },
+            eventName,
+            payload,
             async (ack) => {
               if (!ack || ack.ok !== true) {
                 console.warn('WebSocket send failed, falling back to REST', ack);

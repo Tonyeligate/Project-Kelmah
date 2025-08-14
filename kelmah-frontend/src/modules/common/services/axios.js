@@ -363,9 +363,32 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
   );
 };
 
-// Create service-specific clients with enhanced configurations for Render cold starts
+// Helper: prefer gateway base when VITE_API_URL is provided
+const getClientBaseUrl = (serviceUrl) => {
+  // If a global gateway URL is set, use it for all services
+  const hasGatewayEnv = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL;
+  const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
+  // Avoid mixed-content by preferring relative /api over http:// base when on https
+  if (isHttps) {
+    const base = hasGatewayEnv ? API_BASE_URL : serviceUrl;
+    if (typeof base === 'string' && base.startsWith('http:')) {
+      return '/api';
+    }
+  }
+  if (hasGatewayEnv) {
+    return API_BASE_URL; // e.g., http(s)://gateway or '/api'
+  }
+  // In development, API_BASE_URL is '/api' (proxied to gateway)
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
+    return API_BASE_URL;
+  }
+  // Fallback to service-specific URL (production direct service)
+  return serviceUrl;
+};
+
+// Create service-specific clients with enhanced configurations
 export const authServiceClient = axios.create({
-  baseURL: SERVICES.AUTH_SERVICE,
+  baseURL: getClientBaseUrl(SERVICES.AUTH_SERVICE),
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -374,7 +397,7 @@ export const authServiceClient = axios.create({
 retryInterceptor(authServiceClient);
 
 export const userServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE,
+  baseURL: getClientBaseUrl(SERVICES.USER_SERVICE),
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -383,7 +406,7 @@ export const userServiceClient = axios.create({
 retryInterceptor(userServiceClient);
 
 export const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
+  baseURL: getClientBaseUrl(SERVICES.JOB_SERVICE),
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -392,7 +415,7 @@ export const jobServiceClient = axios.create({
 retryInterceptor(jobServiceClient);
 
 export const messagingServiceClient = axios.create({
-  baseURL: SERVICES.MESSAGING_SERVICE,
+  baseURL: getClientBaseUrl(SERVICES.MESSAGING_SERVICE),
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -401,7 +424,7 @@ export const messagingServiceClient = axios.create({
 retryInterceptor(messagingServiceClient);
 
 export const paymentServiceClient = axios.create({
-  baseURL: SERVICES.PAYMENT_SERVICE,
+  baseURL: getClientBaseUrl(SERVICES.PAYMENT_SERVICE),
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -409,8 +432,17 @@ export const paymentServiceClient = axios.create({
 });
 retryInterceptor(paymentServiceClient);
 
+export const reviewsServiceClient = axios.create({
+  baseURL: getClientBaseUrl(SERVICES.REVIEW_SERVICE),
+  timeout: timeoutConfig.timeout,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+retryInterceptor(reviewsServiceClient);
+
 export const schedulingClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE, // Using user service for scheduling
+  baseURL: getClientBaseUrl(SERVICES.USER_SERVICE), // Using user service for scheduling
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -419,7 +451,7 @@ export const schedulingClient = axios.create({
 retryInterceptor(schedulingClient);
 
 // Add auth interceptors to all service clients
-[authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, schedulingClient].forEach(client => {
+[authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, reviewsServiceClient, schedulingClient].forEach(client => {
   // Request interceptor
   client.interceptors.request.use(
     (config) => {
@@ -488,5 +520,16 @@ retryInterceptor(schedulingClient);
 export const getAuthToken = () => {
   return secureStorage.getAuthToken();
 };
+
+// Global session-expired notifier for appshell
+axiosInstance.interceptors.response.use(
+  (r) => r,
+  (error) => {
+    if (error?.response?.status === 401 && typeof window !== 'undefined') {
+      try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) {}
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default axiosInstance;

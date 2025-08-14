@@ -1,5 +1,4 @@
 import axios from '../../common/services/axios';
-import { API_URL } from '../../../config/constants';
 
 /**
  * Service for handling search functionality

@@ -4,11 +4,14 @@ const stripeService = require("../services/stripe");
 const paypalService = require("../services/paypal");
 const ghanaPayments = require("../controllers/ghana.controller");
 const router = express.Router();
+const payoutAdminController = require('../controllers/payoutAdmin.controller');
 const PaystackService = require("../integrations/paystack");
 const paystack = new PaystackService();
 
 // Protect all payment endpoints
 router.use(authenticate);
+// Per-route policies
+const { createLimiter } = require('../../auth-service/middlewares/rateLimiter');
 
 // Create a new payment intent/order
 // Durable idempotency store (MongoDB model, optionally Redis)
@@ -21,7 +24,7 @@ try {
   }
 } catch (_) {}
 
-router.post("/create-payment-intent", async (req, res, next) => {
+router.post("/create-payment-intent", createLimiter('payments'), async (req, res, next) => {
   try {
     const { amount, currency, provider = "stripe", idempotencyKey, ...options } = req.body;
     if (!amount || amount <= 0) {
@@ -82,7 +85,7 @@ router.post("/create-payment-intent", async (req, res, next) => {
 });
 
 // Confirm an existing payment intent/order
-router.post("/confirm-payment", async (req, res, next) => {
+router.post("/confirm-payment", createLimiter('payments'), async (req, res, next) => {
   try {
     const { paymentIntentId, provider = "stripe" } = req.body;
     let result;
@@ -120,20 +123,20 @@ module.exports = router;
 router.use(authenticate);
 
 // MTN MoMo
-router.post('/mtn-momo/request-to-pay', ghanaPayments.mtnRequestToPay);
+router.post('/mtn-momo/request-to-pay', createLimiter('payments'), ghanaPayments.mtnRequestToPay);
 router.get('/mtn-momo/status/:referenceId', ghanaPayments.mtnStatus);
 router.post('/mtn-momo/validate', ghanaPayments.mtnValidate);
 
 // Vodafone Cash
-router.post('/vodafone-cash/request-to-pay', ghanaPayments.vodafoneRequestToPay);
+router.post('/vodafone-cash/request-to-pay', createLimiter('payments'), ghanaPayments.vodafoneRequestToPay);
 router.get('/vodafone-cash/status/:referenceId', ghanaPayments.vodafoneStatus);
 
 // AirtelTigo Money
-router.post('/airteltigo/request-to-pay', ghanaPayments.airtelRequestToPay);
+router.post('/airteltigo/request-to-pay', createLimiter('payments'), ghanaPayments.airtelRequestToPay);
 router.get('/airteltigo/status/:referenceId', ghanaPayments.airtelStatus);
 
 // Paystack initialize and verify (card/bank)
-router.post('/paystack/initialize', async (req, res) => {
+router.post('/paystack/initialize', createLimiter('payments'), async (req, res) => {
   try {
     const { email, amount, currency = 'GHS', reference, metadata = {}, channels } = req.body;
     if (!email || !amount) return res.status(400).json({ success: false, message: 'email and amount are required' });
@@ -156,3 +159,8 @@ router.get('/paystack/verify/:reference', async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 });
+
+// Admin payout queue endpoints
+router.post('/admin/payouts/queue', payoutAdminController.enqueuePayout);
+router.post('/admin/payouts/process', payoutAdminController.processBatch);
+router.get('/admin/payouts', payoutAdminController.listPayouts);

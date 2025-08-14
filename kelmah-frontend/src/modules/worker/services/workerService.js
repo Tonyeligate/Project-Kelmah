@@ -1,4 +1,4 @@
-import { userServiceClient } from '../../common/services/axios';
+import { userServiceClient, jobServiceClient } from '../../common/services/axios';
 
 const API_URL = '/api/workers';
 
@@ -303,6 +303,14 @@ const workerService = {
   },
 
   /**
+   * Get list of bookmarked worker IDs for current user
+   * @returns {Promise<{workerIds: string[]}>}
+   */
+  getBookmarks: () => {
+    return userServiceClient.get(`/api/users/bookmarks`);
+  },
+
+  /**
    * Remove bookmark from worker profile
    * @param {string} workerId - Worker ID
    * @returns {Promise<void>}
@@ -358,7 +366,7 @@ const workerService = {
    */
   getSavedJobs: async () => {
     try {
-      const response = await userServiceClient.get('/api/workers/me/saved-jobs');
+      const response = await jobServiceClient.get('/api/jobs/saved');
       return response.data;
     } catch (error) {
       throw error;
@@ -371,7 +379,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   saveJob: (jobId) => {
-    return userServiceClient.post(`/api/jobs/${jobId}/save`);
+    return jobServiceClient.post(`/api/jobs/${jobId}/save`);
   },
 
   /**
@@ -380,7 +388,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   unsaveJob: (jobId) => {
-    return userServiceClient.delete(`/api/jobs/${jobId}/save`);
+    return jobServiceClient.delete(`/api/jobs/${jobId}/save`);
   },
 
   /**
@@ -390,7 +398,7 @@ const workerService = {
    */
   getApplications: async (filters = {}) => {
     try {
-      const response = await userServiceClient.get('/api/workers/me/applications', {
+      const response = await jobServiceClient.get('/api/jobs/applications/me', {
         params: filters,
       });
       return response.data;
@@ -406,7 +414,7 @@ const workerService = {
    * @returns {Promise<Object>} - Application response
    */
   applyToJob: (jobId, applicationData) => {
-    return userServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+    return jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
   },
 
   /**
@@ -415,7 +423,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   withdrawApplication: (jobId) => {
-    return userServiceClient.delete(`/api/jobs/${jobId}/apply`);
+    return jobServiceClient.delete(`/api/jobs/${jobId}/apply`);
   },
 
   /**
@@ -424,7 +432,7 @@ const workerService = {
    * @returns {Promise<Object>} - Application status
    */
   getApplicationStatus: (jobId) => {
-    return userServiceClient.get(`/api/jobs/${jobId}/application-status`);
+    return jobServiceClient.get(`/api/jobs/${jobId}/application-status`);
   },
 };
 

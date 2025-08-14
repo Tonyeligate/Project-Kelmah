@@ -1,5 +1,5 @@
 const { authenticate } = require('./auth');
-const jwt = require('jsonwebtoken');
+const jwtUtils = require('../../../shared/utils/jwt');
 
 describe('payment-service authenticate middleware', () => {
   let req, res, next;
@@ -23,7 +23,7 @@ describe('payment-service authenticate middleware', () => {
 
   it('returns 401 if token is invalid', () => {
     req.headers.authorization = 'Bearer badtoken';
-    jest.spyOn(jwt, 'verify').mockImplementation(() => { throw new Error('invalid'); });
+    jest.spyOn(jwtUtils, 'verifyAccessToken').mockImplementation(() => { throw new Error('invalid'); });
 
     authenticate(req, res, next);
     expect(res.status).toHaveBeenCalledWith(401);
@@ -32,12 +32,13 @@ describe('payment-service authenticate middleware', () => {
   });
 
   it('sets req.user and calls next for a valid token', () => {
-    const decoded = { id: 'user123' };
+    const claims = { sub: 'user123', email: 'u@e.com', role: 'user', version: 0 };
     req.headers.authorization = 'Bearer goodtoken';
-    jest.spyOn(jwt, 'verify').mockReturnValue(decoded);
+    jest.spyOn(jwtUtils, 'verifyAccessToken').mockReturnValue(claims);
+    jest.spyOn(jwtUtils, 'decodeUserFromClaims').mockReturnValue({ id: 'user123', email: 'u@e.com', role: 'user', version: 0 });
 
     authenticate(req, res, next);
-    expect(req.user).toEqual(decoded);
+    expect(req.user).toEqual({ id: 'user123', _id: 'user123', email: 'u@e.com', role: 'user', version: 0 });
     expect(next).toHaveBeenCalled();
   });
 }); 

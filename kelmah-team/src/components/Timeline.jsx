@@ -1,6 +1,9 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import '../styles/Timeline.css'
+import work1 from '../assets/work1.svg'
+import work2 from '../assets/work2.svg'
+import work3 from '../assets/work3.svg'
 
 const Timeline = () => {
   const timelineData = [
@@ -12,6 +15,7 @@ const Timeline = () => {
       skills: ['HTML5 & CSS3', 'JavaScript ES6+', 'React.js', 'Git & Version Control', 'Development Environment'],
       deliverables: ['Personal Portfolio Website', 'Interactive JavaScript Projects', 'First React Application'],
       icon: '🏗️',
+      iconSvg: work1,
       color: 'blue'
     },
     {
@@ -22,6 +26,7 @@ const Timeline = () => {
       skills: ['Node.js & Express', 'MongoDB & Mongoose', 'RESTful APIs', 'Authentication', 'Testing'],
       deliverables: ['Full-Stack Web Application', 'API Documentation', 'Database Design'],
       icon: '⚙️',
+      iconSvg: work2,
       color: 'green'
     },
     {
@@ -32,6 +37,7 @@ const Timeline = () => {
       skills: ['React Native', 'Mobile UI/UX', 'State Management', 'Performance Optimization', 'Deployment'],
       deliverables: ['Cross-Platform Mobile App', 'Advanced Web Features', 'Deployed Applications'],
       icon: '📱',
+      iconSvg: work3,
       color: 'purple'
     },
     {
@@ -125,7 +131,11 @@ const Timeline = () => {
             >
               <div className="timeline__marker">
                 <div className={`timeline__marker-icon timeline__marker--${item.color}`}>
-                  <span className="marker-icon">{item.icon}</span>
+                  {item.iconSvg ? (
+                    <img src={item.iconSvg} alt={item.phase} className="marker-svg" />
+                  ) : (
+                    <span className="marker-icon">{item.icon}</span>
+                  )}
                 </div>
                 <motion.div 
                   className="timeline__marker-pulse"

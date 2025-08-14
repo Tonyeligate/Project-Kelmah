@@ -4,6 +4,7 @@
  */
 
 const jwt = require('jsonwebtoken');
+const jwtUtils = require('../../shared/utils/jwt');
 const axios = require('axios');
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
@@ -26,10 +27,10 @@ const authenticate = async (req, res, next) => {
     
     const token = authHeader.split(' ')[1];
     
-    // Verify token locally first (faster)
+    // Verify token with unified settings (iss/aud)
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = jwtUtils.verifyAccessToken(token);
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         return res.status(401).json({
@@ -39,7 +40,6 @@ const authenticate = async (req, res, next) => {
           shouldRefresh: true
         });
       }
-      
       return res.status(401).json({
         success: false,
         message: 'Invalid token',
@@ -75,19 +75,10 @@ const authenticate = async (req, res, next) => {
     }
     
     // Add user context to request
-    req.user = {
-      id: decoded.sub || decoded.id,
-      email: decoded.email,
-      role: decoded.role,
-      version: decoded.version
-    };
-    
+    const userCtx = jwtUtils.decodeUserFromClaims(decoded);
+    req.user = { id: userCtx.id, email: userCtx.email, role: userCtx.role, version: userCtx.version };
     req.token = token;
-    req.auth = {
-      jti: decoded.jti,
-      iat: decoded.iat,
-      exp: decoded.exp
-    };
+    req.auth = { jti: userCtx.jti, iat: userCtx.iat, exp: userCtx.exp };
     
     next();
   } catch (error) {
@@ -139,15 +130,9 @@ const optionalAuth = async (req, res, next) => {
   
   try {
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    req.user = {
-      id: decoded.sub || decoded.id,
-      email: decoded.email,
-      role: decoded.role,
-      version: decoded.version
-    };
-    
+    const decoded = jwtUtils.verifyAccessToken(token);
+    const claims = jwtUtils.decodeUserFromClaims(decoded);
+    req.user = { id: claims.id, email: claims.email, role: claims.role, version: claims.version };
     req.token = token;
   } catch (error) {
     // Ignore token errors for optional auth

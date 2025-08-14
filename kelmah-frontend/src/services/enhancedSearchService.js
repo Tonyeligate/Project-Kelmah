@@ -1,5 +1,5 @@
 import searchCacheService from './searchCacheService';
-import axios from 'axios';
+import { jobServiceClient, userServiceClient } from '../modules/common/services/axios';
 
 /**
  * Enhanced Search Service with Intelligent Caching
@@ -7,7 +7,7 @@ import axios from 'axios';
  */
 class EnhancedSearchService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || '/api';
+    this.baseURL = '/api';
     this.requestQueue = [];
     this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
     this.retryAttempts = 3;
@@ -105,7 +105,7 @@ class EnhancedSearchService {
       }
 
       // Make API request with retries
-      const results = await this.makeRequestWithRetry('GET', `/search/jobs`, { params });
+      const results = await this.makeRequestWithRetry('GET', `/jobs`, { params });
       
       // Enhance results with Ghana-specific data
       const enhancedResults = this.enhanceJobResults(results.data);
@@ -166,7 +166,7 @@ class EnhancedSearchService {
         return this.getOfflineResponse(searchType, params);
       }
 
-      const results = await this.makeRequestWithRetry('GET', `/search/workers`, { params });
+      const results = await this.makeRequestWithRetry('GET', `/users/workers/search`, { params });
       const enhancedResults = this.enhanceWorkerResults(results.data);
       
       await searchCacheService.setCached(searchType, params, enhancedResults);
@@ -296,9 +296,11 @@ class EnhancedSearchService {
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
       try {
         const timeout = this.calculateTimeout(attempt);
-        const response = await axios({
+        const isWorkerSearch = String(url).startsWith('/users');
+        const client = isWorkerSearch ? userServiceClient : jobServiceClient;
+        const response = await client.request({
           method,
-          url: this.baseURL + url,
+          url: `/api${url}`,
           timeout,
           ...config
         });

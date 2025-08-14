@@ -18,10 +18,15 @@ export const useDashboard = () => {
 
   // Initialize dashboard service with token from localStorage
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      dashboardService.initialize(token);
-    }
+    (async () => {
+      try {
+        const { secureStorage } = await import('../../../utils/secureStorage');
+        const token = secureStorage.getAuthToken();
+        if (token) {
+          dashboardService.initialize(token);
+        }
+      } catch {}
+    })();
   }, []);
 
   // Initialize socket connection and listeners when authenticated

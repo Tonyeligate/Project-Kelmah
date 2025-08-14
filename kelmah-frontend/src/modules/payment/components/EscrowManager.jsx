@@ -53,34 +53,24 @@ const EscrowManager = () => {
       const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2,8).toUpperCase()}`;
 
       if (form.provider === 'stripe') {
-        const res = await fetch('/api/payments/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: Math.round(Number(form.amount) * 100),
-            currency: 'GHS',
-            provider: 'stripe',
-            metadata: { escrowReference }
-          })
+        const resp = await paymentService.createStripePaymentIntent({
+          amount: Math.round(Number(form.amount) * 100),
+          currency: 'GHS',
+          provider: 'stripe',
+          metadata: { escrowReference }
         });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Payment init failed');
+        if (!resp?.success && !resp?.clientSecret) throw new Error(resp?.message || 'Payment init failed');
         setMessage({ type: 'success', text: `Stripe initialized (escrowRef ${escrowReference})` });
       } else if (form.provider === 'paystack') {
-        const res = await fetch('/api/payments/paystack/initialize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: form.email || 'test@example.com',
-            amount: Number(form.amount),
-            currency: 'GHS',
-            metadata: { escrowReference },
-            escrowReference
-          })
+        const resp = await paymentService.processPaystackPayment({
+          email: form.email || 'test@example.com',
+          amount: Number(form.amount),
+          currency: 'GHS',
+          metadata: { escrowReference },
+          escrowReference
         });
-        const json = await res.json();
-        if (!res.ok || !json?.success) throw new Error(json.error?.message || json.message || 'Payment init failed');
-        setMessage({ type: 'success', text: `Paystack initialized (ref ${json.data.reference})` });
+        if (!resp?.success) throw new Error(resp?.error?.message || resp?.message || 'Payment init failed');
+        setMessage({ type: 'success', text: `Paystack initialized (ref ${resp?.data?.reference || escrowReference})` });
       } else {
         throw new Error('Select Stripe or Paystack for this test');
       }
@@ -92,9 +82,8 @@ const EscrowManager = () => {
   const releaseEscrow = async (id) => {
     try {
       setMessage(null);
-      const res = await fetch(`/api/payments/escrows/${id}/release`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || 'Release failed');
+      const res = await paymentService.releaseEscrow(id, {});
+      if (!res?.success) throw new Error(res?.message || 'Release failed');
       setMessage({ type: 'success', text: 'Escrow released' });
       await loadEscrows();
     } catch (e) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -41,6 +41,7 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { selectHirerJobs, selectHirerLoading, selectHirerPayments } from '../services/hirerSlice';
+import paymentService from '../../payment/services/paymentService';
 
 // No mock data - using real API data only
 
@@ -130,14 +131,28 @@ const PaymentRelease = () => {
   const handlePaymentRelease = async () => {
     setLoading(true);
     try {
-      // Mock payment release
-      console.log(
-        `Releasing payment of ${selectedPayment.amount} via ${paymentMethod}`,
-      );
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
+      if (!selectedPayment) return;
+      // Prefer escrow release flow if escrowId is present
+      if (selectedPayment.escrowId) {
+        await paymentService.releaseEscrow(selectedPayment.escrowId, {
+          milestone: selectedPayment.milestoneId || undefined,
+          amount: selectedPayment.amount,
+          method: paymentMethod,
+          confirmationCode: confirmationCode || undefined,
+        });
+      } else {
+        // Fallback: create a payout transaction
+        await paymentService.createTransaction({
+          amount: selectedPayment.amount,
+          type: 'payout',
+          paymentMethod: paymentMethod,
+          metadata: {
+            jobTitle: selectedPayment.jobTitle,
+            workerId: selectedPayment.worker?.id,
+            milestone: selectedPayment.milestone,
+          },
+        });
+      }
       handleDialogClose();
     } catch (error) {
       console.error('Error releasing payment:', error);

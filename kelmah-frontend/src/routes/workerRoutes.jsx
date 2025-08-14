@@ -14,11 +14,13 @@ import SchedulingPage from '../modules/scheduling/pages/SchedulingPage';
 import WorkerReviewsPage from '../modules/reviews/pages/WorkerReviewsPage';
 import WorkerProfileEditPage from '../modules/worker/pages/WorkerProfileEditPage';
 import WorkerProfile from '../modules/worker/components/WorkerProfile';
-import JobSearchPage from '../modules/worker/pages/JobApplicationPage';
+import JobSearchPage from '../modules/worker/pages/JobSearchPage';
 import ContractManagementPage from '../modules/contracts/pages/ContractManagementPage';
 import PaymentCenterPage from '../modules/payment/pages/PaymentCenterPage';
 import WalletPage from '../modules/payment/pages/WalletPage';
 import EscrowManager from '../modules/payment/components/EscrowManager';
+import SavedJobs from '../modules/jobs/components/common/SavedJobs';
+import JobAlertsPage from '../modules/jobs/pages/JobAlertsPage';
 
 const WorkerRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
@@ -240,6 +242,30 @@ const WorkerRoutes = () => {
             loading={loading}
           >
             <WalletPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/worker/saved-jobs"
+        element={
+          <ProtectedRoute
+            isAllowed={isAuthenticated && hasRole(user, 'worker')}
+            redirectPath="/login"
+            loading={loading}
+          >
+            <SavedJobs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/worker/job-alerts"
+        element={
+          <ProtectedRoute
+            isAllowed={isAuthenticated && hasRole(user, 'worker')}
+            redirectPath="/login"
+            loading={loading}
+          >
+            <JobAlertsPage />
           </ProtectedRoute>
         }
       />

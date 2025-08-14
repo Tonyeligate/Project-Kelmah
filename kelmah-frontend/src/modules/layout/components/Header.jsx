@@ -46,6 +46,8 @@ import MobileNav from './MobileNav';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
+import { useNotifications } from '../../notifications/contexts/NotificationContext';
+import workersApi from '../../../api/services/workersApi';
 
 // Enhanced Styled Components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -317,6 +319,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [headerAvailability, setHeaderAvailability] = useState(null);
+  const [headerCompletion, setHeaderCompletion] = useState(null);
 
   // 🎯 ENHANCED: Comprehensive page type detection
   const isOnAuthPage = location.pathname.includes('/login') || 
@@ -355,6 +359,27 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
     
     return false;
   }, [isOnAuthPage, isOnHomePage, isOnDashboardPage, isInitialized, isAuthenticated]);
+
+  // Load quick worker status for header chips
+  React.useEffect(() => {
+    const loadHeaderWorkerStatus = async () => {
+      try {
+        if (!showUserFeatures || user?.role !== 'worker') return;
+        const id = user?.id || user?._id || user?.userId;
+        if (id) {
+          const [avail, comp] = await Promise.all([
+            workersApi.getAvailabilityStatus(id).catch(() => null),
+            workersApi.getProfileCompletion().catch(() => null),
+          ]);
+          if (avail) setHeaderAvailability(avail);
+          if (comp) setHeaderCompletion(comp);
+        }
+      } catch (e) {
+        // Non-blocking: header chips are optional
+      }
+    };
+    loadHeaderWorkerStatus();
+  }, [showUserFeatures, user?.role, user?.id, user?._id, user?.userId]);
   
   // 🔍 DEBUG: Authentication state logging (development only)
   React.useEffect(() => {
@@ -435,7 +460,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const currentPage = getCurrentPageInfo();
   
   // ✅ ENHANCED: Dynamic data based on user state and current page
-  const unreadNotifications = showUserFeatures ? 3 : 0;
+  const { unreadCount: notifUnreadCount, notifications: notifList = [] } = useNotifications();
+  const unreadNotifications = showUserFeatures ? (notifUnreadCount || 0) : 0;
   const unreadMessages = showUserFeatures ? 2 : 0;
   const isUserOnline = showUserFeatures ? true : false;
 
@@ -688,34 +714,39 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         </Typography>
       </Box>
 
-      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
-        <ListItemText
-          primary="New job application received"
-          secondary="2 minutes ago"
-          primaryTypographyProps={{ fontWeight: 500 }}
-          secondaryTypographyProps={{ fontSize: '0.75rem' }}
-        />
-      </MenuItem>
-
-      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
-        <ListItemText
-          primary="Payment processed successfully"
-          secondary="1 hour ago"
-          primaryTypographyProps={{ fontWeight: 500 }}
-          secondaryTypographyProps={{ fontSize: '0.75rem' }}
-        />
-      </MenuItem>
-
-      <MenuItem onClick={handleNotificationsClose} sx={{ py: 1.5 }}>
-        <ListItemText
-          primary="Profile verification approved"
-          secondary="3 hours ago"
-          primaryTypographyProps={{ fontWeight: 500 }}
-          secondaryTypographyProps={{ fontSize: '0.75rem' }}
-        />
-      </MenuItem>
+      {/* Render latest notifications (up to 5) */}
+      {(notifList || []).slice(0, 5).map((n) => (
+        <MenuItem key={n.id || n._id} onClick={() => { handleNotificationsClose(); navigate(n.actionUrl || '/notifications'); }} sx={{ py: 1.5 }}>
+          <ListItemText
+            primary={n.title || n.message || 'Notification'}
+            secondary={new Date(n.createdAt || n.date).toLocaleString()}
+            primaryTypographyProps={{ fontWeight: 500 }}
+            secondaryTypographyProps={{ fontSize: '0.75rem' }}
+          />
+        </MenuItem>
+      ))}
 
       <Divider />
+
+      {/* Mark all as read */}
+      <MenuItem
+        onClick={() => {
+          try {
+            // Use NotificationContext to mark all as read
+            const ctx = useNotifications();
+            ctx.markAllAsRead?.();
+          } catch (_) {}
+          handleNotificationsClose();
+        }}
+        sx={{ 
+          py: 1.2,
+          justifyContent: 'center',
+          color: 'text.secondary',
+          fontWeight: 600,
+        }}
+      >
+        Mark all as read
+      </MenuItem>
 
       <MenuItem
         onClick={() => {
@@ -957,6 +988,43 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
             </Box>
           ) : showUserFeatures ? (
             <>
+              {/* Worker quick status chips */}
+              {user?.role === 'worker' && (
+                <Stack direction="row" spacing={0.75} sx={{ mr: 0.5 }}>
+                  {headerAvailability && (
+                    <Chip
+                      size="small"
+                      label={headerAvailability.isAvailable ? 'Available' : (headerAvailability.status || 'Busy')}
+                      sx={{
+                        backgroundColor: headerAvailability.isAvailable
+                          ? 'rgba(76, 175, 80, 0.12)'
+                          : 'rgba(255, 152, 0, 0.12)',
+                        color: headerAvailability.isAvailable ? '#4caf50' : '#ff9800',
+                        border: theme.palette.mode === 'dark'
+                          ? '1px solid rgba(255, 215, 0, 0.15)'
+                          : '1px solid rgba(0, 0, 0, 0.12)'
+                      }}
+                      onClick={() => navigate('/worker/profile/edit?section=availability')}
+                      clickable
+                    />
+                  )}
+                  {typeof (headerCompletion?.completion) === 'number' && (
+                    <Chip
+                      size="small"
+                      label={`${Math.round(headerCompletion.completion)}%`}
+                      sx={{
+                        backgroundColor: 'rgba(255, 215, 0, 0.12)',
+                        color: '#FFD700',
+                        border: theme.palette.mode === 'dark'
+                          ? '1px solid rgba(255, 215, 0, 0.15)'
+                          : '1px solid rgba(0, 0, 0, 0.12)'
+                      }}
+                      onClick={() => navigate('/worker/profile/edit')}
+                      clickable
+                    />
+                  )}
+                </Stack>
+              )}
               {/* Messages */}
               <Tooltip title="Messages" arrow>
                 <ActionButton onClick={() => navigate('/messages')}>

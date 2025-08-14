@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -26,6 +26,8 @@ import {
   useTheme,
   useMediaQuery,
   Autocomplete,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -47,6 +49,7 @@ import {
   updateWorkerProfile,
   fetchWorkerProfile,
 } from '../services/workerSlice';
+import api from '../../common/services/axios';
 
 const Input = styled('input')({
   display: 'none',
@@ -55,6 +58,7 @@ const Input = styled('input')({
 const WorkerProfileEditPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -82,6 +86,17 @@ const WorkerProfileEditPage = () => {
     phone: '',
     profileImage: null,
     portfolio: [],
+    availabilityStatus: 'available',
+    availableHours: {
+      monday: { start: '09:00', end: '17:00', available: true },
+      tuesday: { start: '09:00', end: '17:00', available: true },
+      wednesday: { start: '09:00', end: '17:00', available: true },
+      thursday: { start: '09:00', end: '17:00', available: true },
+      friday: { start: '09:00', end: '17:00', available: true },
+      saturday: { start: '09:00', end: '13:00', available: false },
+      sunday: { start: '09:00', end: '13:00', available: false },
+    },
+    pausedUntil: '',
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -96,9 +111,44 @@ const WorkerProfileEditPage = () => {
     proficiency: 'Beginner',
   });
 
+  // Profile completeness
+  const [completeness, setCompleteness] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+
+  // If navigated with ?section=availability, auto-scroll/focus availability section
+  const availabilityRef = React.useRef(null);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get('section');
+    if (section === 'availability' && availabilityRef.current) {
+      availabilityRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const fetchCompleteness = async () => {
+      try {
+        const id = user?.id || user?.userId;
+        if (!id) return;
+        const resp = await fetch(`/api/users/workers/${id}/completeness`, {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        const json = await resp.json();
+        if (json?.success) {
+          setCompleteness(json.data?.completion ?? 0);
+          setSuggestions(json.data?.suggestions ?? []);
+        }
+      } catch (_) {}
+    };
+    fetchCompleteness();
+  }, [user]);
+
   // Load profile data when component mounts
   useEffect(() => {
-    dispatch(fetchWorkerProfile())
+    const id = user?.id || user?.userId;
+    if (!id) return;
+    dispatch(fetchWorkerProfile(id))
       .unwrap()
       .then((profile) => {
         // Populate form with existing profile data
@@ -116,6 +166,17 @@ const WorkerProfileEditPage = () => {
           phone: profile.phone || '',
           profileImage: null, // Will be populated only when user changes it
           portfolio: profile.portfolio || [],
+          availabilityStatus: profile?.availability?.status || 'available',
+          availableHours: profile?.availability?.schedule || {
+            monday: { start: '09:00', end: '17:00', available: true },
+            tuesday: { start: '09:00', end: '17:00', available: true },
+            wednesday: { start: '09:00', end: '17:00', available: true },
+            thursday: { start: '09:00', end: '17:00', available: true },
+            friday: { start: '09:00', end: '17:00', available: true },
+            saturday: { start: '09:00', end: '13:00', available: false },
+            sunday: { start: '09:00', end: '13:00', available: false },
+          },
+          pausedUntil: '',
         });
 
         setImagePreview(profile.profileImageUrl);
@@ -129,6 +190,28 @@ const WorkerProfileEditPage = () => {
         });
       });
   }, [dispatch, user]);
+
+  // Load availability (authoritative from API)
+  useEffect(() => {
+    const id = user?.id || user?.userId;
+    if (!id) return;
+    (async () => {
+      try {
+        const resp = await api.get(`/api/users/workers/${id}/availability`);
+        const data = resp.data?.data || resp.data;
+        if (data) {
+          setFormData((prev) => ({
+            ...prev,
+            availabilityStatus: data.availabilityStatus || prev.availabilityStatus,
+            availableHours: data.availableHours || prev.availableHours,
+            pausedUntil: data.pausedUntil ? String(data.pausedUntil).slice(0, 10) : '',
+          }));
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -307,7 +390,8 @@ const WorkerProfileEditPage = () => {
     });
 
     try {
-      await dispatch(updateWorkerProfile(profileFormData)).unwrap();
+      const id = user?.id || user?.userId;
+      await dispatch(updateWorkerProfile({ workerId: id, profileData: profileFormData })).unwrap();
       setSnackbar({
         open: true,
         message: 'Profile updated successfully!',
@@ -325,6 +409,61 @@ const WorkerProfileEditPage = () => {
         message: 'Failed to update profile. Please try again.',
         severity: 'error',
       });
+    }
+  };
+
+  // Availability handlers
+  const days = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ];
+
+  const handleAvailabilityStatusChange = (e) => {
+    const { value } = e.target;
+    setFormData((prev) => ({ ...prev, availabilityStatus: value }));
+  };
+
+  const handleDayToggle = (day, checked) => {
+    setFormData((prev) => ({
+      ...prev,
+      availableHours: {
+        ...prev.availableHours,
+        [day]: { ...prev.availableHours[day], available: checked },
+      },
+    }));
+  };
+
+  const handleTimeChange = (day, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      availableHours: {
+        ...prev.availableHours,
+        [day]: { ...prev.availableHours[day], [field]: value },
+      },
+    }));
+  };
+
+  const handleSaveAvailability = async () => {
+    try {
+      const id = user?.id || user?.userId;
+      await dispatch(
+        updateWorkerAvailability({
+          workerId: id,
+          availabilityData: {
+            availabilityStatus: formData.availabilityStatus,
+            availableHours: formData.availableHours,
+            pausedUntil: formData.pausedUntil || null,
+          },
+        }),
+      ).unwrap();
+      setSnackbar({ open: true, message: 'Availability updated!', severity: 'success' });
+    } catch (err) {
+      setSnackbar({ open: true, message: String(err || 'Failed to update availability'), severity: 'error' });
     }
   };
 
@@ -372,6 +511,118 @@ const WorkerProfileEditPage = () => {
       )}
 
       <form onSubmit={handleSubmit}>
+        {/* Availability */}
+        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }} ref={availabilityRef}>
+          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+            Availability
+          </Typography>
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth>
+                <InputLabel id="availability-status-label">Status</InputLabel>
+                <Select
+                  labelId="availability-status-label"
+                  label="Status"
+                  value={formData.availabilityStatus}
+                  onChange={handleAvailabilityStatusChange}
+                >
+                  <MenuItem value="available">Available</MenuItem>
+                  <MenuItem value="busy">Busy</MenuItem>
+                  <MenuItem value="unavailable">Unavailable</MenuItem>
+                  <MenuItem value="vacation">On Vacation</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Paused Until"
+                type="date"
+                value={formData.pausedUntil}
+                onChange={(e) => setFormData((p) => ({ ...p, pausedUntil: e.target.value }))}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={2}>
+            {days.map((day) => {
+              const d = formData.availableHours?.[day] || { start: '09:00', end: '17:00', available: false };
+              const label = day.charAt(0).toUpperCase() + day.slice(1);
+              return (
+                <Grid item xs={12} md={6} key={day}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant="subtitle1">{label}</Typography>
+                      <FormControlLabel
+                        control={<Switch checked={!!d.available} onChange={(e) => handleDayToggle(day, e.target.checked)} />}
+                        label={d.available ? 'Available' : 'Off'}
+                      />
+                    </Box>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Start"
+                          type="time"
+                          value={d.start}
+                          onChange={(e) => handleTimeChange(day, 'start', e.target.value)}
+                          fullWidth
+                          disabled={!d.available}
+                          inputProps={{ step: 300 }}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="End"
+                          type="time"
+                          value={d.end}
+                          onChange={(e) => handleTimeChange(day, 'end', e.target.value)}
+                          fullWidth
+                          disabled={!d.available}
+                          inputProps={{ step: 300 }}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Tip: Set unavailable days to Off and adjust time ranges for each workday.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={handleSaveAvailability}
+              disabled={!!loading?.availability}
+            >
+              {loading?.availability ? 'Saving...' : 'Save Availability'}
+            </Button>
+          </Box>
+        </Paper>
+        {/* Profile Completeness */}
+        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+            Profile Completeness
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h4" fontWeight="bold" color="primary">
+              {completeness ?? 0}%
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Improve your chances by completing the items below.
+            </Typography>
+          </Box>
+          {suggestions?.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              {suggestions.map((s, i) => (
+                <Chip key={i} label={s} sx={{ mr: 1, mb: 1 }} />
+              ))}
+            </Box>
+          )}
+        </Paper>
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"

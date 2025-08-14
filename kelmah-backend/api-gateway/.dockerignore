@@ -1,0 +1,20 @@
+# Don't copy .env files to Docker - use environment variables instead
+.env
+.env.*
+
+# Development files
+*.log
+logs/
+
+# Documentation
+README.md
+
+# Git
+.git
+.gitignore
+
+
+
+
+
+

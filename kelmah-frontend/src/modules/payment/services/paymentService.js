@@ -86,6 +86,10 @@ const paymentService = {
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
     const response = await paymentServiceClient.get('/api/payments/transactions/history', { params });
+    // Normalize to { data, pagination }
+    if (Array.isArray(response.data)) {
+      return { data: response.data, pagination: { page: params.page || 1, limit: params.limit || 20, total: response.data.length, pages: 1 } };
+    }
     return response.data;
   },
 
@@ -317,6 +321,12 @@ const paymentService = {
 
   verifyPaystackPayment: async (reference) => {
     const { data } = await paymentServiceClient.get(`/api/payments/paystack/verify/${reference}`);
+    return data;
+  },
+
+  // Stripe integration
+  createStripePaymentIntent: async (intentData) => {
+    const { data } = await paymentServiceClient.post('/api/payments/create-payment-intent', intentData);
     return data;
   },
 

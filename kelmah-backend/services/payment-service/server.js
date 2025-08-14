@@ -4,7 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-const morgan = require("morgan");
+// removed morgan; using shared JSON logger
 
 // Import routes
 // Support both naming variants for compatibility
@@ -32,58 +32,91 @@ logger.info('payment-service starting...', {
   environment: process.env.NODE_ENV || 'development'
 });
 
+// Fail-fast env validation
+try {
+  const { requireEnv } = require('../../shared/utils/envValidator');
+  if (process.env.NODE_ENV === 'production') {
+    requireEnv(['JWT_SECRET', 'MONGODB_URI'], 'payment-service');
+    // At least one provider key must be present for payments
+    if (!(
+      process.env.STRIPE_SECRET_KEY ||
+      process.env.PAYSTACK_SECRET_KEY ||
+      process.env.MTN_MOMO_PRIMARY_KEY || process.env.MTN_SUBSCRIPTION_KEY ||
+      process.env.VODAFONE_CLIENT_ID || process.env.AIRTELTIGO_CLIENT_ID
+    )) {
+      console.error('payment-service: No payment provider keys configured');
+      process.exit(1);
+    }
+  } else if (!process.env.JWT_SECRET) {
+    console.error('Payment Service missing JWT_SECRET. Exiting.');
+    process.exit(1);
+  }
+} catch {}
+
 const app = express();
+// Optional tracing
+try { require('../../shared/utils/tracing').initTracing('payment-service'); } catch {}
+try { const monitoring = require('../../shared/utils/monitoring'); monitoring.initErrorMonitoring('payment-service'); monitoring.initTracing('payment-service'); } catch {}
 
 // Middleware
 app.use(helmet());
+// Unified CORS (env-driven allowlist + Vercel previews)
 const corsOptions = {
   origin: function (origin, callback) {
+    const envAllow = (process.env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://kelmah-frontend-cyan.vercel.app', // Current production frontend
       'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'https://kelmah-frontend-mu.vercel.app', // Legacy URL for compatibility
-      process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'
+      process.env.FRONTEND_URL,
+      ...envAllow,
     ].filter(Boolean);
-    
-    // Allow all Vercel preview and deployment URLs
+
     const vercelPatterns = [
       /^https:\/\/.*\.vercel\.app$/,
       /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
       /^https:\/\/project-kelmah.*\.vercel\.app$/,
-      /^https:\/\/kelmah-frontend.*\.vercel\.app$/
+      /^https:\/\/kelmah-frontend.*\.vercel\.app$/,
     ];
-    
-    if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
-    
-    // Check exact matches first
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
+
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
+      return callback(null, true);
     }
-    
-    // Check Vercel patterns
-    const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
-    if (isVercelPreview) {
-      logger.info(`✅ CORS allowed Vercel preview: ${origin}`);
-      callback(null, true);
-      return;
-    }
-    
     logger.info(`🚨 CORS blocked origin: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','X-Requested-With','X-Request-ID'],
 };
 
 app.use(cors(corsOptions));
-app.use(morgan("dev"));
+// request/response logging is handled by createHttpLogger
 
 // Add HTTP request logging
 app.use(createHttpLogger(logger));
+
+// Rate limiting (shared Redis-backed limiter with fallback)
+try {
+  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  app.use(createLimiter('default'));
+} catch (err) {
+  const rateLimit = require('express-rate-limit');
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many requests. Please try again later.' },
+  });
+  app.use(limiter);
+}
+
+// Mount webhooks BEFORE JSON parser to preserve raw bodies for signature verification
+app.use('/api/webhooks', require('./routes/webhooks.routes'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -95,8 +128,19 @@ app.use("/api/payments/methods", paymentMethodRoutes);
 app.use("/api/payments/escrows", escrowRoutes);
 app.use("/api/payments/bills", billRoutes);
 app.use("/api/payments", paymentsRoutes);
-// Webhooks (raw body parsers are mounted in the routes file)
-app.use('/api/webhooks', require('./routes/webhooks.routes'));
+// Webhooks are mounted above JSON parser
+
+// Provider health endpoint for monitoring
+app.get('/health/providers', (req, res) => {
+  const providers = {
+    stripe: Boolean(process.env.STRIPE_SECRET_KEY),
+    paystack: Boolean(process.env.PAYSTACK_SECRET_KEY),
+    mtn: Boolean(process.env.MTN_MOMO_API_KEY || process.env.MTN_MOMO_PRIMARY_KEY),
+    vodafone: Boolean(process.env.VODAFONE_CASH_API_KEY || process.env.VODAFONE_CLIENT_ID),
+    airteltigo: Boolean(process.env.AIRTELTIGO_CLIENT_ID || process.env.AIRTELTIGO_MERCHANT_ID),
+  };
+  res.json({ success: true, data: { providers } });
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -111,6 +155,28 @@ app.get('/health/ready', (req, res) => {
 
 app.get('/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+// Lightweight reconciliation trigger for schedulers (e.g., GitHub Actions cron)
+// Non-blocking: runs reconcile in background and returns 202 immediately
+app.post('/health/reconcile', (req, res) => {
+  try {
+    const since = req.query.since;
+    const limit = req.query.limit;
+    // Defer import to avoid circular deps at boot
+    const transactionRoutes = require('./routes/transactions.routes');
+    // Kick off reconcile via internal HTTP call to reuse auth/middleware
+    // but here we call controller directly to avoid auth requirement since this is internal
+    const controller = require('./controllers/transaction.controller');
+    setImmediate(async () => {
+      try {
+        await controller.reconcile({ query: { since, limit }, user: { _id: 'scheduler' } }, { json: () => {} });
+      } catch (_) {}
+    });
+    res.status(202).json({ success: true, message: 'Reconciliation started' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Failed to start reconciliation' });
+  }
 });
 
 // Error handling middleware
@@ -140,7 +206,29 @@ mongoose
 app.use(createErrorLogger(logger));
 
 app.listen(PORT, () => {
-      logger.info(`Payment service is running on port ${PORT}`);
+    logger.info(`Payment service is running on port ${PORT}`);
+
+    // Optional background reconciliation without external scheduler
+    const enableReconcile = (process.env.ENABLE_RECONCILE_CRON || 'false').toLowerCase() === 'true';
+    const intervalMinutes = Math.max(5, parseInt(process.env.RECONCILE_INTERVAL_MINUTES || '30'));
+    if (enableReconcile) {
+      try {
+        const controller = require('./controllers/transaction.controller');
+        const tick = async () => {
+          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          await controller.reconcile(
+            { query: { since, limit: 200 }, user: { _id: 'cron' } },
+            { json: (payload) => logger.info('Reconcile tick complete', payload) }
+          );
+        };
+        setInterval(() => {
+          tick().catch((e) => logger.error('Reconcile tick failed', { error: e?.message }));
+        }, intervalMinutes * 60 * 1000);
+        logger.info(`Reconcile cron enabled (every ${intervalMinutes} minutes)`);
+      } catch (e) {
+        logger.error('Failed to initialize reconcile cron', { error: e?.message });
+      }
+    }
     });
   })
   .catch((error) => {

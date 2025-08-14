@@ -1,24 +1,6 @@
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
+import { userServiceClient as schedulingClient } from '../../common/services/axios';
 
-// Create dedicated scheduling service client (could be part of user service or separate)
-const schedulingClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE, // Assuming scheduling is part of user service
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth token to requests
-schedulingClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Use centralized userServiceClient as scheduling lives in user-service
 
 class SchedulingService {
   /**

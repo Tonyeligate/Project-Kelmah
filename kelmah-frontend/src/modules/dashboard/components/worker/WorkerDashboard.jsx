@@ -57,6 +57,8 @@ import AvailabilityStatus from './AvailabilityStatus';
 import EarningsChart from './EarningsChart';
 import UpcomingAppointments from './UpcomingAppointments';
 import ProfileCompletion from './ProfileCompletion';
+import workersApi from '../../../../api/services/workersApi';
+import NearbyWorkersWidget from '../../../worker/components/NearbyWorkersWidget';
 
 /**
  * Enhanced Worker Dashboard with responsive design and improved UX
@@ -81,13 +83,36 @@ const EnhancedWorkerDashboard = () => {
   const [showQuickApply, setShowQuickApply] = useState(false);
   const [showAllStats, setShowAllStats] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [completion, setCompletion] = useState(null);
+  const [availability, setAvailability] = useState({ status: 'available', isAvailable: true });
 
-  // Effect to handle data loading
+  // Load profile completeness
   useEffect(() => {
-    if (data?.user) {
-      // Handle user data if needed
-    }
-  }, [data, navigate]);
+    const load = async () => {
+      try {
+        const c = await workersApi.getProfileCompletion();
+        setCompletion(c);
+      } catch (e) {
+        console.warn('Failed to load profile completion', e?.message);
+      }
+    };
+    load();
+  }, []);
+
+  // Load availability for header chips
+  useEffect(() => {
+    const loadAvailability = async () => {
+      try {
+        const id = user?.id || user?._id || user?.userId;
+        if (!id) return;
+        const a = await workersApi.getAvailabilityStatus(id);
+        setAvailability(a);
+      } catch (e) {
+        console.warn('Failed to load availability', e?.message);
+      }
+    };
+    loadAvailability();
+  }, [user]);
 
   // Handle refresh functionality
   const handleRefresh = async () => {
@@ -780,29 +805,48 @@ const EnhancedWorkerDashboard = () => {
               Here's what's happening with your work today
             </Typography>
           </Box>
-
-          <IconButton
-            onClick={handleRefresh}
-            disabled={refreshing}
-            sx={{
-              background: alpha('#FFD700', 0.1),
-              border: '1px solid rgba(255,215,0,0.3)',
-              '&:hover': {
-                background: alpha('#FFD700', 0.2),
-              },
-            }}
-          >
-            <RefreshIcon
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Chip
+              size="small"
+              label={availability?.isAvailable ? 'Available' : (availability?.status || 'Busy')}
               sx={{
-                color: '#FFD700',
-                animation: refreshing ? 'spin 1s linear infinite' : 'none',
-                '@keyframes spin': {
-                  '0%': { transform: 'rotate(0deg)' },
-                  '100%': { transform: 'rotate(360deg)' },
+                color: availability?.isAvailable ? '#4CAF50' : '#FF9800',
+                borderColor: availability?.isAvailable ? 'rgba(76,175,80,0.4)' : 'rgba(255,152,0,0.4)'
+              }}
+              variant="outlined"
+            />
+            <Chip
+              size="small"
+              label={`${completion?.percentage ?? 0}% Complete`}
+              sx={{
+                color: (completion?.percentage ?? 0) >= 80 ? '#4CAF50' : '#FFD700',
+                borderColor: (completion?.percentage ?? 0) >= 80 ? 'rgba(76,175,80,0.4)' : 'rgba(255,215,0,0.3)'
+              }}
+              variant="outlined"
+            />
+            <IconButton
+              onClick={handleRefresh}
+              disabled={refreshing}
+              sx={{
+                background: alpha('#FFD700', 0.1),
+                border: '1px solid rgba(255,215,0,0.3)',
+                '&:hover': {
+                  background: alpha('#FFD700', 0.2),
                 },
               }}
-            />
-          </IconButton>
+            >
+              <RefreshIcon
+                sx={{
+                  color: '#FFD700',
+                  animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' },
+                  },
+                }}
+              />
+            </IconButton>
+          </Stack>
         </Stack>
       </Box>
 
@@ -872,7 +916,11 @@ const EnhancedWorkerDashboard = () => {
         <Grid item xs={12} lg={4}>
           <Stack spacing={{ xs: 2, md: 3 }}>
             <AvailabilityStatus />
-            <ProfileCompletion />
+            <ProfileCompletion
+              completion={typeof completion?.completion === 'number' ? completion.completion : 0}
+              profileData={{}}
+              suggestions={completion?.suggestions || completion?.suggestedNextSteps || []}
+            />
             <UpcomingAppointments />
 
             {/* Desktop Quick Actions */}
@@ -882,6 +930,9 @@ const EnhancedWorkerDashboard = () => {
 
             {/* Mobile Portfolio */}
             {isTablet && <Portfolio />}
+
+            {/* Nearby Workers */}
+            <NearbyWorkersWidget />
           </Stack>
         </Grid>
       </Grid>

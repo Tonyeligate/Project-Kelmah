@@ -72,6 +72,7 @@ import {
   LocationOn as LocationOnIcon,
   Schedule as ScheduleIcon,
   MonetizationOn as MonetizationOnIcon,
+  AttachMoney as AttachMoneyIcon,
   TrendingUp as TrendingUpIcon,
   CheckCircle as CheckCircleIcon,
   Group as GroupIcon,
@@ -112,7 +113,7 @@ import {
   Psychology as PsychologyIcon,
   Engineering as EngineeringIcon,
   Construction as ConstructionIcon,
-  ElectricalServices as ElectricalIcon,
+  ElectricalServices as ElectricalServicesIcon,
   Plumbing as PlumbingIcon,
   Build as BuildIcon,
   Home as HomeIcon,
@@ -126,7 +127,7 @@ import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -138,7 +139,7 @@ import {
   setFilters,
   selectJobsPagination,
 } from '../../jobs/services/jobSlice';
-import { useAuth } from '../../auth/hooks/useAuth';
+import useAuth from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 // Enhanced Animations with Worker-focused Themes
@@ -195,45 +196,47 @@ const heartbeat = keyframes`
 `;
 
 // Professional Worker-focused Styled Components
-const HeroGradientSection = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, 
-    ${theme.palette.primary.main} 0%, 
-    ${theme.palette.secondary.main} 25%,
-    ${theme.palette.primary.dark} 50%,
-    ${theme.palette.secondary.dark} 75%,
-    ${theme.palette.primary.main} 100%)`,
-  backgroundSize: '400% 400%',
-  animation: `${gradientShift} 20s ease infinite`,
-  color: 'white',
-  padding: theme.spacing(12, 0),
-  position: 'relative',
-  overflow: 'hidden',
-  minHeight: '90vh',
-  display: 'flex',
-  alignItems: 'center',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `radial-gradient(circle at 25% 75%, ${alpha('#4ECDC4', 0.3)} 0%, transparent 50%),
-                radial-gradient(circle at 75% 25%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 70%)`,
-    animation: `${float} 25s ease-in-out infinite`,
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: '-30%',
-    left: '-20%',
-    width: '140%',
-    height: '160%',
-    background: `conic-gradient(from 45deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.15)} 90deg, transparent 180deg, ${alpha('#4ECDC4', 0.15)} 270deg, transparent 360deg)`,
-    animation: `${rotateGlow} 40s linear infinite`,
-  },
-  [];
+const HeroGradientSection = styled(Box)(({ theme }) => {
+  return {
+    background: `linear-gradient(135deg, 
+      ${theme.palette.primary.main} 0%, 
+      ${theme.palette.secondary.main} 25%,
+      ${theme.palette.primary.dark} 50%,
+      ${theme.palette.secondary.dark} 75%,
+      ${theme.palette.primary.main} 100%)`,
+    backgroundSize: '400% 400%',
+    animation: `${gradientShift} 20s ease infinite`,
+    color: 'white',
+    padding: theme.spacing(12, 0),
+    position: 'relative',
+    overflow: 'hidden',
+    minHeight: '90vh',
+    display: 'flex',
+    alignItems: 'center',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: `radial-gradient(circle at 25% 75%, ${alpha('#4ECDC4', 0.3)} 0%, transparent 50%),
+                  radial-gradient(circle at 75% 25%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 70%)`,
+      animation: `${float} 25s ease-in-out infinite`,
+    },
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      top: '-30%',
+      left: '-20%',
+      width: '140%',
+      height: '160%',
+      background: `conic-gradient(from 45deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.15)} 90deg, transparent 180deg, ${alpha('#4ECDC4', 0.15)} 270deg, transparent 360deg)`,
+      animation: `${rotateGlow} 40s linear infinite`,
+    }
+  };
+});
 
 const jobCategories = [
   { 

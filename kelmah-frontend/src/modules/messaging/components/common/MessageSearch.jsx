@@ -133,12 +133,25 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
     });
   };
 
-  // Add highlight to matching text
-  const highlightMatches = (text, query) => {
-    if (!text || !query) return text;
-
-    const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<span class="highlight">$1</span>');
+  // Safe highlight without HTML injection
+  const renderHighlighted = (text, q) => {
+    if (!text || !q) return <>{text}</>;
+    try {
+      const parts = text.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+      return (
+        <>
+          {parts.map((part, i) =>
+            part.toLowerCase() === q.toLowerCase() ? (
+              <span key={i} className="highlight">{part}</span>
+            ) : (
+              <React.Fragment key={i}>{part}</React.Fragment>
+            ),
+          )}
+        </>
+      );
+    } catch (_) {
+      return <>{text}</>;
+    }
   };
 
   return (
@@ -257,12 +270,9 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                           {message.sender.name}
                         </Typography>
                       </Box>
-                      <ContentPreview
-                        variant="body2"
-                        dangerouslySetInnerHTML={{
-                          __html: highlightMatches(message.content, query),
-                        }}
-                      />
+                      <ContentPreview variant="body2">
+                        {renderHighlighted(message.content, query)}
+                      </ContentPreview>
                       {message.attachments &&
                         message.attachments.length > 0 && (
                           <Box

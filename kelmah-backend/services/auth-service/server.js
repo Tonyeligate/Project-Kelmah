@@ -6,7 +6,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const morgan = require("morgan");
+// removed morgan; using shared JSON logger
 const cookieParser = require("cookie-parser");
 const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
@@ -35,6 +35,20 @@ logger.info('auth-service starting...', {
 });
 
 const app = express();
+// Optional tracing and error monitoring
+try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('auth-service'); monitoring.initTracing('auth-service'); } catch {}
+
+// Env validation (fail-fast in production)
+try {
+  const { requireEnv } = require('./utils/envValidator');
+  if (process.env.NODE_ENV === 'production') {
+    requireEnv(['JWT_SECRET', 'JWT_REFRESH_SECRET'], 'auth-service');
+    if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
+      logger.error('auth-service missing MONGODB_URI/MONGO_URI in production');
+      process.exit(1);
+    }
+  }
+} catch {}
 
 // Middleware
 
@@ -48,44 +62,58 @@ app.use(cookieParser());
 // Security middleware
 app.use(helmet());
 
-// CORS configuration for production and development
+// CORS configuration for production and development (env-driven with Vercel preview support)
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
+    const envAllow = (process.env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://kelmah-frontend-cyan.vercel.app', // Current production frontend
       'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'https://kelmah-frontend.onrender.com',
-      'https://project-kelmah.onrender.com',
-      'https://kelmah-frontend-ecru.vercel.app',
-      'https://kelmah-frontend-mu.vercel.app', // Legacy URL for backward compatibility
-      process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app' // Dynamic with fallback
-    ].filter(Boolean); // Remove any undefined values
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.info(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      process.env.FRONTEND_URL,
+      ...envAllow,
+    ].filter(Boolean);
+
+    const vercelPatterns = [
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
+      /^https:\/\/project-kelmah.*\.vercel\.app$/,
+      /^https:\/\/kelmah-frontend.*\.vercel\.app$/,
+    ];
+
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
+      return callback(null, true);
     }
+    logger.warn(`CORS blocked origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Request-ID", "X-Client-Version"],
-  optionsSuccessStatus: 200 // for legacy browser support
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-ID', 'X-Client-Version'],
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-// Logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-} else {
-  app.use(morgan("combined"));
+// Logging via createHttpLogger only
+
+// Rate limiting (shared Redis-backed limiter with fallback)
+try {
+  const { createLimiter } = require('./middlewares/rateLimiter');
+  app.use(createLimiter('default'));
+} catch (err) {
+  const rateLimit_fallback = require('express-rate-limit');
+  const limiter = rateLimit_fallback({
+    windowMs: 15 * 60 * 1000,
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many requests. Please try again later.' },
+  });
+  app.use(limiter);
 }
 
 // API routes

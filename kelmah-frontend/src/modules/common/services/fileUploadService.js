@@ -74,6 +74,20 @@ const fileUploadService = {
       if (file.size > (maxSizeMb * 1024 * 1024)) {
         throw new Error(`File exceeds max size ${maxSizeMb}MB`);
       }
+      // If presign is disabled on backend, fallback to local direct upload route
+      if (!putUrl || !getUrl) {
+        // Backend will store locally when ENABLE_S3_UPLOADS !== 'true'
+        const form = new FormData();
+        form.append('files', file);
+        const localPath = service === 'user'
+          ? '/api/profile/uploads'
+          : `/api/messages/${folder.replace('attachments/', '')}/attachments`;
+        const resp = await client.post(localPath, form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        const uploaded = resp.data?.data?.files?.[0] || resp.data?.files?.[0];
+        return uploaded || { url: resp.data?.url, name: file.name, size: file.size, type: file.type };
+      }
       await fetch(putUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
       return { url: getUrl, name: file.name, size: file.size, type: file.type };
     } catch (error) {

@@ -393,9 +393,10 @@ const PremiumPage = () => {
               />
             }
             label={
-              <Typography>
+              <Typography component="span">
                 Bill Annually{' '}
                 <Chip
+                  component="span"
                   label="Save 20%"
                   color="success"
                   size="small"

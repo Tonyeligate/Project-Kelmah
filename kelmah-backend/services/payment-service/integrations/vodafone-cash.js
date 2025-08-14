@@ -3,7 +3,8 @@
  * Vodafone Cash API implementation for Ghana
  */
 
-const axios = require('axios');
+const { http } = require('../../../shared/utils/http');
+const { CircuitBreaker } = require('../../../shared/utils/circuitBreaker');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 
@@ -33,7 +34,7 @@ class VodafoneCashService {
 
       const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
       
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/oauth/token`,
         'grant_type=client_credentials&scope=payment',
         {
@@ -44,6 +45,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       // Store token and expiry
       this.accessToken = response.data.access_token;
@@ -89,7 +92,7 @@ class VodafoneCashService {
         cancelUrl: `${process.env.FRONTEND_URL}/payment/cancel`
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/v1/payments/initiate`,
         requestData,
         {
@@ -101,6 +104,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -131,7 +136,7 @@ class VodafoneCashService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/v1/payments/${paymentId}/status`,
         {
           headers: {
@@ -140,6 +145,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -188,7 +195,7 @@ class VodafoneCashService {
         callbackUrl: `${process.env.CALLBACK_URL}/vodafone/payout-webhook`
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/v1/payouts/initiate`,
         requestData,
         {
@@ -200,6 +207,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -229,7 +238,7 @@ class VodafoneCashService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/v1/payouts/${payoutId}/status`,
         {
           headers: {
@@ -238,6 +247,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -274,7 +285,7 @@ class VodafoneCashService {
 
       const formattedNumber = this.formatPhoneNumber(phoneNumber);
       
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/v1/customers/${formattedNumber}/validate`,
         {
           headers: {
@@ -283,6 +294,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -313,7 +326,7 @@ class VodafoneCashService {
         return tokenResult;
       }
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/v1/merchants/${this.merchantId}/balance`,
         {
           headers: {
@@ -322,6 +335,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -368,7 +383,7 @@ class VodafoneCashService {
       if (endDate) queryParams.append('endDate', endDate);
       if (status) queryParams.append('status', status);
 
-      const response = await axios.get(
+      const doCall = () => http.get(
         `${this.baseURL}/v1/merchants/${this.merchantId}/transactions?${queryParams}`,
         {
           headers: {
@@ -377,6 +392,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 20000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -535,7 +552,7 @@ class VodafoneCashService {
         return tokenResult;
       }
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/v1/payments/${paymentId}/cancel`,
         { reason },
         {
@@ -546,6 +563,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -586,7 +605,7 @@ class VodafoneCashService {
         merchantId: this.merchantId
       };
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/v1/payments/${paymentId}/refund`,
         requestData,
         {
@@ -598,6 +617,8 @@ class VodafoneCashService {
           }
         }
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
 
       return {
         success: true,

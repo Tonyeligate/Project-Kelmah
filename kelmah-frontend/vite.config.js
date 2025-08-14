@@ -63,6 +63,7 @@ export default defineConfig({
       'react-redux',
       '@emotion/react',
       '@emotion/styled',
+      '@mui/system',
       '@mui/material',
       '@mui/icons-material'
     ],

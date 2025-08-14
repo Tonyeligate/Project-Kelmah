@@ -7,7 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
-const authenticate = require('../middlewares/auth.middleware');
+const { authenticate } = require('../middleware/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').MONOLITH_SERVICE;

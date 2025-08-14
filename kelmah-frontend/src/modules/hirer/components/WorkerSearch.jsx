@@ -47,34 +47,15 @@ import {
   Group as GroupIcon,
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
-
-// Create dedicated user service client for worker operations
-const userServiceClient = axios.create({
-  baseURL: SERVICES.USER_SERVICE,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-userServiceClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+import { userServiceClient } from '../../common/services/axios';
+import messagingService from '../../messaging/services/messagingService';
+import { useNavigate } from 'react-router-dom';
 
 // No mock data - using real API data only
 
 const WorkerSearch = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [loading, setLoading] = useState(false);
@@ -805,6 +786,15 @@ const WorkerSearch = () => {
                         size="small"
                         startIcon={<MessageIcon />}
                         sx={{ flex: 1 }}
+                        onClick={async () => {
+                          try {
+                            const convo = await messagingService.createDirectConversation(worker.id);
+                            const newId = convo?.id || convo?.data?.data?.conversation?.id || convo?.data?.conversation?.id || convo?.conversation?.id || convo?.data?.id;
+                            if (newId) navigate(`/messages?conversation=${newId}`);
+                          } catch (e) {
+                            console.error('Failed to start conversation', e);
+                          }
+                        }}
                       >
                         Message
                       </Button>

@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const config = require("../config/config");
 
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -8,11 +7,13 @@ const authenticate = (req, res, next) => {
   }
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, config.JWT_SECRET);
-    // Normalize user shape so downstream code can use req.user._id
-    req.user = {
-      ...decoded,
-      _id: decoded._id || decoded.id || decoded.userId,
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { 
+      id: decoded.id || decoded.sub, 
+      _id: decoded.id || decoded.sub, 
+      email: decoded.email, 
+      role: decoded.role, 
+      version: decoded.version 
     };
     next();
   } catch (error) {

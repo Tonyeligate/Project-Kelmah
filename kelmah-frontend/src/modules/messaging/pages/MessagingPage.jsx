@@ -63,6 +63,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { useMessages } from '../contexts/MessageContext';
+// Use consolidated messaging service client that matches backend routes
+import messagingService from '../services/messagingService';
 import ConversationList from '../components/common/ConversationList';
 import Chatbox from '../components/common/Chatbox';
 
@@ -76,7 +78,7 @@ const EnhancedMessagingPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   // State management - Get conversations from context
-  const { conversations, selectedConversation, selectConversation } = useMessages();
+  const { conversations, selectedConversation, selectConversation, typingUsers } = useMessages();
   
   // Local state for UI
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,19 +133,50 @@ const EnhancedMessagingPage = () => {
       initializeMessaging();
     }
 
-    // Auto-select conversation from URL
-    const params = new URLSearchParams(search);
-    const conversationId = params.get('conversation');
-    if (conversationId) {
-      const conversation = mockConversations.find(
-        (c) => c.id === conversationId,
-      );
-      if (conversation) {
-        selectConversation(conversation);
-        setMessages([]);
+    // Deep-link: /messages?recipient=<userId> or /messages?conversation=<id>
+    const runDeepLink = async () => {
+      const params = new URLSearchParams(search);
+      const conversationId = params.get('conversation');
+      const recipientId = params.get('recipient');
+
+      if (conversationId) {
+        // Select if present in current list; otherwise just set URL
+        const existing = (conversations || []).find((c) => c.id === conversationId);
+        if (existing) {
+          selectConversation(existing);
+          setMessages([]);
+        } else {
+          navigate(`/messages?conversation=${conversationId}`, { replace: true });
+        }
+        return;
       }
-    }
-  }, [user, search]);
+
+      if (recipientId) {
+        // Try to find an existing direct conversation with this recipient
+        const existing = (conversations || []).find((c) =>
+          (c.participants || []).some((p) => String(p.id) === String(recipientId))
+        );
+        if (existing) {
+          selectConversation(existing);
+          setMessages([]);
+          navigate(`/messages?conversation=${existing.id}`, { replace: true });
+          return;
+        }
+        // Create new direct conversation
+        try {
+          const convo = await messagingService.createDirectConversation(recipientId);
+          const newId = convo?.id || convo?.data?.data?.conversation?.id || convo?.data?.conversation?.id || convo?.conversation?.id || convo?.data?.id;
+          if (newId) {
+            navigate(`/messages?conversation=${newId}`, { replace: true });
+          }
+        } catch (e) {
+          console.error('Deep-link conversation creation failed:', e);
+        }
+      }
+    };
+
+    runDeepLink();
+  }, [user, search, conversations, navigate, selectConversation]);
 
   // Filter conversations based on search and filter
   useEffect(() => {

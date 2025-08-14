@@ -5,7 +5,8 @@ const eventsApi = {
     console.log('Starting getEvents request...');
     try {
       // Check if token exists
-      const token = localStorage.getItem('token');
+      const { secureStorage } = await import('../../../utils/secureStorage');
+      const token = secureStorage.getAuthToken();
       console.log('Token exists:', !!token);
 
       const response = await api.get('/api/events');

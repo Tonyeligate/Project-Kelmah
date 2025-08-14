@@ -1,5 +1,12 @@
 const express = require('express');
 const router = express.Router();
+let adminLimiter = null;
+try {
+  const { createLimiter } = require('../../auth-service/middlewares/rateLimiter');
+  adminLimiter = createLimiter('admin');
+} catch (_) {
+  adminLimiter = (req, res, next) => next();
+}
 const mongoose = require('mongoose');
 
 // Models
@@ -8,7 +15,7 @@ const Review = mongoose.model('Review');
 // Auth middleware is expected to be applied at app level for /api/admin
 
 // GET /api/admin/reviews/queue?status=pending&page=1&limit=20
-router.get('/reviews/queue', async (req, res) => {
+router.get('/reviews/queue', adminLimiter, async (req, res) => {
   try {
     const { status = 'pending', page = 1, limit = 20, category, minRating } = req.query;
     const filter = { status };
@@ -44,7 +51,7 @@ router.get('/reviews/queue', async (req, res) => {
 });
 
 // POST /api/admin/reviews/:id/moderate { status, note }
-router.post('/reviews/:id/moderate', async (req, res) => {
+router.post('/reviews/:id/moderate', adminLimiter, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, note } = req.body;
@@ -68,7 +75,7 @@ router.post('/reviews/:id/moderate', async (req, res) => {
 });
 
 // POST /api/admin/reviews/bulk-moderate { ids: [], status, note }
-router.post('/reviews/bulk-moderate', async (req, res) => {
+router.post('/reviews/bulk-moderate', adminLimiter, async (req, res) => {
   try {
     const { ids = [], status, note } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {

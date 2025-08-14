@@ -10,18 +10,10 @@ const authenticateUser = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
-    // Enhanced logging for debugging
-    console.log('🔐 Job Service Auth Check:', {
-      url: req.url,
-      method: req.method,
-      hasAuthHeader: !!authHeader,
-    });
+    // Minimal contextual logging; avoid sensitive data
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.warn('❌ Job Service Auth Failed: No token or invalid format:', {
-        authHeader: authHeader ? 'present but wrong format' : 'missing',
-        url: req.url
-      });
+      // Use structured logger in future; keep terse output
       return res.status(401).json({ 
         message: "No token provided",
         debug: process.env.NODE_ENV === 'development' ? 'Expected: Bearer <token>' : undefined
@@ -32,29 +24,23 @@ const authenticateUser = (req, res, next) => {
     
     // ✅ CRITICAL FIX: Check if JWT_SECRET is configured
     if (!process.env.JWT_SECRET) {
-      console.error('❌ CRITICAL: JWT_SECRET environment variable not set in Job Service!');
+      // Avoid noisy logs: configuration should be validated at startup
       return res.status(500).json({ 
         message: "Authentication service misconfigured." 
       });
     }
     
-    // Verify JWT token using environment variable directly (standardized approach)
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    console.log('🔓 Job Service token decoded successfully:', {
-      userId: decoded.sub || decoded.id || decoded.userId,
-      role: decoded.role,
-      exp: new Date(decoded.exp * 1000).toISOString()
-    });
-    
-    req.user = decoded;
+    req.user = { 
+      id: decoded.id || decoded.sub, 
+      email: decoded.email, 
+      role: decoded.role, 
+      version: decoded.version 
+    };
     next();
   } catch (error) {
-    console.error('❌ Job Service authentication error:', {
-      error: error.message,
-      name: error.name,
-      url: req.url
-    });
+    // Avoid leaking details in production
     
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ message: "Invalid token" });

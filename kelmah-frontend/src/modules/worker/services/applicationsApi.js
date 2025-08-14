@@ -1,24 +1,6 @@
-import axios from 'axios';
-import { SERVICES } from '../../../config/environment';
+import { jobServiceClient } from '../../common/services/axios';
 
-// Create dedicated job service client for applications
-const jobServiceClient = axios.create({
-  baseURL: SERVICES.JOB_SERVICE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth token to requests
-jobServiceClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('kelmah_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Use centralized jobServiceClient with auth/retries
 
 // No mock data - using real API only
 

@@ -3,7 +3,7 @@
  * Handles JWT token verification and user authentication
  */
 
-const jwt = require('jsonwebtoken');
+const jwtUtils = require('../../shared/utils/jwt');
 const { User } = require('../models');
 const { AppError } = require('../utils/errorTypes');
 const config = require('../config');
@@ -31,7 +31,7 @@ exports.authenticate = async (req, res, next) => {
     if (!config.JWT_SECRET) {
       return next(new AppError('Server configuration error', 500));
     }
-    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const decoded = jwtUtils.verifyAccessToken(token);
     
     // Find user by id
     const user = await User.findByPk(decoded.id);
@@ -117,7 +117,7 @@ exports.authenticateRefreshToken = async (req, res, next) => {
       return next(new AppError('Refresh token missing', 400));
     }
     // Verify and decode refresh token
-    const decoded = jwt.verify(refreshToken, config.JWT_REFRESH_SECRET);
+    const decoded = jwtUtils.verifyRefreshToken(refreshToken);
     const user = await User.findByPk(decoded.id);
     if (!user) {
       return next(new AppError('Invalid refresh token', 401));

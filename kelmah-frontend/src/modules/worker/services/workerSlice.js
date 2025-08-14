@@ -4,11 +4,11 @@ import api from '../../common/services/axios';
 // Async thunks for worker operations
 export const fetchWorkerProfile = createAsyncThunk(
   'worker/fetchProfile',
-  async (_, { rejectWithValue }) => {
+  async (workerId, { rejectWithValue }) => {
     try {
-      // Align with backend user-service routes under /api/profile
-      const response = await api.get('/api/profile');
-      return response.data?.data || response.data;
+      // Use user-service worker endpoint
+      const response = await api.get(`/api/users/workers/${workerId}`);
+      return response.data?.data?.worker || response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker profile',
@@ -19,9 +19,9 @@ export const fetchWorkerProfile = createAsyncThunk(
 
 export const updateWorkerProfile = createAsyncThunk(
   'worker/updateProfile',
-  async (profileData, { rejectWithValue }) => {
+  async ({ workerId, profileData }, { rejectWithValue }) => {
     try {
-      const response = await api.put('/api/profile', profileData);
+      const response = await api.put(`/api/users/workers/${workerId}`, profileData);
       return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
@@ -33,10 +33,10 @@ export const updateWorkerProfile = createAsyncThunk(
 
 export const fetchWorkerSkills = createAsyncThunk(
   'worker/fetchSkills',
-  async (_, { rejectWithValue }) => {
+  async (workerId, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/worker/skills');
-      return response.data;
+      const response = await api.get(`/api/users/workers/${workerId}/skills`);
+      return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker skills',
@@ -47,9 +47,10 @@ export const fetchWorkerSkills = createAsyncThunk(
 
 export const updateWorkerSkills = createAsyncThunk(
   'worker/updateSkills',
-  async (skills, { rejectWithValue }) => {
+  async ({ workerId, skills }, { rejectWithValue }) => {
     try {
-      const response = await api.put('/api/worker/skills', { skills });
+      // Bulk update not supported; client should call add/update individually
+      const response = await api.get(`/api/users/workers/${workerId}/skills`);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -63,8 +64,10 @@ export const fetchWorkerJobs = createAsyncThunk(
   'worker/fetchJobs',
   async (status = 'active', { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/worker/jobs?status=${status}`);
-      return response.data;
+      const response = await api.get('/api/jobs/assigned', { params: { status } });
+      const payload = response.data?.data || response.data;
+      const jobs = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+      return { status, jobs };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker jobs',
@@ -77,10 +80,9 @@ export const fetchWorkerApplications = createAsyncThunk(
   'worker/fetchApplications',
   async (status = 'pending', { rejectWithValue }) => {
     try {
-      const response = await api.get(
-        `/api/worker/applications?status=${status}`,
-      );
-      return response.data;
+      const response = await api.get('/api/jobs/applications/me', { params: { status } });
+      const apps = response.data?.data || response.data || [];
+      return { status, applications: Array.isArray(apps) ? apps : [] };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker applications',
@@ -108,9 +110,9 @@ export const submitWorkerApplication = createAsyncThunk(
 
 export const fetchWorkerEarnings = createAsyncThunk(
   'worker/fetchEarnings',
-  async (period = 'month', { rejectWithValue }) => {
+  async ({ workerId, period = 'month' }, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/worker/earnings?period=${period}`);
+      const response = await api.get(`/api/users/workers/${workerId}/earnings?period=${period}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -122,10 +124,10 @@ export const fetchWorkerEarnings = createAsyncThunk(
 
 export const updateWorkerAvailability = createAsyncThunk(
   'worker/updateAvailability',
-  async (availabilityData, { rejectWithValue }) => {
+  async ({ workerId, availabilityData }, { rejectWithValue }) => {
     try {
       const response = await api.put(
-        '/api/worker/availability',
+        `/api/users/workers/${workerId}/availability`,
         availabilityData,
       );
       return response.data;

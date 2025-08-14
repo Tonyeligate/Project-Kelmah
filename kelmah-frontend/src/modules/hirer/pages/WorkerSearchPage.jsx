@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import WorkerSearch from '../components/WorkerSearch';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 const WorkerSearchPage = () => {
   return (

@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const RevokedToken = require('../models/RevokedToken');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
 
 module.exports = {
@@ -20,17 +21,32 @@ module.exports = {
     );
     return { accessToken, refreshToken };
   },
-  verifyAuthToken: (token) => {
-    return jwt.verify(token, process.env.JWT_SECRET, {
+  verifyAuthToken: async (token) => {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
       issuer: process.env.JWT_ISSUER || 'kelmah-auth-service',
       audience: process.env.JWT_AUDIENCE || 'kelmah-platform'
     });
+    // Defense-in-depth: blacklist check by JTI
+    if (decoded && decoded.jti) {
+      const blacklisted = await RevokedToken.findOne({ jti: decoded.jti });
+      if (blacklisted) {
+        const err = new Error('Token revoked');
+        err.name = 'JsonWebTokenError';
+        throw err;
+      }
+    }
+    return decoded;
   },
   verifyRefreshToken: (token) => {
     return jwt.verify(token, process.env.JWT_REFRESH_SECRET, {
       issuer: process.env.JWT_ISSUER || 'kelmah-auth-service',
       audience: process.env.JWT_AUDIENCE || 'kelmah-platform'
     });
+  },
+  revokeByJti: async (jti, userId, expiresAt, reason = 'revoked') => {
+    try {
+      await RevokedToken.create({ jti, userId, expiresAt, reason });
+    } catch (_) {}
   },
 };
 

@@ -7,11 +7,13 @@
 // Import Mongoose models
 const User = require('./User');
 const RefreshToken = require('./RefreshToken');
+const RevokedToken = require('./RevokedToken');
 
 // Export models
 module.exports = {
   User,
-  RefreshToken
+  RefreshToken,
+  RevokedToken
 };
 
 // Note: Mongoose handles relationships differently than Sequelize

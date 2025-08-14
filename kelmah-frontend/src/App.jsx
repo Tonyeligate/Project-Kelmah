@@ -17,17 +17,19 @@ import HirerDashboardPage from './modules/hirer/pages/HirerDashboardPage';
 import SkillsAssessmentPage from './modules/worker/pages/SkillsAssessmentPage';
 import MyApplicationsPage from './modules/worker/pages/MyApplicationsPage';
 import WorkerProfileEditPage from './modules/worker/pages/WorkerProfileEditPage';
-import JobSearchPage from './modules/worker/pages/JobApplicationPage';
+import JobSearchPage from './modules/worker/pages/JobSearchPage';
 import GeoLocationSearch from './modules/search/pages/GeoLocationSearch';
 import SearchPage from './modules/search/pages/SearchPage';
 import ProfessionalMapPage from './modules/map/pages/ProfessionalMapPage';
 import NotificationsPage from './modules/notifications/pages/NotificationsPage';
+import NotificationSettingsPage from './modules/notifications/pages/NotificationSettingsPage';
 import LoginPage from './modules/auth/pages/LoginPage';
 import RegisterPage from './modules/auth/pages/RegisterPage';
-import MessagingPage from './modules/messaging/pages/MessagingPage';
-import JobDetailsPage from './modules/jobs/pages/JobDetailsPage';
-import UserProfilePage from './modules/profiles/pages/UserProfilePage';
-import ProfilePage from './modules/profile/pages/ProfilePage';
+import { lazy, Suspense } from 'react';
+const MessagingPage = lazy(() => import('./modules/messaging/pages/MessagingPage'));
+const JobDetailsPage = lazy(() => import('./modules/jobs/pages/JobDetailsPage'));
+const UserProfilePage = lazy(() => import('./modules/profiles/pages/UserProfilePage'));
+const ProfilePage = lazy(() => import('./modules/profile/pages/ProfilePage'));
 import ApplicationManagementPage from './modules/hirer/pages/ApplicationManagementPage';
 import ContractManagementPage from './modules/contracts/pages/ContractManagementPage';
 import ContractDetailsPage from './modules/contracts/pages/ContractDetailsPage';
@@ -36,7 +38,7 @@ import JobPostingPage from './modules/hirer/pages/JobPostingPage';
 import JobManagementPage from './modules/hirer/pages/JobManagementPage';
 import { verifyAuth } from './modules/auth/services/authSlice';
 import ProtectedRoute from './modules/auth/components/common/ProtectedRoute';
-import { TOKEN_KEY } from './config/constants';
+import { AUTH_CONFIG } from './config/environment';
 import { secureStorage } from './utils/secureStorage';
 import PaymentCenterPage from './modules/payment/pages/PaymentCenterPage';
 import PaymentsPage from './modules/payment/pages/PaymentsPage';
@@ -137,6 +139,28 @@ const AppContent = () => {
 
   // Verify auth on component mount and location change
   useEffect(() => {
+    // One-time migration of legacy localStorage tokens to secureStorage
+    try {
+      const legacyKeys = ['kelmah_auth_token', 'authToken', AUTH_CONFIG.tokenKey, 'refreshToken', 'user'];
+      let migrated = false;
+      legacyKeys.forEach((k) => {
+        const v = localStorage.getItem(k);
+        if (!v) return;
+        if (k === 'user') {
+          try { secureStorage.setUserData(JSON.parse(v)); } catch (_) {}
+        } else if (k === 'refreshToken') {
+          secureStorage.setRefreshToken(v);
+        } else {
+          secureStorage.setAuthToken(v);
+        }
+        localStorage.removeItem(k);
+        migrated = true;
+      });
+      if (migrated) {
+        console.log('🔐 Migrated legacy auth data to secureStorage');
+      }
+    } catch (_) {}
+
     // Skip auto-auth when on login or register to respect explicit logout
     if (location.pathname === '/login' || location.pathname === '/register') {
       console.log('Auth check skipped on auth pages');
@@ -145,7 +169,7 @@ const AppContent = () => {
 
       const checkAuth = () => {
         // Always use real authentication
-      const token = secureStorage.getAuthToken() || localStorage.getItem(TOKEN_KEY);
+      const token = secureStorage.getAuthToken() || localStorage.getItem(AUTH_CONFIG.tokenKey);
 
       // Only verify auth if Redux state is currently unauthenticated.
       if (!isAuthenticated) {
@@ -219,7 +243,9 @@ const AppContent = () => {
                 redirectPath="/login"
                 loading={loading}
               >
-                <ProfilePage />
+                <Suspense fallback={<Box sx={{ p: 4 }}><CircularProgress /></Box>}>
+                  <ProfilePage />
+                </Suspense>
               </ProtectedRoute>
               } 
             />
@@ -237,7 +263,7 @@ const AppContent = () => {
           />
 
           {/* Dashboard redirect - only when accessing /dashboard directly */}
-          <Route 
+            <Route 
             path="/dashboard" 
             element={
               <DashboardRedirect 
@@ -310,6 +336,19 @@ const AppContent = () => {
             />
 
             <Route 
+            path="/notifications/settings"
+              element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <NotificationSettingsPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
             path="/messages"
               element={
               <ProtectedRoute
@@ -317,7 +356,9 @@ const AppContent = () => {
                 redirectPath="/login"
                 loading={loading}
               >
-                <MessagingPage />
+                <Suspense fallback={<Box sx={{ p: 4 }}><CircularProgress /></Box>}>
+                  <MessagingPage />
+                </Suspense>
                 </ProtectedRoute>
               } 
             />
@@ -434,6 +475,23 @@ const AppErrorFallback = ({ error }) => (
 );
 
 function App() {
+  // Frontend Sentry (optional)
+  try {
+    if ((import.meta?.env?.VITE_ENABLE_SENTRY || '').toString() === 'true') {
+      const SENTRY_PKG_ID = '@sentry/react';
+      import(/* @vite-ignore */ SENTRY_PKG_ID)
+        .then((Sentry) => {
+          const sdk = Sentry?.default || Sentry;
+          if (sdk?.init) {
+            sdk.init({
+              dsn: import.meta?.env?.VITE_SENTRY_DSN,
+              tracesSampleRate: Number(import.meta?.env?.VITE_SENTRY_TRACES || 0.05),
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  } catch {}
   return (
     <ErrorBoundary FallbackComponent={AppErrorFallback}>
       <KelmahThemeProvider>

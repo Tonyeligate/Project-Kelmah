@@ -3,7 +3,8 @@
  * Provides a compatible interface like MTN/Vodafone for requestToPay and status
  */
 
-const axios = require('axios');
+const { http } = require('../../../shared/utils/http');
+const { CircuitBreaker } = require('../../../shared/utils/circuitBreaker');
 const { v4: uuidv4 } = require('uuid');
 
 class AirtelTigoService {
@@ -22,7 +23,7 @@ class AirtelTigoService {
         return { success: true, data: { access_token: this.accessToken } };
       }
 
-      const response = await axios.post(
+      const doCall = () => http.post(
         `${this.baseURL}/oauth/token`,
         'grant_type=client_credentials',
         {
@@ -32,6 +33,8 @@ class AirtelTigoService {
           },
         },
       );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       this.accessToken = response.data.access_token;
       this.tokenExpiry = new Date(Date.now() + response.data.expires_in * 1000);
@@ -64,13 +67,15 @@ class AirtelTigoService {
         callbackUrl: `${process.env.CALLBACK_URL || ''}/airteltigo/webhook`,
       };
 
-      const response = await axios.post(`${this.baseURL}/v1/collections/request-to-pay`, payload, {
+      const doCall = () => http.post(`${this.baseURL}/v1/collections/request-to-pay`, payload, {
         headers: {
           Authorization: `Bearer ${tokenResult.data.access_token}`,
           'Content-Type': 'application/json',
           'X-Request-ID': referenceId,
         },
       });
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
 
       return {
         success: true,
@@ -90,12 +95,83 @@ class AirtelTigoService {
       const tokenResult = await this.getAccessToken();
       if (!tokenResult.success) return tokenResult;
 
-      const response = await axios.get(`${this.baseURL}/v1/collections/status/${referenceId}`, {
+      const doCall = () => http.get(`${this.baseURL}/v1/collections/status/${referenceId}`, {
         headers: {
           Authorization: `Bearer ${tokenResult.data.access_token}`,
           Accept: 'application/json',
         },
       });
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
+
+      return {
+        success: true,
+        data: {
+          referenceId,
+          status: response.data?.status || 'PENDING',
+          amount: response.data?.amount,
+          currency: response.data?.currency || 'GHS',
+          completedAt: response.data?.completedAt,
+        },
+      };
+    } catch (error) {
+      return { success: false, error: error.response?.data || error.message };
+    }
+  }
+
+  // Transfer (payout) to customer wallet
+  async transfer({ amount, phoneNumber, externalId, description }) {
+    try {
+      const tokenResult = await this.getAccessToken();
+      if (!tokenResult.success) return tokenResult;
+
+      const referenceId = externalId || uuidv4();
+      const payload = {
+        referenceId,
+        amount: parseFloat(amount),
+        currency: 'GHS',
+        msisdn: this.formatPhoneNumber(phoneNumber),
+        description: description || 'Kelmah platform payout',
+        merchantId: this.merchantId,
+        callbackUrl: `${process.env.CALLBACK_URL || ''}/airteltigo/payout-webhook`,
+      };
+
+      const doCall = () => http.post(`${this.baseURL}/v1/disbursements/transfer`, payload, {
+        headers: {
+          Authorization: `Bearer ${tokenResult.data.access_token}`,
+          'Content-Type': 'application/json',
+          'X-Request-ID': referenceId,
+        },
+      });
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 15000 });
+      const response = await breaker.fire();
+
+      return {
+        success: true,
+        data: {
+          referenceId,
+          status: response.data?.status || 'PENDING',
+          message: 'Payout initiated successfully',
+        },
+      };
+    } catch (error) {
+      return { success: false, error: error.response?.data || error.message };
+    }
+  }
+
+  async getTransferStatus(referenceId) {
+    try {
+      const tokenResult = await this.getAccessToken();
+      if (!tokenResult.success) return tokenResult;
+
+      const doCall = () => http.get(`${this.baseURL}/v1/disbursements/status/${referenceId}`, {
+        headers: {
+          Authorization: `Bearer ${tokenResult.data.access_token}`,
+          Accept: 'application/json',
+        },
+      });
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
 
       return {
         success: true,

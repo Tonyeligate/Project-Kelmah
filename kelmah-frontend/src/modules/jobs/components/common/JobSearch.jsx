@@ -78,7 +78,13 @@ const JobSearch = () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/jobs/search`, {
         params: filters,
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: await (async () => {
+          try {
+            const { secureStorage } = await import('../../../utils/secureStorage');
+            const token = secureStorage.getAuthToken();
+            return token ? { Authorization: `Bearer ${token}` } : {};
+          } catch { return {}; }
+        })(),
       });
       setJobs(response.data.data);
     } catch (err) {
@@ -115,7 +121,13 @@ const JobSearch = () => {
         `${BACKEND_URL}/jobs/${jobId}/apply`,
         {},
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: await (async () => {
+            try {
+              const { secureStorage } = await import('../../../utils/secureStorage');
+              const token = secureStorage.getAuthToken();
+              return token ? { Authorization: `Bearer ${token}` } : {};
+            } catch { return {}; }
+          })(),
         },
       );
       // Show success message or update UI

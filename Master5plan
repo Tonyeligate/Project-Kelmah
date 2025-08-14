@@ -1,0 +1,253 @@
+## Kelmah Master Plan v5 (God Mode, Hirer-Focused)
+
+### Objective
+Deliver a production-ready marketplace with a rock-solid hirer experience: seamless job posting and management, application review, contracting, escrow funding, milestone payouts, messaging, and reviews. This plan fixes critical defects, completes underbuilt areas, and aligns data models, validations, and UI.
+
+### Executive Summary of Critical Findings
+- Job status mismatch across layers
+  - Frontend uses active/paused/expired/closed; validator uses active/paused/closed/cancelled; model and controller use draft/open/in-progress/completed/cancelled.
+  - Impact: status transitions fail; tabs show empty data; updates 4xx.
+
+- Job creation shape mismatch (UI ⇄ validator ⇄ model)
+  - UI sends: paymentType + budget.min/max or budget.fixed, duration (string), locationType + location (string).
+  - Validator expects: budget { type, amount, currency }, location { type, address }, duration { type, value }.
+  - Model expects: budget (Number), paymentType (enum), duration { value, unit }, location { type, country, city }.
+  - Impact: 400 validation errors or malformed records.
+
+- Method mismatch for status updates
+  - Gateway forwards PUT /api/jobs/:id/status; job-service exposes PATCH /api/jobs/:id/status.
+  - Impact: 404 on status updates via gateway.
+
+- Escrow routes file duplication
+  - payment-service `routes/escrow.routes.js` contains two routers and multiple module.exports. Risk of route drift, hidden endpoints.
+
+- Payments under-implemented
+  - Paystack/Stripe remove/verify methods not implemented; funding endpoint creates pending escrow without charging provider; missing idempotency keys and webhook reconciliation.
+
+- Auth duplication and inconsistency
+  - `shared/utils/jwt.js` vs `auth-service/utils/jwt.js`/`jwt-secure.js` produce different token shapes/flows.
+  - Impact: refresh/verify differences across services.
+
+- Logging noise in production
+  - Console logs in services and frontend; should be level-gated and PII-scrubbed.
+
+### Canonical Design Decisions (apply immediately)
+- Canonical job statuses: draft, open, in-progress, completed, cancelled.
+- Canonical job shape (service boundary input):
+  - title, description, category, skills[]
+  - paymentType: 'fixed' | 'hourly'
+  - budget: number (in currency units)
+  - currency: 'GHS' default
+  - duration: { value: number, unit: 'hour'|'day'|'week'|'month' }
+  - location: { type: 'remote'|'onsite'|'hybrid', country?: string, city?: string, address?: string }
+  - visibility: 'public'|'private'|'invite-only' (default 'public')
+
+- Mapping rules from current UI:
+  - If paymentType=hourly: budget = Number(budget.max || budget.min), currency = 'GHS'. If fixed: budget = Number(budget.fixed).
+  - duration string like "2 weeks" → { value: 2, unit: 'week' }.
+  - locationType + location string → { type: locationType, address: location string; city/country parsed when possible }.
+
+### Phase 0: Hotfixes and Alignment (1–2 days)
+1) Status vocabulary unification
+   - Frontend: replace active→open, paused→(remove), expired→(derived UI badge), closed→cancelled.
+   - Backend validator: change `changeJobStatus` to allow ['open','in-progress','completed','cancelled','draft'].
+   - Controller: keep current transition rules; ensure validator matches.
+
+2) Job creation/update mapping
+   - Add a server-side input normalizer in job-service `createJob` and `updateJob` that maps current UI payload to canonical model (until UI updates). Validate post-normalization.
+   - Update `job.validation.js` schemas to match the canonical shape.
+
+3) Status update method mismatch
+   - API Gateway: accept both PUT and PATCH for `/api/jobs/:jobId/status` and forward as PATCH. Or duplicate route with PATCH.
+   - Frontend: update to call PATCH.
+
+4) Escrow routes duplication cleanup
+   - payment-service `routes/escrow.routes.js`: remove duplicate router; export a single router that includes notify + all escrow endpoints.
+
+5) Auth consistency quick pass
+   - Use `shared/utils/jwt` across gateway and services for access tokens; keep refresh in auth-service with `jwt-secure` only. Document issuer/audience.
+
+6) Logging policy
+   - Replace console.* with shared logger; reduce to info/warn/error in prod; scrub tokens/emails.
+
+Acceptance
+- Create job from UI succeeds; job visible in hirer dashboard under ‘open’ or ‘draft’.
+- Update status from UI succeeds; transitions enforced.
+- Payment escrow routes respond without 500s; single export verified.
+
+### Phase 1: Hirer E2E – Job Posting & Management (3–5 days)
+Backend
+- Job create/update normalization utilities; attach hirerId from auth.
+- Add server-side derived fields: proposalCount=0, viewCount=0.
+- Add attachments presign (S3) endpoint for job attachments (optional now, plan for Phase 5 security review).
+- Applications: ensure endpoints exist for listing, filtering by status, and counts per job.
+
+Frontend
+- JobPostingPage: map current fields to canonical shape before POST.
+- JobManagementPage: update tabs to ['all','open','in-progress','completed','cancelled','draft']; remove paused/expired tabs; show expired badge when deadline < now.
+- Status actions: open, in-progress, completed, cancelled only.
+- Hook attachments uploader (deferred if S3 not ready).
+
+Acceptance
+- Post job (draft or publish) → appears under correct tab; can edit and delete draft/open; cannot edit in-progress/completed.
+- Search and filters return results consistent with backend pagination.
+
+### Phase 2: Applications, Offers, and Contracting (3–5 days)
+Backend
+- Confirm endpoints:
+  - GET `/api/jobs/:id/applications?status=pending|accepted|rejected`.
+  - PUT `/api/jobs/:id/applications/:appId` body { status }.
+  - POST `/api/jobs/:id/assign` { workerId } – moves job to in-progress, creates Contract.
+  - GET/POST `/api/jobs/:id/contract` – ensure persistence and validation.
+
+Frontend
+- ProposalReview: load pending per job, accept/reject actions; Assign worker flow creates contract.
+- On assignment, suggest escrow setup.
+
+Acceptance
+- Hirer can review, accept, and assign; contract created; job moves to in-progress.
+
+### Phase 3: Escrow Funding, Milestones, and Payouts (5–8 days)
+Backend
+- payment-service: implement idempotency keys for fund/release/refund; store externalRef and provider metadata.
+- Integrate at least one provider path end-to-end (Paystack or MTN MoMo) for Ghana.
+- Webhooks: verify signatures; reconcile escrow status to active/released/refunded; update Wallet ledger.
+- Milestones routes complete (already present): add invariants/tests.
+
+Frontend
+- EscrowManager: drive funding against provider and show statuses; connect to contract/job context.
+- PaymentRelease: per-milestone release with confirmation; show ledger entries.
+
+Acceptance
+- Fund escrow → provider returns success → webhook flips escrow to active; release milestone → worker wallet credited; no duplicate processing under retries.
+
+### Phase 4: Messaging and Notifications (3–4 days)
+- Auto-open conversation on application accept/assignment; emit system message with job/contract context.
+- Notification preferences and in-app notifications for hirer events (new application, milestone completion, payment status).
+
+### Phase 5: Hardening, Observability, and Security (3–5 days)
+- Rate limiting (Redis) on auth, payments, job-create.
+- JSON structured logs, correlation IDs across gateway/services.
+- Dashboards: request rate, error rate, latency; provider health endpoints.
+- File uploads: antivirus scanning queue for large files; presigned uploads only.
+
+### Concrete Edit Backlog (file-level)
+- Frontend
+  - `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`: replace tab statuses and actions with canonical statuses; update status labels.
+  - `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`: pre-submit transform to canonical payload; duration/location mapping; currency default.
+  - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`: use PATCH for job status; expect job object in response and compute { jobId, status } client-side.
+
+- API Gateway
+  - `kelmah-backend/api-gateway/routes/job.routes.js`: add PATCH handler for `/:jobId/status`; keep PUT temporarily for backward compatibility.
+
+- Job Service
+  - `kelmah-backend/services/job-service/validations/job.validation.js`: align `createJob`, `updateJob`, `changeJobStatus` with canonical shape/statuses.
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`: add `normalizeJobInput(req.body)`; accept UI legacy fields; map to model.
+  - `kelmah-backend/services/job-service/models/Job.js`: keep `budget: Number`, add `currency` field if needed; ensure `toJSON` virtual id is on.
+
+- Payment Service
+  - `kelmah-backend/services/payment-service/routes/escrow.routes.js`: remove duplicate router; export one router; keep notify route.
+  - Implement idempotency and provider integration scaffolding; webhook verification.
+
+- Auth
+  - Use `shared/utils/jwt` for access verification across services; keep refresh logic in auth-service only; document issuer/audience envs.
+
+### Acceptance Test Matrix (hirer-focused)
+- Jobs
+  - Create draft/open job; update; delete draft; paginate/search; status transitions valid/invalid.
+  - My jobs returns correct per-status counts; UI tabs match backend.
+- Applications
+  - List pending; accept/reject; assign worker; contract created.
+- Escrow
+  - Fund escrow (idempotent); webhook activates; release milestone; refund path happy/sad; wallet balances update.
+- Messaging/Notifications
+  - System messages on assignment/milestones; unread counts update; notification center shows events.
+
+### Environment & Config Unification
+- Document required envs per service; fail-fast on missing secrets.
+- Gateway defines CORS and origins; downstream services trust gateway origin.
+- Feature flags: ENABLE_PAYMENTS, ENABLE_FILE_UPLOADS, USE_REDIS_RATE_LIMIT, PROVIDER_SWITCH (paystack|mtn|stripe).
+
+### Timeline & Ownership
+- Phase 0: 1–2 days
+- Phase 1: 3–5 days
+- Phase 2: 3–5 days
+- Phase 3: 5–8 days
+- Phase 4: 3–4 days
+- Phase 5: 3–5 days
+
+### Risks & Mitigations
+- Provider instability → retries with idempotency + reconciliation jobs; circuit breakers.
+- Data model drift → introduce normalizer layer; add contract tests to guard payload shapes.
+- WebSocket scale → sticky sessions or broker-backed socket; define scale plan.
+
+---
+This plan locks in a single, consistent data model and status vocabulary, fixes gateway and routing mismatches, and delivers a complete, production-grade hirer journey end-to-end with escrow-backed payments and strong operability.
+
+### AWS Tonight: Quick Deployment Checklist (Minimum Viable, Fast Path)
+
+- Architecture (fast path)
+  - Single ALB + ECS Fargate services (auth, user, job, payment, messaging), each listening on its port and registered in its own Target Group.
+  - Path-based routing on ALB: `/api/auth/*` → auth-service, `/api/users/*` → user-service, `/api/jobs/*` → job-service, `/api/payments/*` → payment-service, `/api/messages/*` → messaging-service.
+  - Frontend on S3 + CloudFront. Set VITE_*_URL to the ALB domain (same for all services). CORS allowlist includes CloudFront domain.
+
+- Prerequisites
+  - AWS CLI configured; ECR repos created for each service; MongoDB Atlas cluster URI (or DocumentDB) available; JWT secrets ready.
+
+- Build and push images (per service)
+  - Create ECR repo once: `aws ecr create-repository --repository-name kelmah-job-service`
+  - Authenticate: `aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com`
+  - Build/tag/push (example job-service):
+```
+docker build -t kelmah-job-service ./kelmah-backend/services/job-service
+docker tag kelmah-job-service:latest <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/kelmah-job-service:latest
+docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/kelmah-job-service:latest
+```
+  - Repeat for: kelmah-auth-service, kelmah-user-service, kelmah-payment-service, kelmah-messaging-service.
+
+- ECS Fargate services
+  - Create a cluster (Fargate).
+  - For each service, create a Task Definition with container image from ECR and container port:
+    - auth: 3001, user: 3002, job: 3003, payment: 3004, messaging: 3005 (adjust if different).
+  - Environment variables (examples):
+    - All: `NODE_ENV=production`, `JWT_SECRET=<secret>`, `JWT_REFRESH_SECRET=<secret>`, `JWT_ISSUER=kelmah-auth-service`, `JWT_AUDIENCE=kelmah-platform`.
+    - Mongo: `MONGODB_URI=<atlas-uri>` (payment-service uses `PAYMENT_MONGO_URI` or `MONGODB_URI`).
+    - Payment-service: provider keys (e.g., `PAYSTACK_SECRET_KEY`, `STRIPE_SECRET_KEY`) optional tonight.
+    - CORS: set `ALLOWED_ORIGINS=<your-cloudfront-domain>`; optionally `FRONTEND_URL=https://<cloudfront>`.
+  - Create a Target Group per service and add ECS service to it.
+  - Create an ALB with HTTPS; add listener rules:
+    - `/api/auth/*` → auth TG
+    - `/api/users/*` → user TG
+    - `/api/jobs/*` → job TG
+    - `/api/payments/*` → payment TG
+    - `/api/messages/*` → messaging TG
+
+- Frontend (S3 + CloudFront)
+  - Build: set env for Vite build so all services resolve to ALB domain:
+```
+VITE_AUTH_SERVICE_URL=https://<ALB_DOMAIN>
+VITE_USER_SERVICE_URL=https://<ALB_DOMAIN>
+VITE_JOB_SERVICE_URL=https://<ALB_DOMAIN>
+VITE_MESSAGING_SERVICE_URL=https://<ALB_DOMAIN>
+VITE_PAYMENT_SERVICE_URL=https://<ALB_DOMAIN>
+VITE_API_URL=https://<ALB_DOMAIN>
+npm --prefix kelmah-frontend ci
+npm --prefix kelmah-frontend run build
+```
+  - Upload `kelmah-frontend/dist` to S3 (static website bucket), then put CloudFront in front.
+
+- Quick validation
+  - GET `https://<ALB_DOMAIN>/api/jobs/health` or `/api/jobs` returns 200.
+  - Post a job from the frontend; verify it appears under “open” and My Jobs.
+  - Update job status; verify PATCH works.
+  - Optional: fund escrow (stub OK), list escrows.
+
+- DNS and TLS
+  - Point `api.<your-domain>` to ALB; `app.<your-domain>` to CloudFront. Request ACM certs and attach to ALB/CloudFront.
+
+- Rollback/Recovery
+  - Keep last working images in ECR; use ECS service deployment rollback; ALB health checks protect against bad rollouts.
+
+
+
+

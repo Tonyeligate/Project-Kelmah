@@ -24,6 +24,8 @@ const User = require("./models/User");
 const userRoutes = require("./routes/user.routes");
 const profileRoutes = require("./routes/profile.routes");
 const settingsRoutes = require("./routes/settings.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
+const availabilityRoutes = require("./routes/availability.routes");
 
 // Initialize express app
 
@@ -41,7 +43,29 @@ logger.info('user-service starting...', {
   environment: process.env.NODE_ENV || 'development'
 });
 
+// Fail-fast for required secrets
+if (process.env.NODE_ENV === 'production') {
+  try {
+    const { requireEnv } = require('./utils/envValidator');
+    requireEnv(['JWT_SECRET', 'MONGODB_URI'], 'user-service');
+  } catch {
+    if (!process.env.JWT_SECRET) {
+      console.error('User Service missing JWT_SECRET. Exiting.');
+      process.exit(1);
+    }
+  }
+}
+// Warn if advanced worker SQL is enabled but SQL URL is not configured
+if (process.env.ENABLE_WORKER_SQL === 'true') {
+  if (!process.env.USER_SQL_URL && !process.env.DATABASE_URL) {
+    console.warn('⚠️ ENABLE_WORKER_SQL=true but no USER_SQL_URL/DATABASE_URL configured. Advanced worker features will be degraded.');
+  }
+}
+
 const app = express();
+// Optional tracing
+try { require('./utils/tracing').initTracing('user-service'); } catch {}
+try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('user-service'); monitoring.initTracing('user-service'); } catch {}
 
 // Middleware
 
@@ -54,19 +78,20 @@ app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
-// ✅ ENHANCED: CORS configuration with Vercel preview URL support
+// Unified CORS: env-driven allowlist + Vercel previews
 const corsOptions = {
   origin: function (origin, callback) {
+    const envAllow = (process.env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://kelmah-frontend-cyan.vercel.app', // Current production frontend
       'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'https://kelmah-frontend-mu.vercel.app', // Legacy URL for compatibility
-      process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app'
+      process.env.FRONTEND_URL,
+      ...envAllow,
     ].filter(Boolean);
     
-    // Allow all Vercel preview and deployment URLs
     const vercelPatterns = [
       /^https:\/\/.*\.vercel\.app$/,
       /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
@@ -75,40 +100,40 @@ const corsOptions = {
     ];
     
     if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
-    
-    // Check exact matches first
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
+    if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
+      return callback(null, true);
     }
-    
-    // Check Vercel patterns
-    const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
-    if (isVercelPreview) {
-      logger.info(`✅ User Service CORS allowed Vercel preview: ${origin}`);
-      callback(null, true);
-      return;
-    }
-    
     logger.info(`🚨 User Service CORS blocked origin: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", 'X-Requested-With', 'X-Request-ID'],
 };
 
 app.use(cors(corsOptions));
 
-// Logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-} else {
-  app.use(morgan("combined"));
+// Use shared JSON logger; remove morgan
+
+// Rate limiting (shared Redis-backed limiter with fallback)
+try {
+  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  app.use(createLimiter('default'));
+} catch (err) {
+  const rateLimit = require('express-rate-limit');
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many requests. Please try again later.' },
+  });
+  app.use(limiter);
 }
 
 // API routes
 app.use("/api/users", userRoutes);
+app.use("/api/availability", availabilityRoutes);
 
 // Removed temporary profile/activity/statistics stub endpoints
 
@@ -157,6 +182,9 @@ app.get('/api/appointments', (req, res) => {
 });
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/analytics", analyticsRoutes);
+// alias under users for gateway consistency
+app.use("/api/users/analytics", analyticsRoutes);
 
 // Removed temporary contracts endpoint; job-service should serve contracts
 

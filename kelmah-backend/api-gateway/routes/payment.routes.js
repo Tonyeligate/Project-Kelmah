@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
-const authenticate = require('../middlewares/auth.middleware');
+const { authenticate } = require('../middleware/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').PAYMENT_SERVICE;
@@ -63,10 +63,17 @@ router.post('/paypal/capture-order', paymentProxy); // Capture PayPal order
 router.post('/paypal/webhook', paymentProxy); // Handle PayPal webhooks
 
 // Escrow management
-router.get('/escrow', paymentProxy); // Get user's escrow transactions
-router.get('/escrow/:escrowId', paymentProxy); // Get specific escrow
-router.post('/escrow/:escrowId/dispute', paymentProxy); // Create dispute
-router.put('/escrow/:escrowId/resolve', paymentProxy); // Resolve dispute
+// Canonical singular
+router.get('/escrow', paymentProxy);
+router.get('/escrow/:escrowId', paymentProxy);
+router.post('/escrow/:escrowId/dispute', paymentProxy);
+router.put('/escrow/:escrowId/resolve', paymentProxy);
+// Aliases (plural) for FE compatibility
+router.get('/escrows', paymentProxy);
+router.get('/escrows/:escrowId', paymentProxy);
+router.post('/escrows/:escrowId/dispute', paymentProxy);
+router.post('/escrows/:escrowId/release', paymentProxy);
+router.post('/escrows/:escrowId/refund', paymentProxy);
 
 // Subscription payments
 router.get('/subscriptions', paymentProxy); // Get user subscriptions
@@ -87,5 +94,16 @@ router.get('/disputes', paymentProxy); // Get user disputes
 router.post('/disputes', paymentProxy); // Create dispute
 router.put('/disputes/:disputeId', paymentProxy); // Update dispute
 router.get('/disputes/:disputeId', paymentProxy); // Get dispute details
+
+// Admin payout queue
+// Bills (aliases expected by FE)
+router.get('/bills', paymentProxy);
+router.post('/bills/:billId/pay', paymentProxy);
+
+// Transaction history alias expected by FE
+router.get('/transactions/history', paymentProxy);
+router.post('/admin/payouts/queue', paymentProxy);
+router.post('/admin/payouts/process', paymentProxy);
+router.get('/admin/payouts', paymentProxy);
 
 module.exports = router;

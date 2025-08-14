@@ -41,7 +41,10 @@ const createServiceProxy = (options) => {
       }
       
       // Add internal service identification
-      proxyReq.setHeader('X-Internal-Request', process.env.INTERNAL_API_KEY || 'internal-request');
+      const internalKey = process.env.INTERNAL_API_KEY || (process.env.NODE_ENV !== 'production' ? 'internal-request' : undefined);
+      if (internalKey) {
+        proxyReq.setHeader('X-Internal-Request', internalKey);
+      }
       
       // Log the proxy request
       console.log(`Proxying ${req.method} ${req.originalUrl} to ${target}${proxyReq.path}`);

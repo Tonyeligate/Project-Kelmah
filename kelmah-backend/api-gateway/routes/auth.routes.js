@@ -31,7 +31,7 @@ const protectedAuthProxy = (req, res, next) => {
 };
 
 // Authentication middleware for protected routes
-const authenticate = require('../middlewares/auth.middleware');
+const { authenticate } = require('../middleware/auth');
 
 // Public routes
 router.post('/login', publicAuthProxy);
@@ -39,7 +39,13 @@ router.post('/register', publicAuthProxy);
 router.post('/forgot-password', publicAuthProxy);
 router.post('/reset-password', publicAuthProxy);
 router.get('/verify-email/:token', publicAuthProxy);
+// Refresh token aliases for FE compatibility
 router.post('/refresh', publicAuthProxy);
+router.post('/refresh-token', publicAuthProxy);
+// Verify auth (returns current user)
+router.get('/verify', publicAuthProxy);
+// Resend verification email
+router.post('/resend-verification-email', publicAuthProxy);
 
 // Protected routes
 router.post('/logout', authenticate, protectedAuthProxy);

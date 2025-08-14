@@ -30,8 +30,9 @@ import {
   CalendarToday,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import axiosInstance from '../../common/services/axios';
+import reviewsApi from '../../../services/reviewsApi';
 
 function UserProfilePage() {
   const { userId } = useParams();
@@ -59,9 +60,15 @@ function UserProfilePage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await axiosInstance.get(`/api/reviews/user/${userId}`);
-      setReviews(response.data.reviews);
-      setRatings(response.data.ratings);
+      const [list, rating] = await Promise.all([
+        reviewsApi.getWorkerReviews(userId, { status: 'approved', limit: 10 }),
+        reviewsApi.getWorkerRating(userId)
+      ]);
+      setReviews(list.reviews || []);
+      setRatings({
+        average_rating: rating?.averageRating || 0,
+        total_ratings: rating?.totalReviews || 0
+      });
     } catch (error) {
       console.error('Error fetching reviews:', error);
       setError('Error fetching reviews');

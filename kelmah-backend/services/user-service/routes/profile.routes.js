@@ -3,31 +3,40 @@ const router = require("express").Router();
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-// Minimal auth middleware (trust gateway to pass Authorization)
-const authenticate = (req, res, next) => {
-  const auth = req.headers.authorization || '';
-  if (!auth.startsWith('Bearer ')) return res.status(401).json({ success: false, message: 'Unauthorized' });
-  // In production, verify JWT here. For now accept presence as service sits behind API Gateway.
-  next();
-};
+// Defense-in-depth: verify JWT using shared middleware
+let authenticate;
+try {
+  ({ authenticate } = require('../middlewares/auth'));
+} catch (_) {
+  // Fallback minimal check if middleware unavailable
+  authenticate = (req, res, next) => {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    next();
+  };
+}
 
 // Portfolio controller routes
 try {
   const PortfolioController = require('../controllers/portfolio.controller');
 
-  // Get worker portfolio
-  router.get('/workers/:workerId/portfolio', authenticate, PortfolioController.getWorkerPortfolio);
-  // Get single portfolio item
-  router.get('/portfolio/:id', authenticate, PortfolioController.getPortfolioItem);
+  // Get worker portfolio (public read)
+  router.get('/workers/:workerId/portfolio', PortfolioController.getWorkerPortfolio);
+  // Get single portfolio item (public read)
+  router.get('/portfolio/:id', PortfolioController.getPortfolioItem);
   // Search featured
   router.get('/portfolio/featured', PortfolioController.getFeaturedPortfolio);
   // Search portfolio
   router.get('/portfolio/search', PortfolioController.searchPortfolio);
-  router.get('/workers/:workerId/portfolio/stats', authenticate, PortfolioController.getPortfolioStats);
+  router.get('/workers/:workerId/portfolio/stats', PortfolioController.getPortfolioStats);
   // Manage portfolio
   router.post('/portfolio', authenticate, PortfolioController.createPortfolioItem);
   router.put('/portfolio/:id', authenticate, PortfolioController.updatePortfolioItem);
   router.delete('/portfolio/:id', authenticate, PortfolioController.deletePortfolioItem);
+  // Toggle featured / partial updates
+  router.patch('/portfolio/:id', authenticate, PortfolioController.updatePortfolioItem);
+  // Share portfolio item (generates shareable link and increments share counter)
+  router.post('/portfolio/:id/share', authenticate, PortfolioController.sharePortfolioItem);
 } catch (e) {
   // Fallback stub if controller not available
   router.get('/portfolio/health', (req, res) => res.json({ success: true, message: 'portfolio routes loaded' }));
@@ -36,7 +45,7 @@ try {
 // Upload endpoints (disable when S3 presigned uploads are enabled)
 try {
   const uploads = require('../controllers/upload.controller');
-  const allowDirect = process.env.ENABLE_S3_UPLOADS !== 'true';
+  const allowDirect = process.env.ENABLE_S3_UPLOADS !== 'true' && process.env.NODE_ENV !== 'production';
   if (allowDirect) {
     router.post('/portfolio/upload', authenticate, upload.array('files', 10), uploads.uploadWorkSamples);
     router.post('/certificates/upload', authenticate, upload.array('files', 10), uploads.uploadCertificates);

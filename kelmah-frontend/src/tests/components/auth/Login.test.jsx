@@ -4,17 +4,17 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import useAuth from '../../auth/hooks/useAuth';
-import Login from '../Login';
+import { useAuth } from '../../../modules/auth/contexts/AuthContext';
+import Login from '../../../modules/auth/components/login/Login';
 import { thunk } from 'redux-thunk';
 
 // Mock Redux store
 const mockStore = configureStore([thunk]);
 
 // Mock the useAuth hook
-jest.mock('../../auth/hooks/useAuth', () => ({
+jest.mock('../../../modules/auth/contexts/AuthContext', () => ({
   __esModule: true,
-  default: jest.fn(),
+  useAuth: jest.fn(),
 }));
 
 // Mock useNavigate
@@ -25,28 +25,25 @@ jest.mock('react-router-dom', () => ({
 }));
 
 // Mock child components to isolate the Login component
+// These components may not exist; mock safely to isolate Login
 jest.mock(
-  '../../common/components/auth/AuthLayout',
+  '../../../modules/auth/components/AuthLayout',
   () =>
-    ({ children }) =>
-      (
-        <div>
-          AuthLayout {children}
-        </div>
-      ),
+    ({ children }) => (
+      <div>
+        AuthLayout {children}
+      </div>
+    ),
 );
 jest.mock(
-  '../../common/components/ui/AuthCard',
+  '../../../modules/auth/components/AuthCard',
   () =>
-    ({ children, title }) =>
-      (
-        <div>
-          <h1>
-            {title}
-          </h1>
-          {children}
-        </div>
-      ),
+    ({ children, title }) => (
+      <div>
+        <h1>{title}</h1>
+        {children}
+      </div>
+    ),
 );
 
 describe('Login Component', () => {

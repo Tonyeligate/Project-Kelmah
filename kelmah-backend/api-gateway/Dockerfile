@@ -1,5 +1,5 @@
 # Use Node.js LTS as the base image
-FROM node:16-alpine
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -20,11 +20,12 @@ RUN chown -R appuser:appgroup /app
 # Switch to non-root user
 USER appuser
 
-# Set environment variables
-ENV NODE_ENV=production
+# Environment variables should be set at runtime, not build time
+# ENV NODE_ENV=production  # Commented out - set this in deployment platform
 
 # Expose port for API access
-EXPOSE 5000
+# Gateway default port is 3000 unless overridden by API_GATEWAY_PORT/PORT
+EXPOSE 3000
 
 # Command to run the application
-CMD ["node", "api-gateway/server.js"] 
+CMD ["node", "server.js"]

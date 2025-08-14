@@ -1,42 +1,16 @@
 /**
- * Audit Logger Utility
- * Centralized audit logging for security and compliance
- * Modified for messaging service (self-contained)
+ * Simple Audit Logger for Messaging Service
+ * Logs important events for security and compliance
  */
-
-const fs = require('fs').promises;
-const path = require('path');
 
 class AuditLogger {
   constructor() {
-    this.logDir = process.env.AUDIT_LOG_DIR || path.join(__dirname, '../logs/audit');
-    this.maxFileSize = parseInt(process.env.AUDIT_MAX_FILE_SIZE || '10485760'); // 10MB
-    this.maxFiles = parseInt(process.env.AUDIT_MAX_FILES || '30');
     this.enabled = process.env.AUDIT_LOGGING_ENABLED !== 'false';
-    
-    this.initializeLogDirectory();
-  }
-  
-  /**
-   * Initialize log directory
-   */
-  async initializeLogDirectory() {
-    try {
-      await fs.access(this.logDir);
-    } catch {
-      await fs.mkdir(this.logDir, { recursive: true });
-    }
   }
   
   /**
    * Log audit event
    * @param {Object} event - Audit event data
-   * @param {string} event.userId - User ID
-   * @param {string} event.action - Action performed
-   * @param {Object} event.details - Additional details
-   * @param {string} event.ipAddress - IP address
-   * @param {string} event.userAgent - User agent
-   * @param {Date} event.timestamp - Custom timestamp (optional)
    */
   async log(event) {
     if (!this.enabled) return;
@@ -52,133 +26,14 @@ class AuditLogger {
         sessionId: event.sessionId || null,
         requestId: event.requestId || null,
         severity: this.getSeverity(event.action),
-        source: 'kelmah-messaging-service'
+        source: 'messaging-service'
       };
       
-      // Log to file
-      await this.logToFile(auditEntry);
-      
-      // Send to external systems if configured
-      await this.logToExternalSystems(auditEntry);
+      // Log to console (can be extended to file/database)
+      console.log('AUDIT:', JSON.stringify(auditEntry));
       
     } catch (error) {
       console.error('Audit logging failed:', error);
-      // Don't throw - audit logging failure shouldn't break the application
-    }
-  }
-  
-  /**
-   * Log to file
-   * @param {Object} auditEntry - Audit entry
-   */
-  async logToFile(auditEntry) {
-    const logFileName = `audit-${new Date().toISOString().split('T')[0]}.log`;
-    const logFilePath = path.join(this.logDir, logFileName);
-    
-    const logLine = JSON.stringify(auditEntry) + '\n';
-    
-    try {
-      // Check file size and rotate if necessary
-      await this.rotateLogIfNeeded(logFilePath);
-      
-      // Append to log file
-      await fs.appendFile(logFilePath, logLine, 'utf8');
-    } catch (error) {
-      console.error('File audit logging failed:', error);
-    }
-  }
-  
-  /**
-   * Log to external systems (SIEM, monitoring, etc.)
-   * @param {Object} auditEntry - Audit entry
-   */
-  async logToExternalSystems(auditEntry) {
-    // Implement integrations with external systems
-    // Examples: Splunk, ELK Stack, Datadog, etc.
-    
-    if (process.env.WEBHOOK_AUDIT_URL) {
-      try {
-        const axios = require('axios');
-        await axios.post(process.env.WEBHOOK_AUDIT_URL, auditEntry, {
-          timeout: 5000,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.WEBHOOK_AUDIT_TOKEN}`
-          }
-        });
-      } catch (error) {
-        console.error('Webhook audit logging failed:', error.message);
-      }
-    }
-  }
-  
-  /**
-   * Rotate log file if it exceeds max size
-   * @param {string} logFilePath - Path to log file
-   */
-  async rotateLogIfNeeded(logFilePath) {
-    try {
-      const stats = await fs.stat(logFilePath);
-      
-      if (stats.size >= this.maxFileSize) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const rotatedPath = `${logFilePath}.${timestamp}`;
-        
-        await fs.rename(logFilePath, rotatedPath);
-        
-        // Clean up old files
-        await this.cleanupOldLogs();
-      }
-    } catch (error) {
-      // File doesn't exist yet, which is fine
-      if (error.code !== 'ENOENT') {
-        console.error('Log rotation error:', error);
-      }
-    }
-  }
-  
-  /**
-   * Clean up old log files
-   */
-  async cleanupOldLogs() {
-    try {
-      const files = await fs.readdir(this.logDir);
-      const logFiles = files
-        .filter(file => file.startsWith('audit-') && file.endsWith('.log'))
-        .map(file => ({
-          name: file,
-          path: path.join(this.logDir, file),
-          time: 0 // Will be populated below
-        }));
-      
-      // Get file stats
-      for (const file of logFiles) {
-        try {
-          const stats = await fs.stat(file.path);
-          file.time = stats.mtime.getTime();
-        } catch (error) {
-          console.error(`Error getting stats for ${file.name}:`, error);
-        }
-      }
-      
-      // Sort by modification time (newest first)
-      logFiles.sort((a, b) => b.time - a.time);
-      
-      // Remove files beyond the maximum count
-      if (logFiles.length > this.maxFiles) {
-        const filesToDelete = logFiles.slice(this.maxFiles);
-        
-        for (const file of filesToDelete) {
-          try {
-            await fs.unlink(file.path);
-            console.log(`Deleted old audit log: ${file.name}`);
-          } catch (error) {
-            console.error(`Error deleting ${file.name}:`, error);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error cleaning up old logs:', error);
     }
   }
   
@@ -189,29 +44,14 @@ class AuditLogger {
    */
   getSeverity(action) {
     const severityMap = {
-      // Critical actions
-      'SOCKET_CONNECTED': 'medium',
-      'SOCKET_DISCONNECTED': 'medium',
       'MESSAGE_SENT': 'low',
-      'CONVERSATION_JOINED': 'low',
-      'TYPING_INDICATOR': 'low',
-      
-      // High severity
-      'USER_LOGIN': 'high',
-      'USER_LOGOUT': 'high',
-      'PASSWORD_CHANGED': 'high',
-      'EMAIL_VERIFIED': 'high',
-      'TOKEN_REFRESH': 'high',
-      
-      // Medium severity
-      'USER_CREATED': 'medium',
-      'USER_UPDATED': 'medium',
-      'PROFILE_UPDATED': 'medium',
-      
-      // Low severity
-      'USER_VIEW': 'low',
-      'SEARCH_PERFORMED': 'low',
-      'NOTIFICATION_SENT': 'low'
+      'USER_CONNECTED': 'medium',
+      'USER_DISCONNECTED': 'medium',
+      'TYPING_START': 'low',
+      'TYPING_STOP': 'low',
+      'READ_RECEIPT': 'low',
+      'JOIN_CONVERSATION': 'medium',
+      'LEAVE_CONVERSATION': 'medium'
     };
     
     return severityMap[action] || 'medium';

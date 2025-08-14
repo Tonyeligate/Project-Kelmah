@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const expressRateLimit = require('express-rate-limit');
 const { RedisStore } = require('rate-limit-redis');
 const { createClient } = require('redis');
 
@@ -11,7 +11,6 @@ const MAX_REDIS_ATTEMPTS = 3;
 function getRedisClient() {
   if (redisClient && redisConnected) return redisClient;
   if (redisInitialized && redisConnectionAttempts >= MAX_REDIS_ATTEMPTS) {
-    // Stop spamming logs after max attempts
     return null;
   }
   
@@ -21,7 +20,7 @@ function getRedisClient() {
         url: process.env.REDIS_URL || process.env.REDIS_URI || 'redis://localhost:6379',
         socket: { 
           reconnectStrategy: (retries) => {
-            if (retries > MAX_REDIS_ATTEMPTS) return false; // Stop retrying
+            if (retries > MAX_REDIS_ATTEMPTS) return false;
             return Math.min(retries * 1000, 5000);
           },
           connectTimeout: 5000
@@ -63,7 +62,7 @@ function getRedisClient() {
   } catch (error) {
     if (redisConnectionAttempts < MAX_REDIS_ATTEMPTS) {
       console.warn('Redis not available in production environment - using memory store');
-      redisConnectionAttempts = MAX_REDIS_ATTEMPTS; // Stop further attempts
+      redisConnectionAttempts = MAX_REDIS_ATTEMPTS;
     }
     redisConnected = false;
     return null;
@@ -77,7 +76,7 @@ const LIMITS = {
   default: { windowMs: 15 * 60 * 1000, max: 100 },
 };
 
-const createLimiter = (key = 'default') => {
+function createLimiter(key = 'default') {
   const cfg = LIMITS[key] || LIMITS.default;
   const useRedis = process.env.USE_REDIS_RATE_LIMIT !== 'false';
   
@@ -93,17 +92,17 @@ const createLimiter = (key = 'default') => {
         console.log(`Rate limiter using Redis store for ${key}`);
       } else {
         console.warn(`Redis not available, using memory store for ${key} rate limiting`);
-        store = undefined; // Will fallback to in-memory store
+        store = undefined;
       }
     } catch (error) {
       console.error(`Failed to create Redis store for ${key}:`, error.message);
-      store = undefined; // Fallback to in-memory store
+      store = undefined;
     }
   } else {
     console.log(`Using memory store for ${key} rate limiting (Redis disabled)`);
   }
 
-  return rateLimit({
+  return expressRateLimit({
     windowMs: cfg.windowMs,
     max: cfg.max,
     standardHeaders: true,
@@ -112,6 +111,6 @@ const createLimiter = (key = 'default') => {
     ...(store ? { store } : {}),
     keyGenerator: (req) => `${req.ip}:${(req.body?.email || '').toLowerCase()}`,
   });
-};
+}
 
 module.exports = { createLimiter };

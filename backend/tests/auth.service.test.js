@@ -1,4 +1,4 @@
-const { describe, test, expect, beforeEach, jest } = require('@jest/globals');
+const { describe, test, expect, beforeEach } = require('@jest/globals');
 
 // Import the auth service (adjust path as needed)
 const AuthService = require('../src/services/auth.service');
