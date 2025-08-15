@@ -51,14 +51,14 @@ export const SECURITY_CONFIG = {
     'img-src': ["'self'", "data:", "https:"],
     'connect-src': [
       "'self'",
-      // Gateway over HTTPS (Vercel rewrite terminates TLS, upstream may be HTTP but hidden)
-      'https://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000',
-      // Legacy Render URLs (kept for docs/testing; not used in production anymore)
-      'https://kelmah-auth-service.onrender.com',
-      'https://kelmah-user-service.onrender.com',
-      'https://kelmah-job-service.onrender.com',
-      'https://kelmah-messaging-service.onrender.com',
-      'https://kelmah-payment-service.onrender.com'
+  // Allow API Gateway host
+  'http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000',
+  // Legacy Render URLs (kept for docs/testing; not used in production anymore)
+  "https://kelmah-auth-service.onrender.com",
+  "https://kelmah-user-service.onrender.com",
+  "https://kelmah-job-service.onrender.com",
+  "https://kelmah-messaging-service.onrender.com",
+  "https://kelmah-payment-service.onrender.com"
     ]
   },
 

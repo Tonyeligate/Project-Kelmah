@@ -1,0 +1,13 @@
+# Vercel ignore patterns
+.vercel/
+node_modules/
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+kelmah-backend/
+kelmah-team/
+*.md
+*.txt
+!README.md

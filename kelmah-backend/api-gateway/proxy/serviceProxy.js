@@ -24,26 +24,9 @@ const createServiceProxy = (options) => {
   const proxyOptions = {
     target,
     changeOrigin: true,
-    // Ensure nested routers keep their mount prefix by pre-pending pathPrefix
-    // Example: Gateway mounts router at /api/auth and route is '/login'.
-    // We rewrite '/login' -> '/api/auth/login' for the upstream service.
-    pathRewrite: (path, req) => {
-      let out = path || '';
-      if (pathPrefix) {
-        const needsPrefix = !out.startsWith(pathPrefix);
-        if (needsPrefix) {
-          out = `${pathPrefix}${out.startsWith('/') ? '' : '/'}${out}`;
-        }
-      }
-      // Apply additional rewrite rules if provided (object of regex->replacement)
-      if (pathRewrite && typeof pathRewrite === 'object') {
-        try {
-          for (const [from, to] of Object.entries(pathRewrite)) {
-            out = out.replace(new RegExp(from), to);
-          }
-        } catch (_) {}
-      }
-      return out;
+    // Do not strip the pathPrefix by default; only apply explicit rewrites
+    pathRewrite: {
+      ...pathRewrite,
     },
     onProxyReq: (proxyReq, req, res) => {
       // Forward user information to services
