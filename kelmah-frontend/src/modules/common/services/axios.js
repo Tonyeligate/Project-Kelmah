@@ -136,7 +136,7 @@ axiosInstance.interceptors.response.use(
         try {
           // Use a new axios instance to avoid interceptor loops
           const refreshResponse = await axios.post(
-            `${API_BASE_URL}/api/auth/refresh-token`,
+            `${API_BASE_URL}/auth/refresh-token`,
             { refreshToken },
             {
               headers: { 'Content-Type': 'application/json' },
