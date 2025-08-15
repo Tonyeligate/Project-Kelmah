@@ -1,7 +1,18 @@
 {
+  "version": 2,
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000/api/$1"
+    },
+    {
+      "source": "/socket.io/(.*)",
+      "destination": "http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000/socket.io/$1"
+    }
+  ],
   "routes": [
     {
       "src": "/assets/(.*)",
@@ -16,4 +27,4 @@
       "dest": "/index.html"
     }
   ]
-} 
+}

@@ -40,9 +40,11 @@ import {
   School as SchoolIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
+import { API_BASE_URL } from '../../../config/environment';
 import { useAuth } from '../../../modules/auth/contexts/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use centralized API base (defaults to '/api') to ensure requests go through the gateway
+const API_URL = API_BASE_URL;
 
 // Custom TabPanel component
 function TabPanel(props) {

@@ -59,9 +59,22 @@ export const SERVICES = {
   REVIEW_SERVICE: getServiceUrl('REVIEW_SERVICE'),
 };
 
-// Primary API URL (defaults to Auth Service)
-// API base URL: if provided, honor VITE_API_URL; otherwise, default to '/api'
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Primary API URL selection with mixed-content protection
+// If the page is served over HTTPS and VITE_API_URL is http, prefer relative '/api' to avoid mixed content
+const computeApiBase = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const isBrowser = typeof window !== 'undefined';
+  const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
+
+  // On Vercel or any HTTPS host, avoid absolute http base to prevent mixed-content
+  if (isHttpsPage && typeof envUrl === 'string' && envUrl.startsWith('http:')) {
+    return '/api';
+  }
+  // Default to env when safe, otherwise use gateway-relative '/api'
+  return envUrl || '/api';
+};
+
+export const API_BASE_URL = computeApiBase();
 
 // ===============================================
 // APPLICATION CONFIGURATION
