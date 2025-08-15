@@ -72,7 +72,12 @@
       const shouldRegisterSW = !/localhost|127\.0\.0\.1/.test(location.hostname);
       if ('serviceWorker' in navigator && shouldRegisterSW) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          // Only register if the script exists
+          fetch('/sw.js', { method: 'HEAD' })
+            .then((res) => {
+              if (!res.ok) throw new Error('SW missing');
+              return navigator.serviceWorker.register('/sw.js');
+            })
             .then((registration) => {
               console.log('✅ Service Worker registered successfully:', registration.scope);
               
@@ -93,7 +98,7 @@
               });
             })
             .catch((error) => {
-              console.error('❌ Service Worker registration failed:', error);
+              console.warn('❌ Service Worker not registered (missing or error):', error?.message || error);
             });
         });
 

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "kelmah-frontend/package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }
+  ],
+  "installCommand": "cd kelmah-frontend && npm install --legacy-peer-deps",
+  "buildCommand": "cd kelmah-frontend && npm run build",
+  "outputDirectory": "kelmah-frontend/build",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000/api/$1" },
+    { "source": "/socket.io/(.*)", "destination": "http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000/socket.io/$1" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "kelmah-frontend/build/$1" }
+  ]
+}
