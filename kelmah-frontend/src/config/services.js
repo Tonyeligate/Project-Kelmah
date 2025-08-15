@@ -8,13 +8,14 @@
 
 const isDevelopment = import.meta.env.MODE === 'development';
 
-// Production URLs (Render services)
+// Production URLs: by default route via API Gateway (relative '/api').
+// These can be overridden via VITE_*_URL if you need to target a specific service directly.
 const PRODUCTION_SERVICES = {
-  AUTH_SERVICE: 'https://kelmah-auth-service.onrender.com',
-  USER_SERVICE: 'https://kelmah-user-service.onrender.com',
-  JOB_SERVICE: 'https://kelmah-job-service.onrender.com',
-  MESSAGING_SERVICE: 'https://kelmah-messaging-service.onrender.com',
-  PAYMENT_SERVICE: 'https://kelmah-payment-service.onrender.com',
+  AUTH_SERVICE: '',
+  USER_SERVICE: '',
+  JOB_SERVICE: '',
+  MESSAGING_SERVICE: '',
+  PAYMENT_SERVICE: '',
 };
 
 // Development URLs (through Vite proxy)
@@ -48,8 +49,12 @@ const getServicePath = (service, path) => {
         return `/api${path}`;
     }
   } else {
-    // Production: direct service URLs (services already include /api in their routes)
-    return `${SERVICES[service]}${path}`;
+    // Production: if a direct service URL is provided via env override, use it; otherwise go through gateway
+    const direct = SERVICES[service];
+    if (direct && /^https?:\/\//.test(direct)) {
+      return `${direct}${path}`;
+    }
+    return `/api${path}`;
   }
 };
 

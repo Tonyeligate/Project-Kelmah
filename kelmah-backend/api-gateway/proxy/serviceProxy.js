@@ -24,9 +24,9 @@ const createServiceProxy = (options) => {
   const proxyOptions = {
     target,
     changeOrigin: true,
+    // Do not strip the pathPrefix by default; only apply explicit rewrites
     pathRewrite: {
-      [`^${pathPrefix}`]: '',
-      ...pathRewrite
+      ...pathRewrite,
     },
     onProxyReq: (proxyReq, req, res) => {
       // Forward user information to services

@@ -62,8 +62,7 @@ export const MessageProvider = ({ children }) => {
 
     // WebSocket URL based on environment with robust fallbacks
     // Always use production messaging service for WebSocket connections
-    const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || 
-      'https://kelmah-messaging-service.onrender.com';
+  const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || window.location.origin;
 
     console.log('🔌 Connecting to messaging WebSocket:', wsUrl);
 

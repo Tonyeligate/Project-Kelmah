@@ -29,8 +29,10 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../../../../config/environment';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+// Use centralized API base (defaults to '/api') to ensure requests go through the gateway
+const BACKEND_URL = API_BASE_URL;
 
 const JobSearch = () => {
   const navigate = useNavigate();

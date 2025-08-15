@@ -34,12 +34,12 @@ const conversationProxy = (req, res, next) => {
 // All messaging routes require authentication
 router.use(authenticate);
 
-// Conversation routes (rooted to support mount at /api/conversations)
-router.get('/', conversationProxy); // List conversations
-router.post('/', conversationProxy); // Create conversation
-router.get('/:conversationId', conversationProxy); // Get specific conversation
-router.put('/:conversationId', conversationProxy); // Update conversation
-router.delete('/:conversationId', conversationProxy); // Delete conversation
+// Conversation routes (mounted at /api/conversations)
+router.get('/conversations', conversationProxy); // List conversations
+router.post('/conversations', conversationProxy); // Create conversation
+router.get('/conversations/:conversationId', conversationProxy); // Get specific conversation
+router.put('/conversations/:conversationId', conversationProxy); // Update conversation
+router.delete('/conversations/:conversationId', conversationProxy); // Delete conversation
 
 // Conversation participants
 router.post('/conversations/:conversationId/participants', conversationProxy); // Add participant

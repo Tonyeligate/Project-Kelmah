@@ -34,7 +34,7 @@ class WebSocketService {
 
       // Determine WebSocket URL (fixed for messaging service)
       const wsUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://kelmah-messaging-service.onrender.com'
+  ? import.meta.env.VITE_MESSAGING_SERVICE_URL || window.location.origin
         : 'http://localhost:3005';
 
       // Create Socket.io connection

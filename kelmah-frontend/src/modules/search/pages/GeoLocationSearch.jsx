@@ -65,12 +65,14 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import axios from 'axios';
+import { API_BASE_URL } from '../../../config/environment';
 import { Helmet } from 'react-helmet-async';
 import { useSelector } from 'react-redux';
 import JobCard from '../../jobs/components/listing/JobCard';
 import WorkerCard from '../../worker/components/WorkerCard';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use centralized API base (defaults to '/api') to ensure requests go through the gateway
+const API_URL = API_BASE_URL;
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;

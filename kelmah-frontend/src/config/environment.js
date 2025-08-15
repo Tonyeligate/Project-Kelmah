@@ -25,12 +25,13 @@ const DEFAULT_SERVICES = {
     REVIEW_SERVICE: 'http://localhost:5006',
   },
   production: {
-    AUTH_SERVICE: 'https://kelmah-auth-service.onrender.com',
-    USER_SERVICE: 'https://kelmah-user-service.onrender.com',
-    JOB_SERVICE: 'https://kelmah-job-service.onrender.com', // Should now work properly
-    MESSAGING_SERVICE: 'https://kelmah-messaging-service.onrender.com',
-    PAYMENT_SERVICE: 'https://kelmah-payment-service.onrender.com',
-    REVIEW_SERVICE: 'https://kelmah-review-service.onrender.com',
+    // Leave empty by default to route via API Gateway (/api) unless overridden via VITE_*_URL
+    AUTH_SERVICE: '',
+    USER_SERVICE: '',
+    JOB_SERVICE: '',
+    MESSAGING_SERVICE: '',
+    PAYMENT_SERVICE: '',
+    REVIEW_SERVICE: '',
   },
 };
 
@@ -43,12 +44,9 @@ const getServiceUrl = (serviceName) => {
     return envValue;
   }
 
-  // Prefer gateway proxy in development unless explicitly overridden
-  if (import.meta.env.DEV) {
-    // Let the gateway route to the right service via /api
-    return '';
-  }
-  return DEFAULT_SERVICES.production[serviceName];
+  // Prefer gateway proxy in development and production unless explicitly overridden
+  // Returning empty string forces buildEndpoint to use '/api' relative to current origin
+  return '';
 };
 
 // Service URLs
@@ -62,8 +60,8 @@ export const SERVICES = {
 };
 
 // Primary API URL (defaults to Auth Service)
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : SERVICES.AUTH_SERVICE);
+// API base URL: if provided, honor VITE_API_URL; otherwise, default to '/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // ===============================================
 // APPLICATION CONFIGURATION
@@ -186,9 +184,11 @@ export const LOG_CONFIG = {
 
 // Helper function to build API endpoints
 const buildEndpoint = (serviceUrl, path) => {
-  return isDevelopment
-    ? `/api${path}` // Use API gateway proxy in development
-    : `${serviceUrl || ''}/api${path}`; // Direct service URL in production (ALB domain via VITE_*_URL)
+  // Always route via API gateway unless a direct service URL override is present
+  if (serviceUrl && /^https?:\/\//.test(serviceUrl)) {
+    return `${serviceUrl}/api${path}`;
+  }
+  return `/api${path}`;
 };
 
 export const API_ENDPOINTS = {

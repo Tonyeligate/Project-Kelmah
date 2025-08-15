@@ -49,6 +49,17 @@ const services = {
   review: process.env.REVIEW_SERVICE_URL || 'https://kelmah-review-service.onrender.com'
 };
 
+// Expose service URLs to route modules
+app.set('serviceUrls', {
+  AUTH_SERVICE: services.auth,
+  USER_SERVICE: services.user,
+  JOB_SERVICE: services.job,
+  PAYMENT_SERVICE: services.payment,
+  MESSAGING_SERVICE: services.messaging,
+  NOTIFICATION_SERVICE: services.notification,
+  REVIEW_SERVICE: services.review,
+});
+
 // Fail-fast: ensure critical environment variables are present
 (() => {
   const requiredEnv = ['JWT_SECRET'];
@@ -220,16 +231,9 @@ app.get('/api/health/aggregate', async (req, res) => {
   }
 });
 
-// Authentication routes (public)
-app.use('/api/auth', createProxyMiddleware({
-  target: services.auth,
-  changeOrigin: true,
-  pathRewrite: { '^/api/auth': '/api/auth' },
-  onError: (err, req, res) => {
-    logger.error('Auth service error:', err);
-    res.status(503).json({ error: 'Authentication service unavailable' });
-  }
-}));
+// Authentication routes (public) — use dedicated router to support aliases like /refresh-token
+const authRouter = require('./routes/auth.routes');
+app.use('/api/auth', authRouter);
 
 // User routes (protected) with validation
 app.use(
@@ -379,54 +383,19 @@ app.use('/api/search', createProxyMiddleware({
   pathRewrite: { '^/api/search': '/api/search' }
 }));
 
-// Payment routes (protected with validation)
+// Payment routes (protected with validation) — use dedicated router to expose granular endpoints and aliases
+const paymentRouter = require('./routes/payment.routes');
 app.use('/api/payments',
   rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }),
   authMiddleware.authenticate,
   requestValidator.enforceTierLimits(),
   requestValidator.validatePayment,
-  createProxyMiddleware({
-    target: services.payment,
-    changeOrigin: true,
-    pathRewrite: { '^/api/payments': '/api/payments' },
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('X-User-ID', req.user.id);
-        proxyReq.setHeader('X-Payment-Source', 'api-gateway');
-        proxyReq.setHeader('X-User-Tier', req.userTier || 'basic');
-      }
-    }
-  })
+  paymentRouter
 );
 
-// Messaging routes (protected) with WebSocket support and validation
-app.use(
-  '/api/messages',
-  authMiddleware.authenticate,
-  celebrate({
-    [Segments.QUERY]: Joi.object({
-      page: Joi.number().integer().min(1).default(1),
-      limit: Joi.number().integer().min(1).max(100).default(20),
-      q: Joi.string().max(255).optional(),
-    }).unknown(true),
-  }),
-  createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    ws: true,
-    pathRewrite: { '^/api/messages': '/api/messages' },
-  })
-);
-
-// Conversations routes (protected) → messaging-service
-app.use('/api/conversations',
-  authMiddleware.authenticate,
-  createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    pathRewrite: { '^/api/conversations': '/api/conversations' }
-  })
-);
+// Messaging routes (protected) — mount dedicated router to support aliases and granular endpoints
+const messagingRouter = require('./routes/messaging.routes');
+app.use('/api', authMiddleware.authenticate, messagingRouter);
 
 // Upload routes for messaging (protected) → messaging-service
 app.use('/api/uploads',
