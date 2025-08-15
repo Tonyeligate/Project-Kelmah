@@ -8,6 +8,4 @@ node_modules/
 Thumbs.db
 kelmah-backend/
 kelmah-team/
-*.md
-*.txt
-!README.md
+!kelmah-frontend/
