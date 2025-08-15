@@ -15,6 +15,10 @@ const publicAuthProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
     pathPrefix: '/api/auth',
+    // Rewrite to actual backend path: /auth/...
+    pathRewrite: {
+      '^/api/auth': '/auth',
+    },
     requireAuth: false
   });
   return proxy(req, res, next);
@@ -25,6 +29,10 @@ const protectedAuthProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
     pathPrefix: '/api/auth',
+    // Rewrite to actual backend path: /auth/...
+    pathRewrite: {
+      '^/api/auth': '/auth',
+    },
     requireAuth: true
   });
   return proxy(req, res, next);
