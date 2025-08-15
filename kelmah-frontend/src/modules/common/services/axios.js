@@ -386,8 +386,8 @@ const getClientBaseUrl = (serviceUrl) => {
   const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
   // Avoid mixed-content by preferring relative /api over http:// base when on https
   if (isHttps) {
-  const base = hasGatewayEnv ? API_BASE_URL : serviceUrl;
-  if (typeof base === 'string' && base.startsWith('http:')) {
+    const base = hasGatewayEnv ? API_BASE_URL : serviceUrl;
+    if (typeof base === 'string' && base.startsWith('http:')) {
       return '/api';
     }
   }

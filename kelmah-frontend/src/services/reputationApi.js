@@ -8,7 +8,7 @@ import { API_BASE_URL } from '../config/environment';
 
 // Create reputation service client
 const reputationServiceClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `${API_BASE_URL}`,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });

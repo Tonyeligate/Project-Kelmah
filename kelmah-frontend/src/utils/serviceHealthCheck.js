@@ -26,9 +26,7 @@ const HEALTH_ENDPOINTS = {
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
   const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/health';
   // Prefer gateway-relative health checks to avoid mixed-content on HTTPS
-  const base = (typeof window !== 'undefined' && window.location.protocol === 'https:')
-    ? '/api'
-    : (serviceUrl || API_BASE_URL || '/api');
+  const base = '/api'; // Always use gateway-relative to avoid mixed-content
   const fullUrl = `${base}${healthEndpoint}`;
   
   try {
