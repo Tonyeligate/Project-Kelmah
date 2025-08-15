@@ -115,3 +115,4 @@ mock-services/
 render-cli/
 temp/
 data/
+.vercel/

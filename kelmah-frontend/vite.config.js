@@ -4,17 +4,21 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
 // https://vitejs.dev/config/
+// Enable bundle analyzer locally only (avoid opening browser on CI/Vercel)
+const ENABLE_ANALYZER = Boolean(process.env.ANALYZE);
+const IS_CI = Boolean(process.env.CI || process.env.VERCEL);
+
 export default defineConfig({
   plugins: [
     react(),
-    visualizer({
+    ENABLE_ANALYZER && visualizer({
       template: 'treemap',
-      open: true,
+      open: false, // never try to open a browser in CI
       gzipSize: true,
       brotliSize: true,
       filename: 'analyse.html',
     }),
-  ],
+  ].filter(Boolean),
   define: {
     'process.env': process.env,
     global: 'globalThis',

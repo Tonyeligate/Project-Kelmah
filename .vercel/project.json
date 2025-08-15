@@ -1,1 +1,15 @@
-{"projectId":"prj_M7FpMUfMAosCGY2rQHjkdE48sz2D","orgId":"team_Uzxnx0fnYEQTcYgSXRU64LDU"}
+{
+  "projectId": "prj_M7FpMUfMAosCGY2rQHjkdE48sz2D",
+  "orgId": "team_Uzxnx0fnYEQTcYgSXRU64LDU",
+  "settings": {
+    "framework": null,
+    "git": {
+      "deploymentEnabled": true
+    },
+    "buildCommand": "cd kelmah-frontend && npm run build",
+    "installCommand": "cd kelmah-frontend && npm install --legacy-peer-deps",
+    "outputDirectory": "kelmah-frontend/build",
+    "directoryListing": false,
+    "rootDirectory": "kelmah-frontend"
+  }
+}
