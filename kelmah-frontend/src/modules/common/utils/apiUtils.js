@@ -17,7 +17,7 @@ export const checkApiHealth = async (showLoading = true) => {
     }
 
     // Check actual health endpoint via API gateway
-    const response = await axiosInstance.get('/api/health', {
+    const response = await axiosInstance.get('/health', {
       timeout: 3000, // Shorter timeout for faster development
       skipAuthRefresh: true, // Don't try to refresh tokens on health check
       skipErrorHandling: true, // Handle errors locally

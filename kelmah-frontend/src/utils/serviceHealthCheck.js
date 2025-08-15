@@ -5,7 +5,7 @@
  * to improve user experience with Render free tier services.
  */
 
-import { SERVICES } from '../config/environment';
+import { SERVICES, API_BASE_URL } from '../config/environment';
 
 // Service health status cache
 const serviceHealthCache = new Map();
@@ -25,7 +25,11 @@ const HEALTH_ENDPOINTS = {
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
   const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/health';
-  const fullUrl = `${serviceUrl}${healthEndpoint}`;
+  // Prefer gateway-relative health checks to avoid mixed-content on HTTPS
+  const base = (typeof window !== 'undefined' && window.location.protocol === 'https:')
+    ? '/api'
+    : (serviceUrl || API_BASE_URL || '/api');
+  const fullUrl = `${base}${healthEndpoint}`;
   
   try {
     const controller = new AbortController();
@@ -78,21 +82,19 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
  * Warm up a service by making a simple health check request
  */
 export const warmUpService = async (serviceUrl) => {
-  console.log(`🔥 Warming up service: ${serviceUrl}`);
+  console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
   
   try {
-    // Make a simple request to wake up the service
-    const response = await fetch(serviceUrl, {
-      method: 'HEAD', // Lightweight request
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    // Warm up via gateway health to avoid mixed content and ensure path exists
+    const response = await fetch('/api/health', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     });
     
-    console.log(`🔥 Service warmed up - ${serviceUrl}: ${response.status}`);
+    console.log(`🔥 Service warmed up - ${serviceUrl || 'gateway'}: ${response.status}`);
     return response.ok;
   } catch (error) {
-    console.warn(`🔥 Service warmup failed - ${serviceUrl}:`, error.message);
+    console.warn(`🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`, error.message);
     return false;
   }
 };
@@ -113,10 +115,17 @@ export const warmUpAllServices = async () => {
   });
   
   try {
+    // Also warm up aggregate health once via gateway
+    warmupPromises.push(
+      fetch('/api/health/aggregate', { method: 'GET' })
+        .then(r => r.ok)
+        .catch(() => false)
+    );
+
     const results = await Promise.allSettled(warmupPromises);
     const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
     
-    console.log(`🔥 Service warmup complete: ${successCount}/${services.length} services responding`);
+    console.log(`🔥 Service warmup complete: ${successCount}/${services.length + 1} services responding`);
     return results;
   } catch (error) {
     console.error('Service warmup error:', error);

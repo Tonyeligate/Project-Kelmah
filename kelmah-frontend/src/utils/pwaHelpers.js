@@ -6,6 +6,17 @@
 // Service Worker Registration with Ghana-specific optimizations
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
+    // Skip SW registration if the script isn't present (e.g., Vercel without public asset)
+    try {
+      const headCheck = await fetch('/sw.js', { method: 'HEAD' });
+      if (!headCheck.ok) {
+        console.warn('ServiceWorker script not found at /sw.js, skipping registration');
+        return null;
+      }
+    } catch (_) {
+      console.warn('ServiceWorker script HEAD check failed, skipping registration');
+      return null;
+    }
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
