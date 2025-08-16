@@ -247,3 +247,4 @@ After all fixes and redeployments:
 4. Consider using AWS Secrets Manager for sensitive environment variables
 5. Set up proper logging aggregation and monitoring
 
+

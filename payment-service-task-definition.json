@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "payment-service",
-      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-payment-service:20250814-184745",
+      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-payment-service:20250815-233718",
       "essential": true,
       "portMappings": [ { "containerPort": 3004, "hostPort": 3004, "protocol": "tcp" } ],
       "environment": [

@@ -188,57 +188,74 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Connect to MongoDB for payment service
+// Start HTTP server first; connect to MongoDB with retry to avoid ECS crash loops
 const mongoUri = process.env.PAYMENT_MONGO_URI || process.env.MONGODB_URI;
-mongoose
-  .connect(mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-  })
-  .then(() => {
-    logger.info("Connected to MongoDB");
+const mongoOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+};
 
-    // Start server
-    const PORT = process.env.PORT || 3004;
-    
-// Error logging middleware (must be last)
-app.use(createErrorLogger(logger));
+const PORT = process.env.PORT || 3004;
+let httpServerStarted = false;
 
-app.listen(PORT, () => {
-    logger.info(`Payment service is running on port ${PORT}`);
+async function connectDbWithRetry() {
+  const baseDelayMs = 5000;
+  let attempt = 0;
+  // Keep retrying DB connection with backoff to avoid container exits when DB is unavailable
+  for (;;) {
+    try {
+      await mongoose.connect(mongoUri, mongoOptions);
+      logger.info('Connected to MongoDB');
 
-    // Optional background reconciliation without external scheduler
-    const enableReconcile = (process.env.ENABLE_RECONCILE_CRON || 'false').toLowerCase() === 'true';
-    const intervalMinutes = Math.max(5, parseInt(process.env.RECONCILE_INTERVAL_MINUTES || '30'));
-    if (enableReconcile) {
+      // Optional background reconciliation without external scheduler (requires DB)
       try {
-        const controller = require('./controllers/transaction.controller');
-        const tick = async () => {
-          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-          await controller.reconcile(
-            { query: { since, limit: 200 }, user: { _id: 'cron' } },
-            { json: (payload) => logger.info('Reconcile tick complete', payload) }
-          );
-        };
-        setInterval(() => {
-          tick().catch((e) => logger.error('Reconcile tick failed', { error: e?.message }));
-        }, intervalMinutes * 60 * 1000);
-        logger.info(`Reconcile cron enabled (every ${intervalMinutes} minutes)`);
+        const enableReconcile = (process.env.ENABLE_RECONCILE_CRON || 'false').toLowerCase() === 'true';
+        const intervalMinutes = Math.max(5, parseInt(process.env.RECONCILE_INTERVAL_MINUTES || '30'));
+        if (enableReconcile) {
+          const controller = require('./controllers/transaction.controller');
+          const tick = async () => {
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            await controller.reconcile(
+              { query: { since, limit: 200 }, user: { _id: 'cron' } },
+              { json: (payload) => logger.info('Reconcile tick complete', payload) }
+            );
+          };
+          setInterval(() => {
+            tick().catch((e) => logger.error('Reconcile tick failed', { error: e?.message }));
+          }, intervalMinutes * 60 * 1000);
+          logger.info(`Reconcile cron enabled (every ${intervalMinutes} minutes)`);
+        }
       } catch (e) {
         logger.error('Failed to initialize reconcile cron', { error: e?.message });
       }
-    }
-    });
-  })
-  .catch((error) => {
-    logger.error("MongoDB connection error:", error);
-    process.exit(1);
-  });
 
-// Handle unhandled promise rejections
+      break;
+    } catch (err) {
+      attempt += 1;
+      const delay = Math.min(baseDelayMs * attempt, 30000);
+      logger.error('MongoDB connection error:', err?.message || err);
+      logger.info(`Retrying MongoDB connection in ${Math.floor(delay / 1000)}s (attempt ${attempt})`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+// Error logging middleware (must be last before listen)
+app.use(createErrorLogger(logger));
+
+// Start server immediately so /health endpoints are available regardless of DB
+if (!httpServerStarted) {
+  app.listen(PORT, () => {
+    httpServerStarted = true;
+    logger.info(`Payment service is running on port ${PORT}`);
+  });
+}
+
+// Begin DB connection attempts in background
+connectDbWithRetry();
+
+// Handle unhandled promise rejections (do not exit to keep task alive)
 process.on("unhandledRejection", (err) => {
   logger.error("Unhandled Promise Rejection:", err);
-  // Close server & exit process
-  process.exit(1);
 });

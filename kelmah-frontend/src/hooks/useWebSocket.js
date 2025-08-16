@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import authService from '../modules/auth/services/authService';
 
 export const useWebSocket = (
-  url = process.env.REACT_APP_WEBSOCKET_URL || 'http://localhost:3005',
+  url = (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'https:')) || 'http://localhost:3005',
 ) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);

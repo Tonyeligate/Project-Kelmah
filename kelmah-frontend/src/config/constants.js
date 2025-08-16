@@ -6,7 +6,7 @@ const isDevelopment = ENV === 'development';
 const API_URLS = {
   development: '/api', // Use proxy; ensure base includes /api for modules using API_URL
   test: 'http://localhost:5000',
-  production: process.env.VITE_API_URL || 'https://api.kelmah.com',
+  production: process.env.VITE_API_URL || '/api',
 };
 
 // Determine API_BASE_URL: use VITE_API_URL if provided, otherwise fallback to environment-specific defaults
@@ -15,7 +15,7 @@ export const API_BASE_URL = process.env.VITE_API_URL || API_URLS[ENV];
 export const API_URL = API_BASE_URL;
 export const SOCKET_URL = isDevelopment
   ? 'http://localhost:3003'
-  : process.env.VITE_MESSAGING_URL || API_BASE_URL;
+  : process.env.VITE_MESSAGING_URL || (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'https:'));
 export const APP_NAME = 'Kelmah';
 
 // Authentication related

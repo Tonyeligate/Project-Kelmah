@@ -1,11 +1,12 @@
-# Vercel ignore patterns
-.vercel/
-node_modules/
-.env.local
-.env.*.local
-*.log
-.DS_Store
-Thumbs.db
+# Deploy only frontend directory
 kelmah-backend/
 kelmah-team/
+*.md
+*.txt
+*.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
+node_modules/
 !kelmah-frontend/
