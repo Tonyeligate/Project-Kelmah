@@ -472,24 +472,31 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Connect to MongoDB only
+// Connect to MongoDB but do not block server start if ALLOW_START_WITHOUT_DB=true
+const startServer = () => {
+  // Error logging middleware (must be last)
+  app.use(createErrorLogger(logger));
+
+  app.listen(PORT, () => {
+    logger.info(`🚀 Auth Service running on port ${PORT}`);
+    logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
+    logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
+  });
+};
+
 connectDB()
   .then(() => {
     logger.info("✅ Auth Service connected to MongoDB");
-    
-    // Error logging middleware (must be last)
-    app.use(createErrorLogger(logger));
-
-    // Start the server after DB is ready
-    app.listen(PORT, () => {
-      logger.info(`🚀 Auth Service running on port ${PORT}`);
-      logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
-      logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
-    });
+    startServer();
   })
   .catch((err) => {
     logger.error("❌ MongoDB connection error:", err);
-    process.exit(1);
+    if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
+      logger.warn('Starting server without DB connection due to ALLOW_START_WITHOUT_DB=true');
+      startServer();
+    } else {
+      process.exit(1);
+    }
   });
 
 module.exports = app;

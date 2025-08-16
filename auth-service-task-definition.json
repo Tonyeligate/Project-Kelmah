@@ -32,6 +32,7 @@
         {"name": "SMTP_PORT", "value": "465"},
         {"name": "SMTP_USER", "value": "anthonyjioeeli@gmail.com"},
         {"name": "NODE_ENV", "value": "production"},
+        {"name": "ALLOW_START_WITHOUT_DB", "value": "true"},
         {"name": "PORT", "value": "5001"}
       ],
       "logConfiguration": {
