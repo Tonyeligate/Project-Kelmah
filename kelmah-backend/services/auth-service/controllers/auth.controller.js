@@ -117,6 +117,12 @@ exports.register = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
   try {
+    const mongoose = require('mongoose');
+    if (!mongoose?.connection || mongoose.connection.readyState !== 1) {
+      logger.warn('Login attempted while DB not ready', { readyState: mongoose?.connection?.readyState });
+      return next(new AppError('Service temporarily unavailable. Please try again shortly.', 503));
+    }
+
     const { email, password, rememberMe = false } = req.body;
     
     // Input validation

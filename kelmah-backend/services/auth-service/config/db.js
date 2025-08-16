@@ -4,6 +4,8 @@
  */
 
 const mongoose = require('mongoose');
+// Fail fast on DB unavailability: do not buffer model operations when disconnected
+try { mongoose.set('bufferCommands', false); } catch (_) {}
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -12,8 +14,8 @@ const options = {
   retryWrites: true,
   w: 'majority',
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 15000,
   family: 4 // Use IPv4, skip trying IPv6
 };
 
