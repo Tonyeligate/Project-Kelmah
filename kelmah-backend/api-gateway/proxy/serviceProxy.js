@@ -21,12 +21,47 @@ const createServiceProxy = (options) => {
     requireAuth = true,
   } = options;
 
+  // Build a safe pathRewrite that preserves nested router base paths
+  // and applies any explicit rewrite rules provided by callers.
+  const applyObjectRewrite = (incomingPath) => {
+    if (!pathRewrite || typeof pathRewrite !== 'object') return incomingPath;
+    let rewritten = incomingPath;
+    try {
+      for (const [pattern, replacement] of Object.entries(pathRewrite)) {
+        const regex = new RegExp(pattern);
+        if (regex.test(rewritten)) {
+          rewritten = rewritten.replace(regex, replacement);
+        }
+      }
+    } catch (_) {
+      // On any parsing error, fall back to the original path
+      return incomingPath;
+    }
+    return rewritten;
+  };
+
   const proxyOptions = {
     target,
     changeOrigin: true,
-    // Do not strip the pathPrefix by default; only apply explicit rewrites
-    pathRewrite: {
-      ...pathRewrite,
+    // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
+    pathRewrite: (path, req) => {
+      try {
+        const base = typeof pathPrefix === 'string' && pathPrefix.length > 0
+          ? pathPrefix
+          : (req && typeof req.baseUrl === 'string' ? req.baseUrl : '');
+
+        // Normalize and join
+        let joinedPath = path || '/';
+        if (base && !joinedPath.startsWith(base)) {
+          joinedPath = `${base}${joinedPath.startsWith('/') ? '' : '/'}${joinedPath}`;
+        }
+
+        // Apply any explicit rewrite rules last
+        return applyObjectRewrite(joinedPath);
+      } catch (_) {
+        // Fallback to original
+        return path;
+      }
     },
     onProxyReq: (proxyReq, req, res) => {
       // Forward user information to services
