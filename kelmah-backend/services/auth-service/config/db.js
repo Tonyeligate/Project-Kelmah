@@ -86,6 +86,7 @@ const connectDB = async () => {
     console.error(`❌ Error connecting to MongoDB: ${error.message}`);
     console.error('🔍 Connection string check - ensure MONGODB_URI is set correctly');
     
+
     // In production, we normally exit if database connection fails.
     // Allow override via ALLOW_START_WITHOUT_DB=true to keep service alive for health checks and warmup.
     if (process.env.NODE_ENV === 'production' && process.env.ALLOW_START_WITHOUT_DB !== 'true') {

@@ -43,6 +43,9 @@ const createServiceProxy = (options) => {
   const proxyOptions = {
     target,
     changeOrigin: true,
+    // Give upstream a bit more time for cold starts
+    proxyTimeout: 30000,
+    timeout: 30000,
     // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
     pathRewrite: (path, req) => {
       try {
@@ -80,6 +83,19 @@ const createServiceProxy = (options) => {
       if (internalKey) {
         proxyReq.setHeader('X-Internal-Request', internalKey);
       }
+
+      // If body was already parsed by Express (application/json), re-send it to the upstream
+      try {
+        const method = (req.method || '').toUpperCase();
+        const contentType = (req.headers['content-type'] || '').toLowerCase();
+        const isJson = contentType.includes('application/json');
+        const hasBody = req.body && Object.keys(req.body).length > 0;
+        if (method !== 'GET' && method !== 'HEAD' && isJson && hasBody) {
+          const bodyData = JSON.stringify(req.body);
+          proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+          proxyReq.write(bodyData);
+        }
+      } catch (_) {}
       
       // Log the proxy request
       console.log(`Proxying ${req.method} ${req.originalUrl} to ${target}${proxyReq.path}`);
