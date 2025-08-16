@@ -38,9 +38,18 @@ const logger = winston.createLogger({
   ]
 });
 
-// Service registry - Production URLs from Render deployment
+// Service registry
+// Prefer AWS internal NLB endpoints when env points to Render
+const INTERNAL_NLB = process.env.INTERNAL_NLB_DNS || 'http://kelmah-internal-svcs-250d7eb165a8b7d3.elb.eu-north-1.amazonaws.com';
+const preferAws = (envUrl, fallbackAwsUrl) => {
+  if (typeof envUrl === 'string' && envUrl.length > 0 && !/onrender\.com/.test(envUrl)) {
+    return envUrl;
+  }
+  return fallbackAwsUrl;
+};
+
 const services = {
-  auth: process.env.AUTH_SERVICE_URL || 'https://kelmah-auth-service.onrender.com',
+  auth: preferAws(process.env.AUTH_SERVICE_URL, `${INTERNAL_NLB}:5001`),
   user: process.env.USER_SERVICE_URL || 'https://kelmah-user-service.onrender.com',
   job: process.env.JOB_SERVICE_URL || 'https://kelmah-job-service.onrender.com',
   payment: process.env.PAYMENT_SERVICE_URL || 'https://kelmah-payment-service.onrender.com',

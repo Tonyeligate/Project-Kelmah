@@ -40,7 +40,8 @@ const { authenticate } = require('../middleware/auth');
 // Bypass proxy for login/register to avoid body/timeout issues
 router.post('/login', async (req, res) => {
   try {
-    const url = `${getServiceUrl(req)}/api/auth/login`;
+    const upstream = getServiceUrl(req);
+    const url = `${upstream}/api/auth/login`;
     const r = await axios.post(url, req.body, {
       headers: { 'Content-Type': 'application/json', 'X-Request-ID': req.id || '' },
       timeout: 45000,
@@ -55,7 +56,8 @@ router.post('/login', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const url = `${getServiceUrl(req)}/api/auth/register`;
+    const upstream = getServiceUrl(req);
+    const url = `${upstream}/api/auth/register`;
     const r = await axios.post(url, req.body, {
       headers: { 'Content-Type': 'application/json', 'X-Request-ID': req.id || '' },
       timeout: 45000,
