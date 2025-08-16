@@ -51,8 +51,8 @@ export const SECURITY_CONFIG = {
     'img-src': ["'self'", "data:", "https:"],
     'connect-src': [
       "'self'",
-  // Allow API Gateway host
-  'http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000',
+  // Allow API Gateway via ALB
+  'http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com',
   // Legacy Render URLs (kept for docs/testing; not used in production anymore)
   "https://kelmah-auth-service.onrender.com",
   "https://kelmah-user-service.onrender.com",

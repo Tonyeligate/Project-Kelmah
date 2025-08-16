@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "job-service",
-      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-job-service:20250814-190446",
+      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-job-service:20250816-023229",
       "essential": true,
       "portMappings": [ { "containerPort": 5003, "hostPort": 5003, "protocol": "tcp" } ],
       "environment": [

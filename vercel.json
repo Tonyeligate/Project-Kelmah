@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "kelmah-frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000/api/$1" },
+    { "source": "/socket.io/(.*)", "destination": "http://ec2-16-170-242-190.eu-north-1.compute.amazonaws.com:3000/socket.io/$1" }
+  ]
+}
