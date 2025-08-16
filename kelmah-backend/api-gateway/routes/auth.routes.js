@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
+const axios = require('axios');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').AUTH_SERVICE;
@@ -36,8 +37,36 @@ const protectedAuthProxy = (req, res, next) => {
 const { authenticate } = require('../middleware/auth');
 
 // Public routes
-router.post('/login', publicAuthProxy);
-router.post('/register', publicAuthProxy);
+// Bypass proxy for login/register to avoid body/timeout issues
+router.post('/login', async (req, res) => {
+  try {
+    const url = `${getServiceUrl(req)}/api/auth/login`;
+    const r = await axios.post(url, req.body, {
+      headers: { 'Content-Type': 'application/json', 'X-Request-ID': req.id || '' },
+      timeout: 45000,
+      validateStatus: () => true,
+    });
+    res.status(r.status).set(r.headers).send(r.data);
+  } catch (e) {
+    const status = e.response?.status || 504;
+    res.status(status).json({ success: false, message: e.message || 'Auth service unavailable' });
+  }
+});
+
+router.post('/register', async (req, res) => {
+  try {
+    const url = `${getServiceUrl(req)}/api/auth/register`;
+    const r = await axios.post(url, req.body, {
+      headers: { 'Content-Type': 'application/json', 'X-Request-ID': req.id || '' },
+      timeout: 45000,
+      validateStatus: () => true,
+    });
+    res.status(r.status).set(r.headers).send(r.data);
+  } catch (e) {
+    const status = e.response?.status || 504;
+    res.status(status).json({ success: false, message: e.message || 'Auth service unavailable' });
+  }
+});
 router.post('/forgot-password', publicAuthProxy);
 router.post('/reset-password', publicAuthProxy);
 router.get('/verify-email/:token', publicAuthProxy);
