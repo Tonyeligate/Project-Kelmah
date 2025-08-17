@@ -737,6 +737,10 @@ const server = app.listen(PORT, () => {
 });
 
 // Enable WebSocket upgrade handling for Socket.IO proxy
-server.on('upgrade', socketIoProxy.upgrade);
+if (socketIoProxy && typeof socketIoProxy.upgrade === 'function') {
+  server.on('upgrade', socketIoProxy.upgrade);
+} else {
+  console.warn('Socket.IO proxy upgrade handler not available');
+}
 
 module.exports = app;
