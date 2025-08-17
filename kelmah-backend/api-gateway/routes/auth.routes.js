@@ -36,39 +36,8 @@ const protectedAuthProxy = (req, res, next) => {
 // Authentication middleware for protected routes
 const { authenticate } = require('../middleware/auth');
 
-// Public routes
-// Bypass proxy for login/register to avoid body/timeout issues
-router.post('/login', async (req, res) => {
-  try {
-    // Direct connection to auth service avoiding proxy
-    const authUrl = process.env.AUTH_SERVICE_URL || 'http://kelmah-internal-svcs-250d7eb165a8b7d3.elb.eu-north-1.amazonaws.com:5001';
-    const url = `${authUrl}/api/auth/login`;
-    
-    console.log(`[LOGIN] Attempting login to: ${url}`);
-    console.log(`[LOGIN] Body:`, JSON.stringify(req.body));
-    
-    const r = await axios.post(url, req.body, {
-      headers: { 
-        'Content-Type': 'application/json', 
-        'X-Request-ID': req.id || '',
-        'User-Agent': 'kelmah-api-gateway'
-      },
-      timeout: 30000,
-      validateStatus: () => true,
-    });
-    
-    console.log(`[LOGIN] Response status: ${r.status}`);
-    res.status(r.status).json(r.data);
-  } catch (e) {
-    console.error(`[LOGIN] Error:`, e.message);
-    console.error(`[LOGIN] Stack:`, e.stack);
-    res.status(504).json({ 
-      success: false, 
-      message: 'Authentication service temporarily unavailable', 
-      debug: e.message 
-    });
-  }
-});
+// Public routes  
+router.post('/login', publicAuthProxy);
 
 router.post('/register', async (req, res) => {
   try {
