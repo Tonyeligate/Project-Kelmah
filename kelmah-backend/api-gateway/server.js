@@ -50,12 +50,12 @@ const preferAws = (envUrl, fallbackAwsUrl) => {
 
 const services = {
   auth: preferAws(process.env.AUTH_SERVICE_URL, `${INTERNAL_NLB}:5001`),
-  user: process.env.USER_SERVICE_URL || 'https://kelmah-user-service.onrender.com',
-  job: process.env.JOB_SERVICE_URL || 'https://kelmah-job-service.onrender.com',
-  payment: process.env.PAYMENT_SERVICE_URL || 'https://kelmah-payment-service.onrender.com',
-  messaging: process.env.MESSAGING_SERVICE_URL || 'https://kelmah-messaging-service.onrender.com',
-  notification: process.env.NOTIFICATION_SERVICE_URL || 'https://kelmah-notification-service.onrender.com',
-  review: process.env.REVIEW_SERVICE_URL || 'https://kelmah-review-service.onrender.com'
+  user: preferAws(process.env.USER_SERVICE_URL, `${INTERNAL_NLB}:5002`),
+  job: preferAws(process.env.JOB_SERVICE_URL, `${INTERNAL_NLB}:5003`),
+  payment: preferAws(process.env.PAYMENT_SERVICE_URL, `${INTERNAL_NLB}:5004`),
+  messaging: preferAws(process.env.MESSAGING_SERVICE_URL, `${INTERNAL_NLB}:5005`),
+  notification: preferAws(process.env.NOTIFICATION_SERVICE_URL, `${INTERNAL_NLB}:5006`),
+  review: preferAws(process.env.REVIEW_SERVICE_URL, `${INTERNAL_NLB}:5007`)
 };
 
 // Expose service URLs to route modules
@@ -417,11 +417,26 @@ app.use('/api/uploads',
 );
 
 // Socket.IO WebSocket proxy to messaging-service
-const socketIoProxy = createProxyMiddleware('/socket.io', {
-  target: services.messaging,
-  changeOrigin: true,
-  ws: true
-});
+let socketIoProxy;
+try {
+  if (services.messaging && typeof services.messaging === 'string' && services.messaging.length > 0) {
+    socketIoProxy = createProxyMiddleware('/socket.io', {
+      target: services.messaging,
+      changeOrigin: true,
+      ws: true
+    });
+  } else {
+    console.warn('Messaging service URL not configured, WebSocket proxy disabled');
+    socketIoProxy = (req, res, next) => {
+      res.status(503).json({ error: 'WebSocket service unavailable' });
+    };
+  }
+} catch (error) {
+  console.error('Failed to create Socket.IO proxy:', error.message);
+  socketIoProxy = (req, res, next) => {
+    res.status(503).json({ error: 'WebSocket service configuration error' });
+  };
+}
 app.use(socketIoProxy);
 
 // Socket metrics passthrough (admin validated upstream)
