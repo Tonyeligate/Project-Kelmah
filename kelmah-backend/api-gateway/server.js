@@ -409,11 +409,17 @@ app.use('/api', authMiddleware.authenticate, messagingRouter);
 // Upload routes for messaging (protected) → messaging-service
 app.use('/api/uploads',
   authMiddleware.authenticate,
-  createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    pathRewrite: { '^/api/uploads': '/api/uploads' }
-  })
+  (req, res, next) => {
+    if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
+      return res.status(503).json({ error: 'Messaging service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.messaging,
+      changeOrigin: true,
+      pathRewrite: { '^/api/uploads': '/api/uploads' }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Socket.IO WebSocket proxy to messaging-service
@@ -443,32 +449,50 @@ app.use(socketIoProxy);
 app.use('/api/socket/metrics',
   authMiddleware.authenticate,
   authMiddleware.authorize('admin'),
-  createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    pathRewrite: { '^/api/socket/metrics': '/api/socket/metrics' }
-  })
+  (req, res, next) => {
+    if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
+      return res.status(503).json({ error: 'Messaging service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.messaging,
+      changeOrigin: true,
+      pathRewrite: { '^/api/socket/metrics': '/api/socket/metrics' }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Notification routes (protected) → messaging-service (hosts notifications API)
 app.use('/api/notifications',
   authMiddleware.authenticate,
-  createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    pathRewrite: { '^/api/notifications': '/api/notifications' }
-  })
+  (req, res, next) => {
+    if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
+      return res.status(503).json({ error: 'Messaging service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.messaging,
+      changeOrigin: true,
+      pathRewrite: { '^/api/notifications': '/api/notifications' }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Admin review moderation (admin only) → route to review-service
 app.use('/api/admin/reviews',
   authMiddleware.authenticate,
   authMiddleware.authorize('admin'),
-  createProxyMiddleware({
-    target: services.review,
-    changeOrigin: true,
-    pathRewrite: { '^/api/admin/reviews': '/api/admin/reviews' }
-  })
+  (req, res, next) => {
+    if (!services.review || typeof services.review !== 'string' || services.review.length === 0) {
+      return res.status(503).json({ error: 'Review service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.review,
+      changeOrigin: true,
+      pathRewrite: { '^/api/admin/reviews': '/api/admin/reviews' }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Review routes (mixed protection)
@@ -488,55 +512,79 @@ app.use('/api/reviews',
     return authMiddleware.authenticate(req, res, next);
   },
   rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }), // Review-specific rate limiting
-  createProxyMiddleware({
-    target: services.review,
-    changeOrigin: true,
-    pathRewrite: { '^/api/reviews': '/api/reviews' },
+  (req, res, next) => {
+    if (!services.review || typeof services.review !== 'string' || services.review.length === 0) {
+      return res.status(503).json({ error: 'Review service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.review,
+      changeOrigin: true,
+      pathRewrite: { '^/api/reviews': '/api/reviews' },
     onProxyReq: (proxyReq, req) => {
       if (req.user) {
         proxyReq.setHeader('X-User-ID', req.user.id);
         proxyReq.setHeader('X-User-Role', req.user.role);
       }
     },
-    onError: (err, req, res) => {
-      logger.error('Review service error:', err);
-      res.status(503).json({ error: 'Review service unavailable' });
-    }
-  })
+      onError: (err, req, res) => {
+        logger.error('Review service error:', err);
+        res.status(503).json({ error: 'Review service unavailable' });
+      }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Rating routes (public)
 app.use('/api/ratings',
-  createProxyMiddleware({
-    target: services.review,
-    changeOrigin: true,
-    pathRewrite: { '^/api/ratings': '/api/ratings' },
-    onError: (err, req, res) => {
-      logger.error('Rating service error:', err);
-      res.status(503).json({ error: 'Rating service unavailable' });
+  (req, res, next) => {
+    if (!services.review || typeof services.review !== 'string' || services.review.length === 0) {
+      return res.status(503).json({ error: 'Rating service unavailable' });
     }
-  })
+    const proxy = createProxyMiddleware({
+      target: services.review,
+      changeOrigin: true,
+      pathRewrite: { '^/api/ratings': '/api/ratings' },
+      onError: (err, req, res) => {
+        logger.error('Rating service error:', err);
+        res.status(503).json({ error: 'Rating service unavailable' });
+      }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Admin routes (admin only)
 app.use('/api/admin',
   authMiddleware.authenticate,
   authMiddleware.authorize('admin'),
-  createProxyMiddleware({
-    target: services.user,
-    changeOrigin: true,
-    pathRewrite: { '^/api/admin': '/api/admin' }
-  })
+  (req, res, next) => {
+    if (!services.user || typeof services.user !== 'string' || services.user.length === 0) {
+      return res.status(503).json({ error: 'User service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.user,
+      changeOrigin: true,
+      pathRewrite: { '^/api/admin': '/api/admin' }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // Webhook routes
 app.use('/api/webhooks',
   requestValidator.validateWebhook,
-  createProxyMiddleware({
-    target: services.payment,
-    changeOrigin: true,
-    pathRewrite: { '^/api/webhooks': '/api/webhooks' }
-  })
+  (req, res, next) => {
+    if (!services.payment || typeof services.payment !== 'string' || services.payment.length === 0) {
+      return res.status(503).json({ error: 'Payment service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.payment,
+      changeOrigin: true,
+      pathRewrite: { '^/api/webhooks': '/api/webhooks' }
+    });
+    return proxy(req, res, next);
+  }
 );
 
 // API documentation endpoint  
