@@ -436,12 +436,14 @@ try {
     socketIoProxy = (req, res, next) => {
       res.status(503).json({ error: 'WebSocket service unavailable' });
     };
+    socketIoProxy.upgrade = () => {}; // No-op upgrade handler
   }
 } catch (error) {
   console.error('Failed to create Socket.IO proxy:', error.message);
   socketIoProxy = (req, res, next) => {
     res.status(503).json({ error: 'WebSocket service configuration error' });
   };
+  socketIoProxy.upgrade = () => {}; // No-op upgrade handler
 }
 app.use(socketIoProxy);
 
