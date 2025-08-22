@@ -51,14 +51,13 @@ export const SECURITY_CONFIG = {
     'img-src': ["'self'", "data:", "https:"],
     'connect-src': [
       "'self'",
-  // Allow API Gateway via ALB
-  'http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com',
-  // Legacy Render URLs (kept for docs/testing; not used in production anymore)
-  "https://kelmah-auth-service.onrender.com",
-  "https://kelmah-user-service.onrender.com",
-  "https://kelmah-job-service.onrender.com",
-  "https://kelmah-messaging-service.onrender.com",
-  "https://kelmah-payment-service.onrender.com"
+      'https://08afaa2bd3f4.ngrok-free.app',
+      // Legacy Render URLs (kept for docs/testing; not used in production anymore)
+      "https://kelmah-auth-service.onrender.com",
+      "https://kelmah-user-service.onrender.com",
+      "https://kelmah-job-service.onrender.com",
+      "https://kelmah-messaging-service.onrender.com",
+      "https://kelmah-payment-service.onrender.com"
     ]
   },
 
