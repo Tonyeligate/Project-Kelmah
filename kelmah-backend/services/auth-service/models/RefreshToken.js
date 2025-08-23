@@ -13,7 +13,7 @@ const RefreshTokenSchema = new mongoose.Schema({
     index: true,
   },
   tokenId: { type: String, required: true, index: true }, // JWT jti
-  tokenHash: { type: String, required: true, unique: true }, // sha256 of raw part
+  tokenHash: { type: String, required: true, sparse: true }, // sha256 of raw part - sparse to handle nulls
   version: { type: Number, default: 0 },
   expiresAt: { type: Date, required: true, index: true },
   isRevoked: { type: Boolean, default: false, index: true },
@@ -31,6 +31,7 @@ const RefreshTokenSchema = new mongoose.Schema({
 }, { timestamps: true, collection: 'refreshtokens' });
 
 RefreshTokenSchema.index({ userId: 1, tokenId: 1 }, { unique: true });
+RefreshTokenSchema.index({ tokenHash: 1 }, { unique: true, sparse: true });
 RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 RefreshTokenSchema.methods.isExpired = function() {

@@ -3,8 +3,11 @@
  * Real-time messaging with Socket.IO integration
  */
 
-const express = require('express');
+// Load environment variables FIRST, before any other imports
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
+const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');

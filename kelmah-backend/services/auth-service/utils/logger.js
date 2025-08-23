@@ -159,9 +159,33 @@ const setupGlobalErrorHandlers = (serviceLogger = logger) => {
   
   // Handle unhandled promise rejections
   process.on('unhandledRejection', (reason, promise) => {
+    let reasonStr = 'Unknown';
+    let promiseStr = 'Unknown';
+    
+    try {
+      if (reason instanceof Error) {
+        reasonStr = reason.message;
+      } else if (typeof reason === 'string') {
+        reasonStr = reason;
+      } else if (reason && typeof reason === 'object') {
+        reasonStr = JSON.stringify(reason, Object.getOwnPropertyNames(reason));
+      }
+    } catch (e) {
+      reasonStr = 'Non-serializable reason object';
+    }
+    
+    try {
+      if (promise && typeof promise === 'object') {
+        promiseStr = 'Promise object';
+      }
+    } catch (e) {
+      promiseStr = 'Non-serializable promise object';
+    }
+    
     serviceLogger.error('Unhandled Promise Rejection', {
-      reason: reason,
-      promise: promise
+      reason: reasonStr,
+      promise: promiseStr,
+      stack: reason instanceof Error ? reason.stack : undefined
     });
   });
   

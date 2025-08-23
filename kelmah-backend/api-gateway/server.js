@@ -3,6 +3,9 @@
  * Centralized routing and authentication for all microservices
  */
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -40,7 +43,7 @@ const logger = winston.createLogger({
 
 // Service registry
 // Prefer AWS internal NLB endpoints when env points to Render
-const INTERNAL_NLB = process.env.INTERNAL_NLB_DNS || 'http://kelmah-internal-svcs-250d7eb165a8b7d3.elb.eu-north-1.amazonaws.com';
+const INTERNAL_NLB = process.env.INTERNAL_NLB_DNS || 'http://localhost';
 const preferAws = (envUrl, fallbackAwsUrl) => {
   if (typeof envUrl === 'string' && envUrl.length > 0 && !/onrender\.com/.test(envUrl)) {
     return envUrl;

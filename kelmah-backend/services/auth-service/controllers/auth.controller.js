@@ -6,7 +6,7 @@
 const models = require("../models");
 const { User, RefreshToken, RevokedToken } = models;
 const { AppError } = require("../utils/errorTypes");
-const jwtUtils = require("../utils/jwt");
+const jwtUtils = require("../utils/shared-jwt");
 const emailService = require("../services/email.service");
 const crypto = require("crypto");
 const secure = require('../utils/jwt-secure');
@@ -15,7 +15,7 @@ const config = require("../config");
 const { generateOTP } = require("../utils/otp");
 const deviceUtil = require("../utils/device");
 const sessionUtil = require("../utils/session");
-const logger = require("../utils/logger");
+const { logger } = require("../utils/logger");
 // MFA dependencies
 let speakeasy, QRCode;
 try {
@@ -201,16 +201,29 @@ exports.login = async (req, res, next) => {
     });
 
     // Store only hashed part + tokenId
-    await RefreshToken.create({
-      userId: user.id,
-      tokenId: refreshData.tokenId,
-      tokenHash: refreshData.tokenHash,
-      version: user.tokenVersion || 0,
-      expiresAt: refreshData.expiresAt,
-      deviceInfo: refreshData.deviceInfo,
-      createdByIp: req.ip,
-      createdAt: new Date(),
-    });
+    try {
+      await RefreshToken.create({
+        userId: user.id,
+        tokenId: refreshData.tokenId,
+        tokenHash: refreshData.tokenHash,
+        version: user.tokenVersion || 0,
+        expiresAt: refreshData.expiresAt,
+        deviceInfo: refreshData.deviceInfo,
+        createdByIp: req.ip,
+        createdAt: new Date(),
+      });
+    } catch (dbError) {
+      // Handle duplicate key errors gracefully
+      if (dbError.code === 11000) {
+        logger.warn('Duplicate refresh token detected, continuing with login', { 
+          userId: user.id, 
+          tokenId: refreshData.tokenId 
+        });
+        // Continue with login even if refresh token creation fails
+      } else {
+        throw dbError;
+      }
+    }
 
     // Update user login information
     user.lastLogin = new Date();

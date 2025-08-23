@@ -6,7 +6,33 @@
  */
 
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
+
+// Try multiple paths for .env file
+const envPaths = [
+  path.resolve(__dirname, '../../../.env'),           // From auth-service/config/ to root
+  path.resolve(__dirname, '../../.env'),             // From auth-service/config/ to kelmah-backend/
+  path.resolve(__dirname, '../.env'),                // From auth-service/config/ to auth-service/
+  path.resolve(process.cwd(), '.env')                // From current working directory
+];
+
+let envLoaded = false;
+for (const envPath of envPaths) {
+  try {
+    require('dotenv').config({ path: envPath });
+    if (process.env.JWT_SECRET) {
+      console.log(`✅ Environment loaded from: ${envPath}`);
+      envLoaded = true;
+      break;
+    }
+  } catch (error) {
+    // Continue to next path
+  }
+}
+
+if (!envLoaded) {
+  console.warn('⚠️  Warning: Could not load .env file from any of the expected paths');
+  console.warn('   Expected paths:', envPaths);
+}
 
 // Helper function to parse boolean environment variables
 const parseBoolean = (value, defaultValue = false) => {
@@ -29,14 +55,15 @@ const REQUIRED_ENV_VARS = [
   'JWT_REFRESH_SECRET'
 ];
 
-// Check for required environment variables
+// Check for required environment variables (but don't exit during import)
 const missingEnvVars = REQUIRED_ENV_VARS.filter(env => !process.env[env]);
 
 if (missingEnvVars.length > 0) {
   console.error('❌ Error: Missing required environment variables:');
   missingEnvVars.forEach(env => console.error(`   - ${env}`));
   console.error('\nPlease set these environment variables and restart the service.');
-  process.exit(1);
+  // Don't exit here - let the main server handle it
+  // process.exit(1);
 }
 
 // ===============================================

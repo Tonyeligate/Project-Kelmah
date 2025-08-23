@@ -1,0 +1,32 @@
+{
+  "serviceName": "kelmah-api-gateway-alb",
+  "cluster": "Project-Kelmah",
+  "taskDefinition": "api-gateway-task:20",
+  "desiredCount": 1,
+  "launchType": "FARGATE",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "subnet-0dd46e5972b0e31a7",
+        "subnet-0e5fed10308075b94", 
+        "subnet-02a1a058044d0f5ce"
+      ],
+      "securityGroups": [
+        "sg-0dc2f8282ea9de58b"
+      ],
+      "assignPublicIp": "ENABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:eu-north-1:992350137489:targetgroup/api-gateway-tg/a19c8fc19886ca31",
+      "containerName": "api-gateway",
+      "containerPort": 3000
+    }
+  ],
+  "healthCheckGracePeriodSeconds": 120,
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100
+  }
+}

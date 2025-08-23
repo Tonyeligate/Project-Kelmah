@@ -5,7 +5,7 @@
 
 import { messagingServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
-import { SERVICES } from '../../../config/environment';
+import { WS_CONFIG } from '../../../config/environment';
 
 class NotificationService {
   constructor() {
@@ -17,8 +17,7 @@ class NotificationService {
   async connect(token) {
     if (this.isConnected) return;
     try {
-      const base = SERVICES?.MESSAGING_SERVICE || '';
-      const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || base || 'https://04b7e0ce3378.ngrok-free.app';
+      const wsUrl = WS_CONFIG.url || await import('../../../config/dynamicConfig.js').then(m => m.getWebSocketUrl());
       const { io } = await import('socket.io-client');
       this.socket = io(wsUrl, {
         auth: { token },

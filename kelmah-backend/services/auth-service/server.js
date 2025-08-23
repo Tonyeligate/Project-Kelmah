@@ -3,6 +3,10 @@
  * Handles authentication, authorization, and user identity management
  */
 
+// Load environment variables FIRST, before any other imports
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -12,8 +16,6 @@ const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
 const mongoose = require("mongoose");
 const { connectDB } = require("./config/db");
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // Import routes
 const authRoutes = require("./routes/auth.routes");
@@ -115,6 +117,9 @@ try {
   });
   app.use(limiter);
 }
+
+// Error logging middleware (must be BEFORE routes to catch errors)
+app.use(createErrorLogger(logger));
 
 // API routes
 app.use("/api/auth", authRoutes);
@@ -474,9 +479,6 @@ if (missingEnvVars.length > 0) {
 
 // Connect to MongoDB but do not block server start if ALLOW_START_WITHOUT_DB=true
 const startServer = () => {
-  // Error logging middleware (must be last)
-  app.use(createErrorLogger(logger));
-
   app.listen(PORT, () => {
     logger.info(`🚀 Auth Service running on port ${PORT}`);
     logger.info(`📊 Environment: ${process.env.NODE_ENV}`);

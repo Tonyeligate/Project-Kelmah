@@ -5,7 +5,7 @@
 
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { Op } = require('sequelize');
+// const { Op } = require('sequelize'); // Removed - not needed for MongoDB
 const SecurityUtils = require('./security');
 
 class SecureJWT {
@@ -15,8 +15,15 @@ class SecureJWT {
     this.accessTokenExpiry = process.env.JWT_EXPIRES_IN || '15m';
     this.refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
     
+    // Don't throw error in constructor - check at runtime instead
+    this._validateSecrets();
+  }
+  
+  _validateSecrets() {
     if (!this.accessTokenSecret || !this.refreshTokenSecret) {
-      throw new Error('JWT secrets not configured properly');
+      console.error('JWT secrets not configured properly');
+      console.error('JWT_SECRET:', this.accessTokenSecret ? '[set]' : '[missing]');
+      console.error('JWT_REFRESH_SECRET:', this.refreshTokenSecret ? '[set]' : '[missing]');
     }
   }
   
@@ -27,6 +34,10 @@ class SecureJWT {
    * @returns {string} Signed JWT token
    */
   generateAccessToken(user, context = {}) {
+    if (!this.accessTokenSecret) {
+      throw new Error('JWT_SECRET not configured');
+    }
+    
     const payload = SecurityUtils.createJWTPayload(user, {
       expiresIn: this.parseExpiry(this.accessTokenExpiry),
       deviceFingerprint: context.deviceFingerprint,
@@ -47,6 +58,10 @@ class SecureJWT {
    * @returns {Promise<Object>} Token data including hash for storage
    */
   async generateRefreshToken(user, context = {}) {
+    if (!this.refreshTokenSecret) {
+      throw new Error('JWT_REFRESH_SECRET not configured');
+    }
+    
     const tokenId = crypto.randomUUID();
     const rawToken = crypto.randomBytes(64).toString('hex');
     
@@ -91,6 +106,10 @@ class SecureJWT {
    * @returns {Object} Decoded token payload
    */
   verifyAccessToken(token, context = {}) {
+    if (!this.accessTokenSecret) {
+      throw new Error('JWT_SECRET not configured');
+    }
+    
     try {
       const decoded = jwt.verify(token, this.accessTokenSecret, {
         algorithms: ['HS256'],
@@ -123,6 +142,10 @@ class SecureJWT {
    * @returns {Object} Verification result
    */
   async verifyRefreshToken(compositeToken, storedTokenData) {
+    if (!this.refreshTokenSecret) {
+      throw new Error('JWT_REFRESH_SECRET not configured');
+    }
+    
     try {
       // Split composite token
       const parts = compositeToken.split('.');

@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 import { store } from '../store/store';
 import { addNotification, updateOnlineUsers } from '../store/slices/notificationSlice';
+import { WS_CONFIG } from '../config/environment';
 
 /**
  * WebSocket service for real-time communication
@@ -25,17 +26,17 @@ class WebSocketService {
    * @param {string} userRole - User role (worker, hirer, admin)
    * @param {string} token - Authentication token
    */
-  connect(userId, userRole, token) {
+  async connect(userId, userRole, token) {
     try {
       // Disconnect existing connection
       if (this.socket) {
         this.disconnect();
       }
 
-      // Determine WebSocket URL (fixed for messaging service)
-      const wsUrl = process.env.NODE_ENV === 'production' 
-  ? import.meta.env.VITE_MESSAGING_SERVICE_URL || 'https://04b7e0ce3378.ngrok-free.app'
-        : 'http://localhost:3005';
+      // Determine WebSocket URL using centralized configuration
+      const wsUrl = WS_CONFIG.url || (process.env.NODE_ENV === 'production' 
+        ? await import('../../config/dynamicConfig.js').then(m => m.getWebSocketUrl()) 
+        : 'http://localhost:3005');
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {

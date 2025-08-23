@@ -6,6 +6,7 @@ const DEFAULT_AUDIENCE = process.env.JWT_AUDIENCE || 'kelmah-platform';
 function ensureSecret(name) {
   const value = process.env[name];
   if (!value) {
+    console.error(`Missing ${name} environment variable`);
     throw new Error(`Missing ${name} environment variable`);
   }
   return value;
@@ -20,7 +21,13 @@ function signAccessToken(payload, options = {}) {
     role: payload.role,
     version: payload.version ?? payload.tokenVersion ?? 0,
   };
-  return jwt.sign(body, secret, { expiresIn, issuer, audience, jwtid });
+  
+  const signOptions = { expiresIn, issuer, audience };
+  if (jwtid && typeof jwtid === 'string') {
+    signOptions.jwtid = jwtid;
+  }
+  
+  return jwt.sign(body, secret, signOptions);
 }
 
 function signRefreshToken(payload, options = {}) {
@@ -30,7 +37,13 @@ function signRefreshToken(payload, options = {}) {
     sub: String(payload.id || payload.sub),
     version: payload.version ?? payload.tokenVersion ?? 0,
   };
-  return jwt.sign(body, secret, { expiresIn, issuer, audience, jwtid });
+  
+  const signOptions = { expiresIn, issuer, audience };
+  if (jwtid && typeof jwtid === 'string') {
+    signOptions.jwtid = jwtid;
+  }
+  
+  return jwt.sign(body, secret, signOptions);
 }
 
 function verifyAccessToken(token, options = {}) {

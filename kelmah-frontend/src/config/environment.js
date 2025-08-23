@@ -155,8 +155,11 @@ export const UI_CONFIG = {
 // WEBSOCKET CONFIGURATION
 // ===============================================
 
+// Import dynamic configuration
+import { getWebSocketUrlSync } from './dynamicConfig';
+
 export const WS_CONFIG = {
-  url: import.meta.env.VITE_WS_URL || SERVICES.MESSAGING_SERVICE,
+  url: import.meta.env.VITE_WS_URL || import.meta.env.VITE_MESSAGING_SERVICE_URL || getWebSocketUrlSync(),
   reconnectionAttempts: parseInt(
     import.meta.env.VITE_WS_RECONNECTION_ATTEMPTS || '5',
   ),

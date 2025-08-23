@@ -41,7 +41,7 @@ const { authenticate } = require('../middleware/auth');
 router.post('/login', async (req, res) => {
   try {
     // Direct connection to auth service avoiding proxy
-    const authUrl = process.env.AUTH_SERVICE_URL || 'http://kelmah-internal-svcs-250d7eb165a8b7d3.elb.eu-north-1.amazonaws.com:5001';
+    const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
     const url = `${authUrl}/api/auth/login`;
     
     console.log(`[LOGIN] Attempting login to: ${url}`);
