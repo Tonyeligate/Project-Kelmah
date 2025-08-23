@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 
-const WS_URL = (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'https:')) || 'http://localhost:3005';
+const WS_URL = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.ngrokUrl?.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')) || 
+              (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')) || 
+              'ws://localhost:3005';
 
 export function useRealTimeAnalytics() {
   const [metrics, setMetrics] = useState(null);

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/environment';
+import { API_BASE_URL, WS_CONFIG } from '../../../config/environment';
 import { io } from 'socket.io-client';
 
 /**
@@ -29,10 +29,10 @@ class DashboardService {
 
     if (!this.token) return;
 
-    this.socket = io(API_BASE_URL, {
+    this.socket = io(WS_CONFIG.url || '/socket.io', {
       auth: { token: this.token },
-      path: '/ws',
-      transports: ['websocket'],
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
