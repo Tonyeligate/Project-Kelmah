@@ -63,8 +63,8 @@ export const getWebSocketUrl = async () => {
     return ngrokUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
   }
   
-  // Fallback to environment variable or null
-  return import.meta.env.VITE_WS_URL || import.meta.env.VITE_MESSAGING_SERVICE_URL || null;
+  // Fallback to default - will be updated by ngrok manager
+  return null;
 };
 
 // Function to get API URL dynamically
@@ -75,8 +75,8 @@ export const getApiUrl = async () => {
     return ngrokUrl;
   }
   
-  // Fallback to environment variable or null
-  return import.meta.env.VITE_NGROK_URL || import.meta.env.VITE_MESSAGING_SERVICE_URL || null;
+  // Fallback to default - will be updated by ngrok manager
+  return null;
 };
 
 // Synchronous version for environment configuration
@@ -88,9 +88,9 @@ export const getWebSocketUrlSync = () => {
         return storedUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
       }
     }
-    return import.meta.env.VITE_WS_URL || import.meta.env.VITE_MESSAGING_SERVICE_URL || null;
+    return null;
   } catch (error) {
-    return import.meta.env.VITE_WS_URL || import.meta.env.VITE_MESSAGING_SERVICE_URL || null;
+    return null;
   }
 };
 

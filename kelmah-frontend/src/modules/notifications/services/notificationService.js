@@ -5,7 +5,7 @@
 
 import { messagingServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
- import { WS_CONFIG } from '../../../config/environment';
+import { WS_CONFIG } from '../../../config/environment';
 
 class NotificationService {
   constructor() {
@@ -17,7 +17,7 @@ class NotificationService {
   async connect(token) {
     if (this.isConnected) return;
     try {
-      const wsUrl = WS_CONFIG.url || await import('../../../config/dynamicConfig.js').then(m => m.getWebSocketUrl());
+      const wsUrl = WS_CONFIG.url || '/socket.io';
       const { io } = await import('socket.io-client');
       this.socket = io(wsUrl, {
         auth: { token },

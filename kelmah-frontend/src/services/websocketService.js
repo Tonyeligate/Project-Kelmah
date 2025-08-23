@@ -26,7 +26,7 @@ class WebSocketService {
    * @param {string} userRole - User role (worker, hirer, admin)
    * @param {string} token - Authentication token
    */
-  async connect(userId, userRole, token) {
+  connect(userId, userRole, token) {
     try {
       // Disconnect existing connection
       if (this.socket) {
@@ -35,7 +35,7 @@ class WebSocketService {
 
       // Determine WebSocket URL using centralized configuration
       const wsUrl = WS_CONFIG.url || (process.env.NODE_ENV === 'production' 
-        ? await import('../../config/dynamicConfig.js').then(m => m.getWebSocketUrl()) 
+        ? '/socket.io' 
         : 'http://localhost:3005');
 
       // Create Socket.io connection
