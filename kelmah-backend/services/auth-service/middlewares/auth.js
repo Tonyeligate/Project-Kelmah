@@ -1,4 +1,4 @@
-const jwtUtils = require('../utils/jwt');
+const jwtUtils = require('../utils/shared-jwt');
 const { AppError } = require('../utils/errorTypes');
 const User = require('../models').User;
 
@@ -27,7 +27,7 @@ const authenticate = async (req, res, next) => {
     // Verify token
     let decoded;
     try {
-      decoded = await jwtUtils.verifyAuthToken(token);
+      decoded = jwtUtils.verifyAccessToken(token);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return next(new AppError('Token has expired. Please login again.', 401));
@@ -38,8 +38,14 @@ const authenticate = async (req, res, next) => {
       }
     }
     
+    // Extract user ID from token (handle both 'sub' and 'id' fields)
+    const userId = decoded.sub || decoded.id;
+    if (!userId) {
+      return next(new AppError('Invalid token format. Please login again.', 401));
+    }
+    
     // Check if user still exists in database
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(userId);
     if (!user) {
       return next(new AppError('User no longer exists. Please login again.', 401));
     }
@@ -88,7 +94,8 @@ const optionalAuth = async (req, res, next) => {
       return next();
     }
     const decoded = jwtUtils.verifyAccessToken(token);
-    const user = await User.findById(decoded.id);
+    const userId = decoded.sub || decoded.id;
+    const user = await User.findById(userId);
     
     if (user && user.isActive) {
       req.user = {
