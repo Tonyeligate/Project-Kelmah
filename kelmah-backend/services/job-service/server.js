@@ -11,7 +11,7 @@ const cookieParser = require("cookie-parser");
 const config = require("./config");
 const { notFound } = require('./utils/errorTypes');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 // Import MongoDB connection
 const { connectDB } = require("./config/db");

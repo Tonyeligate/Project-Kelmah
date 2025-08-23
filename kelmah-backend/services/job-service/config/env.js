@@ -6,8 +6,8 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load .env file
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Load .env file from the service directory
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Required environment variables
 const requiredEnvVars = [
