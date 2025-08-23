@@ -51,7 +51,7 @@ export const SECURITY_CONFIG = {
     'img-src': ["'self'", "data:", "https:"],
     'connect-src': [
       "'self'",
-      'https://04b7e0ce3378.ngrok-free.app',
+      // Dynamic ngrok URL will be injected by ngrok manager
       // Legacy Render URLs (kept for docs/testing; not used in production anymore)
       "https://kelmah-auth-service.onrender.com",
       "https://kelmah-user-service.onrender.com",
