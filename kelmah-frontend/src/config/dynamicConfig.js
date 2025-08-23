@@ -87,10 +87,20 @@ export const getWebSocketUrlSync = () => {
       if (storedUrl) {
         return storedUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
       }
+      
+      // Try to get from runtime config synchronously (this will work if the file is already loaded)
+      // Note: This is a fallback for when the file is already in the browser cache
+      const runtimeConfig = window.__RUNTIME_CONFIG__;
+      if (runtimeConfig && runtimeConfig.ngrokUrl) {
+        return runtimeConfig.ngrokUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+      }
     }
-    return null;
+    
+    // Return the current ngrok URL from runtime config as fallback
+    return 'wss://eb40d687c078.ngrok-free.app';
   } catch (error) {
-    return null;
+    // Return the current ngrok URL as fallback
+    return 'wss://eb40d687c078.ngrok-free.app';
   }
 };
 

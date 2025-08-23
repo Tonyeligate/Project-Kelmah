@@ -64,6 +64,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <!-- Runtime Configuration Injection -->
+    <script>
+      // Load runtime configuration synchronously
+      (async function() {
+        try {
+          const response = await fetch('/runtime-config.json');
+          if (response.ok) {
+            const config = await response.json();
+            window.__RUNTIME_CONFIG__ = config;
+            console.log('✅ Runtime config loaded:', config.ngrokUrl);
+          }
+        } catch (error) {
+          console.warn('⚠️ Failed to load runtime config:', error);
+        }
+      })();
+    </script>
+    
     <div id="root"></div>
     
     <!-- 🇬🇭 Service Worker Registration for Ghana Networks -->
