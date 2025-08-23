@@ -18,7 +18,7 @@ class NotificationService {
     if (this.isConnected) return;
     try {
       const base = SERVICES?.MESSAGING_SERVICE || '';
-      const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || base || window.location.origin;
+      const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || base || 'https://04b7e0ce3378.ngrok-free.app';
       const { io } = await import('socket.io-client');
       this.socket = io(wsUrl, {
         auth: { token },
