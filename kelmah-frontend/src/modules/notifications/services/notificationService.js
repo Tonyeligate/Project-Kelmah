@@ -5,7 +5,7 @@
 
 import { messagingServiceClient } from '../../common/services/axios';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
-import { WS_CONFIG } from '../../../config/environment';
+ import { WS_CONFIG } from '../../../config/environment';
 
 class NotificationService {
   constructor() {
