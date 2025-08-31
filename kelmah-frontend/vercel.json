@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://7411d2d624bf.ngrok-free.app/api/$1"
+      "destination": "https://22d59f375492.ngrok-free.app/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://7d6a841ffe47.ngrok-free.app/socket.io/$1"
+      "destination": "https://11339b0bef0a.ngrok-free.app/socket.io/$1"
     }
   ]
 }
