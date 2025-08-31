@@ -108,7 +108,7 @@ router.post(
 );
 
 // Logout route
-router.post("/logout", authController.logout);
+router.post("/logout", authenticate, authController.logout);
 
 // Refresh token
 router.post(
