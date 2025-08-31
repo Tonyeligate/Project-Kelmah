@@ -61,9 +61,10 @@ export const MessageProvider = ({ children }) => {
     if (!token) return;
 
     // WebSocket URL based on environment with robust fallbacks
-    // Use dynamic configuration for WebSocket connections
+    // Use dedicated WebSocket URL from runtime config
     const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || 
-                  (window.__RUNTIME_CONFIG__?.ngrokUrl?.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:') || 
+                  (window.__RUNTIME_CONFIG__?.websocketUrl || 
+                   window.__RUNTIME_CONFIG__?.ngrokUrl?.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:') || 
                    window.location.origin);
 
     console.log('🔌 Connecting to messaging WebSocket:', wsUrl);

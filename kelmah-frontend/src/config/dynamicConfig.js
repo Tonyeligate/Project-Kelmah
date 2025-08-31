@@ -83,16 +83,22 @@ export const getApiUrl = async () => {
 export const getWebSocketUrlSync = () => {
   try {
     if (typeof window !== 'undefined') {
+      // Try to get from runtime config synchronously (this will work if the file is already loaded)
+      const runtimeConfig = window.__RUNTIME_CONFIG__;
+      if (runtimeConfig) {
+        // Prioritize dedicated websocketUrl over converted ngrokUrl
+        if (runtimeConfig.websocketUrl) {
+          return runtimeConfig.websocketUrl;
+        }
+        if (runtimeConfig.ngrokUrl) {
+          return runtimeConfig.ngrokUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+        }
+      }
+      
+      // Fallback to localStorage
       const storedUrl = localStorage.getItem('kelmah_ngrok_url');
       if (storedUrl) {
         return storedUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
-      }
-      
-      // Try to get from runtime config synchronously (this will work if the file is already loaded)
-      // Note: This is a fallback for when the file is already in the browser cache
-      const runtimeConfig = window.__RUNTIME_CONFIG__;
-      if (runtimeConfig && runtimeConfig.ngrokUrl) {
-        return runtimeConfig.ngrokUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
       }
     }
     
