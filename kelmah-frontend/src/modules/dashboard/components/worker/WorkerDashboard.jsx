@@ -64,7 +64,6 @@ import NearbyWorkersWidget from '../../../worker/components/NearbyWorkersWidget'
  * Enhanced Worker Dashboard with responsive design and improved UX
  */
 const EnhancedWorkerDashboard = () => {
-  // ===== ALL HOOKS MUST BE CALLED FIRST (Rules of Hooks) =====
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -217,6 +216,7 @@ const EnhancedWorkerDashboard = () => {
         path: '/messages',
         color: '#FF9800',
         gradient: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+        badgeContent: data?.metrics?.unreadMessages || 0,
         priority: 1,
       },
       {
@@ -389,8 +389,6 @@ const EnhancedWorkerDashboard = () => {
     </motion.div>
   );
 
-  // ===== NOW HANDLE CONDITIONAL RENDERING AFTER ALL HOOKS =====
-  
   // Safety check: don't render if user or data is not ready
   if (!user || !data || Object.keys(data).length === 0) {
     return (
@@ -548,6 +546,10 @@ const EnhancedWorkerDashboard = () => {
             Ready to find your next {user?.profession || 'vocational'} job?
           </Typography>
         </Box>
+
+
+
+
 
         {/* Quick Actions */}
         <Typography
@@ -765,7 +767,6 @@ const EnhancedWorkerDashboard = () => {
     );
   }
 
-  // ===== MAIN DESKTOP DASHBOARD RENDER =====
   return (
     <Box
       sx={{
