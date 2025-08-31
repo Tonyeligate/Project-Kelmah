@@ -112,11 +112,11 @@ class NgrokManager {
       }
 
       // Stage only the files we changed
-      execSync(`git add "${path.relative(this.repoRoot, this.vercelConfigPath)}" "${path.relative(this.repoRoot, this.securityConfigPath)}" "${path.relative(this.repoRoot, this.configPath)}"`, { cwd: this.repoRoot, stdio: 'pipe' });
+      execSync(`git add "${path.relative(this.repoRoot, this.vercelConfigPath)}" "${path.relative(this.repoRoot, this.securityConfigPath)}" "${path.relative(this.repoRoot, this.configPath)}" "${path.relative(this.repoRoot, 'kelmah-frontend/public/runtime-config.json')}"`, { cwd: this.repoRoot, stdio: 'pipe' });
 
       // Create a commit if there are staged changes
       try {
-        execSync(`git commit -m "chore(frontend): update ngrok URL to ${url}"`, { cwd: this.repoRoot, stdio: 'pipe' });
+        execSync(`git commit -m "chore(frontend): update ngrok URLs and runtime config"`, { cwd: this.repoRoot, stdio: 'pipe' });
         console.log('📝 Committed ngrok URL update');
       } catch (e) {
         const msg = (e && e.stderr ? e.stderr.toString() : '').toLowerCase();
