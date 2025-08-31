@@ -18,24 +18,29 @@ class NgrokManager {
 
   async start() {
     try {
-      console.log('🚀 Starting ngrok tunnel...');
+      console.log('🚀 Starting ngrok tunnels...');
       
-      // Start ngrok tunnel
-      const url = await ngrok.connect(3000);
-      console.log('✅ ngrok tunnel started:', url);
+      // Start ngrok tunnel on port 3000 (API Gateway) for HTTP requests
+      const apiUrl = await ngrok.connect(3000);
+      console.log('✅ API Gateway tunnel started:', apiUrl);
+      
+      // Start ngrok tunnel on port 3005 (Messaging Service) for WebSocket connections
+      const wsUrl = await ngrok.connect(3005);
+      console.log('✅ WebSocket tunnel started:', wsUrl);
 
-      // The URL returned by ngrok.connect() is the public URL
-      const publicUrl = url;
-      console.log('📡 Public URL:', publicUrl);
+      // Use API Gateway URL as primary for HTTP requests
+      const publicUrl = apiUrl;
+      console.log('📡 Primary URL (API):', publicUrl);
+      console.log('🔌 WebSocket URL:', wsUrl);
 
       // Save to config file
-      await this.saveConfig(publicUrl);
+      await this.saveConfig(apiUrl, wsUrl);
       
       // Update frontend configuration
-      await this.updateFrontendConfig(publicUrl);
+      await this.updateFrontendConfig(apiUrl, wsUrl);
       
       // Auto-commit and push the minimal set of files to trigger Vercel deploy
-      await this.commitAndPush(publicUrl);
+      await this.commitAndPush(apiUrl);
       
       console.log('🎉 Configuration updated and pushed successfully!');
       console.log('📋 Deployed via Vercel after Git push to main.');
@@ -48,9 +53,10 @@ class NgrokManager {
     }
   }
 
-  async saveConfig(url) {
+  async saveConfig(apiUrl, wsUrl) {
     const config = {
-      domain: url,
+      apiDomain: apiUrl,
+      wsDomain: wsUrl,
       timestamp: new Date().toISOString(),
       status: 'active'
     };
@@ -59,27 +65,28 @@ class NgrokManager {
     console.log('💾 Config saved to:', this.configPath);
   }
 
-  async updateFrontendConfig(url) {
+  async updateFrontendConfig(apiUrl, wsUrl) {
     try {
       // Update vercel.json
       const vercelConfig = JSON.parse(await fs.readFile(this.vercelConfigPath, 'utf8'));
-      vercelConfig.rewrites[0].destination = `${url}/api/$1`;
-      vercelConfig.rewrites[1].destination = `${url}/socket.io/$1`;
+      vercelConfig.rewrites[0].destination = `${apiUrl}/api/$1`;  // API Gateway
+      vercelConfig.rewrites[1].destination = `${wsUrl}/socket.io/$1`;  // Messaging Service
       await fs.writeFile(this.vercelConfigPath, JSON.stringify(vercelConfig, null, 2));
       console.log('✅ Updated vercel.json');
 
       // Update securityConfig.js
       let securityConfig = await fs.readFile(this.securityConfigPath, 'utf8');
       const urlRegex = /https:\/\/[a-zA-Z0-9-]+\.ngrok-free\.app/g;
-      securityConfig = securityConfig.replace(urlRegex, url);
+      // Replace old URLs with new API Gateway URL
+      securityConfig = securityConfig.replace(urlRegex, apiUrl);
       await fs.writeFile(this.securityConfigPath, securityConfig);
       console.log('✅ Updated securityConfig.js');
 
       // Create frontend runtime config for dynamic URL loading
       const frontendConfigPath = path.join(__dirname, 'kelmah-frontend', 'public', 'runtime-config.json');
       const runtimeConfig = {
-        ngrokUrl: url,
-        websocketUrl: url.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:'),
+        ngrokUrl: apiUrl,
+        websocketUrl: wsUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:'),
         timestamp: new Date().toISOString(),
         version: '1.0.0'
       };
@@ -139,7 +146,7 @@ class NgrokManager {
   async getCurrentUrl() {
     try {
       const config = JSON.parse(await fs.readFile(this.configPath, 'utf8'));
-      return config.domain;
+      return config.apiDomain || config.domain; // Backward compatibility
     } catch (error) {
       return null;
     }
@@ -147,8 +154,8 @@ class NgrokManager {
 
   async stop() {
     try {
-      await ngrok.kill();
-      console.log('🛑 ngrok tunnel stopped');
+      await ngrok.kill(); // This kills all ngrok tunnels
+      console.log('🛑 All ngrok tunnels stopped');
     } catch (error) {
       console.error('❌ Error stopping ngrok:', error);
     }
