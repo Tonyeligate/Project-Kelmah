@@ -29,7 +29,7 @@ class DashboardService {
 
     if (!this.token) return;
 
-    this.socket = io(WS_CONFIG.url || '/socket.io', {
+    this.socket = io((typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || '/socket.io', {
       auth: { token: this.token },
       path: '/socket.io',
       transports: ['websocket', 'polling'],

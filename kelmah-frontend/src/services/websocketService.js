@@ -33,10 +33,11 @@ class WebSocketService {
         this.disconnect();
       }
 
-      // Determine WebSocket URL using centralized configuration
-      const wsUrl = WS_CONFIG.url || (process.env.NODE_ENV === 'production' 
-        ? '/socket.io' 
-        : 'http://localhost:3005');
+      // Determine WebSocket URL using runtime config for consistency
+      const wsUrl = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || 
+                   (process.env.NODE_ENV === 'production' 
+                    ? '/socket.io' 
+                    : 'http://localhost:3005');
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {

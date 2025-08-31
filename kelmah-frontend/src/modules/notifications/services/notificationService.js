@@ -17,7 +17,7 @@ class NotificationService {
   async connect(token) {
     if (this.isConnected) return;
     try {
-      const wsUrl = WS_CONFIG.url || '/socket.io';
+      const wsUrl = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || '/socket.io';
       const { io } = await import('socket.io-client');
       this.socket = io(wsUrl, {
         auth: { token },
