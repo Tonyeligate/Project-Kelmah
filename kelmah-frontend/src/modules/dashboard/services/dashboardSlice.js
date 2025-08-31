@@ -94,12 +94,7 @@ export const fetchDashboardData = createAsyncThunk(
       };
     } catch (error) {
       console.warn('All dashboard services unavailable:', error.message);
-      return {
-        metrics: initialState.metrics,
-        recentJobs: initialState.recentJobs,
-        activeWorkers: initialState.activeWorkers,
-        analytics: initialState.analytics,
-      };
+      return rejectWithValue('Failed to load dashboard data');
     }
   },
 );

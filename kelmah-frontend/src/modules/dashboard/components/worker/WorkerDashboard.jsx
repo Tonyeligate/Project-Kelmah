@@ -67,8 +67,19 @@ const EnhancedWorkerDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data, loading, error } = useSelector((state) => state.dashboard);
+  const { data = {}, loading, error } = useSelector((state) => state.dashboard);
   const theme = useTheme();
+
+  // Safety check: don't render if user or data is not ready
+  if (!user || !data || Object.keys(data).length === 0) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary">
+          Loading dashboard...
+        </Typography>
+      </Box>
+    );
+  }
 
   // Force mobile design on small screens but maintain desktop functionality
   const isMobile = false; // Disabled responsive behavior as per user requirement
