@@ -64,6 +64,7 @@ import NearbyWorkersWidget from '../../../worker/components/NearbyWorkersWidget'
  * Enhanced Worker Dashboard with responsive design and improved UX
  */
 const EnhancedWorkerDashboard = () => {
+  // ===== ALL HOOKS MUST BE CALLED FIRST (Rules of Hooks) =====
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -78,7 +79,7 @@ const EnhancedWorkerDashboard = () => {
   // Check actual screen size for styling (not functionality)
   const isActualMobile = useMediaQuery('(max-width: 768px)');
 
-  // Local state - ALL hooks must be called unconditionally
+  // Local state
   const [activeTab, setActiveTab] = useState(0);
   const [showQuickApply, setShowQuickApply] = useState(false);
   const [showAllStats, setShowAllStats] = useState(false);
@@ -86,7 +87,7 @@ const EnhancedWorkerDashboard = () => {
   const [completion, setCompletion] = useState(null);
   const [availability, setAvailability] = useState({ status: 'available', isAvailable: true });
 
-  // Load profile completeness - MUST be called before any conditional returns
+  // Load profile completeness
   useEffect(() => {
     const load = async () => {
       try {
@@ -99,7 +100,7 @@ const EnhancedWorkerDashboard = () => {
     load();
   }, []);
 
-  // Load availability for header chips - MUST be called before any conditional returns
+  // Load availability for header chips
   useEffect(() => {
     const loadAvailability = async () => {
       try {
@@ -216,7 +217,6 @@ const EnhancedWorkerDashboard = () => {
         path: '/messages',
         color: '#FF9800',
         gradient: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-        badgeContent: data?.metrics?.unreadMessages || 0,
         priority: 1,
       },
       {
@@ -389,7 +389,8 @@ const EnhancedWorkerDashboard = () => {
     </motion.div>
   );
 
-  // NOW handle conditional rendering AFTER all hooks are called
+  // ===== NOW HANDLE CONDITIONAL RENDERING AFTER ALL HOOKS =====
+  
   // Safety check: don't render if user or data is not ready
   if (!user || !data || Object.keys(data).length === 0) {
     return (
@@ -400,204 +401,6 @@ const EnhancedWorkerDashboard = () => {
       </Box>
     );
   }
-      {
-        title: 'Find Jobs',
-        description: 'Browse available opportunities',
-        icon: <SearchIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/worker/find-work',
-        color: '#2196F3',
-        gradient: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
-        priority: 1,
-      },
-      {
-        title: 'Applications',
-        description: 'Manage job applications',
-        icon: <AssignmentIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/worker/applications',
-        color: '#4CAF50',
-        gradient: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)',
-        badgeContent: data?.metrics?.newApplications || 0,
-        priority: 1,
-      },
-      {
-        title: 'Messages',
-        description: 'Chat with clients',
-        icon: <MessageIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/messages',
-        color: '#FF9800',
-        gradient: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-        badgeContent: data?.metrics?.unreadMessages || 0,
-        priority: 1,
-      },
-      {
-        title: 'Schedule',
-        description: 'Manage appointments',
-        icon: <ScheduleIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/worker/schedule',
-        color: '#9C27B0',
-        gradient: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-        priority: 2,
-      },
-      {
-        title: 'Notifications',
-        description: 'View all updates',
-        icon: <NotificationsIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />,
-        path: '/notifications',
-        color: '#F44336',
-        gradient: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
-        badgeContent: data?.metrics?.unreadNotifications || 0,
-        priority: 3,
-      },
-    ],
-    [data],
-  );
-
-  // Filter statistics for mobile view
-  const visibleStats = useMemo(() => {
-    if (isMobile && !showAllStats) {
-      return statistics.filter((stat) => stat.priority <= 2).slice(0, 2);
-    }
-    return statistics;
-  }, [statistics, isMobile, showAllStats]);
-
-  // Enhanced statistics card component
-  const EnhancedStatCard = ({ stat, index }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      style={{ height: '100%' }}
-    >
-      <Card
-        sx={{
-          height: '100%',
-          background: `linear-gradient(135deg, ${alpha(stat.color, 0.1)} 0%, ${alpha(stat.color, 0.05)} 100%)`,
-          border: `1px solid ${alpha(stat.color, 0.2)}`,
-          borderRadius: 3,
-          cursor: 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          position: 'relative',
-          overflow: 'hidden',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: `0 8px 25px ${alpha(stat.color, 0.3)}`,
-            border: `1px solid ${alpha(stat.color, 0.4)}`,
-          },
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: stat.gradient,
-          },
-        }}
-        onClick={stat.onClick}
-      >
-        <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
-          <Stack
-            direction="row"
-            alignItems="flex-start"
-            justifyContent="space-between"
-            spacing={2}
-          >
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255,255,255,0.7)',
-                  fontWeight: 600,
-                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  mb: 0.5,
-                }}
-              >
-                {stat.title}
-              </Typography>
-
-              <Typography
-                variant="h4"
-                sx={{
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-                  lineHeight: 1.2,
-                  mb: 0.5,
-                }}
-              >
-                {stat.value}
-              </Typography>
-
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'rgba(255,255,255,0.6)',
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                }}
-              >
-                {stat.subtitle}
-              </Typography>
-
-              {stat.trend !== 0 && (
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={0.5}
-                  sx={{ mt: 1 }}
-                >
-                  {stat.trendDirection === 'up' && (
-                    <TrendingUpIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
-                  )}
-                  {stat.trendDirection === 'down' && (
-                    <TrendingDownIcon sx={{ fontSize: 16, color: '#F44336' }} />
-                  )}
-                  {stat.trendDirection === 'stable' && (
-                    <TrendingFlatIcon
-                      sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }}
-                    />
-                  )}
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color:
-                        stat.trendDirection === 'up'
-                          ? '#4CAF50'
-                          : stat.trendDirection === 'down'
-                            ? '#F44336'
-                            : 'rgba(255,255,255,0.5)',
-                      fontWeight: 600,
-                      fontSize: '0.7rem',
-                    }}
-                  >
-                    {stat.trend > 0 ? '+' : ''}
-                    {stat.trend}%
-                  </Typography>
-                </Stack>
-              )}
-            </Box>
-
-            <Box
-              sx={{
-                width: { xs: 48, sm: 56 },
-                height: { xs: 48, sm: 56 },
-                borderRadius: '50%',
-                background: alpha(stat.color, 0.2),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: stat.color,
-                flexShrink: 0,
-              }}
-            >
-              {stat.icon}
-            </Box>
-          </Stack>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
 
   // Loading state
   if (loading && !data) {
@@ -745,10 +548,6 @@ const EnhancedWorkerDashboard = () => {
             Ready to find your next {user?.profession || 'vocational'} job?
           </Typography>
         </Box>
-
-
-
-
 
         {/* Quick Actions */}
         <Typography
@@ -966,6 +765,7 @@ const EnhancedWorkerDashboard = () => {
     );
   }
 
+  // ===== MAIN DESKTOP DASHBOARD RENDER =====
   return (
     <Box
       sx={{
