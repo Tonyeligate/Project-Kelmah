@@ -96,11 +96,11 @@ export const getWebSocketUrlSync = () => {
       }
     }
     
-    // Return the current ngrok URL from runtime config as fallback
-    return 'wss://eb40d687c078.ngrok-free.app';
+    // Return null as fallback - will be handled by calling code
+    return null;
   } catch (error) {
-    // Return the current ngrok URL as fallback
-    return 'wss://eb40d687c078.ngrok-free.app';
+    // Return null as fallback - will be handled by calling code
+    return null;
   }
 };
 
