@@ -135,7 +135,8 @@ const EnhancedAvailableJobs = () => {
 
   // State management
   const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
+  // REMOVED: filteredJobs state - use applyFiltersAndSearch directly
+  // const [filteredJobs, setFilteredJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [savedJobs, setSavedJobs] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -297,9 +298,11 @@ const EnhancedAvailableJobs = () => {
     return filtered;
   }, [jobs, searchQuery, selectedFilter, sortBy]);
 
-  useEffect(() => {
-    setFilteredJobs(applyFiltersAndSearch);
-  }, [applyFiltersAndSearch]);
+  // REMOVED: This useEffect was causing infinite re-renders
+  // Instead, use applyFiltersAndSearch directly in the component
+  // useEffect(() => {
+  //   setFilteredJobs(applyFiltersAndSearch);
+  // }, [applyFiltersAndSearch]);
 
   // Handle job application
   const handleApply = async (jobId) => {
@@ -729,7 +732,7 @@ const EnhancedAvailableJobs = () => {
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
               Available Jobs
             </Typography>
-            <Badge badgeContent={filteredJobs.length} color="primary">
+            <Badge badgeContent={applyFiltersAndSearch.length} color="primary">
               <WorkIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
             </Badge>
           </Stack>
@@ -861,7 +864,7 @@ const EnhancedAvailableJobs = () => {
           sx={{ mb: 3 }}
         >
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}{' '}
+            {applyFiltersAndSearch.length} job{applyFiltersAndSearch.length !== 1 ? 's' : ''}{' '}
             found
           </Typography>
 
@@ -890,7 +893,7 @@ const EnhancedAvailableJobs = () => {
         </Stack>
 
         {/* Jobs Grid */}
-        {filteredJobs.length === 0 ? (
+        {applyFiltersAndSearch.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <WorkIcon
               sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }}
@@ -908,7 +911,7 @@ const EnhancedAvailableJobs = () => {
         ) : (
           <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
             <AnimatePresence mode="popLayout">
-              {filteredJobs.map((job, index) => (
+              {applyFiltersAndSearch.map((job, index) => (
                 <Grid item xs={12} sm={6} lg={4} key={job.id}>
                   <JobCard job={job} index={index} />
                 </Grid>
@@ -918,7 +921,7 @@ const EnhancedAvailableJobs = () => {
         )}
 
         {/* Load More Button */}
-        {filteredJobs.length > 0 && filteredJobs.length < jobs.length && (
+        {applyFiltersAndSearch.length > 0 && applyFiltersAndSearch.length < jobs.length && (
           <Box sx={{ textAlign: 'center', mt: 4 }}>
             <Button
               variant="outlined"
