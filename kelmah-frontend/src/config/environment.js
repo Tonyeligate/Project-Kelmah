@@ -70,18 +70,14 @@ const computeApiBase = () => {
   if (envUrl) {
     // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
     if (isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn('⚠️ Rejecting http URL on https page, falling back to production backend');
-      return 'https://kelmah-backend-six.vercel.app';
+      console.warn('⚠️ Rejecting http URL on https page, using relative /api for ngrok routing');
+      return '/api';
     }
     return envUrl;
   }
   
-  // Production fallback: use the production backend URL
-  if (isProduction) {
-    return 'https://kelmah-backend-six.vercel.app';
-  }
-  
-  // Development fallback: use relative API Gateway path
+  // No environment URL set - use relative /api to trigger Vercel rewrites to ngrok
+  console.log('🔗 No VITE_API_URL set, using /api for Vercel→ngrok routing');
   return '/api';
 };
 

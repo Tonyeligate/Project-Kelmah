@@ -1,4 +1,4 @@
-const ngrok = require('ngrok');
+okay const ngrok = require('ngrok');
 const fs = require('fs').promises;
 const path = require('path');
 const { execSync } = require('child_process');
@@ -67,30 +67,13 @@ class NgrokManager {
 
   async updateFrontendConfig(apiUrl, wsUrl) {
     try {
-      // Check if we're in a production environment setup
-      const frontendEnvPath = path.join(__dirname, 'kelmah-frontend', '.env');
-      let isProductionSetup = false;
-      
-      try {
-        const envContent = await fs.readFile(frontendEnvPath, 'utf8');
-        if (envContent.includes('VITE_API_URL=https://kelmah-backend-six.vercel.app')) {
-          isProductionSetup = true;
-          console.log('🎯 Production backend URL detected - preserving production config');
-        }
-      } catch (e) {
-        // .env doesn't exist, proceed with ngrok setup
-      }
-
-      // Only update vercel.json if not in production setup
-      if (!isProductionSetup) {
-        const vercelConfig = JSON.parse(await fs.readFile(this.vercelConfigPath, 'utf8'));
-        vercelConfig.rewrites[0].destination = `${apiUrl}/api/$1`;  // API Gateway
-        vercelConfig.rewrites[1].destination = `${wsUrl}/socket.io/$1`;  // Messaging Service
-        await fs.writeFile(this.vercelConfigPath, JSON.stringify(vercelConfig, null, 2));
-        console.log('✅ Updated vercel.json');
-      } else {
-        console.log('⚠️ Skipping vercel.json update (production setup detected)');
-      }
+      // Always update vercel.json for ngrok-based architecture
+      const vercelConfig = JSON.parse(await fs.readFile(this.vercelConfigPath, 'utf8'));
+      vercelConfig.rewrites = vercelConfig.rewrites || [];
+      vercelConfig.rewrites[0] = { source: "/api/(.*)", destination: `${apiUrl}/api/$1` };
+      vercelConfig.rewrites[1] = { source: "/socket.io/(.*)", destination: `${wsUrl}/socket.io/$1` };
+      await fs.writeFile(this.vercelConfigPath, JSON.stringify(vercelConfig, null, 2));
+      console.log('✅ Updated vercel.json');
 
       // Update securityConfig.js (safe to update for ngrok compatibility)
       let securityConfig = await fs.readFile(this.securityConfigPath, 'utf8');
@@ -100,14 +83,14 @@ class NgrokManager {
       await fs.writeFile(this.securityConfigPath, securityConfig);
       console.log('✅ Updated securityConfig.js');
 
-      // Always create frontend runtime config for development use
+      // Always create frontend runtime config for ngrok use
       const frontendConfigPath = path.join(__dirname, 'kelmah-frontend', 'public', 'runtime-config.json');
       const runtimeConfig = {
         ngrokUrl: apiUrl,
         websocketUrl: wsUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:'),
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        isDevelopment: !isProductionSetup  // Flag to indicate this is for development
+        isDevelopment: true  // Always true for ngrok-based setup
       };
       await fs.writeFile(frontendConfigPath, JSON.stringify(runtimeConfig, null, 2));
       console.log('✅ Created frontend runtime config');
