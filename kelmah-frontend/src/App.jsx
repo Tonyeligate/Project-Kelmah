@@ -167,12 +167,18 @@ const AppContent = () => {
       return;
     }
 
-      const checkAuth = () => {
-        // Always use real authentication
+    // Skip verifyAuth if already loading to prevent race conditions
+    if (loading) {
+      console.log('Auth verification skipped - already loading');
+      return;
+    }
+
+    const checkAuth = () => {
+      // Always use real authentication
       const token = secureStorage.getAuthToken() || localStorage.getItem(AUTH_CONFIG.tokenKey);
 
-      // Only verify auth if Redux state is currently unauthenticated.
-      if (!isAuthenticated) {
+      // Only verify auth if Redux state is currently unauthenticated AND not loading
+      if (!isAuthenticated && !loading) {
         if (token) {
           console.log('Token found and no authenticated user – verifying auth state...');
           dispatch(verifyAuth());
@@ -180,14 +186,15 @@ const AppContent = () => {
           console.log('No token found in storage');
         }
       } else {
-        // Already authenticated; skip verification to avoid redundant network calls
-        console.log('User already authenticated – skipping verifyAuth');
+        // Already authenticated or loading; skip verification to avoid redundant network calls
+        console.log('User already authenticated or loading – skipping verifyAuth');
       }
     };
 
-    // Check auth when component mounts or location changes
-    checkAuth();
-  }, [dispatch, location.pathname, isAuthenticated]);
+    // Use a slight delay to prevent race conditions during login flow
+    const timeoutId = setTimeout(checkAuth, 100);
+    return () => clearTimeout(timeoutId);
+  }, [dispatch, location.pathname, isAuthenticated, loading]);
 
   // Enhanced user role detection that works with different API response formats
   const getUserRole = () => {

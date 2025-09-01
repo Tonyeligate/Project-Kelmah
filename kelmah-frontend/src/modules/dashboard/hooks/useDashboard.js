@@ -31,8 +31,8 @@ export const useDashboard = () => {
 
   // Initialize socket connection and listeners when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      // Connect to socket
+    if (isAuthenticated && !isSocketConnected) {
+      // Connect to socket only if not already connected
       dashboardService.connect();
       setIsSocketConnected(dashboardService.connected);
 

@@ -53,12 +53,16 @@ export const MessageProvider = ({ children }) => {
     }
   }, []);
 
-  // WebSocket connection setup
+  // WebSocket connection setup with singleton pattern to prevent multiple connections
   const connectWebSocket = useCallback(() => {
     if (!user || socket) return;
 
     const token = getToken();
     if (!token) return;
+
+    // Prevent multiple concurrent connection attempts
+    if (connectWebSocket._connecting) return;
+    connectWebSocket._connecting = true;
 
     // WebSocket URL based on environment with robust fallbacks
     // Use dedicated WebSocket URL from runtime config
@@ -79,19 +83,28 @@ export const MessageProvider = ({ children }) => {
       upgrade: true,
       timeout: 20000,
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 3, // Reduced to prevent spam
+      reconnectionDelay: 2000, // Increased delay
+      reconnectionDelayMax: 5000,
+      maxReconnectionAttempts: 3,
     });
 
     // Connection events
     newSocket.on('connect', () => {
       console.log('✅ WebSocket connected for messaging');
       setIsConnected(true);
+      connectWebSocket._connecting = false;
     });
 
     newSocket.on('disconnect', () => {
       console.log('❌ WebSocket disconnected');
       setIsConnected(false);
+      connectWebSocket._connecting = false;
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('🚨 WebSocket connection error:', error);
+      connectWebSocket._connecting = false;
     });
 
     newSocket.on('connected', (data) => {

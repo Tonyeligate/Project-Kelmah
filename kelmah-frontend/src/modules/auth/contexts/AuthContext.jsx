@@ -64,10 +64,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     window.addEventListener('auth:tokenExpired', handleTokenExpired);
-    initAuth();
+    
+    // Use timeout to prevent race conditions with Redux auth
+    const timeoutId = setTimeout(initAuth, 50);
 
     return () => {
       window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+      clearTimeout(timeoutId);
     };
   }, [isInitialized, navigate]);
 

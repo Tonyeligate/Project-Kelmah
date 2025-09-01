@@ -11,6 +11,7 @@ class WebSocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
+    this._connecting = false; // Prevent multiple concurrent connections
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 1000;
@@ -28,6 +29,10 @@ class WebSocketService {
    */
   connect(userId, userRole, token) {
     try {
+      // Prevent multiple concurrent connections
+      if (this._connecting) return;
+      this._connecting = true;
+
       // Disconnect existing connection
       if (this.socket) {
         this.disconnect();
@@ -48,16 +53,11 @@ class WebSocketService {
         },
         transports: ['websocket', 'polling'],
         upgrade: true,
-        rememberUpgrade: true,
         timeout: 20000,
-        forceNew: true,
         reconnection: true,
-        reconnectionAttempts: this.maxReconnectAttempts,
-        reconnectionDelay: this.reconnectDelay,
+        reconnectionAttempts: 3, // Reduced to prevent spam
+        reconnectionDelay: 2000, // Increased delay
         reconnectionDelayMax: 5000,
-        maxHttpBufferSize: 1e8,
-        pingTimeout: 60000,
-        pingInterval: 25000
       });
 
       this.setupEventListeners(userId, userRole);
@@ -66,6 +66,7 @@ class WebSocketService {
     } catch (error) {
       console.error('WebSocket connection error:', error);
       this.handleConnectionError(error);
+      this._connecting = false;
     }
   }
 
@@ -78,6 +79,7 @@ class WebSocketService {
       console.log('✅ WebSocket connected:', this.socket.id);
       this.isConnected = true;
       this.reconnectAttempts = 0;
+      this._connecting = false;
       
       // Join user-specific room
       this.socket.emit('join-room', {
@@ -106,6 +108,7 @@ class WebSocketService {
     this.socket.on('disconnect', (reason) => {
       console.log('❌ WebSocket disconnected:', reason);
       this.isConnected = false;
+      this._connecting = false;
       this.stopPingMonitoring();
       
       store.dispatch(addNotification({
@@ -120,6 +123,7 @@ class WebSocketService {
 
     this.socket.on('connect_error', (error) => {
       console.error('WebSocket connection error:', error);
+      this._connecting = false;
       this.handleConnectionError(error);
     });
 
