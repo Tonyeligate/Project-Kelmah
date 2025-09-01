@@ -60,18 +60,29 @@ export const SERVICES = {
 };
 
 // Primary API URL selection with mixed-content protection
-// If the page is served over HTTPS and VITE_API_URL is http, prefer relative '/api' to avoid mixed content
 const computeApiBase = () => {
   const envUrl = import.meta.env.VITE_API_URL;
+  const isProduction = import.meta.env.PROD;
   const isBrowser = typeof window !== 'undefined';
   const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
 
-  // On Vercel or any HTTPS host, avoid absolute http base to prevent mixed-content
-  if (isHttpsPage && typeof envUrl === 'string' && envUrl.startsWith('http:')) {
-    return '/api';
+  // If we have an environment URL, use it (unless it's http on https page)
+  if (envUrl) {
+    // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
+    if (isHttpsPage && envUrl.startsWith('http:')) {
+      console.warn('⚠️ Rejecting http URL on https page, falling back to production backend');
+      return 'https://kelmah-backend-six.vercel.app';
+    }
+    return envUrl;
   }
-  // Default to env when safe, otherwise use gateway-relative '/api'
-  return envUrl || '/api';
+  
+  // Production fallback: use the production backend URL
+  if (isProduction) {
+    return 'https://kelmah-backend-six.vercel.app';
+  }
+  
+  // Development fallback: use relative API Gateway path
+  return '/api';
 };
 
 export const API_BASE_URL = computeApiBase();

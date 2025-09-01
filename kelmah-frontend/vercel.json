@@ -3,15 +3,5 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://f81057a8b9c9.ngrok-free.app/api/$1"
-    },
-    {
-      "source": "/socket.io/(.*)",
-      "destination": "https://bdb32630d1c3.ngrok-free.app/socket.io/$1"
-    }
-  ]
+  "installCommand": "npm install --legacy-peer-deps"
 }

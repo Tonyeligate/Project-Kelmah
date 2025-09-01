@@ -6,28 +6,43 @@
 // Function to get current ngrok URL from config file
 const getCurrentNgrokUrl = async () => {
   try {
+    // In production mode, prefer explicit environment variables over ngrok
+    const isProduction = import.meta.env.MODE === 'production';
+    const hasExplicitApiUrl = import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http');
+    
+    if (isProduction && hasExplicitApiUrl) {
+      console.log('🎯 Production mode: Using explicit API URL instead of ngrok');
+      return null; // Don't use ngrok in production when explicit URL is set
+    }
+    
     if (typeof window !== 'undefined') {
       // Browser environment - try to get from localStorage first
       const storedUrl = localStorage.getItem('kelmah_ngrok_url');
-      if (storedUrl) {
+      if (storedUrl && !isProduction) {
         return storedUrl;
       }
       
-      // Try to fetch from runtime config file
-      try {
-        const response = await fetch('/runtime-config.json');
-        if (response.ok) {
-          const config = await response.json();
-          const url = config.ngrokUrl;
-          
-          // Store in localStorage for future use
-          if (url) {
-            localStorage.setItem('kelmah_ngrok_url', url);
-            return url;
+      // Try to fetch from runtime config file (only in development)
+      if (!isProduction) {
+        try {
+          const response = await fetch('/runtime-config.json');
+          if (response.ok) {
+            const config = await response.json();
+            
+            // Check if this runtime config is for development
+            if (config.isDevelopment !== false) {
+              const url = config.ngrokUrl;
+              
+              // Store in localStorage for future use
+              if (url) {
+                localStorage.setItem('kelmah_ngrok_url', url);
+                return url;
+              }
+            }
           }
+        } catch (fetchError) {
+          console.warn('Failed to fetch runtime config:', fetchError);
         }
-      } catch (fetchError) {
-        console.warn('Failed to fetch runtime config:', fetchError);
       }
       
       // Fallback to environment variable
@@ -69,6 +84,15 @@ export const getWebSocketUrl = async () => {
 
 // Function to get API URL dynamically
 export const getApiUrl = async () => {
+  // In production mode, prioritize environment variables over ngrok
+  const isDevelopment = import.meta.env.MODE === 'development';
+  const prodApiUrl = import.meta.env.VITE_API_URL;
+  
+  if (!isDevelopment && prodApiUrl) {
+    return prodApiUrl;
+  }
+  
+  // In development or when no prod URL is set, use ngrok
   const ngrokUrl = await getCurrentNgrokUrl();
   
   if (ngrokUrl) {
@@ -82,10 +106,19 @@ export const getApiUrl = async () => {
 // Synchronous version for environment configuration
 export const getWebSocketUrlSync = () => {
   try {
+    // In production mode, prioritize environment variables over ngrok
+    const isDevelopment = import.meta.env.MODE === 'development';
+    
+    // If we have a production WebSocket URL set, use it (unless in development)
+    const prodWsUrl = import.meta.env.VITE_WS_URL;
+    if (!isDevelopment && prodWsUrl) {
+      return prodWsUrl;
+    }
+    
     if (typeof window !== 'undefined') {
-      // Try to get from runtime config synchronously (this will work if the file is already loaded)
+      // In development or when no prod URL is set, check runtime config
       const runtimeConfig = window.__RUNTIME_CONFIG__;
-      if (runtimeConfig) {
+      if (runtimeConfig && runtimeConfig.isDevelopment !== false) {
         // Prioritize dedicated websocketUrl over converted ngrokUrl
         if (runtimeConfig.websocketUrl) {
           return runtimeConfig.websocketUrl;
@@ -95,10 +128,12 @@ export const getWebSocketUrlSync = () => {
         }
       }
       
-      // Fallback to localStorage
-      const storedUrl = localStorage.getItem('kelmah_ngrok_url');
-      if (storedUrl) {
-        return storedUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+      // Fallback to localStorage (development only)
+      if (isDevelopment) {
+        const storedUrl = localStorage.getItem('kelmah_ngrok_url');
+        if (storedUrl) {
+          return storedUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+        }
       }
     }
     
