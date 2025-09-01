@@ -33,7 +33,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     dispatch(fetchDashboardData());
-  }, [dispatch]);
+  }, []); // Fixed: Remove dispatch dependency to prevent infinite loop
 
   // Show loading screen if auth or data is loading
   if (authLoading || dataLoading) {

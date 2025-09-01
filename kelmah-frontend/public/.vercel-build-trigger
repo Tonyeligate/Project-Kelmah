@@ -1,0 +1,4 @@
+BUILD_TRIGGER=2024-01-20-fix-sw-deployment
+# This file forces Vercel to recognize sw.js deployment
+# ServiceWorker deployment fix - force cache refresh
+TIMESTAMP=1705778400

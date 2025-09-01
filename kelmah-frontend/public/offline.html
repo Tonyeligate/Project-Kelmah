@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Kelmah</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFD700, #DAA520);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a1a1a;
+            box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .offline-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 30px;
+            opacity: 0.7;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 30px;
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .features h3 {
+            color: #FFD700;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .features-list {
+            list-style: none;
+            text-align: left;
+        }
+
+        .features-list li {
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li::before {
+            content: '✓';
+            color: #FFD700;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .retry-button {
+            background: linear-gradient(45deg, #FFD700, #DAA520);
+            color: #1a1a1a;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            margin: 10px;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .secondary-button {
+            background: transparent;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .secondary-button:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .connection-status.checking {
+            background: rgba(255, 193, 7, 0.1);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .connection-status.online {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .connection-status.offline {
+            background: rgba(244, 67, 54, 0.1);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="logo">K</div>
+        
+        <svg class="offline-icon pulse" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="#FFD700"/>
+        </svg>
+
+        <h1>You're Offline</h1>
+        <p class="subtitle">🇬🇭 No Internet Connection</p>
+        <p class="description">
+            Don't worry! Kelmah works even when you're offline. 
+            Some features are available while you wait for your connection to return.
+        </p>
+
+        <div class="features">
+            <h3>📱 What You Can Do Offline</h3>
+            <ul class="features-list">
+                <li>View saved job listings</li>
+                <li>Browse worker profiles</li>
+                <li>Read cached messages</li>
+                <li>Access your dashboard</li>
+                <li>Prepare job applications</li>
+            </ul>
+        </div>
+
+        <div class="connection-status offline" id="connectionStatus">
+            📶 Checking connection...
+        </div>
+
+        <button class="retry-button" onclick="checkConnection()">
+            🔄 Check Connection
+        </button>
+        
+        <button class="secondary-button" onclick="goOffline()">
+            📱 Browse Offline
+        </button>
+
+        <div class="footer">
+            Kelmah - Ghana's Premier Job Marketplace<br>
+            Optimized for your network conditions
+        </div>
+    </div>
+
+    <script>
+        let isOnline = navigator.onLine;
+        let connectionCheckInterval;
+
+        // Check connection status
+        function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = 'connection-status checking';
+            statusEl.innerHTML = '📶 Checking connection...';
+
+            // Try to fetch a small resource
+            fetch('/manifest.json?t=' + Date.now(), { 
+                method: 'HEAD',
+                cache: 'no-cache',
+                signal: AbortSignal.timeout(5000)
+            })
+            .then(response => {
+                if (response.ok) {
+                    statusEl.className = 'connection-status online';
+                    statusEl.innerHTML = '✅ Connection restored! Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .catch(error => {
+                statusEl.className = 'connection-status offline';
+                statusEl.innerHTML = '❌ Still offline. We\'ll keep checking...';
+                
+                // Auto-retry in 10 seconds
+                setTimeout(checkConnection, 10000);
+            });
+        }
+
+        // Go to offline browsing mode
+        function goOffline() {
+            // Try to navigate to cached homepage
+            window.location.href = '/';
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            isOnline = true;
+            checkConnection();
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = 'connection-status offline';
+            statusEl.innerHTML = '❌ Connection lost';
+        });
+
+        // Auto-check connection every 30 seconds
+        connectionCheckInterval = setInterval(() => {
+            if (!isOnline) {
+                checkConnection();
+            }
+        }, 30000);
+
+        // Initial connection check
+        setTimeout(checkConnection, 2000);
+
+        // Service Worker registration message
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data.type === 'CACHE_UPDATED') {
+                    console.log('🔄 App cache updated');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

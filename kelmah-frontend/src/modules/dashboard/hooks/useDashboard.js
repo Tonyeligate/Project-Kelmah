@@ -227,7 +227,7 @@ export const useDashboard = () => {
     }
   }, [dispatch]);
 
-  // Load all dashboard data when authenticated
+  // Load all dashboard data when authenticated (FIXED: No function dependencies)
   useEffect(() => {
     if (isAuthenticated) {
       loadOverview();
@@ -240,18 +240,7 @@ export const useDashboard = () => {
       loadNotificationsSummary();
       loadRealTimeStats();
     }
-  }, [
-    isAuthenticated,
-    loadOverview,
-    loadRecentActivity,
-    loadStatistics,
-    loadUpcomingTasks,
-    loadRecentMessages,
-    loadPerformanceMetrics,
-    loadQuickActions,
-    loadNotificationsSummary,
-    loadRealTimeStats,
-  ]);
+  }, [isAuthenticated]); // Fixed: Only depend on isAuthenticated to prevent infinite loop
 
   return {
     hasMore,

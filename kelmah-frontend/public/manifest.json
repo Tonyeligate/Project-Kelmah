@@ -1,0 +1,56 @@
+{
+  "name": "Kelmah - Ghana's Premier Job Marketplace",
+  "short_name": "Kelmah",
+  "description": "Connect with skilled vocational workers across Ghana. Find carpenters, plumbers, electricians, and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1a1a1a",
+  "background_color": "#1a1a1a",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-GH",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Find Work",
+      "short_name": "Find Work",
+      "description": "Browse and apply for jobs",
+      "url": "/worker/find-work"
+    },
+    {
+      "name": "Post Job",
+      "short_name": "Post Job",
+      "description": "Post a new job listing",
+      "url": "/hirer/jobs/post"
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "description": "Check your messages",
+      "url": "/messages"
+    },
+    {
+      "name": "Payments",
+      "short_name": "Payments",
+      "description": "Manage payments and earnings",
+      "url": "/payments"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "display_override": ["window-controls-overlay", "standalone"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}
