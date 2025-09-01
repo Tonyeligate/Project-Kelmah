@@ -67,6 +67,7 @@ build/
 # Gatsby files
 .cache/
 public
+!kelmah-frontend/public/
 
 # Storybook build outputs
 .out
@@ -116,3 +117,6 @@ render-cli/
 temp/
 data/
 .vercel/
+
+# Allow runtime configuration files
+!kelmah-frontend/public/runtime-config.json
