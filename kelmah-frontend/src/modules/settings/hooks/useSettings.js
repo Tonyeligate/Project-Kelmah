@@ -35,10 +35,10 @@ export const useSettings = () => {
   }, [dispatch]);
 
   const updateSettings = useCallback(
-    async (settings) => {
+    async (newSettings) => {
       try {
         dispatch(setLoading(true));
-        const updatedSettings = await settingsService.updateSettings(settings);
+        const updatedSettings = await settingsService.updateSettings(newSettings);
         dispatch(setSettings(updatedSettings));
         return updatedSettings;
       } catch (error) {
@@ -123,23 +123,23 @@ export const useSettings = () => {
 
   const loadLanguages = useCallback(async () => {
     try {
-      const availableLanguages = await settingsService.getLanguages();
-      setLanguages(availableLanguages);
-      return availableLanguages;
+      const languages = await settingsService.getAvailableLanguages();
+      setLanguages(languages);
+      return languages;
     } catch (error) {
       console.error('Error loading languages:', error);
-      throw error;
+      return [];
     }
   }, []);
 
   const loadThemes = useCallback(async () => {
     try {
-      const availableThemes = await settingsService.getThemes();
-      setThemes(availableThemes);
-      return availableThemes;
+      const themes = await settingsService.getAvailableThemes();
+      setThemes(themes);
+      return themes;
     } catch (error) {
       console.error('Error loading themes:', error);
-      throw error;
+      return [];
     }
   }, []);
 
@@ -183,3 +183,5 @@ export const useSettings = () => {
     resetSettings,
   };
 };
+
+export default useSettings;
