@@ -176,11 +176,11 @@ const EnhancedWorkerDashboard = () => {
 
   // Load initial data - properly memoized to prevent infinite re-renders
   useEffect(() => {
-    if (userId && !data.metrics) {
-      console.log('Loading dashboard data for user:', userId);
+    if (userId) {
+      console.log('Loading dashboard data for user:', userId, 'Current data:', data);
       dispatch(fetchDashboardData());
     }
-  }, [dispatch, userId, data.metrics]);
+  }, [dispatch, userId]); // Removed data.metrics dependency to always fetch
 
   // Add comprehensive loading state checks to prevent component crashes
   if (!user) {
@@ -197,9 +197,9 @@ const EnhancedWorkerDashboard = () => {
     );
   }
 
-  // Add loading protection for dashboard data
-  if (loading || !data || !data.metrics) {
-    console.log('Dashboard: Loading dashboard data...', { loading, hasData: !!data, hasMetrics: !!data?.metrics });
+  // Add loading protection only for initial loading, not data availability
+  if (loading && !data?.metrics) {
+    console.log('Dashboard: Initial loading...', { loading, hasData: !!data, hasMetrics: !!data?.metrics });
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -270,8 +270,17 @@ const EnhancedWorkerDashboard = () => {
 
   // Memoized statistics to prevent recalculation on every render
   const statistics = useMemo(() => {
-    // Ensure data.metrics exists and has proper structure
-    const metrics = data?.metrics || {};
+    // Ensure data.metrics exists and has proper structure, provide fallbacks
+    const metrics = data?.metrics || {
+      totalJobs: 0,
+      activeApplications: 0,
+      totalEarnings: 0,
+      profileViews: 0,
+      jobsChange: 0,
+      applicationsChange: 0,
+      earningsChange: 0,
+      viewsChange: 0
+    };
     
     // Always return an array to prevent map errors
     try {
