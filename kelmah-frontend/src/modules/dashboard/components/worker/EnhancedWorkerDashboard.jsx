@@ -198,8 +198,8 @@ const EnhancedWorkerDashboard = () => {
   }
 
   // Add loading protection for dashboard data
-  if (loading) {
-    console.log('Dashboard: Loading dashboard data...');
+  if (loading || !data || !data.metrics) {
+    console.log('Dashboard: Loading dashboard data...', { loading, hasData: !!data, hasMetrics: !!data?.metrics });
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -272,7 +272,10 @@ const EnhancedWorkerDashboard = () => {
   const statistics = useMemo(() => {
     // Ensure data.metrics exists and has proper structure
     const metrics = data?.metrics || {};
-    return [
+    
+    // Always return an array to prevent map errors
+    try {
+      return [
     {
       id: 'total-jobs',
       title: 'Total Jobs',
@@ -306,6 +309,10 @@ const EnhancedWorkerDashboard = () => {
       color: GhanaTheme.red,
     },
   ];
+    } catch (error) {
+      console.error('Error creating statistics array:', error);
+      return []; // Return empty array on error
+    }
   }, [data?.metrics]);
 
   // Memoized quick actions to prevent recalculation
@@ -447,7 +454,7 @@ const EnhancedWorkerDashboard = () => {
 
           {/* Statistics Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            {statistics.map((stat, index) => (
+            {Array.isArray(statistics) && statistics.map((stat, index) => (
               <Grid item xs={6} md={3} key={stat.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
