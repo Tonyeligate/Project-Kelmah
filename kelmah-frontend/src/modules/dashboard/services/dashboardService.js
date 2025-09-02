@@ -11,7 +11,6 @@ class DashboardService {
     this.socket = null;
     this.listeners = {};
     this.connected = false;
-    this._connecting = false; // Prevent multiple concurrent connections
   }
 
   /**
@@ -23,28 +22,24 @@ class DashboardService {
   }
 
   /**
-   * Initialize WebSocket connection for dashboard with singleton pattern
+   * Initialize WebSocket connection for dashboard
    */
   connect() {
-    if (this.socket || this._connecting) return;
+    if (this.socket) return;
 
     if (!this.token) return;
-
-    this._connecting = true;
 
     this.socket = io((typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || '/socket.io', {
       auth: { token: this.token },
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionAttempts: 3, // Reduced to prevent spam
-      reconnectionDelay: 2000, // Increased delay
-      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     this.socket.on('connect', () => {
       this.connected = true;
-      this._connecting = false;
       console.log('Dashboard socket connected');
 
       // Join dashboard channel
@@ -54,13 +49,7 @@ class DashboardService {
 
     this.socket.on('disconnect', () => {
       this.connected = false;
-      this._connecting = false;
       console.log('Dashboard socket disconnected');
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('Dashboard socket connection error:', error);
-      this._connecting = false;
     });
 
     // Setup listeners for different dashboard events
@@ -91,7 +80,6 @@ class DashboardService {
     this.socket.disconnect();
     this.socket = null;
     this.connected = false;
-    this._connecting = false;
   }
 
   /**

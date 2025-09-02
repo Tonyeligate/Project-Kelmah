@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -86,7 +86,7 @@ const EnhancedWorkerDashboard = () => {
   const [completion, setCompletion] = useState(null);
   const [availability, setAvailability] = useState({ status: 'available', isAvailable: true });
 
-  // Load profile completeness
+  // Load profile completeness - FIXED: Added dependency array
   useEffect(() => {
     const load = async () => {
       try {
@@ -96,10 +96,14 @@ const EnhancedWorkerDashboard = () => {
         console.warn('Failed to load profile completion', e?.message);
       }
     };
-    load();
-  }, []);
+    
+    // Only load if completion is null to prevent infinite calls
+    if (completion === null) {
+      load();
+    }
+  }, [completion]); // Added dependency
 
-  // Load availability for header chips
+  // Load availability for header chips - FIXED: Added dependency array and guard
   useEffect(() => {
     const loadAvailability = async () => {
       try {
@@ -111,11 +115,15 @@ const EnhancedWorkerDashboard = () => {
         console.warn('Failed to load availability', e?.message);
       }
     };
-    loadAvailability();
-  }, [user]);
+    
+    // Only load if user exists and availability hasn't been loaded
+    if (user && (!availability || availability.status === 'available')) {
+      loadAvailability();
+    }
+  }, [user?.id, user?._id, user?.userId]); // Added specific user ID dependencies
 
-  // Handle refresh functionality
-  const handleRefresh = async () => {
+  // Handle refresh functionality - FIXED: Added useCallback to prevent re-creation
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       // Simulate refresh delay
@@ -127,7 +135,7 @@ const EnhancedWorkerDashboard = () => {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, []); // No dependencies needed
 
   // Dashboard statistics
   const statistics = useMemo(() => [
