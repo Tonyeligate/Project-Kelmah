@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../auth/contexts/AuthContext';"
 import portfolioService from '../services/portfolioService';
 import fileUploadService from '../../common/services/fileUploadService';
 import {
@@ -53,7 +55,8 @@ import ProjectGallery from './ProjectGallery';
 import { formatCurrency, formatDate } from '../../../utils/formatters';
 
 const PortfolioManager = () => {
-  const { user } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user } = useSelector((state) => state.auth);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));

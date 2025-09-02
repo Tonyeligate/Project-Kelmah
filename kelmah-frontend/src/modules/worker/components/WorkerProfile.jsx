@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../auth/contexts/AuthContext';"
 import workerService from '../services/workerService';
 import {
   Box,
@@ -160,7 +162,8 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 }));
 
 function WorkerProfile() {
-  const { user: authUser } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user: authUser } = useSelector((state) => state.auth);
   const { workerId } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../modules/auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../modules/auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 
 // Real-time Components
 const RealTimeChat = React.lazy(() => import('../modules/messaging/components/RealTimeChat'));
@@ -17,7 +19,8 @@ const JobAlertsPage = React.lazy(() => import('../modules/jobs/pages/JobAlertsPa
  * These routes handle real-time messaging, notifications, and live updates
  */
 const RealTimeRoutes = () => {
-  const { user, isAuthenticated } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {

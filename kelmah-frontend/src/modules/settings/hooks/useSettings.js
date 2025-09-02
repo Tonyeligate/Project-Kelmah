@@ -16,7 +16,8 @@ export const useSettings = () => {
   const settings = useSelector(selectSettings);
   const loading = useSelector(selectSettingsLoading);
   const error = useSelector(selectSettingsError);
-  const { isAuthenticated } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [languages, setLanguages] = useState([]);
   const [themes, setThemes] = useState([]);
 

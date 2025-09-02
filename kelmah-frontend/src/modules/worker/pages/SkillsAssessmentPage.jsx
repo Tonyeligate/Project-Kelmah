@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Container,
@@ -113,7 +114,8 @@ import {
   CartesianGrid,
   Tooltip as ChartTooltip,
 } from 'recharts';
-import { useAuth } from '../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../auth/contexts/AuthContext';"
 import workerService from '../services/workerService';
 
 // Animations
@@ -227,7 +229,8 @@ function TabPanel(props) {
 }
 
 const SkillsAssessmentPage = () => {
-  const { user } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const { testId } = useParams();
   const theme = useTheme();

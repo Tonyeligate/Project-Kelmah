@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Grid,
@@ -62,7 +63,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { useAuth } from '../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../auth/contexts/AuthContext';
 import { useMessages } from '../contexts/MessageContext';
 // Use consolidated messaging service client that matches backend routes
 import messagingService from '../services/messagingService';
@@ -71,7 +73,8 @@ import Chatbox from '../components/common/Chatbox';
 
 // Enhanced Messaging Page with modern features
 const EnhancedMessagingPage = () => {
-  const { user } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user } = useSelector((state) => state.auth);
   const { search } = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();

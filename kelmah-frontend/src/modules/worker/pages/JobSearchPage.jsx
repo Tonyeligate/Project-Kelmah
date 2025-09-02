@@ -139,7 +139,8 @@ import {
   setFilters,
   selectJobsPagination,
 } from '../../jobs/services/jobSlice';
-import useAuth from '../../auth/hooks/useAuth';
+// Removed AuthContext import to prevent dual state management conflicts
+// import useAuth from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 // Enhanced Animations with Worker-focused Themes
@@ -383,7 +384,8 @@ const JobSearchPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isInitialized } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user, isAuthenticated: isInitialized } = useSelector((state) => state.auth);
   const authState = useAuthCheck();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
