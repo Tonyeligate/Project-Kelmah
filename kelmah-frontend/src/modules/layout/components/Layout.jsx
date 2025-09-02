@@ -97,7 +97,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
       );
     }
 
-    // Mobile: temporary drawer + AppBar + bottom nav + auto-show header
+    // Mobile: temporary drawer + bottom nav + auto-show header (NO DUPLICATE APP BAR)
     return (
       <Box
         sx={{
@@ -111,28 +111,6 @@ const Layout = ({ children, toggleTheme, mode }) => {
         }}
       >
         <Header toggleTheme={toggleTheme} mode={mode} />
-        <AppBar
-          position="fixed"
-          elevation={0}
-          sx={{
-            zIndex: theme.zIndex.drawer + 1,
-            backgroundColor: theme.palette.secondary.main,
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap>
-              Kelmah
-            </Typography>
-          </Toolbar>
-        </AppBar>
         <Sidebar
           variant="temporary"
           open={mobileOpen}
@@ -144,14 +122,14 @@ const Layout = ({ children, toggleTheme, mode }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            pt: '64px',
+            pt: '56px', // Reduced from 64px since no duplicate AppBar
             pb: '56px',
             px: { xs: 1, sm: 2 },
             overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
             // Fix mobile scroll issues
-            maxHeight: 'calc(100vh - 120px)',
+            maxHeight: 'calc(100vh - 112px)', // Reduced from 120px
             position: 'relative',
           }}
         >

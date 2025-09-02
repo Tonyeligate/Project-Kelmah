@@ -386,7 +386,7 @@ const EnhancedHirerDashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       <ErrorBoundary>
-        <AnimatePresence>
+      <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

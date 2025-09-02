@@ -773,7 +773,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   if (authState.isLoading || !authState.isReady) {
     return (
       <StyledAppBar position="static" elevation={0}>
-        <Toolbar sx={{ minHeight: { xs: 70, sm: 80 } }}>
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}> {/* Reduced from 70/80 to 56/64 */}
           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
             <BrandLogo component={RouterLink} to="/">
               <LogoIcon>K</LogoIcon>
@@ -797,15 +797,15 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   return (
     <StyledAppBar position="static" elevation={0}>
       <Toolbar sx={{ 
-        minHeight: { xs: 56, sm: 64, md: 72 }, 
+        minHeight: { xs: 48, sm: 52, md: 56 }, // Reduced from 56/64/72 to 48/52/56
         px: { xs: 1, sm: 2, md: 3 },
-        py: { xs: 0.5, sm: 1 },
+        py: { xs: 0.25, sm: 0.5 }, // Reduced padding
         gap: { xs: 0.5, sm: 1 },
         // SportyBet-style compact mobile header
         '@media (max-width: 768px)': {
-          minHeight: '52px',
+          minHeight: '44px', // Reduced from 52px
           px: 1,
-          py: 0.5,
+          py: 0.25, // Reduced padding
         }
       }}>
         {/* Mobile Menu Button */}

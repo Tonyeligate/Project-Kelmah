@@ -110,7 +110,7 @@ const Login = () => {
             const result = await dispatch(loginAction({ 
         email: email.trim(), 
         password,
-        rememberMe
+        rememberMe 
       })).unwrap();
       
       console.log('Login successful, redirecting to dashboard');
