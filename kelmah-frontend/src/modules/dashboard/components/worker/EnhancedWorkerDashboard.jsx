@@ -53,6 +53,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
 import { useAuth } from '../../../auth/contexts/AuthContext';
 import workersApi from '../../../../api/services/workersApi';
+import VocationalJobCategories from './VocationalJobCategories';
+import VisualQuickActions from './VisualQuickActions';
 
 // Ghana-inspired theme
 const GhanaTheme = {
@@ -416,23 +418,15 @@ const EnhancedWorkerDashboard = () => {
             ))}
           </Grid>
 
-          {/* Quick Actions */}
-          <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 3 }}>
-            Quick Actions
-          </Typography>
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            {quickActions.map((action, index) => (
-              <Grid item xs={6} md={3} key={action.title}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <QuickActionCard {...action} />
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
+          {/* Visual Job Categories for Easy Navigation */}
+          <Box sx={{ mb: 4 }}>
+            <VocationalJobCategories />
+          </Box>
+
+          {/* Visual Quick Actions */}
+          <Box sx={{ mb: 4 }}>
+            <VisualQuickActions />
+          </Box>
 
           {/* Recent Activity */}
           <Grid container spacing={3}>

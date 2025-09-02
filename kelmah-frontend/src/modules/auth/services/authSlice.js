@@ -113,6 +113,15 @@ export const verifyAuth = createAsyncThunk(
           user: verify.user,
           isAuthenticated: true,
         };
+      } else if (verify?.success) {
+        // API returned success but no user data, use stored user
+        const storedUserData = secureStorage.getUserData();
+        if (storedUserData) {
+          return {
+            user: storedUserData,
+            isAuthenticated: true,
+          };
+        }
       }
 
       throw new Error('Could not verify authentication');
