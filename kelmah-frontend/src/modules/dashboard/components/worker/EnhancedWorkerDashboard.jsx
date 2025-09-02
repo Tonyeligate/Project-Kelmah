@@ -182,7 +182,7 @@ const EnhancedWorkerDashboard = () => {
     }
   }, [dispatch, userId, data.metrics]);
 
-  // Add loading state check to prevent component crashes
+  // Add comprehensive loading state checks to prevent component crashes
   if (!user) {
     console.log('Dashboard: Waiting for user data...');
     return (
@@ -191,6 +191,21 @@ const EnhancedWorkerDashboard = () => {
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ ml: 2 }}>
             Loading your dashboard...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
+  // Add loading protection for dashboard data
+  if (loading) {
+    console.log('Dashboard: Loading dashboard data...');
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ ml: 2 }}>
+            Loading your dashboard data...
           </Typography>
         </Box>
       </Container>
@@ -446,14 +461,18 @@ const EnhancedWorkerDashboard = () => {
           </Grid>
 
           {/* Visual Job Categories for Easy Navigation */}
-          <Box sx={{ mb: 4 }}>
-            <VocationalJobCategories />
-          </Box>
+          <ErrorBoundary>
+            <Box sx={{ mb: 4 }}>
+              <VocationalJobCategories />
+            </Box>
+          </ErrorBoundary>
 
           {/* Visual Quick Actions */}
-          <Box sx={{ mb: 4 }}>
-            <VisualQuickActions />
-          </Box>
+          <ErrorBoundary>
+            <Box sx={{ mb: 4 }}>
+              <VisualQuickActions />
+            </Box>
+          </ErrorBoundary>
 
           {/* Recent Activity */}
           <Grid container spacing={3}>
