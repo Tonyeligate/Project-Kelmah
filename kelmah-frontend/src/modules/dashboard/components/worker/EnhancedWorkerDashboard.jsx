@@ -197,20 +197,13 @@ const EnhancedWorkerDashboard = () => {
     );
   }
 
-  // Add loading protection only for initial loading, not data availability
-  if (loading && !data?.metrics) {
-    console.log('Dashboard: Initial loading...', { loading, hasData: !!data, hasMetrics: !!data?.metrics });
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading your dashboard data...
-          </Typography>
-        </Box>
-      </Container>
-    );
-  }
+  // Show dashboard content immediately - loading states handled by individual components
+  console.log('Dashboard: Rendering with data:', { 
+    loading, 
+    hasData: !!data, 
+    hasMetrics: !!data?.metrics,
+    metricsKeys: data?.metrics ? Object.keys(data.metrics) : 'none'
+  });
 
   // Load profile completion - with guard to prevent infinite calls
   useEffect(() => {
