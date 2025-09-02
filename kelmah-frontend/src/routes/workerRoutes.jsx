@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
@@ -27,8 +27,8 @@ const WorkerRoutes = () => {
   const hasRole = (user, role) =>
     user?.role === role || user?.userType === role || user?.userRole === role;
   
-  // Enhanced role checking that handles race conditions
-  const isWorkerAllowed = () => {
+  // Memoized role checking to prevent infinite re-renders
+  const isWorkerAllowed = useMemo(() => {
     console.log('Worker route protection check:', {
       isAuthenticated,
       hasUser: !!user,
@@ -56,7 +56,7 @@ const WorkerRoutes = () => {
     // Otherwise, not allowed
     console.log('Worker route: Access denied - not authenticated');
     return false;
-  };
+  }, [isAuthenticated, user, loading]);
 
   return (
     <>
@@ -64,7 +64,7 @@ const WorkerRoutes = () => {
         path="/worker/dashboard"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -76,7 +76,7 @@ const WorkerRoutes = () => {
         path="/worker/skills"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -88,7 +88,7 @@ const WorkerRoutes = () => {
         path="/worker/skills/test/:testId"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -100,7 +100,7 @@ const WorkerRoutes = () => {
         path="/worker/applications"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -112,7 +112,7 @@ const WorkerRoutes = () => {
         path="/worker/schedule"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -124,7 +124,7 @@ const WorkerRoutes = () => {
         path="/worker/reviews"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -136,7 +136,7 @@ const WorkerRoutes = () => {
         path="/worker/profile/edit"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -148,7 +148,7 @@ const WorkerRoutes = () => {
         path="/worker/profile"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -160,7 +160,7 @@ const WorkerRoutes = () => {
         path="/worker/portfolio"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -172,7 +172,7 @@ const WorkerRoutes = () => {
         path="/worker/portfolio/manage"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -184,7 +184,7 @@ const WorkerRoutes = () => {
         path="/worker/certificates"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -196,7 +196,7 @@ const WorkerRoutes = () => {
         path="/worker/earnings"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -208,7 +208,7 @@ const WorkerRoutes = () => {
         path="/worker/availability"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -220,7 +220,7 @@ const WorkerRoutes = () => {
         path="/worker/find-work"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -232,7 +232,7 @@ const WorkerRoutes = () => {
         path="/worker/contracts"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -244,7 +244,7 @@ const WorkerRoutes = () => {
         path="/worker/payment"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -256,7 +256,7 @@ const WorkerRoutes = () => {
         path="/worker/payment/escrows"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -268,7 +268,7 @@ const WorkerRoutes = () => {
         path="/worker/wallet"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -280,7 +280,7 @@ const WorkerRoutes = () => {
         path="/worker/saved-jobs"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
@@ -292,7 +292,7 @@ const WorkerRoutes = () => {
         path="/worker/job-alerts"
         element={
           <ProtectedRoute
-            isAllowed={isWorkerAllowed()}
+            isAllowed={isWorkerAllowed}
             redirectPath="/login"
             loading={loading}
           >
