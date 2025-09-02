@@ -326,6 +326,10 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerAvailability, setHeaderAvailability] = useState(null);
   const [headerCompletion, setHeaderCompletion] = useState(null);
+  
+  // 🎯 AUTO-HIDE HEADER STATE
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [mouseY, setMouseY] = useState(0);
 
   // 🎯 ENHANCED: Comprehensive page type detection
   const isOnAuthPage = location.pathname.includes('/login') || 
@@ -364,6 +368,37 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
     
     return false;
   }, [isOnAuthPage, isOnHomePage, isOnDashboardPage, isInitialized, isAuthenticated]);
+
+  // 🎯 AUTO-HIDE HEADER FUNCTIONALITY
+  React.useEffect(() => {
+    if (!autoShowMode || isMobile) return; // Only on desktop with autoShowMode
+    
+    const handleMouseMove = (e) => {
+      const currentY = e.clientY;
+      setMouseY(currentY);
+      
+      // Show header when mouse is near top (within 50px)
+      if (currentY < 50) {
+        setIsHeaderVisible(true);
+      } else {
+        // Hide header when mouse moves away from top
+        setIsHeaderVisible(false);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      setIsHeaderVisible(false);
+    };
+
+    // Add event listeners
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [autoShowMode, isMobile]);
 
   // Load quick worker status for header chips
   React.useEffect(() => {
@@ -795,17 +830,35 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   }
 
   return (
-    <StyledAppBar position="static" elevation={0}>
+    <StyledAppBar 
+      position={autoShowMode && !isMobile ? "fixed" : "static"} 
+      elevation={0}
+      sx={{
+        // Auto-hide animation
+        transform: autoShowMode && !isMobile 
+          ? (isHeaderVisible ? 'translateY(0)' : 'translateY(-100%)')
+          : 'translateY(0)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        zIndex: theme.zIndex.appBar + 1,
+        // Ensure header doesn't take up space when hidden
+        ...(autoShowMode && !isMobile && !isHeaderVisible && {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+        })
+      }}
+    >
       <Toolbar sx={{ 
-        minHeight: { xs: 48, sm: 52, md: 56 }, // Reduced from 56/64/72 to 48/52/56
+        minHeight: { xs: 40, sm: 44, md: 48 }, // Further reduced: 48/52/56 → 40/44/48
         px: { xs: 1, sm: 2, md: 3 },
-        py: { xs: 0.25, sm: 0.5 }, // Reduced padding
+        py: { xs: 0.125, sm: 0.25 }, // Further reduced padding
         gap: { xs: 0.5, sm: 1 },
         // SportyBet-style compact mobile header
         '@media (max-width: 768px)': {
-          minHeight: '44px', // Reduced from 52px
+          minHeight: '36px', // Further reduced from 44px
           px: 1,
-          py: 0.25, // Reduced padding
+          py: 0.125, // Further reduced padding
         }
       }}>
         {/* Mobile Menu Button */}

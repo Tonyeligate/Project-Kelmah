@@ -74,7 +74,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
     if (isMdUp) {
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          <Header toggleTheme={toggleTheme} mode={mode} />
+          <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
           <Sidebar variant="permanent" />
           <Box 
             component="main" 
@@ -82,6 +82,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
               flexGrow: 1, 
               width: '100%',
               minWidth: 0, // Prevents flex item from growing beyond container
+              pt: { xs: '48px', sm: '52px', md: '56px' }, // Add top padding for fixed header
               p: { xs: 1, sm: 2, md: 3 },
             }}
           >
@@ -122,14 +123,14 @@ const Layout = ({ children, toggleTheme, mode }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            pt: '56px', // Reduced from 64px since no duplicate AppBar
+            pt: '48px', // Further reduced from 56px to match new header height
             pb: '56px',
             px: { xs: 1, sm: 2 },
             overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
             // Fix mobile scroll issues
-            maxHeight: 'calc(100vh - 112px)', // Reduced from 120px
+            maxHeight: 'calc(100vh - 104px)', // Reduced from 112px
             position: 'relative',
           }}
         >
