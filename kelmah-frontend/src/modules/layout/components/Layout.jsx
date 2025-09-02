@@ -17,7 +17,7 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
-import AutoShowHeader from '../../../components/AutoShowHeader';
+// Header functionality integrated into Header component
 
 /**
  * Main layout component that wraps the entire application
@@ -55,7 +55,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
           minHeight: '100vh',
           position: 'relative',
         }}>
-          <AutoShowHeader toggleTheme={toggleTheme} mode={mode} />
+          <Header toggleTheme={toggleTheme} mode={mode} />
           {children}
           <MobileBottomNav />
         </Box>
@@ -73,7 +73,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
       }, []);
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          <AutoShowHeader toggleTheme={toggleTheme} mode={mode} />
+          <Header toggleTheme={toggleTheme} mode={mode} />
           <Sidebar variant="permanent" />
           <Box 
             component="main" 
@@ -109,7 +109,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
           overflowY: 'auto',
         }}
       >
-        <AutoShowHeader toggleTheme={toggleTheme} mode={mode} />
+        <Header toggleTheme={toggleTheme} mode={mode} />
         <AppBar
           position="fixed"
           elevation={0}

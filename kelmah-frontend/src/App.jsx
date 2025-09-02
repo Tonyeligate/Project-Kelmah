@@ -51,7 +51,7 @@ import WorkerReviewsPage from './modules/reviews/pages/WorkerReviewsPage';
 import DisputesPage from './modules/disputes/pages/DisputesPage';
 import PremiumPage from './modules/premium/pages/PremiumPage';
 import EscrowDetailsPage from './modules/payment/pages/EscrowDetailsPage';
-import OfflineManager from './components/pwa/OfflineManager';
+// OfflineManager functionality handled by service worker and PWA helpers
 import { initializePWA } from './utils/pwaHelpers';
 import WorkerSearchPage from './modules/hirer/pages/WorkerSearchPage';
 import JobsPage from './modules/jobs/pages/JobsPage';
@@ -220,8 +220,7 @@ const AppContent = () => {
 
   return (
     <ContractProvider>
-      {/* PWA Offline Manager for Ghana's network conditions */}
-      <OfflineManager />
+      {/* PWA functionality handled by service worker and background sync */}
       
       <Layout toggleTheme={toggleTheme} mode={mode}>
           <Routes>

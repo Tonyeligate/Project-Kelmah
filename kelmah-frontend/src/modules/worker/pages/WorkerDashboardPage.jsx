@@ -8,7 +8,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
-import WorkerDashboard from '../../dashboard/components/worker/WorkerDashboard';
+import EnhancedWorkerDashboard from '../../dashboard/components/worker/EnhancedWorkerDashboard';
 import workerImage from '../../../assets/cartoon-worker.jpeg';
 
 const WorkerDashboardPage = () => {
@@ -92,7 +92,7 @@ const WorkerDashboardPage = () => {
           </Typography>
         </Box>
       </Box>
-      <WorkerDashboard user={displayUser} />
+                  <EnhancedWorkerDashboard user={displayUser} />
     </>
   );
 };
