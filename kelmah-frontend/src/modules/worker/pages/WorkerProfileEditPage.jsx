@@ -159,13 +159,13 @@ const WorkerProfileEditPage = () => {
           bio: profile.bio || '',
           hourlyRate: profile.hourlyRate || '',
           experience: profile.experience || '',
-          skills: profile.skills || [],
-          education: profile.education || [],
-          languages: profile.languages || [],
+          skills: Array.isArray(profile.skills) ? profile.skills : [],
+          education: Array.isArray(profile.education) ? profile.education : [],
+          languages: Array.isArray(profile.languages) ? profile.languages : [],
           location: profile.location || '',
           phone: profile.phone || '',
           profileImage: null, // Will be populated only when user changes it
-          portfolio: profile.portfolio || [],
+          portfolio: Array.isArray(profile.portfolio) ? profile.portfolio : [],
           availabilityStatus: profile?.availability?.status || 'available',
           availableHours: profile?.availability?.schedule || {
             monday: { start: '09:00', end: '17:00', available: true },
@@ -617,7 +617,7 @@ const WorkerProfileEditPage = () => {
           </Box>
           {suggestions?.length > 0 && (
             <Box sx={{ mt: 2 }}>
-              {suggestions.map((s, i) => (
+              {Array.isArray(suggestions) && suggestions.map((s, i) => (
                 <Chip key={i} label={s} sx={{ mr: 1, mb: 1 }} />
               ))}
             </Box>
@@ -853,7 +853,7 @@ const WorkerProfileEditPage = () => {
             </Box>
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {formData.skills.map((skill, index) => (
+              {Array.isArray(formData.skills) && formData.skills.map((skill, index) => (
                 <Chip
                   key={index}
                   label={skill}
@@ -933,7 +933,7 @@ const WorkerProfileEditPage = () => {
                 Added Education & Certifications
               </Typography>
 
-              {formData.education.map((edu, index) => (
+              {Array.isArray(formData.education) && formData.education.map((edu, index) => (
                 <Card key={index} variant="outlined" sx={{ mb: 1 }}>
                   <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
                     <Box
@@ -1032,7 +1032,7 @@ const WorkerProfileEditPage = () => {
                 Added Languages
               </Typography>
 
-              {formData.languages.map((lang, index) => (
+              {Array.isArray(formData.languages) && formData.languages.map((lang, index) => (
                 <Card key={index} variant="outlined" sx={{ mb: 1 }}>
                   <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
                     <Box
@@ -1089,7 +1089,7 @@ const WorkerProfileEditPage = () => {
           </Button>
 
           <Grid container spacing={3}>
-            {formData.portfolio.map((item, index) => (
+            {Array.isArray(formData.portfolio) && formData.portfolio.map((item, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card variant="outlined">
                   <CardContent>

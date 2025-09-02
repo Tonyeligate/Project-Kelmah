@@ -123,7 +123,7 @@ export const useSettings = () => {
 
   const loadLanguages = useCallback(async () => {
     try {
-      const languages = await settingsService.getAvailableLanguages();
+      const languages = await settingsService.getLanguages();
       setLanguages(languages);
       return languages;
     } catch (error) {
@@ -134,7 +134,7 @@ export const useSettings = () => {
 
   const loadThemes = useCallback(async () => {
     try {
-      const themes = await settingsService.getAvailableThemes();
+      const themes = await settingsService.getThemes();
       setThemes(themes);
       return themes;
     } catch (error) {
