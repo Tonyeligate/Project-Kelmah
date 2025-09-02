@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -60,7 +61,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
 import jobsApi from '../../../jobs/services/jobsApi';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../../auth/contexts/AuthContext';
 
 // Enhanced trade icon mapping
 // Utility function to format budget/salary data
@@ -129,7 +131,8 @@ const getPriorityChip = (job) => {
 
 const EnhancedAvailableJobs = () => {
   const theme = useTheme();
-  const { user } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user } = useSelector((state) => state.auth);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 

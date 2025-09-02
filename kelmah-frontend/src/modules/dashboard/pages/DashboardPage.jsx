@@ -8,7 +8,8 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { useAuth } from '../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../auth/contexts/AuthContext';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
 import { fetchDashboardData } from '../../dashboard/services/dashboardSlice';
 import { useDispatch } from 'react-redux';
@@ -25,7 +26,8 @@ const DashboardPage = () => {
   const theme = useTheme();
   const isMobile = false; // Disabled responsive behavior as per user requirement
   const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size
-  const { user, loading: authLoading } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user, loading: authLoading } = useSelector((state) => state.auth);
   // Get data from Redux store
   const { loading: dataLoading, error: dataError } = useSelector(
     (state) => state.dashboard,
