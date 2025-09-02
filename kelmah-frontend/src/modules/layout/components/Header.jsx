@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../auth/services/authSlice';
 import {
   AppBar,
   Toolbar,
@@ -43,7 +45,8 @@ import { styled } from '@mui/material/styles';
 import { motion, AnimatePresence } from 'framer-motion';
 import DesktopNav from './DesktopNav';
 import MobileNav from './MobileNav';
-import { useAuth } from '../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../auth/contexts/AuthContext';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
@@ -310,7 +313,9 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  // Use Redux logout action instead of AuthContext
+  const dispatch = useDispatch();
+  const logout = () => dispatch(logoutUser());
   const authState = useAuthCheck();
   
   // ✅ FIXED: Enable proper mobile responsiveness based on screen size

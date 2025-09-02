@@ -56,20 +56,20 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    // Listen for token expiry events
-    const handleTokenExpired = () => {
-      setUser(null);
-      setError('Session expired. Please login again.');
-      navigate('/login');
-    };
+      // DISABLED: Token expiry events now handled by Redux auth system
+  // const handleTokenExpired = () => {
+  //   setUser(null);
+  //   setError('Session expired. Please login again.');
+  //   navigate('/login');
+  // };
 
-    window.addEventListener('auth:tokenExpired', handleTokenExpired);
+  // window.addEventListener('auth:tokenExpired', handleTokenExpired);
     
     // Use timeout to prevent race conditions with Redux auth
     const timeoutId = setTimeout(initAuth, 50);
 
     return () => {
-      window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+      // window.removeEventListener('auth:tokenExpired', handleTokenExpired);
       clearTimeout(timeoutId);
     };
   }, [isInitialized, navigate]);

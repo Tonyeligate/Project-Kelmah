@@ -4,8 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
 import store from './store';
-// Removed AuthProvider to prevent dual state management conflicts with Redux
-// import { AuthProvider } from './modules/auth/contexts/AuthContext';
+// Temporary AuthProvider import to prevent useAuth errors during transition
+import { AuthProvider } from './modules/auth/contexts/AuthContext';
 import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
 import { PaymentProvider } from './modules/payment/contexts/PaymentContext';
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
@@ -114,7 +114,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           }}
           dense
         >
-          <NotificationProvider>
+          <AuthProvider>
+            <NotificationProvider>
               <MessageProvider>
                 <PaymentProvider>
                   <ContractProvider>
@@ -127,6 +128,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 </PaymentProvider>
               </MessageProvider>
             </NotificationProvider>
+          </AuthProvider>
         </SnackbarProvider>
       </BrowserRouter>
     </Provider>

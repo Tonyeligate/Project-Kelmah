@@ -4,10 +4,14 @@
  */
 
 import { useMemo } from 'react';
-import { useAuth } from '../modules/auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../modules/auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 
 export const useAuthCheck = () => {
-  const { user, isAuthenticated, loading, isInitialized } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const isInitialized = true; // Redux auth is always initialized
 
   // Robust authentication state checking with error handling
   const isUserAuthenticated = useMemo(() => {

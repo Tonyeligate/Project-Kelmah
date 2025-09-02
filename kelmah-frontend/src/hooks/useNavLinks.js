@@ -1,10 +1,14 @@
 import { useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../modules/auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../modules/auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 
 const useNavLinks = () => {
-  const { user, isAuthenticated: isAuthFn, hasRole, isInitialized } = useAuth();
-  const isAuthenticated = isAuthFn();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isInitialized = true; // Redux auth is always initialized
+  const hasRole = (role) => user?.role === role || user?.userType === role;
   const location = useLocation();
 
   const navLinks = useMemo(() => {
