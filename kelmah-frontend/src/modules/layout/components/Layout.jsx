@@ -44,6 +44,14 @@ const Layout = ({ children, toggleTheme, mode }) => {
     location.pathname.includes('/reviews');
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
+  
+  // Session expired banner state - moved outside conditional blocks
+  const [sessionExpired, setSessionExpired] = useState(false);
+  React.useEffect(() => {
+    const handler = () => setSessionExpired(true);
+    window.addEventListener('auth:tokenExpired', handler);
+    return () => window.removeEventListener('auth:tokenExpired', handler);
+  }, []);
 
   // Dashboard layout
   if (isDashboardPage) {
@@ -64,13 +72,6 @@ const Layout = ({ children, toggleTheme, mode }) => {
     
     // Desktop: permanent sidebar + auto-show header
     if (isMdUp) {
-      // Session expired banner state
-      const [sessionExpired, setSessionExpired] = useState(false);
-      React.useEffect(() => {
-        const handler = () => setSessionExpired(true);
-        window.addEventListener('auth:tokenExpired', handler);
-        return () => window.removeEventListener('auth:tokenExpired', handler);
-      }, []);
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
           <Header toggleTheme={toggleTheme} mode={mode} />

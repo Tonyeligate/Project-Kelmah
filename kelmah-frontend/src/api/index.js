@@ -23,7 +23,7 @@ import searchApi from './services/searchApi';
 import settingsApi from './services/settingsApi';
 
 // Check if we should use mock mode
-const USE_MOCK_MODE = true; // Set to true to use mock APIs
+const USE_MOCK_MODE = false; // Set to false to use real APIs
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
