@@ -83,7 +83,8 @@ const Layout = ({ children, toggleTheme, mode }) => {
               width: '100%',
               minWidth: 0, // Prevents flex item from growing beyond container
               pt: { xs: '48px', sm: '52px', md: '56px' }, // Add top padding for fixed header
-              p: { xs: 1, sm: 2, md: 3 },
+              px: { xs: 1, sm: 2, md: 3 }, // Only horizontal padding
+              pb: { xs: 1, sm: 2, md: 3 }, // Bottom padding
             }}
           >
             {sessionExpired && (

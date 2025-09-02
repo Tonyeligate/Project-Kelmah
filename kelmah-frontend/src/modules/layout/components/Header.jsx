@@ -528,11 +528,14 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const handleLogout = async () => {
     handleMenuClose();
     try {
-    await logout();
-    navigate('/');
+      console.log('🔄 Starting logout process...');
+      await logout();
+      console.log('✅ Logout successful, navigating to home...');
+      navigate('/');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Logout error:', error);
       // Force navigation even if logout fails
+      console.log('🔄 Force navigating to home despite logout error...');
       navigate('/');
     }
   };
@@ -840,12 +843,13 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
           : 'translateY(0)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         zIndex: theme.zIndex.appBar + 1,
-        // Ensure header doesn't take up space when hidden
-        ...(autoShowMode && !isMobile && !isHeaderVisible && {
+        // Fixed positioning for auto-hide mode
+        ...(autoShowMode && !isMobile && {
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
+          width: '100%',
         })
       }}
     >
