@@ -60,6 +60,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { useMessages } from '../contexts/MessageContext';

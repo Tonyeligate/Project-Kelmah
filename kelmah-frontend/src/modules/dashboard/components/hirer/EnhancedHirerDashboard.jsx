@@ -7,6 +7,7 @@ import {
   Typography,
   Card,
   CardContent,
+  CircularProgress,
   Avatar,
   Chip,
   Button,
@@ -56,7 +57,9 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchHirerDashboardData } from '../../services/hirerDashboardSlice';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../../auth/contexts/AuthContext';
+import ErrorBoundary from '../../../../components/common/ErrorBoundary';
 import hirersApi from '../../../../api/services/hirersApi';
 
 // Ghana-inspired theme
@@ -178,7 +181,8 @@ const HirerActionCard = React.memo(({ title, description, icon, onClick, gradien
 const EnhancedHirerDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user } = useSelector((state) => state.auth);
   const { data = {}, loading, error } = useSelector((state) => state.hirerDashboard || {});
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -196,8 +200,24 @@ const EnhancedHirerDashboard = () => {
   );
 
   // Load initial data - properly memoized to prevent infinite re-renders
+  // Add loading state check to prevent component crashes
+  if (!user) {
+    console.log('Hirer Dashboard: Waiting for user data...');
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ ml: 2 }}>
+            Loading your dashboard...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
   useEffect(() => {
     if (userId && !data.metrics) {
+      console.log('Loading hirer dashboard data for user:', userId);
       dispatch(fetchHirerDashboardData());
     }
   }, [dispatch, userId, data.metrics]);
@@ -365,7 +385,8 @@ const EnhancedHirerDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-      <AnimatePresence>
+      <ErrorBoundary>
+        <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -647,6 +668,7 @@ const EnhancedHirerDashboard = () => {
           </Grid>
         </motion.div>
       </AnimatePresence>
+      </ErrorBoundary>
     </Container>
   );
 };
