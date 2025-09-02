@@ -7,6 +7,7 @@ import {
   Typography,
   Card,
   CardContent,
+  CircularProgress,
   Avatar,
   Chip,
   Button,
@@ -51,7 +52,8 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+// Removed AuthContext import to prevent dual state management conflicts
+// import { useAuth } from '../../../auth/contexts/AuthContext';
 import workersApi from '../../../../api/services/workersApi';
 import VocationalJobCategories from './VocationalJobCategories';
 import VisualQuickActions from './VisualQuickActions';
@@ -154,7 +156,8 @@ const QuickActionCard = React.memo(({ title, description, icon, onClick, gradien
 const EnhancedWorkerDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  // Use ONLY Redux auth state to prevent dual state management conflicts
+  const { user } = useSelector((state) => state.auth);
   const { data = {}, loading, error } = useSelector((state) => state.dashboard);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -174,9 +177,25 @@ const EnhancedWorkerDashboard = () => {
   // Load initial data - properly memoized to prevent infinite re-renders
   useEffect(() => {
     if (userId && !data.metrics) {
+      console.log('Loading dashboard data for user:', userId);
       dispatch(fetchDashboardData());
     }
   }, [dispatch, userId, data.metrics]);
+
+  // Add loading state check to prevent component crashes
+  if (!user) {
+    console.log('Dashboard: Waiting for user data...');
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ ml: 2 }}>
+            Loading your dashboard...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
 
   // Load profile completion - with guard to prevent infinite calls
   useEffect(() => {
