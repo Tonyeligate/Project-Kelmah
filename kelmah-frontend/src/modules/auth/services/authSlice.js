@@ -250,22 +250,24 @@ const authSlice = createSlice({
       })
       .addCase(verifyAuth.fulfilled, (state, action) => {
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        // CRITICAL: Ensure user data is never set to undefined
+        state.user = action.payload.user || state.user;
         state.loading = false;
         state.error = null;
+        console.log('Auth verification fulfilled with user:', state.user?.email);
       })
       .addCase(verifyAuth.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         // CRITICAL: Don't immediately clear auth state on verifyAuth rejection
-        // Only clear if there's no valid token in storage
-        const hasValidToken = secureStorage.getAuthToken();
-        if (!hasValidToken) {
+        // Keep authentication state to prevent redirect loops during verification failures
+        // Only clear if we don't have existing auth state
+        if (!state.isAuthenticated || !state.user) {
           state.isAuthenticated = false;
           state.user = null;
           state.token = null;
         }
-        // If there's a valid token, keep the user authenticated to prevent redirect loops
+        console.log('Auth verification rejected but keeping existing auth state:', state.user?.email);
       })
       // Logout cases
       .addCase(logoutUser.pending, (state) => {

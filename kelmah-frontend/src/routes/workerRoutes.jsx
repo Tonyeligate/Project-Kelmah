@@ -29,13 +29,32 @@ const WorkerRoutes = () => {
   
   // Enhanced role checking that handles race conditions
   const isWorkerAllowed = () => {
+    console.log('Worker route protection check:', {
+      isAuthenticated,
+      hasUser: !!user,
+      userRole: user?.role,
+      loading,
+      userId: user?.id
+    });
+    
     // If loading, allow access to prevent redirect loops
-    if (loading) return true;
+    if (loading) {
+      console.log('Worker route: Allowing access due to loading state');
+      return true;
+    }
     // If authenticated and user exists, check role
-    if (isAuthenticated && user) return hasRole(user, 'worker');
+    if (isAuthenticated && user) {
+      const allowed = hasRole(user, 'worker');
+      console.log('Worker route: Role check result:', allowed);
+      return allowed;
+    }
     // If authenticated but no user (race condition), allow access temporarily
-    if (isAuthenticated && !user) return true;
+    if (isAuthenticated && !user) {
+      console.log('Worker route: Allowing access due to race condition (authenticated but no user)');
+      return true;
+    }
     // Otherwise, not allowed
+    console.log('Worker route: Access denied - not authenticated');
     return false;
   };
 
