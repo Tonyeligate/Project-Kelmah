@@ -245,6 +245,8 @@ const authSlice = createSlice({
       .addCase(verifyAuth.pending, (state) => {
         state.loading = true;
         state.error = null;
+        // CRITICAL: Don't clear user data during verification to prevent route protection failures
+        // Keep existing authentication state during verification
       })
       .addCase(verifyAuth.fulfilled, (state, action) => {
         state.isAuthenticated = true;
@@ -255,9 +257,15 @@ const authSlice = createSlice({
       .addCase(verifyAuth.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        state.isAuthenticated = false;
-        state.user = null;
-        state.token = null;
+        // CRITICAL: Don't immediately clear auth state on verifyAuth rejection
+        // Only clear if there's no valid token in storage
+        const hasValidToken = secureStorage.getAuthToken();
+        if (!hasValidToken) {
+          state.isAuthenticated = false;
+          state.user = null;
+          state.token = null;
+        }
+        // If there's a valid token, keep the user authenticated to prevent redirect loops
       })
       // Logout cases
       .addCase(logoutUser.pending, (state) => {
