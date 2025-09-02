@@ -10,6 +10,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { login as loginAction } from '../../services/authSlice';
 import {
   Box,
   Button,
@@ -39,12 +41,15 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+// Removed AuthContext import to use Redux auth system
+// import { useAuth } from '../../contexts/AuthContext';
 
 const MobileLogin = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { login, loading: authLoading } = useAuth();
+  // Use Redux auth system instead of AuthContext
+  const dispatch = useDispatch();
+  const { loading: authLoading } = useSelector((state) => state.auth);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -107,11 +112,11 @@ const MobileLogin = () => {
     setSubmitError('');
 
     try {
-      await login({
+      await dispatch(loginAction({
         email: formData.email.trim(),
         password: formData.password,
         rememberMe: formData.rememberMe,
-      });
+      })).unwrap();
 
       // Show success state briefly
       setShowSuccess(true);

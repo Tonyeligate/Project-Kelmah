@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { login as loginAction } from '../../services/authSlice';
 import {
   Box,
   Button,
@@ -33,7 +35,8 @@ import {
 import { motion } from 'framer-motion';
 import { FEATURES, API_BASE_URL } from '../../../../config/environment';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+// Removed AuthContext import to use Redux auth system
+// import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
 import MobileLogin from '../mobile/MobileLogin';
 
@@ -64,7 +67,9 @@ const Login = () => {
   }, []);
 
   const navigate = useNavigate();
-  const { login, loading: authLoading, error: authError } = useAuth();
+  // Use Redux auth system instead of AuthContext
+  const dispatch = useDispatch();
+  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,11 +107,11 @@ const Login = () => {
     setSubmitting(true);
 
     try {
-      const user = await login({ 
+            const result = await dispatch(loginAction({ 
         email: email.trim(), 
         password,
-        rememberMe 
-      });
+        rememberMe
+      })).unwrap();
       
       console.log('Login successful, redirecting to dashboard');
       navigate('/dashboard');

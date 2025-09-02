@@ -13,7 +13,10 @@ import { useSelector } from 'react-redux';
 import { selectAuthLoading, selectAuthError } from '../../services/authSlice';
 
 const AuthForm = ({ mode = 'login', onSuccess }) => {
-  const { login, register } = useAuth();
+  // Use Redux auth system instead of AuthContext
+  const dispatch = useDispatch();
+  const loginUser = (credentials) => dispatch(loginAction(credentials));
+  const registerUser = (userData) => dispatch(registerAction(userData));
   const loading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
 
