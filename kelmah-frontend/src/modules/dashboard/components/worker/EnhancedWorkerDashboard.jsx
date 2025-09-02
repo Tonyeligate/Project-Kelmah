@@ -254,40 +254,44 @@ const EnhancedWorkerDashboard = () => {
   }, [userId, recentJobs.length]);
 
   // Memoized statistics to prevent recalculation on every render
-  const statistics = useMemo(() => [
+  const statistics = useMemo(() => {
+    // Ensure data.metrics exists and has proper structure
+    const metrics = data?.metrics || {};
+    return [
     {
       id: 'total-jobs',
       title: 'Total Jobs',
-      value: data?.metrics?.totalJobs || 0,
-      change: data?.metrics?.jobsChange || 0,
+      value: metrics?.totalJobs || 0,
+      change: metrics?.jobsChange || 0,
       icon: <WorkIcon />,
       color: GhanaTheme.trust,
     },
     {
       id: 'active-applications',
       title: 'Active Applications',
-      value: data?.metrics?.activeApplications || 0,
-      change: data?.metrics?.applicationsChange || 0,
+      value: metrics?.activeApplications || 0,
+      change: metrics?.applicationsChange || 0,
       icon: <AssignmentIcon />,
       color: GhanaTheme.green,
     },
     {
       id: 'total-earnings',
       title: 'Total Earnings',
-      value: `GH₵ ${data?.metrics?.totalEarnings || 0}`,
-      change: data?.metrics?.earningsChange || 0,
+      value: `GH₵ ${metrics?.totalEarnings || 0}`,
+      change: metrics?.earningsChange || 0,
       icon: <MoneyIcon />,
       color: GhanaTheme.gold,
     },
     {
       id: 'profile-views',
       title: 'Profile Views',
-      value: data?.metrics?.profileViews || 0,
-      change: data?.metrics?.viewsChange || 0,
+      value: metrics?.profileViews || 0,
+      change: metrics?.viewsChange || 0,
       icon: <VisibilityIcon />,
       color: GhanaTheme.red,
     },
-  ], [data?.metrics]);
+  ];
+  }, [data?.metrics]);
 
   // Memoized quick actions to prevent recalculation
   const quickActions = useMemo(() => [

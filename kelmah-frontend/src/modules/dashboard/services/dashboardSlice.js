@@ -91,7 +91,8 @@ export const fetchDashboardData = createAsyncThunk(
           };
 
       const recentJobs = jobsResponse.status === 'fulfilled'
-        ? jobsResponse.value.data
+        ? (Array.isArray(jobsResponse.value.data) ? jobsResponse.value.data : 
+           Array.isArray(jobsResponse.value.data?.jobs) ? jobsResponse.value.data.jobs : [])
         : [
             {
               id: 1,
@@ -117,11 +118,17 @@ export const fetchDashboardData = createAsyncThunk(
           ];
 
       const activeWorkers = workersResponse.status === 'fulfilled'
-        ? workersResponse.value.data
+        ? (Array.isArray(workersResponse.value.data) ? workersResponse.value.data : 
+           Array.isArray(workersResponse.value.data?.workers) ? workersResponse.value.data.workers : [])
         : initialState.data.activeWorkers;
 
       const analytics = analyticsResponse.status === 'fulfilled'
-        ? analyticsResponse.value.data
+        ? {
+            ...analyticsResponse.value.data,
+            topSkills: Array.isArray(analyticsResponse.value.data?.topSkills) 
+              ? analyticsResponse.value.data.topSkills 
+              : ['Web Development', 'Mobile Apps', 'Design', 'Writing']
+          }
         : {
             ...initialState.data.analytics,
             jobsThisMonth: Math.floor(Math.random() * 20) + 5,
