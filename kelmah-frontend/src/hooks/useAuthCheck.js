@@ -16,10 +16,8 @@ export const useAuthCheck = () => {
   // Robust authentication state checking with error handling
   const isUserAuthenticated = useMemo(() => {
     try {
-      if (!isAuthenticated || typeof isAuthenticated !== 'function') {
-        return false;
-      }
-      return isAuthenticated();
+      // Redux auth state: isAuthenticated is a boolean, not a function
+      return Boolean(isAuthenticated);
     } catch (error) {
       console.error('Error checking authentication status:', error);
       return false;
