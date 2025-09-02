@@ -32,29 +32,35 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize authentication state
   useEffect(() => {
+    // DISABLED: Authentication now handled entirely by Redux
     // Prevent multiple initializations
     if (isInitialized) return;
 
-    const initAuth = async () => {
-      setLoading(true);
-      try {
-        // Use the new initialization method from authService
-        const initResult = await authService.initializeAuth();
-        
-        if (initResult.authenticated && initResult.user) {
-          setUser(initResult.user);
-          console.log('Authentication initialized successfully');
-        } else {
-          console.log('No valid authentication found');
-        }
-      } catch (err) {
-        console.error('Failed to initialize auth:', err);
-        setError('Failed to initialize authentication');
-      } finally {
-        setLoading(false);
-        setIsInitialized(true);
-      }
-    };
+    // Skip AuthContext initialization - Redux handles all auth
+    setLoading(false);
+    setIsInitialized(true);
+    console.log('AuthContext: Skipping initialization - using Redux auth system');
+
+    // const initAuth = async () => {
+    //   setLoading(true);
+    //   try {
+    //     // Use the new initialization method from authService
+    //     const initResult = await authService.initializeAuth();
+    //     
+    //     if (initResult.authenticated && initResult.user) {
+    //       setUser(initResult.user);
+    //       console.log('Authentication initialized successfully');
+    //     } else {
+    //       console.log('No valid authentication found');
+    //     }
+    //   } catch (err) {
+    //     console.error('Failed to initialize auth:', err);
+    //     setError('Failed to initialize authentication');
+    //   } finally {
+    //     setLoading(false);
+    //     setIsInitialized(true);
+    //   }
+    // };
 
       // DISABLED: Token expiry events now handled by Redux auth system
   // const handleTokenExpired = () => {
@@ -66,37 +72,39 @@ export const AuthProvider = ({ children }) => {
   // window.addEventListener('auth:tokenExpired', handleTokenExpired);
     
     // Use timeout to prevent race conditions with Redux auth
-    const timeoutId = setTimeout(initAuth, 50);
+    // const timeoutId = setTimeout(initAuth, 50);
 
-    return () => {
-      // window.removeEventListener('auth:tokenExpired', handleTokenExpired);
-      clearTimeout(timeoutId);
-    };
+    // return () => {
+    //   // window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+    //   clearTimeout(timeoutId);
+    // };
   }, [isInitialized, navigate]);
 
-  // Login function
+  // Login function - DISABLED: Now handled by Redux
   const login = useCallback(async (credentials) => {
-    setLoading(true);
-    setError(null);
+    console.log('AuthContext: Login called but disabled - using Redux auth system');
+    // setLoading(true);
+    // setError(null);
 
-    try {
-      const response = await authService.login(credentials);
+    // try {
+    //   const response = await authService.login(credentials);
 
-      if (response.success && response.user) {
-        setUser(response.user);
-        console.log('Login successful for user:', response.user.email);
-        return response.user;
-      } else {
-        throw new Error('Invalid response from login service');
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      const errorMessage = err.message || 'Login failed. Please check your credentials.';
-      setError(errorMessage);
-      throw err; // Re-throw the original error for better error handling
-    } finally {
-      setLoading(false);
-    }
+    //   if (response.success && response.user) {
+    //     setUser(response.user);
+    //     console.log('Login successful for user:', response.user.email);
+    //     return response.user;
+    //   } else {
+    //     throw new Error('Invalid response from login service');
+    //   }
+    // } catch (err) {
+    //   console.error('Login error:', err);
+    //   const errorMessage = err.message || 'Login failed. Please check your credentials.';
+    //   setError(errorMessage);
+    //   throw err; // Re-throw the original error for better error handling
+    // } finally {
+    //   setLoading(false);
+    // }
+    throw new Error('AuthContext login disabled - use Redux auth system');
   }, []);
 
   // Register function
