@@ -111,12 +111,15 @@ const authService = {
 
       if (user) {
         secureStorage.setUserData(user);
+        return { user, success: true };
+      } else {
+        // API returned success but no user data - don't clear storage, just return success
+        // This allows the stored user data to be used
+        return { user: undefined, success: true };
       }
-
-      return { user, success: true };
     } catch (error) {
       console.warn('Auth verification failed:', error.message);
-      // Clear invalid authentication data
+      // Only clear storage on actual API errors, not when user data is missing
       secureStorage.clear();
       return { success: false, error: error.message };
     }

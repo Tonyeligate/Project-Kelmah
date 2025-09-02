@@ -117,10 +117,21 @@ export const verifyAuth = createAsyncThunk(
         // API returned success but no user data, use stored user
         const storedUserData = secureStorage.getUserData();
         if (storedUserData) {
+          console.log('Using stored user data for verification:', storedUserData.email);
           return {
             user: storedUserData,
             isAuthenticated: true,
           };
+        } else {
+          console.warn('API returned success but no user data and no stored user found');
+          // Don't throw error here, just return the stored user from initial state
+          const initialStateUser = secureStorage.getUserData();
+          if (initialStateUser) {
+            return {
+              user: initialStateUser,
+              isAuthenticated: true,
+            };
+          }
         }
       }
 
