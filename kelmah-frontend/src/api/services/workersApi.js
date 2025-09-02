@@ -4,6 +4,7 @@
  */
 
 import { userServiceClient as workersServiceClient } from '../../modules/common/services/axios';
+import { secureStorage } from '../../utils/secureStorage';
 
 // Use centralized client with auth/retry
 

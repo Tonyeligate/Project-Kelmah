@@ -28,7 +28,7 @@ const USE_MOCK_MODE = false; // Set to false to use real APIs
 // Create axios instance with default config
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 60000, // Increased timeout to 60 seconds for better reliability
   headers: {
     'Content-Type': 'application/json',
   },
@@ -80,6 +80,15 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         // window.location.href = '/login'; // removed to prevent full page reload on 401
       }
+    }
+
+    // Enhanced error handling for timeouts and network issues
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      console.warn('Request timeout - service may be starting up. Please try again.');
+      error.message = 'Request is taking longer than usual. The service may be starting up. Please wait a moment and try again.';
+    } else if (!error.response && error.request) {
+      console.warn('Network error - check your internet connection');
+      error.message = 'Unable to connect to our servers. Please check your internet connection and try again.';
     }
 
     return Promise.reject(error);

@@ -55,6 +55,7 @@ import { useAuth } from '../../../auth/contexts/AuthContext';
 import workersApi from '../../../../api/services/workersApi';
 import VocationalJobCategories from './VocationalJobCategories';
 import VisualQuickActions from './VisualQuickActions';
+import ErrorBoundary from '../../../../components/common/ErrorBoundary';
 
 // Ghana-inspired theme
 const GhanaTheme = {
@@ -214,7 +215,9 @@ const EnhancedWorkerDashboard = () => {
       try {
         const jobs = await workersApi.getRecentJobs();
         if (isMounted) {
-          setRecentJobs(jobs || []);
+          // Ensure jobs is always an array
+          const jobsArray = Array.isArray(jobs) ? jobs : (jobs?.data ? jobs.data : []);
+          setRecentJobs(jobsArray);
         }
       } catch (error) {
         console.warn('Failed to load recent jobs:', error);
@@ -334,12 +337,13 @@ const EnhancedWorkerDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+      <ErrorBoundary>
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
           {/* Header */}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
             <Box>
@@ -458,7 +462,7 @@ const EnhancedWorkerDashboard = () => {
                         </Box>
                       ))}
                     </Stack>
-                  ) : recentJobs.length > 0 ? (
+                  ) : Array.isArray(recentJobs) && recentJobs.length > 0 ? (
                     <List dense>
                       {recentJobs.slice(0, 3).map((job, index) => (
                         <ListItem
@@ -593,6 +597,7 @@ const EnhancedWorkerDashboard = () => {
           </Grid>
         </motion.div>
       </AnimatePresence>
+      </ErrorBoundary>
     </Container>
   );
 };
