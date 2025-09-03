@@ -187,6 +187,28 @@ const StatCard = styled(motion.div)(({ theme }) => ({
   },
 }));
 
+// SearchInterface styled component for search interface wrapper
+const SearchInterface = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  borderRadius: 24,
+  padding: theme.spacing(4),
+  position: 'relative',
+  overflow: 'hidden',
+  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+    pointerEvents: 'none',
+  },
+}));
+
 const shimmer = keyframes`
   0% { background-position: -200px 0; }
   100% { background-position: calc(200px + 100%) 0; }
