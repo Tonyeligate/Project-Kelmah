@@ -7,6 +7,8 @@ const User = require("../models/User");
 const Contract = require("../models/Contract");
 const ContractDispute = require("../models/ContractDispute");
 const Application = require("../models/Application");
+const Bid = require("../models/Bid");
+const UserPerformance = require("../models/UserPerformance");
 const SavedJob = require("../models/SavedJob");
 const Category = require("../models/Category");
 const { AppError } = require("../middlewares/error");
@@ -1444,6 +1446,274 @@ const getJobCategories = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+/**
+ * Enhanced Job Distribution Methods
+ */
+
+// Get jobs by location with performance-based filtering
+const getJobsByLocation = async (req, res, next) => {
+  try {
+    const { region, district } = req.query;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    if (!region) {
+      return errorResponse(res, 400, 'Region is required');
+    }
+
+    const query = { 'locationDetails.region': region };
+    if (district) {
+      query['locationDetails.district'] = district;
+    }
+
+    const { count, rows } = await Job.findAndCountAll({
+      where: query,
+      offset,
+      limit,
+      order: [['createdAt', 'DESC']],
+      include: [
+        { model: 'User', as: 'hirer', attributes: ['firstName', 'lastName', 'profilePicture'] }
+      ]
+    });
+
+    return paginatedResponse(res, 200, 'Jobs by location retrieved successfully', rows, page, limit, count);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get jobs by skill with performance-based filtering
+const getJobsBySkill = async (req, res, next) => {
+  try {
+    const { skill } = req.params;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    const jobs = await Job.findBySkill(skill)
+      .populate('hirer', 'firstName lastName profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalCount = await Job.countDocuments({
+      $or: [
+        { 'requirements.primarySkills': skill },
+        { 'requirements.secondarySkills': skill },
+        { skills: skill }
+      ]
+    });
+
+    return paginatedResponse(res, 200, `Jobs for ${skill} skill retrieved successfully`, jobs, page, limit, totalCount);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get jobs by performance tier
+const getJobsByPerformanceTier = async (req, res, next) => {
+  try {
+    const { tier } = req.params;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    const validTiers = ['tier1', 'tier2', 'tier3'];
+    if (!validTiers.includes(tier)) {
+      return errorResponse(res, 400, 'Invalid tier. Must be tier1, tier2, or tier3');
+    }
+
+    const jobs = await Job.findByPerformanceTier(tier)
+      .populate('hirer', 'firstName lastName profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalCount = await Job.countDocuments({ performanceTier: tier });
+
+    return paginatedResponse(res, 200, `Jobs for ${tier} retrieved successfully`, jobs, page, limit, totalCount);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get personalized job recommendations based on user performance
+const getPersonalizedJobRecommendations = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    // Get user performance data
+    const userPerformance = await UserPerformance.findOne({ userId });
+    if (!userPerformance) {
+      return errorResponse(res, 404, 'User performance data not found');
+    }
+
+    // Get user's skills
+    const primarySkills = userPerformance.skillVerification.primarySkills
+      .filter(skill => skill.verified)
+      .map(skill => skill.skill);
+    
+    const secondarySkills = userPerformance.skillVerification.secondarySkills
+      .filter(skill => skill.verified)
+      .map(skill => skill.skill);
+
+    const allSkills = [...primarySkills, ...secondarySkills];
+
+    if (allSkills.length === 0) {
+      return successResponse(res, 200, 'No skills found for recommendations', []);
+    }
+
+    // Find jobs matching user skills
+    const jobs = await Job.find({
+      $or: [
+        { 'requirements.primarySkills': { $in: allSkills } },
+        { 'requirements.secondarySkills': { $in: allSkills } },
+        { skills: { $in: allSkills } }
+      ],
+      status: 'open',
+      'bidding.bidStatus': 'open'
+    })
+    .populate('hirer', 'firstName lastName profilePicture')
+    .skip(offset)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+    // Calculate match scores for each job
+    const jobsWithScores = jobs.map(job => {
+      let score = 0;
+      
+      // Skill matching (40% weight)
+      const primarySkillMatch = job.requirements.primarySkills.some(skill => primarySkills.includes(skill));
+      const secondarySkillMatch = job.requirements.secondarySkills.some(skill => secondarySkills.includes(skill));
+      if (primarySkillMatch) score += 40;
+      if (secondarySkillMatch) score += 20;
+      
+      // Location matching (30% weight)
+      if (userPerformance.locationPreferences.primaryRegion === job.locationDetails.region) {
+        score += 30;
+      }
+      
+      // Performance tier matching (20% weight)
+      if (userPerformance.performanceTier === job.performanceTier) {
+        score += 20;
+      }
+      
+      // Recent job bonus (10% weight)
+      const daysSincePosted = Math.floor((new Date() - job.createdAt) / (1000 * 60 * 60 * 24));
+      if (daysSincePosted <= 3) score += 10;
+      
+      return { ...job.toObject(), matchScore: score };
+    });
+
+    // Sort by match score
+    jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
+
+    const totalCount = await Job.countDocuments({
+      $or: [
+        { 'requirements.primarySkills': { $in: allSkills } },
+        { 'requirements.secondarySkills': { $in: allSkills } },
+        { skills: { $in: allSkills } }
+      ],
+      status: 'open',
+      'bidding.bidStatus': 'open'
+    });
+
+    return paginatedResponse(res, 200, 'Personalized job recommendations retrieved successfully', jobsWithScores, page, limit, totalCount);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Close job bidding
+const closeJobBidding = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return errorResponse(res, 404, 'Job not found');
+    }
+
+    if (job.hirer.toString() !== req.user.id) {
+      return errorResponse(res, 403, 'Access denied. You can only close bidding for your own jobs');
+    }
+
+    await job.closeBidding();
+
+    return successResponse(res, 200, 'Job bidding closed successfully', job);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Extend job deadline
+const extendJobDeadline = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const { days = 7 } = req.body;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return errorResponse(res, 404, 'Job not found');
+    }
+
+    if (job.hirer.toString() !== req.user.id) {
+      return errorResponse(res, 403, 'Access denied. You can only extend deadline for your own jobs');
+    }
+
+    await job.extendDeadline(days);
+
+    return successResponse(res, 200, 'Job deadline extended successfully', job);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Renew expired job
+const renewJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return errorResponse(res, 404, 'Job not found');
+    }
+
+    if (job.hirer.toString() !== req.user.id) {
+      return errorResponse(res, 403, 'Access denied. You can only renew your own jobs');
+    }
+
+    if (!job.isExpired) {
+      return errorResponse(res, 400, 'Job is not expired');
+    }
+
+    await job.renewJob();
+
+    return successResponse(res, 200, 'Job renewed successfully', job);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get expired jobs for cleanup
+const getExpiredJobs = async (req, res, next) => {
+  try {
+    // Only admins can access this endpoint
+    if (req.user.role !== 'admin') {
+      return errorResponse(res, 403, 'Access denied');
+    }
+
+    const expiredJobs = await Job.findExpiredJobs();
+    return successResponse(res, 200, 'Expired jobs retrieved successfully', expiredJobs);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createJob,
   getJobs,
@@ -1470,4 +1740,13 @@ module.exports = {
   getJobCategories,
   getMyAssignedJobs,
   getMyApplications,
+  // Enhanced Job Distribution Methods
+  getJobsByLocation,
+  getJobsBySkill,
+  getJobsByPerformanceTier,
+  getPersonalizedJobRecommendations,
+  closeJobBidding,
+  extendJobDeadline,
+  renewJob,
+  getExpiredJobs,
 };

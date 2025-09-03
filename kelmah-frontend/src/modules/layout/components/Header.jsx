@@ -544,7 +544,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
       }
       
       // Dispatch logout action
-      await logout();
+    await logout();
       console.log('✅ Logout action dispatched');
       
       // Force navigation to home

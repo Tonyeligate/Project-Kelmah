@@ -17,10 +17,12 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const { connectDB } = require("./config/db");
 
 // Import MongoDB models
-const { Job, Application, Category } = require("./models");
+const { Job, Application, Bid, UserPerformance, Category } = require("./models");
 
 // Import routes
 const jobRoutes = require("./routes/job.routes");
+const bidRoutes = require("./routes/bid.routes");
+const userPerformanceRoutes = require("./routes/userPerformance.routes");
 
 // Initialize express app
 
@@ -124,6 +126,8 @@ try {
 
 // API routes
 app.use("/api/jobs", jobRoutes);
+app.use("/api/bids", bidRoutes);
+app.use("/api/user-performance", userPerformanceRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

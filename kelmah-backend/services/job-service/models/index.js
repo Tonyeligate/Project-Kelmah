@@ -7,7 +7,9 @@
 // via `config/db.js` with retry/backoff logic.
 module.exports = {
   Job: require('./Job'),
-  Application: require('./Application'),
+  Application: require('./Application'), // Keep for backward compatibility
+  Bid: require('./Bid'), // New bidding system
+  UserPerformance: require('./UserPerformance'), // New performance tracking
   Category: require('./Category'),
   Contract: require('./Contract'),
   ContractDispute: require('./ContractDispute'),

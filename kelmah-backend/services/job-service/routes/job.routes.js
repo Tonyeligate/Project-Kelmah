@@ -81,4 +81,21 @@ router.get("/analytics", authorizeRoles("admin"), jobController.getJobAnalytics)
 router.get('/assigned', authorizeRoles('worker'), jobController.getMyAssignedJobs);
 router.get('/applications/me', authorizeRoles('worker'), jobController.getMyApplications);
 
+// Enhanced Job Distribution Routes
+// Location-based job filtering
+router.get('/location', jobController.getJobsByLocation);
+router.get('/skill/:skill', jobController.getJobsBySkill);
+router.get('/tier/:tier', jobController.getJobsByPerformanceTier);
+
+// Personalized recommendations
+router.get('/recommendations/personalized', authorizeRoles('worker'), jobController.getPersonalizedJobRecommendations);
+
+// Job management (hirer only)
+router.patch('/:id/close-bidding', authorizeRoles('hirer'), jobController.closeJobBidding);
+router.patch('/:id/extend-deadline', authorizeRoles('hirer'), jobController.extendJobDeadline);
+router.patch('/:id/renew', authorizeRoles('hirer'), jobController.renewJob);
+
+// Admin routes
+router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
+
 module.exports = router;
