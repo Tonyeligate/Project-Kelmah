@@ -565,6 +565,64 @@ const AuthWrapper = ({ children }) => {
                   </Box>
 
                   <Stack spacing={0.5} alignItems="center">
+                    {/* Custom K Logo */}
+                    <Box
+                      sx={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
+                        mb: 1,
+                      }}
+                    >
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 48 48"
+                      >
+                        {/* Abstract Human Figure 1 (Left side of K) */}
+                        <path
+                          d="M12 8 L12 40 M12 24 L20 16 M12 24 L20 32"
+                          stroke="#000000"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          fill="none"
+                        />
+                        
+                        {/* Abstract Human Figure 2 (Right side of K) */}
+                        <path
+                          d="M36 8 L36 40 M36 24 L28 16 M36 24 L28 32"
+                          stroke="#000000"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          fill="none"
+                        />
+                        
+                        {/* Connecting element to form the K shape */}
+                        <path
+                          d="M20 16 L28 16 M20 32 L28 32"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          fill="none"
+                        />
+                        
+                        {/* Central connection point */}
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="2"
+                          fill="#000000"
+                        />
+                      </svg>
+                    </Box>
                     <Typography
                       variant="h5"
                       sx={{

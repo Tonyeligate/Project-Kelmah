@@ -82,38 +82,82 @@ const BrandLogo = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Custom K Logo Component with Abstract Human Figures
+const CustomKLogo = ({ theme, size = 48 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 48 48"
+    style={{
+      borderRadius: '50%',
+      background: theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+        : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+      boxShadow: theme.palette.mode === 'dark'
+        ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+        : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+    }}
+  >
+    {/* Abstract Human Figure 1 (Left side of K) */}
+    <path
+      d="M12 8 L12 40 M12 24 L20 16 M12 24 L20 32"
+      stroke={theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold}
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    
+    {/* Abstract Human Figure 2 (Right side of K) */}
+    <path
+      d="M36 8 L36 40 M36 24 L28 16 M36 24 L28 32"
+      stroke={theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold}
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    
+    {/* Connecting element to form the K shape */}
+    <path
+      d="M20 16 L28 16 M20 32 L28 32"
+      stroke={theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    
+    {/* Central connection point */}
+    <circle
+      cx="24"
+      cy="24"
+      r="2"
+      fill={theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold}
+    />
+  </svg>
+);
+
 const LogoIcon = styled(Box)(({ theme }) => ({
   width: 48,
   height: 48,
   borderRadius: '50%',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   marginRight: theme.spacing(1.5),
-  color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
-  fontWeight: 800,
-  fontSize: '1.5rem',
-  fontFamily: 'Montserrat, sans-serif',
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 4px 15px rgba(255, 215, 0, 0.4)`
-    : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     width: 36,
     height: 36,
     marginRight: theme.spacing(0.5),
-    fontSize: '1.1rem',
   },
   // SportyBet-style mobile optimization
   '@media (max-width: 768px)': {
     width: 32,
     height: 32,
     marginRight: 4,
-    fontSize: '1rem',
   },
   '&::before': {
     content: '""',
@@ -127,6 +171,7 @@ const LogoIcon = styled(Box)(({ theme }) => ({
       : `linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%)`,
     transform: 'translateX(-100%)',
     transition: 'transform 0.6s ease',
+    borderRadius: '50%',
   },
   '&:hover::before': {
     transform: 'translateX(100%)',
@@ -853,7 +898,9 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}> {/* Reduced from 70/80 to 56/64 */}
           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
             <BrandLogo component={RouterLink} to="/">
-              <LogoIcon>K</LogoIcon>
+              <LogoIcon>
+                <CustomKLogo theme={theme} size={isMobile ? 32 : 48} />
+              </LogoIcon>
               <Box>
                 <BrandText variant="h6">elmah</BrandText>
                 <TaglineText>Ghana's Skilled Trades Platform</TaglineText>
@@ -1044,7 +1091,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
               // ✅ Desktop: Show brand logo
               <BrandLogo component={RouterLink} to="/">
                 <LogoIcon>
-                  <EngineeringIcon sx={{ fontSize: '1.2rem' }} />
+                  <CustomKLogo theme={theme} size={isMobile ? 32 : 48} />
                 </LogoIcon>
                 <Box>
                   <BrandText variant="h6">elmah</BrandText>
