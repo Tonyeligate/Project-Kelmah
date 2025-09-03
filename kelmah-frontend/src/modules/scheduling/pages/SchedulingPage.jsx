@@ -302,8 +302,9 @@ const SchedulingPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Extract dates with appointments for calendar badges
-  const appointmentDays = appointments
+  const appointmentDays = Array.isArray(appointments) ? appointments
     .map((a) => {
+      if (!a) return null; // Skip null/undefined appointments
       const appointmentDate = a.startTime || a.date;
       if (!appointmentDate) return null;
 
@@ -320,17 +321,20 @@ const SchedulingPage = () => {
         return null;
       }
     })
-    .filter((date) => date !== null);
+    .filter((date) => date !== null) : [];
 
   // Load appointments helper
   const loadAppointments = async () => {
     setLoading(true);
     try {
       const data = await schedulingService.getAppointments();
-      setAppointments(data);
+      // Fix: Ensure appointments is always an array
+      const appointmentsArray = Array.isArray(data) ? data : [];
+      setAppointments(appointmentsArray);
     } catch (err) {
       console.error('Error loading appointments:', err);
       setError('Failed to load appointments');
+      setAppointments([]); // Set empty array as fallback
       enqueueSnackbar('Failed to load appointments', { variant: 'error' });
     } finally {
       setLoading(false);
@@ -341,10 +345,13 @@ const SchedulingPage = () => {
   const loadJobs = async () => {
     setLoadingJobs(true);
     try {
-      const data = await jobsService.getJobs({ limit: 100 });
-      setJobs(data);
+      const response = await jobsService.getJobs({ limit: 100 });
+      // Fix: jobsApi.getJobs returns { jobs: [], totalPages, totalJobs, currentPage }
+      const jobsArray = Array.isArray(response?.jobs) ? response.jobs : [];
+      setJobs(jobsArray);
     } catch (err) {
       console.error('Error loading jobs:', err);
+      setJobs([]); // Set empty array as fallback
     } finally {
       setLoadingJobs(false);
     }
@@ -366,7 +373,7 @@ const SchedulingPage = () => {
       }
       
       // Use mock data only if explicitly enabled in development
-      if (workers.length > 0) {
+      if (Array.isArray(workers) && workers.length > 0) {
         setUsers(workers);
       } else if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
         const mockUsers = [
@@ -516,17 +523,19 @@ const SchedulingPage = () => {
   };
 
   // Filter appointments based on status and search query
-  const filteredAppointments = appointments.filter((app) => {
+  const filteredAppointments = Array.isArray(appointments) ? appointments.filter((app) => {
+    if (!app) return false; // Skip null/undefined appointments
     const matchesStatus = filterStatus === 'all' || app.status === filterStatus;
     const matchesSearch =
       !searchQuery ||
-      app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.hirer.toLowerCase().includes(searchQuery.toLowerCase());
+      (app.jobTitle && app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (app.hirer && app.hirer.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesStatus && matchesSearch;
-  });
+  }) : [];
 
   // Filter for selected day's appointments
-  const dailyAppointments = filteredAppointments.filter((a) => {
+  const dailyAppointments = Array.isArray(filteredAppointments) ? filteredAppointments.filter((a) => {
+    if (!a || !a.date) return false; // Skip null/undefined appointments or dates
     try {
       const appointmentDate = new Date(a.date);
       if (isNaN(appointmentDate.getTime())) return false;
@@ -535,10 +544,11 @@ const SchedulingPage = () => {
       console.warn('Invalid appointment date in dailyAppointments filter:', a.date);
       return false;
     }
-  });
+  }) : [];
 
   // Group appointments by date string for agenda view
-  const appointmentsByDate = filteredAppointments.reduce((acc, app) => {
+  const appointmentsByDate = Array.isArray(filteredAppointments) ? filteredAppointments.reduce((acc, app) => {
+    if (!app) return acc; // Skip null/undefined appointments
     try {
       const appointmentDate = new Date(app.date);
       if (isNaN(appointmentDate.getTime())) {
@@ -553,16 +563,23 @@ const SchedulingPage = () => {
       console.warn('Error processing appointment date in reduce:', app.date, error);
       return acc;
     }
-  }, {});
+  }, {}) : {};
 
   // Get upcoming appointments (next 7 days)
-  const upcomingAppointments = filteredAppointments
-    .filter(
-      (a) =>
-        isAfter(new Date(a.date), new Date()) &&
-        isBefore(new Date(a.date), addDays(new Date(), 7)),
-    )
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const upcomingAppointments = Array.isArray(filteredAppointments) ? filteredAppointments
+    .filter((a) => {
+      if (!a || !a.date) return false; // Skip null/undefined appointments or dates
+      try {
+        const appointmentDate = new Date(a.date);
+        if (isNaN(appointmentDate.getTime())) return false;
+        return isAfter(appointmentDate, new Date()) &&
+               isBefore(appointmentDate, addDays(new Date(), 7));
+      } catch (error) {
+        console.warn('Error processing upcoming appointment date:', a.date, error);
+        return false;
+      }
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
