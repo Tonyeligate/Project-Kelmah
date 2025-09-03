@@ -51,6 +51,7 @@ import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import workersApi from '../../../api/services/workersApi';
+import { secureStorage } from '../../../utils/secureStorage';
 
 // Enhanced Styled Components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -529,14 +530,52 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
     handleMenuClose();
     try {
       console.log('🔄 Starting logout process...');
+      
+      // Clear all storage immediately for better UX
+      try {
+        secureStorage.clear();
+        localStorage.removeItem('kelmah_auth_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('kelmah_encryption_secret');
+        sessionStorage.clear();
+        console.log('✅ Local storage cleared');
+      } catch (storageError) {
+        console.warn('⚠️ Storage cleanup warning:', storageError);
+      }
+      
+      // Dispatch logout action
       await logout();
-      console.log('✅ Logout successful, navigating to home...');
-      navigate('/');
+      console.log('✅ Logout action dispatched');
+      
+      // Force navigation to home
+      console.log('🔄 Navigating to home...');
+      navigate('/', { replace: true });
+      
+      // Force page reload to ensure clean state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
     } catch (error) {
       console.error('❌ Logout error:', error);
+      
+      // Force clear everything and navigate
+      try {
+        secureStorage.clear();
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (clearError) {
+        console.warn('⚠️ Force clear warning:', clearError);
+      }
+      
       // Force navigation even if logout fails
       console.log('🔄 Force navigating to home despite logout error...');
-      navigate('/');
+      navigate('/', { replace: true });
+      
+      // Force page reload
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
   };
 
