@@ -1,6 +1,9 @@
 /**
- * Jobs API Service
+ * Jobs API Service - ORIGINAL VERSION
  * Handles job posting, searching, and job-related operations
+ * 
+ * BACKUP CREATED: September 3, 2025
+ * REASON: Enhanced with new bidding and performance methods
  */
 
 import apiClient from '../index';
@@ -175,94 +178,6 @@ class JobsApi {
    */
   async getJobCategories() {
     const response = await apiClient.get('/jobs/categories');
-    return response.data;
-  }
-
-  // Enhanced Job Distribution Methods
-
-  /**
-   * Get jobs by location with performance-based filtering
-   * @param {Object} params - Query parameters
-   * @param {string} params.region - Ghana region
-   * @param {string} params.district - District (optional)
-   * @param {number} params.page - Page number
-   * @param {number} params.limit - Results per page
-   * @returns {Promise<Object>} Jobs by location
-   */
-  async getJobsByLocation(params = {}) {
-    const response = await apiClient.get('/jobs/location', { params });
-    return response.data;
-  }
-
-  /**
-   * Get jobs by skill with performance-based filtering
-   * @param {string} skill - Skill name
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Object>} Jobs for specific skill
-   */
-  async getJobsBySkill(skill, params = {}) {
-    const response = await apiClient.get(`/jobs/skill/${skill}`, { params });
-    return response.data;
-  }
-
-  /**
-   * Get jobs by performance tier
-   * @param {string} tier - Performance tier (tier1, tier2, tier3)
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Object>} Jobs for specific tier
-   */
-  async getJobsByPerformanceTier(tier, params = {}) {
-    const response = await apiClient.get(`/jobs/tier/${tier}`, { params });
-    return response.data;
-  }
-
-  /**
-   * Get personalized job recommendations based on user performance
-   * @param {Object} params - Query parameters
-   * @returns {Promise<Object>} Personalized job recommendations
-   */
-  async getPersonalizedJobRecommendations(params = {}) {
-    const response = await apiClient.get('/jobs/recommendations/personalized', { params });
-    return response.data;
-  }
-
-  /**
-   * Close job bidding
-   * @param {string} jobId - Job ID
-   * @returns {Promise<Object>} Response data
-   */
-  async closeJobBidding(jobId) {
-    const response = await apiClient.patch(`/jobs/${jobId}/close-bidding`);
-    return response.data;
-  }
-
-  /**
-   * Extend job deadline
-   * @param {string} jobId - Job ID
-   * @param {number} days - Number of days to extend
-   * @returns {Promise<Object>} Response data
-   */
-  async extendJobDeadline(jobId, days = 7) {
-    const response = await apiClient.patch(`/jobs/${jobId}/extend-deadline`, { days });
-    return response.data;
-  }
-
-  /**
-   * Renew expired job
-   * @param {string} jobId - Job ID
-   * @returns {Promise<Object>} Response data
-   */
-  async renewJob(jobId) {
-    const response = await apiClient.patch(`/jobs/${jobId}/renew`);
-    return response.data;
-  }
-
-  /**
-   * Get expired jobs (admin only)
-   * @returns {Promise<Object>} Expired jobs
-   */
-  async getExpiredJobs() {
-    const response = await apiClient.get('/jobs/expired');
     return response.data;
   }
 }

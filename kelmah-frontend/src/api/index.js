@@ -12,6 +12,8 @@ import workersApiDefault from './services/workersApi';
 // Import all other APIs
 import authApi from './services/authApi';
 import jobsApi from './services/jobsApi';
+import bidApi from './services/bidApi';
+import userPerformanceApi from './services/userPerformanceApi';
 import hirersApi from './services/hirersApi';
 import messagesApi from './services/messagesApi';
 import profileApi from './services/profileApi';
@@ -101,6 +103,8 @@ export default axiosInstance;
 // Import and export all API services
 export { default as authApi } from './services/authApi';
 export { default as jobsApi } from './services/jobsApi';
+export { default as bidApi } from './services/bidApi';
+export { default as userPerformanceApi } from './services/userPerformanceApi';
 
 // Use mockWorkersApi if in mock mode, otherwise use the real API
 export const workersApi = USE_MOCK_MODE

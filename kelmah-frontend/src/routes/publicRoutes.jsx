@@ -6,6 +6,7 @@ import RegisterPage from '../modules/auth/pages/RegisterPage';
 import RoleSelectionPage from '../modules/auth/pages/RoleSelectionPage';
 import JobsPage from '../modules/jobs/pages/JobsPage';
 import JobDetailsPage from '../modules/jobs/pages/JobDetailsPage';
+import JobApplicationForm from '../modules/worker/components/JobApplicationForm';
 import UserProfilePage from '../modules/profiles/pages/UserProfilePage';
 import WorkerSearchPage from '../modules/hirer/pages/WorkerSearchPage';
 import PremiumPage from '../modules/premium/pages/PremiumPage';
@@ -19,6 +20,7 @@ const publicRoutes = [
   <Route key="/register" path="/register" element={<RegisterPage />} />,
   <Route key="/role-selection" path="/role-selection" element={<RoleSelectionPage />} />,
   <Route key="/jobs" path="/jobs" element={<JobsPage />} />,
+  <Route key="/jobs/:id/apply" path="/jobs/:id/apply" element={<JobApplicationForm />} />,
   <Route key="/jobs/:id" path="/jobs/:id" element={<JobDetailsPage />} />,
   <Route
     key="/profiles/user/:userId"

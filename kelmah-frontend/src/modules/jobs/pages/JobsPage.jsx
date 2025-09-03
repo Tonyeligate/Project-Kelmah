@@ -158,6 +158,7 @@ import {
 } from '../services/jobSlice';
 import JobCard from '../components/common/JobCard';
 import { useNavigate } from 'react-router-dom';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 // Advanced Animations with Smooth Transitions
 const float = keyframes`
@@ -393,6 +394,8 @@ const platformMetrics = [
 
 const JobsPage = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const authState = useAuthCheck();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -574,6 +577,27 @@ const JobsPage = () => {
           <meta name="description" content="Discover high-paying skilled trade opportunities across Ghana. Connect with top employers in electrical, plumbing, carpentry, HVAC, and construction." />
         </Helmet>
         
+        {/* Authentication Notice */}
+        {!authState.isAuthenticated && (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              borderRadius: 0,
+              mb: 3,
+              bgcolor: 'rgba(33, 150, 243, 0.1)',
+              border: '1px solid rgba(33, 150, 243, 0.3)',
+              '& .MuiAlert-message': {
+                width: '100%',
+                textAlign: 'center'
+              }
+            }}
+          >
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              <strong>Sign in to apply for jobs!</strong> Create an account or log in to start applying for opportunities.
+            </Typography>
+          </Alert>
+        )}
+        
         {/* Hero Header Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -693,6 +717,12 @@ const JobsPage = () => {
                       variant="contained"
                     size="large"
                     startIcon={<SearchIcon />}
+                    onClick={() => {
+                      console.log('🔍 Search button clicked!');
+                      console.log('Search params:', { searchQuery, selectedCategory, selectedLocation, budgetRange });
+                      // The filteredJobs will automatically update based on the state changes
+                      // This is just for logging and potential future API calls
+                    }}
                       sx={{
                       bgcolor: '#D4AF37',
                       color: 'black',
@@ -1062,6 +1092,28 @@ const JobsPage = () => {
                       <Button 
                         variant="contained" 
                         fullWidth
+                        onClick={() => {
+                          console.log('📝 Apply Now clicked for job:', job.id);
+                          console.log('🔐 Auth state:', { 
+                            isAuthenticated: authState.isAuthenticated, 
+                            user: authState.user,
+                            authState: authState 
+                          });
+                          
+                          if (!authState.isAuthenticated) {
+                            console.log('🔒 User not authenticated, redirecting to login');
+                            navigate('/login', { 
+                              state: { 
+                                from: `/jobs/${job.id}/apply`,
+                                message: 'Please sign in to apply for this job'
+                              } 
+                            });
+                            return;
+                          }
+                          
+                          console.log('🚀 Navigating to application form:', `/jobs/${job.id}/apply`);
+                          navigate(`/jobs/${job.id}/apply`);
+                        }}
                         sx={{
                           bgcolor: '#D4AF37',
                           color: 'black',
@@ -1071,9 +1123,35 @@ const JobsPage = () => {
                           },
                         }}
                       >
-                        Apply Now
+                        {authState.isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
                       </Button>
                       <IconButton 
+                        onClick={() => {
+                          console.log('🔍 View Details clicked for job:', job.id);
+                          navigate(`/jobs/${job.id}`);
+                        }}
+                        sx={{ 
+                          color: '#D4AF37',
+                          '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                        }}
+                      >
+                        <Visibility />
+                      </IconButton>
+                      <IconButton 
+                        onClick={() => {
+                          console.log('🔖 Bookmark clicked for job:', job.id);
+                          if (!authState.isAuthenticated) {
+                            navigate('/login', { 
+                              state: { 
+                                from: `/jobs/${job.id}`,
+                                message: 'Please sign in to save jobs'
+                              } 
+                            });
+                            return;
+                          }
+                          // TODO: Implement bookmark functionality
+                          console.log('Bookmark functionality to be implemented');
+                        }}
                         sx={{ 
                           color: '#D4AF37',
                           '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
@@ -1082,6 +1160,20 @@ const JobsPage = () => {
                         <BookmarkBorder />
                       </IconButton>
                       <IconButton 
+                        onClick={() => {
+                          console.log('📤 Share clicked for job:', job.id);
+                          if (navigator.share) {
+                            navigator.share({
+                              title: job.title,
+                              text: `Check out this job opportunity: ${job.title} at ${job.company}`,
+                              url: window.location.origin + `/jobs/${job.id}`
+                            }).catch(err => console.log('Error sharing:', err));
+                          } else {
+                            // Fallback: copy to clipboard
+                            navigator.clipboard.writeText(`${job.title} at ${job.company} - ${window.location.origin}/jobs/${job.id}`);
+                            console.log('Job link copied to clipboard');
+                          }
+                        }}
                         sx={{ 
                           color: '#D4AF37',
                           '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }

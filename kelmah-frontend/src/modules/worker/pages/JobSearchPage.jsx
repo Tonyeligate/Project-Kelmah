@@ -140,6 +140,9 @@ import {
   setFilters,
   selectJobsPagination,
 } from '../../jobs/services/jobSlice';
+import { jobsApi, bidApi, userPerformanceApi } from '../../../api';
+import EnhancedJobCard from '../components/EnhancedJobCard';
+import UserPerformanceDashboard from '../components/UserPerformanceDashboard';
 // Removed AuthContext import to prevent dual state management conflicts
 // import useAuth from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
@@ -627,6 +630,53 @@ const JobSearchPage = () => {
   const [skillGaps, setSkillGaps] = useState([]);
   const [animateCards, setAnimateCards] = useState(false);
 
+  // Enhanced state for new bidding system
+  const [userPerformance, setUserPerformance] = useState(null);
+  const [myBids, setMyBids] = useState([]);
+  const [biddingJobs, setBiddingJobs] = useState([]);
+  const [performanceLoading, setPerformanceLoading] = useState(false);
+  const [bidsLoading, setBidsLoading] = useState(false);
+
+  // Enhanced functions for new system
+  const fetchUserPerformance = async () => {
+    if (!authState.isAuthenticated) return;
+    
+    setPerformanceLoading(true);
+    try {
+      const response = await userPerformanceApi.getMyPerformance();
+      setUserPerformance(response.data);
+    } catch (error) {
+      console.error('Error fetching user performance:', error);
+    } finally {
+      setPerformanceLoading(false);
+    }
+  };
+
+  const fetchMyBids = async () => {
+    if (!authState.isAuthenticated) return;
+    
+    setBidsLoading(true);
+    try {
+      const response = await bidApi.getMyBids();
+      setMyBids(response.data || []);
+    } catch (error) {
+      console.error('Error fetching my bids:', error);
+    } finally {
+      setBidsLoading(false);
+    }
+  };
+
+  const fetchBiddingJobs = async () => {
+    if (!authState.isAuthenticated) return;
+    
+    try {
+      const response = await jobsApi.getPersonalizedJobRecommendations();
+      setBiddingJobs(response.data || []);
+    } catch (error) {
+      console.error('Error fetching bidding jobs:', error);
+    }
+  };
+
   // Skill options for autocomplete
   const skillOptions = [
     'Electrical Wiring', 'Smart Home Integration', 'Solar Installation', 'Industrial Automation',
@@ -653,6 +703,15 @@ const JobSearchPage = () => {
     }
   }, [isAuthenticated]);
 
+  // Fetch enhanced data when component mounts
+  useEffect(() => {
+    if (authState.isAuthenticated) {
+      fetchUserPerformance();
+      fetchMyBids();
+      fetchBiddingJobs();
+    }
+  }, [authState.isAuthenticated]);
+
   // Responsive view mode adjustment
   useEffect(() => {
     if (isMobile && viewMode === 'grid') {
@@ -662,6 +721,7 @@ const JobSearchPage = () => {
 
   // Enhanced search with AI-powered matching
   const handleSearch = useCallback(async () => {
+    console.log('🔍 Search initiated:', { searchQuery, selectedCategory, sortBy });
     setShowSampleData(false);
     setAnimateCards(true);
     
@@ -682,9 +742,49 @@ const JobSearchPage = () => {
     };
 
     try {
-      const newFilters = { ...filters, ...searchParams };
-      dispatch(setFilters(newFilters));
-      dispatch(fetchJobs(newFilters));
+      // For now, let's use the sample data and filter it
+      let filteredJobs = [...creativeJobOpportunities];
+      
+      // Apply search filter
+      if (searchQuery.trim()) {
+        filteredJobs = filteredJobs.filter(job => 
+          job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+      }
+      
+      // Apply category filter
+      if (selectedCategory) {
+        filteredJobs = filteredJobs.filter(job => 
+          job.skills.some(skill => skill.toLowerCase().includes(selectedCategory.toLowerCase()))
+        );
+      }
+      
+      // Apply urgent filter
+      if (onlyUrgent) {
+        filteredJobs = filteredJobs.filter(job => job.urgency === 'high');
+      }
+      
+      // Apply featured filter
+      if (onlyFeatured) {
+        filteredJobs = filteredJobs.filter(job => job.featured);
+      }
+      
+      console.log('📊 Filtered jobs:', filteredJobs.length);
+      
+      // Update the jobs state with filtered results
+      // For now, we'll use a simple state update since Redux might not be connected
+      setMatchingJobs(filteredJobs);
+      
+      // Try Redux dispatch if available
+      try {
+        const newFilters = { ...filters, ...searchParams };
+        dispatch(setFilters(newFilters));
+        dispatch(fetchJobs(newFilters));
+      } catch (reduxError) {
+        console.log('Redux not available, using local state:', reduxError);
+      }
       
       // Analytics tracking
       if (typeof gtag !== 'undefined') {
@@ -1084,14 +1184,50 @@ const JobSearchPage = () => {
           
           <Grid item xs={12} md={3}>
             <Stack direction="row" spacing={1}>
-              <AnimatedButton
+              <Button
                 variant="contained"
-                onClick={handleSearch}
+                onClick={() => {
+                  console.log('🔍 Search button clicked!');
+                  handleSearch();
+                }}
                 fullWidth
                 startIcon={<SearchIcon />}
+                sx={{
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                  },
+                }}
               >
                 Find Jobs
-              </AnimatedButton>
+              </Button>
+              
+              {/* Test Navigation Button */}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  console.log('🧪 Test navigation to application form');
+                  navigate('/jobs/1/apply');
+                }}
+                sx={{ mt: 1 }}
+              >
+                Test Apply
+              </Button>
+              
+              {/* Test Search Button */}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  console.log('🧪 Test search functionality');
+                  setSearchQuery('electrical');
+                  handleSearch();
+                }}
+                sx={{ mt: 1 }}
+              >
+                Test Search
+              </Button>
               
               <ToggleButtonGroup
                 value={viewMode}
@@ -1278,11 +1414,15 @@ const JobSearchPage = () => {
           trending={job.matchScore >= 90}
           matchScore={job.matchScore}
           elevation={job.featured ? 12 : 4}
+          sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         >
           <CardContent sx={{ 
             p: 3, 
             pt: job.featured && job.premium ? 7 : job.featured || job.premium ? 5 : 3,
-            pb: 2
+            pb: 2,
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             {/* Job Header */}
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
@@ -1487,31 +1627,78 @@ const JobSearchPage = () => {
             )}
           </CardContent>
 
-          <CardActions sx={{ p: 3, pt: 0 }}>
-            <Stack direction="row" spacing={1} width="100%">
-              <AnimatedButton
+          <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', gap: 1, flex: 1 }}>
+              <Button
                 variant="contained"
-                fullWidth
+                size="small"
                 startIcon={<VisibilityIcon />}
-                onClick={() => navigate(`/jobs/${job.id}`)}
+                onClick={() => {
+                  console.log('🔍 View Details clicked for job:', job.id);
+                  navigate(`/jobs/${job.id}`);
+                }}
+                sx={{ flex: 1 }}
               >
                 View Details
-              </AnimatedButton>
-              <AnimatedButton
+              </Button>
+              <Button
                 variant="outlined"
+                size="small"
                 startIcon={<HandshakeIcon />}
-                onClick={() => navigate(`/jobs/${job.id}/apply`)}
+                onClick={() => {
+                  console.log('📝 Apply Now clicked for job:', job.id);
+                  console.log('🔐 Auth state:', { 
+                    isAuthenticated: authState.isAuthenticated, 
+                    user: authState.user,
+                    authState: authState 
+                  });
+                  
+                  if (!authState.isAuthenticated) {
+                    console.log('🔒 User not authenticated, redirecting to login');
+                    navigate('/login', { 
+                      state: { 
+                        from: `/jobs/${job.id}/apply`,
+                        message: 'Please sign in to apply for this job'
+                      } 
+                    });
+                    return;
+                  }
+                  
+                  console.log('🚀 Navigating to application form:', `/jobs/${job.id}/apply`);
+                  navigate(`/jobs/${job.id}/apply`);
+                }}
                 sx={{
+                  flex: 1,
                   borderColor: theme.palette.secondary.main,
                   color: theme.palette.secondary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.dark,
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                  }
                 }}
               >
-                Apply Now
-              </AnimatedButton>
-              <IconButton color="primary">
-                <ShareIcon />
-              </IconButton>
-            </Stack>
+                {authState.isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
+              </Button>
+            </Box>
+            <IconButton 
+              color="primary"
+              size="small"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: job.title,
+                    text: `Check out this job opportunity: ${job.title} at ${job.company.name}`,
+                    url: window.location.href
+                  });
+                } else {
+                  // Fallback: copy to clipboard
+                  navigator.clipboard.writeText(`${job.title} at ${job.company.name} - ${window.location.origin}/jobs/${job.id}`);
+                  console.log('Job link copied to clipboard');
+                }
+              }}
+            >
+              <ShareIcon />
+            </IconButton>
           </CardActions>
         </JobOpportunityCard>
       </motion.div>
@@ -1608,6 +1795,24 @@ const JobSearchPage = () => {
       </Helmet>
 
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        {/* Authentication Notice */}
+        {!authState.isAuthenticated && (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              borderRadius: 0,
+              '& .MuiAlert-message': {
+                width: '100%',
+                textAlign: 'center'
+              }
+            }}
+          >
+            <Typography variant="body2">
+              <strong>Sign in to apply for jobs!</strong> Create an account or log in to start applying for opportunities.
+            </Typography>
+          </Alert>
+        )}
+        
         {renderHeroSection()}
         {renderSearchInterface()}
         {renderCategories()}
@@ -1630,10 +1835,10 @@ const JobSearchPage = () => {
         ) : (
           <Container maxWidth="xl" sx={{ py: 4 }}>
             <Typography variant="h4" gutterBottom>
-              Search Results ({jobs.length} jobs found)
+              Search Results ({matchingJobs.length > 0 ? matchingJobs.length : jobs.length} jobs found)
             </Typography>
             <Grid container spacing={3}>
-              {jobs.map((job, index) => renderJobCard(job, index))}
+              {(matchingJobs.length > 0 ? matchingJobs : jobs).map((job, index) => renderJobCard(job, index))}
             </Grid>
           </Container>
         )}
