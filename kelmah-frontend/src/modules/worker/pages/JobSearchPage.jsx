@@ -121,6 +121,7 @@ import {
   Thermostat as HvacIcon,
   Rocket as RocketIcon,
   Diamond as DiamondIcon,
+  Handshake as HandshakeIcon,
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
