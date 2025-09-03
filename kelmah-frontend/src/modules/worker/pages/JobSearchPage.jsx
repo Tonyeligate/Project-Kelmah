@@ -385,7 +385,7 @@ const JobSearchPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // Use ONLY Redux auth state to prevent dual state management conflicts
-  const { user, isAuthenticated: isInitialized } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const authState = useAuthCheck();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
@@ -661,12 +661,12 @@ const JobSearchPage = () => {
 
   // Initialize personalized features for authenticated users
   useEffect(() => {
-    if (authState.isAuthenticated && user && isInitialized) {
+    if (authState.isAuthenticated && user && isAuthenticated) {
       generatePersonalizedRecommendations();
       analyzeCareerGrowth();
       identifySkillGaps();
     }
-  }, [authState.isAuthenticated, user, isInitialized, generatePersonalizedRecommendations, analyzeCareerGrowth, identifySkillGaps]);
+  }, [authState.isAuthenticated, user, isAuthenticated, generatePersonalizedRecommendations, analyzeCareerGrowth, identifySkillGaps]);
 
   const renderHeroSection = () => (
     <HeroGradientSection ref={heroRef}>
