@@ -111,11 +111,11 @@ const FeatureCircle = styled(Box)(({ theme }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',
-  background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+  background: `linear-gradient(135deg, #FFD700 0%, #FFA500 100%)`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: theme.palette.secondary.contrastText,
+  color: '#000000',
   fontWeight: 'bold',
   marginRight: theme.spacing(3),
   boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
@@ -236,18 +236,18 @@ const HomePage = () => {
 
   const features = [
     {
-      icon: <VerifiedIcon sx={{ fontSize: 28, color: '#000' }} />,
+      icon: <VerifiedIcon sx={{ fontSize: 28, color: '#000000' }} />,
       title: 'Verified Skilled Workers',
       description:
         'All tradespeople are vetted and verified for quality assurance',
     },
     {
-      icon: <SecurityIcon sx={{ fontSize: 28, color: '#000' }} />,
+      icon: <SecurityIcon sx={{ fontSize: 28, color: '#000000' }} />,
       title: 'Secure Escrow Payments',
       description: 'Safe payment system protecting both workers and hirers',
     },
     {
-      icon: <StarIcon sx={{ fontSize: 28, color: '#000' }} />,
+      icon: <StarIcon sx={{ fontSize: 28, color: '#000000' }} />,
       title: 'Quality Guarantee',
       description: 'Rating system ensuring high-quality workmanship',
     },
