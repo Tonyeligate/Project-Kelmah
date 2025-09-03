@@ -477,6 +477,112 @@ const workerStats = [
   },
 ];
 
+// Sample creative job opportunities for demonstration
+const creativeJobOpportunities = [
+  {
+    id: 1,
+    title: 'Senior Smart Home Integration Specialist',
+    company: { name: 'TechHomes Ghana', logo: null },
+    location: 'Accra, Ghana',
+    type: 'Full-time',
+    budget: { min: 8000, max: 12000, type: 'monthly', currency: 'GHS' },
+    description: 'Lead smart home automation projects for luxury residential and commercial properties.',
+    skills: ['IoT Systems', 'Home Automation', 'Smart Home Integration', 'Project Management'],
+    benefits: ['Health Insurance', 'Flexible Hours', 'Professional Development', 'Performance Bonus'],
+    featured: true,
+    urgent: false,
+    premium: true,
+    coordinates: { lat: 5.6037, lng: -0.1870 },
+    postedDate: new Date('2024-01-15'),
+    urgency: 'medium'
+  },
+  {
+    id: 2,
+    title: 'Renewable Energy Installation Expert',
+    company: { name: 'GreenPower Solutions', logo: null },
+    location: 'Kumasi, Ghana',
+    type: 'Contract',
+    budget: { min: 15000, max: 25000, type: 'project', currency: 'GHS' },
+    description: 'Install and maintain solar panel systems for residential and commercial clients.',
+    skills: ['Solar Installation', 'Electrical Systems', 'Renewable Energy', 'Safety Protocols'],
+    benefits: ['Project Bonuses', 'Equipment Provided', 'Training Opportunities'],
+    featured: false,
+    urgent: true,
+    premium: false,
+    coordinates: { lat: 6.6885, lng: -1.6244 },
+    postedDate: new Date('2024-01-14'),
+    urgency: 'high'
+  },
+  {
+    id: 3,
+    title: 'Custom Furniture Designer & Maker',
+    company: { name: 'Artisan Craft Co.', logo: null },
+    location: 'Cape Coast, Ghana',
+    type: 'Part-time',
+    budget: { min: 5000, max: 8000, type: 'monthly', currency: 'GHS' },
+    description: 'Create bespoke furniture pieces using traditional and modern techniques.',
+    skills: ['Woodworking', 'Furniture Design', 'Carpentry', '3D Design'],
+    benefits: ['Creative Freedom', 'Flexible Schedule', 'Material Allowance'],
+    featured: true,
+    urgent: false,
+    premium: false,
+    coordinates: { lat: 5.1053, lng: -1.2466 },
+    postedDate: new Date('2024-01-13'),
+    urgency: 'low'
+  },
+  {
+    id: 4,
+    title: 'Industrial Automation Technician',
+    company: { name: 'Manufacturing Plus', logo: null },
+    location: 'Tema, Ghana',
+    type: 'Full-time',
+    budget: { min: 10000, max: 15000, type: 'monthly', currency: 'GHS' },
+    description: 'Maintain and upgrade automated manufacturing systems.',
+    skills: ['Industrial Automation', 'PLC Programming', 'Mechanical Systems', 'Troubleshooting'],
+    benefits: ['Health Insurance', 'Retirement Plan', 'Overtime Pay', 'Safety Equipment'],
+    featured: false,
+    urgent: false,
+    premium: true,
+    coordinates: { lat: 5.6833, lng: -0.0167 },
+    postedDate: new Date('2024-01-12'),
+    urgency: 'medium'
+  },
+  {
+    id: 5,
+    title: 'Sustainable Building Consultant',
+    company: { name: 'EcoBuild Ghana', logo: null },
+    location: 'Tamale, Ghana',
+    type: 'Contract',
+    budget: { min: 12000, max: 18000, type: 'monthly', currency: 'GHS' },
+    description: 'Advise on sustainable construction practices and green building materials.',
+    skills: ['Sustainable Building', 'Construction', 'Environmental Design', 'Project Management'],
+    benefits: ['Travel Allowance', 'Professional Development', 'Flexible Hours'],
+    featured: true,
+    urgent: true,
+    premium: false,
+    coordinates: { lat: 9.4008, lng: -0.8393 },
+    postedDate: new Date('2024-01-11'),
+    urgency: 'high'
+  },
+  {
+    id: 6,
+    title: 'Advanced HVAC Systems Specialist',
+    company: { name: 'Climate Control Pro', logo: null },
+    location: 'Takoradi, Ghana',
+    type: 'Full-time',
+    budget: { min: 9000, max: 13000, type: 'monthly', currency: 'GHS' },
+    description: 'Install and maintain advanced heating, ventilation, and air conditioning systems.',
+    skills: ['HVAC Systems', 'Climate Control', 'Energy Efficiency', 'System Design'],
+    benefits: ['Company Vehicle', 'Tool Allowance', 'Health Insurance', 'Performance Bonus'],
+    featured: false,
+    urgent: false,
+    premium: true,
+    coordinates: { lat: 4.8845, lng: -1.7553 },
+    postedDate: new Date('2024-01-10'),
+    urgency: 'medium'
+  }
+];
+
 const JobSearchPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
