@@ -209,6 +209,45 @@ const SearchInterface = styled(Paper)(({ theme }) => ({
   },
 }));
 
+// GlassCard styled component for glass morphism effect
+const GlassCard = styled(Card)(({ theme }) => ({
+  background: alpha(theme.palette.background.paper, 0.9),
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: 16,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[20],
+    background: alpha(theme.palette.background.paper, 0.95),
+  },
+}));
+
+// JobOpportunityCard styled component for job listings
+const JobOpportunityCard = styled(Card)(({ theme, featured, urgent, premium }) => ({
+  background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+  border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.divider, 0.2)}`,
+  borderRadius: 16,
+  overflow: 'hidden',
+  position: 'relative',
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 8px 25px ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.3)}`,
+    border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.4)}`,
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main} 0%, ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.8)} 100%)`,
+  },
+}));
+
 const shimmer = keyframes`
   0% { background-position: -200px 0; }
   100% { background-position: calc(200px + 100%) 0; }
