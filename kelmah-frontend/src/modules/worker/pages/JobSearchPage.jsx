@@ -151,6 +151,20 @@ const float = keyframes`
   75% { transform: translateY(-12px) rotate(-1deg); }
 `;
 
+// AnimatedButton styled component
+const AnimatedButton = styled(Button)(({ theme }) => ({
+  borderRadius: 25,
+  padding: '12px 24px',
+  fontWeight: 600,
+  textTransform: 'none',
+  transition: 'all 0.3s ease-in-out',
+  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: theme.shadows[12],
+  },
+}));
+
 const shimmer = keyframes`
   0% { background-position: -200px 0; }
   100% { background-position: calc(200px + 100%) 0; }
