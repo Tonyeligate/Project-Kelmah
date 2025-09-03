@@ -62,9 +62,12 @@ const MyApplicationsPage = () => {
     const fetchApplications = async () => {
       try {
         const data = await applicationsApi.getMyApplications();
-        setApplications(data);
+        // Ensure data is an array, fallback to empty array if not
+        const applicationsArray = Array.isArray(data) ? data : [];
+        setApplications(applicationsArray);
       } catch (error) {
         console.error('Error loading applications:', error);
+        setApplications([]); // Set empty array as fallback
       } finally {
         setLoading(false);
       }
@@ -103,14 +106,14 @@ const MyApplicationsPage = () => {
   };
 
   // Filter applications based on current tab
-  const filteredApplications = applications.filter((app) => {
+  const filteredApplications = Array.isArray(applications) ? applications.filter((app) => {
     if (tabValue === 0) return true; // All applications
     if (tabValue === 1) return app.status === 'pending';
     if (tabValue === 2) return app.status === 'interview';
     if (tabValue === 3) return app.status === 'offer';
     if (tabValue === 4) return app.status === 'rejected';
     return false;
-  });
+  }) : [];
 
   // Status label and color mapping
   const getStatusInfo = (status) => {
