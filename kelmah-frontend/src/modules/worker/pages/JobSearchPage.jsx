@@ -1541,10 +1541,22 @@ const JobSearchPage = () => {
               <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h5" fontWeight={700} color="secondary.main">
-                    ${job.budget.min}-{job.budget.max}
+                    {job.budget ? (
+                      typeof job.budget === 'object' ? (
+                        `$${job.budget.min}-${job.budget.max}`
+                      ) : (
+                        `$${job.budget}`
+                      )
+                    ) : (
+                      'N/A'
+                    )}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    per {job.budget.type}
+                    {job.budget && typeof job.budget === 'object' ? (
+                      `per ${job.budget.type}`
+                    ) : (
+                      job.paymentType === 'hourly' ? 'per hour' : 'fixed'
+                    )}
                   </Typography>
                 </Box>
               </Grid>

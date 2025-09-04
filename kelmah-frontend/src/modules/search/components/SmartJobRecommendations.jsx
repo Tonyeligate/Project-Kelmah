@@ -311,10 +311,13 @@ const SmartJobRecommendations = ({
             <Box display="flex" alignItems="center" gap={1}>
               <MoneyIcon fontSize="small" color="action" />
               <Typography variant="body2" fontWeight="medium">
-                {typeof job.budget === 'object' 
-                  ? `${formatCurrency(job.budget.min)} - ${formatCurrency(job.budget.max)}`
-                  : formatCurrency(job.budget)
-                }
+                {job.budget ? (
+                  typeof job.budget === 'object' 
+                    ? `${formatCurrency(job.budget.min)} - ${formatCurrency(job.budget.max)}`
+                    : formatCurrency(job.budget)
+                ) : (
+                  'Salary not specified'
+                )}
               </Typography>
             </Box>
 

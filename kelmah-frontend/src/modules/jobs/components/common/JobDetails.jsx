@@ -137,7 +137,15 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <AttachMoney color="action" />
                 <Typography color="text.secondary">
-                  ${job.budget.toLocaleString()}
+                  {job.budget ? (
+                    typeof job.budget === 'object' ? (
+                      `$${job.budget.min} - $${job.budget.max}`
+                    ) : (
+                      `$${job.budget.toLocaleString()}`
+                    )
+                  ) : (
+                    'Salary not specified'
+                  )}
                 </Typography>
               </Box>
 
