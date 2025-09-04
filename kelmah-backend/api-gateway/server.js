@@ -384,7 +384,17 @@ app.use('/api/jobs',
   createProxyMiddleware({
     target: services.job,
     changeOrigin: true,
-    pathRewrite: { '^/api/jobs': '/api/jobs' }
+    onProxyReq: (proxyReq, req, res) => {
+      // Ensure the full path is preserved
+      console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service`);
+    },
+    onError: (err, req, res) => {
+      console.error('[API Gateway] Job service proxy error:', err.message);
+      res.status(503).json({ 
+        error: 'Job service temporarily unavailable',
+        message: err.message 
+      });
+    }
   })
 );
 
