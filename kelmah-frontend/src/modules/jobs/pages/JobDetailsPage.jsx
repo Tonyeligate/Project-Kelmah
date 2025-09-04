@@ -116,7 +116,9 @@ const JobDetailsPage = () => {
   };
 
   const handleMessageHirer = () => {
-    navigate(`/messages?participantId=${job.hirer.id}`);
+    if (job.hirer?.id) {
+      navigate(`/messages?participantId=${job.hirer.id}`);
+    }
   };
 
   const handleToggleSave = () => {
@@ -276,7 +278,7 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        ${job.minRate} - ${job.maxRate} /{' '}
+                        ${job.minRate || job.budget || 'N/A'} - ${job.maxRate || job.budget || 'N/A'} /{' '}
                         {job.rateType === 'hourly' ? 'hr' : 'fixed'}
                       </Typography>
                     </Box>
@@ -284,20 +286,20 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Schedule sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        Posted: {job.postedDate}
+                        Posted: {job.postedDate || job.createdAt || 'N/A'}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <WorkOutline sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.applicants} Applicants
+                        {job.applicants || job.proposalCount || 0} Applicants
                       </Typography>
                     </Box>
                   </Box>
 
                   <Chip
-                    label={job.status}
+                    label={job.status || 'Unknown'}
                     sx={{
                       background:
                         job.status === 'Open'
@@ -428,7 +430,7 @@ const JobDetailsPage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Schedule sx={{ color: '#FFD700', mr: 1 }} />
                     <Typography variant="body1" sx={{ color: '#fff' }}>
-                      Complete by: {job.deadline}
+                      Complete by: {job.deadline || job.endDate || 'N/A'}
                     </Typography>
                   </Box>
                 </Box>
@@ -511,29 +513,29 @@ const JobDetailsPage = () => {
                 </Typography>
 
                 <ProfileLink
-                  onClick={() => navigate(`/profile/${job.hirer.id}`)}
+                  onClick={() => navigate(`/profile/${job.hirer?.id}`)}
                 >
                   <Avatar
-                    src={job.hirer.avatar}
-                    alt={job.hirer.name}
+                    src={job.hirer?.profileImage || job.hirer?.avatar}
+                    alt={job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Hirer'}
                     sx={{ width: 56, height: 56, mr: 2 }}
                   />
 
                   <Box>
                     <Typography variant="h6" sx={{ color: '#FFD700' }}>
-                      {job.hirer.name}
+                      {job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Hirer'}
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Star sx={{ color: '#FFD700', fontSize: 18, mr: 0.5 }} />
                       <Typography variant="body2" sx={{ color: '#fff', mr: 1 }}>
-                        {job.hirer.rating.toFixed(1)}
+                        {job.hirer?.rating?.toFixed(1) || 'N/A'}
                       </Typography>
                       <Typography
                         variant="body2"
                         sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                       >
-                        ({job.hirer.reviews} reviews)
+                        ({job.hirer?.reviews || job.hirer?.totalJobsPosted || 0} reviews)
                       </Typography>
                     </Box>
 
@@ -541,7 +543,7 @@ const JobDetailsPage = () => {
                       variant="body2"
                       sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}
                     >
-                      {job.hirer.jobsPosted} jobs posted
+                      {job.hirer?.jobsPosted || job.hirer?.totalJobsPosted || 0} jobs posted
                     </Typography>
                   </Box>
                 </ProfileLink>
