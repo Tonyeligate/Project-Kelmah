@@ -127,17 +127,27 @@ function JobDetails() {
                 </Typography>
               </Box>
 
-              {job.location && (
+              {(job.location?.address || job.location?.city || job.location) && (
                 <Box display="flex" alignItems="center" gap={1}>
                   <LocationOn color="action" />
-                  <Typography color="text.secondary">{job.location}</Typography>
+                  <Typography color="text.secondary">
+                    {job.location?.address || job.location?.city || job.location}
+                  </Typography>
                 </Box>
               )}
 
               <Box display="flex" alignItems="center" gap={1}>
                 <AttachMoney color="action" />
                 <Typography color="text.secondary">
-                  ${job.budget ? job.budget.toLocaleString() : 'N/A'}
+                  {job.budget ? (
+                    typeof job.budget === 'object' ? (
+                      `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0}`
+                    ) : (
+                      `${job.currency || 'GHS'} ${job.budget.toLocaleString()}`
+                    )
+                  ) : (
+                    'N/A'
+                  )}
                 </Typography>
               </Box>
 

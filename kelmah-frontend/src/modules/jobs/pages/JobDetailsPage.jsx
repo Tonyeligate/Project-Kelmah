@@ -116,9 +116,7 @@ const JobDetailsPage = () => {
   };
 
   const handleMessageHirer = () => {
-    if (job.hirer?.id) {
-      navigate(`/messages?participantId=${job.hirer.id}`);
-    }
+    navigate(`/messages?participantId=${job.hirer?._id || job.hirer?.id}`);
   };
 
   const handleToggleSave = () => {
@@ -236,7 +234,7 @@ const JobDetailsPage = () => {
                   >
                     <iframe
                       title="Job Location"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(job.location)}&output=embed`}
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(job.location?.address || job.location?.city || job.location || 'Ghana')}&output=embed`}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -264,7 +262,7 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <LocationOn sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.location}
+                        {job.location?.address || job.location?.city || job.location || 'Location not specified'}
                       </Typography>
                     </Box>
 
@@ -278,28 +276,35 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        ${job.minRate || job.budget || 'N/A'} - ${job.maxRate || job.budget || 'N/A'} /{' '}
-                        {job.rateType === 'hourly' ? 'hr' : 'fixed'}
+                        {job.budget ? (
+                          typeof job.budget === 'object' ? (
+                            `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0} / ${job.budget.type || 'fixed'}`
+                          ) : (
+                            `${job.currency || 'GHS'} ${job.budget.toLocaleString()} / ${job.paymentType || 'fixed'}`
+                          )
+                        ) : (
+                          'Budget not specified'
+                        )}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Schedule sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        Posted: {job.postedDate || job.createdAt || 'N/A'}
+                        Posted: {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Unknown'}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <WorkOutline sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.applicants || job.proposalCount || 0} Applicants
+                        {job.proposalCount || 0} Applicants
                       </Typography>
                     </Box>
                   </Box>
 
                   <Chip
-                    label={job.status || 'Unknown'}
+                    label={job.status}
                     sx={{
                       background:
                         job.status === 'Open'
@@ -430,7 +435,7 @@ const JobDetailsPage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Schedule sx={{ color: '#FFD700', mr: 1 }} />
                     <Typography variant="body1" sx={{ color: '#fff' }}>
-                      Complete by: {job.deadline || job.endDate || 'N/A'}
+                      Complete by: {job.endDate ? new Date(job.endDate).toLocaleDateString() : 'No deadline specified'}
                     </Typography>
                   </Box>
                 </Box>
@@ -513,17 +518,19 @@ const JobDetailsPage = () => {
                 </Typography>
 
                 <ProfileLink
-                  onClick={() => navigate(`/profile/${job.hirer?.id}`)}
+                  onClick={() => navigate(`/profile/${job.hirer?._id || job.hirer?.id}`)}
                 >
                   <Avatar
-                    src={job.hirer?.profileImage || job.hirer?.avatar}
-                    alt={job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Hirer'}
+                    src={job.hirer?.avatar || job.hirer?.profilePicture}
+                    alt={job.hirer?.firstName || job.hirer?.name || 'Hirer'}
                     sx={{ width: 56, height: 56, mr: 2 }}
                   />
 
                   <Box>
                     <Typography variant="h6" sx={{ color: '#FFD700' }}>
-                      {job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Hirer'}
+                      {job.hirer?.firstName && job.hirer?.lastName 
+                        ? `${job.hirer.firstName} ${job.hirer.lastName}` 
+                        : job.hirer?.name || 'Hirer'}
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -535,7 +542,7 @@ const JobDetailsPage = () => {
                         variant="body2"
                         sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                       >
-                        ({job.hirer?.reviews || job.hirer?.totalJobsPosted || 0} reviews)
+                        ({job.hirer?.reviews || 0} reviews)
                       </Typography>
                     </Box>
 
@@ -543,7 +550,7 @@ const JobDetailsPage = () => {
                       variant="body2"
                       sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}
                     >
-                      {job.hirer?.jobsPosted || job.hirer?.totalJobsPosted || 0} jobs posted
+                      {job.hirer?.jobsPosted || 0} jobs posted
                     </Typography>
                   </Box>
                 </ProfileLink>
