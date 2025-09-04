@@ -382,11 +382,12 @@ app.use('/api/jobs',
     next();
   },
   createProxyMiddleware({
-    target: services.job,
+    target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: { '^/api/jobs': '/api/jobs' },
     onProxyReq: (proxyReq, req, res) => {
       // Ensure the full path is preserved
-      console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service`);
+      console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service at http://localhost:5003`);
     },
     onError: (err, req, res) => {
       console.error('[API Gateway] Job service proxy error:', err.message);
