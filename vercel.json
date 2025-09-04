@@ -10,7 +10,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com/api/$1" },
-    { "source": "/socket.io/(.*)", "destination": "http://kelmah-alb-655284218.eu-north-1.elb.amazonaws.com/socket.io/$1" }
+    { "source": "/api/(.*)", "destination": "https://e7e63332d334.ngrok-free.app/api/$1" },
+    { "source": "/socket.io/(.*)", "destination": "https://e7e63332d334.ngrok-free.app/socket.io/$1" }
   ]
 }
