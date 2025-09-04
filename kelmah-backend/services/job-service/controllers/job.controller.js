@@ -231,6 +231,29 @@ const getJobs = async (req, res, next) => {
       .limit(limit)
       .sort(req.query.sort || "-createdAt");
 
+    // Transform jobs to match frontend expectations
+    const transformedJobs = jobs.map(job => ({
+      ...job.toObject(),
+      // Add budget object for complex budget display
+      budget: {
+        min: job.bidding?.minBidAmount || job.budget || 0,
+        max: job.bidding?.maxBidAmount || job.budget || 0,
+        type: job.paymentType || 'fixed',
+        amount: job.budget || 0
+      },
+      // Add missing fields that frontend expects
+      hirer_name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown',
+      profession: job.category,
+      skills_required: job.skills ? job.skills.join(', ') : '',
+      created_at: job.createdAt,
+      // Add avatar field for hirer
+      hirer: {
+        ...job.hirer?.toObject(),
+        avatar: job.hirer?.profileImage,
+        name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown'
+      }
+    }));
+
     // Get total count
     const total = await Job.countDocuments(query);
 
@@ -238,7 +261,7 @@ const getJobs = async (req, res, next) => {
       res,
       200,
       "Jobs retrieved successfully",
-      jobs,
+      transformedJobs,
       page,
       limit,
       total,
@@ -267,7 +290,30 @@ const getJobById = async (req, res, next) => {
     job.viewCount += 1;
     await job.save();
 
-    return successResponse(res, 200, "Job retrieved successfully", job);
+    // Transform job data to match frontend expectations
+    const transformedJob = {
+      ...job.toObject(),
+      // Add budget object for complex budget display (keeping original budget as well)
+      budget: {
+        min: job.bidding?.minBidAmount || job.budget || 0,
+        max: job.bidding?.maxBidAmount || job.budget || 0,
+        type: job.paymentType || 'fixed',
+        amount: job.budget || 0
+      },
+      // Add missing fields that frontend expects
+      hirer_name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown',
+      profession: job.category,
+      skills_required: job.skills ? job.skills.join(', ') : '',
+      created_at: job.createdAt,
+      // Add avatar field for hirer
+      hirer: {
+        ...job.hirer?.toObject(),
+        avatar: job.hirer?.profileImage,
+        name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown'
+      }
+    };
+
+    return successResponse(res, 200, "Job retrieved successfully", transformedJob);
   } catch (error) {
     next(error);
   }
