@@ -123,7 +123,7 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <Person color="action" />
                 <Typography color="text.secondary">
-                  Posted by {job.hirer_name}
+                  Posted by {job.hirer_name || job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown'}
                 </Typography>
               </Box>
 
@@ -137,30 +137,22 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <AttachMoney color="action" />
                 <Typography color="text.secondary">
-                  {job.budget ? (
-                    typeof job.budget === 'object' ? (
-                      `$${job.budget.min} - $${job.budget.max}`
-                    ) : (
-                      `$${job.budget.toLocaleString()}`
-                    )
-                  ) : (
-                    'Salary not specified'
-                  )}
+                  ${job.budget ? job.budget.toLocaleString() : 'N/A'}
                 </Typography>
               </Box>
 
               <Box display="flex" alignItems="center" gap={1}>
                 <Work color="action" />
-                <Typography color="text.secondary">{job.profession}</Typography>
+                <Typography color="text.secondary">{job.profession || job.category || 'N/A'}</Typography>
               </Box>
 
               <Box display="flex" alignItems="center" gap={1}>
                 <Schedule color="action" />
                 <Typography color="text.secondary">
                   Posted{' '}
-                  {formatDistanceToNow(new Date(job.created_at), {
+                  {job.created_at ? formatDistanceToNow(new Date(job.created_at), {
                     addSuffix: true,
-                  })}
+                  }) : 'Unknown'}
                 </Typography>
               </Box>
             </Box>
@@ -177,16 +169,16 @@ function JobDetails() {
             <Typography paragraph>{job.description}</Typography>
           </Grid>
 
-          {job.skills_required && (
+          {(job.skills_required || job.skills) && (
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom color="secondary">
                 Required Skills
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap">
-                {job.skills_required.split(',').map((skill, index) => (
+                {(job.skills_required ? job.skills_required.split(',') : job.skills || []).map((skill, index) => (
                   <Chip
                     key={index}
-                    label={skill.trim()}
+                    label={typeof skill === 'string' ? skill.trim() : skill}
                     variant="outlined"
                     size="small"
                   />

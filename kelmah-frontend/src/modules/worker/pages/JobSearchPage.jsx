@@ -1541,22 +1541,10 @@ const JobSearchPage = () => {
               <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h5" fontWeight={700} color="secondary.main">
-                    {job.budget ? (
-                      typeof job.budget === 'object' ? (
-                        `$${job.budget.min}-${job.budget.max}`
-                      ) : (
-                        `$${job.budget}`
-                      )
-                    ) : (
-                      'N/A'
-                    )}
+                    ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {job.budget && typeof job.budget === 'object' ? (
-                      `per ${job.budget.type}`
-                    ) : (
-                      job.paymentType === 'hourly' ? 'per hour' : 'fixed'
-                    )}
+                    per {job.budget?.type || 'N/A'}
                   </Typography>
                 </Box>
               </Grid>
@@ -1780,7 +1768,7 @@ const JobSearchPage = () => {
                       {job.company?.name || 'Company Name'}
                     </Typography>
                     <Typography variant="body2" color="secondary.main" fontWeight="bold">
-                      ${job.budget?.min}-{job.budget?.max}/{job.budget?.type}
+                      ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}/{job.budget?.type || 'N/A'}
                     </Typography>
                     <Button
                       size="small"

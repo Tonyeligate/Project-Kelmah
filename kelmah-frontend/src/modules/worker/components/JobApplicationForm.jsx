@@ -240,15 +240,7 @@ const JobApplicationForm = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <MoneyIcon sx={{ mr: 1, color: theme.palette.success.main }} />
                     <Typography>
-                      {job.budget ? (
-                        typeof job.budget === 'object' ? (
-                          `GH₵${job.budget.min} - ${job.budget.max} ${job.budget.type}`
-                        ) : (
-                          `GH₵${job.budget} ${job.paymentType === 'hourly' ? 'per hour' : 'fixed'}`
-                        )
-                      ) : (
-                        'Salary not specified'
-                      )}
+                      GH₵{job.budget?.min || 'N/A'} - {job.budget?.max || 'N/A'} {job.budget?.type || ''}
                     </Typography>
                   </Box>
                   
@@ -335,15 +327,7 @@ const JobApplicationForm = () => {
                       value={applicationData.expectedSalary}
                       onChange={handleInputChange('expectedSalary')}
                       required
-                      helperText={job.budget ? (
-                        typeof job.budget === 'object' ? (
-                          `Job offers GH₵${job.budget.min} - ${job.budget.max}`
-                        ) : (
-                          `Job offers GH₵${job.budget}`
-                        )
-                      ) : (
-                        'Job salary not specified'
-                      )}
+                      helperText={`Job offers GH₵${job.budget?.min || 'N/A'} - ${job.budget?.max || 'N/A'}`}
                     />
                   </Grid>
 
