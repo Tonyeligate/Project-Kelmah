@@ -202,7 +202,7 @@ const EnhancedAvailableJobs = () => {
           ...getJobIconData(job),
           status: savedJobs.has(job.id) ? 'saved' : 'idle',
           distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
-          salary: job.salary || job.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
+          salary: job.salary || job?.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
           applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
           matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
         }));
