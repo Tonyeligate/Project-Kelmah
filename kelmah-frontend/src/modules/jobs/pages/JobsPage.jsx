@@ -412,13 +412,13 @@ const JobsPage = () => {
     const iconMap = {
       'Electrical': ElectricalIcon,
       'Plumbing': PlumbingIcon,
-      'Carpentry': CarpentryIcon,
+      'Carpentry': CarpenterIcon,
       'HVAC': HvacIcon,
       'Construction': ConstructionIcon,
-      'Painting': PaintingIcon,
-      'General': GeneralIcon
+      'Painting': PaintIcon,
+      'General': WorkIcon
     };
-    return iconMap[category] || GeneralIcon;
+    return iconMap[category] || WorkIcon;
   };
 
   // Fetch jobs from API
