@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import jobsApi from '../../../api/services/jobsApi';
 import {
   Container,
   Grid,
@@ -402,8 +403,53 @@ const JobsPage = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [budgetRange, setBudgetRange] = useState([500, 10000]);
   const [showFilters, setShowFilters] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  // Enhanced Ghana-focused skilled trades jobs
+  // Helper function to get category icon
+  const getCategoryIcon = (category) => {
+    const iconMap = {
+      'Electrical': ElectricalIcon,
+      'Plumbing': PlumbingIcon,
+      'Carpentry': CarpentryIcon,
+      'HVAC': HvacIcon,
+      'Construction': ConstructionIcon,
+      'Painting': PaintingIcon,
+      'General': GeneralIcon
+    };
+    return iconMap[category] || GeneralIcon;
+  };
+
+  // Fetch jobs from API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const response = await jobsApi.getJobs({
+          status: 'open',
+          limit: 50
+        });
+        
+        if (response && response.items) {
+          setJobs(response.items);
+        } else {
+          setJobs([]);
+        }
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching jobs:', err);
+        setError('Failed to load jobs. Please try again.');
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchJobs();
+  }, []);
+  
+  // Enhanced Ghana-focused skilled trades jobs (fallback data)
   const sampleJobs = [
     {
       id: 1,
@@ -557,14 +603,16 @@ const JobsPage = () => {
     { value: 'Koforidua', label: 'Koforidua, Eastern Region' }
   ];
 
-  const filteredJobs = sampleJobs.filter(job => {
+  const filteredJobs = (jobs.length > 0 ? jobs : sampleJobs).filter(job => {
     const matchesSearch = !searchQuery || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+      (job.company && job.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (job.skills && job.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase())));
     
     const matchesCategory = !selectedCategory || job.category === selectedCategory;
-    const matchesLocation = !selectedLocation || job.location.includes(selectedLocation);
+    const matchesLocation = !selectedLocation || 
+      (job.location && job.location.includes(selectedLocation)) ||
+      (job.location?.city && job.location.city.includes(selectedLocation));
     
     return matchesSearch && matchesCategory && matchesLocation;
   });
@@ -946,8 +994,36 @@ const JobsPage = () => {
             </Box>
           </Box>
           
+          {loading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={60} sx={{ color: '#FFD700' }} />
+              <Typography variant="h6" sx={{ ml: 2, color: '#fff' }}>
+                Loading jobs...
+              </Typography>
+            </Box>
+          )}
+          
+          {error && (
+            <Box sx={{ py: 4 }}>
+              <Alert severity="error" sx={{ bgcolor: '#2d1b1b', color: '#fff' }}>
+                {error}
+              </Alert>
+            </Box>
+          )}
+          
+          {!loading && !error && filteredJobs.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant="h5" sx={{ color: '#fff', mb: 2 }}>
+                No jobs found
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#ccc' }}>
+                Try adjusting your search criteria or check back later.
+              </Typography>
+            </Box>
+          )}
+          
           <Grid container spacing={3}>
-            {filteredJobs.map((job, index) => (
+            {!loading && !error && filteredJobs.map((job, index) => (
               <Grid item xs={12} md={6} lg={4} key={job.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -973,13 +1049,15 @@ const JobsPage = () => {
                       {/* Job Header */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <job.icon sx={{ mr: 1, color: '#D4AF37', fontSize: 24 }} />
+                          {React.createElement(getCategoryIcon(job.category), { 
+                            sx: { mr: 1, color: '#D4AF37', fontSize: 24 } 
+                          })}
                           <Box>
                             <Typography variant="h6" component="h2" sx={{ color: 'white', fontWeight: 'bold' }}>
                               {job.title}
                             </Typography>
                             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                              {job.company}
+                              {job.hirer?.name || 'Unknown Company'}
                             </Typography>
                           </Box>
                 </Box>
@@ -1015,16 +1093,22 @@ const JobsPage = () => {
                       <Box sx={{ mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <LocationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
-                          <Typography variant="body2" sx={{ color: 'white' }}>{job.location}</Typography>
+                          <Typography variant="body2" sx={{ color: 'white' }}>
+                            {job.location?.city || job.location || 'Location not specified'}
+                          </Typography>
                         </Box>
                         
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <MonetizationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
                           <Typography variant="body2" fontWeight="bold" sx={{ color: '#D4AF37' }}>
-                            {job.budget}
+                            {job.budget ? (
+                              typeof job.budget === 'object' ? 
+                                `${job.currency || 'GHS'} ${job.budget.min || job.budget.amount} - ${job.budget.max || job.budget.amount}` :
+                                `${job.currency || 'GHS'} ${job.budget}`
+                            ) : 'Budget not specified'}
                           </Typography>
                           <Chip 
-                            label={job.type} 
+                            label={job.paymentType || 'Fixed'} 
                             size="small" 
                             sx={{ 
                               ml: 1, 
@@ -1037,7 +1121,7 @@ const JobsPage = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <Star fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
                           <Typography variant="body2" sx={{ color: 'white' }}>
-                            {job.rating} Rating • {job.applicants} Applicants
+                            {job.rating || '4.5'} Rating • {job.proposalCount || 0} Applicants
                           </Typography>
                         </Box>
                       </Box>
