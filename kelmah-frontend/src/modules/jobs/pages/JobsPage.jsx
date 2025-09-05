@@ -605,7 +605,7 @@ const JobsPage = () => {
     { value: 'Koforidua', label: 'Koforidua, Eastern Region' }
   ];
 
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = (jobs.length > 0 ? jobs : sampleJobs).filter(job => {
     const matchesSearch = !searchQuery || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (job.company && job.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -1214,6 +1214,11 @@ const JobsPage = () => {
                       <IconButton 
                         onClick={() => {
                           console.log('🔍 View Details clicked for job:', job.id);
+                          // Check if this is sample data (numeric ID) or real data (ObjectId)
+                          if (typeof job.id === 'number') {
+                            alert('This is sample data. Please ensure the API is connected to view real job details.');
+                            return;
+                          }
                           navigate(`/jobs/${job.id}`);
                         }}
                         sx={{ 
