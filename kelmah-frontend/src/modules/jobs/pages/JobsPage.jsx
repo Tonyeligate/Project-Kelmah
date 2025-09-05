@@ -605,7 +605,7 @@ const JobsPage = () => {
     { value: 'Koforidua', label: 'Koforidua, Eastern Region' }
   ];
 
-  const filteredJobs = (jobs.length > 0 ? jobs : sampleJobs).filter(job => {
+  const filteredJobs = jobs.filter(job => {
     const matchesSearch = !searchQuery || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (job.company && job.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
