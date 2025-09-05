@@ -1104,9 +1104,9 @@ const JobsPage = () => {
                           <MonetizationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
                           <Typography variant="body2" fontWeight="bold" sx={{ color: '#D4AF37' }}>
                             {job?.budget ? (
-                              typeof job.budget === 'object' ? 
-                                `${job.currency || 'GHS'} ${job.budget.min || job.budget.amount} - ${job.budget.max || job.budget.amount}` :
-                                `${job.currency || 'GHS'} ${job.budget}`
+                              typeof job?.budget === 'object' ? 
+                                `${job?.currency || 'GHS'} ${job?.budget?.min || job?.budget?.amount || 0} - ${job?.budget?.max || job?.budget?.amount || 0}` :
+                                `${job?.currency || 'GHS'} ${job?.budget}`
                             ) : 'Budget not specified'}
                           </Typography>
                           <Chip 
