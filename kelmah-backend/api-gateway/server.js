@@ -199,6 +199,7 @@ const healthResponse = (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     services: Object.keys(services),
+    serviceUrls: services,
     version: '2.0.0',
     uptime: process.uptime()
   });
@@ -367,22 +368,36 @@ app.use(
 );
 
 // Job routes (public listings, protected management)
-app.use('/api/jobs', createProxyMiddleware({
-  target: services.job,
-  changeOrigin: true,
-  timeout: 10000,
-  onProxyReq: (proxyReq, req, res) => {
-    console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service at ${services.job}`);
-    console.log(`[API Gateway] Target URL: ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
-  },
-  onError: (err, req, res) => {
-    console.error('[API Gateway] Job service proxy error:', err.message);
+app.use('/api/jobs', async (req, res) => {
+  console.log(`[API Gateway] Job route middleware called for ${req.method} ${req.url}`);
+  console.log(`[API Gateway] Target service: ${services.job}`);
+  
+  try {
+    const axios = require('axios');
+    const targetUrl = `${services.job}/api/jobs${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`;
+    console.log(`[API Gateway] Proxying to: ${targetUrl}`);
+    
+    const response = await axios({
+      method: req.method,
+      url: targetUrl,
+      data: req.body,
+      headers: {
+        ...req.headers,
+        host: undefined, // Remove host header
+      },
+      timeout: 10000
+    });
+    
+    console.log(`[API Gateway] Job service response: ${response.status} - ${response.data ? 'data received' : 'no data'}`);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error('[API Gateway] Job service proxy error:', error.message);
     res.status(503).json({ 
       error: 'Job service temporarily unavailable',
-      message: err.message 
+      message: error.message 
     });
   }
-}));
+});
 
 // Search routes (public)
 app.use('/api/search', createProxyMiddleware({
