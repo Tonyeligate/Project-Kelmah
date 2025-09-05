@@ -1101,7 +1101,7 @@ const JobsPage = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <MonetizationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
                           <Typography variant="body2" fontWeight="bold" sx={{ color: '#D4AF37' }}>
-                            {job.budget ? (
+                            {job?.budget ? (
                               typeof job.budget === 'object' ? 
                                 `${job.currency || 'GHS'} ${job.budget.min || job.budget.amount} - ${job.budget.max || job.budget.amount}` :
                                 `${job.currency || 'GHS'} ${job.budget}`

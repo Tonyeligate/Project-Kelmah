@@ -139,7 +139,7 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <AttachMoney color="action" />
                 <Typography color="text.secondary">
-                  {job.budget ? (
+                  {job?.budget ? (
                     typeof job.budget === 'object' ? (
                       `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0}`
                     ) : (
