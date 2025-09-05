@@ -426,22 +426,35 @@ const JobsPage = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true);
+        console.log('🔍 Fetching jobs from API...');
+        
         const response = await jobsApi.getJobs({
           status: 'open',
           limit: 50
         });
         
+        console.log('📊 API Response:', response);
+        
         if (response && response.data) {
+          console.log('✅ Jobs loaded from API:', response.data.length);
           setJobs(response.data);
         } else if (response && Array.isArray(response)) {
+          console.log('✅ Jobs loaded from API (array):', response.length);
           setJobs(response);
         } else {
+          console.warn('⚠️ No jobs data in response');
           setJobs([]);
         }
         setError(null);
       } catch (err) {
-        console.error('Error fetching jobs:', err);
-        setError('Failed to load jobs. Please try again.');
+        console.error('❌ Error fetching jobs:', err);
+        console.error('❌ Error details:', {
+          message: err.message,
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data
+        });
+        setError(`Failed to load jobs: ${err.message}`);
         setJobs([]);
       } finally {
         setLoading(false);
@@ -605,7 +618,7 @@ const JobsPage = () => {
     { value: 'Koforidua', label: 'Koforidua, Eastern Region' }
   ];
 
-  const filteredJobs = (jobs.length > 0 ? jobs : sampleJobs).filter(job => {
+  const filteredJobs = jobs.filter(job => {
     const matchesSearch = !searchQuery || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (job.company && job.company.toLowerCase().includes(searchQuery.toLowerCase())) ||

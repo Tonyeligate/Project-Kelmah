@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const jwtUtils = require('../../shared/utils/jwt');
 const axios = require('axios');
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 /**

@@ -367,37 +367,22 @@ app.use(
 );
 
 // Job routes (public listings, protected management)
-app.use('/api/jobs',
-  (req, res, next) => {
-    if (req.method === 'GET' && !req.path.includes('/applications')) {
-      return next();
-    }
-    return authMiddleware.authenticate(req, res, next);
+app.use('/api/jobs', createProxyMiddleware({
+  target: services.job,
+  changeOrigin: true,
+  timeout: 10000,
+  onProxyReq: (proxyReq, req, res) => {
+    console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service at ${services.job}`);
+    console.log(`[API Gateway] Target URL: ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
   },
-  (req, res, next) => {
-    const page = parseInt(req.query.page, 10);
-    const limit = parseInt(req.query.limit, 10);
-    if (!Number.isNaN(page) && page < 1) req.query.page = 1;
-    if (!Number.isNaN(limit)) req.query.limit = Math.min(Math.max(limit, 1), 100);
-    next();
-  },
-  createProxyMiddleware({
-    target: 'http://localhost:5003',
-    changeOrigin: true,
-    pathRewrite: { '^/api/jobs': '/api/jobs' },
-    onProxyReq: (proxyReq, req, res) => {
-      // Ensure the full path is preserved
-      console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service at http://localhost:5003`);
-    },
-    onError: (err, req, res) => {
-      console.error('[API Gateway] Job service proxy error:', err.message);
-      res.status(503).json({ 
-        error: 'Job service temporarily unavailable',
-        message: err.message 
-      });
-    }
-  })
-);
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Job service proxy error:', err.message);
+    res.status(503).json({ 
+      error: 'Job service temporarily unavailable',
+      message: err.message 
+    });
+  }
+}));
 
 // Search routes (public)
 app.use('/api/search', createProxyMiddleware({
@@ -418,7 +403,7 @@ app.use('/api/payments',
 
 // Messaging routes (protected) — mount dedicated router to support aliases and granular endpoints
 const messagingRouter = require('./routes/messaging.routes');
-app.use('/api', authMiddleware.authenticate, messagingRouter);
+app.use('/api/messages', authMiddleware.authenticate, messagingRouter);
 
 // Upload routes for messaging (protected) → messaging-service
 app.use('/api/uploads',

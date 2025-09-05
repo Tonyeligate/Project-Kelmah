@@ -28,18 +28,53 @@ const jobsApi = {
    */
   async getJobs(params = {}) {
     try {
+      console.log('🔍 Calling job service API with params:', params);
       const response = await jobServiceClient.get('/api/jobs', { params });
-      const jobs = response.data.data || response.data.jobs || [];
+      console.log('📊 Raw API response:', response.data);
+      
+      // Handle different response formats from the backend
+      let jobs = [];
+      let totalPages = 1;
+      let totalJobs = 0;
+      let currentPage = 1;
+      
+      if (response.data) {
+        // Check if response has pagination structure
+        if (response.data.data && Array.isArray(response.data.data)) {
+          jobs = response.data.data;
+          totalPages = response.data.pagination?.totalPages || 1;
+          totalJobs = response.data.pagination?.totalItems || jobs.length;
+          currentPage = response.data.pagination?.currentPage || 1;
+        } else if (Array.isArray(response.data)) {
+          jobs = response.data;
+        } else if (response.data.jobs && Array.isArray(response.data.jobs)) {
+          jobs = response.data.jobs;
+          totalPages = response.data.totalPages || 1;
+          totalJobs = response.data.totalJobs || jobs.length;
+          currentPage = response.data.currentPage || 1;
+        }
+      }
+      
+      console.log('✅ Extracted jobs:', jobs.length);
+      
       return {
+        data: jobs.map(transformJobListItem),
         jobs: jobs.map(transformJobListItem),
-        totalPages: response.data.totalPages || 1,
-        totalJobs: response.data.totalJobs || jobs.length,
-        currentPage: response.data.currentPage || 1,
+        totalPages,
+        totalJobs,
+        currentPage,
       };
     } catch (error) {
-      console.warn('Job service unavailable for jobs list:', error.message);
+      console.error('❌ Job service API error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       // No mock data fallback; return empty results to reflect real state
       return {
+        data: [],
         jobs: [],
         totalPages: 1,
         totalJobs: 0,

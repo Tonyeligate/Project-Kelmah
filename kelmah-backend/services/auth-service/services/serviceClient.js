@@ -7,10 +7,10 @@ const { handleError } = require("../utils/errorHandler");
 
 // Get service URLs from environment variables or use defaults
 const serviceUrls = {
-  USER: process.env.USER_SERVICE_URL || "http://localhost:3002/api",
-  MESSAGING: process.env.MESSAGING_SERVICE_URL || "http://localhost:3003/api",
-  JOB: process.env.JOB_SERVICE_URL || "http://localhost:3004/api",
-  PAYMENT: process.env.PAYMENT_SERVICE_URL || "http://localhost:3005/api",
+  USER: process.env.USER_SERVICE_URL || "http://localhost:5002/api",
+  MESSAGING: process.env.MESSAGING_SERVICE_URL || "http://localhost:5005/api",
+  JOB: process.env.JOB_SERVICE_URL || "http://localhost:5003/api",
+  PAYMENT: process.env.PAYMENT_SERVICE_URL || "http://localhost:5004/api",
 };
 
 // Create axios instances for each service
