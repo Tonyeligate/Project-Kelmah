@@ -154,7 +154,7 @@ const JobSearch = () => {
               <Chip icon={<Work />} label={job.category} size="small" />
               <Chip
                 icon={<AttachMoney />}
-                label={`$${job.budget}`}
+                label={`$${job?.budget || 'N/A'}`}
                 size="small"
               />
             </Box>

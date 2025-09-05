@@ -76,7 +76,7 @@ function JobListing({ job, onApply, onViewDetails }) {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <AttachMoney sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="body2" color="text.secondary">
-                  Budget: ${job.budget}
+                  Budget: ${job?.budget || 'Not specified'}
                 </Typography>
               </Box>
 

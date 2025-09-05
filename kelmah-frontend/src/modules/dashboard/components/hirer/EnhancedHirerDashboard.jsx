@@ -545,7 +545,7 @@ const EnhancedHirerDashboard = () => {
                             secondary={
                               <Box>
                                 <Typography variant="body2" color="text.secondary">
-                                  {job.applicationsCount || 0} applications • GH₵{job.budget || '0'}
+                                  {job.applicationsCount || 0} applications • GH₵{job?.budget || '0'}
                                 </Typography>
                                 <Box display="flex" gap={1} mt={0.5}>
                                   <Chip

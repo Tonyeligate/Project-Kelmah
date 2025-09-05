@@ -532,7 +532,7 @@ const EnhancedWorkerDashboard = () => {
                           </ListItemAvatar>
                           <ListItemText
                             primary={job.title || 'Job Opportunity'}
-                            secondary={`${job.location || 'Ghana'} • GH₵${job.budget || '0'}`}
+                            secondary={`${job.location || 'Ghana'} • GH₵${job?.budget || '0'}`}
                           />
                         </ListItem>
                       ))}
