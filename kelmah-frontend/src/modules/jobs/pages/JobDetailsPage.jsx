@@ -302,11 +302,11 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job?.budget ? (
-                          typeof job?.budget === 'object' ? (
-                            `${job?.budget?.currency || 'GHS'} ${job?.budget?.min || 0} - ${job?.budget?.max || 0} / ${job?.budget?.type || 'fixed'}`
+                        {job?.budget && job.budget !== null ? (
+                          typeof job.budget === 'object' ? (
+                            `${job.budget?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0} / ${job.budget?.type || 'fixed'}`
                           ) : (
-                            `${job?.currency || 'GHS'} ${job?.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
+                            `${job?.currency || 'GHS'} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
                           )
                         ) : (
                           'Budget not specified'
