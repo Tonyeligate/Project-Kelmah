@@ -136,7 +136,7 @@ const EnhancedJobCard = ({
   const getBidStatusColor = () => {
     if (!job?.bidding) return theme.palette.grey[500];
     
-    switch (job.bidding.bidStatus) {
+    switch (job?.bidding?.bidStatus) {
       case 'open': return theme.palette.success.main;
       case 'full': return theme.palette.warning.main;
       case 'closed': return theme.palette.error.main;
@@ -147,8 +147,8 @@ const EnhancedJobCard = ({
   const getBidStatusText = () => {
     if (!job?.bidding) return 'No Bidding';
     
-    switch (job.bidding.bidStatus) {
-      case 'open': return `${job.bidding.currentBidders}/${job.bidding.maxBidders} Bidders`;
+    switch (job?.bidding?.bidStatus) {
+      case 'open': return `${job?.bidding?.currentBidders || 0}/${job?.bidding?.maxBidders || 0} Bidders`;
       case 'full': return 'Bidding Full';
       case 'closed': return 'Bidding Closed';
       default: return 'No Bidding';
@@ -203,7 +203,7 @@ const EnhancedJobCard = ({
             )}
             
             <Typography variant="h6" fontWeight={600} sx={{ pr: 8 }}>
-              {job.title}
+              {job?.title || 'Job Title'}
             </Typography>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
@@ -224,13 +224,13 @@ const EnhancedJobCard = ({
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
               <Chip
                 icon={<LocationOnIcon />}
-                label={job.location}
+                label={job?.location || 'Location not specified'}
                 size="small"
                 variant="outlined"
               />
               <Chip
                 icon={<WorkIcon />}
-                label={job.type}
+                label={job?.type || 'Type not specified'}
                 size="small"
                 variant="outlined"
               />
@@ -274,9 +274,9 @@ const EnhancedJobCard = ({
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <AttachMoneyIcon sx={{ fontSize: 16, mr: 1, color: theme.palette.success.main }} />
               <Typography variant="body2" fontWeight={600}>
-                {job.budget ? (
+                {job?.budget ? (
                   typeof job.budget === 'object' ? (
-                    `GH₵${job.budget.min} - ${job.budget.max} ${job.budget.type}`
+                    `GH₵${job.budget.min || 0} - ${job.budget.max || 0} ${job.budget.type || 'fixed'}`
                   ) : (
                     `GH₵${job.budget}`
                   )
@@ -298,7 +298,7 @@ const EnhancedJobCard = ({
                 overflow: 'hidden',
               }}
             >
-              {job.description}
+              {job?.description || 'No description available'}
             </Typography>
 
             {/* Skills */}
