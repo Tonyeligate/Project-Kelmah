@@ -116,6 +116,7 @@ const JobDetailsPage = () => {
   };
 
   const handleMessageHirer = () => {
+    if (!job) return;
     navigate(`/messages?participantId=${job.hirer?._id || job.hirer?.id}`);
   };
 
@@ -125,6 +126,7 @@ const JobDetailsPage = () => {
   };
 
   const handleShareJob = () => {
+    if (!job) return;
     // In a real app, would open a share dialog
     if (navigator.share) {
       navigator.share({
@@ -253,7 +255,7 @@ const JobDetailsPage = () => {
                       fontWeight: 'bold',
                     })}
                   >
-                    {job.title}
+                    {job?.title || 'Job Title'}
                   </Typography>
 
                   <Box
@@ -269,14 +271,14 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Category sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.category}
+                        {job?.category || 'Category'}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.budget ? (
+                        {job?.budget ? (
                           typeof job.budget === 'object' ? (
                             `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0} / ${job.budget.type || 'fixed'}`
                           ) : (
@@ -291,26 +293,26 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Schedule sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        Posted: {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Unknown'}
+                        Posted: {job?.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Unknown'}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <WorkOutline sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.proposalCount || 0} Applicants
+                        {job?.proposalCount || 0} Applicants
                       </Typography>
                     </Box>
                   </Box>
 
                   <Chip
-                    label={job.status}
+                    label={job?.status || 'Unknown'}
                     sx={{
                       background:
-                        job.status === 'Open'
+                        job?.status === 'Open'
                           ? 'rgba(76, 175, 80, 0.2)'
                           : 'rgba(255, 152, 0, 0.2)',
-                      color: job.status === 'Open' ? '#4caf50' : '#ff9800',
+                      color: job?.status === 'Open' ? '#4caf50' : '#ff9800',
                       fontWeight: 'bold',
                     }}
                   />
@@ -341,7 +343,7 @@ const JobDetailsPage = () => {
                       mb: 3,
                     }}
                   >
-                    {job.description}
+                    {job?.description || 'No description available'}
                   </Typography>
 
                   <Box sx={{ mt: 3 }}>
@@ -356,7 +358,7 @@ const JobDetailsPage = () => {
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {(job.skills || []).map((skill, index) => (
+                      {(job?.skills || []).map((skill, index) => (
                         <SkillChip key={index} label={skill} />
                       ))}
                     </Box>
@@ -564,8 +566,8 @@ const JobDetailsPage = () => {
           <JobApplication
             open={applicationOpen}
             onClose={handleCloseApplication}
-            jobId={job.id}
-            jobTitle={job.title}
+            jobId={job?.id}
+            jobTitle={job?.title}
           />
         )}
       </Container>
