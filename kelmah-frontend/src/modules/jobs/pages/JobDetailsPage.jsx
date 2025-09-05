@@ -180,7 +180,31 @@ const JobDetailsPage = () => {
     );
   }
 
-  if (!job) return null;
+  if (!job) {
+    return (
+      <Box
+        sx={{
+          minHeight: '80vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <Alert severity="error" sx={{ maxWidth: 400 }}>
+          Job not found. The job you're looking for doesn't exist or has been removed.
+        </Alert>
+        <Button 
+          variant="contained" 
+          onClick={() => navigate('/jobs')}
+          sx={{ mt: 2 }}
+        >
+          Back to Jobs
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box

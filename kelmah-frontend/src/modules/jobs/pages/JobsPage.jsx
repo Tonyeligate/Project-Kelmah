@@ -431,8 +431,10 @@ const JobsPage = () => {
           limit: 50
         });
         
-        if (response && response.items) {
-          setJobs(response.items);
+        if (response && response.data) {
+          setJobs(response.data);
+        } else if (response && Array.isArray(response)) {
+          setJobs(response);
         } else {
           setJobs([]);
         }
