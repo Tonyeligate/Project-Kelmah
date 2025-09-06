@@ -19,7 +19,7 @@ class AuthApi {
    * @returns {Promise<Object>} Auth data with token and user info
    */
   async login(credentials) {
-    const response = await apiClient.post('/auth/login', credentials);
+    const response = await apiClient.post('/api/auth/login', credentials);
 
     if (response.data.token) {
       localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
@@ -43,7 +43,7 @@ class AuthApi {
    * @returns {Promise<Object>} Registration response
    */
   async register(userData) {
-    const response = await apiClient.post('/auth/register', userData);
+    const response = await apiClient.post('/api/auth/register', userData);
 
     if (response.data.token) {
       localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
@@ -69,7 +69,7 @@ class AuthApi {
    * @returns {Promise<Object>} User data if token is valid
    */
   async verifyToken() {
-    const response = await apiClient.get('/auth/verify');
+    const response = await apiClient.get('/api/auth/verify');
     return response.data;
   }
 
@@ -80,7 +80,7 @@ class AuthApi {
    * @returns {Promise<Object>} Reset request response
    */
   async requestPasswordReset(data) {
-    const response = await apiClient.post('/auth/forgot-password', data);
+    const response = await apiClient.post('/api/auth/forgot-password', data);
     return response.data;
   }
 
@@ -93,7 +93,7 @@ class AuthApi {
    */
   async resetPassword(data) {
     const response = await apiClient.post(
-      `/auth/reset-password/${data.token}`,
+      `/api/auth/reset-password/${data.token}`,
       { password: data.password },
     );
     return response.data;
@@ -107,7 +107,7 @@ class AuthApi {
    * @returns {Promise<Object>} Change password response
    */
   async changePassword(data) {
-    const response = await apiClient.post('/auth/change-password', data);
+    const response = await apiClient.post('/api/auth/change-password', data);
     return response.data;
   }
 
@@ -116,7 +116,7 @@ class AuthApi {
    * @returns {Promise<Object>} User profile data
    */
   async getCurrentUser() {
-    const response = await apiClient.get('/auth/me');
+    const response = await apiClient.get('/api/auth/me');
     return response.data;
   }
 
@@ -126,7 +126,7 @@ class AuthApi {
    * @returns {Promise<Object>} Updated security settings
    */
   async updateSecuritySettings(settings) {
-    const response = await apiClient.put('/auth/security', settings);
+    const response = await apiClient.put('/api/auth/security', settings);
     return response.data;
   }
 
@@ -136,7 +136,7 @@ class AuthApi {
    * @returns {Promise<Object>} Verification response
    */
   async verifyEmail(token) {
-    const response = await apiClient.get(`/auth/verify/${token}`);
+    const response = await apiClient.get(`/api/auth/verify/${token}`);
     return response.data;
   }
 
@@ -147,7 +147,7 @@ class AuthApi {
    * @returns {Promise<Object>} Resend response
    */
   async resendVerificationEmail(data) {
-    const response = await apiClient.post('/auth/resend-verification', data);
+    const response = await apiClient.post('/api/auth/resend-verification-email', data);
     return response.data;
   }
 }
