@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+import { getApiBaseUrl } from '../config/environment';
 import { JWT_LOCAL_STORAGE_KEY } from '../config/config';
 import mockWorkersApiDefault from './services/mockWorkersApi';
 import workersApiDefault from './services/workersApi';
@@ -59,7 +59,8 @@ axiosInstance.interceptors.response.use(
       try {
         // Implement refresh token logic here if needed
         // const refreshToken = localStorage.getItem(JWT_REFRESH_KEY);
-        // const response = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+        // const baseURL = await getApiBaseUrl();
+        // const response = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
         // localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
         // originalRequest.headers.Authorization = `Bearer ${response.data.token}`;
         // return axiosInstance(originalRequest);

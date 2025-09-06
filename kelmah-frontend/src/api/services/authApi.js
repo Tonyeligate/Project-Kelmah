@@ -8,7 +8,7 @@ import {
   JWT_LOCAL_STORAGE_KEY,
   AUTH_USER_KEY,
   REFRESH_TOKEN_KEY,
-} from '../../config';
+} from '../../config/config';
 
 class AuthApi {
   /**
