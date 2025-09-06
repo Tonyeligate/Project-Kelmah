@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+import { getApiBaseUrl } from '../config/environment';
 import { JWT_LOCAL_STORAGE_KEY, REFRESH_TOKEN_KEY } from '../config/config';
 import mockWorkersApiDefault from './services/mockWorkersApi';
 import workersApiDefault from './services/workersApi';
@@ -27,18 +27,30 @@ import settingsApi from './services/settingsApi';
 // Check if we should use mock mode
 const USE_MOCK_MODE = false; // Set to false to use real APIs
 
-// Create axios instance with default config
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 60000, // Increased timeout to 60 seconds for better reliability
-  headers: {
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
-  },
-});
+// Create axios instance with async base URL
+let axiosInstance = null;
 
-// Request interceptor for adding auth token
-axiosInstance.interceptors.request.use(
+const initializeAxiosInstance = async () => {
+  if (!axiosInstance) {
+    const baseURL = await getApiBaseUrl();
+    axiosInstance = axios.create({
+      baseURL,
+      timeout: 60000, // Increased timeout to 60 seconds for better reliability
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
+      },
+    });
+  }
+  return axiosInstance;
+};
+
+// Add interceptors after axios instance is initialized
+const addInterceptors = async () => {
+  const instance = await initializeAxiosInstance();
+  
+  // Request interceptor for adding auth token
+  instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
     if (token) {
@@ -49,8 +61,8 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor for error handling
-axiosInstance.interceptors.response.use(
+  // Response interceptor for error handling
+  instance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -65,7 +77,7 @@ axiosInstance.interceptors.response.use(
           throw new Error('No refresh token available');
         }
         // Request new tokens
-        const resp = await axiosInstance.post('/auth/refresh-token', {
+        const resp = await instance.post('/auth/refresh-token', {
           refreshToken,
         });
         // Extract tokens from response (support nested data format)
@@ -76,7 +88,7 @@ axiosInstance.interceptors.response.use(
         localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
         // Update authorization header and retry original request
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return axiosInstance(originalRequest);
+        return instance(originalRequest);
       } catch (refreshError) {
         // Handle refresh failure - clear storage and redirect to login
         localStorage.removeItem(JWT_LOCAL_STORAGE_KEY);
@@ -96,7 +108,11 @@ axiosInstance.interceptors.response.use(
 
     return Promise.reject(error);
   },
-);
+  );
+};
+
+// Initialize the instance and add interceptors
+addInterceptors();
 
 // Export configured axios instance
 export default axiosInstance;

@@ -5,7 +5,7 @@
  * to improve user experience with Render free tier services.
  */
 
-import { SERVICES, API_BASE_URL } from '../config/environment';
+import { SERVICES, getApiBaseUrl } from '../config/environment';
 
 // Service health status cache
 const serviceHealthCache = new Map();
@@ -26,9 +26,19 @@ const HEALTH_ENDPOINTS = {
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
   const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/health';
   // Prefer gateway-relative health checks to avoid mixed-content on HTTPS
-  const base = (typeof window !== 'undefined' && window.location.protocol === 'https:')
-    ? '/api'
-    : (serviceUrl || API_BASE_URL || '/api');
+  let base = '/api'; // Default fallback
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    base = '/api';
+  } else if (serviceUrl) {
+    base = serviceUrl;
+  } else {
+    try {
+      base = await getApiBaseUrl();
+    } catch (error) {
+      console.warn('Failed to get API base URL, using fallback:', error);
+      base = '/api';
+    }
+  }
   const fullUrl = `${base}${healthEndpoint}`;
   
   try {
