@@ -152,6 +152,19 @@ const jobsApi = {
   async getJobById(jobId) {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
+      console.log('🔍 Single job API response:', response.data);
+      
+      // Handle the response format: {success: true, items: [...], page: 1, total: 12}
+      if (response.data && response.data.items && Array.isArray(response.data.items)) {
+        // Find the specific job by ID
+        const job = response.data.items.find(item => item.id === jobId || item._id === jobId);
+        if (job) {
+          console.log('✅ Found job by ID:', job.title);
+          return job;
+        }
+      }
+      
+      // Fallback to old format
       return response.data.data || response.data;
     } catch (error) {
       console.warn(`Job service unavailable for job ${jobId}:`, error.message);
