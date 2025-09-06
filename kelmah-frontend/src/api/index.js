@@ -33,6 +33,7 @@ const axiosInstance = axios.create({
   timeout: 60000, // Increased timeout to 60 seconds for better reliability
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning
   },
 });
 

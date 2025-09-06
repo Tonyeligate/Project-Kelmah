@@ -648,15 +648,15 @@ const JobsPage = () => {
           </Alert>
         )}
         
-        {/* Hero Header Section */}
+        {/* Hero Header Section - More Professional & Compact */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Box sx={{ mb: 6, textAlign: 'center' }}>
+          <Box sx={{ mb: 4, textAlign: 'center' }}>
                 <Typography
-              variant="h2" 
+              variant="h3" 
               component="h1" 
                   gutterBottom
               sx={{ 
@@ -665,24 +665,26 @@ const JobsPage = () => {
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                mb: 2
+                mb: 1,
+                fontSize: { xs: '2rem', md: '2.5rem' }
               }}
             >
               Find Your Next Trade Opportunity
             </Typography>
             <Typography 
-              variant="h5" 
+              variant="h6" 
               sx={{ 
                 color: 'rgba(255,255,255,0.8)', 
-                mb: 4,
-                maxWidth: 800,
-                mx: 'auto'
+                mb: 3,
+                maxWidth: 600,
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.1rem' }
               }}
             >
               Connect with Ghana's top employers and advance your skilled trades career
                 </Typography>
 
-            {/* Enhanced Search & Filter Section */}
+            {/* Enhanced Search & Filter Section - More Uniform & Informative */}
             <Paper 
               elevation={8}
               sx={{ 
@@ -696,7 +698,7 @@ const JobsPage = () => {
               }}
             >
               <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={5}>
                   <TextField
                     fullWidth
                     value={searchQuery}
@@ -730,7 +732,8 @@ const JobsPage = () => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <FormControl fullWidth>
-                  <Select
+                    <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Trade Category</InputLabel>
+                    <Select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       displayEmpty
@@ -761,7 +764,38 @@ const JobsPage = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={2}>
+                  <FormControl fullWidth>
+                    <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Location</InputLabel>
+                    <Select
+                      value={selectedLocation}
+                      onChange={(e) => setSelectedLocation(e.target.value)}
+                      displayEmpty
+                      sx={{
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(212,175,55,0.3)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#D4AF37',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#D4AF37',
+                        },
+                        '& .MuiSvgIcon-root': {
+                          color: '#D4AF37',
+                        },
+                      }}
+                    >
+                      {ghanaLocations.map((location) => (
+                        <MenuItem key={location.value} value={location.value}>
+                          {location.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={2}>
                     <Button
                       fullWidth
                       variant="contained"
@@ -782,52 +816,38 @@ const JobsPage = () => {
                       },
                     }}
                   >
-                    Search Jobs
+                    Search
                   </Button>
                 </Grid>
               </Grid>
               
-              {/* Advanced Filters Toggle */}
+              {/* Enhanced Advanced Filters Toggle */}
               <Box sx={{ mt: 2, textAlign: 'center' }}>
                 <Button
                   startIcon={<FilterListIcon />}
                   onClick={() => setShowFilters(!showFilters)}
-                  sx={{ color: '#D4AF37' }}
+                  sx={{ 
+                    color: '#D4AF37',
+                    border: '1px solid rgba(212,175,55,0.3)',
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    '&:hover': {
+                      bgcolor: 'rgba(212,175,55,0.1)',
+                      borderColor: '#D4AF37'
+                    }
+                  }}
                 >
                   {showFilters ? 'Hide' : 'Show'} Advanced Filters
                     </Button>
                   </Box>
               
-              {/* Advanced Filters */}
+              {/* Enhanced Advanced Filters */}
               <Collapse in={showFilters}>
                 <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                      <FormControl fullWidth>
-                        <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37' }}>
-                          Location
-                        </Typography>
-                        <Select
-                          value={selectedLocation}
-                          onChange={(e) => setSelectedLocation(e.target.value)}
-                          displayEmpty
-                          sx={{
-                            color: 'white',
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(212,175,55,0.3)',
-                            },
-                          }}
-                        >
-                          {ghanaLocations.map((location) => (
-                            <MenuItem key={location.value} value={location.value}>
-                              {location.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37' }}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
                         Salary Range (GHS)
                       </Typography>
                       <Slider
@@ -851,15 +871,19 @@ const JobsPage = () => {
                         }}
                       />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                        <Typography variant="caption">GHS {budgetRange[0]}</Typography>
-                        <Typography variant="caption">GHS {budgetRange[1]}+</Typography>
+                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          GHS {budgetRange[0]}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          GHS {budgetRange[1]}+
+                        </Typography>
                       </Box>
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37' }}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
                         Quick Filters
                       </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                         <Chip 
                           label="Urgent Jobs" 
                           variant="outlined" 
@@ -887,6 +911,24 @@ const JobsPage = () => {
                             '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
                           }} 
                         />
+                        <Chip 
+                          label="Contract" 
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                        <Chip 
+                          label="Part-time" 
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
                       </Box>
                     </Grid>
                   </Grid>
@@ -896,83 +938,6 @@ const JobsPage = () => {
           </Box>
         </motion.div>
 
-        {/* Stats Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <Grid container spacing={3} sx={{ mb: 6 }}>
-            <Grid item xs={6} md={3}>
-              <Paper 
-                sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  bgcolor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(212,175,55,0.2)'
-                }}
-              >
-                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
-                  {filteredJobs.length}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  Available Jobs
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Paper 
-                sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  bgcolor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(212,175,55,0.2)'
-                }}
-              >
-                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
-                  2,500+
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  Active Employers
-                </Typography>
-                    </Paper>
-                  </Grid>
-            <Grid item xs={6} md={3}>
-              <Paper 
-                sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  bgcolor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(212,175,55,0.2)'
-                }}
-              >
-                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
-                  15K+
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  Skilled Workers
-                </Typography>
-              </Paper>
-              </Grid>
-            <Grid item xs={6} md={3}>
-              <Paper 
-                sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  bgcolor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(212,175,55,0.2)'
-                }}
-              >
-                <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
-                  98%
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  Success Rate
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-        </motion.div>
 
         {/* Enhanced Jobs Grid */}
         <motion.div
@@ -1307,6 +1272,109 @@ const JobsPage = () => {
           </Box>
         </motion.div>
         
+        {/* Stats Section - Moved to Bottom */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Box sx={{ mt: 8, mb: 6 }}>
+            <Typography variant="h4" sx={{ color: '#D4AF37', fontWeight: 'bold', textAlign: 'center', mb: 4 }}>
+              Platform Statistics
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={6} md={3}>
+                <Paper 
+                  sx={{ 
+                    p: 3, 
+                    textAlign: 'center',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    '&:hover': {
+                      border: '1px solid #D4AF37',
+                      boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
+                    },
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <Typography variant="h3" sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}>
+                    {filteredJobs.length}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'medium' }}>
+                    Available Jobs
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <Paper 
+                  sx={{ 
+                    p: 3, 
+                    textAlign: 'center',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    '&:hover': {
+                      border: '1px solid #D4AF37',
+                      boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
+                    },
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <Typography variant="h3" sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}>
+                    2,500+
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'medium' }}>
+                    Active Employers
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <Paper 
+                  sx={{ 
+                    p: 3, 
+                    textAlign: 'center',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    '&:hover': {
+                      border: '1px solid #D4AF37',
+                      boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
+                    },
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <Typography variant="h3" sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}>
+                    15K+
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'medium' }}>
+                    Skilled Workers
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <Paper 
+                  sx={{ 
+                    p: 3, 
+                    textAlign: 'center',
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    '&:hover': {
+                      border: '1px solid #D4AF37',
+                      boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
+                    },
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <Typography variant="h3" sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}>
+                    98%
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 'medium' }}>
+                    Success Rate
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Box>
+        </motion.div>
+
         {/* CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1315,7 +1383,7 @@ const JobsPage = () => {
         >
           <Paper
             sx={{
-              mt: 8, 
+              mt: 4, 
               p: 4, 
               textAlign: 'center',
               bgcolor: 'rgba(212,175,55,0.1)',
