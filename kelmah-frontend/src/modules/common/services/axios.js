@@ -172,7 +172,7 @@ const addMainInterceptors = async () => {
             // Use a new axios instance to avoid interceptor loops
             const baseURL = await getApiBaseUrl();
             const refreshResponse = await axios.post(
-              `${baseURL}/auth/refresh-token`,
+              `${baseURL}/api/auth/refresh-token`,
               { refreshToken },
               {
                 headers: { 'Content-Type': 'application/json' },

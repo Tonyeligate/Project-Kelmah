@@ -21,7 +21,7 @@ const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await axiosInstance.post('/auth/login', credentials);
+      const response = await axiosInstance.post('/api/auth/login', credentials);
       
       // Extract data from response (handle different response structures)
       const responseData = response.data.data || response.data;
@@ -84,7 +84,7 @@ const authService = {
   register: async (userData) => {
     try {
       const response = await axiosInstance.post(
-        '/auth/register',
+        '/api/auth/register',
         userData,
       );
       const { token, user } = response.data.data || response.data;
@@ -106,7 +106,7 @@ const authService = {
   // Verify authentication
   verifyAuth: async () => {
     try {
-      const response = await axiosInstance.get('/auth/verify');
+      const response = await axiosInstance.get('/api/auth/verify');
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -132,7 +132,7 @@ const authService = {
       const refreshToken = secureStorage.getRefreshToken();
       const logoutData = refreshToken ? { refreshToken } : {};
       
-      await axiosInstance.post('/auth/logout', logoutData);
+      await axiosInstance.post('/api/auth/logout', logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
@@ -174,7 +174,7 @@ const authService = {
         throw new Error('No refresh token available');
       }
 
-      const response = await axiosInstance.post('/auth/refresh-token', {
+      const response = await axiosInstance.post('/api/auth/refresh-token', {
         refreshToken
       });
       
