@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import jobsApi from '../../../api/services/jobsApi';
+import jobsApi from '../services/jobsApi';
 import {
   Container,
   Grid,
