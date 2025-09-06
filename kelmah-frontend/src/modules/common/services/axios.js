@@ -7,7 +7,7 @@
 
 import axios from 'axios';
 import {
-  API_BASE_URL,
+  getApiBaseUrl,
   AUTH_CONFIG,
   PERFORMANCE_CONFIG,
   LOG_CONFIG,
@@ -16,16 +16,44 @@ import {
 import { secureStorage } from '../../../utils/secureStorage';
 import { handleServiceError, getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
-// Create axios instance with default configuration
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: PERFORMANCE_CONFIG.apiTimeout,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
+// Initialize axios instance with async base URL
+let axiosInstance = null;
+
+const initializeAxios = async () => {
+  if (!axiosInstance) {
+    const baseURL = await getApiBaseUrl();
+    axiosInstance = axios.create({
+      baseURL,
+      timeout: PERFORMANCE_CONFIG.apiTimeout,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      withCredentials: false, // Disable credentials for ngrok compatibility
+    });
+  }
+  return axiosInstance;
+};
+
+// Create a proxy that initializes axios on first use
+const createAxiosProxy = () => {
+  return new Proxy({}, {
+    get(target, prop) {
+      if (typeof axiosInstance?.[prop] === 'function') {
+        return (...args) => {
+          if (!axiosInstance) {
+            return initializeAxios().then(instance => instance[prop](...args));
+          }
+          return axiosInstance[prop](...args);
+        };
+      }
+      return axiosInstance?.[prop];
+    }
+  });
+};
+
+// Export the proxy as the main axios instance
+const axiosInstanceProxy = createAxiosProxy();
 
 // Normalize url when baseURL already includes /api but url also begins with /api
 const normalizeUrlForGateway = (config) => {
@@ -383,167 +411,189 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
 };
 
 // Helper: prefer gateway base when VITE_API_URL is provided
-const getClientBaseUrl = (serviceUrl) => {
+const getClientBaseUrl = async (serviceUrl) => {
   // If a global gateway URL is set, use it for all services
   const hasGatewayEnv = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL;
   const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
-  // Avoid mixed-content by preferring relative /api over http:// base when on https
-  if (isHttps) {
-  const base = hasGatewayEnv ? API_BASE_URL : serviceUrl;
-  if (typeof base === 'string' && base.startsWith('http:')) {
+  
+  if (hasGatewayEnv) {
+    const baseURL = await getApiBaseUrl();
+    // Avoid mixed-content by preferring relative /api over http:// base when on https
+    if (isHttps && typeof baseURL === 'string' && baseURL.startsWith('http:')) {
       return '/api';
     }
+    return baseURL; // e.g., http(s)://gateway or '/api'
   }
-  if (hasGatewayEnv) {
-    return API_BASE_URL; // e.g., http(s)://gateway or '/api'
-  }
-  // In development, API_BASE_URL is '/api' (proxied to gateway)
-  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-    return API_BASE_URL;
-  }
+  
   // Fallback to service-specific URL (production direct service)
   return serviceUrl;
 };
 
-// Create service-specific clients with enhanced configurations
-export const authServiceClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.AUTH_SERVICE),
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(authServiceClient);
-
-export const userServiceClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.USER_SERVICE),
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(userServiceClient);
-
-export const jobServiceClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.JOB_SERVICE),
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(jobServiceClient);
-
-export const messagingServiceClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.MESSAGING_SERVICE),
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(messagingServiceClient);
-
-export const paymentServiceClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.PAYMENT_SERVICE),
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(paymentServiceClient);
-
-export const reviewsServiceClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.REVIEW_SERVICE),
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(reviewsServiceClient);
-
-export const schedulingClient = axios.create({
-  baseURL: getClientBaseUrl(SERVICES.USER_SERVICE), // Using user service for scheduling
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Disable credentials for ngrok compatibility
-});
-retryInterceptor(schedulingClient);
-
-// Add auth interceptors to all service clients
-[authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, reviewsServiceClient, schedulingClient].forEach(client => {
-  // Request interceptor
-  client.interceptors.request.use(
-    (config) => {
-      // Normalize to avoid /api/api duplication
-      config = normalizeUrlForGateway(config);
-      // Add auth token securely
-      const token = secureStorage.getAuthToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-
-      // Add request timestamp for debugging
-      config.metadata = { startTime: new Date() };
-
-      // Log request in development
-      if (LOG_CONFIG.enableConsole) {
-        console.group(
-          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-        );
-        console.log('Config:', {
-          baseURL: config.baseURL,
-          url: config.url,
-          method: config.method,
-          headers: config.headers,
-          data: config.data,
-        });
-        console.groupEnd();
-      }
-
-      return config;
+// Create service-specific clients with async base URL initialization
+const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
+  const baseURL = await getClientBaseUrl(serviceUrl);
+  const client = axios.create({
+    baseURL,
+    timeout: timeoutConfig.timeout,
+    headers: {
+      'Content-Type': 'application/json',
+      ...extraHeaders,
     },
-    (error) => {
-      console.error('❌ Request Error:', error);
-      return Promise.reject(error);
-    },
-  );
+    withCredentials: false, // Disable credentials for ngrok compatibility
+  });
+  retryInterceptor(client);
+  return client;
+};
 
-  // Response interceptor
-  client.interceptors.response.use(
-    (response) => {
-      // Log response time in development
-      if (LOG_CONFIG.enableConsole && response.config.metadata) {
-        const duration = new Date() - response.config.metadata.startTime;
-        console.log(
-          `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
-        );
-      }
+// Initialize service clients
+let authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, reviewsServiceClient, schedulingClient;
 
-      return response;
-    },
-    (error) => {
-      // Log error in development
-      if (LOG_CONFIG.enableConsole) {
-        console.error('❌ API Error:', {
-          url: error.config?.url,
-          method: error.config?.method,
-          status: error.response?.status,
-          message: error.response?.data?.message || error.message,
-        });
-      }
+const initializeServiceClients = async () => {
+  if (!authServiceClient) {
+    authServiceClient = await createServiceClient(SERVICES.AUTH_SERVICE);
+    userServiceClient = await createServiceClient(SERVICES.USER_SERVICE);
+    jobServiceClient = await createServiceClient(SERVICES.JOB_SERVICE, { 'ngrok-skip-browser-warning': 'true' });
+    messagingServiceClient = await createServiceClient(SERVICES.MESSAGING_SERVICE);
+    paymentServiceClient = await createServiceClient(SERVICES.PAYMENT_SERVICE);
+    reviewsServiceClient = await createServiceClient(SERVICES.REVIEW_SERVICE);
+    schedulingClient = await createServiceClient(SERVICES.USER_SERVICE); // Using user service for scheduling
+  }
+  return {
+    authServiceClient,
+    userServiceClient,
+    jobServiceClient,
+    messagingServiceClient,
+    paymentServiceClient,
+    reviewsServiceClient,
+    schedulingClient
+  };
+};
 
-      return Promise.reject(error);
-    },
-  );
+// Export service clients with lazy initialization
+export const getAuthServiceClient = () => initializeServiceClients().then(clients => clients.authServiceClient);
+export const getUserServiceClient = () => initializeServiceClients().then(clients => clients.userServiceClient);
+export const getJobServiceClient = () => initializeServiceClients().then(clients => clients.jobServiceClient);
+export const getMessagingServiceClient = () => initializeServiceClients().then(clients => clients.messagingServiceClient);
+export const getPaymentServiceClient = () => initializeServiceClients().then(clients => clients.paymentServiceClient);
+export const getReviewsServiceClient = () => initializeServiceClients().then(clients => clients.reviewsServiceClient);
+export const getSchedulingClient = () => initializeServiceClients().then(clients => clients.schedulingClient);
+
+// For backward compatibility, create proxy objects
+export const authServiceClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getAuthServiceClient().then(client => client[prop](...args));
+  }
 });
+
+export const userServiceClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getUserServiceClient().then(client => client[prop](...args));
+  }
+});
+
+export const jobServiceClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getJobServiceClient().then(client => client[prop](...args));
+  }
+});
+
+export const messagingServiceClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getMessagingServiceClient().then(client => client[prop](...args));
+  }
+});
+
+export const paymentServiceClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getPaymentServiceClient().then(client => client[prop](...args));
+  }
+});
+
+export const reviewsServiceClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getReviewsServiceClient().then(client => client[prop](...args));
+  }
+});
+
+export const schedulingClient = new Proxy({}, {
+  get(target, prop) {
+    return (...args) => getSchedulingClient().then(client => client[prop](...args));
+  }
+});
+
+// Add auth interceptors to all service clients after initialization
+const addInterceptorsToClients = async () => {
+  const clients = await initializeServiceClients();
+  Object.values(clients).forEach(client => {
+    // Request interceptor
+    client.interceptors.request.use(
+      (config) => {
+        // Normalize to avoid /api/api duplication
+        config = normalizeUrlForGateway(config);
+        // Add auth token securely
+        const token = secureStorage.getAuthToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Add request timestamp for debugging
+        config.metadata = { startTime: new Date() };
+
+        // Log request in development
+        if (LOG_CONFIG.enableConsole) {
+          console.group(
+            `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+          );
+          console.log('Config:', {
+            baseURL: config.baseURL,
+            url: config.url,
+            method: config.method,
+            headers: config.headers,
+            data: config.data,
+          });
+          console.groupEnd();
+        }
+
+        return config;
+      },
+      (error) => {
+        console.error('❌ Request Error:', error);
+        return Promise.reject(error);
+      },
+    );
+
+    // Response interceptor
+    client.interceptors.response.use(
+      (response) => {
+        // Log response time in development
+        if (LOG_CONFIG.enableConsole && response.config.metadata) {
+          const duration = new Date() - response.config.metadata.startTime;
+          console.log(
+            `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
+          );
+        }
+
+        return response;
+      },
+      (error) => {
+        // Log error in development
+        if (LOG_CONFIG.enableConsole) {
+          console.error('❌ API Error:', {
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            message: error.response?.data?.message || error.message,
+          });
+        }
+
+        return Promise.reject(error);
+      },
+    );
+  });
+};
+
+// Initialize interceptors
+addInterceptorsToClients();
 
 // Get token from secure storage for external use
 export const getAuthToken = () => {
@@ -551,14 +601,19 @@ export const getAuthToken = () => {
 };
 
 // Global session-expired notifier for appshell
-axiosInstance.interceptors.response.use(
-  (r) => r,
-  (error) => {
-    if (error?.response?.status === 401 && typeof window !== 'undefined') {
-      try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) {}
+const addGlobalInterceptors = async () => {
+  const instance = await initializeAxios();
+  instance.interceptors.response.use(
+    (r) => r,
+    (error) => {
+      if (error?.response?.status === 401 && typeof window !== 'undefined') {
+        try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) {}
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
+  );
+};
 
-export default axiosInstance;
+addGlobalInterceptors();
+
+export default axiosInstanceProxy;

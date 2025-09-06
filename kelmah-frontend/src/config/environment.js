@@ -59,23 +59,50 @@ export const SERVICES = {
   REVIEW_SERVICE: getServiceUrl('REVIEW_SERVICE'),
 };
 
+// Load runtime config for dynamic ngrok URL
+let runtimeConfig = null;
+const loadRuntimeConfig = async () => {
+  if (typeof window !== 'undefined' && !runtimeConfig) {
+    try {
+      const response = await fetch('/runtime-config.json');
+      runtimeConfig = await response.json();
+      console.log('🔧 Runtime config loaded:', runtimeConfig);
+    } catch (error) {
+      console.warn('⚠️ Failed to load runtime config:', error.message);
+    }
+  }
+  return runtimeConfig;
+};
+
 // Primary API URL selection with mixed-content protection
-const computeApiBase = () => {
+const computeApiBase = async () => {
   const envUrl = import.meta.env.VITE_API_URL;
   const isProduction = import.meta.env.PROD;
   const isBrowser = typeof window !== 'undefined';
   const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
   const isVercel = isBrowser && window.location.hostname.includes('vercel.app');
 
-  // For Vercel deployments, use ngrok URL directly to bypass Vercel rewrites
+  // Load runtime config for dynamic ngrok URL
+  const config = await loadRuntimeConfig();
+  const ngrokUrl = config?.ngrokUrl;
+
+  // For Vercel deployments, use ngrok URL from runtime config
   if (isVercel) {
-    console.log('🔗 Vercel deployment detected, using ngrok URL directly');
-    return 'https://fb99b18e572a.ngrok-free.app';
+    console.log('🔗 Vercel deployment detected, using ngrok URL from runtime config');
+    if (ngrokUrl) {
+      return ngrokUrl;
+    }
+    console.warn('⚠️ No ngrok URL in runtime config, falling back to /api');
+    return '/api';
   }
 
-  // For production, use ngrok URL directly to bypass Vercel rewrites
+  // For production, use ngrok URL from runtime config
   if (isProduction) {
-    return 'https://fb99b18e572a.ngrok-free.app';
+    if (ngrokUrl) {
+      return ngrokUrl;
+    }
+    console.warn('⚠️ No ngrok URL in runtime config, falling back to /api');
+    return '/api';
   }
 
   // If we have an environment URL, use it (unless it's http on https page)
@@ -93,6 +120,11 @@ const computeApiBase = () => {
   return '/api';
 };
 
+// Export async function to get API base URL
+export const getApiBaseUrl = computeApiBase;
+
+// For backward compatibility, export a promise that resolves to the URL
+// Note: This will be a promise, so consumers should await it or use getApiBaseUrl()
 export const API_BASE_URL = computeApiBase();
 
 // ===============================================
