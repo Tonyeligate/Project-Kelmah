@@ -239,7 +239,8 @@ const getJobs = async (req, res, next) => {
         min: job.bidding?.minBidAmount || job.budget || 0,
         max: job.bidding?.maxBidAmount || job.budget || 0,
         type: job.paymentType || 'fixed',
-        amount: job.budget || 0
+        amount: job.budget || 0,
+        currency: job.currency || 'GHS'
       },
       // Add missing fields that frontend expects
       hirer_name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown',
@@ -298,7 +299,8 @@ const getJobById = async (req, res, next) => {
         min: job.bidding?.minBidAmount || job.budget || 0,
         max: job.bidding?.maxBidAmount || job.budget || 0,
         type: job.paymentType || 'fixed',
-        amount: job.budget || 0
+        amount: job.budget || 0,
+        currency: job.currency || 'GHS'
       },
       // Add missing fields that frontend expects
       hirer_name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown',

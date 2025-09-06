@@ -6,6 +6,7 @@
 import axios from 'axios';
 import { getApiBaseUrl } from '../config/environment';
 import { JWT_LOCAL_STORAGE_KEY, REFRESH_TOKEN_KEY } from '../config/config';
+import { secureStorage } from '../utils/secureStorage';
 import mockWorkersApiDefault from './services/mockWorkersApi';
 import workersApiDefault from './services/workersApi';
 
@@ -52,7 +53,8 @@ const addInterceptors = async () => {
   // Request interceptor for adding auth token
   instance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
+    // Try secureStorage first, then localStorage as fallback
+    const token = secureStorage.getAuthToken() || localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -72,7 +74,7 @@ const addInterceptors = async () => {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        const refreshToken = secureStorage.getRefreshToken() || localStorage.getItem(REFRESH_TOKEN_KEY);
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
@@ -83,7 +85,9 @@ const addInterceptors = async () => {
         // Extract tokens from response (support nested data format)
         const payload = resp.data.data || resp.data;
         const { token: newToken, refreshToken: newRefreshToken } = payload;
-        // Store new tokens
+        // Store new tokens in both secureStorage and localStorage
+        secureStorage.setAuthToken(newToken);
+        secureStorage.setRefreshToken(newRefreshToken);
         localStorage.setItem(JWT_LOCAL_STORAGE_KEY, newToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
         // Update authorization header and retry original request
@@ -91,6 +95,7 @@ const addInterceptors = async () => {
         return instance(originalRequest);
       } catch (refreshError) {
         // Handle refresh failure - clear storage and redirect to login
+        secureStorage.clear();
         localStorage.removeItem(JWT_LOCAL_STORAGE_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         // window.location.href = '/login'; // removed to prevent full page reload on 401

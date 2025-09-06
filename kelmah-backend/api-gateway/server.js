@@ -367,43 +367,53 @@ app.use(
   })
 );
 
+// Import job proxy and rate limiter
+const { createEnhancedJobProxy } = require('./proxy/job.proxy');
+const { getRateLimiter } = require('./middlewares/rate-limiter');
+
 // Job routes (public listings, protected management)
-app.use('/api/jobs', async (req, res) => {
-  console.log(`[API Gateway] Job route middleware called for ${req.method} ${req.url}`);
-  console.log(`[API Gateway] Target service: ${services.job}`);
-  
-  try {
-    const axios = require('axios');
-    const targetUrl = `${services.job}/api/jobs${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`;
-    console.log(`[API Gateway] Proxying to: ${targetUrl}`);
-    
-    const response = await axios({
-      method: req.method,
-      url: targetUrl,
-      data: req.body,
-      headers: {
-        ...req.headers,
-        host: undefined, // Remove host header
-      },
-      timeout: 10000
-    });
-    
-    console.log(`[API Gateway] Job service response: ${response.status} - ${response.data ? 'data received' : 'no data'}`);
-    res.status(response.status).json(response.data);
-  } catch (error) {
-    console.error('[API Gateway] Job service proxy error:', error.message);
-    res.status(503).json({ 
-      error: 'Job service temporarily unavailable',
-      message: error.message 
-    });
+// Apply rate limiting based on endpoint type
+app.use('/api/jobs', (req, res, next) => {
+  // Apply different rate limits based on the operation
+  if (req.method === 'POST') {
+    // Job creation - stricter rate limit
+    return getRateLimiter('jobCreation')(req, res, next);
+  } else if (req.url.includes('/apply') && req.method === 'POST') {
+    // Job application - moderate rate limit
+    return getRateLimiter('jobApplication')(req, res, next);
+  } else {
+    // General job operations - standard rate limit
+    return getRateLimiter('general')(req, res, next);
   }
 });
 
-// Search routes (public)
+// Apply enhanced job proxy with health checking
+app.use('/api/jobs', createEnhancedJobProxy(services.job, {
+  pathRewrite: { '^/api/jobs': '/api/jobs' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Job service error:', err.message);
+    res.status(503).json({
+      error: 'Job service temporarily unavailable',
+      message: 'Please try again later',
+      timestamp: new Date().toISOString()
+    });
+  }
+}));
+
+// Search routes (public) with rate limiting
+app.use('/api/search', getRateLimiter('search'));
 app.use('/api/search', createProxyMiddleware({
   target: services.job,
   changeOrigin: true,
-  pathRewrite: { '^/api/search': '/api/search' }
+  pathRewrite: { '^/api/search': '/api/search' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Search service error:', err.message);
+    res.status(503).json({
+      error: 'Search service temporarily unavailable',
+      message: 'Please try again later',
+      timestamp: new Date().toISOString()
+    });
+  }
 }));
 
 // Payment routes (protected with validation) — use dedicated router to expose granular endpoints and aliases

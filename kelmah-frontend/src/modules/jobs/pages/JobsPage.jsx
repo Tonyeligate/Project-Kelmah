@@ -464,135 +464,42 @@ const JobsPage = () => {
     fetchJobs();
   }, []);
   
-  // Enhanced Ghana-focused skilled trades jobs (fallback data)
-  const sampleJobs = [
-    {
-      id: 1,
-      title: "Senior Electrical Engineer - Commercial Projects",
-      company: "PowerTech Solutions Ghana",
-      location: "Accra, Greater Accra",
-      budget: "GHS 3,500 - 5,500",
-      type: "Full-time",
-      category: "Electrical",
-      urgent: true,
-      verified: true,
-      rating: 4.8,
-      applicants: 12,
-      description: "Seeking certified electrician for high-rise commercial installations. Must have 5+ years experience with industrial wiring and safety protocols.",
-      skills: ["Electrical Installation", "Industrial Wiring", "Safety Protocols", "Circuit Design", "Maintenance"],
-      requirements: ["Valid Electrical License", "5+ Years Experience", "Safety Certification"],
-      benefits: ["Health Insurance", "Performance Bonus", "Transport Allowance"],
-      postedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      icon: ElectricalIcon,
-      companyLogo: "/images/powertech-logo.png"
-    },
-    {
-      id: 2,
-      title: "Master Plumber - Residential & Commercial",
-      company: "AquaFlow Ghana Limited",
-      location: "Kumasi, Ashanti Region", 
-      budget: "GHS 2,800 - 4,200",
-      type: "Contract",
-      category: "Plumbing",
-      urgent: false,
-      verified: true,
-      rating: 4.9,
-      applicants: 8,
-      description: "Professional plumber needed for luxury residential and commercial plumbing systems. Experience with modern fixtures required.",
-      skills: ["Pipe Installation", "Water Systems", "Drainage", "Fixture Installation", "Leak Detection"],
-      requirements: ["Plumbing Certification", "3+ Years Experience", "Own Tools"],
-      benefits: ["Project Bonus", "Material Allowance", "Training Opportunities"],
-      postedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      icon: PlumbingIcon,
-      companyLogo: "/images/aquaflow-logo.png"
-    },
-    {
-      id: 3,
-      title: "Expert Carpenter - Custom Furniture Specialist",
-      company: "WoodCraft Artisans Ltd",
-      location: "Tema, Greater Accra",
-      budget: "GHS 2,200 - 3,800", 
-      type: "Part-time",
-      category: "Carpentry",
-      urgent: false,
-      verified: true,
-      rating: 4.7,
-      applicants: 15,
-      description: "Seeking master carpenter for high-end custom furniture and cabinet making. Must excel in traditional and modern woodworking techniques.",
-      skills: ["Fine Woodworking", "Cabinet Making", "Furniture Design", "Tool Mastery", "Finishing"],
-      requirements: ["Carpentry Certification", "Portfolio Required", "4+ Years Experience"],
-      benefits: ["Flexible Hours", "Material Discount", "Skill Development"],
-      postedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-      icon: CarpenterIcon,
-      companyLogo: "/images/woodcraft-logo.png"
-    },
-    {
-      id: 4,
-      title: "HVAC Technician - Climate Control Systems",
-      company: "CoolAir Ghana",
-      location: "Accra, Greater Accra",
-      budget: "GHS 2,800 - 4,500",
-      type: "Full-time",
-      category: "HVAC",
-      urgent: true,
-      verified: true,
-      rating: 4.6,
-      applicants: 7,
-      description: "Install and maintain air conditioning systems in commercial buildings. Experience with energy-efficient systems preferred.",
-      skills: ["HVAC Installation", "System Maintenance", "Refrigeration", "Energy Efficiency", "Troubleshooting"],
-      requirements: ["HVAC License", "3+ Years Experience", "Transport Available"],
-      benefits: ["Medical Cover", "Overtime Pay", "Equipment Provided"],
-      postedDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-      deadline: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
-      icon: HvacIcon,
-      companyLogo: "/images/coolair-logo.png"
-    },
-    {
-      id: 5,
-      title: "Construction Supervisor - Building Projects",
-      company: "BuildRight Construction",
-      location: "Kumasi, Ashanti Region",
-      budget: "GHS 4,200 - 6,500",
-      type: "Full-time",
-      category: "Construction",
-      urgent: false,
-      verified: true,
-      rating: 4.8,
-      applicants: 9,
-      description: "Lead construction teams for residential and commercial building projects. Strong leadership and technical skills required.",
-      skills: ["Project Management", "Team Leadership", "Quality Control", "Safety Management", "Cost Control"],
-      requirements: ["Construction Management Degree", "5+ Years Experience", "Leadership Skills"],
-      benefits: ["Car Allowance", "Profit Sharing", "Career Growth"],
-      postedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      deadline: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
-      icon: ConstructionIcon,
-      companyLogo: "/images/buildright-logo.png"
-    },
-    {
-      id: 6,
-      title: "Professional Painter - Residential & Commercial",
-      company: "ColorMaster Painters",
-      location: "Tema, Greater Accra",
-      budget: "GHS 1,800 - 2,800",
-      type: "Contract",
-      category: "Painting",
-      urgent: false,
-      verified: true,
-      rating: 4.5,
-      applicants: 11,
-      description: "Skilled painter for interior and exterior painting projects. Experience with decorative finishes and modern techniques preferred.",
-      skills: ["Interior Painting", "Exterior Painting", "Decorative Finishes", "Surface Preparation", "Color Consultation"],
-      requirements: ["Painting Experience", "Own Equipment", "Quality Portfolio"],
-      benefits: ["Material Discount", "Flexible Schedule", "Performance Bonus"],
-      postedDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-      deadline: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-      icon: PaintIcon,
-      companyLogo: "/images/colormaster-logo.png"
+  // Error boundary component for better error handling
+  const ErrorBoundary = ({ children, fallback }) => {
+    const [hasError, setHasError] = useState(false);
+    
+    useEffect(() => {
+      const handleError = (error) => {
+        console.error('JobsPage Error:', error);
+        setHasError(true);
+      };
+      
+      window.addEventListener('error', handleError);
+      return () => window.removeEventListener('error', handleError);
+    }, []);
+    
+    if (hasError) {
+      return fallback || (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography variant="h5" sx={{ color: '#fff', mb: 2 }}>
+            Something went wrong
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#ccc', mb: 3 }}>
+            We're having trouble loading jobs. Please try refreshing the page.
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={() => window.location.reload()}
+            sx={{ bgcolor: '#D4AF37', color: 'black' }}
+          >
+            Refresh Page
+          </Button>
+        </Box>
+      );
     }
-  ];
+    
+    return children;
+  };
 
   const tradeCategories = [
     { value: '', label: 'All Trades', icon: WorkIcon },
@@ -633,7 +540,8 @@ const JobsPage = () => {
   });
 
   return (
-    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
+    <ErrorBoundary>
+      <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
       <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
         <Helmet>
           <title>Find Skilled Trade Jobs - Kelmah | Ghana's Premier Job Platform</title>
@@ -651,76 +559,76 @@ const JobsPage = () => {
               {/* Left Side - Hero Text */}
               <Grid item xs={12} md={4}>
                 <Box>
-                  <Typography
+                <Typography
                     variant="h4" 
-                    component="h1" 
-                    sx={{ 
-                      fontWeight: 'bold',
-                      background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
+              component="h1" 
+              sx={{ 
+                fontWeight: 'bold',
+                background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
                       mb: 1,
                       fontSize: { xs: '1.5rem', md: '2rem' }
-                    }}
-                  >
-                    Find Your Next Trade Opportunity
-                  </Typography>
-                  <Typography 
+              }}
+            >
+              Find Your Next Trade Opportunity
+            </Typography>
+            <Typography 
                     variant="h6" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.8)', 
+              sx={{ 
+                color: 'rgba(255,255,255,0.8)', 
                       fontSize: { xs: '0.9rem', md: '1rem' }
-                    }}
-                  >
-                    Connect with Ghana's top employers and advance your skilled trades career
-                  </Typography>
+              }}
+            >
+              Connect with Ghana's top employers and advance your skilled trades career
+                </Typography>
                 </Box>
               </Grid>
 
               {/* Right Side - Expanded Filter System */}
               <Grid item xs={12} md={8}>
-                <Paper 
-                  elevation={8}
-                  sx={{ 
+            <Paper 
+              elevation={8}
+              sx={{ 
                     p: 2, 
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(10px)',
+                bgcolor: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(212,175,55,0.2)',
                     borderRadius: 2
-                  }}
-                >
-                  <Grid container spacing={2} alignItems="center">
+              }}
+            >
+              <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
+                  <TextField
+                    fullWidth
                         size="small"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search jobs, skills, companies..."
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            color: 'white',
-                            '& fieldset': {
-                              borderColor: 'rgba(212,175,55,0.3)',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: '#D4AF37',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#D4AF37',
-                            },
-                          },
-                        }}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search jobs, skills, companies..."
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: 'white',
+                        '& fieldset': {
+                          borderColor: 'rgba(212,175,55,0.3)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#D4AF37',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#D4AF37',
+                        },
+                      },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
                               <SearchIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
                     <Grid item xs={12} sm={2.5}>
                       <FormControl fullWidth size="small">
                         <InputLabel 
@@ -736,38 +644,38 @@ const JobsPage = () => {
                         >
                           Trade Category
                         </InputLabel>
-                        <Select
-                          value={selectedCategory}
-                          onChange={(e) => setSelectedCategory(e.target.value)}
-                          displayEmpty
-                          sx={{
-                            color: 'white',
+                  <Select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      displayEmpty
+                      sx={{
+                        color: 'white',
                             fontSize: '0.875rem',
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(212,175,55,0.3)',
-                            },
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#D4AF37',
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#D4AF37',
-                            },
-                            '& .MuiSvgIcon-root': {
-                              color: '#D4AF37',
-                            },
-                          }}
-                        >
-                          {tradeCategories.map((category) => (
-                            <MenuItem key={category.value} value={category.value}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(212,175,55,0.3)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#D4AF37',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#D4AF37',
+                        },
+                        '& .MuiSvgIcon-root': {
+                          color: '#D4AF37',
+                        },
+                      }}
+                    >
+                      {tradeCategories.map((category) => (
+                        <MenuItem key={category.value} value={category.value}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <category.icon sx={{ mr: 1, color: '#D4AF37', fontSize: 18 }} />
                                 <Typography variant="body2">{category.label}</Typography>
-                              </Box>
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
                     <Grid item xs={12} sm={2.5}>
                       <FormControl fullWidth size="small">
                         <InputLabel 
@@ -813,35 +721,35 @@ const JobsPage = () => {
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={1}>
-                      <Button
-                        fullWidth
-                        variant="contained"
+                    <Button
+                      fullWidth
+                      variant="contained"
                         size="small"
-                        startIcon={<SearchIcon />}
-                        onClick={() => {
-                          console.log('🔍 Search button clicked!');
-                          console.log('Search params:', { searchQuery, selectedCategory, selectedLocation, budgetRange });
-                        }}
-                        sx={{
-                          bgcolor: '#D4AF37',
-                          color: 'black',
-                          fontWeight: 'bold',
+                    startIcon={<SearchIcon />}
+                    onClick={() => {
+                      console.log('🔍 Search button clicked!');
+                      console.log('Search params:', { searchQuery, selectedCategory, selectedLocation, budgetRange });
+                    }}
+                      sx={{
+                      bgcolor: '#D4AF37',
+                      color: 'black',
+                      fontWeight: 'bold',
                           fontSize: '0.875rem',
-                          '&:hover': {
-                            bgcolor: '#B8941F',
-                          },
-                        }}
-                      >
+                        '&:hover': {
+                        bgcolor: '#B8941F',
+                      },
+                    }}
+                  >
                         Search
-                      </Button>
-                    </Grid>
-                  </Grid>
-                  
+                  </Button>
+                </Grid>
+              </Grid>
+              
                   {/* Advanced Filters Toggle - Compact */}
                   <Box sx={{ mt: 1, textAlign: 'center' }}>
-                    <Button
-                      startIcon={<FilterListIcon />}
-                      onClick={() => setShowFilters(!showFilters)}
+                <Button
+                  startIcon={<FilterListIcon />}
+                  onClick={() => setShowFilters(!showFilters)}
                       size="small"
                       sx={{ 
                         color: '#D4AF37',
@@ -854,36 +762,36 @@ const JobsPage = () => {
                       {showFilters ? 'Hide' : 'Show'} Filters
                     </Button>
                   </Box>
-                  
+              
                   {/* Advanced Filters - Compact */}
-                  <Collapse in={showFilters}>
+              <Collapse in={showFilters}>
                     <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-                      <Grid container spacing={2}>
+                  <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
                           <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
-                            Salary Range (GHS)
-                          </Typography>
-                          <Slider
-                            value={budgetRange}
-                            onChange={(e, newValue) => setBudgetRange(newValue)}
-                            valueLabelDisplay="auto"
-                            min={500}
-                            max={10000}
-                            step={100}
+                        Salary Range (GHS)
+                      </Typography>
+                      <Slider
+                        value={budgetRange}
+                        onChange={(e, newValue) => setBudgetRange(newValue)}
+                        valueLabelDisplay="auto"
+                        min={500}
+                        max={10000}
+                        step={100}
                             size="small"
-                            sx={{
-                              color: '#D4AF37',
-                              '& .MuiSlider-thumb': {
-                                bgcolor: '#D4AF37',
-                              },
-                              '& .MuiSlider-track': {
-                                bgcolor: '#D4AF37',
-                              },
-                              '& .MuiSlider-rail': {
-                                bgcolor: 'rgba(212,175,55,0.3)',
-                              },
-                            }}
-                          />
+                        sx={{
+                          color: '#D4AF37',
+                          '& .MuiSlider-thumb': {
+                            bgcolor: '#D4AF37',
+                          },
+                          '& .MuiSlider-track': {
+                            bgcolor: '#D4AF37',
+                          },
+                          '& .MuiSlider-rail': {
+                            bgcolor: 'rgba(212,175,55,0.3)',
+                          },
+                        }}
+                      />
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                               GHS {budgetRange[0]}
@@ -891,42 +799,42 @@ const JobsPage = () => {
                             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                               GHS {budgetRange[1]}+
                             </Typography>
-                          </Box>
-                        </Grid>
+                      </Box>
+                    </Grid>
                         <Grid item xs={12} md={6}>
                           <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
-                            Quick Filters
-                          </Typography>
+                        Quick Filters
+                      </Typography>
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            <Chip 
+                        <Chip 
                               label="Urgent" 
                               size="small"
-                              variant="outlined" 
-                              sx={{ 
-                                borderColor: '#D4AF37', 
-                                color: '#D4AF37',
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
                                 fontSize: '0.7rem',
-                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                              }} 
-                            />
-                            <Chip 
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                        <Chip 
                               label="Verified" 
                               size="small"
-                              variant="outlined" 
-                              sx={{ 
-                                borderColor: '#D4AF37', 
-                                color: '#D4AF37',
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
                                 fontSize: '0.7rem',
-                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                              }} 
-                            />
-                            <Chip 
-                              label="Full-time" 
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                        <Chip 
+                          label="Full-time" 
                               size="small"
-                              variant="outlined" 
-                              sx={{ 
-                                borderColor: '#D4AF37', 
-                                color: '#D4AF37',
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: '#D4AF37', 
+                            color: '#D4AF37',
                                 fontSize: '0.7rem',
                                 '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
                               }} 
@@ -939,17 +847,17 @@ const JobsPage = () => {
                                 borderColor: '#D4AF37', 
                                 color: '#D4AF37',
                                 fontSize: '0.7rem',
-                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                              }} 
-                            />
-                          </Box>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
-                </Paper>
-              </Grid>
+                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                          }} 
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Collapse>
+              </Paper>
             </Grid>
+                  </Grid>
           </Box>
         </motion.div>
         
@@ -1086,9 +994,15 @@ const JobsPage = () => {
                           <MonetizationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
                           <Typography variant="body2" fontWeight="bold" sx={{ color: '#D4AF37' }}>
                             {job?.budget ? (
-                              typeof job?.budget === 'object' ? 
-                                `${job?.currency || 'GHS'} ${job?.budget?.min || job?.budget?.amount || 0} - ${job?.budget?.max || job?.budget?.amount || 0}` :
-                                `${job?.currency || 'GHS'} ${job?.budget}`
+                              typeof job?.budget === 'object' ? (
+                                job.budget.min === job.budget.max ? (
+                                  `${job.budget.currency || 'GHS'} ${job.budget.amount?.toLocaleString() || 0}`
+                                ) : (
+                                  `${job.budget.currency || 'GHS'} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0}`
+                                )
+                              ) : (
+                                `${job?.currency || 'GHS'} ${job?.budget?.toLocaleString()}`
+                              )
                             ) : 'Budget not specified'}
                           </Typography>
                           <Chip 
@@ -1391,7 +1305,7 @@ const JobsPage = () => {
             </Grid>
           </Box>
         </motion.div>
-
+        
         {/* CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1450,6 +1364,7 @@ const JobsPage = () => {
         </motion.div>
       </Container>
         </Box>
+      </ErrorBoundary>
   );
 };
 
