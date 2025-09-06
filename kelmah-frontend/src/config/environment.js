@@ -66,6 +66,11 @@ const computeApiBase = () => {
   const isBrowser = typeof window !== 'undefined';
   const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
 
+  // For production, use ngrok URL directly to bypass Vercel rewrites
+  if (isProduction) {
+    return 'https://fb99b18e572a.ngrok-free.app';
+  }
+
   // If we have an environment URL, use it (unless it's http on https page)
   if (envUrl) {
     // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
