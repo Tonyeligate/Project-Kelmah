@@ -20,8 +20,8 @@ class NgrokManager {
     try {
       console.log('🚀 Starting ngrok tunnels...');
       
-      // Start ngrok tunnel on port 3000 (API Gateway) for HTTP requests
-      const apiUrl = await ngrok.connect(3000);
+      // Start ngrok tunnel on port 5000 (API Gateway) for HTTP requests
+      const apiUrl = await ngrok.connect(5000);
       console.log('✅ API Gateway tunnel started:', apiUrl);
       
       // Start ngrok tunnel on port 3005 (Messaging Service) for WebSocket connections

@@ -75,178 +75,178 @@ const normalizeUrlForGateway = (config) => {
 // Add interceptors after axios instance is initialized
 const addMainInterceptors = async () => {
   const instance = await initializeAxios();
-  
-  // Request interceptor
+
+// Request interceptor
   instance.interceptors.request.use(
-    (config) => {
-      // Normalize to avoid /api/api duplication
-      config = normalizeUrlForGateway(config);
-      // Add auth token securely
-      const token = secureStorage.getAuthToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+  (config) => {
+    // Normalize to avoid /api/api duplication
+    config = normalizeUrlForGateway(config);
+    // Add auth token securely
+    const token = secureStorage.getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-      // Add security headers
-      config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      config.headers['X-Client-Version'] = '1.0.0';
+    // Add security headers
+    config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    config.headers['X-Client-Version'] = '1.0.0';
 
-      // Add request timestamp for debugging
-      config.metadata = { startTime: new Date() };
+    // Add request timestamp for debugging
+    config.metadata = { startTime: new Date() };
 
-      // Log request in development
-      if (LOG_CONFIG.enableConsole) {
-        console.group(
-          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-        );
-        console.log('Config:', {
-          baseURL: config.baseURL,
-          url: config.url,
-          method: config.method,
-          headers: config.headers,
-          data: config.data,
-        });
-        console.groupEnd();
-      }
+    // Log request in development
+    if (LOG_CONFIG.enableConsole) {
+      console.group(
+        `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+      );
+      console.log('Config:', {
+        baseURL: config.baseURL,
+        url: config.url,
+        method: config.method,
+        headers: config.headers,
+        data: config.data,
+      });
+      console.groupEnd();
+    }
 
-      return config;
-    },
-    (error) => {
-      console.error('❌ Request Error:', error);
-      return Promise.reject(error);
-    },
-  );
+    return config;
+  },
+  (error) => {
+    console.error('❌ Request Error:', error);
+    return Promise.reject(error);
+  },
+);
 
-  // Response interceptor
+// Response interceptor
   instance.interceptors.response.use(
-    (response) => {
-      // Calculate request duration
-      const duration = new Date() - response.config.metadata.startTime;
+  (response) => {
+    // Calculate request duration
+    const duration = new Date() - response.config.metadata.startTime;
 
-      // Log response in development
-      if (LOG_CONFIG.enableConsole) {
-        console.group(`✅ API Response: ${response.status} (${duration}ms)`);
-        console.log('Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-          data: response.data,
-        });
-        console.groupEnd();
-      }
+    // Log response in development
+    if (LOG_CONFIG.enableConsole) {
+      console.group(`✅ API Response: ${response.status} (${duration}ms)`);
+      console.log('Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data,
+      });
+      console.groupEnd();
+    }
 
-      return response;
-    },
-    async (error) => {
-      const originalRequest = error.config;
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
 
-      // Calculate request duration if available
-      const duration = originalRequest?.metadata?.startTime
-        ? new Date() - originalRequest.metadata.startTime
-        : 'unknown';
+    // Calculate request duration if available
+    const duration = originalRequest?.metadata?.startTime
+      ? new Date() - originalRequest.metadata.startTime
+      : 'unknown';
 
-      // Enhanced error logging
-      if (LOG_CONFIG.enableConsole) {
-        console.group(
-          `❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`,
-        );
-        console.error('Error details:', {
-          url: originalRequest?.url,
-          method: originalRequest?.method,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          message: error.message,
-          data: error.response?.data,
-        });
-        console.groupEnd();
-      }
+    // Enhanced error logging
+    if (LOG_CONFIG.enableConsole) {
+      console.group(
+        `❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`,
+      );
+      console.error('Error details:', {
+        url: originalRequest?.url,
+        method: originalRequest?.method,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message,
+        data: error.response?.data,
+      });
+      console.groupEnd();
+    }
 
-      // Handle 401 Unauthorized - attempt token refresh
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
+    // Handle 401 Unauthorized - attempt token refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-        const refreshToken = secureStorage.getRefreshToken();
+      const refreshToken = secureStorage.getRefreshToken();
 
-        if (refreshToken) {
-          try {
-            // Use a new axios instance to avoid interceptor loops
+      if (refreshToken) {
+        try {
+          // Use a new axios instance to avoid interceptor loops
             const baseURL = await getApiBaseUrl();
-            const refreshResponse = await axios.post(
+          const refreshResponse = await axios.post(
               `${baseURL}/api/auth/refresh-token`,
-              { refreshToken },
-              {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: PERFORMANCE_CONFIG.apiTimeout,
-              },
-            );
+            { refreshToken },
+            {
+              headers: { 'Content-Type': 'application/json' },
+              timeout: PERFORMANCE_CONFIG.apiTimeout,
+            },
+          );
 
-            const newToken =
-              refreshResponse.data.data?.token || refreshResponse.data.token;
+          const newToken =
+            refreshResponse.data.data?.token || refreshResponse.data.token;
 
-            if (newToken) {
-              // Update stored token securely
-              secureStorage.setAuthToken(newToken);
+          if (newToken) {
+            // Update stored token securely
+            secureStorage.setAuthToken(newToken);
 
-              // Update the failed request with new token
-              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            // Update the failed request with new token
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
-              // Retry the original request
+            // Retry the original request
               return instance(originalRequest);
-            }
-          } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
-
-            // Clear auth data securely
-            secureStorage.clear();
-
-            // Redirect to login page
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login?reason=session_expired';
-            }
-
-            return Promise.reject(refreshError);
           }
-        } else {
-          // No refresh token available, redirect to login
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+
+          // Clear auth data securely
+          secureStorage.clear();
+
+          // Redirect to login page
           if (typeof window !== 'undefined') {
-            window.location.href = '/login?reason=no_token';
+            window.location.href = '/login?reason=session_expired';
           }
+
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token available, redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login?reason=no_token';
         }
       }
+    }
 
-      // Handle 403 Forbidden
-      if (error.response?.status === 403) {
-        console.warn('Access forbidden - insufficient permissions');
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.warn('Access forbidden - insufficient permissions');
 
-        // You might want to redirect to an unauthorized page
-        if (
-          typeof window !== 'undefined' &&
-          window.location.pathname !== '/unauthorized'
-        ) {
-          window.location.href = '/unauthorized';
-        }
+      // You might want to redirect to an unauthorized page
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname !== '/unauthorized'
+      ) {
+        window.location.href = '/unauthorized';
       }
+    }
 
-      // Handle 404 Not Found
-      if (error.response?.status === 404) {
-        console.warn('Resource not found:', originalRequest?.url);
-      }
+    // Handle 404 Not Found
+    if (error.response?.status === 404) {
+      console.warn('Resource not found:', originalRequest?.url);
+    }
 
-      // Handle 500 Server Error
-      if (error.response?.status >= 500) {
-        console.error('Server error occurred');
+    // Handle 500 Server Error
+    if (error.response?.status >= 500) {
+      console.error('Server error occurred');
 
-        // You might want to show a global error notification here
-      }
+      // You might want to show a global error notification here
+    }
 
-      // Network errors
-      if (!error.response) {
-        console.error('Network error - check your internet connection');
-      }
+    // Network errors
+    if (!error.response) {
+      console.error('Network error - check your internet connection');
+    }
 
-      return Promise.reject(error);
-    },
-  );
+    return Promise.reject(error);
+  },
+);
 };
 
 // Initialize interceptors
