@@ -426,6 +426,7 @@ export const jobServiceClient = axios.create({
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 retryInterceptor(jobServiceClient);
