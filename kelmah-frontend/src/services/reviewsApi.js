@@ -4,6 +4,7 @@
  */
 
 import { userServiceClient, reviewsServiceClient } from '../modules/common/services/axios';
+import { getApiBaseUrl } from '../config/environment';
 
 const REVIEWS_BASE = '/api/reviews';
 
@@ -223,7 +224,8 @@ const reviewsApi = {
    */
   async getTopWorkersByCategory(category, limit = 10) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/ratings/top-workers`, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.get(`${baseURL}/api/ratings/top-workers`, {
         params: { category, limit }
       });
       return response.data.data;

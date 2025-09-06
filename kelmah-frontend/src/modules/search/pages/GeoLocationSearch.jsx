@@ -65,14 +65,21 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/environment';
+import { getApiBaseUrl } from '../../../config/environment';
 import { Helmet } from 'react-helmet-async';
 import { useSelector } from 'react-redux';
 import JobCard from '../../jobs/components/listing/JobCard';
 import WorkerCard from '../../worker/components/WorkerCard';
 
 // Use centralized API base (defaults to '/api') to ensure requests go through the gateway
-const API_URL = API_BASE_URL;
+const getApiUrl = async () => {
+  try {
+    return await getApiBaseUrl();
+  } catch (error) {
+    console.warn('Failed to get API base URL, using fallback:', error);
+    return '/api';
+  }
+};
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -349,12 +356,13 @@ const GeoLocationSearch = () => {
       };
 
       let response;
+      const apiUrl = await getApiUrl();
       if (searchType === 0) {
         // Search for jobs
-        response = await axios.get(`${API_URL}/jobs/search`, { params: searchParams });
+        response = await axios.get(`${apiUrl}/jobs/search`, { params: searchParams });
       } else {
         // Search for workers/professionals
-        response = await axios.get(`${API_URL}/workers/search`, { params: searchParams });
+        response = await axios.get(`${apiUrl}/workers/search`, { params: searchParams });
       }
 
       const results = response.data.data || response.data.results || [];

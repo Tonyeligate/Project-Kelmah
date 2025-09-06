@@ -40,11 +40,18 @@ import {
   School as SchoolIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/environment';
+import { getApiBaseUrl } from '../../../config/environment';
 import { useAuth } from '../../../modules/auth/contexts/AuthContext';
 
 // Use centralized API base (defaults to '/api') to ensure requests go through the gateway
-const API_URL = API_BASE_URL;
+const getApiUrl = async () => {
+  try {
+    return await getApiBaseUrl();
+  } catch (error) {
+    console.warn('Failed to get API base URL, using fallback:', error);
+    return '/api';
+  }
+};
 
 // Custom TabPanel component
 function TabPanel(props) {

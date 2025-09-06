@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/environment';
+import { getApiBaseUrl } from '../../../config/environment';
 
 // Create async thunk for submitting reviews
 export const submitReview = createAsyncThunk(
@@ -9,7 +9,8 @@ export const submitReview = createAsyncThunk(
     try {
       const { auth } = getState();
 
-      const response = await axios.post(`${API_BASE_URL}/api/reviews`, reviewData, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.post(`${baseURL}/api/reviews`, reviewData, {
         headers: {
           Authorization: `Bearer ${auth.token}`,
         },
@@ -35,7 +36,8 @@ export const fetchReviewsByRecipient = createAsyncThunk(
     try {
       const { auth } = getState();
 
-      const response = await axios.get(`${API_BASE_URL}/api/reviews`, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.get(`${baseURL}/api/reviews`, {
         params: {
           recipientId,
           recipientType,
@@ -64,8 +66,9 @@ export const fetchReviewsByContract = createAsyncThunk(
     try {
       const { auth } = getState();
 
+      const baseURL = await getApiBaseUrl();
       const response = await axios.get(
-        `${API_BASE_URL}/api/reviews/contract/${contractId}`,
+        `${baseURL}/api/reviews/contract/${contractId}`,
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
