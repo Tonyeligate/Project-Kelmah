@@ -24,7 +24,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  withCredentials: true,
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 
 // Normalize url when baseURL already includes /api but url also begins with /api
@@ -412,6 +412,7 @@ export const authServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(authServiceClient);
 
@@ -421,6 +422,7 @@ export const userServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(userServiceClient);
 
@@ -431,6 +433,7 @@ export const jobServiceClient = axios.create({
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(jobServiceClient);
 
@@ -440,6 +443,7 @@ export const messagingServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(messagingServiceClient);
 
@@ -449,6 +453,7 @@ export const paymentServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(paymentServiceClient);
 
@@ -458,6 +463,7 @@ export const reviewsServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(reviewsServiceClient);
 
@@ -467,6 +473,7 @@ export const schedulingClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(schedulingClient);
 
