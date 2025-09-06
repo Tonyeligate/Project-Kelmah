@@ -6,13 +6,13 @@
  */
 
 import { AUTH_CONFIG } from '../../../config/environment';
-import { authServiceClient } from '../../common/services/axios';
+import axiosInstance from '../../../api';
 import { secureStorage } from '../../../utils/secureStorage';
 
-// Use centralized authServiceClient with standard interceptors
+// Use centralized axiosInstance with standard interceptors
 
-// Response interceptor will be set up after authService is defined
-// to avoid circular dependency issues
+// Response interceptors are handled by the main axios configuration
+// in api/index.js to avoid circular dependency issues
 
 // Token refresh tracking
 let tokenRefreshTimeout = null;
@@ -21,7 +21,7 @@ const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await authServiceClient.post('/auth/login', credentials);
+      const response = await axiosInstance.post('/auth/login', credentials);
       
       // Extract data from response (handle different response structures)
       const responseData = response.data.data || response.data;
@@ -83,7 +83,7 @@ const authService = {
   // Register user
   register: async (userData) => {
     try {
-      const response = await authServiceClient.post(
+      const response = await axiosInstance.post(
         '/auth/register',
         userData,
       );
@@ -106,7 +106,7 @@ const authService = {
   // Verify authentication
   verifyAuth: async () => {
     try {
-      const response = await authServiceClient.get('/auth/verify');
+      const response = await axiosInstance.get('/auth/verify');
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -132,7 +132,7 @@ const authService = {
       const refreshToken = secureStorage.getRefreshToken();
       const logoutData = refreshToken ? { refreshToken } : {};
       
-      await authServiceClient.post('/auth/logout', logoutData);
+      await axiosInstance.post('/auth/logout', logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
@@ -174,7 +174,7 @@ const authService = {
         throw new Error('No refresh token available');
       }
 
-      const response = await authServiceClient.post('/auth/refresh-token', {
+      const response = await axiosInstance.post('/auth/refresh-token', {
         refreshToken
       });
       
@@ -210,7 +210,7 @@ const authService = {
   // Forgot password
   forgotPassword: async (email) => {
     try {
-      const response = await authServiceClient.post(
+      const response = await axiosInstance.post(
         '/api/auth/forgot-password',
         { email },
       );
@@ -224,7 +224,7 @@ const authService = {
   // Reset password
   resetPassword: async (token, password) => {
     try {
-      const response = await authServiceClient.post(
+      const response = await axiosInstance.post(
         '/api/auth/reset-password',
         { token, password },
       );
@@ -238,7 +238,7 @@ const authService = {
   // Update profile
   updateProfile: async (profileData) => {
     try {
-      const response = await authServiceClient.put('/api/auth/profile', profileData);
+      const response = await axiosInstance.put('/api/auth/profile', profileData);
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -255,7 +255,7 @@ const authService = {
   // Change password
   changePassword: async (currentPassword, newPassword) => {
     try {
-      const response = await authServiceClient.post(
+      const response = await axiosInstance.post(
         '/api/auth/change-password',
         {
           currentPassword,
@@ -301,7 +301,7 @@ const authService = {
   // Email Verification Methods
   verifyEmail: async (token) => {
     try {
-      const response = await authServiceClient.get(`/api/auth/verify-email/${token}`);
+      const response = await axiosInstance.get(`/api/auth/verify-email/${token}`);
       return {
         success: true,
         message: response.data.message || 'Email verified successfully',
@@ -318,7 +318,7 @@ const authService = {
 
   resendVerificationEmail: async (email) => {
     try {
-      const response = await authServiceClient.post('/api/auth/resend-verification-email', {
+      const response = await axiosInstance.post('/api/auth/resend-verification-email', {
         email,
       });
       return {
@@ -337,7 +337,7 @@ const authService = {
   // MFA Setup (placeholder for future implementation)
   setupMFA: async () => {
     try {
-      const response = await authServiceClient.post('/api/auth/setup-mfa');
+      const response = await axiosInstance.post('/api/auth/setup-mfa');
       // Expect { success, data: { secret, otpauthUrl, qrCode? } }
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
@@ -351,7 +351,7 @@ const authService = {
   // Verify MFA (placeholder for future implementation)
   verifyMFA: async (token) => {
     try {
-      const response = await authServiceClient.post('/api/auth/verify-mfa', { token });
+      const response = await axiosInstance.post('/api/auth/verify-mfa', { token });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
@@ -364,7 +364,7 @@ const authService = {
   // Disable MFA (placeholder for future implementation)
   disableMFA: async (password, token) => {
     try {
-      const response = await authServiceClient.post('/api/auth/disable-mfa', { password, token });
+      const response = await axiosInstance.post('/api/auth/disable-mfa', { password, token });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
@@ -495,36 +495,7 @@ const authService = {
   },
 };
 
-// Add response interceptor to handle token refresh on 401 errors
-// (Set up after authService is defined to avoid circular dependency)
-authServiceClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    
-    // If we get a 401 and haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        // Attempt to refresh the token
-        const refreshResult = await authService.refreshToken();
-        
-        if (refreshResult.success) {
-          // Update the authorization header and retry the original request
-          originalRequest.headers.Authorization = `Bearer ${refreshResult.token}`;
-          return authServiceClient(originalRequest);
-        }
-      } catch (refreshError) {
-        console.error('Token refresh failed during request retry:', refreshError);
-        // Clear auth data and dispatch token expired event
-        secureStorage.clear();
-        window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
+// Note: Response interceptors for token refresh are now handled in the main axios configuration
+// (src/modules/common/services/axios.js) to avoid circular dependency issues with the proxy-based authServiceClient
 
 export default authService;

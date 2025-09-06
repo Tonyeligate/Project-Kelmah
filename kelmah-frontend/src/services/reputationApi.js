@@ -7,18 +7,18 @@ import axios from 'axios';
 import { getApiBaseUrl } from '../config/environment';
 
 // Create reputation service client with async initialization
-let await initializeReputationClient() = null;
+let reputationClient = null;
 
 const initializeReputationClient = async () => {
-  if (!await initializeReputationClient()) {
+  if (!reputationClient) {
     const baseURL = await getApiBaseUrl();
-    await initializeReputationClient() = axios.create({
+    reputationClient = axios.create({
       baseURL,
       timeout: 30000,
       headers: { 'Content-Type': 'application/json' },
     });
   }
-  return await initializeReputationClient();
+  return reputationClient;
 };
 
 // Auth is handled by gateway middleware; keep lightweight client here
@@ -77,7 +77,8 @@ const reputationApi = {
    */
   async getWorkerRatings(workerId) {
     try {
-      const response = await await initializeReputationClient().get(`/ratings/worker/${workerId}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/ratings/worker/${workerId}`);
       return response.data || this.getDefaultRatings(workerId);
     } catch (error) {
       console.error('Error fetching worker ratings:', error);
@@ -90,7 +91,8 @@ const reputationApi = {
    */
   async getWorkerAchievements(workerId) {
     try {
-      const response = await await initializeReputationClient().get(`/achievements/worker/${workerId}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/achievements/worker/${workerId}`);
       return response.data || [];
     } catch (error) {
       console.error('Error fetching worker achievements:', error);
@@ -104,7 +106,8 @@ const reputationApi = {
    */
   async getWorkerStats(workerId) {
     try {
-      const response = await await initializeReputationClient().get(`/workers/${workerId}/stats`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/workers/${workerId}/stats`);
       return response.data || this.getDefaultStats(workerId);
     } catch (error) {
       console.error('Error fetching worker stats:', error);
@@ -309,7 +312,8 @@ const reputationApi = {
         ...(category && { category })
       });
 
-      const response = await await initializeReputationClient().get(`/reputation/leaderboard?${params}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/reputation/leaderboard?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
@@ -322,7 +326,8 @@ const reputationApi = {
    */
   async getReputationInsights(timeRange = '30d') {
     try {
-      const response = await await initializeReputationClient().get(`/reputation/insights?timeRange=${timeRange}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/reputation/insights?timeRange=${timeRange}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching reputation insights:', error);
@@ -335,7 +340,8 @@ const reputationApi = {
    */
   async awardAchievement(workerId, achievementId) {
     try {
-      const response = await await initializeReputationClient().post(`/achievements/award`, {
+      const client = await initializeReputationClient();
+      const response = await client.post(`/achievements/award`, {
         workerId,
         achievementId
       });
@@ -351,7 +357,8 @@ const reputationApi = {
    */
   async updateVerificationStatus(workerId, verificationType, status) {
     try {
-      const response = await await initializeReputationClient().put(`/workers/${workerId}/verification`, {
+      const client = await initializeReputationClient();
+      const response = await client.put(`/workers/${workerId}/verification`, {
         type: verificationType,
         status
       });
@@ -367,7 +374,8 @@ const reputationApi = {
    */
   async getWorkerReputationAnalytics(workerId, timeRange = '90d') {
     try {
-      const response = await await initializeReputationClient().get(`/reputation/analytics/worker/${workerId}?timeRange=${timeRange}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/reputation/analytics/worker/${workerId}?timeRange=${timeRange}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching worker analytics:', error);
@@ -384,7 +392,8 @@ const reputationApi = {
         ...(category && { category })
       });
 
-      const response = await await initializeReputationClient().get(`/reputation/compare/${workerId}?${params}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/reputation/compare/${workerId}?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error comparing reputation:', error);
@@ -397,7 +406,8 @@ const reputationApi = {
    */
   async getReputationHistory(workerId, timeRange = '1y') {
     try {
-      const response = await await initializeReputationClient().get(`/reputation/history/${workerId}?timeRange=${timeRange}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/reputation/history/${workerId}?timeRange=${timeRange}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching reputation history:', error);
@@ -410,7 +420,8 @@ const reputationApi = {
    */
   async checkBadgeEligibility(workerId) {
     try {
-      const response = await await initializeReputationClient().get(`/achievements/eligibility/${workerId}`);
+      const client = await initializeReputationClient();
+      const response = await client.get(`/achievements/eligibility/${workerId}`);
       return response.data;
     } catch (error) {
       console.error('Error checking badge eligibility:', error);
@@ -423,7 +434,8 @@ const reputationApi = {
    */
   async getPlatformReputationStats() {
     try {
-      const response = await await initializeReputationClient().get('/reputation/platform-stats');
+      const client = await initializeReputationClient();
+      const response = await client.get('/reputation/platform-stats');
       return response.data;
     } catch (error) {
       console.error('Error fetching platform stats:', error);

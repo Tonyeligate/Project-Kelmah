@@ -10,14 +10,8 @@ const REVIEWS_BASE = '/api/reviews';
 
 // Auth handled by centralized axios when using apiGet/apiPost; kept for direct calls
 
-// Response interceptor for error handling
-reviewsServiceClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    console.error('Reviews API Error:', error);
-    throw error.response?.data || error;
-  }
-);
+// Note: Response interceptors are handled by the main axios configuration
+// in src/modules/common/services/axios.js to avoid circular dependency issues
 
 const reviewsApi = {
   /**
