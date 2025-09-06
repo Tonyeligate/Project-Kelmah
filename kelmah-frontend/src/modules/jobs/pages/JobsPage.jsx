@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import jobsApi from '../../../api/services/jobsApi';
+import jobsApi from '../services/jobsApi';
 import {
   Container,
   Grid,
@@ -426,22 +426,35 @@ const JobsPage = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true);
+        console.log('🔍 Fetching jobs from API...');
+        
         const response = await jobsApi.getJobs({
           status: 'open',
           limit: 50
         });
         
+        console.log('📊 API Response:', response);
+        
         if (response && response.data) {
+          console.log('✅ Jobs loaded from API:', response.data.length);
           setJobs(response.data);
         } else if (response && Array.isArray(response)) {
+          console.log('✅ Jobs loaded from API (array):', response.length);
           setJobs(response);
         } else {
+          console.warn('⚠️ No jobs data in response');
           setJobs([]);
         }
         setError(null);
       } catch (err) {
-        console.error('Error fetching jobs:', err);
-        setError('Failed to load jobs. Please try again.');
+        console.error('❌ Error fetching jobs:', err);
+        console.error('❌ Error details:', {
+          message: err.message,
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data
+        });
+        setError(`Failed to load jobs: ${err.message}`);
         setJobs([]);
       } finally {
         setLoading(false);
@@ -605,7 +618,7 @@ const JobsPage = () => {
     { value: 'Koforidua', label: 'Koforidua, Eastern Region' }
   ];
 
-  const filteredJobs = (jobs.length > 0 ? jobs : sampleJobs).filter(job => {
+  const filteredJobs = jobs.filter(job => {
     const matchesSearch = !searchQuery || 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (job.company && job.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -621,322 +634,325 @@ const JobsPage = () => {
 
   return (
     <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
         <Helmet>
           <title>Find Skilled Trade Jobs - Kelmah | Ghana's Premier Job Platform</title>
           <meta name="description" content="Discover high-paying skilled trade opportunities across Ghana. Connect with top employers in electrical, plumbing, carpentry, HVAC, and construction." />
         </Helmet>
         
-        {/* Authentication Notice */}
-        {!authState.isAuthenticated && (
-          <Alert 
-            severity="info" 
-            sx={{ 
-              borderRadius: 0,
-              mb: 3,
-              bgcolor: 'rgba(33, 150, 243, 0.1)',
-              border: '1px solid rgba(33, 150, 243, 0.3)',
-              '& .MuiAlert-message': {
-                width: '100%',
-                textAlign: 'center'
-              }
-            }}
-          >
-            <Typography variant="body2" sx={{ color: 'white' }}>
-              <strong>Sign in to apply for jobs!</strong> Create an account or log in to start applying for opportunities.
-            </Typography>
-          </Alert>
-        )}
-        
-        {/* Hero Header Section - More Professional & Compact */}
+        {/* Hero Section & Filter System - Directly Below Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Box sx={{ mb: 4, textAlign: 'center' }}>
-                <Typography
-              variant="h3" 
-              component="h1" 
-                  gutterBottom
-              sx={{ 
-                fontWeight: 'bold',
-                background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 1,
-                fontSize: { xs: '2rem', md: '2.5rem' }
-              }}
-            >
-              Find Your Next Trade Opportunity
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: 'rgba(255,255,255,0.8)', 
-                mb: 3,
-                maxWidth: 600,
-                mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.1rem' }
-              }}
-            >
-              Connect with Ghana's top employers and advance your skilled trades career
-                </Typography>
-
-            {/* Enhanced Search & Filter Section - More Uniform & Informative */}
-            <Paper 
-              elevation={8}
-              sx={{ 
-                p: 3, 
-                maxWidth: 1000, 
-                mx: 'auto', 
-                mb: 4,
-                bgcolor: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(212,175,55,0.2)'
-              }}
-            >
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} md={5}>
-                  <TextField
-                    fullWidth
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search jobs, skills, companies..."
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: 'rgba(212,175,55,0.3)',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#D4AF37',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#D4AF37',
-                        },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255,255,255,0.7)',
-                      },
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#D4AF37' }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Trade Category</InputLabel>
-                    <Select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      displayEmpty
-                      sx={{
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(212,175,55,0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#D4AF37',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#D4AF37',
-                        },
-                        '& .MuiSvgIcon-root': {
-                          color: '#D4AF37',
-                        },
-                      }}
-                    >
-                      {tradeCategories.map((category) => (
-                        <MenuItem key={category.value} value={category.value}>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <category.icon sx={{ mr: 1, color: '#D4AF37' }} />
-                            {category.label}
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={2}>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>Location</InputLabel>
-                    <Select
-                      value={selectedLocation}
-                      onChange={(e) => setSelectedLocation(e.target.value)}
-                      displayEmpty
-                      sx={{
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(212,175,55,0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#D4AF37',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#D4AF37',
-                        },
-                        '& .MuiSvgIcon-root': {
-                          color: '#D4AF37',
-                        },
-                      }}
-                    >
-                      {ghanaLocations.map((location) => (
-                        <MenuItem key={location.value} value={location.value}>
-                          {location.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={2}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                    size="large"
-                    startIcon={<SearchIcon />}
-                    onClick={() => {
-                      console.log('🔍 Search button clicked!');
-                      console.log('Search params:', { searchQuery, selectedCategory, selectedLocation, budgetRange });
-                      // The filteredJobs will automatically update based on the state changes
-                      // This is just for logging and potential future API calls
-                    }}
-                      sx={{
-                      bgcolor: '#D4AF37',
-                      color: 'black',
+          <Box sx={{ mb: 4, mt: 0 }}> {/* Minimal spacing from header */}
+            <Grid container spacing={3} alignItems="center">
+              {/* Left Side - Hero Text */}
+              <Grid item xs={12} md={4}>
+                <Box>
+                  <Typography
+                    variant="h4" 
+                    component="h1" 
+                    sx={{ 
                       fontWeight: 'bold',
-                        '&:hover': {
-                        bgcolor: '#B8941F',
-                      },
+                      background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      mb: 1,
+                      fontSize: { xs: '1.5rem', md: '2rem' }
                     }}
                   >
-                    Search
-                  </Button>
-                </Grid>
+                    Find Your Next Trade Opportunity
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.8)', 
+                      fontSize: { xs: '0.9rem', md: '1rem' }
+                    }}
+                  >
+                    Connect with Ghana's top employers and advance your skilled trades career
+                  </Typography>
+                </Box>
               </Grid>
-              
-              {/* Enhanced Advanced Filters Toggle */}
-              <Box sx={{ mt: 2, textAlign: 'center' }}>
-                <Button
-                  startIcon={<FilterListIcon />}
-                  onClick={() => setShowFilters(!showFilters)}
+
+              {/* Right Side - Expanded Filter System */}
+              <Grid item xs={12} md={8}>
+                <Paper 
+                  elevation={8}
                   sx={{ 
-                    color: '#D4AF37',
-                    border: '1px solid rgba(212,175,55,0.3)',
-                    px: 3,
-                    py: 1,
-                    borderRadius: 2,
-                    '&:hover': {
-                      bgcolor: 'rgba(212,175,55,0.1)',
-                      borderColor: '#D4AF37'
-                    }
+                    p: 2, 
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    borderRadius: 2
                   }}
                 >
-                  {showFilters ? 'Hide' : 'Show'} Advanced Filters
-                    </Button>
-                  </Box>
-              
-              {/* Enhanced Advanced Filters */}
-              <Collapse in={showFilters}>
-                <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body2" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
-                        Salary Range (GHS)
-                      </Typography>
-                      <Slider
-                        value={budgetRange}
-                        onChange={(e, newValue) => setBudgetRange(newValue)}
-                        valueLabelDisplay="auto"
-                        min={500}
-                        max={10000}
-                        step={100}
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search jobs, skills, companies..."
                         sx={{
-                          color: '#D4AF37',
-                          '& .MuiSlider-thumb': {
-                            bgcolor: '#D4AF37',
-                          },
-                          '& .MuiSlider-track': {
-                            bgcolor: '#D4AF37',
-                          },
-                          '& .MuiSlider-rail': {
-                            bgcolor: 'rgba(212,175,55,0.3)',
+                          '& .MuiOutlinedInput-root': {
+                            color: 'white',
+                            '& fieldset': {
+                              borderColor: 'rgba(212,175,55,0.3)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#D4AF37',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#D4AF37',
+                            },
                           },
                         }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
+                            </InputAdornment>
+                          ),
+                        }}
                       />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                          GHS {budgetRange[0]}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                          GHS {budgetRange[1]}+
-                        </Typography>
-                      </Box>
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body2" sx={{ mb: 2, color: '#D4AF37', fontWeight: 'bold' }}>
-                        Quick Filters
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                        <Chip 
-                          label="Urgent Jobs" 
-                          variant="outlined" 
+                    <Grid item xs={12} sm={2.5}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel 
+                          shrink
                           sx={{ 
-                            borderColor: '#D4AF37', 
-                            color: '#D4AF37',
-                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                          }} 
-                        />
-                        <Chip 
-                          label="Verified Companies" 
-                          variant="outlined" 
+                            color: 'rgba(255,255,255,0.7)', 
+                            fontSize: '0.75rem',
+                            transform: 'translate(14px, -9px) scale(0.85)',
+                            '&.Mui-focused': {
+                              color: '#D4AF37',
+                            }
+                          }}
+                        >
+                          Trade Category
+                        </InputLabel>
+                        <Select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          displayEmpty
+                          sx={{
+                            color: 'white',
+                            fontSize: '0.875rem',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(212,175,55,0.3)',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#D4AF37',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#D4AF37',
+                            },
+                            '& .MuiSvgIcon-root': {
+                              color: '#D4AF37',
+                            },
+                          }}
+                        >
+                          {tradeCategories.map((category) => (
+                            <MenuItem key={category.value} value={category.value}>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <category.icon sx={{ mr: 1, color: '#D4AF37', fontSize: 18 }} />
+                                <Typography variant="body2">{category.label}</Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={2.5}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel 
+                          shrink
                           sx={{ 
-                            borderColor: '#D4AF37', 
-                            color: '#D4AF37',
-                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                          }} 
-                        />
-                        <Chip 
-                          label="Full-time" 
-                          variant="outlined" 
-                          sx={{ 
-                            borderColor: '#D4AF37', 
-                            color: '#D4AF37',
-                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                          }} 
-                        />
-                        <Chip 
-                          label="Contract" 
-                          variant="outlined" 
-                          sx={{ 
-                            borderColor: '#D4AF37', 
-                            color: '#D4AF37',
-                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                          }} 
-                        />
-                        <Chip 
-                          label="Part-time" 
-                          variant="outlined" 
-                          sx={{ 
-                            borderColor: '#D4AF37', 
-                            color: '#D4AF37',
-                            '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
-                          }} 
-                        />
-                      </Box>
+                            color: 'rgba(255,255,255,0.7)', 
+                            fontSize: '0.75rem',
+                            transform: 'translate(14px, -9px) scale(0.85)',
+                            '&.Mui-focused': {
+                              color: '#D4AF37',
+                            }
+                          }}
+                        >
+                          Location
+                        </InputLabel>
+                        <Select
+                          value={selectedLocation}
+                          onChange={(e) => setSelectedLocation(e.target.value)}
+                          displayEmpty
+                          sx={{
+                            color: 'white',
+                            fontSize: '0.875rem',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(212,175,55,0.3)',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#D4AF37',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#D4AF37',
+                            },
+                            '& .MuiSvgIcon-root': {
+                              color: '#D4AF37',
+                            },
+                          }}
+                        >
+                          {ghanaLocations.map((location) => (
+                            <MenuItem key={location.value} value={location.value}>
+                              <Typography variant="body2">{location.label}</Typography>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={1}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        size="small"
+                        startIcon={<SearchIcon />}
+                        onClick={() => {
+                          console.log('🔍 Search button clicked!');
+                          console.log('Search params:', { searchQuery, selectedCategory, selectedLocation, budgetRange });
+                        }}
+                        sx={{
+                          bgcolor: '#D4AF37',
+                          color: 'black',
+                          fontWeight: 'bold',
+                          fontSize: '0.875rem',
+                          '&:hover': {
+                            bgcolor: '#B8941F',
+                          },
+                        }}
+                      >
+                        Search
+                      </Button>
                     </Grid>
                   </Grid>
-                </Box>
-              </Collapse>
-            </Paper>
+                  
+                  {/* Advanced Filters Toggle - Compact */}
+                  <Box sx={{ mt: 1, textAlign: 'center' }}>
+                    <Button
+                      startIcon={<FilterListIcon />}
+                      onClick={() => setShowFilters(!showFilters)}
+                      size="small"
+                      sx={{ 
+                        color: '#D4AF37',
+                        fontSize: '0.75rem',
+                        '&:hover': {
+                          bgcolor: 'rgba(212,175,55,0.1)',
+                        }
+                      }}
+                    >
+                      {showFilters ? 'Hide' : 'Show'} Filters
+                    </Button>
+                  </Box>
+                  
+                  {/* Advanced Filters - Compact */}
+                  <Collapse in={showFilters}>
+                    <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(212,175,55,0.2)' }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
+                            Salary Range (GHS)
+                          </Typography>
+                          <Slider
+                            value={budgetRange}
+                            onChange={(e, newValue) => setBudgetRange(newValue)}
+                            valueLabelDisplay="auto"
+                            min={500}
+                            max={10000}
+                            step={100}
+                            size="small"
+                            sx={{
+                              color: '#D4AF37',
+                              '& .MuiSlider-thumb': {
+                                bgcolor: '#D4AF37',
+                              },
+                              '& .MuiSlider-track': {
+                                bgcolor: '#D4AF37',
+                              },
+                              '& .MuiSlider-rail': {
+                                bgcolor: 'rgba(212,175,55,0.3)',
+                              },
+                            }}
+                          />
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                              GHS {budgetRange[0]}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                              GHS {budgetRange[1]}+
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
+                            Quick Filters
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            <Chip 
+                              label="Urgent" 
+                              size="small"
+                              variant="outlined" 
+                              sx={{ 
+                                borderColor: '#D4AF37', 
+                                color: '#D4AF37',
+                                fontSize: '0.7rem',
+                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                              }} 
+                            />
+                            <Chip 
+                              label="Verified" 
+                              size="small"
+                              variant="outlined" 
+                              sx={{ 
+                                borderColor: '#D4AF37', 
+                                color: '#D4AF37',
+                                fontSize: '0.7rem',
+                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                              }} 
+                            />
+                            <Chip 
+                              label="Full-time" 
+                              size="small"
+                              variant="outlined" 
+                              sx={{ 
+                                borderColor: '#D4AF37', 
+                                color: '#D4AF37',
+                                fontSize: '0.7rem',
+                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                              }} 
+                            />
+                            <Chip 
+                              label="Contract" 
+                              size="small"
+                              variant="outlined" 
+                              sx={{ 
+                                borderColor: '#D4AF37', 
+                                color: '#D4AF37',
+                                fontSize: '0.7rem',
+                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' }
+                              }} 
+                            />
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Collapse>
+                </Paper>
+              </Grid>
+            </Grid>
           </Box>
         </motion.div>
+        
 
 
         {/* Enhanced Jobs Grid */}
@@ -960,6 +976,7 @@ const JobsPage = () => {
               />
             </Box>
           </Box>
+
           
           {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -1174,7 +1191,7 @@ const JobsPage = () => {
                           },
                         }}
                       >
-                        {authState.isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
+                        Apply Now
                       </Button>
                       <IconButton 
                         onClick={() => {

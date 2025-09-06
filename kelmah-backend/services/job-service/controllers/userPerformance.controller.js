@@ -3,7 +3,7 @@
  */
 
 const { UserPerformance, User } = require('../models');
-const { successResponse, errorResponse, paginatedResponse } = require('../../utils/response');
+const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 
 // Get user performance data
 exports.getUserPerformance = async (req, res, next) => {

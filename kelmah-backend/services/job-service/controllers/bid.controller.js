@@ -3,7 +3,7 @@
  */
 
 const { Bid, Job, UserPerformance } = require('../models');
-const { successResponse, errorResponse, paginatedResponse } = require('../../utils/response');
+const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 
 // Create a new bid
 exports.createBid = async (req, res, next) => {

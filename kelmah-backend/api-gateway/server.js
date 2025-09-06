@@ -199,6 +199,7 @@ const healthResponse = (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     services: Object.keys(services),
+    serviceUrls: services,
     version: '2.0.0',
     uptime: process.uptime()
   });
@@ -367,37 +368,36 @@ app.use(
 );
 
 // Job routes (public listings, protected management)
-app.use('/api/jobs',
-  (req, res, next) => {
-    if (req.method === 'GET' && !req.path.includes('/applications')) {
-      return next();
-    }
-    return authMiddleware.authenticate(req, res, next);
-  },
-  (req, res, next) => {
-    const page = parseInt(req.query.page, 10);
-    const limit = parseInt(req.query.limit, 10);
-    if (!Number.isNaN(page) && page < 1) req.query.page = 1;
-    if (!Number.isNaN(limit)) req.query.limit = Math.min(Math.max(limit, 1), 100);
-    next();
-  },
-  createProxyMiddleware({
-    target: 'http://localhost:5003',
-    changeOrigin: true,
-    pathRewrite: { '^/api/jobs': '/api/jobs' },
-    onProxyReq: (proxyReq, req, res) => {
-      // Ensure the full path is preserved
-      console.log(`[API Gateway] Proxying ${req.method} ${req.url} to job service at http://localhost:5003`);
-    },
-    onError: (err, req, res) => {
-      console.error('[API Gateway] Job service proxy error:', err.message);
-      res.status(503).json({ 
-        error: 'Job service temporarily unavailable',
-        message: err.message 
-      });
-    }
-  })
-);
+app.use('/api/jobs', async (req, res) => {
+  console.log(`[API Gateway] Job route middleware called for ${req.method} ${req.url}`);
+  console.log(`[API Gateway] Target service: ${services.job}`);
+  
+  try {
+    const axios = require('axios');
+    const targetUrl = `${services.job}/api/jobs${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`;
+    console.log(`[API Gateway] Proxying to: ${targetUrl}`);
+    
+    const response = await axios({
+      method: req.method,
+      url: targetUrl,
+      data: req.body,
+      headers: {
+        ...req.headers,
+        host: undefined, // Remove host header
+      },
+      timeout: 10000
+    });
+    
+    console.log(`[API Gateway] Job service response: ${response.status} - ${response.data ? 'data received' : 'no data'}`);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error('[API Gateway] Job service proxy error:', error.message);
+    res.status(503).json({ 
+      error: 'Job service temporarily unavailable',
+      message: error.message 
+    });
+  }
+});
 
 // Search routes (public)
 app.use('/api/search', createProxyMiddleware({
@@ -418,7 +418,7 @@ app.use('/api/payments',
 
 // Messaging routes (protected) — mount dedicated router to support aliases and granular endpoints
 const messagingRouter = require('./routes/messaging.routes');
-app.use('/api', authMiddleware.authenticate, messagingRouter);
+app.use('/api/messages', authMiddleware.authenticate, messagingRouter);
 
 // Upload routes for messaging (protected) → messaging-service
 app.use('/api/uploads',

@@ -1,4 +1,4 @@
-okay const ngrok = require('ngrok');
+const ngrok = require('ngrok');
 const fs = require('fs').promises;
 const path = require('path');
 const { execSync } = require('child_process');

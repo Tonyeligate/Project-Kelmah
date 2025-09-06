@@ -24,7 +24,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  withCredentials: true,
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 
 // Normalize url when baseURL already includes /api but url also begins with /api
@@ -34,8 +34,11 @@ const normalizeUrlForGateway = (config) => {
     const url = typeof config.url === 'string' ? config.url : '';
     const baseEndsWithApi = base === '/api' || base.endsWith('/api');
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
+    
     if (baseEndsWithApi && urlStartsWithApi) {
+      // Remove the leading /api from the url to avoid /api/api duplication
       config.url = url.replace(/^\/api\/?/, '/');
+      console.log(`🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`);
     }
   } catch (_) {}
   return config;
@@ -409,6 +412,7 @@ export const authServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(authServiceClient);
 
@@ -418,6 +422,7 @@ export const userServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(userServiceClient);
 
@@ -426,7 +431,9 @@ export const jobServiceClient = axios.create({
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(jobServiceClient);
 
@@ -436,6 +443,7 @@ export const messagingServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(messagingServiceClient);
 
@@ -445,6 +453,7 @@ export const paymentServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(paymentServiceClient);
 
@@ -454,6 +463,7 @@ export const reviewsServiceClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(reviewsServiceClient);
 
@@ -463,6 +473,7 @@ export const schedulingClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false, // Disable credentials for ngrok compatibility
 });
 retryInterceptor(schedulingClient);
 

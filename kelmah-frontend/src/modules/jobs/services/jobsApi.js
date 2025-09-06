@@ -18,6 +18,17 @@ const transformJobListItem = (job) => {
     status: job.status,
     location: job.location,
     skills: job.skills || [],
+    // Map API date fields to frontend expected fields
+    postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
+    deadline: job.endDate ? new Date(job.endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    startDate: job.startDate ? new Date(job.startDate) : new Date(),
+    // Additional fields for display
+    hirer: job.hirer || { name: job.hirer_name || 'Unknown Company' },
+    proposalCount: job.proposalCount || 0,
+    viewCount: job.viewCount || 0,
+    rating: job.rating || 4.5,
+    urgent: job.urgent || false,
+    verified: job.verified || false,
   };
 };
 
@@ -28,18 +39,61 @@ const jobsApi = {
    */
   async getJobs(params = {}) {
     try {
+      console.log('🔍 Calling job service API with params:', params);
+      console.log('🔍 Job service client baseURL:', jobServiceClient.defaults.baseURL);
+      console.log('🔍 Job service client headers:', jobServiceClient.defaults.headers);
       const response = await jobServiceClient.get('/api/jobs', { params });
-      const jobs = response.data.data || response.data.jobs || [];
+      console.log('📊 Raw API response:', response.data);
+      
+      // Handle different response formats from the backend
+      let jobs = [];
+      let totalPages = 1;
+      let totalJobs = 0;
+      let currentPage = 1;
+      
+      if (response.data) {
+        // Check if response has pagination structure
+        if (response.data.data && Array.isArray(response.data.data)) {
+          jobs = response.data.data;
+          totalPages = response.data.pagination?.totalPages || 1;
+          totalJobs = response.data.pagination?.totalItems || jobs.length;
+          currentPage = response.data.pagination?.currentPage || 1;
+        } else if (response.data.items && Array.isArray(response.data.items)) {
+          // Handle the actual API response format: {success: true, items: [...], page: 1, total: 12}
+          jobs = response.data.items;
+          totalPages = Math.ceil(response.data.total / response.data.limit) || 1;
+          totalJobs = response.data.total || jobs.length;
+          currentPage = response.data.page || 1;
+        } else if (Array.isArray(response.data)) {
+          jobs = response.data;
+        } else if (response.data.jobs && Array.isArray(response.data.jobs)) {
+          jobs = response.data.jobs;
+          totalPages = response.data.totalPages || 1;
+          totalJobs = response.data.totalJobs || jobs.length;
+          currentPage = response.data.currentPage || 1;
+        }
+      }
+      
+      console.log('✅ Extracted jobs:', jobs.length);
+      
       return {
+        data: jobs.map(transformJobListItem),
         jobs: jobs.map(transformJobListItem),
-        totalPages: response.data.totalPages || 1,
-        totalJobs: response.data.totalJobs || jobs.length,
-        currentPage: response.data.currentPage || 1,
+        totalPages,
+        totalJobs,
+        currentPage,
       };
     } catch (error) {
-      console.warn('Job service unavailable for jobs list:', error.message);
+      console.error('❌ Job service API error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       // No mock data fallback; return empty results to reflect real state
       return {
+        data: [],
         jobs: [],
         totalPages: 1,
         totalJobs: 0,
@@ -98,6 +152,19 @@ const jobsApi = {
   async getJobById(jobId) {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
+      console.log('🔍 Single job API response:', response.data);
+      
+      // Handle the response format: {success: true, items: [...], page: 1, total: 12}
+      if (response.data && response.data.items && Array.isArray(response.data.items)) {
+        // Find the specific job by ID
+        const job = response.data.items.find(item => item.id === jobId || item._id === jobId);
+        if (job) {
+          console.log('✅ Found job by ID:', job.title);
+          return job;
+        }
+      }
+      
+      // Fallback to old format
       return response.data.data || response.data;
     } catch (error) {
       console.warn(`Job service unavailable for job ${jobId}:`, error.message);

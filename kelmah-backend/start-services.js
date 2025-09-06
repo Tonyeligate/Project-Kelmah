@@ -30,35 +30,35 @@ const services = [
   {
     name: 'Auth Service',
     path: './services/auth-service',
-    port: 3001,
+    port: 5001,
     command: 'node server.js',
     color: 'green'
   },
   {
     name: 'User Service',
     path: './services/user-service',
-    port: 3002,
+    port: 5002,
     command: 'node server.js',
     color: 'blue'
   },
   {
     name: 'Job Service',
     path: './services/job-service',
-    port: 3003,
+    port: 5003,
     command: 'node server.js',
     color: 'yellow'
   },
   {
     name: 'Payment Service',
     path: './services/payment-service',
-    port: 3004,
+    port: 5004,
     command: 'node server.js',
     color: 'magenta'
   },
   {
     name: 'Messaging Service',
     path: './services/messaging-service',
-    port: 3005,
+    port: 5005,
     command: 'node server.js',
     color: 'cyan'
   },

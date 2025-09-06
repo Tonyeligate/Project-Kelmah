@@ -65,6 +65,18 @@ const computeApiBase = () => {
   const isProduction = import.meta.env.PROD;
   const isBrowser = typeof window !== 'undefined';
   const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
+  const isVercel = isBrowser && window.location.hostname.includes('vercel.app');
+
+  // For Vercel deployments, use ngrok URL directly to bypass Vercel rewrites
+  if (isVercel) {
+    console.log('🔗 Vercel deployment detected, using ngrok URL directly');
+    return 'https://fb99b18e572a.ngrok-free.app';
+  }
+
+  // For production, use ngrok URL directly to bypass Vercel rewrites
+  if (isProduction) {
+    return 'https://fb99b18e572a.ngrok-free.app';
+  }
 
   // If we have an environment URL, use it (unless it's http on https page)
   if (envUrl) {

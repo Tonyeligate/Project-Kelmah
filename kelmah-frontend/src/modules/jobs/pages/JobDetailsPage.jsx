@@ -99,6 +99,15 @@ const JobDetailsPage = () => {
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
+  // Debug logging
+  useEffect(() => {
+    if (job) {
+      console.log('🔍 Job object in JobDetailsPage:', job);
+      console.log('🔍 Job budget:', job.budget);
+      console.log('🔍 Job budget type:', typeof job.budget);
+    }
+  }, [job]);
+
   // Auto-open application dialog if ?apply=true
   useEffect(() => {
     const params = new URLSearchParams(search);
@@ -304,7 +313,7 @@ const JobDetailsPage = () => {
                       <Typography variant="body1" sx={{ color: '#fff' }}>
                         {job?.budget && job.budget !== null ? (
                           typeof job.budget === 'object' ? (
-                            `${job.budget?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0} / ${job.budget?.type || 'fixed'}`
+                            `${job?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0} / ${job.budget?.type || 'fixed'}`
                           ) : (
                             `${job?.currency || 'GHS'} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
                           )
