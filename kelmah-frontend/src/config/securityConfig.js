@@ -51,7 +51,7 @@ export const SECURITY_CONFIG = {
     'img-src': ["'self'", "data:", "https:"],
     'connect-src': [
       "'self'",
-      'https://f39b7ba607e2.ngrok-free.app',
+      'https://bb54e7493f0f.ngrok-free.app',
       // Legacy Render URLs (kept for docs/testing; not used in production anymore)
       "https://kelmah-auth-service.onrender.com",
       "https://kelmah-user-service.onrender.com",
