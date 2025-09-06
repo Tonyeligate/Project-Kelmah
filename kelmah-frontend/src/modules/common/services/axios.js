@@ -34,8 +34,11 @@ const normalizeUrlForGateway = (config) => {
     const url = typeof config.url === 'string' ? config.url : '';
     const baseEndsWithApi = base === '/api' || base.endsWith('/api');
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
+    
     if (baseEndsWithApi && urlStartsWithApi) {
+      // Remove the leading /api from the url to avoid /api/api duplication
       config.url = url.replace(/^\/api\/?/, '/');
+      console.log(`🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`);
     }
   } catch (_) {}
   return config;
