@@ -47,6 +47,12 @@ const jobsApi = {
           totalPages = response.data.pagination?.totalPages || 1;
           totalJobs = response.data.pagination?.totalItems || jobs.length;
           currentPage = response.data.pagination?.currentPage || 1;
+        } else if (response.data.items && Array.isArray(response.data.items)) {
+          // Handle the actual API response format: {success: true, items: [...], page: 1, total: 12}
+          jobs = response.data.items;
+          totalPages = Math.ceil(response.data.total / response.data.limit) || 1;
+          totalJobs = response.data.total || jobs.length;
+          currentPage = response.data.page || 1;
         } else if (Array.isArray(response.data)) {
           jobs = response.data;
         } else if (response.data.jobs && Array.isArray(response.data.jobs)) {
