@@ -512,7 +512,15 @@ function JobApplication() {
                         <Schedule color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
                           <strong>Duration:</strong>{' '}
-                          {job?.duration || 'Not specified'} days
+                          {job?.duration ? (
+                            typeof job.duration === 'object' ? (
+                              `${job.duration.value || 0} ${job.duration.unit || 'days'}`
+                            ) : (
+                              `${job.duration} days`
+                            )
+                          ) : (
+                            'Not specified'
+                          )}
                         </Typography>
                       </Box>
                     </Grid>
