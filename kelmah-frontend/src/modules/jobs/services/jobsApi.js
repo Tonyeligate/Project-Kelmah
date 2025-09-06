@@ -29,6 +29,8 @@ const jobsApi = {
   async getJobs(params = {}) {
     try {
       console.log('🔍 Calling job service API with params:', params);
+      console.log('🔍 Job service client baseURL:', jobServiceClient.defaults.baseURL);
+      console.log('🔍 Job service client headers:', jobServiceClient.defaults.headers);
       const response = await jobServiceClient.get('/api/jobs', { params });
       console.log('📊 Raw API response:', response.data);
       
