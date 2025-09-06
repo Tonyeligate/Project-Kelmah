@@ -125,13 +125,13 @@ function JobApplication() {
       try {
         setLoading(true);
         const response = await jobsApi.getJobById(jobId);
-        setJob(response.data);
+        setJob(response);
 
         // Set defaults from job
         setApplicationData((prev) => ({
           ...prev,
-          proposedBudget: response.data.budget,
-          currency: response.data.currency || 'GHS',
+          proposedBudget: response?.budget?.amount || response?.budget?.min || response?.budget || '',
+          currency: response?.currency || 'GHS',
         }));
 
         setError(null);
@@ -496,7 +496,13 @@ function JobApplication() {
                       >
                         <Paid color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
-                          <strong>Budget:</strong> {job?.budget} {job?.currency}
+                          <strong>Budget:</strong> {job?.budget ? (
+                            typeof job.budget === 'object' ? (
+                              `${job?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
+                            ) : (
+                              `${job?.currency || 'GHS'} ${job.budget}`
+                            )
+                          ) : 'Not specified'} {job?.currency}
                         </Typography>
                       </Box>
 
