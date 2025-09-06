@@ -1,10 +1,20 @@
 import axios from 'axios';
-import { API_BASE_URL, WS_CONFIG } from '../../../config/environment';
+import { getApiBaseUrl, WS_CONFIG } from '../../../config/environment';
 import { io } from 'socket.io-client';
 
 /**
  * Dashboard service to handle dashboard data fetching and real-time updates
  */
+
+// Helper function to get API base URL
+const getApiUrl = async () => {
+  try {
+    return await getApiBaseUrl();
+  } catch (error) {
+    console.warn('Failed to get API base URL, using fallback:', error);
+    return '/api';
+  }
+};
 class DashboardService {
   constructor() {
     this.token = null;
@@ -125,8 +135,9 @@ class DashboardService {
   // Get dashboard overview data
   async getOverview() {
     try {
+      const apiUrl = await getApiUrl();
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/overview`,
+        `${apiUrl}/api/dashboard/overview`,
         {
           headers: { Authorization: `Bearer ${this.token}` },
         },
@@ -142,7 +153,7 @@ class DashboardService {
   async getRecentActivity(page = 1, limit = 10) {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/activity`,
+        `${await getApiUrl()}/api/dashboard/activity`,
         {
           params: { page, limit },
           headers: { Authorization: `Bearer ${this.token}` },
@@ -159,7 +170,7 @@ class DashboardService {
   async getStatistics(timeframe = 'week') {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/statistics`,
+        `${await getApiUrl()}/api/dashboard/statistics`,
         {
           params: { timeframe },
           headers: { Authorization: `Bearer ${this.token}` },
@@ -189,7 +200,7 @@ class DashboardService {
   async getRecentMessages() {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/messages`,
+        `${await getApiUrl()}/api/dashboard/messages`,
         {
           headers: { Authorization: `Bearer ${this.token}` },
         },
@@ -205,7 +216,7 @@ class DashboardService {
   async getPerformanceMetrics() {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/performance`,
+        `${await getApiUrl()}/api/dashboard/performance`,
         {
           headers: { Authorization: `Bearer ${this.token}` },
         },
@@ -221,7 +232,7 @@ class DashboardService {
   async getQuickActions() {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/quick-actions`,
+        `${await getApiUrl()}/api/dashboard/quick-actions`,
         {
           headers: { Authorization: `Bearer ${this.token}` },
         },
@@ -237,7 +248,7 @@ class DashboardService {
   async getNotificationsSummary() {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/dashboard/notifications-summary`,
+        `${await getApiUrl()}/api/dashboard/notifications-summary`,
         {
           headers: { Authorization: `Bearer ${this.token}` },
         },

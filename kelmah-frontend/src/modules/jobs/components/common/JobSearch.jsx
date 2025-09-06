@@ -29,10 +29,17 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../../config/environment';
+import { getApiBaseUrl } from '../../../../config/environment';
 
 // Use centralized API base (defaults to '/api') to ensure requests go through the gateway
-const BACKEND_URL = API_BASE_URL;
+const getBackendUrl = async () => {
+  try {
+    return await getApiBaseUrl();
+  } catch (error) {
+    console.warn('Failed to get API base URL, using fallback:', error);
+    return '/api';
+  }
+};
 
 const JobSearch = () => {
   const navigate = useNavigate();
@@ -78,7 +85,8 @@ const JobSearch = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${BACKEND_URL}/jobs/search`, {
+      const backendUrl = await getBackendUrl();
+      const response = await axios.get(`${backendUrl}/jobs/search`, {
         params: filters,
         headers: await (async () => {
           try {
@@ -119,8 +127,9 @@ const JobSearch = () => {
 
   const handleApplyJob = async (jobId) => {
     try {
+      const backendUrl = await getBackendUrl();
       await axios.post(
-        `${BACKEND_URL}/jobs/${jobId}/apply`,
+        `${backendUrl}/jobs/${jobId}/apply`,
         {},
         {
           headers: await (async () => {

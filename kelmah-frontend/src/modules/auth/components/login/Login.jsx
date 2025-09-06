@@ -33,7 +33,7 @@ import {
   SecurityOutlined,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { FEATURES, API_BASE_URL } from '../../../../config/environment';
+import { FEATURES, getApiBaseUrl } from '../../../../config/environment';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 // Removed AuthContext import to use Redux auth system
 // import { useAuth } from '../../contexts/AuthContext';
@@ -704,13 +704,14 @@ const Login = () => {
                         startIcon={
                           <GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-              onClick={() => {
+              onClick={async () => {
                 if (!FEATURES.analytics) {
                   // Gate social login behind a feature flag for now
                   alert('Google login is temporarily disabled');
                   return;
                 }
-                window.location.href = `${API_BASE_URL}/api/auth/google`;
+                const apiBaseUrl = await getApiBaseUrl();
+                window.location.href = `${apiBaseUrl}/api/auth/google`;
               }}
                             sx={{
                 py: { xs: 1.5, sm: 1.2 },
@@ -746,12 +747,13 @@ const Login = () => {
                         startIcon={
                           <LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-              onClick={() => {
+              onClick={async () => {
                 if (!FEATURES.analytics) {
                   alert('LinkedIn login is temporarily disabled');
                   return;
                 }
-                window.location.href = `${API_BASE_URL}/api/auth/linkedin`;
+                const apiBaseUrl = await getApiBaseUrl();
+                window.location.href = `${apiBaseUrl}/api/auth/linkedin`;
               }}
                             sx={{
                 py: { xs: 1.5, sm: 1.2 },
