@@ -18,6 +18,17 @@ const transformJobListItem = (job) => {
     status: job.status,
     location: job.location,
     skills: job.skills || [],
+    // Map API date fields to frontend expected fields
+    postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
+    deadline: job.endDate ? new Date(job.endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    startDate: job.startDate ? new Date(job.startDate) : new Date(),
+    // Additional fields for display
+    hirer: job.hirer || { name: job.hirer_name || 'Unknown Company' },
+    proposalCount: job.proposalCount || 0,
+    viewCount: job.viewCount || 0,
+    rating: job.rating || 4.5,
+    urgent: job.urgent || false,
+    verified: job.verified || false,
   };
 };
 
