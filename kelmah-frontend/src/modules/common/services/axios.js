@@ -24,11 +24,11 @@ const initializeAxios = async () => {
     const baseURL = await getApiBaseUrl();
     axiosInstance = axios.create({
       baseURL,
-      timeout: PERFORMANCE_CONFIG.apiTimeout,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+  timeout: PERFORMANCE_CONFIG.apiTimeout,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
       withCredentials: false, // Disable credentials for ngrok compatibility
     });
   }
@@ -72,179 +72,189 @@ const normalizeUrlForGateway = (config) => {
   return config;
 };
 
-// Request interceptor
-axiosInstance.interceptors.request.use(
-  (config) => {
-    // Normalize to avoid /api/api duplication
-    config = normalizeUrlForGateway(config);
-    // Add auth token securely
-    const token = secureStorage.getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+// Add interceptors after axios instance is initialized
+const addMainInterceptors = async () => {
+  const instance = await initializeAxios();
+  
+  // Request interceptor
+  instance.interceptors.request.use(
+    (config) => {
+      // Normalize to avoid /api/api duplication
+      config = normalizeUrlForGateway(config);
+      // Add auth token securely
+      const token = secureStorage.getAuthToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
 
-    // Add security headers
-    config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    config.headers['X-Client-Version'] = '1.0.0';
+      // Add security headers
+      config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      config.headers['X-Client-Version'] = '1.0.0';
 
-    // Add request timestamp for debugging
-    config.metadata = { startTime: new Date() };
+      // Add request timestamp for debugging
+      config.metadata = { startTime: new Date() };
 
-    // Log request in development
-    if (LOG_CONFIG.enableConsole) {
-      console.group(
-        `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-      );
-      console.log('Config:', {
-        baseURL: config.baseURL,
-        url: config.url,
-        method: config.method,
-        headers: config.headers,
-        data: config.data,
-      });
-      console.groupEnd();
-    }
+      // Log request in development
+      if (LOG_CONFIG.enableConsole) {
+        console.group(
+          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+        );
+        console.log('Config:', {
+          baseURL: config.baseURL,
+          url: config.url,
+          method: config.method,
+          headers: config.headers,
+          data: config.data,
+        });
+        console.groupEnd();
+      }
 
-    return config;
-  },
-  (error) => {
-    console.error('❌ Request Error:', error);
-    return Promise.reject(error);
-  },
-);
+      return config;
+    },
+    (error) => {
+      console.error('❌ Request Error:', error);
+      return Promise.reject(error);
+    },
+  );
 
-// Response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => {
-    // Calculate request duration
-    const duration = new Date() - response.config.metadata.startTime;
+  // Response interceptor
+  instance.interceptors.response.use(
+    (response) => {
+      // Calculate request duration
+      const duration = new Date() - response.config.metadata.startTime;
 
-    // Log response in development
-    if (LOG_CONFIG.enableConsole) {
-      console.group(`✅ API Response: ${response.status} (${duration}ms)`);
-      console.log('Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        data: response.data,
-      });
-      console.groupEnd();
-    }
+      // Log response in development
+      if (LOG_CONFIG.enableConsole) {
+        console.group(`✅ API Response: ${response.status} (${duration}ms)`);
+        console.log('Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+          data: response.data,
+        });
+        console.groupEnd();
+      }
 
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
+      return response;
+    },
+    async (error) => {
+      const originalRequest = error.config;
 
-    // Calculate request duration if available
-    const duration = originalRequest?.metadata?.startTime
-      ? new Date() - originalRequest.metadata.startTime
-      : 'unknown';
+      // Calculate request duration if available
+      const duration = originalRequest?.metadata?.startTime
+        ? new Date() - originalRequest.metadata.startTime
+        : 'unknown';
 
-    // Enhanced error logging
-    if (LOG_CONFIG.enableConsole) {
-      console.group(
-        `❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`,
-      );
-      console.error('Error details:', {
-        url: originalRequest?.url,
-        method: originalRequest?.method,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        message: error.message,
-        data: error.response?.data,
-      });
-      console.groupEnd();
-    }
+      // Enhanced error logging
+      if (LOG_CONFIG.enableConsole) {
+        console.group(
+          `❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`,
+        );
+        console.error('Error details:', {
+          url: originalRequest?.url,
+          method: originalRequest?.method,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          message: error.message,
+          data: error.response?.data,
+        });
+        console.groupEnd();
+      }
 
-    // Handle 401 Unauthorized - attempt token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+      // Handle 401 Unauthorized - attempt token refresh
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
 
-      const refreshToken = secureStorage.getRefreshToken();
+        const refreshToken = secureStorage.getRefreshToken();
 
-      if (refreshToken) {
-        try {
-          // Use a new axios instance to avoid interceptor loops
-          const refreshResponse = await axios.post(
-            `${API_BASE_URL}/auth/refresh-token`,
-            { refreshToken },
-            {
-              headers: { 'Content-Type': 'application/json' },
-              timeout: PERFORMANCE_CONFIG.apiTimeout,
-            },
-          );
+        if (refreshToken) {
+          try {
+            // Use a new axios instance to avoid interceptor loops
+            const baseURL = await getApiBaseUrl();
+            const refreshResponse = await axios.post(
+              `${baseURL}/auth/refresh-token`,
+              { refreshToken },
+              {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: PERFORMANCE_CONFIG.apiTimeout,
+              },
+            );
 
-          const newToken =
-            refreshResponse.data.data?.token || refreshResponse.data.token;
+            const newToken =
+              refreshResponse.data.data?.token || refreshResponse.data.token;
 
-          if (newToken) {
-            // Update stored token securely
-            secureStorage.setAuthToken(newToken);
+            if (newToken) {
+              // Update stored token securely
+              secureStorage.setAuthToken(newToken);
 
-            // Update the failed request with new token
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              // Update the failed request with new token
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
-            // Retry the original request
-            return axiosInstance(originalRequest);
+              // Retry the original request
+              return instance(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
+
+            // Clear auth data securely
+            secureStorage.clear();
+
+            // Redirect to login page
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login?reason=session_expired';
+            }
+
+            return Promise.reject(refreshError);
           }
-        } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
-
-          // Clear auth data securely
-          secureStorage.clear();
-
-          // Redirect to login page
+        } else {
+          // No refresh token available, redirect to login
           if (typeof window !== 'undefined') {
-            window.location.href = '/login?reason=session_expired';
+            window.location.href = '/login?reason=no_token';
           }
-
-          return Promise.reject(refreshError);
-        }
-      } else {
-        // No refresh token available, redirect to login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login?reason=no_token';
         }
       }
-    }
 
-    // Handle 403 Forbidden
-    if (error.response?.status === 403) {
-      console.warn('Access forbidden - insufficient permissions');
+      // Handle 403 Forbidden
+      if (error.response?.status === 403) {
+        console.warn('Access forbidden - insufficient permissions');
 
-      // You might want to redirect to an unauthorized page
-      if (
-        typeof window !== 'undefined' &&
-        window.location.pathname !== '/unauthorized'
-      ) {
-        window.location.href = '/unauthorized';
+        // You might want to redirect to an unauthorized page
+        if (
+          typeof window !== 'undefined' &&
+          window.location.pathname !== '/unauthorized'
+        ) {
+          window.location.href = '/unauthorized';
+        }
       }
-    }
 
-    // Handle 404 Not Found
-    if (error.response?.status === 404) {
-      console.warn('Resource not found:', originalRequest?.url);
-    }
+      // Handle 404 Not Found
+      if (error.response?.status === 404) {
+        console.warn('Resource not found:', originalRequest?.url);
+      }
 
-    // Handle 500 Server Error
-    if (error.response?.status >= 500) {
-      console.error('Server error occurred');
+      // Handle 500 Server Error
+      if (error.response?.status >= 500) {
+        console.error('Server error occurred');
 
-      // You might want to show a global error notification here
-    }
+        // You might want to show a global error notification here
+      }
 
-    // Network errors
-    if (!error.response) {
-      console.error('Network error - check your internet connection');
-    }
+      // Network errors
+      if (!error.response) {
+        console.error('Network error - check your internet connection');
+      }
 
-    return Promise.reject(error);
-  },
-);
+      return Promise.reject(error);
+    },
+  );
+};
+
+// Initialize interceptors
+addMainInterceptors();
 
 // Helper function to create API calls with consistent error handling
-export const createApiCall = (method, url, data = null, config = {}) => {
+export const createApiCall = async (method, url, data = null, config = {}) => {
+  const instance = await initializeAxios();
   const requestConfig = {
     method,
     url,
@@ -257,7 +267,7 @@ export const createApiCall = (method, url, data = null, config = {}) => {
     requestConfig.params = data;
   }
 
-  return axiosInstance(requestConfig);
+  return instance(requestConfig);
 };
 
 // Helper functions for common HTTP methods
@@ -418,7 +428,7 @@ const getClientBaseUrl = async (serviceUrl) => {
   
   if (hasGatewayEnv) {
     const baseURL = await getApiBaseUrl();
-    // Avoid mixed-content by preferring relative /api over http:// base when on https
+  // Avoid mixed-content by preferring relative /api over http:// base when on https
     if (isHttps && typeof baseURL === 'string' && baseURL.startsWith('http:')) {
       return '/api';
     }
@@ -434,9 +444,9 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
   const baseURL = await getClientBaseUrl(serviceUrl);
   const client = axios.create({
     baseURL,
-    timeout: timeoutConfig.timeout,
-    headers: {
-      'Content-Type': 'application/json',
+  timeout: timeoutConfig.timeout,
+  headers: {
+    'Content-Type': 'application/json',
       ...extraHeaders,
     },
     withCredentials: false, // Disable credentials for ngrok compatibility
@@ -446,26 +456,26 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
 };
 
 // Initialize service clients
-let authServiceClient, userServiceClient, jobServiceClient, messagingServiceClient, paymentServiceClient, reviewsServiceClient, schedulingClient;
+let authServiceClientInstance, userServiceClientInstance, jobServiceClientInstance, messagingServiceClientInstance, paymentServiceClientInstance, reviewsServiceClientInstance, schedulingClientInstance;
 
 const initializeServiceClients = async () => {
-  if (!authServiceClient) {
-    authServiceClient = await createServiceClient(SERVICES.AUTH_SERVICE);
-    userServiceClient = await createServiceClient(SERVICES.USER_SERVICE);
-    jobServiceClient = await createServiceClient(SERVICES.JOB_SERVICE, { 'ngrok-skip-browser-warning': 'true' });
-    messagingServiceClient = await createServiceClient(SERVICES.MESSAGING_SERVICE);
-    paymentServiceClient = await createServiceClient(SERVICES.PAYMENT_SERVICE);
-    reviewsServiceClient = await createServiceClient(SERVICES.REVIEW_SERVICE);
-    schedulingClient = await createServiceClient(SERVICES.USER_SERVICE); // Using user service for scheduling
+  if (!authServiceClientInstance) {
+    authServiceClientInstance = await createServiceClient(SERVICES.AUTH_SERVICE);
+    userServiceClientInstance = await createServiceClient(SERVICES.USER_SERVICE);
+    jobServiceClientInstance = await createServiceClient(SERVICES.JOB_SERVICE, { 'ngrok-skip-browser-warning': 'true' });
+    messagingServiceClientInstance = await createServiceClient(SERVICES.MESSAGING_SERVICE);
+    paymentServiceClientInstance = await createServiceClient(SERVICES.PAYMENT_SERVICE);
+    reviewsServiceClientInstance = await createServiceClient(SERVICES.REVIEW_SERVICE);
+    schedulingClientInstance = await createServiceClient(SERVICES.USER_SERVICE); // Using user service for scheduling
   }
   return {
-    authServiceClient,
-    userServiceClient,
-    jobServiceClient,
-    messagingServiceClient,
-    paymentServiceClient,
-    reviewsServiceClient,
-    schedulingClient
+    authServiceClient: authServiceClientInstance,
+    userServiceClient: userServiceClientInstance,
+    jobServiceClient: jobServiceClientInstance,
+    messagingServiceClient: messagingServiceClientInstance,
+    paymentServiceClient: paymentServiceClientInstance,
+    reviewsServiceClient: reviewsServiceClientInstance,
+    schedulingClient: schedulingClientInstance
   };
 };
 
@@ -525,71 +535,71 @@ export const schedulingClient = new Proxy({}, {
 const addInterceptorsToClients = async () => {
   const clients = await initializeServiceClients();
   Object.values(clients).forEach(client => {
-    // Request interceptor
-    client.interceptors.request.use(
-      (config) => {
-        // Normalize to avoid /api/api duplication
-        config = normalizeUrlForGateway(config);
-        // Add auth token securely
-        const token = secureStorage.getAuthToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
+  // Request interceptor
+  client.interceptors.request.use(
+    (config) => {
+      // Normalize to avoid /api/api duplication
+      config = normalizeUrlForGateway(config);
+      // Add auth token securely
+      const token = secureStorage.getAuthToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
 
-        // Add request timestamp for debugging
-        config.metadata = { startTime: new Date() };
+      // Add request timestamp for debugging
+      config.metadata = { startTime: new Date() };
 
-        // Log request in development
-        if (LOG_CONFIG.enableConsole) {
-          console.group(
-            `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-          );
-          console.log('Config:', {
-            baseURL: config.baseURL,
-            url: config.url,
-            method: config.method,
-            headers: config.headers,
-            data: config.data,
-          });
-          console.groupEnd();
-        }
+      // Log request in development
+      if (LOG_CONFIG.enableConsole) {
+        console.group(
+          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+        );
+        console.log('Config:', {
+          baseURL: config.baseURL,
+          url: config.url,
+          method: config.method,
+          headers: config.headers,
+          data: config.data,
+        });
+        console.groupEnd();
+      }
 
-        return config;
-      },
-      (error) => {
-        console.error('❌ Request Error:', error);
-        return Promise.reject(error);
-      },
-    );
+      return config;
+    },
+    (error) => {
+      console.error('❌ Request Error:', error);
+      return Promise.reject(error);
+    },
+  );
 
-    // Response interceptor
-    client.interceptors.response.use(
-      (response) => {
-        // Log response time in development
-        if (LOG_CONFIG.enableConsole && response.config.metadata) {
-          const duration = new Date() - response.config.metadata.startTime;
-          console.log(
-            `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
-          );
-        }
+  // Response interceptor
+  client.interceptors.response.use(
+    (response) => {
+      // Log response time in development
+      if (LOG_CONFIG.enableConsole && response.config.metadata) {
+        const duration = new Date() - response.config.metadata.startTime;
+        console.log(
+          `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        );
+      }
 
-        return response;
-      },
-      (error) => {
-        // Log error in development
-        if (LOG_CONFIG.enableConsole) {
-          console.error('❌ API Error:', {
-            url: error.config?.url,
-            method: error.config?.method,
-            status: error.response?.status,
-            message: error.response?.data?.message || error.message,
-          });
-        }
+      return response;
+    },
+    (error) => {
+      // Log error in development
+      if (LOG_CONFIG.enableConsole) {
+        console.error('❌ API Error:', {
+          url: error.config?.url,
+          method: error.config?.method,
+          status: error.response?.status,
+          message: error.response?.data?.message || error.message,
+        });
+      }
 
-        return Promise.reject(error);
-      },
-    );
-  });
+      return Promise.reject(error);
+    },
+  );
+});
 };
 
 // Initialize interceptors
@@ -604,14 +614,14 @@ export const getAuthToken = () => {
 const addGlobalInterceptors = async () => {
   const instance = await initializeAxios();
   instance.interceptors.response.use(
-    (r) => r,
-    (error) => {
-      if (error?.response?.status === 401 && typeof window !== 'undefined') {
-        try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) {}
-      }
-      return Promise.reject(error);
+  (r) => r,
+  (error) => {
+    if (error?.response?.status === 401 && typeof window !== 'undefined') {
+      try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) {}
     }
-  );
+    return Promise.reject(error);
+  }
+);
 };
 
 addGlobalInterceptors();
