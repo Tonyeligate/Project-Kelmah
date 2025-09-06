@@ -186,7 +186,8 @@ class DashboardService {
   // Get upcoming tasks
   async getUpcomingTasks() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/dashboard/tasks`, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.get(`${baseURL}/api/dashboard/tasks`, {
         headers: { Authorization: `Bearer ${this.token}` },
       });
       return response.data.data;
@@ -263,7 +264,8 @@ class DashboardService {
   // Get real-time stats
   async getRealTimeStats() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.get(`${baseURL}/api/dashboard/stats`, {
         headers: { Authorization: `Bearer ${this.token}` },
       });
       return response.data.data || response.data;
@@ -276,7 +278,8 @@ class DashboardService {
   // Get job matches for workers
   async getJobMatches() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/dashboard/job-matches`, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.get(`${baseURL}/api/dashboard/job-matches`, {
         headers: { Authorization: `Bearer ${this.token}` },
       });
       return response.data.data || response.data;
@@ -289,7 +292,8 @@ class DashboardService {
   // Get personalized recommendations
   async getRecommendations() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/dashboard/recommendations`, {
+      const baseURL = await getApiBaseUrl();
+      const response = await axios.get(`${baseURL}/api/dashboard/recommendations`, {
         headers: { Authorization: `Bearer ${this.token}` },
       });
       return response.data.data || response.data;

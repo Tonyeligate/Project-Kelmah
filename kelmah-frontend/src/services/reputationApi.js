@@ -37,8 +37,10 @@ const addInterceptors = async () => {
   );
 };
 
-// Initialize interceptors
-addInterceptors();
+// Initialize interceptors (don't await to avoid blocking module loading)
+addInterceptors().catch(error => {
+  console.error('Failed to initialize reputation API interceptors:', error);
+});
 
 const reputationApi = {
   /**
