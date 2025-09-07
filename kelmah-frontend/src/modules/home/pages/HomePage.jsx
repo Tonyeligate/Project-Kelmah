@@ -814,7 +814,7 @@ const HomePage = () => {
                           borderWidth: 2,
                         },
                       }}
-                      onClick={() => navigate('/find-talents')}
+                      onClick={() => navigate('/hirer/find-talent')} // ✅ FIXED: Use correct route
                     >
                       Hire Skilled Workers
                     </StyledButton>

@@ -669,7 +669,7 @@ const GeoLocationSearch = () => {
               searchType={searchType}
               location={location}
               onGetStarted={() =>
-                navigate(searchType === 0 ? '/jobs' : '/find-talents')
+                navigate(searchType === 0 ? '/jobs' : '/hirer/find-talent') // ✅ FIXED: Use correct route
               }
             />
           </TabPanel>

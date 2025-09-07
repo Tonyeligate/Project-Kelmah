@@ -120,7 +120,7 @@ const SmartNavigation = () => {
         {
           label: 'Find Workers',
           icon: <SearchIcon />,
-          path: '/find-talents',
+          path: '/hirer/find-talent', // ✅ FIXED: Use correct authenticated route
           description: 'Search for skilled workers',
           color: '#00BCD4',
         }

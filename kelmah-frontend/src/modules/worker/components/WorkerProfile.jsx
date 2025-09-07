@@ -1268,8 +1268,8 @@ function WorkerProfile() {
           </Link>
           <Link
             color="inherit"
-            href="/find-talents"
-            onClick={() => navigate('/find-talents')}
+            href="/hirer/find-talent"
+            onClick={() => navigate('/hirer/find-talent')} // ✅ FIXED: Use correct route
           >
             Find Talents
           </Link>

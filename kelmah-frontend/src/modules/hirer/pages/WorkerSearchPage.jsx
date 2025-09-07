@@ -13,7 +13,7 @@ const WorkerSearchPage = () => {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login?redirect=/find-talents');
+      navigate('/login?redirect=/hirer/find-talent'); // ✅ FIXED: Use correct route
     }
   }, [isAuthenticated, navigate]);
 
@@ -73,7 +73,7 @@ const WorkerSearchPage = () => {
                 variant="contained" 
                 color="primary"
                 size="large"
-                onClick={() => navigate('/login?redirect=/find-talents')}
+                onClick={() => navigate('/login?redirect=/hirer/find-talent')} // ✅ FIXED: Use correct route
                 sx={{ 
                   bgcolor: '#D4AF37',
                   '&:hover': { bgcolor: '#B8941F' }

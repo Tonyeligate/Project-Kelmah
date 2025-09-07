@@ -9,7 +9,7 @@ export function getNavLinks(isAuthenticated, user) {
       to:
         isAuthenticated && user?.role === 'hirer'
           ? '/hirer/find-talent'
-          : '/find-talents',
+          : '/login?redirect=/hirer/find-talent', // ✅ FIXED: Redirect to login instead of non-existent route
     },
     { label: 'Pricing', to: '/premium' },
   ];
