@@ -17,7 +17,7 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
-import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
+// import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation'; // ✅ REMOVED: Breadcrumb navigation taking up too much space
 import SmartNavigation from '../../../components/common/SmartNavigation';
 // Header functionality integrated into Header component
 
@@ -76,9 +76,9 @@ const Layout = ({ children, toggleTheme, mode }) => {
     if (isMdUp) {
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
-          <Sidebar variant="permanent" />
-          <BreadcrumbNavigation />
+            <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
+            <Sidebar variant="permanent" />
+            {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
           <Box 
             component="main" 
             sx={{ 
@@ -116,8 +116,8 @@ const Layout = ({ children, toggleTheme, mode }) => {
           overflowY: 'auto',
         }}
       >
-        <Header toggleTheme={toggleTheme} mode={mode} />
-        <BreadcrumbNavigation />
+          <Header toggleTheme={toggleTheme} mode={mode} />
+          {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
         <Sidebar
           variant="temporary"
           open={mobileOpen}

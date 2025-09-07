@@ -177,6 +177,19 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
           {user?.profession || 'Carpenter'}
         </Typography>
+        
+        {/* ✅ IMPROVED: Add current location indicator */}
+        <Box sx={{ 
+          mt: 2, 
+          p: 1, 
+          backgroundColor: 'rgba(212,175,55,0.1)', 
+          borderRadius: 1,
+          border: '1px solid rgba(212,175,55,0.3)',
+        }}>
+          <Typography variant="caption" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
+            Currently on: {mainNavItems.find(item => location.pathname === item.path)?.text || 'Dashboard'}
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
           <Rating
             name="read-only"
@@ -211,27 +224,51 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       </Box>
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
       <List sx={{ flexGrow: 1 }}>
-        {mainNavItems.map((item) => (
-          <React.Fragment key={item.text}>
-            <ListItem
-              button
-              component={item.path ? RouterLink : 'div'}
-              to={item.path}
-              onClick={() => item.subItems && handleSubMenuToggle(item.text)}
-            >
-              <ListItemIcon sx={{ color: '#fff' }}>
-                {item.badge && item.badge > 0 ? (
-                  <Badge color="error" badgeContent={item.badge} max={99}>
-                    {item.icon}
-                  </Badge>
-                ) : (
-                  item.icon
-                )}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          </React.Fragment>
-        ))}
+        {mainNavItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <React.Fragment key={item.text}>
+              <ListItem
+                button
+                component={item.path ? RouterLink : 'div'}
+                to={item.path}
+                onClick={() => item.subItems && handleSubMenuToggle(item.text)}
+                sx={{
+                  // ✅ IMPROVED: Add active state highlighting
+                  backgroundColor: isActive ? 'rgba(212,175,55,0.15)' : 'transparent',
+                  borderLeft: isActive ? '4px solid #D4AF37' : '4px solid transparent',
+                  '&:hover': {
+                    backgroundColor: isActive ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <ListItemIcon sx={{ 
+                  color: isActive ? '#D4AF37' : '#fff',
+                  transition: 'color 0.3s ease',
+                }}>
+                  {item.badge && item.badge > 0 ? (
+                    <Badge color="error" badgeContent={item.badge} max={99}>
+                      {item.icon}
+                    </Badge>
+                  ) : (
+                    item.icon
+                  )}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      color: isActive ? '#D4AF37' : '#fff',
+                      fontWeight: isActive ? 'bold' : 'normal',
+                      transition: 'all 0.3s ease',
+                    },
+                  }}
+                />
+              </ListItem>
+            </React.Fragment>
+          );
+        })}
       </List>
       <Box sx={{ p: 2, mt: 'auto' }}>
         <Button
