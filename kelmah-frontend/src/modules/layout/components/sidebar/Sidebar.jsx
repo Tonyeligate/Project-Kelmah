@@ -227,12 +227,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         {mainNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <React.Fragment key={item.text}>
-              <ListItem
-                button
-                component={item.path ? RouterLink : 'div'}
-                to={item.path}
-                onClick={() => item.subItems && handleSubMenuToggle(item.text)}
+          <React.Fragment key={item.text}>
+            <ListItem
+              button
+              component={item.path ? RouterLink : 'div'}
+              to={item.path}
+              onClick={() => item.subItems && handleSubMenuToggle(item.text)}
                 sx={{
                   // ✅ IMPROVED: Add active state highlighting
                   backgroundColor: isActive ? 'rgba(212,175,55,0.15)' : 'transparent',
@@ -247,14 +247,14 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   color: isActive ? '#D4AF37' : '#fff',
                   transition: 'color 0.3s ease',
                 }}>
-                  {item.badge && item.badge > 0 ? (
-                    <Badge color="error" badgeContent={item.badge} max={99}>
-                      {item.icon}
-                    </Badge>
-                  ) : (
-                    item.icon
-                  )}
-                </ListItemIcon>
+                {item.badge && item.badge > 0 ? (
+                  <Badge color="error" badgeContent={item.badge} max={99}>
+                    {item.icon}
+                  </Badge>
+                ) : (
+                  item.icon
+                )}
+              </ListItemIcon>
                 <ListItemText 
                   primary={item.text}
                   sx={{
@@ -265,8 +265,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                     },
                   }}
                 />
-              </ListItem>
-            </React.Fragment>
+            </ListItem>
+          </React.Fragment>
           );
         })}
       </List>
