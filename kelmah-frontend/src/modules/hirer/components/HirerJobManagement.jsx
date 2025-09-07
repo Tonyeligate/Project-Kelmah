@@ -111,11 +111,11 @@ const HirerJobManagement = () => {
   const getCurrentJobs = () => {
     switch (activeTab) {
       case 0:
-        return activeJobs || [];
+        return Array.isArray(activeJobs) ? activeJobs : [];
       case 1:
-        return completedJobs || [];
+        return Array.isArray(completedJobs) ? completedJobs : [];
       case 2:
-        return draftJobs || [];
+        return Array.isArray(draftJobs) ? draftJobs : [];
       default:
         return [];
     }

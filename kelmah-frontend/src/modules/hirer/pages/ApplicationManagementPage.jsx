@@ -99,7 +99,7 @@ function ApplicationManagementPage() {
   useEffect(() => {
     const fetchAllApplications = async () => {
       setLoading(true);
-      if (activeJobs && activeJobs.length > 0) {
+      if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
         try {
           const allApplications = await Promise.all(
             activeJobs.map((job) =>

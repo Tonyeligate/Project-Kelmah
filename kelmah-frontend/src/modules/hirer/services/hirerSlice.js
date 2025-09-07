@@ -26,9 +26,11 @@ export const fetchHirerJobs = createAsyncThunk(
         params: { status, role: 'hirer' },
       });
       const jobs = response.data?.data || response.data?.jobs || response.data || [];
-      return { status, jobs };
+      // ✅ FIXED: Ensure jobs is always an array
+      return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
       console.warn(`Job service unavailable for hirer jobs (${status}):`, error.message);
+      // ✅ FIXED: Always return empty array on error
       return { status, jobs: [] };
     }
   }
@@ -259,7 +261,7 @@ export const fetchPaymentSummary = createAsyncThunk(
 const initialState = {
   profile: null,
   jobs: {
-    open: [],
+    active: [],        // ✅ FIXED: Changed from 'active' to active
     'in-progress': [],
     completed: [],
     cancelled: [],
@@ -365,7 +367,9 @@ const hirerSlice = createSlice({
       .addCase(fetchHirerJobs.rejected, (state, action) => {
         state.loading.jobs = false;
         state.error.jobs = action.payload || 'Failed to fetch jobs';
-        // No fallback data - user will see empty state
+        // ✅ FIXED: Set empty array instead of undefined
+        const status = action.meta.arg || 'active';
+        state.jobs[status] = [];
       })
 
       // Create Hirer Job
@@ -466,7 +470,10 @@ const hirerSlice = createSlice({
 
 // Selectors
 export const selectHirerProfile = (state) => state.hirer.profile;
-export const selectHirerJobs = (status) => (state) => state.hirer.jobs[status];
+export const selectHirerJobs = (status) => (state) => {
+  const jobs = state.hirer.jobs[status];
+  return Array.isArray(jobs) ? jobs : [];
+};
 export const selectHirerApplications = (state) => state.hirer.applications;
 export const selectHirerAnalytics = (state) => state.hirer.analytics;
 export const selectHirerPayments = (state) => state.hirer.payments;

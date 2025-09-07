@@ -130,7 +130,7 @@ const JobProgressTracker = () => {
   };
 
   // Build progress model from active jobs
-  const jobsWithProgress = Array.isArray(activeJobs)
+  const jobsWithProgress = Array.isArray(activeJobs) && activeJobs.length > 0
     ? activeJobs.map((job) => ({
         id: job.id || job._id,
         title: job.title || 'Untitled Job',

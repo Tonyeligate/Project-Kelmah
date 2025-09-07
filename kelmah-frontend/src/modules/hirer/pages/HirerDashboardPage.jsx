@@ -318,7 +318,7 @@ const HirerDashboardPage = () => {
         ]);
 
         // Fetch applications for each active job
-        if (activeJobs) {
+        if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
           const applicationPromises = activeJobs.map((job) =>
             dispatch(
               fetchJobApplications({ jobId: job.id, status: 'pending' }),
@@ -348,7 +348,7 @@ const HirerDashboardPage = () => {
       ]);
 
       // Refresh applications for each active job
-      if (activeJobs) {
+      if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
         const applicationPromises = activeJobs.map((job) =>
           dispatch(
             fetchJobApplications({ jobId: job.id, status: 'pending' }),
