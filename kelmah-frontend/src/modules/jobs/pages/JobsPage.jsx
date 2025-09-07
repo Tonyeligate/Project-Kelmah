@@ -398,6 +398,9 @@ const JobsPage = () => {
   const navigate = useNavigate();
   const authState = useAuthCheck();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -541,7 +544,7 @@ const JobsPage = () => {
 
   return (
     <ErrorBoundary>
-      <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
+    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
       <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
         <Helmet>
           <title>Find Skilled Trade Jobs - Kelmah | Ghana's Premier Job Platform</title>
@@ -555,10 +558,10 @@ const JobsPage = () => {
           transition={{ duration: 0.6 }}
         >
           <Box sx={{ mb: 4, mt: 0 }}> {/* Minimal spacing from header */}
-            <Grid container spacing={3} alignItems="center">
+            <Grid container spacing={{ xs: 2, md: 3 }} alignItems="center">
               {/* Left Side - Hero Text */}
               <Grid item xs={12} md={4}>
-                <Box>
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                 <Typography
                     variant="h4" 
               component="h1" 
@@ -569,19 +572,25 @@ const JobsPage = () => {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                       mb: 1,
-                      fontSize: { xs: '1.5rem', md: '2rem' }
+                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem', lg: '2.25rem' },
+                      lineHeight: { xs: 1.2, md: 1.3 }
               }}
             >
-              Find Your Next Trade Opportunity
+              {isSmallMobile ? 'Find Trade Jobs' : 'Find Your Next Trade Opportunity'}
             </Typography>
             <Typography 
                     variant="h6" 
               sx={{ 
                 color: 'rgba(255,255,255,0.8)', 
-                      fontSize: { xs: '0.9rem', md: '1rem' }
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                      lineHeight: { xs: 1.4, md: 1.5 },
+                      maxWidth: { xs: '100%', md: '90%' }
               }}
             >
-              Connect with Ghana's top employers and advance your skilled trades career
+              {isSmallMobile 
+                ? 'Connect with top employers in Ghana'
+                : 'Connect with Ghana\'s top employers and advance your skilled trades career'
+              }
                 </Typography>
                 </Box>
               </Grid>
@@ -598,17 +607,18 @@ const JobsPage = () => {
                     borderRadius: 2
               }}
             >
-              <Grid container spacing={2} alignItems="center">
+              <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
                     <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                        size="small"
+                        size={isSmallMobile ? "medium" : "small"}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search jobs, skills, companies..."
+                    placeholder={isSmallMobile ? "Search jobs..." : "Search jobs, skills, companies..."}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         color: 'white',
+                        minHeight: { xs: '48px', sm: '40px' },
                         '& fieldset': {
                           borderColor: 'rgba(212,175,55,0.3)',
                         },
@@ -619,11 +629,18 @@ const JobsPage = () => {
                           borderColor: '#D4AF37',
                         },
                       },
+                      '& .MuiInputBase-input': {
+                        fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                        '&::placeholder': {
+                          color: 'rgba(255,255,255,0.6)',
+                          opacity: 1,
+                        },
+                      },
                     }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                              <SearchIcon sx={{ color: '#D4AF37', fontSize: 20 }} />
+                              <SearchIcon sx={{ color: '#D4AF37', fontSize: { xs: '1.2rem', sm: '1rem' } }} />
                         </InputAdornment>
                       ),
                     }}
@@ -914,9 +931,9 @@ const JobsPage = () => {
             </Box>
           )}
           
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
             {!loading && !error && filteredJobs.map((job, index) => (
-              <Grid item xs={12} md={6} lg={4} key={job.id}>
+              <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -930,25 +947,51 @@ const JobsPage = () => {
                       flexDirection: 'column',
                       bgcolor: 'rgba(255,255,255,0.05)',
                       border: '1px solid rgba(212,175,55,0.2)',
+                      borderRadius: { xs: 3, sm: 2 },
+                      minHeight: { xs: '280px', sm: '320px' },
                       '&:hover': {
                         border: '1px solid #D4AF37',
                         boxShadow: '0 8px 32px rgba(212,175,55,0.3)',
+                        transform: { xs: 'none', sm: 'translateY(-2px)' },
                       },
                       transition: 'all 0.3s ease-in-out'
                     }}
                   >
-                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                    <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
                       {/* Job Header */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                           {React.createElement(getCategoryIcon(job.category), { 
-                            sx: { mr: 1, color: '#D4AF37', fontSize: 24 } 
+                            sx: { mr: 1, color: '#D4AF37', fontSize: { xs: 20, sm: 24 } } 
                           })}
-                          <Box>
-                            <Typography variant="h6" component="h2" sx={{ color: 'white', fontWeight: 'bold' }}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography 
+                              variant="h6" 
+                              component="h2" 
+                              sx={{ 
+                                color: 'white', 
+                                fontWeight: 'bold',
+                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+                                lineHeight: { xs: 1.3, sm: 1.4 },
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: { xs: 2, sm: 1 },
+                                WebkitBoxOrient: 'vertical'
+                              }}
+                            >
                               {job.title}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                color: 'rgba(255,255,255,0.7)',
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
                               {job.hirer?.name || 'Unknown Company'}
                             </Typography>
                           </Box>

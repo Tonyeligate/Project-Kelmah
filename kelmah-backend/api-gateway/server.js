@@ -392,7 +392,7 @@ app.use('/api/jobs', createEnhancedJobProxy(services.job, {
   pathRewrite: { '^/api/jobs': '/api/jobs' },
   onError: (err, req, res) => {
     console.error('[API Gateway] Job service error:', err.message);
-    res.status(503).json({
+    res.status(503).json({ 
       error: 'Job service temporarily unavailable',
       message: 'Please try again later',
       timestamp: new Date().toISOString()

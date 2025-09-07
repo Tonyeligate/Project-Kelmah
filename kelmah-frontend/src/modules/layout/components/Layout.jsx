@@ -17,6 +17,8 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
+import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
+import SmartNavigation from '../../../components/common/SmartNavigation';
 // Header functionality integrated into Header component
 
 /**
@@ -76,6 +78,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
           <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
           <Sidebar variant="permanent" />
+          <BreadcrumbNavigation />
           <Box 
             component="main" 
             sx={{ 
@@ -95,6 +98,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
             )}
             {children}
           </Box>
+          <SmartNavigation />
         </Box>
       );
     }
@@ -113,6 +117,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
         }}
       >
         <Header toggleTheme={toggleTheme} mode={mode} />
+        <BreadcrumbNavigation />
         <Sidebar
           variant="temporary"
           open={mobileOpen}

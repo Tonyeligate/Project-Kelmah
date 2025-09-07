@@ -11,6 +11,8 @@ import {
   Divider,
   Stack,
   IconButton,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   LocationOn,
@@ -29,6 +31,10 @@ import {
 
 const JobCard = ({ job, onViewDetails }) => {
   if (!job) return null;
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
 
   const {
     id,
@@ -66,29 +72,84 @@ const JobCard = ({ job, onViewDetails }) => {
   };
 
   return (
-    <Card sx={{ mb: 2, borderRadius: 2, boxShadow: 2 }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="h6" component="div">
+    <Card sx={{ 
+      mb: 2, 
+      borderRadius: { xs: 3, sm: 2 }, 
+      boxShadow: 2,
+      minHeight: { xs: '280px', sm: '320px' },
+      '&:hover': {
+        transform: { xs: 'none', sm: 'translateY(-2px)' },
+        boxShadow: { xs: 2, sm: 4 },
+      },
+      transition: 'all 0.3s ease-in-out'
+    }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          mb: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
+        }}>
+          <Typography 
+            variant="h6" 
+            component="div"
+            sx={{
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              lineHeight: { xs: 1.3, sm: 1.4 },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: { xs: 2, sm: 1 },
+              WebkitBoxOrient: 'vertical'
+            }}
+          >
             {title}
           </Typography>
           <Chip
-            size="small"
+            size={isMobile ? "small" : "medium"}
             label={category}
             color="primary"
             variant="outlined"
+            sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
           />
         </Box>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {description?.substring(0, 150)}
-          {description?.length > 150 ? '...' : ''}
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 2,
+            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+            lineHeight: { xs: 1.4, sm: 1.5 },
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: { xs: 3, sm: 2 },
+            WebkitBoxOrient: 'vertical'
+          }}
+        >
+          {description?.substring(0, isMobile ? 100 : 150)}
+          {description?.length > (isMobile ? 100 : 150) ? '...' : ''}
         </Typography>
 
-        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={{ xs: 1, sm: 2 }} 
+          sx={{ mb: 2 }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <AttachMoney fontSize="small" color="action" sx={{ mr: 0.5 }} />
-            <Typography variant="body2">{formatBudget()}</Typography>
+            <AttachMoney 
+              fontSize={isMobile ? "small" : "medium"} 
+              color="action" 
+              sx={{ mr: 0.5 }} 
+            />
+            <Typography 
+              variant="body2"
+              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+            >
+              {formatBudget()}
+            </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center' }}>

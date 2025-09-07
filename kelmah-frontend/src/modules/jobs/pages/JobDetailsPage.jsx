@@ -246,7 +246,7 @@ const JobDetailsPage = () => {
           </Button>
         </motion.div>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {/* Main Content */}
           <Grid item xs={12} md={8}>
             <motion.div
