@@ -114,7 +114,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             {
               text: 'Find Talent',
               icon: <FindInPageIcon />,
-              path: '/hirer/find-talent', // ✅ FIXED: Use correct authenticated route
+              path: '/hirer/find-talent',
             },
           ]
         : [];

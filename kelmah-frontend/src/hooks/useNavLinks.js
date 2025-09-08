@@ -18,15 +18,7 @@ const useNavLinks = () => {
       { label: 'Jobs', to: '/jobs' },
     ];
 
-    if (!isAuthenticated || hasRole('worker')) {
-      links.push({
-        label: 'Find Work',
-        to:
-          isAuthenticated && hasRole('worker')
-            ? '/worker/find-work'
-            : '/search/location',
-      });
-    }
+    // Removed 'Find Work' from global header to avoid redundancy with 'Jobs'
     if (!isAuthenticated || hasRole('hirer')) {
       links.push({
         label: 'Find Talents',
