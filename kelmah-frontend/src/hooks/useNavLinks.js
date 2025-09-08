@@ -18,14 +18,14 @@ const useNavLinks = () => {
       { label: 'Jobs', to: '/jobs' },
     ];
 
-    // Removed 'Find Work' from global header to avoid redundancy with 'Jobs'
+    // Show public Find Talents when not authenticated; hirers get their dashboard view
     if (!isAuthenticated || hasRole('hirer')) {
       links.push({
         label: 'Find Talents',
         to:
           isAuthenticated && hasRole('hirer')
             ? '/hirer/find-talent'
-            : '/login?redirect=/hirer/find-talent',
+            : '/find-talents',
       });
     }
 
