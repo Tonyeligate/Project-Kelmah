@@ -151,6 +151,9 @@ services/[service-name]/
 6. **Public vs Protected Routes**: Always distinguish between public pages (accessible without auth) and protected pages (require authentication)
 7. **Null Safety**: Components must handle null/undefined user state gracefully, especially in public routes
 8. **Navigation Consistency**: Ensure navigation links point to correct routes based on authentication state
+9. **Header Navigation**: Never add hirer-only or worker-only links to global header; use dashboard/sidebar instead
+10. **Job Page Confusion**: "Jobs" = public browse, "My Jobs" = hirer management (different APIs, different audiences)
+11. **Service Worker Caching**: Changes to header navigation may require service worker unregistration or hard refresh
 
 ## Error Investigation & Fix Protocol
 
@@ -224,6 +227,36 @@ services/[service-name]/
 - **Conditional Rendering**: Use `user && user.id` patterns for auth-dependent features
 - **Error Boundaries**: Wrap components that might fail due to missing auth data
 - **Loading States**: Show appropriate loading/empty states when user data is unavailable
+
+## Header Navigation & Job Page Architecture
+
+### Global Header Navigation Rules
+- **Header Links**: Only show public, universally relevant links in global header
+- **Current Header Links**: Home, Jobs, Find Talents, Pricing, Auth buttons
+- **Removed from Header**: "Find Work" (redundant with Jobs), "My Jobs" (hirer-only)
+- **Navigation Sources**: `src/hooks/useNavLinks.js` and `src/config/navLinks.js` control header links
+
+### Job Page Differentiation
+- **All Jobs (Public Browse)**: `/jobs` - Shows all open opportunities to everyone
+  - API: `GET /api/jobs` (no authentication required)
+  - Purpose: Public job discovery and browsing
+  - Audience: All users (authenticated and unauthenticated)
+  
+- **My Jobs (Hirer Management)**: `/hirer/jobs` or dashboard tabs
+  - API: `GET /api/jobs/my-jobs?status=...` (requires authentication + hirer role)
+  - Purpose: Manage hirer's own job postings (active, completed, drafts)
+  - Audience: Authenticated hirers only
+  - Location: Inside hirer dashboard/sidebar, NOT in global header
+
+### Find Talents Navigation Pattern
+- **Unauthenticated Users**: Route to `/find-talents` (public page)
+- **Authenticated Hirers**: Route to `/hirer/find-talent` (dashboard page)
+- **Implementation**: Conditional routing based on authentication state
+
+### Search & Discovery Patterns
+- **Worker Search**: Accessible via Jobs page filters, hero CTAs, not global header
+- **Location Search**: Available through Jobs page and dedicated search components
+- **Map Search**: Separate `/map` route for geographic job discovery
 
 ## Project Context & Purpose
 
