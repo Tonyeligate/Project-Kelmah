@@ -148,6 +148,9 @@ services/[service-name]/
 3. **CORS**: API Gateway handles CORS for all services
 4. **Socket.IO**: Connects through gateway proxy, not directly to messaging service
 5. **Rate Limiting**: Configured at API Gateway level, affects all services
+6. **Public vs Protected Routes**: Always distinguish between public pages (accessible without auth) and protected pages (require authentication)
+7. **Null Safety**: Components must handle null/undefined user state gracefully, especially in public routes
+8. **Navigation Consistency**: Ensure navigation links point to correct routes based on authentication state
 
 ## Error Investigation & Fix Protocol
 
@@ -162,6 +165,8 @@ services/[service-name]/
 - **Always read files**: For accuracy, read all files related to the subject matter
 - **No assumptions**: Base solutions on actual code analysis, not assumptions
 - **Complete flow understanding**: Trace entire process flow before implementing fixes
+- **Public Route Testing**: Always test public routes without authentication to ensure they work for all users
+- **Navigation Flow Validation**: Verify navigation links work correctly for both authenticated and unauthenticated users
 
 ## User Experience & Accessibility Guidelines
 
@@ -199,6 +204,26 @@ services/[service-name]/
 - **Deep Search Required**: Before deleting files, perform thorough search to confirm they're unused
 - **Documentation Reference**: Use project knowledge from documentation for decision-making
 - **Professional Standards**: Apply professional judgment based on project purpose
+
+## Public Route & Navigation Patterns
+
+### Public Route Requirements
+- **Public Pages**: Must work without authentication (e.g., `/find-talents`, `/jobs`, `/search`)
+- **Null Safety**: All components in public routes must handle `user = null` gracefully
+- **No Auth Dependencies**: Avoid accessing `user.id`, `user.role`, or auth-only APIs in public components
+- **Graceful Degradation**: Show appropriate fallbacks when personalized features aren't available
+
+### Navigation Link Patterns
+- **Unauthenticated Users**: Route to public pages (e.g., `/find-talents` for "Find Talents")
+- **Authenticated Users**: Route to role-specific pages (e.g., `/hirer/find-talent` for hirers)
+- **Consistent Behavior**: Same navigation item should work for both logged-in and logged-out users
+- **Redirect Handling**: Use public routes instead of login redirects for discoverable content
+
+### Component Safety Guidelines
+- **User Context Checks**: Always verify `user?.id` exists before accessing user properties
+- **Conditional Rendering**: Use `user && user.id` patterns for auth-dependent features
+- **Error Boundaries**: Wrap components that might fail due to missing auth data
+- **Loading States**: Show appropriate loading/empty states when user data is unavailable
 
 ## Project Context & Purpose
 
