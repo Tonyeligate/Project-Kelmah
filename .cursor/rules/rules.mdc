@@ -1,6 +1,7 @@
 ---
 alwaysApply: true
 ---
+
 # Kelmah Platform - AI Coding Agent Instructions
 
 ## Architecture Overview
@@ -161,69 +162,6 @@ services/[service-name]/
 - **Always read files**: For accuracy, read all files related to the subject matter
 - **No assumptions**: Base solutions on actual code analysis, not assumptions
 - **Complete flow understanding**: Trace entire process flow before implementing fixes
-- **Proactive Testing**: Execute diagnostic commands yourself using terminal tools - do not ask user to run tests
-- **Self-Verification**: Perform your own health checks, endpoint tests, and status verification
-
-## AI Agent Operational Rules (Augmented)
-
-### Strict Investigation Protocol (MANDATORY)
-1. List all files involved in the Test/Error report. No guesswork; read all of them fully.
-2. Read the listed files and identify the exact lines/areas causing the issue.
-3. Scan related files to confirm the true root cause and interactions.
-4. Confirm the end-to-end flow and logic before proposing or implementing a fix.
-5. Confirm the fix precisely addresses the root cause by re-scanning all involved files and re-running verification.
-
-### Agent Diagnostics Policy
-- Agents MUST perform diagnostics themselves (terminal/web requests) and must NOT ask the user to run commands.
-- Use the current ngrok host to access services; servers are not hosted on this machine externally.
-- Always test via the API Gateway (`/api/*`) and include `ngrok-skip-browser-warning: true` where needed.
-- Use provided credentials for auth flows:
-  - Gifty password: `1122112Ga`
-  - All other users: `TestUser123!`
-- Database reference for investigations when needed:
-  - `MONGODB_URI=mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging`
-
-### Deployment/Verification Checklist for Backend Route Issues
-- Ensure route specificity order is correct (e.g., `/:id` goes LAST so it doesn't shadow specific routes like `/my-jobs`).
-- After code changes, restart/redeploy the specific microservice that the API Gateway/ngrok targets.
-- Verify via curl:
-  - Login to get token at `/api/auth/login`
-  - Call protected endpoints (e.g., `/api/jobs/my-jobs`) with `Authorization: Bearer <token>`
-- If 404/503 persists through the Gateway, compare local routes vs deployed instance and inspect service logs for auth/role middleware and route mounting issues.
-
-### Backend Deployment Mismatch Diagnosis
-
-**503 Service Unavailable Pattern:**
-1. **Gateway Status**: Check if API Gateway is responding (usually is)
-2. **Service Mismatch**: Local code fixed, but deployed service behind ngrok/proxy still has old code
-3. **Route Existence**: Verify endpoint exists in deployed service vs local version
-4. **Deployment Status**: Check if service needs restart/redeploy with latest code
-
-**Diagnosis Steps:**
-```bash
-# 1. Check Gateway health
-curl http://localhost:3000/health
-
-# 2. Check specific service health directly
-curl https://[service-ngrok-url]/health
-
-# 3. Test problematic endpoint directly on service
-curl https://[service-ngrok-url]/[endpoint-path]
-
-# 4. Compare local vs deployed routes
-# Local: check kelmah-backend/services/[service]/routes/
-# Deployed: check actual service response structure
-```
-
-**⚠️ DIAGNOSTIC TESTING PROTOCOL: AI agents should PERFORM diagnostic tests themselves using terminal commands, not ask the user to run them. Use run_in_terminal or terminal-tools to execute verification commands directly.**
-
-**Resolution Protocol:**
-1. **Identify Mismatch**: Compare local route definitions vs deployed service behavior
-2. **Code Verification**: Confirm local code has the fix  
-3. **Perform Tests**: Execute diagnostic commands yourself to verify service status
-4. **Deployment Request**: Request service restart/redeploy from project owner only if tests confirm mismatch
-5. **Wait for Deployment**: Do not attempt service operations - owner handles deployment
-5. **Verify Fix**: Test endpoint after redeployment
 
 ## User Experience & Accessibility Guidelines
 

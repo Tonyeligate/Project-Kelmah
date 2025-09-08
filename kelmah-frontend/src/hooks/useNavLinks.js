@@ -33,7 +33,7 @@ const useNavLinks = () => {
         to:
           isAuthenticated && hasRole('hirer')
             ? '/hirer/find-talent'
-            : '/login?redirect=/hirer/find-talent', // ✅ FIXED: Redirect to login instead of non-existent route
+            : '/find-talents',
       });
     }
 
