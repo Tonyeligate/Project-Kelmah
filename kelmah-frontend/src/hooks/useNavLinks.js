@@ -33,7 +33,7 @@ const useNavLinks = () => {
         to:
           isAuthenticated && hasRole('hirer')
             ? '/hirer/find-talent'
-            : '/find-talents',
+            : '/login?redirect=/hirer/find-talent',
       });
     }
 
