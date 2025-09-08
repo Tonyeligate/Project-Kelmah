@@ -22,27 +22,29 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
   const [skills, setSkills] = useState(initialValues.skills || []);
   const [skill, setSkill] = useState('');
 
-  // Sample job categories for the demo
+  // Vocational job categories for Ghana's skilled trades
   const jobCategories = [
-    'Web Development',
-    'Mobile Development',
-    'Design',
-    'Writing',
-    'Admin Support',
-    'Customer Service',
-    'Marketing',
-    'Accounting',
-    'Consulting',
-    'Legal',
+    'Carpentry',
+    'Masonry',
+    'Plumbing',
+    'Electrical Work',
+    'Painting',
+    'Welding',
+    'Roofing',
+    'Flooring',
+    'HVAC',
+    'Landscaping',
+    'General Construction',
+    'Maintenance',
   ];
 
-  // Sample job types
+  // Job types relevant to skilled trades
   const jobTypes = [
     'Full-time',
     'Part-time',
     'Contract',
-    'Freelance',
-    'Internship',
+    'Daily Work',
+    'Project-based',
   ];
 
   const handleSubmit = (e) => {
@@ -68,38 +70,40 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+    <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
       <Box component="form" onSubmit={handleSubmit}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={4}>
+        <Grid container spacing={1} alignItems="center">
+          <Grid item xs={12} sm={6} md={3}>
             <TextField
               fullWidth
-              label="Keywords"
+              label="What work do you need?"
               variant="outlined"
+              size="small"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Job title, skills, or company"
+              placeholder="e.g., Carpenter, Plumber"
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={2}>
             <TextField
               fullWidth
-              label="Location"
+              label="Where?"
               variant="outlined"
+              size="small"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="City, state, or remote"
+              placeholder="e.g., Accra, Kumasi"
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel>Job Type</InputLabel>
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth variant="outlined" size="small">
+              <InputLabel>Type</InputLabel>
               <Select
                 value={jobType}
                 onChange={(e) => setJobType(e.target.value)}
-                label="Job Type"
+                label="Type"
               >
                 <MenuItem value="">Any</MenuItem>
                 {jobTypes.map((type) => (
@@ -111,13 +115,13 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel>Category</InputLabel>
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth variant="outlined" size="small">
+              <InputLabel>Trade</InputLabel>
               <Select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                label="Category"
+                label="Trade"
               >
                 <MenuItem value="">Any</MenuItem>
                 {jobCategories.map((cat) => (
@@ -129,32 +133,24 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={8}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                fullWidth
-                label="Skills"
-                variant="outlined"
-                value={skill}
-                onChange={(e) => setSkill(e.target.value)}
-                placeholder="Add relevant skills"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-              />
-              <Button
-                variant="outlined"
-                onClick={handleAddSkill}
-                sx={{ minWidth: 100 }}
-              >
-                Add Skill
-              </Button>
-            </Box>
+          <Grid item xs={12} sm={12} md={3}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={<SearchIcon />}
+              fullWidth
+              sx={{ height: '40px' }}
+            >
+              Find Work
+            </Button>
+          </Grid>
+        </Grid>
 
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+        {/* Skills Section - Collapsible */}
+        {skills.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {skills.map((s) => (
                 <Chip
                   key={s}
@@ -162,24 +158,12 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
                   onDelete={() => handleRemoveSkill(s)}
                   color="primary"
                   variant="outlined"
+                  size="small"
                 />
               ))}
             </Box>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              startIcon={<SearchIcon />}
-              size="large"
-              sx={{ px: 4 }}
-            >
-              Search Jobs
-            </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        )}
       </Box>
     </Paper>
   );

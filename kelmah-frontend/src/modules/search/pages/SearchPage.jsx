@@ -29,7 +29,7 @@ import SEO from '../../common/components/common/SEO';
 
 // Styled components
 const PageWrapper = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3, 0, 8),
+  padding: theme.spacing(2, 0, 4),
   backgroundColor: theme.palette.background.default,
   color: theme.palette.text.primary,
   minHeight: 'calc(100vh - 64px)',
@@ -382,39 +382,33 @@ const SearchPage = () => {
         {/* Search Form */}
         <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
         
-        {/* Quick Actions */}
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Box display="flex" gap={1} flexWrap="wrap">
-            <Button
-              variant={showAdvancedFilters ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            >
-              Advanced Filters
-            </Button>
-            <Button
-              variant={showLocationSearch ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => setShowLocationSearch(!showLocationSearch)}
-            >
-              Location Search
-            </Button>
-            <Button
-              variant={showSavedSearches ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => setShowSavedSearches(!showSavedSearches)}
-            >
-              Saved Searches
-            </Button>
-            <Button
-              variant={showRecommendations ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => setShowRecommendations(!showRecommendations)}
-            >
-              Recommendations
-            </Button>
-          </Box>
-        </Paper>
+        {/* Quick Actions - Compact Row */}
+        <Box display="flex" gap={1} mb={2} flexWrap="wrap">
+          <Button
+            variant={showAdvancedFilters ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            sx={{ minWidth: 'auto', px: 2 }}
+          >
+            Filters
+          </Button>
+          <Button
+            variant={showLocationSearch ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => setShowLocationSearch(!showLocationSearch)}
+            sx={{ minWidth: 'auto', px: 2 }}
+          >
+            Map
+          </Button>
+          <Button
+            variant={showRecommendations ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => setShowRecommendations(!showRecommendations)}
+            sx={{ minWidth: 'auto', px: 2 }}
+          >
+            Suggestions
+          </Button>
+        </Box>
 
         {/* Search Suggestions */}
         {showSuggestions && searchSuggestions.length > 0 && (
@@ -439,12 +433,12 @@ const SearchPage = () => {
         )}
         
         {/* Advanced Components */}
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {/* Left Column - Search Tools */}
           <Grid item xs={12} md={showMap ? 12 : 4}>
             {/* Smart Recommendations */}
             {showRecommendations && (
-              <Box mb={3}>
+              <Box mb={2}>
                 <SmartJobRecommendations
                   maxRecommendations={3}
                   showHeader={true}
@@ -461,7 +455,7 @@ const SearchPage = () => {
             
             {/* Advanced Filters */}
             {showAdvancedFilters && (
-              <Box mb={3}>
+              <Box mb={2}>
                 <AdvancedFilters
                   onFiltersChange={handleSearch}
                   initialFilters={searchParams}
@@ -472,7 +466,7 @@ const SearchPage = () => {
             
             {/* Location Search */}
             {showLocationSearch && (
-              <Box mb={3}>
+              <Box mb={2}>
                 <LocationBasedSearch
                   onLocationSelect={(location, radius) => {
                     handleSearch({
@@ -490,22 +484,6 @@ const SearchPage = () => {
                   initialLocation={searchParams.location}
                   radius={searchParams.distance || 10}
                   compact={isMobile}
-                />
-              </Box>
-            )}
-            
-            {/* Saved Searches */}
-            {showSavedSearches && (
-              <Box mb={3}>
-                <SavedSearches
-                  compact={isMobile}
-                  onSearchSelect={(search) => {
-                    const searchFilters = {
-                      keyword: search.query,
-                      ...search.filters
-                    };
-                    handleSearch(searchFilters);
-                  }}
                 />
               </Box>
             )}
