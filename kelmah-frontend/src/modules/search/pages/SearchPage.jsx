@@ -386,7 +386,7 @@ const SearchPage = () => {
         description="Search for jobs by location, skills, experience level, and more. Find your perfect match with our advanced job search tools."
       />
 
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ pt: 1 }}>
         {/* Search Form */}
         <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
         
@@ -420,38 +420,6 @@ const SearchPage = () => {
           </Box>
         )}
 
-        {/* Public User Call-to-Action */}
-        {!isAuthenticated && (
-          <Box mb={2}>
-            <Alert 
-              severity="info" 
-              sx={{ 
-                bgcolor: 'rgba(33, 150, 243, 0.1)',
-                border: '1px solid rgba(33, 150, 243, 0.3)',
-                '& .MuiAlert-message': { color: 'white' }
-              }}
-            >
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                🔍 <strong>Browse available skilled workers</strong> - Find carpenters, plumbers, electricians, and more
-              </Typography>
-              <Button 
-                variant="contained" 
-                size="small" 
-                onClick={() => navigate('/register')}
-                sx={{ mr: 1 }}
-              >
-                Sign Up to Contact Workers
-              </Button>
-              <Button 
-                variant="outlined" 
-                size="small" 
-                onClick={() => navigate('/login')}
-              >
-                Login
-              </Button>
-            </Alert>
-          </Box>
-        )}
 
         {/* Search Suggestions */}
         {showSuggestions && searchSuggestions.length > 0 && (
@@ -478,79 +446,79 @@ const SearchPage = () => {
         {/* Advanced Components - Only for authenticated hirers */}
         {isAuthenticated && isHirer && (
           <Grid container spacing={2}>
-            {/* Left Column - Search Tools */}
-            <Grid item xs={12} md={showMap ? 12 : 4}>
-              {/* Smart Recommendations */}
-              {showRecommendations && (
+          {/* Left Column - Search Tools */}
+          <Grid item xs={12} md={showMap ? 12 : 4}>
+            {/* Smart Recommendations */}
+            {showRecommendations && (
                 <Box mb={2}>
-                  <SmartJobRecommendations
-                    maxRecommendations={3}
-                    showHeader={true}
-                    compact={true}
-                    onJobSelect={(jobId, action) => {
-                      if (action === 'view') {
-                        navigate(`/jobs/${jobId}`);
-                      }
-                    }}
-                    filterCriteria={searchParams}
-                  />
-                </Box>
-              )}
-              
-              {/* Advanced Filters */}
-              {showAdvancedFilters && (
-                <Box mb={2}>
-                  <AdvancedFilters
-                    onFiltersChange={handleSearch}
-                    initialFilters={searchParams}
-                    compact={isMobile}
-                  />
-                </Box>
-              )}
-              
-              {/* Location Search */}
-              {showLocationSearch && (
-                <Box mb={2}>
-                  <LocationBasedSearch
-                    onLocationSelect={(location, radius) => {
-                      handleSearch({
-                        ...searchParams,
-                        location: {
-                          address: location.name,
-                          coordinates: {
-                            latitude: location.coordinates[0],
-                            longitude: location.coordinates[1]
-                          }
-                        },
-                        distance: radius
-                      });
-                    }}
-                    initialLocation={searchParams.location}
-                    radius={searchParams.distance || 10}
-                    compact={isMobile}
-                  />
-                </Box>
-              )}
-            </Grid>
-          
-            {/* Right Column - Search Results */}
-            {!showMap && (
-              <Grid item xs={12} md={8}>
-                <SearchResults
-                  jobs={searchResults}
-                  loading={loading}
-                  filters={searchParams}
-                  onRemoveFilter={handleRemoveFilter}
-                  onSortChange={handleSortChange}
-                  pagination={pagination}
-                  onPageChange={handlePageChange}
-                  showMap={showMap}
-                  onToggleView={handleToggleView}
-                  onSaveJob={handleSaveJob}
+                <SmartJobRecommendations
+                  maxRecommendations={3}
+                  showHeader={true}
+                  compact={true}
+                  onJobSelect={(jobId, action) => {
+                    if (action === 'view') {
+                      navigate(`/jobs/${jobId}`);
+                    }
+                  }}
+                  filterCriteria={searchParams}
                 />
-              </Grid>
+              </Box>
+            )}
+            
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+                <Box mb={2}>
+                <AdvancedFilters
+                  onFiltersChange={handleSearch}
+                  initialFilters={searchParams}
+                  compact={isMobile}
+                />
+              </Box>
+            )}
+            
+            {/* Location Search */}
+            {showLocationSearch && (
+                <Box mb={2}>
+                <LocationBasedSearch
+                  onLocationSelect={(location, radius) => {
+                    handleSearch({
+                      ...searchParams,
+                      location: {
+                        address: location.name,
+                        coordinates: {
+                          latitude: location.coordinates[0],
+                          longitude: location.coordinates[1]
+                        }
+                      },
+                      distance: radius
+                    });
+                  }}
+                  initialLocation={searchParams.location}
+                  radius={searchParams.distance || 10}
+                  compact={isMobile}
+                />
+              </Box>
             )}
           </Grid>
+          
+          {/* Right Column - Search Results */}
+          {!showMap && (
+            <Grid item xs={12} md={8}>
+              <SearchResults
+                jobs={searchResults}
+                loading={loading}
+                filters={searchParams}
+                onRemoveFilter={handleRemoveFilter}
+                onSortChange={handleSortChange}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                showMap={showMap}
+                onToggleView={handleToggleView}
+                onSaveJob={handleSaveJob}
+              />
+            </Grid>
+          )}
+        </Grid>
         )}
 
         {/* Public User Results - Full Width */}
