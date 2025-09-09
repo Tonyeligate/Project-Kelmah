@@ -424,6 +424,23 @@ app.use('/api/search', createProxyMiddleware({
   }
 }));
 
+// Compatibility alias: some clients still call /api/jobs/search/*
+// Route them to the same search proxy to avoid 404s
+app.use('/api/jobs/search', getRateLimiter('search'));
+app.use('/api/jobs/search', createProxyMiddleware({
+  target: services.job,
+  changeOrigin: true,
+  pathRewrite: { '^/api/jobs/search': '/api/search' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Search alias error:', err.message);
+    res.status(503).json({
+      error: 'Search service temporarily unavailable',
+      message: 'Please try again later',
+      timestamp: new Date().toISOString()
+    });
+  }
+}));
+
 // Payment routes (protected with validation) — use dedicated router to expose granular endpoints and aliases
 const paymentRouter = require('./routes/payment.routes');
 app.use('/api/payments',
