@@ -86,13 +86,9 @@ const computeApiBase = async () => {
   const config = await loadRuntimeConfig();
   const ngrokUrl = config?.ngrokUrl;
 
-  // For Vercel deployments, use ngrok URL from runtime config
+  // For Vercel deployments, always use /api to trigger Vercel rewrites
   if (isVercel) {
-    console.log('🔗 Vercel deployment detected, using ngrok URL from runtime config');
-    if (ngrokUrl) {
-      return ngrokUrl;
-    }
-    console.warn('⚠️ No ngrok URL in runtime config, falling back to /api');
+    console.log('🔗 Vercel deployment detected, using /api for Vercel→ngrok routing');
     return '/api';
   }
 
