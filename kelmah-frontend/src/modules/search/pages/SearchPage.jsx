@@ -420,7 +420,6 @@ const SearchPage = () => {
           </Box>
         )}
 
-
         {/* Search Suggestions */}
         {showSuggestions && searchSuggestions.length > 0 && (
           <SearchSuggestions
@@ -446,79 +445,79 @@ const SearchPage = () => {
         {/* Advanced Components - Only for authenticated hirers */}
         {isAuthenticated && isHirer && (
           <Grid container spacing={2}>
-          {/* Left Column - Search Tools */}
-          <Grid item xs={12} md={showMap ? 12 : 4}>
-            {/* Smart Recommendations */}
-            {showRecommendations && (
+            {/* Left Column - Search Tools */}
+            <Grid item xs={12} md={showMap ? 12 : 4}>
+              {/* Smart Recommendations */}
+              {showRecommendations && (
                 <Box mb={2}>
-                <SmartJobRecommendations
-                  maxRecommendations={3}
-                  showHeader={true}
-                  compact={true}
-                  onJobSelect={(jobId, action) => {
-                    if (action === 'view') {
-                      navigate(`/jobs/${jobId}`);
-                    }
-                  }}
-                  filterCriteria={searchParams}
-                />
-              </Box>
-            )}
-            
-            {/* Advanced Filters */}
-            {showAdvancedFilters && (
+                  <SmartJobRecommendations
+                    maxRecommendations={3}
+                    showHeader={true}
+                    compact={true}
+                    onJobSelect={(jobId, action) => {
+                      if (action === 'view') {
+                        navigate(`/jobs/${jobId}`);
+                      }
+                    }}
+                    filterCriteria={searchParams}
+                  />
+                </Box>
+              )}
+              
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
                 <Box mb={2}>
-                <AdvancedFilters
-                  onFiltersChange={handleSearch}
-                  initialFilters={searchParams}
-                  compact={isMobile}
-                />
-              </Box>
-            )}
-            
-            {/* Location Search */}
-            {showLocationSearch && (
+                  <AdvancedFilters
+                    onFiltersChange={handleSearch}
+                    initialFilters={searchParams}
+                    compact={isMobile}
+                  />
+                </Box>
+              )}
+              
+              {/* Location Search */}
+              {showLocationSearch && (
                 <Box mb={2}>
-                <LocationBasedSearch
-                  onLocationSelect={(location, radius) => {
-                    handleSearch({
-                      ...searchParams,
-                      location: {
-                        address: location.name,
-                        coordinates: {
-                          latitude: location.coordinates[0],
-                          longitude: location.coordinates[1]
-                        }
-                      },
-                      distance: radius
-                    });
-                  }}
-                  initialLocation={searchParams.location}
-                  radius={searchParams.distance || 10}
-                  compact={isMobile}
+                  <LocationBasedSearch
+                    onLocationSelect={(location, radius) => {
+                      handleSearch({
+                        ...searchParams,
+                        location: {
+                          address: location.name,
+                          coordinates: {
+                            latitude: location.coordinates[0],
+                            longitude: location.coordinates[1]
+                          }
+                        },
+                        distance: radius
+                      });
+                    }}
+                    initialLocation={searchParams.location}
+                    radius={searchParams.distance || 10}
+                    compact={isMobile}
+                  />
+                </Box>
+              )}
+            </Grid>
+          
+            {/* Right Column - Search Results */}
+            {!showMap && (
+              <Grid item xs={12} md={8}>
+                <SearchResults
+                  jobs={searchResults}
+                  loading={loading}
+                  filters={searchParams}
+                  onRemoveFilter={handleRemoveFilter}
+                  onSortChange={handleSortChange}
+                  pagination={pagination}
+                  onPageChange={handlePageChange}
+                  showMap={showMap}
+                  onToggleView={handleToggleView}
+                  onSaveJob={handleSaveJob}
                 />
-              </Box>
+              </Grid>
             )}
           </Grid>
-          
-          {/* Right Column - Search Results */}
-          {!showMap && (
-            <Grid item xs={12} md={8}>
-              <SearchResults
-                jobs={searchResults}
-                loading={loading}
-                filters={searchParams}
-                onRemoveFilter={handleRemoveFilter}
-                onSortChange={handleSortChange}
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                showMap={showMap}
-                onToggleView={handleToggleView}
-                onSaveJob={handleSaveJob}
-              />
-            </Grid>
-          )}
-        </Grid>
         )}
 
         {/* Public User Results - Full Width */}
@@ -565,479 +564,3 @@ const SearchPage = () => {
 };
 
 export default SearchPage;
-
-
-
-        if (newParams[filterKey].length === 0) {
-
-          delete newParams[filterKey];
-
-        }
-
-      } else {
-
-        delete newParams[filterKey];
-
-      }
-
-    } else if (filterKey === 'budget') {
-
-      // Clear budget filters
-
-      delete newParams.budgetMin;
-
-      delete newParams.budgetMax;
-
-    } else if (filterKey === 'location') {
-
-      // Clear location filters
-
-      delete newParams.location;
-
-      delete newParams.distance;
-
-    } else {
-
-      // Clear specific filter
-
-      delete newParams[filterKey];
-
-    }
-
-
-
-    // Reset to first page
-
-    newParams.page = 1;
-
-
-
-    // Update state and URL
-
-    setSearchParams(newParams);
-
-    updateSearchURL(newParams);
-
-    performSearch(newParams);
-
-  };
-
-
-
-  // Toggle between list and map view
-
-  const handleToggleView = () => {
-
-    setShowMap(!showMap);
-
-  };
-
-
-
-  // Handle job saving
-
-  const handleSaveJob = async (jobId) => {
-
-    try {
-
-      await axios.post(
-
-        `${API_URL}/jobs/${jobId}/save`,
-
-        {},
-
-        {
-
-          headers: await (async () => {
-
-            try {
-
-              const { secureStorage } = await import('../../../utils/secureStorage');
-
-              const token = secureStorage.getAuthToken();
-
-              return token ? { Authorization: `Bearer ${token}` } : {};
-
-            } catch { return {}; }
-
-          })(),
-
-        },
-
-      );
-
-
-
-      // Update saved status in results
-
-      setSearchResults((prevResults) =>
-
-        prevResults.map((job) =>
-
-          job.id === jobId ? { ...job, isSaved: true } : job,
-
-        ),
-
-      );
-
-    } catch (error) {
-
-      console.error('Error saving job:', error);
-
-
-
-      // Check if error is due to authentication
-
-      if (error.response?.status === 401) {
-
-        navigate('/login', {
-
-          state: {
-
-            from: location,
-
-            message: 'Please log in to save jobs',
-
-          },
-
-        });
-
-      }
-
-    }
-
-  };
-
-
-
-  return (
-
-    <PageWrapper>
-
-      <SEO
-
-        title="Job Search | Find Your Perfect Match"
-
-        description="Search for jobs by location, skills, experience level, and more. Find your perfect match with our advanced job search tools."
-
-      />
-
-
-
-      <Container maxWidth="lg">
-
-        {/* Search Form */}
-
-        <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
-
-        
-
-        {/* Quick Actions - Show only for authenticated hirers */}
-        {isAuthenticated && isHirer && (
-          <Box display="flex" gap={1} mb={2} flexWrap="wrap">
-            <Button
-
-              variant={showAdvancedFilters ? 'contained' : 'outlined'}
-
-              size="small"
-
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-
-              sx={{ minWidth: 'auto', px: 2 }}
-            >
-
-              Filters
-            </Button>
-
-            <Button
-
-              variant={showLocationSearch ? 'contained' : 'outlined'}
-
-              size="small"
-
-              onClick={() => setShowLocationSearch(!showLocationSearch)}
-
-              sx={{ minWidth: 'auto', px: 2 }}
-            >
-              Map
-            </Button>
-
-            <Button
-
-              variant={showRecommendations ? 'contained' : 'outlined'}
-
-              size="small"
-
-              onClick={() => setShowRecommendations(!showRecommendations)}
-
-              sx={{ minWidth: 'auto', px: 2 }}
-            >
-
-              Suggestions
-            </Button>
-
-          </Box>
-
-        )}
-
-
-
-        {/* Search Suggestions */}
-
-        {showSuggestions && searchSuggestions.length > 0 && (
-
-          <SearchSuggestions
-
-            suggestions={searchSuggestions}
-
-            onSuggestionSelected={(suggestion) => {
-
-              setShowSuggestions(false);
-
-              if (suggestion.type === 'location' && suggestion.data) {
-
-                handleSearch({
-
-                  ...searchParams,
-
-                  location: suggestion.data,
-
-                });
-
-              } else {
-
-                handleSearch({
-
-                  ...searchParams,
-
-                  keyword: suggestion.text,
-
-                });
-
-              }
-
-            }}
-
-            onClose={() => setShowSuggestions(false)}
-
-          />
-
-        )}
-
-        
-
-        {/* Advanced Components - Only for authenticated hirers */}
-        {isAuthenticated && isHirer && (
-          <Grid container spacing={2}>
-          {/* Left Column - Search Tools */}
-
-          <Grid item xs={12} md={showMap ? 12 : 4}>
-
-            {/* Smart Recommendations */}
-
-            {showRecommendations && (
-
-                <Box mb={2}>
-                <SmartJobRecommendations
-
-                  maxRecommendations={3}
-
-                  showHeader={true}
-
-                  compact={true}
-
-                  onJobSelect={(jobId, action) => {
-
-                    if (action === 'view') {
-
-                      navigate(`/jobs/${jobId}`);
-
-                    }
-
-                  }}
-
-                  filterCriteria={searchParams}
-
-                />
-
-              </Box>
-
-            )}
-
-            
-
-            {/* Advanced Filters */}
-
-            {showAdvancedFilters && (
-
-                <Box mb={2}>
-                <AdvancedFilters
-
-                  onFiltersChange={handleSearch}
-
-                  initialFilters={searchParams}
-
-                  compact={isMobile}
-
-                />
-
-              </Box>
-
-            )}
-
-            
-
-            {/* Location Search */}
-
-            {showLocationSearch && (
-
-                <Box mb={2}>
-                <LocationBasedSearch
-
-                  onLocationSelect={(location, radius) => {
-
-                    handleSearch({
-
-                      ...searchParams,
-
-                      location: {
-
-                        address: location.name,
-
-                        coordinates: {
-
-                          latitude: location.coordinates[0],
-
-                          longitude: location.coordinates[1]
-
-                        }
-
-                      },
-
-                      distance: radius
-
-                    });
-
-                  }}
-
-                  initialLocation={searchParams.location}
-
-                  radius={searchParams.distance || 10}
-
-                  compact={isMobile}
-
-                />
-
-              </Box>
-
-            )}
-
-          </Grid>
-
-          
-
-          {/* Right Column - Search Results */}
-
-          {!showMap && (
-
-            <Grid item xs={12} md={8}>
-
-              <SearchResults
-
-                jobs={searchResults}
-
-                loading={loading}
-
-                filters={searchParams}
-
-                onRemoveFilter={handleRemoveFilter}
-
-                onSortChange={handleSortChange}
-
-                pagination={pagination}
-
-                onPageChange={handlePageChange}
-
-                showMap={showMap}
-
-                onToggleView={handleToggleView}
-
-                onSaveJob={handleSaveJob}
-
-              />
-
-            </Grid>
-
-          )}
-
-        </Grid>
-
-        )}
-
-        {/* Public User Results - Full Width */}
-        {!isAuthenticated && (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <SearchResults
-                jobs={searchResults}
-                loading={loading}
-                filters={searchParams}
-                onRemoveFilter={handleRemoveFilter}
-                onSortChange={handleSortChange}
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                showMap={false}
-                onToggleView={handleToggleView}
-                onSaveJob={handleSaveJob}
-                isPublicView={true}
-              />
-            </Grid>
-          </Grid>
-        )}
-
-
-        {/* Error Alert */}
-
-        {error && (
-
-          <Alert severity="error" sx={{ mb: 3 }}>
-
-            {error}
-
-          </Alert>
-
-        )}
-
-
-
-        {/* Map View (Full Width) - Only for authenticated hirers */}
-        {isAuthenticated && isHirer && showMap && (
-          <JobMapView
-
-            jobs={searchResults}
-
-            centerLocation={searchParams.location?.coordinates || null}
-
-            radius={searchParams.distance || 50}
-
-            loading={loading}
-
-            onToggleView={handleToggleView}
-
-          />
-
-        )}
-
-      </Container>
-
-    </PageWrapper>
-
-  );
-
-};
-
-
-
-export default SearchPage;
-
-
