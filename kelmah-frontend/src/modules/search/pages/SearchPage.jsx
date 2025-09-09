@@ -106,9 +106,9 @@ const SearchPage = () => {
     setSearchParams(params);
 
     // Perform initial search for all users to show workers
-    if (Object.keys(params).length === 0) {
+      if (Object.keys(params).length === 0) {
       // No URL params - show all workers by default
-      performSearch({ page: 1, limit: 12 });
+        performSearch({ page: 1, limit: 12 });
     } else if (params.page !== pagination.page) {
       // URL params exist - perform search with those params
       performSearch(params);
@@ -125,8 +125,8 @@ const SearchPage = () => {
 
     // Temporarily disable search suggestions as the endpoint doesn't exist
     console.log('Search suggestions temporarily disabled - endpoint not implemented');
-    setSearchSuggestions([]);
-    setShowSuggestions(false);
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
     return;
 
     // try {
@@ -556,6 +556,7 @@ const SearchPage = () => {
                 <WorkerSearchResults
                   workers={searchResults}
                   loading={loading}
+                  error={error}
                   filters={searchParams}
                   onRemoveFilter={handleRemoveFilter}
                   onSortChange={handleSortChange}
@@ -590,6 +591,7 @@ const SearchPage = () => {
               <WorkerSearchResults
                 workers={searchResults}
                 loading={loading}
+                error={error}
                 filters={searchParams}
                 onRemoveFilter={handleRemoveFilter}
                 onSortChange={handleSortChange}

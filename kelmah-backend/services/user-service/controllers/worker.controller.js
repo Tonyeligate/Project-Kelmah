@@ -364,7 +364,7 @@ class WorkerController {
           try {
             await MongoUser.updateOne({ _id: worker._id }, { $set: updates });
             console.log(`✅ Auto-populated worker fields for ${worker.firstName} ${worker.lastName}`);
-          } catch (error) {
+    } catch (error) {
             console.error(`❌ Failed to auto-populate worker fields for ${worker._id}:`, error);
           }
         }

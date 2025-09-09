@@ -23,6 +23,7 @@ import WorkerCard from '../../../worker/components/WorkerCard';
 const WorkerSearchResults = ({
   workers = [],
   loading = false,
+  error = null,
   filters = {},
   onRemoveFilter,
   onSortChange,
