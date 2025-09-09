@@ -68,11 +68,12 @@ class NgrokManager {
   async updateFrontendConfig(apiUrl, wsUrl) {
     try {
       // Always update vercel.json for ngrok-based architecture
-      const vercelConfig = JSON.parse(await fs.readFile(this.vercelConfigPath, 'utf8'));
+      const vercelConfigContent = await fs.readFile(this.vercelConfigPath, 'utf8');
+      const vercelConfig = JSON.parse(vercelConfigContent);
       vercelConfig.rewrites = vercelConfig.rewrites || [];
       vercelConfig.rewrites[0] = { source: "/api/(.*)", destination: `${apiUrl}/api/$1` };
       vercelConfig.rewrites[1] = { source: "/socket.io/(.*)", destination: `${wsUrl}/socket.io/$1` };
-      await fs.writeFile(this.vercelConfigPath, JSON.stringify(vercelConfig, null, 2));
+      await fs.writeFile(this.vercelConfigPath, JSON.stringify(vercelConfig, null, 2), 'utf8');
       console.log('✅ Updated vercel.json');
 
       // Update securityConfig.js (safe to update for ngrok compatibility)
@@ -92,7 +93,7 @@ class NgrokManager {
         version: '1.0.0',
         isDevelopment: true  // Always true for ngrok-based setup
       };
-      await fs.writeFile(frontendConfigPath, JSON.stringify(runtimeConfig, null, 2));
+      await fs.writeFile(frontendConfigPath, JSON.stringify(runtimeConfig, null, 2), 'utf8');
       console.log('✅ Created frontend runtime config');
 
     } catch (error) {
