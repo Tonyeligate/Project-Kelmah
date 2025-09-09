@@ -104,11 +104,19 @@ const SearchPage = () => {
 
     setSearchParams(params);
 
-    // Check if we need to perform a search
-    if (Object.keys(params).length > 0 && params.page !== pagination.page) {
+    // For unauthenticated users, always perform a default search to show workers
+    if (!isAuthenticated) {
+      // If no search params, show all workers by default
+      if (Object.keys(params).length === 0) {
+        performSearch({ page: 1, limit: 12 });
+      } else {
+        performSearch(params);
+      }
+    } else if (Object.keys(params).length > 0 && params.page !== pagination.page) {
+      // For authenticated users, only search if there are params
       performSearch(params);
     }
-  }, [location.search]);
+  }, [location.search, isAuthenticated]);
 
   // Fetch search suggestions when user types
   const fetchSearchSuggestions = async (query) => {
@@ -119,7 +127,7 @@ const SearchPage = () => {
     }
 
     try {
-      const response = await axios.get(`${API_URL}/jobs/search/suggestions`, {
+      const response = await axios.get('/api/jobs/search/suggestions', {
         params: { query },
       });
 
@@ -345,7 +353,7 @@ const SearchPage = () => {
   const handleSaveJob = async (jobId) => {
     try {
       await axios.post(
-        `${API_URL}/jobs/${jobId}/save`,
+        `/api/jobs/${jobId}/save`,
         {},
         {
           headers: await (async () => {
@@ -524,6 +532,19 @@ const SearchPage = () => {
         {!isAuthenticated && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
+              {/* Public User Header */}
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                  🔍 Discover Skilled Workers in Ghana
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                  Browse available carpenters, plumbers, electricians, masons, and other skilled professionals
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Sign up to contact workers and post your own jobs
+                </Typography>
+              </Box>
+              
               <SearchResults
                 jobs={searchResults}
                 loading={loading}
