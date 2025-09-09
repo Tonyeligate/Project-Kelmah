@@ -18,22 +18,14 @@ const useNavLinks = () => {
       { label: 'Jobs', to: '/jobs' },
     ];
 
-    if (!isAuthenticated || hasRole('worker')) {
-      links.push({
-        label: 'Find Work',
-        to:
-          isAuthenticated && hasRole('worker')
-            ? '/worker/find-work'
-            : '/search/location',
-      });
-    }
+    // Show public Find Talents when not authenticated; hirers get their dashboard view
     if (!isAuthenticated || hasRole('hirer')) {
       links.push({
         label: 'Find Talents',
         to:
           isAuthenticated && hasRole('hirer')
             ? '/hirer/find-talent'
-            : '/login?redirect=/hirer/find-talent', // ✅ FIXED: Redirect to login instead of non-existent route
+            : '/find-talents',
       });
     }
 

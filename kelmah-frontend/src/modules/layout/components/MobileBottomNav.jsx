@@ -70,7 +70,7 @@ const MobileBottomNav = () => {
   // Determine current tab based on path
   let currentValue;
   if (path.includes('/dashboard')) currentValue = 'dashboard';
-  else if (path.startsWith('/search') || path.startsWith('/hirer/find-talent') || path.includes('/find-work')) // ✅ FIXED: Use correct route
+  else if (path.startsWith('/search') || path.startsWith('/hirer/find-talent') || path.includes('/find-work') || path.startsWith('/find-talents'))
     currentValue = 'jobs';
   else if (path.includes('/applications')) currentValue = 'jobs';
   else if (path.startsWith('/messages')) currentValue = 'messages';
@@ -86,7 +86,7 @@ const MobileBottomNav = () => {
         navigate(isHirer ? '/hirer/dashboard' : '/worker/dashboard');
         break;
       case 'jobs':
-        navigate(isHirer ? '/hirer/find-talent' : '/worker/find-work'); // ✅ FIXED: Use correct route
+        navigate(isHirer ? '/hirer/find-talent' : '/worker/find-work');
         break;
       case 'messages':
         navigate('/messages');

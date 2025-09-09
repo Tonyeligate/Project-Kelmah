@@ -8,7 +8,7 @@ import JobsPage from '../modules/jobs/pages/JobsPage';
 import JobDetailsPage from '../modules/jobs/pages/JobDetailsPage';
 import JobApplicationForm from '../modules/worker/components/JobApplicationForm';
 import UserProfilePage from '../modules/profiles/pages/UserProfilePage';
-// import WorkerSearchPage from '../modules/hirer/pages/WorkerSearchPage'; // ✅ MOVED: Now only accessible via authenticated hirer routes
+import WorkerSearchPage from '../modules/hirer/pages/WorkerSearchPage'; // ✅ ADDED: For public /find-talents route
 import PremiumPage from '../modules/premium/pages/PremiumPage';
 import GeoLocationSearch from '../modules/search/pages/GeoLocationSearch';
 import SearchPage from '../modules/search/pages/SearchPage';

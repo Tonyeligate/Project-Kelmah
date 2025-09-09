@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import axios from '../../common/services/axios';
 
 // Custom components
@@ -29,7 +30,7 @@ import SEO from '../../common/components/common/SEO';
 
 // Styled components
 const PageWrapper = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3, 0, 8),
+  padding: theme.spacing(0.5, 0, 4),
   backgroundColor: theme.palette.background.default,
   color: theme.palette.text.primary,
   minHeight: 'calc(100vh - 64px)',
@@ -44,6 +45,10 @@ const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Get user authentication state
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isHirer = user?.role === 'hirer' || user?.userType === 'hirer';
 
   // Search state
   const [searchParams, setSearchParams] = useState({});
@@ -151,6 +156,9 @@ const SearchPage = () => {
     setError(null);
 
     try {
+      // Determine API endpoint based on user type
+      const apiEndpoint = isAuthenticated && isHirer ? '/api/search' : '/api/workers';
+      
       // Prepare API parameters
       const apiParams = {
         page: params.page || 1,
@@ -182,15 +190,15 @@ const SearchPage = () => {
         apiParams.radius = params.distance || 50;
       }
 
-      // Make API request to unified search endpoint
-      const response = await axios.get('/api/search', { params: apiParams });
+      // Make API request to appropriate endpoint
+      const response = await axios.get(apiEndpoint, { params: apiParams });
 
       if (response.data.success) {
-        // Unwrap jobs and pagination
-        const jobsData = Array.isArray(response.data.data)
+        // Unwrap data and pagination
+        const data = Array.isArray(response.data.data)
           ? response.data.data
           : response.data.data;
-        setSearchResults(jobsData);
+        setSearchResults(data);
         const paginationData = response.data.meta?.pagination || {};
         setPagination({
           page: paginationData.page || apiParams.page,
@@ -199,14 +207,14 @@ const SearchPage = () => {
           totalPages: paginationData.totalPages || 1,
         });
       } else {
-        setError(response.data.message || 'Failed to search jobs');
+        setError(response.data.message || 'Failed to search');
         setSearchResults([]);
       }
     } catch (error) {
-      console.error('Error searching jobs:', error);
+      console.error('Error searching:', error);
       setError(
         error.response?.data?.message ||
-          'An error occurred while searching for jobs',
+          'An error occurred while searching',
       );
       setSearchResults([]);
     } finally {
@@ -378,43 +386,40 @@ const SearchPage = () => {
         description="Search for jobs by location, skills, experience level, and more. Find your perfect match with our advanced job search tools."
       />
 
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ pt: 0 }}>
         {/* Search Form */}
         <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
         
-        {/* Quick Actions */}
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Box display="flex" gap={1} flexWrap="wrap">
+        {/* Quick Actions - Show only for authenticated hirers */}
+        {isAuthenticated && isHirer && (
+          <Box display="flex" gap={1} mb={2} flexWrap="wrap">
             <Button
               variant={showAdvancedFilters ? 'contained' : 'outlined'}
               size="small"
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              sx={{ minWidth: 'auto', px: 2 }}
             >
-              Advanced Filters
+              Filters
             </Button>
             <Button
               variant={showLocationSearch ? 'contained' : 'outlined'}
               size="small"
               onClick={() => setShowLocationSearch(!showLocationSearch)}
+              sx={{ minWidth: 'auto', px: 2 }}
             >
-              Location Search
-            </Button>
-            <Button
-              variant={showSavedSearches ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => setShowSavedSearches(!showSavedSearches)}
-            >
-              Saved Searches
+              Map
             </Button>
             <Button
               variant={showRecommendations ? 'contained' : 'outlined'}
               size="small"
               onClick={() => setShowRecommendations(!showRecommendations)}
+              sx={{ minWidth: 'auto', px: 2 }}
             >
-              Recommendations
+              Suggestions
             </Button>
           </Box>
-        </Paper>
+        )}
+
 
         {/* Search Suggestions */}
         {showSuggestions && searchSuggestions.length > 0 && (
@@ -438,13 +443,14 @@ const SearchPage = () => {
           />
         )}
         
-        {/* Advanced Components */}
-        <Grid container spacing={3}>
+        {/* Advanced Components - Only for authenticated hirers */}
+        {isAuthenticated && isHirer && (
+          <Grid container spacing={2}>
           {/* Left Column - Search Tools */}
           <Grid item xs={12} md={showMap ? 12 : 4}>
             {/* Smart Recommendations */}
             {showRecommendations && (
-              <Box mb={3}>
+                <Box mb={2}>
                 <SmartJobRecommendations
                   maxRecommendations={3}
                   showHeader={true}
@@ -461,7 +467,7 @@ const SearchPage = () => {
             
             {/* Advanced Filters */}
             {showAdvancedFilters && (
-              <Box mb={3}>
+                <Box mb={2}>
                 <AdvancedFilters
                   onFiltersChange={handleSearch}
                   initialFilters={searchParams}
@@ -472,7 +478,7 @@ const SearchPage = () => {
             
             {/* Location Search */}
             {showLocationSearch && (
-              <Box mb={3}>
+                <Box mb={2}>
                 <LocationBasedSearch
                   onLocationSelect={(location, radius) => {
                     handleSearch({
@@ -490,22 +496,6 @@ const SearchPage = () => {
                   initialLocation={searchParams.location}
                   radius={searchParams.distance || 10}
                   compact={isMobile}
-                />
-              </Box>
-            )}
-            
-            {/* Saved Searches */}
-            {showSavedSearches && (
-              <Box mb={3}>
-                <SavedSearches
-                  compact={isMobile}
-                  onSearchSelect={(search) => {
-                    const searchFilters = {
-                      keyword: search.query,
-                      ...search.filters
-                    };
-                    handleSearch(searchFilters);
-                  }}
                 />
               </Box>
             )}
@@ -529,6 +519,28 @@ const SearchPage = () => {
             </Grid>
           )}
         </Grid>
+        )}
+
+        {/* Public User Results - Full Width */}
+        {!isAuthenticated && (
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <SearchResults
+                jobs={searchResults}
+                loading={loading}
+                filters={searchParams}
+                onRemoveFilter={handleRemoveFilter}
+                onSortChange={handleSortChange}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                showMap={false}
+                onToggleView={handleToggleView}
+                onSaveJob={handleSaveJob}
+                isPublicView={true}
+              />
+            </Grid>
+          </Grid>
+        )}
 
         {/* Error Alert */}
         {error && (
@@ -537,8 +549,8 @@ const SearchPage = () => {
           </Alert>
         )}
 
-        {/* Map View (Full Width) */}
-        {showMap && (
+        {/* Map View (Full Width) - Only for authenticated hirers */}
+        {isAuthenticated && isHirer && showMap && (
           <JobMapView
             jobs={searchResults}
             centerLocation={searchParams.location?.coordinates || null}

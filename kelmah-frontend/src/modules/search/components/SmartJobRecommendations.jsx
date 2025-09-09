@@ -71,11 +71,19 @@ const SmartJobRecommendations = ({
         setLoading(true);
       }
       
+      // If no authenticated user, skip personalized recommendations gracefully
+      if (!user || !user.id) {
+        setRecommendations([]);
+        setAiInsights(null);
+        setError(null);
+        return;
+      }
+
       const response = await searchService.getSmartJobRecommendations(
-        user.id, 
-        { 
+        user.id,
+        {
           limit: maxRecommendations,
-          ...filterCriteria 
+          ...filterCriteria,
         }
       );
       
@@ -90,13 +98,18 @@ const SmartJobRecommendations = ({
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user.id, maxRecommendations, filterCriteria, enqueueSnackbar]);
+  }, [user?.id, maxRecommendations, filterCriteria, enqueueSnackbar]);
 
   useEffect(() => {
+    // Load only when user is available; otherwise show empty state without errors
     if (user?.id) {
       loadRecommendations();
+    } else {
+      setLoading(false);
+      setRecommendations([]);
+      setAiInsights(null);
     }
-  }, [loadRecommendations, user]);
+  }, [loadRecommendations, user?.id]);
 
   // Handle save/unsave job
   const handleToggleSave = async (jobId) => {
