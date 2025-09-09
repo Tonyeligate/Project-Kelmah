@@ -135,8 +135,11 @@ try {
 app.use("/api/users", userRoutes);
 app.use("/api/availability", availabilityRoutes);
 
-// Direct worker routes for public access (workaround for route mapping issue)
+// Direct worker routes for public access (MUST come before other routes)
 const WorkerController = require('./controllers/worker.controller');
+// Handle both /workers (from gateway path rewrite) and /api/workers (direct calls)
+app.get('/workers', WorkerController.getAllWorkers);
+app.get('/workers/search', WorkerController.searchWorkers);
 app.get('/api/workers', WorkerController.getAllWorkers);
 app.get('/api/workers/search', WorkerController.searchWorkers);
 
@@ -211,7 +214,7 @@ app.get('/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 
-// Root endpoint with API information and deployment verification
+// Root endpoint with API information and deployment verification (AFTER specific routes)
 app.get("/", (req, res) => {
   const actualService = 'user-service';
   const expectedAtThisURL = process.env.SERVICE_NAME || 'unknown';
