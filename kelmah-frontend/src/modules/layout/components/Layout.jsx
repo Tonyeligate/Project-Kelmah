@@ -165,7 +165,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
             flexGrow: 1, 
             width: '100%',
             minWidth: 0,
-            py: location.pathname === '/find-talents' ? 0 : { xs: 1, sm: 2, md: 3 },
+            py: { xs: 1, sm: 2, md: 3 },
             px: { xs: 1, sm: 2, md: 3 },
             overflowX: 'hidden',
             overflowY: 'auto',
@@ -176,7 +176,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
             },
             // Mobile-specific improvements
             '@media (max-width: 768px)': {
-              py: location.pathname === '/find-talents' ? 0 : { xs: 0.5, sm: 1 },
+              py: { xs: 0.5, sm: 1 },
               px: { xs: 0.5, sm: 1 },
               minHeight: '100vh', // Full height since footer is now dynamic
             },

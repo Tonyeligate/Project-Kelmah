@@ -154,9 +154,6 @@ services/[service-name]/
 9. **Header Navigation**: Never add hirer-only or worker-only links to global header; use dashboard/sidebar instead
 10. **Job Page Confusion**: "Jobs" = public browse, "My Jobs" = hirer management (different APIs, different audiences)
 11. **Service Worker Caching**: Changes to header navigation may require service worker unregistration or hard refresh
-12. **UI Spacing Issues**: Check Layout component padding for public pages - may need route-specific padding removal
-13. **Role-Based Content**: Implement conditional rendering based on authentication state and user roles
-14. **API Endpoint Selection**: Route to different APIs based on user type (e.g., `/api/workers` for public, `/api/search` for hirers)
 
 ## Error Investigation & Fix Protocol
 
@@ -173,8 +170,6 @@ services/[service-name]/
 - **Complete flow understanding**: Trace entire process flow before implementing fixes
 - **Public Route Testing**: Always test public routes without authentication to ensure they work for all users
 - **Navigation Flow Validation**: Verify navigation links work correctly for both authenticated and unauthenticated users
-- **UI Spacing Investigation**: When users report excessive spacing, check Layout component padding and route-specific styling
-- **Role-Based Testing**: Test both authenticated and unauthenticated user experiences for role-based features
 
 ## User Experience & Accessibility Guidelines
 
@@ -232,27 +227,6 @@ services/[service-name]/
 - **Conditional Rendering**: Use `user && user.id` patterns for auth-dependent features
 - **Error Boundaries**: Wrap components that might fail due to missing auth data
 - **Loading States**: Show appropriate loading/empty states when user data is unavailable
-
-## UI/UX Optimization Patterns
-
-### Spacing and Layout Optimization
-- **Layout Component Padding**: Check for excessive padding in Layout component that affects public pages
-- **Route-Specific Styling**: Use conditional styling based on `location.pathname` for specific page requirements
-- **Container Spacing**: Minimize unnecessary margins and padding for compact layouts
-- **Mobile-First Design**: Ensure spacing works well on mobile devices for vocational workers
-
-### Role-Based UI Implementation
-- **Authentication State**: Use `useSelector((state) => state.auth)` to get user and authentication status
-- **Conditional Features**: Show/hide features based on `isAuthenticated` and `user.role`
-- **API Routing**: Route to different endpoints based on user type (public vs authenticated)
-- **Content Differentiation**: Provide different experiences for public users vs authenticated users
-- **Progressive Enhancement**: Start with basic functionality, enhance for authenticated users
-
-### Vocational Worker UI Patterns
-- **Simplified Interfaces**: Remove complex features for public users, keep essential functionality
-- **Clear CTAs**: Provide obvious sign-up/login prompts for public users
-- **Trade-Specific Content**: Use vocational terminology (Carpenter, Plumber, etc.) instead of generic terms
-- **Compact Design**: Minimize vertical space usage for better mobile experience
 
 ## Header Navigation & Job Page Architecture
 

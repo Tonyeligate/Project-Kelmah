@@ -70,7 +70,7 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
   };
 
   return (
-    <Paper elevation={1} sx={{ p: 2, mb: 2, mt: 0 }}>
+    <Paper elevation={1} sx={{ p: 1.5, mb: 1, mt: 0 }}>
       <Box component="form" onSubmit={handleSubmit}>
         <Grid container spacing={1} alignItems="center">
           <Grid item xs={12} sm={6} md={3}>
