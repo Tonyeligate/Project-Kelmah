@@ -36,19 +36,7 @@ router.get("/me/credentials", getUserCredentials);
 
 // Worker search & bookmarks (Phase 2)
 router.get('/workers/search', WorkerController.searchWorkers);
-// Nearby workers using 2dsphere if available (MVP via job service-style bounds fallback)
-router.post('/workers/nearby', WorkerController.getNearbyWorkers);
 router.get('/workers', WorkerController.getAllWorkers);
-router.get('/workers/:id', WorkerController.getWorkerById);
-router.put('/workers/:id', authenticate, createLimiter('reviews'), WorkerController.createOrUpdateProfile);
-router.get('/workers/:id/availability', WorkerController.getAvailability);
-router.put('/workers/:id/availability', authenticate, createLimiter('messaging'), validateAvailabilityPayload, WorkerController.updateAvailability);
-router.get('/workers/:id/completeness', authenticate, WorkerController.getProfileCompleteness);
-router.get('/workers/:id/skills', WorkerController.getSkills);
-router.post('/workers/:id/skills', authenticate, createLimiter('reviews'), WorkerController.addSkill);
-router.put('/workers/:id/skills/:skillId', authenticate, createLimiter('reviews'), WorkerController.updateSkill);
-router.delete('/workers/:id/skills/:skillId', authenticate, createLimiter('reviews'), WorkerController.deleteSkill);
-router.get('/workers/:workerId/stats', WorkerController.getStats);
 
 // Duplicate routes (cleanup) — already defined above; keeping single source of truth
 
