@@ -163,12 +163,15 @@ const SearchPage = () => {
 
   // Perform search with provided parameters
   const performSearch = async (params = searchParams) => {
+    console.log('🔍 performSearch called with params:', params);
+    console.log('🔍 isAuthenticated:', isAuthenticated, 'isHirer:', isHirer);
     setLoading(true);
     setError(null);
 
     try {
       // Determine API endpoint based on user type
       const apiEndpoint = isAuthenticated && isHirer ? '/api/users/workers/search' : '/api/workers';
+      console.log('🔍 Using API endpoint:', apiEndpoint);
       
       // Prepare API parameters
       const apiParams = {
@@ -202,7 +205,9 @@ const SearchPage = () => {
       }
 
       // Make API request to appropriate endpoint
+      console.log('🔍 Making API request to:', apiEndpoint, 'with params:', apiParams);
       const response = await axios.get(apiEndpoint, { params: apiParams });
+      console.log('🔍 API response:', response.data);
 
       if (response.data && response.data.success) {
         // Unwrap standardized payloads: { data: { workers, pagination } } or { workers }
@@ -210,6 +215,7 @@ const SearchPage = () => {
         const workers = Array.isArray(payload)
           ? payload
           : (payload?.workers || payload?.results || []);
+        console.log('🔍 Extracted workers:', workers);
         setSearchResults(workers);
         const paginationData = payload?.pagination || response.data.meta?.pagination || {};
         setPagination({
