@@ -30,8 +30,10 @@ export const messagingService = {
   // Create a new conversation
   async createConversation(participantId, jobId) {
     try {
+      // Align with backend: expects participantIds array and optional type
       const response = await messagingServiceClient.post('/api/conversations', {
-        participantId,
+        participantIds: [participantId],
+        type: 'direct',
         jobId,
       });
       return response.data;

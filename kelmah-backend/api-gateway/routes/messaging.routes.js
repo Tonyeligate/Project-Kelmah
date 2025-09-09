@@ -12,21 +12,25 @@ const { authenticate } = require('../middleware/auth');
 const getServiceUrl = (req) => req.app.get('serviceUrls').MESSAGING_SERVICE;
 
 // Messaging proxy middleware
+// Forward /api/messages/* → messaging-service /api/messages/* (no duplication)
 const messagingProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
-    pathPrefix: '/api/messages',
-    requireAuth: true
+    requireAuth: true,
   });
   return proxy(req, res, next);
 };
 
 // Conversation proxy middleware
+// Map gateway /api/messages/conversations[/...] → service /api/conversations[/...]
 const conversationProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
-    pathPrefix: '/api/conversations',
-    requireAuth: true
+    requireAuth: true,
+    pathRewrite: {
+      '^/api/messages/conversations$': '/api/conversations',
+      '^/api/messages/conversations/': '/api/conversations/'
+    }
   });
   return proxy(req, res, next);
 };

@@ -183,7 +183,7 @@ class MessageSocketHandler {
    */
   async handleSendMessage(socket, data, ack) {
     try {
-      const { conversationId, content, messageType = 'text', attachments = [], clientId } = data;
+      const { conversationId, content, messageType = 'text', attachments = [], clientId } = data || {};
       const userId = socket.userId;
 
       // Rate limiting check
@@ -201,7 +201,7 @@ class MessageSocketHandler {
       }
 
       // Validate input
-      if (!conversationId || (!content && attachments.length === 0)) {
+      if (!conversationId || (!content && (!Array.isArray(attachments) || attachments.length === 0))) {
         socket.emit('error', { message: 'Invalid message data' });
         if (typeof ack === 'function') ack({ ok: false, error: 'invalid' });
         return;
@@ -223,12 +223,10 @@ class MessageSocketHandler {
       const message = new Message({
         sender: userId,
         recipient: conversation.participants.find(p => p.toString() !== userId.toString()),
-        content: content || '',
+        content: typeof content === 'string' ? content : '',
         messageType,
-        attachments: attachments.length > 0 ? attachments : [],
-        readStatus: {
-          isRead: false
-        }
+        attachments: Array.isArray(attachments) && attachments.length > 0 ? attachments : [],
+        readStatus: { isRead: false }
       });
       await message.save();
 

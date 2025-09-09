@@ -13,7 +13,6 @@ exports.createMessage = async (req, res) => {
     }
 
     const {
-      sender,
       recipient,
       content,
       messageType,
@@ -26,7 +25,8 @@ exports.createMessage = async (req, res) => {
 
     // Create the message
     const message = new Message({
-      sender,
+      // Enforce sender as the authenticated user for security
+      sender: req.user?._id || req.user?.id,
       recipient,
       content,
       messageType,
@@ -115,11 +115,16 @@ exports.getConversationMessages = async (req, res) => {
       {
         recipient: req.user._id,
         'readStatus.isRead': false,
+        // Scope only to this conversation participants
+        $or: [
+          { sender: { $in: conversation.participants }, recipient: req.user._id },
+          { recipient: { $in: conversation.participants }, sender: req.user._id },
+        ],
       },
       {
         $set: {
-          "readStatus.isRead": true,
-          "readStatus.readAt": new Date(),
+          'readStatus.isRead': true,
+          'readStatus.readAt': new Date(),
         },
       },
     );

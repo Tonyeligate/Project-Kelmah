@@ -146,7 +146,7 @@ services/[service-name]/
 1. **Import Paths**: After refactoring, use new modular paths (`@/modules/[domain]/...`)
 2. **Service URLs**: Frontend detects environment and routes through gateway in production
 3. **CORS**: API Gateway handles CORS for all services
-4. **Socket.IO**: Connects through gateway proxy, not directly to messaging service
+4. **Socket.IO**: Connects through gateway proxy (`/socket.io`), not directly to messaging service
 5. **Rate Limiting**: Configured at API Gateway level, affects all services
 6. **Public vs Protected Routes**: Always distinguish between public pages (accessible without auth) and protected pages (require authentication)
 7. **Null Safety**: Components must handle null/undefined user state gracefully, especially in public routes
@@ -301,6 +301,16 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 - Always skip rate limiting for `/health`, `/health/ready`, `/health/live` at both gateway and services.
 
 ### Job-Service Route Ordering
+### Messaging & Notifications through Gateway
+- Always call messaging REST via gateway:
+  - Conversations: Frontend uses `/api/messages/conversations[...]`; gateway rewrites to messaging-service `/api/conversations[...]`.
+  - Messages in conversation: Frontend `/api/messages/conversations/:id/messages`; gateway rewrites to `/api/messages/conversation/:id`.
+  - Notifications: `/api/notifications` (protected) → messaging-service.
+- WebSocket: connect via gateway `/socket.io` with `auth: { token }`. Messaging-service validates JWT with `JWT_SECRET`.
+- Do not duplicate `/api` in rewrites. Preserve a single `/api` prefix end-to-end.
+- Conversation creation payload must be `{ participantIds: [string], type: 'direct' | 'group', title? }`. Sender must not be supplied on message POST; backend derives from JWT.
+- Read status updates must be scoped to the current conversation participants; avoid global read marking.
+
 - Keep `router.get('/:id', ...)` ONLY once and strictly LAST in `routes/job.routes.js` to avoid shadowing specific routes like `/my-jobs`.
 - Define specific routes (e.g., `/my-jobs`, `/contracts`, `/dashboard`) before any `/:id` route.
 
@@ -315,6 +325,13 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 - If 429 is returned, observe `Retry-After`/rate-limit headers; resets may be needed even after code changes.
 
 ### Incident Playbook: `/api/jobs/my-jobs` returns 404/429/503
+### Incident Playbook: Messaging/Notifications 401/404/WS Failures
+1. Verify frontend uses `/api/*` for REST and `/socket.io` for WebSocket.
+2. Confirm gateway messaging rewrites exist and are correct (no double `/api`).
+3. Ensure requests include `Authorization: Bearer <token>`; gateway passes it through.
+4. Check messaging-service `JWT_SECRET` is set and matches the issuer.
+5. Inspect gateway logs for proxied paths and status; inspect messaging-service logs for auth errors.
+
 1. Verify gateway health: `GET /health` should be 200.
 2. Check job-service health: `GET <JOB_SERVICE_URL>/health` should be 200.
 3. Confirm gateway → job-service proxy preserves `/api/jobs` (remove custom `pathRewrite` if conflicting).

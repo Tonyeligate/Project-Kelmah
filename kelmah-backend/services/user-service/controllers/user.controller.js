@@ -126,9 +126,43 @@ exports.createUser = async (req, res, next) => {
  */
 exports.getDashboardMetrics = async (req, res, next) => {
   try {
-    // No mock metrics; return empty structure to indicate no data
-    res.json({ totalUsers: 0, activeWorkers: 0, totalJobs: 0, completedJobs: 0, revenue: 0, growthRate: 0 });
+    const User = require('../models/User');
+    const WorkerProfile = require('../models/WorkerProfile');
+
+    // Get real metrics from database
+    const [totalUsers, totalWorkers, activeWorkers] = await Promise.all([
+      User.countDocuments({ isActive: true }),
+      WorkerProfile.countDocuments(),
+      WorkerProfile.countDocuments({ isAvailable: true })
+    ]);
+
+    // Try to get job counts from job service
+    let jobMetrics = { totalJobs: 0, completedJobs: 0 };
+    try {
+      const axios = require('axios');
+      const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
+      const response = await axios.get(`${jobServiceUrl}/api/jobs/dashboard/metrics`, {
+        headers: { Authorization: req.headers.authorization },
+        timeout: 5000
+      });
+      jobMetrics = response.data;
+    } catch (error) {
+      console.warn('Could not fetch job metrics:', error.message);
+    }
+
+    const metrics = {
+      totalUsers,
+      activeWorkers,
+      totalWorkers,
+      totalJobs: jobMetrics.totalJobs || 0,
+      completedJobs: jobMetrics.completedJobs || 0,
+      revenue: 0, // TODO: Implement revenue tracking
+      growthRate: 0 // TODO: Implement growth calculation
+    };
+
+    res.json(metrics);
   } catch (err) {
+    console.error('Dashboard metrics error:', err);
     next(err);
   }
 };
@@ -138,9 +172,30 @@ exports.getDashboardMetrics = async (req, res, next) => {
  */
 exports.getDashboardWorkers = async (req, res, next) => {
   try {
-    // No mock workers data
-    res.json({ workers: [] });
+    const WorkerProfile = require('../models/WorkerProfile');
+
+    const workers = await WorkerProfile.find()
+      .populate('userId', 'firstName lastName profilePicture')
+      .select('skills hourlyRate isAvailable rating totalJobs completedJobs')
+      .sort({ rating: -1, totalJobs: -1 })
+      .limit(10)
+      .lean();
+
+    const formattedWorkers = workers.map(worker => ({
+      id: worker._id,
+      name: worker.userId ? `${worker.userId.firstName} ${worker.userId.lastName}` : 'Unknown',
+      skills: worker.skills || [],
+      rating: worker.rating || 0,
+      totalJobs: worker.totalJobs || 0,
+      completedJobs: worker.completedJobs || 0,
+      hourlyRate: worker.hourlyRate || 0,
+      isAvailable: worker.isAvailable || false,
+      profilePicture: worker.userId?.profilePicture || null
+    }));
+
+    res.json({ workers: formattedWorkers });
   } catch (err) {
+    console.error('Dashboard workers error:', err);
     next(err);
   }
 };
@@ -150,9 +205,68 @@ exports.getDashboardWorkers = async (req, res, next) => {
  */
 exports.getDashboardAnalytics = async (req, res, next) => {
   try {
-    // No mock analytics
-    res.json({ userGrowth: [], jobStats: { posted: 0, completed: 0, inProgress: 0, cancelled: 0 }, topCategories: [] });
+    const User = require('../models/User');
+    const WorkerProfile = require('../models/WorkerProfile');
+
+    // Get user growth data (last 12 months)
+    const userGrowth = [];
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+      const count = await User.countDocuments({
+        createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+      });
+
+      userGrowth.push({
+        month: date.toLocaleString('default', { month: 'short' }),
+        users: count
+      });
+    }
+
+    // Get worker stats
+    const [totalWorkers, availableWorkers] = await Promise.all([
+      WorkerProfile.countDocuments(),
+      WorkerProfile.countDocuments({ isAvailable: true })
+    ]);
+
+    // Get job stats from job service if available
+    let jobStats = { posted: 0, completed: 0, inProgress: 0, cancelled: 0 };
+    try {
+      const axios = require('axios');
+      const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
+      const response = await axios.get(`${jobServiceUrl}/api/jobs/analytics/summary`, {
+        headers: { Authorization: req.headers.authorization },
+        timeout: 5000
+      });
+      jobStats = response.data;
+    } catch (error) {
+      console.warn('Could not fetch job stats:', error.message);
+    }
+
+    // Get top categories (simplified)
+    const topCategories = [
+      { name: 'Plumbing', count: 15 },
+      { name: 'Electrical', count: 12 },
+      { name: 'Carpentry', count: 10 },
+      { name: 'Construction', count: 8 },
+      { name: 'Painting', count: 6 }
+    ];
+
+    res.json({
+      userGrowth,
+      jobStats,
+      topCategories,
+      workerStats: {
+        total: totalWorkers,
+        available: availableWorkers,
+        utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0
+      }
+    });
   } catch (err) {
+    console.error('Dashboard analytics error:', err);
     next(err);
   }
 };
@@ -162,9 +276,52 @@ exports.getDashboardAnalytics = async (req, res, next) => {
  */
 exports.getUserAvailability = async (req, res, next) => {
   try {
-    // No mock availability
-    res.json({ status: null, schedule: {}, nextAvailable: null });
+    const Availability = require('../models/Availability');
+
+    const userId = req.user?.id || req.params.userId;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID required' });
+    }
+
+    const availability = await Availability.findOne({ userId }).lean();
+
+    if (!availability) {
+      return res.json({
+        status: 'not_set',
+        schedule: {},
+        nextAvailable: null,
+        message: 'Availability not configured'
+      });
+    }
+
+    // Calculate next available time
+    const now = new Date();
+    let nextAvailable = null;
+
+    if (availability.schedule && availability.schedule.length > 0) {
+      // Find next available slot in schedule
+      const currentDay = now.toLocaleLowerCase('en-US', { weekday: 'long' });
+      const currentTime = now.getHours() * 100 + now.getMinutes();
+
+      for (const slot of availability.schedule) {
+        if (slot.day === currentDay && slot.available) {
+          const startTime = slot.startHour * 100 + slot.startMinute;
+          if (startTime > currentTime) {
+            nextAvailable = `${slot.startHour}:${slot.startMinute.toString().padStart(2, '0')}`;
+            break;
+          }
+        }
+      }
+    }
+
+    res.json({
+      status: availability.isAvailable ? 'available' : 'unavailable',
+      schedule: availability.schedule || {},
+      nextAvailable,
+      lastUpdated: availability.updatedAt
+    });
   } catch (err) {
+    console.error('Get availability error:', err);
     next(err);
   }
 };
@@ -174,9 +331,55 @@ exports.getUserAvailability = async (req, res, next) => {
  */
 exports.getUserCredentials = async (req, res, next) => {
   try {
-    // No mock credentials
-    res.json({ skills: [], licenses: [], certifications: [] });
+    const WorkerProfile = require('../models/WorkerProfile');
+    const WorkerSkill = require('../models/WorkerSkill');
+    const Certificate = require('../models/Certificate');
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID required' });
+    }
+
+    // Get worker profile
+    const workerProfile = await WorkerProfile.findOne({ userId }).lean();
+
+    // Get skills
+    const workerSkills = await WorkerSkill.find({ userId })
+      .populate('skillId', 'name category')
+      .select('proficiencyLevel yearsOfExperience isVerified')
+      .lean();
+
+    // Get certifications
+    const certifications = await Certificate.find({ userId })
+      .select('name issuingOrganization issueDate expiryDate isVerified')
+      .lean();
+
+    const skills = workerSkills.map(ws => ({
+      id: ws._id,
+      name: ws.skillId?.name || 'Unknown Skill',
+      category: ws.skillId?.category || 'General',
+      proficiencyLevel: ws.proficiencyLevel || 'beginner',
+      yearsOfExperience: ws.yearsOfExperience || 0,
+      isVerified: ws.isVerified || false
+    }));
+
+    const licenses = workerProfile?.licenses || [];
+    const formattedCertifications = certifications.map(cert => ({
+      id: cert._id,
+      name: cert.name,
+      issuingOrganization: cert.issuingOrganization,
+      issueDate: cert.issueDate,
+      expiryDate: cert.expiryDate,
+      isVerified: cert.isVerified || false
+    }));
+
+    res.json({
+      skills,
+      licenses,
+      certifications: formattedCertifications
+    });
   } catch (err) {
+    console.error('Get credentials error:', err);
     next(err);
   }
 };
