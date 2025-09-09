@@ -375,8 +375,8 @@ app.use(
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
-    // Direct route to user service (no path rewriting needed)
-    pathRewrite: {},
+    // Rewrite /api/workers to /workers (since mount path is stripped automatically)
+    pathRewrite: { '^/': '/workers' },
     onProxyReq: (proxyReq, req) => {
       console.log('🔄 API Gateway: Proxying worker request to user service -', req.originalUrl, '→', proxyReq.path);
     },
