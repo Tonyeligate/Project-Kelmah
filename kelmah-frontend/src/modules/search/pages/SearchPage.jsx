@@ -19,6 +19,7 @@ import axios from '../../common/services/axios';
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
 import SearchResults from '../components/results/SearchResults';
+import WorkerSearchResults from '../components/results/WorkerSearchResults';
 import JobMapView from '../components/map/JobMapView';
 import SearchSuggestions from '../components/suggestions/SearchSuggestions';
 import SmartJobRecommendations from '../components/SmartJobRecommendations';
@@ -390,6 +391,44 @@ const SearchPage = () => {
     }
   };
 
+  // Handle worker saving
+  const handleSaveWorker = async (worker) => {
+    try {
+      await axios.post(
+        `/api/workers/${worker.id}/save`,
+        {},
+        {
+          headers: await (async () => {
+            try {
+              const { secureStorage } = await import('../../../utils/secureStorage');
+              const token = secureStorage.getAuthToken();
+              return token ? { Authorization: `Bearer ${token}` } : {};
+            } catch { return {}; }
+          })(),
+        },
+      );
+
+      // Update saved status in results
+      setSearchResults((prevResults) =>
+        prevResults.map((w) =>
+          w.id === worker.id ? { ...w, isSaved: true } : w,
+        ),
+      );
+    } catch (error) {
+      console.error('Error saving worker:', error);
+
+      // Check if error is due to authentication
+      if (error.response?.status === 401) {
+        navigate('/login', {
+          state: {
+            from: location,
+            message: 'Please log in to save workers',
+          },
+        });
+      }
+    }
+  };
+
   return (
     <PageWrapper>
       <SEO
@@ -514,8 +553,8 @@ const SearchPage = () => {
             {/* Right Column - Search Results */}
             {!showMap && (
               <Grid item xs={12} md={8}>
-                <SearchResults
-                  jobs={searchResults}
+                <WorkerSearchResults
+                  workers={searchResults}
                   loading={loading}
                   filters={searchParams}
                   onRemoveFilter={handleRemoveFilter}
@@ -524,7 +563,7 @@ const SearchPage = () => {
                   onPageChange={handlePageChange}
                   showMap={showMap}
                   onToggleView={handleToggleView}
-                  onSaveJob={handleSaveJob}
+                  onSaveWorker={handleSaveWorker}
                 />
               </Grid>
             )}
@@ -548,8 +587,8 @@ const SearchPage = () => {
                 </Typography>
               </Box>
               
-              <SearchResults
-                jobs={searchResults}
+              <WorkerSearchResults
+                workers={searchResults}
                 loading={loading}
                 filters={searchParams}
                 onRemoveFilter={handleRemoveFilter}
@@ -558,7 +597,7 @@ const SearchPage = () => {
                 onPageChange={handlePageChange}
                 showMap={false}
                 onToggleView={handleToggleView}
-                onSaveJob={handleSaveJob}
+                onSaveWorker={handleSaveWorker}
                 isPublicView={true}
               />
             </Grid>
