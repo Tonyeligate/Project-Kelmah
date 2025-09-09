@@ -154,6 +154,9 @@ services/[service-name]/
 9. **Header Navigation**: Never add hirer-only or worker-only links to global header; use dashboard/sidebar instead
 10. **Job Page Confusion**: "Jobs" = public browse, "My Jobs" = hirer management (different APIs, different audiences)
 11. **Service Worker Caching**: Changes to header navigation may require service worker unregistration or hard refresh
+12. **Navigation Redirects**: Never redirect public navigation items to login pages; use public routes instead
+13. **Route Component Mismatch**: Ensure public routes use public components, not authenticated components that redirect to login
+14. **Dual Navigation Sources**: Always check both `useNavLinks.js` and `navLinks.js` when fixing navigation issues
 
 ## Error Investigation & Fix Protocol
 
@@ -170,6 +173,8 @@ services/[service-name]/
 - **Complete flow understanding**: Trace entire process flow before implementing fixes
 - **Public Route Testing**: Always test public routes without authentication to ensure they work for all users
 - **Navigation Flow Validation**: Verify navigation links work correctly for both authenticated and unauthenticated users
+- **Navigation Source Verification**: Check both `useNavLinks.js` and `navLinks.js` when investigating navigation issues
+- **Route Component Validation**: Ensure public routes use appropriate public components, not authenticated ones
 
 ## User Experience & Accessibility Guidelines
 
@@ -221,6 +226,8 @@ services/[service-name]/
 - **Authenticated Users**: Route to role-specific pages (e.g., `/hirer/find-talent` for hirers)
 - **Consistent Behavior**: Same navigation item should work for both logged-in and logged-out users
 - **Redirect Handling**: Use public routes instead of login redirects for discoverable content
+- **Route Component Mapping**: Ensure public routes use public components (SearchPage) not authenticated components (WorkerSearchPage)
+- **Navigation Sources**: Always check both `src/hooks/useNavLinks.js` and `src/config/navLinks.js` for navigation logic
 
 ### Component Safety Guidelines
 - **User Context Checks**: Always verify `user?.id` exists before accessing user properties
@@ -252,6 +259,8 @@ services/[service-name]/
 - **Unauthenticated Users**: Route to `/find-talents` (public page)
 - **Authenticated Hirers**: Route to `/hirer/find-talent` (dashboard page)
 - **Implementation**: Conditional routing based on authentication state
+- **Critical Fix**: Ensure `/find-talents` route uses `SearchPage` component, NOT `WorkerSearchPage` (which redirects to login)
+- **Navigation Sources**: Both `useNavLinks.js` and `navLinks.js` must route unauthenticated users to `/find-talents`, not login redirects
 
 ### Search & Discovery Patterns
 - **Worker Search**: Accessible via Jobs page filters, hero CTAs, not global header
