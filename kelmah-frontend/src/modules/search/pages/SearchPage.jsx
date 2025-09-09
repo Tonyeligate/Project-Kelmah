@@ -30,7 +30,7 @@ import SEO from '../../common/components/common/SEO';
 
 // Styled components
 const PageWrapper = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 0, 4),
+  padding: theme.spacing(0.5, 0, 4),
   backgroundColor: theme.palette.background.default,
   color: theme.palette.text.primary,
   minHeight: 'calc(100vh - 64px)',
@@ -386,7 +386,7 @@ const SearchPage = () => {
         description="Search for jobs by location, skills, experience level, and more. Find your perfect match with our advanced job search tools."
       />
 
-      <Container maxWidth="lg" sx={{ pt: 1 }}>
+      <Container maxWidth="lg" sx={{ pt: 0 }}>
         {/* Search Form */}
         <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
         
