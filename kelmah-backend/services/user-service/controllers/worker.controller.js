@@ -14,6 +14,7 @@ class WorkerController {
    */
   static async getAllWorkers(req, res) {
     try {
+      console.log('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
       const {
         page = 1,
         limit = 20,

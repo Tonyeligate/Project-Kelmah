@@ -135,13 +135,31 @@ try {
 app.use("/api/users", userRoutes);
 app.use("/api/availability", availabilityRoutes);
 
+// Debug middleware to log all incoming requests
+app.use((req, res, next) => {
+  console.log(`🌐 Incoming request: ${req.method} ${req.originalUrl} - Path: ${req.path}`);
+  next();
+});
+
 // Direct worker routes for public access (MUST come before other routes)
 const WorkerController = require('./controllers/worker.controller');
 // Handle both /workers (from gateway path rewrite) and /api/workers (direct calls)
-app.get('/workers', WorkerController.getAllWorkers);
-app.get('/workers/search', WorkerController.searchWorkers);
-app.get('/api/workers', WorkerController.getAllWorkers);
-app.get('/api/workers/search', WorkerController.searchWorkers);
+app.get('/workers', (req, res) => {
+  console.log('✅ /workers route hit');
+  WorkerController.getAllWorkers(req, res);
+});
+app.get('/workers/search', (req, res) => {
+  console.log('✅ /workers/search route hit');
+  WorkerController.searchWorkers(req, res);
+});
+app.get('/api/workers', (req, res) => {
+  console.log('✅ /api/workers route hit');
+  WorkerController.getAllWorkers(req, res);
+});
+app.get('/api/workers/search', (req, res) => {
+  console.log('✅ /api/workers/search route hit');
+  WorkerController.searchWorkers(req, res);
+});
 
 // Removed temporary profile/activity/statistics stub endpoints
 
