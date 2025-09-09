@@ -102,27 +102,63 @@ class WorkerController {
         );
       };
 
+      // Auto-populate missing worker fields for existing users
+      const workersWithDefaults = await Promise.all(workers.map(async (worker) => {
+        let updateNeeded = false;
+        const updates = {};
+        
+        // Set default values for missing fields
+        if (!worker.profession) { updates.profession = 'General Worker'; updateNeeded = true; }
+        if (!worker.skills || worker.skills.length === 0) { updates.skills = ['General Work']; updateNeeded = true; }
+        if (!worker.hourlyRate) { updates.hourlyRate = 25; updateNeeded = true; }
+        if (!worker.currency) { updates.currency = 'GHS'; updateNeeded = true; }
+        if (worker.rating === undefined) { updates.rating = 4.5; updateNeeded = true; }
+        if (!worker.totalReviews) { updates.totalReviews = 0; updateNeeded = true; }
+        if (!worker.totalJobsCompleted) { updates.totalJobsCompleted = 0; updateNeeded = true; }
+        if (!worker.availabilityStatus) { updates.availabilityStatus = 'available'; updateNeeded = true; }
+        if (worker.isVerified === undefined) { updates.isVerified = false; updateNeeded = true; }
+        if (!worker.yearsOfExperience) { updates.yearsOfExperience = 1; updateNeeded = true; }
+        if (!worker.location) { updates.location = 'Ghana'; updateNeeded = true; }
+        if (!worker.specializations || worker.specializations.length === 0) { updates.specializations = ['General Work']; updateNeeded = true; }
+        if (!worker.bio) { updates.bio = `${updates.profession || worker.profession || 'Professional Worker'} with ${updates.yearsOfExperience || worker.yearsOfExperience || 1} years of experience.`; updateNeeded = true; }
+        
+        // Update worker in database if needed
+        if (updateNeeded) {
+          try {
+            await MongoUser.findByIdAndUpdate(worker._id, updates);
+            return { ...worker, ...updates };
+          } catch (err) {
+            console.warn('Failed to update worker defaults:', err.message);
+            return { ...worker, ...updates };
+          }
+        }
+        
+        return worker;
+      }));
+
       // Format response data with ranking score
-      const formattedWorkers = workers.map(worker => ({
+      const formattedWorkers = workersWithDefaults.map(worker => ({
         id: worker._id.toString(),
         userId: worker._id.toString(),
         name: `${worker.firstName} ${worker.lastName}`,
-        bio: worker.bio || `${worker.profession || 'Professional Worker'} with ${worker.yearsOfExperience || 0} years of experience.`,
-        location: worker.location || 'Ghana',
-        hourlyRate: worker.hourlyRate || 25,
-        currency: worker.currency || 'GHS',
-        rating: worker.rating || 4.5,
-        totalReviews: worker.totalReviews || 0,
-        totalJobsCompleted: worker.totalJobsCompleted || 0,
-        availabilityStatus: worker.availabilityStatus || 'available',
-        isVerified: worker.isVerified || false,
+        bio: worker.bio,
+        location: worker.location,
+        hourlyRate: worker.hourlyRate,
+        currency: worker.currency,
+        rating: worker.rating,
+        totalReviews: worker.totalReviews,
+        totalJobsCompleted: worker.totalJobsCompleted,
+        availabilityStatus: worker.availabilityStatus,
+        isVerified: worker.isVerified,
         profilePicture: worker.profilePicture || null,
         skills: worker.skills?.map(skill => ({
           name: skill,
           proficiency: 'Intermediate',
           certified: false
         })) || [{ name: worker.profession || 'General Work', proficiency: 'Intermediate', certified: false }],
-        specializations: worker.specializations || [worker.profession || 'General Work']
+        specializations: worker.specializations,
+        title: worker.profession,
+        experience: `${worker.yearsOfExperience} years`
       })).map((w) => ({ ...w, rankScore: scoreFor(w) }));
 
       // Sort by computed rankScore desc
@@ -871,21 +907,57 @@ class WorkerController {
         );
       };
 
+      // Auto-populate missing worker fields for search results
+      const workersWithDefaults = await Promise.all(workers.map(async (worker) => {
+        let updateNeeded = false;
+        const updates = {};
+        
+        // Set default values for missing fields (same logic as getAllWorkers)
+        if (!worker.profession) { updates.profession = 'General Worker'; updateNeeded = true; }
+        if (!worker.skills || worker.skills.length === 0) { updates.skills = ['General Work']; updateNeeded = true; }
+        if (!worker.hourlyRate) { updates.hourlyRate = 25; updateNeeded = true; }
+        if (!worker.currency) { updates.currency = 'GHS'; updateNeeded = true; }
+        if (worker.rating === undefined) { updates.rating = 4.5; updateNeeded = true; }
+        if (!worker.totalReviews) { updates.totalReviews = 0; updateNeeded = true; }
+        if (!worker.totalJobsCompleted) { updates.totalJobsCompleted = 0; updateNeeded = true; }
+        if (!worker.availabilityStatus) { updates.availabilityStatus = 'available'; updateNeeded = true; }
+        if (worker.isVerified === undefined) { updates.isVerified = false; updateNeeded = true; }
+        if (!worker.yearsOfExperience) { updates.yearsOfExperience = 1; updateNeeded = true; }
+        if (!worker.location) { updates.location = 'Ghana'; updateNeeded = true; }
+        if (!worker.specializations || worker.specializations.length === 0) { updates.specializations = ['General Work']; updateNeeded = true; }
+        if (!worker.bio) { updates.bio = `${updates.profession || worker.profession || 'Professional Worker'} with ${updates.yearsOfExperience || worker.yearsOfExperience || 1} years of experience.`; updateNeeded = true; }
+        
+        // Update worker in database if needed
+        if (updateNeeded) {
+          try {
+            await MongoUser.findByIdAndUpdate(worker._id, updates);
+            return { ...worker, ...updates };
+          } catch (err) {
+            console.warn('Failed to update worker defaults in search:', err.message);
+            return { ...worker, ...updates };
+          }
+        }
+        
+        return worker;
+      }));
+
       // Format response data
-      const searchResults = workers.map(worker => ({
+      const searchResults = workersWithDefaults.map(worker => ({
         id: worker._id.toString(),
         name: `${worker.firstName} ${worker.lastName}`,
-        bio: worker.bio || `${worker.profession || 'Professional Worker'} with ${worker.yearsOfExperience || 0} years of experience.`,
-        location: worker.location || 'Ghana',
-        hourlyRate: worker.hourlyRate || 25,
-        currency: worker.currency || 'GHS',
-        rating: worker.rating || 4.5,
-        totalReviews: worker.totalReviews || 0,
-        totalJobsCompleted: worker.totalJobsCompleted || 0,
-        isVerified: worker.isVerified || false,
+        bio: worker.bio,
+        location: worker.location,
+        hourlyRate: worker.hourlyRate,
+        currency: worker.currency,
+        rating: worker.rating,
+        totalReviews: worker.totalReviews,
+        totalJobsCompleted: worker.totalJobsCompleted,
+        isVerified: worker.isVerified,
         profilePicture: worker.profilePicture || null,
-        skills: worker.skills || [worker.profession || 'General Work'],
-        availability: availability,
+        skills: worker.skills,
+        availability: worker.availabilityStatus,
+        title: worker.profession,
+        experience: `${worker.yearsOfExperience} years`,
         distance: latitude && longitude && worker.locationCoordinates ?
           calculateDistance(latitude, longitude, worker.locationCoordinates.coordinates[1], worker.locationCoordinates.coordinates[0]) : null
       })).map((w) => ({ ...w, rankScore: scoreFor(w) }));

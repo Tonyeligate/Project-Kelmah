@@ -135,6 +135,11 @@ try {
 app.use("/api/users", userRoutes);
 app.use("/api/availability", availabilityRoutes);
 
+// Direct worker routes for public access (workaround for route mapping issue)
+const WorkerController = require('./controllers/worker.controller');
+app.get('/api/workers', WorkerController.getAllWorkers);
+app.get('/api/workers/search', WorkerController.searchWorkers);
+
 // Removed temporary profile/activity/statistics stub endpoints
 
 // Removed temporary worker endpoints for applications and saved-jobs

@@ -150,6 +150,59 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'Bio cannot exceed 500 characters']
   },
   
+  // Worker-specific fields
+  profession: {
+    type: String,
+    default: 'General Worker'
+  },
+  skills: {
+    type: [String],
+    default: []
+  },
+  hourlyRate: {
+    type: Number,
+    default: 25
+  },
+  currency: {
+    type: String,
+    default: 'GHS'
+  },
+  rating: {
+    type: Number,
+    default: 4.5,
+    min: 0,
+    max: 5
+  },
+  totalReviews: {
+    type: Number,
+    default: 0
+  },
+  totalJobsCompleted: {
+    type: Number,
+    default: 0
+  },
+  availabilityStatus: {
+    type: String,
+    enum: ['available', 'busy', 'unavailable', 'vacation'],
+    default: 'available'
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  yearsOfExperience: {
+    type: Number,
+    default: 1
+  },
+  location: {
+    type: String,
+    default: 'Ghana'
+  },
+  specializations: {
+    type: [String],
+    default: []
+  },
+  
   // Security
   failedLoginAttempts: {
     type: Number,
