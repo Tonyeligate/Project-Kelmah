@@ -106,9 +106,9 @@ const SearchPage = () => {
     setSearchParams(params);
 
     // Perform initial search for all users to show workers
-    if (Object.keys(params).length === 0) {
+      if (Object.keys(params).length === 0) {
       // No URL params - show all workers by default
-      performSearch({ page: 1, limit: 12 });
+        performSearch({ page: 1, limit: 12 });
     } else if (params.page !== pagination.page) {
       // URL params exist - perform search with those params
       performSearch(params);
@@ -125,8 +125,8 @@ const SearchPage = () => {
 
     // Temporarily disable search suggestions as the endpoint doesn't exist
     console.log('Search suggestions temporarily disabled - endpoint not implemented');
-    setSearchSuggestions([]);
-    setShowSuggestions(false);
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
     return;
 
     // try {
@@ -163,12 +163,15 @@ const SearchPage = () => {
 
   // Perform search with provided parameters
   const performSearch = async (params = searchParams) => {
+    console.log('🔍 performSearch called with params:', params);
+    console.log('🔍 isAuthenticated:', isAuthenticated, 'isHirer:', isHirer);
     setLoading(true);
     setError(null);
 
     try {
       // Determine API endpoint based on user type
       const apiEndpoint = isAuthenticated && isHirer ? '/api/users/workers/search' : '/api/workers';
+      console.log('🔍 Using API endpoint:', apiEndpoint);
       
       // Prepare API parameters
       const apiParams = {
@@ -202,7 +205,9 @@ const SearchPage = () => {
       }
 
       // Make API request to appropriate endpoint
+      console.log('🔍 Making API request to:', apiEndpoint, 'with params:', apiParams);
       const response = await axios.get(apiEndpoint, { params: apiParams });
+      console.log('🔍 API response:', response.data);
 
       if (response.data && response.data.success) {
         // Unwrap standardized payloads: { data: { workers, pagination } } or { workers }
@@ -210,6 +215,7 @@ const SearchPage = () => {
         const workers = Array.isArray(payload)
           ? payload
           : (payload?.workers || payload?.results || []);
+        console.log('🔍 Extracted workers:', workers);
         setSearchResults(workers);
         const paginationData = payload?.pagination || response.data.meta?.pagination || {};
         setPagination({
@@ -556,6 +562,7 @@ const SearchPage = () => {
                 <WorkerSearchResults
                   workers={searchResults}
                   loading={loading}
+                  error={error}
                   filters={searchParams}
                   onRemoveFilter={handleRemoveFilter}
                   onSortChange={handleSortChange}
@@ -590,6 +597,7 @@ const SearchPage = () => {
               <WorkerSearchResults
                 workers={searchResults}
                 loading={loading}
+                error={error}
                 filters={searchParams}
                 onRemoveFilter={handleRemoveFilter}
                 onSortChange={handleSortChange}

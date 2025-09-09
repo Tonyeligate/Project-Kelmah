@@ -28,6 +28,7 @@ const initializeAxios = async () => {
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
       withCredentials: false, // Disable credentials for ngrok compatibility
     });
@@ -447,6 +448,7 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
   timeout: timeoutConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
       ...extraHeaders,
     },
     withCredentials: false, // Disable credentials for ngrok compatibility

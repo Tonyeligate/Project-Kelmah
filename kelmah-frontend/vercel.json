@@ -11,7 +11,15 @@
     },
     {
       "source": "/socket.io/(.*)",
+<<<<<<< HEAD
       "destination": "https://e3c6b3527e47.ngrok-free.app/socket.io/$1"
+=======
+      "destination": "https://7e132d8f76fc.ngrok-free.app/socket.io/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+>>>>>>> e3b671787740d535c756c0959608d739dfd0e5d8
     }
   ]
 }
