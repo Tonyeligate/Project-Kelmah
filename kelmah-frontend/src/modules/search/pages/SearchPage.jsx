@@ -104,16 +104,12 @@ const SearchPage = () => {
 
     setSearchParams(params);
 
-    // For unauthenticated users, always perform a default search to show workers
-    if (!isAuthenticated) {
-      // If no search params, show all workers by default
-      if (Object.keys(params).length === 0) {
-        performSearch({ page: 1, limit: 12 });
-      } else {
-        performSearch(params);
-      }
-    } else if (Object.keys(params).length > 0 && params.page !== pagination.page) {
-      // For authenticated users, only search if there are params
+    // Perform initial search for all users to show workers
+    if (Object.keys(params).length === 0) {
+      // No URL params - show all workers by default
+      performSearch({ page: 1, limit: 12 });
+    } else if (params.page !== pagination.page) {
+      // URL params exist - perform search with those params
       performSearch(params);
     }
   }, [location.search, isAuthenticated]);
@@ -126,23 +122,29 @@ const SearchPage = () => {
       return;
     }
 
-    try {
-      const response = await axios.get('/api/search/suggestions', {
-        params: { query },
-      });
+    // Temporarily disable search suggestions as the endpoint doesn't exist
+    console.log('Search suggestions temporarily disabled - endpoint not implemented');
+    setSearchSuggestions([]);
+    setShowSuggestions(false);
+    return;
 
-      if (response.data.success) {
-        setSearchSuggestions(response.data.data || []);
-        setShowSuggestions(true);
-      } else {
-        setSearchSuggestions([]);
-        setShowSuggestions(false);
-      }
-    } catch (error) {
-      console.error('Error fetching search suggestions:', error);
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-    }
+    // try {
+    //   const response = await axios.get('/api/search/suggestions', {
+    //     params: { query },
+    //   });
+
+    //   if (response.data.success) {
+    //     setSearchSuggestions(response.data.data || []);
+    //     setShowSuggestions(true);
+    //   } else {
+    //     setSearchSuggestions([]);
+    //     setShowSuggestions(false);
+    //   }
+    // } catch (error) {
+    //   console.error('Error fetching search suggestions:', error);
+    //   setSearchSuggestions([]);
+    //   setShowSuggestions(false);
+    // }
   };
 
   // Debounced search suggestion fetching
