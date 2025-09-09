@@ -375,8 +375,11 @@ app.use(
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
-    // Rewrite /api/workers to /workers (since mount path is stripped automatically)
-    pathRewrite: { '^/': '/workers' },
+    // Rewrite paths: / -> /workers, /search -> /workers/search, etc.
+    pathRewrite: { 
+      '^/$': '/workers',  // Root path to /workers
+      '^/(.*)': '/workers/$1'  // Sub-paths like /search to /workers/search
+    },
     onProxyReq: (proxyReq, req) => {
       console.log('🔄 API Gateway: Proxying worker request to user service -', req.originalUrl, '→', proxyReq.path);
     },
