@@ -1,7 +1,6 @@
 {
   "version": 2,
   "framework": "vite",
-  "comment": "Updated ngrok URLs for worker display fix",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "installCommand": "npm install --legacy-peer-deps",
