@@ -102,20 +102,25 @@ const WorkerSearch = () => {
   ];
 
   useEffect(() => {
+    console.log('WorkerSearch useEffect - making API calls');
     fetchWorkers();
     // Hydrate saved bookmarks
     (async () => {
       try {
+        console.log('WorkerSearch - fetching bookmarks');
         const res = await userServiceClient.get('/api/users/bookmarks');
         const ids = res?.data?.data?.workerIds || [];
         setSavedWorkers(ids);
-      } catch (_) {}
+      } catch (err) {
+        console.log('WorkerSearch - bookmarks fetch failed:', err.message);
+      }
     })();
   }, [page, filters, searchQuery]);
 
   const fetchWorkers = async () => {
     try {
       setLoading(true);
+      console.log('WorkerSearch - fetchWorkers called');
 
       // Try to fetch from user service, fall back to mock data
       const queryParams = new URLSearchParams({
@@ -125,6 +130,7 @@ const WorkerSearch = () => {
         skills: filters.skills.join(','),
       });
 
+      console.log('WorkerSearch - making API call to:', `/api/users/workers/search?${queryParams}`);
       const response = await userServiceClient.get(
         `/api/users/workers/search?${queryParams}`,
       );
@@ -145,6 +151,7 @@ const WorkerSearch = () => {
         'User service unavailable for worker search:',
         err.message,
       );
+      console.log('WorkerSearch - API call failed:', err.response?.status, err.response?.data);
       setError('Unable to fetch workers. Please try again later.');
       // Provide a safe fallback list for offline/unavailable service
       let fallback = [];

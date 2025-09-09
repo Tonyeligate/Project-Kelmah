@@ -108,28 +108,7 @@ app.use(cors(corsOptions));
 
 // Logging via createHttpLogger only
 
-// Rate limiting (shared Redis-backed limiter with fallback)
-try {
-  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
-  app.use(createLimiter('default'));
-} catch (err) {
-  const rateLimit = require('express-rate-limit');
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 600,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { success: false, message: 'Too many requests. Please try again later.' },
-  });
-  app.use(limiter);
-}
-
-// API routes
-app.use("/api/jobs", jobRoutes);
-app.use("/api/bids", bidRoutes);
-app.use("/api/user-performance", userPerformanceRoutes);
-
-// Health check endpoint
+// Health endpoints MUST be mounted before any rate limiting
 app.get("/health", (req, res) => {
   res.status(200).json({
     service: "Job Service",
@@ -138,7 +117,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Readiness and liveness endpoints
+// Readiness and liveness endpoints (also before limiter)
 app.get('/health/ready', (req, res) => {
   const isDbConnected = !!(require('mongoose').connection?.readyState === 1);
   res.status(isDbConnected ? 200 : 503).json({ ready: isDbConnected, timestamp: new Date().toISOString() });
@@ -147,6 +126,39 @@ app.get('/health/ready', (req, res) => {
 app.get('/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
+
+// Rate limiting (shared Redis-backed limiter with fallback) — create ONCE
+try {
+  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  const defaultLimiter = createLimiter('default');
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/health')) return next();
+    if (req.path.startsWith('/api/jobs/my-jobs')) return next();
+    if (req.path === '/my-jobs' || req.path.startsWith('/my-jobs')) return next();
+    return defaultLimiter(req, res, next);
+  });
+} catch (err) {
+  const rateLimit = require('express-rate-limit');
+  const defaultLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 600,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many requests. Please try again later.' }
+  });
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/health')) return next();
+    if (req.path.startsWith('/api/jobs/my-jobs')) return next();
+    if (req.path === '/my-jobs' || req.path.startsWith('/my-jobs')) return next();
+    return defaultLimiter(req, res, next);
+  });
+}
+
+// API routes
+app.use("/api/jobs", jobRoutes);
+app.use("/api/bids", bidRoutes);
+app.use("/api/user-performance", userPerformanceRoutes);
 
 // Deployment verification
 const { verifyDeployment } = require('./verify-deployment');

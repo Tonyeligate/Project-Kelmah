@@ -16,8 +16,14 @@ const createJobProxy = (targetUrl, options = {}) => {
   const defaultOptions = {
     target: targetUrl,
     changeOrigin: true,
-    pathRewrite: {
-      '^/api/jobs': '/api/jobs'
+    // Ensure the upstream sees the full service prefix even when mounted under '/api/jobs'
+    pathRewrite: (path, req) => {
+      try {
+        if (!path || path === '/') return '/api/jobs';
+        return path.startsWith('/api/jobs') ? path : `/api/jobs${path.startsWith('/') ? '' : '/'}${path}`;
+      } catch (_) {
+        return path;
+      }
     },
     onError: (err, req, res) => {
       console.error('Job proxy error:', err.message);

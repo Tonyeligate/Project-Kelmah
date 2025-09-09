@@ -27,12 +27,12 @@ const publicRoutes = [
     path="/profiles/user/:userId"
     element={<UserProfilePage />}
   />,
-  // ✅ REMOVED: /find-talents route - now only accessible via authenticated hirer routes
-  // <Route
-  //   key="/find-talents"
-  //   path="/find-talents"
-  //   element={<WorkerSearchPage />}
-  // />,
+  // ✅ ADDED: Public /find-talents route that shows login prompt
+  <Route
+    key="/find-talents"
+    path="/find-talents"
+    element={<WorkerSearchPage />}
+  />,
   <Route key="/premium" path="/premium" element={<PremiumPage />} />,
   <Route
     key="/search/location"

@@ -163,7 +163,9 @@ app.use((req, res, next) => {
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
-  message: { error: 'Too many requests' }
+  message: { error: 'Too many requests' },
+  // Do not throttle hirer dashboard critical endpoint (match against full originalUrl)
+  skip: (req) => (req.originalUrl || '').startsWith('/api/jobs/my-jobs')
 }));
 
 // Root route - API welcome and information
@@ -375,6 +377,10 @@ const { getRateLimiter } = require('./middlewares/rate-limiter');
 // Apply rate limiting based on endpoint type
 app.use('/api/jobs', (req, res, next) => {
   // Apply different rate limits based on the operation
+  // Bypass limiter for my-jobs dashboard endpoint
+  if (req.method === 'GET' && (req.path.startsWith('/my-jobs') || (req.originalUrl || '').startsWith('/api/jobs/my-jobs'))) {
+    return next();
+  }
   if (req.method === 'POST') {
     // Job creation - stricter rate limit
     return getRateLimiter('jobCreation')(req, res, next);
@@ -388,8 +394,8 @@ app.use('/api/jobs', (req, res, next) => {
 });
 
 // Apply enhanced job proxy with health checking
+// Note: Do NOT pass pathRewrite here; the proxy already ensures '/api/jobs' prefix is preserved
 app.use('/api/jobs', createEnhancedJobProxy(services.job, {
-  pathRewrite: { '^/api/jobs': '/api/jobs' },
   onError: (err, req, res) => {
     console.error('[API Gateway] Job service error:', err.message);
     res.status(503).json({ 

@@ -25,7 +25,6 @@ router.get("/categories", jobController.getJobCategories);
 router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
 router.get("/contracts/:id", jobController.getContractById);
 router.post("/contracts/:id/disputes", authenticateUser, jobController.createContractDispute);
-router.get("/:id", jobController.getJobById);
 
 // Protected routes
 router.use(authenticateUser);
@@ -97,5 +96,8 @@ router.patch('/:id/renew', authorizeRoles('hirer'), jobController.renewJob);
 
 // Admin routes
 router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
+
+// Keep the catch-all ID route LAST to avoid shadowing specific routes like /my-jobs
+router.get('/:id', jobController.getJobById);
 
 module.exports = router;

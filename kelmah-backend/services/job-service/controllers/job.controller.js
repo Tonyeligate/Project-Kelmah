@@ -42,6 +42,10 @@ const createJob = async (req, res, next) => {
       body.budget = Number(body.budget);
     }
 
+    // Ensure defaults for payment type and currency
+    if (!body.paymentType) body.paymentType = 'fixed';
+    if (!body.currency) body.currency = 'GHS';
+
     // duration string like "2 weeks" → { value, unit }
     if (typeof body.duration === 'string') {
       const match = body.duration.match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
@@ -51,6 +55,10 @@ const createJob = async (req, res, next) => {
         if (unit.endsWith('s')) unit = unit.slice(0, -1);
         body.duration = { value: val, unit };
       }
+    }
+    // Provide a default duration if still missing
+    if (!body.duration || typeof body.duration !== 'object') {
+      body.duration = { value: 1, unit: 'week' };
     }
 
     // locationType + location string → location object
@@ -63,6 +71,63 @@ const createJob = async (req, res, next) => {
     // Ensure skills is array of strings
     if (Array.isArray(body.skills)) {
       body.skills = body.skills.map(String);
+    }
+
+    // Map skills into requirements if requirements not provided
+    if (!body.requirements) {
+      const primary = Array.isArray(body.skills) && body.skills.length > 0 ? [String(body.skills[0])] : [];
+      const secondary = Array.isArray(body.skills) && body.skills.length > 1 ? body.skills.slice(1).map(String) : [];
+      body.requirements = {
+        primarySkills: primary,
+        secondarySkills: secondary,
+        experienceLevel: body.experienceLevel || 'intermediate',
+        certifications: [],
+        tools: []
+      };
+    }
+
+    // Provide bidding defaults if missing
+    if (!body.bidding) {
+      const base = Number(body.budget) || 0;
+      const min = base > 0 ? Math.max(1, Math.floor(base * 0.8)) : 100;
+      const max = base > 0 ? Math.max(min, Math.ceil(base * 1.2)) : 500;
+      body.bidding = {
+        maxBidders: 5,
+        currentBidders: 0,
+        bidDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        minBidAmount: min,
+        maxBidAmount: max,
+        bidStatus: 'open'
+      };
+    } else {
+      // Ensure required bidding fields exist
+      if (body.bidding.minBidAmount == null) {
+        const base = Number(body.budget) || 0;
+        body.bidding.minBidAmount = base > 0 ? Math.max(1, Math.floor(base * 0.8)) : 100;
+      }
+      if (body.bidding.maxBidAmount == null) {
+        const base = Number(body.budget) || 0;
+        const min = Number(body.bidding.minBidAmount) || 100;
+        body.bidding.maxBidAmount = base > 0 ? Math.max(min, Math.ceil(base * 1.2)) : 500;
+      }
+      if (!body.bidding.bidDeadline) {
+        body.bidding.bidDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      }
+      if (!body.bidding.maxBidders) body.bidding.maxBidders = 5;
+      if (body.bidding.currentBidders == null) body.bidding.currentBidders = 0;
+      if (!body.bidding.bidStatus) body.bidding.bidStatus = 'open';
+    }
+
+    // Map region/district into locationDetails if missing
+    if (!body.locationDetails) {
+      const region = body.region || body.location?.region || body.locationRegion || 'Greater Accra';
+      const district = body.district || body.location?.district || body.locationDistrict;
+      body.locationDetails = {
+        region,
+        district,
+        coordinates: body.coordinates || { lat: undefined, lng: undefined },
+        searchRadius: 25
+      };
     }
 
     // Create job

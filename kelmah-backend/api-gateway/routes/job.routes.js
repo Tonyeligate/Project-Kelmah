@@ -16,7 +16,8 @@ const jobProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
     pathPrefix: '/api/jobs',
-    requireAuth: true
+    requireAuth: true,
+    pathRewrite: { '^/api/jobs': '/api/jobs' }
   });
   return proxy(req, res, next);
 };
@@ -26,7 +27,8 @@ const publicJobProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
     pathPrefix: '/api/jobs',
-    requireAuth: false
+    requireAuth: false,
+    pathRewrite: { '^/api/jobs': '/api/jobs' }
   });
   return proxy(req, res, next);
 };
@@ -43,6 +45,7 @@ router.use(authenticate);
 // Job CRUD operations
 router.get('/', jobProxy); // Get jobs (with filters)
 router.post('/', jobProxy); // Create new job
+router.get('/my-jobs', jobProxy); // Hirer: my jobs
 router.get('/:jobId', jobProxy); // Get specific job
 router.put('/:jobId', jobProxy); // Update job
 router.delete('/:jobId', jobProxy); // Delete job

@@ -10,9 +10,14 @@ const WorkerSearchPage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
+  // Debug authentication state
+  console.log('WorkerSearchPage - isAuthenticated:', isAuthenticated);
+
   // Redirect to login if not authenticated
   useEffect(() => {
+    console.log('WorkerSearchPage useEffect - isAuthenticated:', isAuthenticated);
     if (!isAuthenticated) {
+      console.log('WorkerSearchPage - redirecting to login');
       navigate('/login?redirect=/hirer/find-talent'); // ✅ FIXED: Use correct route
     }
   }, [isAuthenticated, navigate]);
