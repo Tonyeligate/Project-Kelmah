@@ -330,6 +330,7 @@ app.use('/api/settings',
 app.use(
   '/api/workers',
   (req, res, next) => {
+    console.log('🌐 API Gateway: Worker route hit -', req.method, req.originalUrl);
     if (req.method === 'GET') return next();
     return authMiddleware.authenticate(req, res, next);
   },
@@ -376,6 +377,13 @@ app.use(
     changeOrigin: true,
     // Direct route to user service (no path rewriting needed)
     pathRewrite: {},
+    onProxyReq: (proxyReq, req) => {
+      console.log('🔄 API Gateway: Proxying worker request to user service -', req.originalUrl, '→', proxyReq.path);
+    },
+    onError: (err, req, res) => {
+      console.error('❌ API Gateway: Worker proxy error -', err.message);
+      res.status(500).json({ error: 'Worker service unavailable', details: err.message });
+    }
   })
 );
 
