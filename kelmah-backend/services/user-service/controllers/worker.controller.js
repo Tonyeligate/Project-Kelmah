@@ -1447,107 +1447,21 @@ class WorkerController {
 
 // REMOVED DUPLICATE searchWorkers FUNCTION
 
+}
 
+// Helper function to calculate distance between coordinates
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c * 100) / 100; // Round to 2 decimal places
+}
 
-      const offset = (page - 1) * limit;
-
-      const whereClause = { 
-
-        isActive: true,
-
-        availabilityStatus: availability 
-
-      };
-
-
-
-      // Text search
-
-      if (query) {
-
-        whereClause[Op.or] = [
-
-          { bio: { [Op.iLike]: `%${query}%` } },
-
-          { location: { [Op.iLike]: `%${query}%` } },
-
-          { specializations: { [Op.contains]: [query.toLowerCase()] } }
-
-        ];
-
-      }
-
-
-
-      // Location search
-
-      if (location) {
-
-        whereClause.location = { [Op.iLike]: `%${location}%` };
-
-      }
-
-
-
-      // Rating filter
-
-      if (minRating > 0) {
-
-        whereClause.rating = { [Op.gte]: parseFloat(minRating) };
-
-      }
-
-
-
-      // Rate filter
-
-      if (maxRate) {
-
-        whereClause.hourlyRate = { [Op.lte]: parseFloat(maxRate) };
-
-      }
-
-
-
-      // Geographic search
-
-      if (latitude && longitude && radius) {
-
-        // Implement geographic search with PostGIS or similar
-
-        // For now, basic implementation
-
-        whereClause.latitude = {
-
-          [Op.between]: [
-
-            parseFloat(latitude) - (radius / 111),
-
-            parseFloat(latitude) + (radius / 111)
-
-          ]
-
-        };
-
-        whereClause.longitude = {
-
-          [Op.between]: [
-
-            parseFloat(longitude) - (radius / 111),
-
-            parseFloat(longitude) + (radius / 111)
-
-          ]
-
-        };
-
-      }
-
-
-
-      // Sort options
-
-      let orderClause;
+module.exports = WorkerController;
 
       switch (sortBy) {
 
