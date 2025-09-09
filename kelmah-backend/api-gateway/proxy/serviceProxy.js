@@ -17,17 +17,17 @@ const createServiceProxy = (options) => {
   const {
     target,
     pathPrefix,
-    pathRewrite = {},
+    pathRewrite: providedPathRewrite = {},
     requireAuth = true,
   } = options;
 
   // Build a safe pathRewrite that preserves nested router base paths
   // and applies any explicit rewrite rules provided by callers.
   const applyObjectRewrite = (incomingPath) => {
-    if (!pathRewrite || typeof pathRewrite !== 'object') return incomingPath;
+    if (!providedPathRewrite || typeof providedPathRewrite !== 'object') return incomingPath;
     let rewritten = incomingPath;
     try {
-      for (const [pattern, replacement] of Object.entries(pathRewrite)) {
+      for (const [pattern, replacement] of Object.entries(providedPathRewrite)) {
         const regex = new RegExp(pattern);
         if (regex.test(rewritten)) {
           rewritten = rewritten.replace(regex, replacement);
@@ -49,6 +49,11 @@ const createServiceProxy = (options) => {
     // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
     pathRewrite: (path, req) => {
       try {
+        // If caller supplied a function, use it directly
+        if (typeof providedPathRewrite === 'function') {
+          return providedPathRewrite(path, req);
+        }
+
         const base = typeof pathPrefix === 'string' && pathPrefix.length > 0
           ? pathPrefix
           : (req && typeof req.baseUrl === 'string' ? req.baseUrl : '');
@@ -59,7 +64,7 @@ const createServiceProxy = (options) => {
           joinedPath = `${base}${joinedPath.startsWith('/') ? '' : '/'}${joinedPath}`;
         }
 
-        // Apply any explicit rewrite rules last
+        // Apply any explicit rewrite rules last (object form)
         return applyObjectRewrite(joinedPath);
       } catch (_) {
         // Fallback to original
@@ -73,9 +78,12 @@ const createServiceProxy = (options) => {
         proxyReq.setHeader('X-User-Role', req.user.role);
       }
       
-      // Forward the original token
+      // Forward Authorization header/token to upstream
+      const incomingAuthHeader = req.headers && req.headers['authorization'];
       if (req.token) {
         proxyReq.setHeader('Authorization', `Bearer ${req.token}`);
+      } else if (incomingAuthHeader) {
+        proxyReq.setHeader('Authorization', incomingAuthHeader);
       }
       
       // Add internal service identification

@@ -15,8 +15,11 @@ const getServiceUrl = (req) => req.app.get('serviceUrls').USER_SERVICE;
 const userProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
-    pathPrefix: '/api',
-    requireAuth: true
+    // Preserve full prefix so user-service receives /api/users/*
+    pathPrefix: '/api/users',
+    // Force preserving the ORIGINAL full URL (including /api/users)
+    pathRewrite: (path, request) => request.originalUrl,
+    requireAuth: true,
   });
   return proxy(req, res, next);
 };
@@ -72,5 +75,8 @@ router.get('/settings', userProxy);
 router.put('/settings', userProxy);
 router.put('/settings/notifications', userProxy);
 router.put('/settings/privacy', userProxy);
+
+// Fallback: proxy any other /api/users/* paths to user-service preserving prefix
+router.use('/', userProxy);
 
 module.exports = router;

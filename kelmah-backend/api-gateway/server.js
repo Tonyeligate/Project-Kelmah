@@ -365,7 +365,9 @@ app.use(
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
-    pathRewrite: { '^/api/workers': '/api/workers' },
+    // Map public worker endpoints to user-service workers under /api/users
+    // This preserves a clean public route while hitting the actual upstream path
+    pathRewrite: { '^/api/workers': '/api/users/workers' },
   })
 );
 
