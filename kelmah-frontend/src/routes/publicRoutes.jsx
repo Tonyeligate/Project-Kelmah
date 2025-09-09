@@ -8,7 +8,6 @@ import JobsPage from '../modules/jobs/pages/JobsPage';
 import JobDetailsPage from '../modules/jobs/pages/JobDetailsPage';
 import JobApplicationForm from '../modules/worker/components/JobApplicationForm';
 import UserProfilePage from '../modules/profiles/pages/UserProfilePage';
-import WorkerSearchPage from '../modules/hirer/pages/WorkerSearchPage'; // ✅ ADDED: For public /find-talents route
 import PremiumPage from '../modules/premium/pages/PremiumPage';
 import GeoLocationSearch from '../modules/search/pages/GeoLocationSearch';
 import SearchPage from '../modules/search/pages/SearchPage';
@@ -27,11 +26,11 @@ const publicRoutes = [
     path="/profiles/user/:userId"
     element={<UserProfilePage />}
   />,
-  // ✅ ADDED: Public /find-talents route that shows login prompt
+  // ✅ ADDED: Public /find-talents route that shows workers
   <Route
     key="/find-talents"
     path="/find-talents"
-    element={<WorkerSearchPage />}
+    element={<SearchPage />}
   />,
   <Route key="/premium" path="/premium" element={<PremiumPage />} />,
   <Route
