@@ -253,7 +253,16 @@ app.use('/api/auth', authRouter);
 // User routes (protected) with validation
 app.use(
   '/api/users',
-  authMiddleware.authenticate,
+  // Allow-list public GET access for worker listings & details
+  (req, res, next) => {
+    if (req.method === 'GET') {
+      const p = req.path || '';
+      if (p === '/workers' || /^\/workers\//.test(p)) {
+        return next();
+      }
+    }
+    return authMiddleware.authenticate(req, res, next);
+  },
   celebrate({
     [Segments.QUERY]: Joi.object({
       page: Joi.number().integer().min(1).default(1),
