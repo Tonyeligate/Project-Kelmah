@@ -165,7 +165,7 @@ const SearchPage = () => {
 
     try {
       // Determine API endpoint based on user type
-      const apiEndpoint = isAuthenticated && isHirer ? '/api/search' : '/api/workers';
+      const apiEndpoint = isAuthenticated && isHirer ? '/api/users/workers/search' : '/api/workers';
       
       // Prepare API parameters
       const apiParams = {
