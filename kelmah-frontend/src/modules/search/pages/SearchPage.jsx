@@ -127,7 +127,7 @@ const SearchPage = () => {
     }
 
     try {
-      const response = await axios.get('/api/jobs/search/suggestions', {
+      const response = await axios.get('/api/search/suggestions', {
         params: { query },
       });
 
@@ -201,13 +201,14 @@ const SearchPage = () => {
       // Make API request to appropriate endpoint
       const response = await axios.get(apiEndpoint, { params: apiParams });
 
-      if (response.data.success) {
-        // Unwrap data and pagination
-        const data = Array.isArray(response.data.data)
-          ? response.data.data
-          : response.data.data;
-        setSearchResults(data);
-        const paginationData = response.data.meta?.pagination || {};
+      if (response.data && response.data.success) {
+        // Unwrap standardized payloads: { data: { workers, pagination } } or { workers }
+        const payload = response.data.data || response.data;
+        const workers = Array.isArray(payload)
+          ? payload
+          : (payload?.workers || payload?.results || []);
+        setSearchResults(workers);
+        const paginationData = payload?.pagination || response.data.meta?.pagination || {};
         setPagination({
           page: paginationData.page || apiParams.page,
           limit: paginationData.limit || apiParams.limit,
