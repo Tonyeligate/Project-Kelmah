@@ -9,24 +9,41 @@ const metaEnv = process.env;
  * @returns {Promise<boolean>} - Whether the API is reachable
  */
 export const checkApiHealth = async (showLoading = true) => {
-  try {
-    // In development, allow proceeding without API connectivity
-    if (import.meta.env.DEV) {
-      console.log('Development mode: Assuming API is available');
-      return true;
-    }
-
-    // Check actual health endpoint via API gateway
-    const response = await axiosInstance.get('/health', {
-      timeout: 3000, // Shorter timeout for faster development
-      skipAuthRefresh: true, // Don't try to refresh tokens on health check
-      skipErrorHandling: true, // Handle errors locally
-    });
-    return response.status === 200;
-  } catch (error) {
-    console.log('API health check failed:', error.message);
-    return import.meta.env.DEV; // In development, proceed even if API is down
+  // In development, allow proceeding without API connectivity
+  if (import.meta.env.DEV) {
+    console.log('Development mode: Assuming API is available');
+    return true;
   }
+
+  const maxAttempts = 3;
+  const baseTimeoutMs = 3000;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const timeout = baseTimeoutMs * attempt; // simple linear backoff
+    try {
+      const response = await axiosInstance.get('/health', {
+        timeout,
+        skipAuthRefresh: true,
+        skipErrorHandling: true,
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      });
+      return response.status === 200;
+    } catch (error) {
+      const isLast = attempt === maxAttempts;
+      console.log(
+        `API health check attempt ${attempt}/${maxAttempts} failed:`,
+        error?.message || 'unknown error'
+      );
+      if (isLast) {
+        return false;
+      }
+      // brief delay before next attempt
+      await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+    }
+  }
+  return false;
 };
 
 // Utility functions for API calls

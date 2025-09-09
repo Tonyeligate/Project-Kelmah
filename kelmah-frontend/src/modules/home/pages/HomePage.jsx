@@ -253,6 +253,11 @@ const HomePage = () => {
     },
   ];
 
+  const goToCategorySearch = (category) => {
+    const query = encodeURIComponent(category);
+    navigate(`/search?categories=${query}`);
+  };
+
   // Control loading screen
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -689,7 +694,7 @@ const HomePage = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: index * 0.15 }}
                     >
-                      <ServiceCard>
+                      <ServiceCard onClick={() => goToCategorySearch(service.title)}>
                         <Box sx={{ position: 'relative' }}>
                         <ServiceCardMedia
                           image={service.image}
@@ -732,6 +737,34 @@ const HomePage = () => {
                                 }}
                           />
                         ))}
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                            <StyledButton
+                              variant="contained"
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                goToCategorySearch(service.title);
+                              }}
+                            >
+                              Find Workers
+                            </StyledButton>
+                            <StyledButton
+                              variant="outlined"
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!user) {
+                                  navigate('/login?redirect=/hirer/jobs/post');
+                                } else if (user.role === 'hirer') {
+                                  navigate('/hirer/jobs/post');
+                                } else {
+                                  navigate('/jobs');
+                                }
+                              }}
+                            >
+                              Post Job
+                            </StyledButton>
                           </Box>
                         </ServiceCardContent>
                   </ServiceCard>
