@@ -1445,37 +1445,7 @@ class WorkerController {
 
    */
 
-  static async searchWorkers(req, res) {
-
-    try {
-
-      const {
-
-        query = '',
-
-        location,
-
-        skills,
-
-        minRating = 0,
-
-        maxRate,
-
-        availability = 'available',
-
-        radius = 50,
-
-        latitude,
-
-        longitude,
-
-        page = 1,
-
-        limit = 20,
-
-        sortBy = 'relevance'
-
-      } = req.query;
+// REMOVED DUPLICATE searchWorkers FUNCTION
 
 
 
