@@ -155,7 +155,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
       minHeight: '100vh',
       width: '100%',
       overflowX: 'hidden', // Prevents horizontal scroll only
-      overflowY: 'auto', // Allows vertical scroll
+      overflowY: 'auto', // Allow natural vertical scrolling
     }}>
       <Header toggleTheme={toggleTheme} mode={mode} />
       <Fade in key={location.pathname} timeout={500}>
@@ -168,7 +168,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
             py: { xs: 1, sm: 2, md: 3 },
             px: { xs: 1, sm: 2, md: 3 },
             overflowX: 'hidden',
-            overflowY: 'auto',
+            overflowY: 'visible', // Allow content to flow naturally
             // Ensure content adapts to all zoom levels
             '@media (min-width: 1px)': {
               maxWidth: '100vw',
@@ -178,7 +178,6 @@ const Layout = ({ children, toggleTheme, mode }) => {
             '@media (max-width: 768px)': {
               py: { xs: 0.5, sm: 1 },
               px: { xs: 0.5, sm: 1 },
-              minHeight: '100vh', // Full height since footer is now dynamic
             },
             // No bottom padding needed since footer is now dynamic and fixed
             pb: { xs: 1, sm: 2, md: 3 },

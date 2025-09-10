@@ -22,7 +22,7 @@ html {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-  overflow-y: auto; /* Enable vertical scrolling */
+  /* Let the body handle vertical scrolling to prevent conflicts */
 }
 
 body {
@@ -47,7 +47,30 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-  overflow-y: auto; /* Enable vertical scrolling */
+  /* Let the body handle vertical scrolling to prevent conflicts */
+}
+
+/* Prevent scroll bar glitches */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.3) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 215, 0, 0.3);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 215, 0, 0.5);
 }
 
 /* Typography Reset */

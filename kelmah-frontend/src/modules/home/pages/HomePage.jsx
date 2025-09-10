@@ -22,6 +22,7 @@ import GestureControl from '../../common/components/controls/GestureControl';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import { checkApiHealth } from '../../common/utils/apiUtils';
+import { useResponsive, useResponsiveTypography, useResponsiveLayout } from '../../../hooks/useResponsive';
 import backgroundImg from '../../../assets/images/background.jpg';
 import plumbingImg from '../../../assets/images/plumbing.jpg.jpeg';
 import electricalImg from '../../../assets/images/electrical.jpg';
@@ -42,8 +43,7 @@ import { alpha } from '@mui/material/styles';
 const Section = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   position: 'relative',
-  overflowX: 'hidden', // Prevent horizontal scroll
-  overflowY: 'visible', // Allow vertical scroll
+  overflow: 'hidden', // Prevent any overflow to avoid scroll bar glitches
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -56,7 +56,6 @@ const Section = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '100vw',
   },
-  // Ensure consistent desktop layout on all devices
   // Tablet adjustments
   [theme.breakpoints.between('sm', 'md')]: {
     minHeight: 'auto',
@@ -142,34 +141,51 @@ const ServiceCard = styled(Card)(({ theme }) => ({
   height: '100%',
   background: 'rgba(44, 44, 44, 0.6)',
   backdropFilter: 'blur(8px)',
-  borderRadius: theme.spacing(3),
+  borderRadius: theme.spacing(2),
   overflow: 'hidden',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   border: '2px solid rgba(255, 215, 0, 0.2)',
   cursor: 'pointer',
+  // Mobile-optimized hover effects
+  '@media (max-width: 600px)': {
+    borderRadius: theme.spacing(1.5),
   '&:hover': {
-    transform: 'translateY(-12px) scale(1.02)',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+      transform: 'translateY(-4px)',
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
+      border: '2px solid rgba(255, 215, 0, 0.4)',
+    },
+  },
+  '&:hover': {
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: '0 15px 30px rgba(0, 0, 0, 0.4)',
     border: '2px solid rgba(255, 215, 0, 0.6)',
     '& .MuiCardMedia-root': {
-      transform: 'scale(1.1)',
+      transform: 'scale(1.05)',
     },
     '& .service-icon': {
-      transform: 'rotate(360deg)',
+      transform: 'rotate(180deg)',
     },
   },
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: 220,
-  transition: 'transform 0.6s ease',
+  height: { xs: 180, sm: 200, md: 220 },
+  transition: 'transform 0.4s ease',
   position: 'relative',
+  // Mobile-specific optimizations
+  '@media (max-width: 600px)': {
+    height: 160,
+  },
 }));
 
 const ServiceCardContent = styled(CardContent)(({ theme }) => ({
   background:
     'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(44,44,44,0.6) 100%)',
-  padding: theme.spacing(3),
+  padding: { xs: theme.spacing(2), sm: theme.spacing(2.5), md: theme.spacing(3) },
+  // Mobile-specific optimizations
+  '@media (max-width: 600px)': {
+    padding: theme.spacing(1.5),
+  },
 }));
 
 const TradeIcon = styled(Box)(({ theme }) => ({
@@ -189,7 +205,9 @@ const TradeIcon = styled(Box)(({ theme }) => ({
 const HomePage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isSm = false; // Force desktop layout on all devices
+  const { isMobile, isTablet, isDesktop } = useResponsive();
+  const responsiveTypography = useResponsiveTypography();
+  const responsiveLayout = useResponsiveLayout();
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState({
     isReachable: true,
@@ -323,15 +341,15 @@ const HomePage = () => {
               width: '100%',
               maxWidth: '100vw',
               px: { xs: 2, sm: 3, md: 4, lg: 6 },
-              py: { xs: 1.5, sm: 2.5 },
+              py: { xs: 2, sm: 3, md: 4 },
               boxSizing: 'border-box',
-              // SportyBet-style mobile content optimization
-              '@media (max-width: 768px)': {
+              // Mobile-optimized spacing
+              '@media (max-width: 600px)': {
                 px: 1.5,
-                py: 1,
+                py: 2,
               },
             }}>
-              <Grid container spacing={4}>
+              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                 <Grid item xs={12} md={8}>
                   <motion.div
                     initial={{ opacity: 0, y: 50 }}
@@ -357,15 +375,27 @@ const HomePage = () => {
             </motion.div>
                     )}
                     <Typography
-                      variant={isSm ? 'h3' : 'h1'}
+                      variant={isMobile ? 'h3' : 'h1'}
                       sx={{
-                        fontSize: { xs: '2.5rem', sm: '3.8rem', md: '5rem' },
+                        fontSize: { 
+                          xs: '2rem', 
+                          sm: '2.5rem', 
+                          md: '3.5rem', 
+                          lg: '4.5rem',
+                          xl: '5rem' 
+                        },
                         fontWeight: 800,
                         color: '#FFFFFF',
-                        mb: { xs: 2, sm: 3 },
-                        textShadow: '3px 3px 6px rgba(0,0,0,0.9), 1px 1px 3px rgba(0,0,0,0.8)',
-                        lineHeight: { xs: 1.2, sm: 1.1 },
+                        mb: { xs: 1.5, sm: 2, md: 3 },
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.9), 1px 1px 2px rgba(0,0,0,0.8)',
+                        lineHeight: { xs: 1.1, sm: 1.2, md: 1.1 },
                         textAlign: { xs: 'center', md: 'left' },
+                        // Mobile-specific optimizations
+                        '@media (max-width: 600px)': {
+                          fontSize: '1.75rem',
+                          lineHeight: 1.1,
+                          mb: 1,
+                        },
                       }}
                     >
                       Ghana's Premier
@@ -387,17 +417,28 @@ const HomePage = () => {
                       Network
                     </Typography>
                     <Typography
-                      variant="h5"
+                      variant={isMobile ? 'h6' : 'h5'}
                       sx={{
                         color: '#FFFFFF',
-                        mb: { xs: 3, sm: 4 },
+                        mb: { xs: 2, sm: 3, md: 4 },
                         fontWeight: 500,
                         maxWidth: { xs: '100%', md: '85%' },
-                        lineHeight: 1.6,
-                        fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem' },
+                        lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
+                        fontSize: { 
+                          xs: '1rem', 
+                          sm: '1.1rem', 
+                          md: '1.3rem',
+                          lg: '1.4rem' 
+                        },
                         textAlign: { xs: 'center', md: 'left' },
-                        px: { xs: 1, sm: 0 },
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
+                        px: { xs: 0.5, sm: 0 },
+                        textShadow: '1px 1px 3px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
+                        // Mobile-specific optimizations
+                        '@media (max-width: 600px)': {
+                          fontSize: '0.95rem',
+                          lineHeight: 1.3,
+                          mb: 1.5,
+                        },
                       }}
                     >
                       Connect with verified skilled workers across Ghana. From
@@ -412,17 +453,16 @@ const HomePage = () => {
                     <Box
                       sx={{
                         display: 'flex',
-                        flexDirection: isSm ? 'column' : 'row',
-                        gap: { xs: 2, sm: 2.5, md: 3 },
-                        mt: { xs: 3, sm: 4, md: 5 },
+                        flexDirection: { xs: 'column', md: 'row' },
+                        gap: { xs: 1.5, sm: 2, md: 3 },
+                        mt: { xs: 2, sm: 3, md: 4 },
                         alignItems: { xs: 'center', md: 'flex-start' },
                         justifyContent: { xs: 'center', md: 'flex-start' },
                         width: '100%',
-                        // SportyBet-style mobile button layout
-                        '@media (max-width: 768px)': {
-                          gap: 1.5,
-                          mt: 2.5,
-                          flexDirection: 'column',
+                        // Mobile-optimized button layout
+                        '@media (max-width: 600px)': {
+                          gap: 1,
+                          mt: 1.5,
                         },
                       }}
                     >
@@ -430,73 +470,78 @@ const HomePage = () => {
                         <>
                           <StyledButton
                             variant="contained"
-                              size="large"
+                            size={isMobile ? 'medium' : 'large'}
                             sx={{
                                 background:
                                   'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                 color: '#000',
                                 fontWeight: 800,
-                                fontSize: '1.2rem',
-                                px: 5,
-                                py: 2,
-                                boxShadow: '0 6px 20px rgba(255, 215, 0, 0.5)',
+                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                                px: { xs: 3, sm: 4, md: 5 },
+                                py: { xs: 1.5, sm: 1.8, md: 2 },
+                                boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
                                 border: '2px solid rgba(255, 215, 0, 0.8)',
-                                // SportyBet-style mobile button optimization
-                                '@media (max-width: 768px)': {
-                                  px: 3,
-                                  py: 1.5,
-                                  fontSize: '1rem',
-                                  minHeight: '48px',
-                                  width: '100%',
+                                minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                                width: { xs: '100%', sm: 'auto' },
+                                maxWidth: { xs: '300px', sm: 'none' },
+                                // Mobile-specific optimizations
+                                '@media (max-width: 600px)': {
+                                  px: 2.5,
+                                  py: 1.2,
+                                  fontSize: '0.95rem',
+                                  minHeight: '44px',
                                   maxWidth: '280px',
                                 },
                               '&:hover': {
                                   background:
                                     'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                                  boxShadow: '0 8px 25px rgba(255, 215, 0, 0.7)',
-                                  transform: 'translateY(-2px)',
+                                  boxShadow: '0 6px 20px rgba(255, 215, 0, 0.6)',
+                                  transform: 'translateY(-1px)',
                               },
                             }}
-                            fullWidth={isSm}
+                            fullWidth={isMobile}
                             onClick={() => navigate('/register')}
                           >
-                              {isSm ? 'Join Kelmah' : 'Join the Network'}
+                              {isMobile ? 'Join Kelmah' : 'Join the Network'}
                           </StyledButton>
                           <StyledButton
                             variant="outlined"
-                              size="large"
+                            size={isMobile ? 'medium' : 'large'}
                             sx={{
                               borderColor: '#FFD700',
                               color: '#FFD700',
-                                borderWidth: 3,
+                                borderWidth: { xs: 2, sm: 2.5, md: 3 },
                                 fontWeight: 700,
-                                fontSize: '1.2rem',
-                                px: 5,
-                                py: 2,
-                                textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
-                                boxShadow: '0 6px 20px rgba(255,215,0,0.5)',
+                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                                px: { xs: 3, sm: 4, md: 5 },
+                                py: { xs: 1.5, sm: 1.8, md: 2 },
+                                textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
+                                boxShadow: '0 4px 15px rgba(255,215,0,0.4)',
                                 background: 'rgba(255, 215, 0, 0.1)',
                                 backdropFilter: 'blur(10px)',
-                                // SportyBet-style mobile button optimization
-                                '@media (max-width: 768px)': {
-                                  px: 3,
-                                  py: 1.5,
-                                  fontSize: '1rem',
-                                  minHeight: '48px',
-                                  width: '100%',
+                                minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                                width: { xs: '100%', sm: 'auto' },
+                                maxWidth: { xs: '300px', sm: 'none' },
+                                // Mobile-specific optimizations
+                                '@media (max-width: 600px)': {
+                                  px: 2.5,
+                                  py: 1.2,
+                                  fontSize: '0.95rem',
+                                  minHeight: '44px',
                                   maxWidth: '280px',
+                                  borderWidth: 2,
                                 },
                               '&:hover': {
                                 borderColor: '#FFC000',
                                 color: '#000',
                                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                                  borderWidth: 3,
+                                  borderWidth: { xs: 2, sm: 2.5, md: 3 },
                                   textShadow: 'none',
-                                  boxShadow: '0 8px 30px rgba(255,215,0,0.6)',
-                                  transform: 'translateY(-2px)',
+                                  boxShadow: '0 6px 20px rgba(255,215,0,0.6)',
+                                  transform: 'translateY(-1px)',
                               },
                             }}
-                            fullWidth={isSm}
+                            fullWidth={isMobile}
                             onClick={() => navigate('/search')}
                           >
                               Find Workers
@@ -505,44 +550,66 @@ const HomePage = () => {
                       ) : user.role === 'worker' ? (
                         <StyledButton
                           variant="contained"
-                            size="large"
+                          size={isMobile ? 'medium' : 'large'}
                           sx={{
                               background:
                                 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                               color: '#000',
                               fontWeight: 800,
-                              fontSize: '1.2rem',
-                              px: 5,
-                              py: 2,
+                              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                              px: { xs: 3, sm: 4, md: 5 },
+                              py: { xs: 1.5, sm: 1.8, md: 2 },
+                              minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                              width: { xs: '100%', sm: 'auto' },
+                              maxWidth: { xs: '300px', sm: 'none' },
+                              '@media (max-width: 600px)': {
+                                px: 2.5,
+                                py: 1.2,
+                                fontSize: '0.95rem',
+                                minHeight: '44px',
+                                maxWidth: '280px',
+                              },
                             '&:hover': {
                                 background:
                                   'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                             },
                           }}
+                          fullWidth={isMobile}
                           onClick={() => navigate('/jobs')}
                         >
-                            Browse Available Jobs
+                            {isMobile ? 'Browse Jobs' : 'Browse Available Jobs'}
                         </StyledButton>
                       ) : (
                         <StyledButton
                           variant="contained"
-                            size="large"
+                          size={isMobile ? 'medium' : 'large'}
                           sx={{
                               background:
                                 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                               color: '#000',
                               fontWeight: 800,
-                              fontSize: '1.2rem',
-                              px: 5,
-                              py: 2,
+                              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                              px: { xs: 3, sm: 4, md: 5 },
+                              py: { xs: 1.5, sm: 1.8, md: 2 },
+                              minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                              width: { xs: '100%', sm: 'auto' },
+                              maxWidth: { xs: '300px', sm: 'none' },
+                              '@media (max-width: 600px)': {
+                                px: 2.5,
+                                py: 1.2,
+                                fontSize: '0.95rem',
+                                minHeight: '44px',
+                                maxWidth: '280px',
+                              },
                             '&:hover': {
                                 background:
                                   'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                             },
                           }}
+                          fullWidth={isMobile}
                           onClick={() => navigate('/hirer/jobs/post')}
                         >
-                          Post a Job
+                          {isMobile ? 'Post Job' : 'Post a Job'}
                         </StyledButton>
                       )}
                     </Box>
@@ -555,7 +622,10 @@ const HomePage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 1, delay: 0.4 }}
                   >
-                    <Box sx={{ mt: { xs: 4, md: 8 } }}>
+                    <Box sx={{ 
+                      mt: { xs: 2, sm: 3, md: 8 },
+                      display: { xs: 'none', sm: 'block' } // Hide on mobile, show on larger screens
+                    }}>
             {features.map((feature, index) => (
                 <motion.div
                           key={feature.title}
@@ -641,15 +711,21 @@ const HomePage = () => {
             id="services"
             sx={{
               minHeight: 'auto',
-              py: 16,
+              py: { xs: 8, sm: 12, md: 16 },
               background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)',
+              alignItems: 'flex-start', // Align content to top instead of center
+              overflow: 'visible', // Allow content to flow naturally
             }}
           >
             <Box sx={{ 
             width: '100%',
             maxWidth: '100vw',
-            px: { xs: 2, sm: 3, md: 4, lg: 6 },
+            px: { xs: 1.5, sm: 3, md: 4, lg: 6 },
             boxSizing: 'border-box',
+            // Mobile-specific optimizations
+            '@media (max-width: 600px)': {
+              px: 1,
+            },
           }}>
                 <motion.div
                 initial={{ opacity: 0, y: 50 }}
@@ -658,26 +734,29 @@ const HomePage = () => {
                 transition={{ duration: 0.8 }}
               >
               <Typography
-                variant="h2"
+                variant={isMobile ? 'h4' : 'h2'}
                 sx={{
                   textAlign: 'center',
-                    mb: 3,
+                    mb: { xs: 2, sm: 3 },
                   color: theme.palette.secondary.main,
                     fontWeight: 800,
-                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.5rem' },
                   }}
                 >
                   Trade Services Available
                 </Typography>
                 <Typography
-                  variant="h6"
+                  variant={isMobile ? 'body1' : 'h6'}
                   sx={{
                     textAlign: 'center',
-                    mb: 10,
+                    mb: { xs: 6, sm: 8, md: 10 },
                     color: 'rgba(255,255,255,0.8)',
-                    maxWidth: 600,
+                    maxWidth: { xs: '100%', sm: 600 },
                     mx: 'auto',
                     fontWeight: 400,
+                    fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
+                    lineHeight: { xs: 1.4, sm: 1.5 },
+                    px: { xs: 2, sm: 0 }
                   }}
                 >
                   Professional skilled workers ready to tackle your projects
@@ -685,7 +764,7 @@ const HomePage = () => {
               </Typography>
               </motion.div>
 
-              <Grid container spacing={4}>
+              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                 {services.map((service, index) => (
                   <Grid item xs={12} sm={6} md={3} key={service.title}>
                     <motion.div
@@ -707,17 +786,25 @@ const HomePage = () => {
                         <ServiceCardContent>
                       <Typography 
                             gutterBottom
-                        variant="h5" 
+                        variant={isMobile ? 'h6' : 'h5'} 
                             component="div"
                             color="white"
-                            sx={{ fontWeight: 700, mb: 2 }}
+                            sx={{ 
+                              fontWeight: 700, 
+                              mb: { xs: 1, sm: 1.5, md: 2 },
+                              fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.25rem' }
+                            }}
                       >
                         {service.title}
                       </Typography>
                       <Typography 
                         variant="body2" 
                             color="rgba(255,255,255,0.85)"
-                            sx={{ mb: 2, lineHeight: 1.5 }}
+                            sx={{ 
+                              mb: { xs: 1.5, sm: 2 }, 
+                              lineHeight: { xs: 1.4, sm: 1.5 },
+                              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '0.875rem' }
+                            }}
                       >
                         {service.description}
                       </Typography>
@@ -738,20 +825,40 @@ const HomePage = () => {
                           />
                         ))}
                           </Box>
-                          <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            gap: { xs: 0.5, sm: 1 }, 
+                            mt: { xs: 1.5, sm: 2 },
+                            flexDirection: { xs: 'column', sm: 'row' }
+                          }}>
                             <StyledButton
                               variant="contained"
-                              size="small"
+                              size={isMobile ? 'small' : 'small'}
+                              sx={{
+                                fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                                py: { xs: 0.5, sm: 0.8 },
+                                px: { xs: 1.5, sm: 2 },
+                                minHeight: { xs: '32px', sm: '36px' },
+                                width: { xs: '100%', sm: 'auto' }
+                              }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 goToCategorySearch(service.title);
                               }}
                             >
-                              Find Workers
+                              {isMobile ? 'Find' : 'Find Workers'}
                             </StyledButton>
                             <StyledButton
                               variant="outlined"
-                              size="small"
+                              size={isMobile ? 'small' : 'small'}
+                              sx={{
+                                fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                                py: { xs: 0.5, sm: 0.8 },
+                                px: { xs: 1.5, sm: 2 },
+                                minHeight: { xs: '32px', sm: '36px' },
+                                width: { xs: '100%', sm: 'auto' },
+                                borderWidth: { xs: 1, sm: 2 }
+                              }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (!user) {
@@ -763,7 +870,7 @@ const HomePage = () => {
                                 }
                               }}
                             >
-                              Post Job
+                              {isMobile ? 'Post' : 'Post Job'}
                             </StyledButton>
                           </Box>
                         </ServiceCardContent>
@@ -780,24 +887,31 @@ const HomePage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <Box sx={{ textAlign: 'center', mt: 12 }}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  mt: { xs: 6, sm: 8, md: 12 },
+                  px: { xs: 2, sm: 0 }
+                }}>
             <Typography 
-                    variant="h4"
+                    variant={isMobile ? 'h5' : 'h4'}
               sx={{
                       color: 'white',
-                      mb: 3,
+                      mb: { xs: 2, sm: 3 },
                       fontWeight: 700,
+                      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
               }}
             >
               Ready to Get Started?
             </Typography>
                   <Typography
-                    variant="h6"
+                    variant={isMobile ? 'body1' : 'h6'}
                     sx={{
                       color: 'rgba(255,255,255,0.8)',
-                      mb: 4,
-                      maxWidth: 500,
+                      mb: { xs: 3, sm: 4 },
+                      maxWidth: { xs: '100%', sm: 500 },
                       mx: 'auto',
+                      fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
+                      lineHeight: { xs: 1.4, sm: 1.5 }
                     }}
                   >
                     Join thousands of skilled workers and satisfied customers on
@@ -806,50 +920,60 @@ const HomePage = () => {
                   <Box
                     sx={{
                       display: 'flex',
-                      gap: 3,
+                      gap: { xs: 2, sm: 3 },
                       justifyContent: 'center',
                       flexWrap: 'wrap',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      alignItems: 'center'
                     }}
                   >
                     <StyledButton
                       variant="contained"
-                      size="large"
+                      size={isMobile ? 'medium' : 'large'}
                       sx={{
                         background:
                           'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         color: '#000',
                         fontWeight: 800,
-                        fontSize: '1.1rem',
-                        px: 4,
-                        py: 1.5,
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
+                        px: { xs: 3, sm: 4 },
+                        py: { xs: 1.2, sm: 1.5 },
+                        minHeight: { xs: '48px', sm: '52px' },
+                        width: { xs: '100%', sm: 'auto' },
+                        maxWidth: { xs: '280px', sm: 'none' },
                         '&:hover': {
                           background:
                             'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                         },
                       }}
+                      fullWidth={isMobile}
                       onClick={() => navigate('/register')}
                     >
-                      Join as a Worker
+                      {isMobile ? 'Join as Worker' : 'Join as a Worker'}
                     </StyledButton>
                     <StyledButton
                       variant="outlined"
-                      size="large"
+                      size={isMobile ? 'medium' : 'large'}
                       sx={{
                         borderColor: '#FFD700',
                         color: '#FFD700',
-                        borderWidth: 2,
+                        borderWidth: { xs: 2, sm: 2 },
                         fontWeight: 700,
-                        fontSize: '1.1rem',
-                        px: 4,
-                        py: 1.5,
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
+                        px: { xs: 3, sm: 4 },
+                        py: { xs: 1.2, sm: 1.5 },
+                        minHeight: { xs: '48px', sm: '52px' },
+                        width: { xs: '100%', sm: 'auto' },
+                        maxWidth: { xs: '280px', sm: 'none' },
                         '&:hover': {
                           background: alpha('#FFD700', 0.1),
-                          borderWidth: 2,
+                          borderWidth: { xs: 2, sm: 2 },
                         },
                       }}
+                      fullWidth={isMobile}
                       onClick={() => navigate('/hirer/find-talent')} // ✅ FIXED: Use correct route
                     >
-                      Hire Skilled Workers
+                      {isMobile ? 'Hire Workers' : 'Hire Skilled Workers'}
                     </StyledButton>
                   </Box>
                 </Box>
