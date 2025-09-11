@@ -40,6 +40,7 @@ import {
   selectJobsLoading,
   selectJobsError,
 } from '../services/jobSlice';
+import { secureStorage } from '../../../utils/secureStorage';
 
 // Styled components
 const DetailsPaper = styled(Paper)(({ theme }) => ({
@@ -94,8 +95,17 @@ const JobDetailsPage = () => {
   const error = useSelector(selectJobsError);
   const [saved, setSaved] = useState(false);
   const [applicationOpen, setApplicationOpen] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
 
   useEffect(() => {
+    const token = secureStorage.getAuthToken();
+    if (!token) {
+      console.log('🔒 No auth token found, authentication required for job details');
+      setAuthRequired(true);
+      return;
+    }
+    
+    // Only fetch job if authenticated
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
@@ -147,6 +157,55 @@ const JobDetailsPage = () => {
       alert('Share feature not supported in your browser');
     }
   };
+
+  const handleSignIn = () => {
+    navigate('/auth/login', { 
+      state: { from: location.pathname + location.search }
+    });
+  };
+
+  // Show authentication required message if no token
+  if (authRequired) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ 
+          mt: 4, 
+          minHeight: '60vh', 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center'
+        }}>
+          <Paper elevation={3} sx={{ p: 4, maxWidth: 500 }}>
+            <Typography variant="h5" gutterBottom color="primary">
+              Authentication Required
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Please sign in to view job details and apply for positions.
+            </Typography>
+            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={handleSignIn}
+                size="large"
+              >
+                Sign In
+              </Button>
+              <Button 
+                variant="outlined" 
+                onClick={() => navigate(-1)}
+                size="large"
+              >
+                Go Back
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      </Container>
+    );
+  }
 
   if (loading) {
     // Show skeleton placeholders for job details

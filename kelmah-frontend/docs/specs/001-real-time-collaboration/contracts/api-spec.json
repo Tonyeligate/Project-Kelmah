@@ -1,0 +1,1136 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kelmah Collaboration Service API",
+    "description": "Real-time collaboration API for job requirements editing",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Kelmah Platform",
+      "url": "https://kelmah.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.kelmah.com/collaboration",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000/api/collaboration",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/sessions": {
+      "post": {
+        "summary": "Create collaboration session",
+        "description": "Create a new collaboration session for job requirements editing",
+        "tags": ["Sessions"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollaborationSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List collaboration sessions",
+        "description": "Get list of collaboration sessions for the authenticated user",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by session status",
+            "schema": {
+              "type": "string",
+              "enum": ["active", "paused", "completed", "cancelled"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of sessions to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of sessions to skip",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}": {
+      "get": {
+        "summary": "Get collaboration session",
+        "description": "Get details of a specific collaboration session",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollaborationSession"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update collaboration session",
+        "description": "Update session settings or status",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollaborationSession"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "End collaboration session",
+        "description": "End a collaboration session",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session ended successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/versions": {
+      "get": {
+        "summary": "Get version history",
+        "description": "Get version history for a collaboration session",
+        "tags": ["Versions"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of versions to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of versions to skip",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create new version",
+        "description": "Create a new version snapshot",
+        "tags": ["Versions"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVersionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Version created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequirementVersion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/versions/{versionId}": {
+      "get": {
+        "summary": "Get specific version",
+        "description": "Get details of a specific version",
+        "tags": ["Versions"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionId",
+            "in": "path",
+            "required": true,
+            "description": "Version ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRequirementVersion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/comments": {
+      "get": {
+        "summary": "Get comments",
+        "description": "Get comments for a collaboration session",
+        "tags": ["Comments"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by comment status",
+            "schema": {
+              "type": "string",
+              "enum": ["active", "resolved", "deleted"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create comment",
+        "description": "Create a new comment on job requirements",
+        "tags": ["Comments"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollaborationComment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/comments/{commentId}": {
+      "put": {
+        "summary": "Update comment",
+        "description": "Update an existing comment",
+        "tags": ["Comments"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "description": "Comment ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollaborationComment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete comment",
+        "description": "Delete a comment",
+        "tags": ["Comments"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "description": "Comment ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comment deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/presence": {
+      "get": {
+        "summary": "Get user presence",
+        "description": "Get current user presence in collaboration session",
+        "tags": ["Presence"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presence retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresenceListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update user presence",
+        "description": "Update current user presence status",
+        "tags": ["Presence"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "Session ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePresenceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Presence updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPresence"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "CollaborationSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique session identifier"
+          },
+          "jobId": {
+            "type": "string",
+            "description": "Job posting ID"
+          },
+          "hirerId": {
+            "type": "string",
+            "description": "Hirer user ID"
+          },
+          "workerId": {
+            "type": "string",
+            "description": "Worker user ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "paused", "completed", "cancelled"],
+            "description": "Session status"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Session creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "lastActivity": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last activity timestamp"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Collaboration preferences"
+          }
+        },
+        "required": ["id", "jobId", "hirerId", "workerId", "status", "createdAt", "updatedAt"]
+      },
+      "JobRequirementVersion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique version identifier"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Collaboration session ID"
+          },
+          "versionNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Sequential version number"
+          },
+          "content": {
+            "type": "string",
+            "description": "Job requirements content"
+          },
+          "delta": {
+            "type": "object",
+            "description": "Changes from previous version"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "User who created this version"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Version creation timestamp"
+          },
+          "changeType": {
+            "type": "string",
+            "enum": ["manual", "auto_save", "conflict_resolution"],
+            "description": "Type of change"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional version information"
+          }
+        },
+        "required": ["id", "sessionId", "versionNumber", "content", "createdBy", "createdAt"]
+      },
+      "CollaborationComment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique comment identifier"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Collaboration session ID"
+          },
+          "authorId": {
+            "type": "string",
+            "description": "User who wrote the comment"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Comment text content"
+          },
+          "position": {
+            "type": "object",
+            "description": "Position in document",
+            "properties": {
+              "line": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "range": {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "end": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "parentCommentId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Parent comment ID for replies"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "resolved", "deleted"],
+            "description": "Comment status"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Comment creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification timestamp"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When comment was resolved"
+          },
+          "resolvedBy": {
+            "type": "string",
+            "description": "User who resolved the comment"
+          }
+        },
+        "required": ["id", "sessionId", "authorId", "content", "status", "createdAt"]
+      },
+      "UserPresence": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique presence identifier"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Collaboration session ID"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["online", "editing", "idle", "offline"],
+            "description": "User status"
+          },
+          "currentPosition": {
+            "type": "object",
+            "description": "Current cursor position",
+            "properties": {
+              "line": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "lastSeen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last activity timestamp"
+          },
+          "isTyping": {
+            "type": "boolean",
+            "description": "Whether user is currently typing"
+          },
+          "typingSince": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When typing started"
+          },
+          "deviceInfo": {
+            "type": "object",
+            "description": "Client device information"
+          }
+        },
+        "required": ["id", "sessionId", "userId", "status", "lastSeen"]
+      },
+      "CreateSessionRequest": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "description": "Job posting ID"
+          },
+          "workerId": {
+            "type": "string",
+            "description": "Worker user ID to invite"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Collaboration preferences"
+          }
+        },
+        "required": ["jobId", "workerId"]
+      },
+      "UpdateSessionRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["active", "paused", "completed", "cancelled"]
+          },
+          "settings": {
+            "type": "object",
+            "description": "Collaboration preferences"
+          }
+        }
+      },
+      "CreateVersionRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Job requirements content"
+          },
+          "delta": {
+            "type": "object",
+            "description": "Changes from previous version"
+          },
+          "changeType": {
+            "type": "string",
+            "enum": ["manual", "auto_save", "conflict_resolution"],
+            "default": "manual"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional version information"
+          }
+        },
+        "required": ["content", "delta"]
+      },
+      "CreateCommentRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Comment text content"
+          },
+          "position": {
+            "type": "object",
+            "description": "Position in document",
+            "properties": {
+              "line": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "range": {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "end": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "parentCommentId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Parent comment ID for replies"
+          }
+        },
+        "required": ["content", "position"]
+      },
+      "UpdateCommentRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Comment text content"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "resolved", "deleted"]
+          }
+        }
+      },
+      "UpdatePresenceRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["online", "editing", "idle", "offline"]
+          },
+          "currentPosition": {
+            "type": "object",
+            "description": "Current cursor position",
+            "properties": {
+              "line": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "isTyping": {
+            "type": "boolean",
+            "description": "Whether user is currently typing"
+          },
+          "deviceInfo": {
+            "type": "object",
+            "description": "Client device information"
+          }
+        }
+      },
+      "SessionListResponse": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollaborationSession"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "hasMore": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "VersionListResponse": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobRequirementVersion"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "hasMore": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "CommentListResponse": {
+        "type": "object",
+        "properties": {
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollaborationComment"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "hasMore": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "PresenceListResponse": {
+        "type": "object",
+        "properties": {
+          "presence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserPresence"
+            }
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Operation completed successfully"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional error details"
+          }
+        },
+        "required": ["error", "message"]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sessions",
+      "description": "Collaboration session management"
+    },
+    {
+      "name": "Versions",
+      "description": "Version history management"
+    },
+    {
+      "name": "Comments",
+      "description": "Comment management"
+    },
+    {
+      "name": "Presence",
+      "description": "User presence management"
+    }
+  ]
+}

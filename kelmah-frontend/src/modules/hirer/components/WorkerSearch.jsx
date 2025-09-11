@@ -735,7 +735,7 @@ const WorkerSearch = () => {
                       Skills
                     </Typography>
                     <Box display="flex" gap={0.5} flexWrap="wrap" mb={2}>
-                      {worker.skills.slice(0, 3).map((skill, index) => (
+                      {Array.isArray(worker.skills) && worker.skills.slice(0, 3).map((skill, index) => (
                         <Chip
                           key={index}
                           label={skill}
@@ -743,7 +743,7 @@ const WorkerSearch = () => {
                           variant="outlined"
                         />
                       ))}
-                      {worker.skills.length > 3 && (
+                      {Array.isArray(worker.skills) && worker.skills.length > 3 && (
                         <Chip
                           label={`+${worker.skills.length - 3} more`}
                           size="small"
@@ -937,7 +937,7 @@ const WorkerSearch = () => {
                 Skills & Expertise
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap" mb={3}>
-                {selectedWorker.skills.map((skill, index) => (
+                {Array.isArray(selectedWorker?.skills) && selectedWorker.skills.map((skill, index) => (
                   <Chip
                     key={index}
                     label={skill}
@@ -952,7 +952,7 @@ const WorkerSearch = () => {
                 Certifications
               </Typography>
               <Box mb={3}>
-                {selectedWorker.certifications.map((cert, index) => (
+                {Array.isArray(selectedWorker?.certifications) && selectedWorker.certifications.map((cert, index) => (
                   <Typography key={index} variant="body2" gutterBottom>
                     • {cert}
                   </Typography>
@@ -964,7 +964,7 @@ const WorkerSearch = () => {
                 Languages
               </Typography>
               <Typography variant="body2" paragraph>
-                {selectedWorker.languages.join(', ')}
+                {Array.isArray(selectedWorker?.languages) ? selectedWorker.languages.join(', ') : ''}
               </Typography>
 
               {/* Portfolio Preview */}
@@ -972,7 +972,7 @@ const WorkerSearch = () => {
                 Portfolio
               </Typography>
               <Grid container spacing={2}>
-                {selectedWorker.portfolio.map((item, index) => (
+                {Array.isArray(selectedWorker?.portfolio) && selectedWorker.portfolio.map((item, index) => (
                   <Grid item xs={4} key={index}>
                     <Paper
                       sx={{

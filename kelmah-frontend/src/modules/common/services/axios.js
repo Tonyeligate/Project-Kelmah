@@ -245,18 +245,7 @@ const addMainInterceptors = async () => {
       console.error('Network error - check your internet connection');
     }
 
-    // Standardize error format
-    const standardizedError = {
-      message: error.response?.data?.message || error.message || 'An error occurred',
-      status: error.response?.status || null,
-      statusText: error.response?.statusText || null,
-      data: error.response?.data || null,
-      url: originalRequest?.url || null,
-      method: originalRequest?.method || null,
-      timestamp: new Date().toISOString(),
-    };
-
-    return Promise.reject(standardizedError);
+    return Promise.reject(error);
   },
 );
 };

@@ -39,12 +39,15 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       base = '/api';
     }
   }
-  const fullUrl = `${base}${healthEndpoint}`;
-  
+
+  // For aggregate health check, use the correct endpoint
+  const isAggregateCheck = serviceUrl === 'aggregate';
+  const fullUrl = isAggregateCheck ? `${base}/health/aggregate` : `${base}${healthEndpoint}`;
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     const response = await fetch(fullUrl, {
       method: 'GET',
       signal: controller.signal,
@@ -52,12 +55,12 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
         'Content-Type': 'application/json',
       },
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     const isHealthy = response.ok;
     const responseTime = Date.now();
-    
+
     // Cache the result
     serviceHealthCache.set(serviceUrl, {
       isHealthy,
@@ -65,17 +68,21 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       responseTime: response.headers.get('x-response-time') || 'unknown',
       status: response.status,
     });
-    
+
     console.log(`🏥 Service Health Check - ${serviceUrl}:`, {
       healthy: isHealthy,
       status: response.status,
       responseTime: `${Date.now() - responseTime}ms`,
+      url: fullUrl
     });
-    
+
     return isHealthy;
   } catch (error) {
-    console.warn(`🏥 Service Health Check Failed - ${serviceUrl}:`, error.message);
-    
+    console.warn(`🏥 Service Health Check Failed - ${serviceUrl}:`, error.message, {
+      url: fullUrl,
+      timeout: timeout
+    });
+
     // Cache the failed result
     serviceHealthCache.set(serviceUrl, {
       isHealthy: false,
@@ -83,7 +90,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       error: error.message,
       status: 'timeout',
     });
-    
+
     return false;
   }
 };
@@ -114,7 +121,7 @@ export const warmUpService = async (serviceUrl) => {
  */
 export const warmUpAllServices = async () => {
   console.log('🔥 Starting service warmup...');
-  
+
   const services = Object.values(SERVICES);
   const warmupPromises = services.map(service => {
     // Don't wait for each service, warm them up in parallel
@@ -123,18 +130,19 @@ export const warmUpAllServices = async () => {
       return false;
     });
   });
-  
+
   try {
     // Also warm up aggregate health once via gateway
     warmupPromises.push(
-      fetch('/api/health/aggregate', { method: 'GET' })
-        .then(r => r.ok)
-        .catch(() => false)
+      checkServiceHealth('aggregate', 15000).catch(error => {
+        console.warn('Aggregate health check failed:', error);
+        return false;
+      })
     );
 
     const results = await Promise.allSettled(warmupPromises);
     const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
-    
+
     console.log(`🔥 Service warmup complete: ${successCount}/${services.length + 1} services responding`);
     return results;
   } catch (error) {
