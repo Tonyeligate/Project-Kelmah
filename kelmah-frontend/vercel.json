@@ -17,10 +17,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "src/api/runtime-config.js": {
-      "memory": 128
-    }
-  }
+  ]
 }
