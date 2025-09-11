@@ -50,73 +50,40 @@ const workersApi = {
 
   // Dashboard-specific methods
   async getDashboardData() {
-    try {
-      const response = await workersServiceClient.get('/api/users/workers/dashboard');
-      return response.data;
-    } catch (error) {
-      console.warn('Workers dashboard API unavailable, using mock data');
-      return this.getMockDashboardData();
-    }
+    const response = await workersServiceClient.get('/api/workers/dashboard');
+    return response.data?.data || response.data;
   },
 
   async getProfileCompletion() {
-    try {
-      const response = await workersServiceClient.get('/api/users/workers/profile/completion');
-      return response.data;
-    } catch (error) {
-      console.warn('Profile completion API unavailable, using mock data');
-      return {
-        percentage: Math.floor(Math.random() * 40) + 60, // 60-100%
-        missingFields: ['portfolio', 'skills', 'experience'],
-      };
-    }
+    const response = await workersServiceClient.get('/api/workers/profile/completion');
+    return response.data?.data || response.data;
   },
 
   async getRecentJobs(limit = 10) {
-    try {
-      const response = await workersServiceClient.get(`/api/users/workers/jobs/recent?limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.warn('Recent jobs API unavailable, using mock data');
-      return this.getMockRecentJobs();
-    }
+    const response = await workersServiceClient.get(`/api/workers/jobs/recent?limit=${limit}`);
+    return response.data?.data || response.data;
   },
 
   async getMetrics(timeframe = '30d') {
-    try {
-      const response = await workersServiceClient.get(`/api/users/workers/metrics?timeframe=${timeframe}`);
-      return response.data;
-    } catch (error) {
-      console.warn('Metrics API unavailable, using mock data');
-      return this.getMockMetrics();
-    }
+    const response = await workersServiceClient.get(`/api/workers/metrics?timeframe=${timeframe}`);
+    return response.data?.data || response.data;
   },
 
   async getApplications(status = 'all', limit = 20) {
-    try {
-      const response = await workersServiceClient.get(`/api/users/workers/applications?status=${status}&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.warn('Applications API unavailable, using mock data');
-      return this.getMockApplications();
-    }
+    const response = await workersServiceClient.get(`/api/workers/applications?status=${status}&limit=${limit}`);
+    return response.data?.data || response.data;
   },
 
   async getEarnings(timeframe = '30d') {
-    try {
-      const response = await workersServiceClient.get(`/api/users/workers/earnings?timeframe=${timeframe}`);
-      return response.data;
-    } catch (error) {
-      console.warn('Earnings API unavailable, using mock data');
-      return this.getMockEarnings();
-    }
+    const response = await workersServiceClient.get(`/api/workers/earnings?timeframe=${timeframe}`);
+    return response.data?.data || response.data;
   },
 
   // Profile methods
   async getProfile() {
     try {
-      const response = await workersServiceClient.get('/api/users/workers/profile');
-      return response.data;
+      const response = await workersServiceClient.get('/api/workers/profile');
+      return response.data?.data || response.data;
     } catch (error) {
       console.warn('Profile API unavailable');
       throw error;
@@ -125,15 +92,14 @@ const workersApi = {
 
   async updateProfile(profileData) {
     try {
-      const response = await workersServiceClient.put('/api/users/workers/profile', profileData);
-      return response.data;
+      const response = await workersServiceClient.put('/api/workers/profile', profileData);
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Failed to update profile:', error);
       throw error;
     }
   },
 
-  // Mock data methods
   getMockDashboardData() {
     return {
       metrics: this.getMockMetrics(),
@@ -292,184 +258,103 @@ const workersApi = {
    * Get worker dashboard statistics - Enhanced with realistic mock data
    */
   async getDashboardStats() {
-    const response = await workersServiceClient.get('/api/workers/me/dashboard');
-    return response.data.data || response.data;
+    const response = await workersServiceClient.get('/api/workers/dashboard/stats');
+    return response.data?.data || response.data;
   },
 
   /**
-   * Get worker earnings data - New enhanced method
+   * Get worker earnings data - Enhanced method
    */
   async getEarningsData(timeRange = '6months') {
-    const response = await workersServiceClient.get('/api/workers/me/earnings', { params: { timeRange } });
-    return response.data.data || response.data;
+    const response = await workersServiceClient.get('/api/workers/earnings', { params: { timeRange } });
+    return response.data?.data || response.data;
   },
 
   /**
    * Get worker appointments - Enhanced method
    */
   async getAppointments() {
-    const response = await workersServiceClient.get('/api/appointments');
-    return response.data.data || response.data;
+    try {
+      const response = await workersServiceClient.get('/api/workers/appointments');
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.warn('Appointments API unavailable');
+      return [];
+    }
   },
 
   /**
    * Get worker profile data - Uses auth token verification
    */
   async getWorkerProfile() {
-    const response = await workersServiceClient.get('/api/users/me/profile');
-    return response.data.data || response.data;
+    try {
+      const response = await workersServiceClient.get('/api/workers/profile');
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.warn('Worker profile API unavailable');
+      throw error;
+    }
   },
 
   /**
    * Update worker profile - Enhanced with validation
    */
   async updateWorkerProfile(profileData) {
-    const response = await workersServiceClient.put('/api/users/me/profile', profileData);
-    return response.data.data || response.data;
+    try {
+      const response = await workersServiceClient.put('/api/workers/profile', profileData);
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.error('Failed to update worker profile:', error);
+      throw error;
+    }
   },
 
   /**
    * Get portfolio projects - Enhanced with realistic data
    */
   async getPortfolioProjects() {
-    try {
-      // Align with user-service profile routes
-      const response = await workersServiceClient.get('/api/profile/portfolio/search');
-      return response.data?.data || response.data;
-    } catch (error) {
-      console.warn('Portfolio service unavailable:', error.message);
-      // Return comprehensive mock portfolio data
-      return [
-        {
-          id: 'proj_1',
-          title: 'Modern Kitchen Renovation',
-          description: 'Complete kitchen renovation including plumbing, electrical, and tiling work for a 3-bedroom house in Accra.',
-          images: ['/images/kitchen-before.jpg', '/images/kitchen-after.jpg'],
-          client: 'Sarah Johnson',
-          location: 'East Legon, Accra',
-          completedDate: '2024-01-15',
-          category: 'Plumbing & Electrical',
-          rating: 5.0,
-          testimonial: 'Kwaku did an exceptional job! The kitchen looks amazing and everything works perfectly.',
-          budget: 'GH₵ 15,000 - GH₵ 20,000',
-          duration: '3 weeks',
-          skills: ['Plumbing', 'Electrical', 'Tiling', 'Project Management']
-        },
-        {
-          id: 'proj_2',
-          title: 'Commercial Office Electrical Setup',
-          description: 'Electrical installation and wiring for a new office building with 20 workstations.',
-          images: ['/images/office-electrical.jpg'],
-          client: 'TechCorp Ghana',
-          location: 'Airport City, Accra',
-          completedDate: '2023-12-10',
-          category: 'Electrical',
-          rating: 4.8,
-          testimonial: 'Professional work completed on time and within budget.',
-          budget: 'GH₵ 25,000 - GH₵ 30,000',
-          duration: '2 weeks',
-          skills: ['Commercial Electrical', 'Safety Standards', 'Project Planning']
-        }
-      ];
-    }
+    const response = await workersServiceClient.get('/api/workers/portfolio');
+    return response.data?.data || response.data;
   },
 
   /**
    * Get skills and licenses - Enhanced with realistic data
    */
   async getSkillsAndLicenses() {
-    try {
-      const response = await workersServiceClient.get('/api/users/me/credentials');
-      return response.data.data || response.data;
-    } catch (error) {
-      console.warn('Credentials service unavailable:', error.message);
-      // Return comprehensive mock credentials data
-      return {
-        skills: [
-          {
-            id: 'skill_1',
-            name: 'Plumbing',
-            level: 'Expert',
-            experience: '8 years',
-            verified: true,
-            certifications: ['Ghana Institute of Plumbers Certification'],
-            endorsements: 45,
-            lastUsed: '2024-01-15'
-          },
-          {
-            id: 'skill_2',
-            name: 'Electrical Installation',
-            level: 'Advanced',
-            experience: '6 years',
-            verified: true,
-            certifications: ['Electrical Contractors Association of Ghana'],
-            endorsements: 38,
-            lastUsed: '2023-12-20'
-          },
-          {
-            id: 'skill_3',
-            name: 'Project Management',
-            level: 'Intermediate',
-            experience: '4 years',
-            verified: false,
-            certifications: [],
-            endorsements: 12,
-            lastUsed: '2024-01-10'
-          }
-        ],
-        licenses: [
-          {
-            id: 'license_1',
-            name: 'Ghana Plumbing License',
-            number: 'GPL-2019-4521',
-            issuedBy: 'Ministry of Water Resources',
-            issueDate: '2019-03-15',
-            expiryDate: '2025-03-15',
-            status: 'active',
-            verified: true
-          },
-          {
-            id: 'license_2',
-            name: 'Electrical Installation License',
-            number: 'EIL-2020-7823',
-            issuedBy: 'Electrical Contractors Association',
-            issueDate: '2020-06-20',
-            expiryDate: '2025-06-20',
-            status: 'active',
-            verified: true
-          }
-        ],
-        certifications: [
-          {
-            id: 'cert_1',
-            name: 'Advanced Plumbing Techniques',
-            provider: 'Ghana Institute of Plumbers',
-            completedDate: '2023-08-15',
-            validUntil: '2026-08-15',
-            credentialId: 'GIP-ADV-2023-1142'
-          }
-        ]
-      };
-    }
+    const response = await workersServiceClient.get('/api/workers/credentials');
+    return response.data?.data || response.data;
   },
 
   /**
    * Request skill verification - Enhanced implementation
    */
   async requestSkillVerification(skillId, verificationData) {
-    const response = await workersServiceClient.post(`/api/users/me/skills/${skillId}/verify`, verificationData);
-    return response.data.data || response.data;
+    try {
+      const response = await workersServiceClient.post(`/api/workers/skills/${skillId}/verify`, verificationData);
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.error('Failed to request skill verification:', error);
+      throw error;
+    }
   },
 
   /**
    * Get profile completion status - New method
    */
   async getProfileCompletion() {
-    const user = secureStorage.getUserData();
-    const id = user?.id || user?._id || user?.userId;
-    if (!id) throw new Error('Missing user id');
-    const resp = await workersServiceClient.get(`/api/users/workers/${id}/completeness`);
-    return resp.data?.data || resp.data;
+    try {
+      const user = secureStorage.getUserData();
+      const id = user?.id || user?._id || user?.userId;
+      if (!id) throw new Error('Missing user id');
+      const resp = await workersServiceClient.get(`/api/workers/${id}/completeness`);
+      return resp.data?.data || resp.data;
+    } catch (error) {
+      console.warn('Profile completion API unavailable, using mock data');
+      return {
+        percentage: Math.floor(Math.random() * 40) + 60, // 60-100%
+        missingFields: ['portfolio', 'skills', 'experience'],
+      };
+    }
   }
 };
 

@@ -6,19 +6,13 @@ import React, {
   useCallback,
 } from 'react';
 import PropTypes from 'prop-types';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { Snackbar, Alert } from '@mui/material';
 import notificationServiceUser, { notificationService } from '../services/notificationService';
 const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
-  // Guard against missing AuthProvider (e.g. in tests)
-  let user = null;
-  try {
-    user = useAuth().user;
-  } catch (e) {
-    user = null;
-  }
+  const user = useSelector(state => state.auth.user);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });

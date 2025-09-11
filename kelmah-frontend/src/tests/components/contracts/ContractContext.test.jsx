@@ -2,7 +2,13 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ContractProvider, useContracts } from '../../../modules/contracts/contexts/ContractContext';
-import { AuthProvider } from '../../../modules/auth/contexts/AuthContext';
+
+// Mock Redux useSelector
+jest.mock('react-redux', () => ({
+  useSelector: jest.fn(),
+}));
+
+import { useSelector } from 'react-redux';
 
 global.jest = require('jest-mock');
 
@@ -32,16 +38,18 @@ describe('ContractContext', () => {
     getContracts: jest.fn(),
   };
 
+  beforeEach(() => {
+    useSelector.mockReturnValue({ id: 1, email: 'test@example.com' });
+  });
+
   test('provides contracts to children', async () => {
     const mockContracts = [{ id: '1', title: 'Test Contract' }];
     mockContractService.getContracts.mockResolvedValue(mockContracts);
 
     render(
-      <AuthProvider>
-        <ContractProvider contractService={mockContractService}>
-          <MockConsumer />
-        </ContractProvider>
-      </AuthProvider>
+      <ContractProvider contractService={mockContractService}>
+        <MockConsumer />
+      </ContractProvider>
     );
 
     // Check that contracts are displayed

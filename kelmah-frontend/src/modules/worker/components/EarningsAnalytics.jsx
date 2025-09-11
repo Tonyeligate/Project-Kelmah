@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import earningsService from '../services/earningsService';
 import {
   Box,
@@ -69,7 +69,7 @@ import { useSnackbar } from 'notistack';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
 
 const EarningsAnalytics = () => {
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 

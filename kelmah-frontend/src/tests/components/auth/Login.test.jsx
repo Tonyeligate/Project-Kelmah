@@ -4,18 +4,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { useAuth } from '../../../modules/auth/contexts/AuthContext';
 import Login from '../../../modules/auth/components/login/Login';
 import { thunk } from 'redux-thunk';
 
 // Mock Redux store
 const mockStore = configureStore([thunk]);
-
-// Mock the useAuth hook
-jest.mock('../../../modules/auth/contexts/AuthContext', () => ({
-  __esModule: true,
-  useAuth: jest.fn(),
-}));
 
 // Mock useNavigate
 const mockedNavigate = jest.fn();
@@ -59,15 +52,6 @@ describe('Login Component', () => {
       },
     });
 
-    useAuth.mockReturnValue({
-      user: null,
-      isAuthenticated: false,
-      login: jest.fn(),
-      logout: jest.fn(),
-      loading: false,
-      error: null,
-      isAdmin: false,
-    });
     store.clearActions();
     mockedNavigate.mockClear();
   });
@@ -125,13 +109,6 @@ describe('Login Component', () => {
   });
 
   test('submits form with valid data', async () => {
-    const loginMock = jest
-      .fn()
-      .mockResolvedValue({ success: true, user: { role: 'user' } });
-    useAuth.mockReturnValue({
-      login: loginMock,
-    });
-
     render(
       <Provider store={store}>
         <MemoryRouter>
@@ -150,17 +127,16 @@ describe('Login Component', () => {
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
     await waitFor(() => {
-      expect(loginMock).toHaveBeenCalledWith('test@example.com', 'password123');
+      const actions = store.getActions();
+      expect(actions).toContainEqual(
+        expect.objectContaining({
+          type: 'auth/login/pending',
+        })
+      );
     });
   });
 
   test('handles login failure', async () => {
-    const error = 'Invalid credentials';
-    const loginMock = jest.fn().mockRejectedValue(new Error(error));
-    useAuth.mockReturnValue({
-      login: loginMock,
-    });
-
     render(
       <Provider store={store}>
         <MemoryRouter>
@@ -179,15 +155,16 @@ describe('Login Component', () => {
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(error)).toBeInTheDocument();
+      const actions = store.getActions();
+      expect(actions).toContainEqual(
+        expect.objectContaining({
+          type: 'auth/login/rejected',
+        })
+      );
     });
   });
 
   test('redirects to dashboard on successful login', async () => {
-    useAuth.mockReturnValue({
-      login: jest.fn().mockResolvedValue({ user: { role: 'user' } }),
-    });
-
     render(
       <Provider store={store}>
         <MemoryRouter initialEntries={['/login']}>

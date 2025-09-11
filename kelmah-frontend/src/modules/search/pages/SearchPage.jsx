@@ -123,29 +123,23 @@ const SearchPage = () => {
       return;
     }
 
-    // Temporarily disable search suggestions as the endpoint doesn't exist
-    console.log('Search suggestions temporarily disabled - endpoint not implemented');
+    try {
+      const response = await axios.get('/api/search/suggestions', {
+        params: { query },
+      });
+
+      if (response.data.success) {
+        setSearchSuggestions(response.data.data || []);
+        setShowSuggestions(true);
+      } else {
         setSearchSuggestions([]);
         setShowSuggestions(false);
-    return;
-
-    // try {
-    //   const response = await axios.get('/api/search/suggestions', {
-    //     params: { query },
-    //   });
-
-    //   if (response.data.success) {
-    //     setSearchSuggestions(response.data.data || []);
-    //     setShowSuggestions(true);
-    //   } else {
-    //     setSearchSuggestions([]);
-    //     setShowSuggestions(false);
-    //   }
-    // } catch (error) {
-    //   console.error('Error fetching search suggestions:', error);
-    //   setSearchSuggestions([]);
-    //   setShowSuggestions(false);
-    // }
+      }
+    } catch (error) {
+      console.error('Error fetching search suggestions:', error);
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
   };
 
   // Debounced search suggestion fetching
@@ -169,8 +163,8 @@ const SearchPage = () => {
     setError(null);
 
     try {
-      // Determine API endpoint based on user type
-      const apiEndpoint = isAuthenticated && isHirer ? '/api/users/workers/search' : '/api/workers';
+      // Use consistent API endpoint for all users
+      const apiEndpoint = '/api/workers';
       console.log('🔍 Using API endpoint:', apiEndpoint);
       
       // Prepare API parameters

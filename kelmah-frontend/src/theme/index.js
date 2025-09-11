@@ -468,9 +468,9 @@ const darkTheme = createTheme({
           color: BRAND_COLORS.gold,
           '&:hover': {
             backgroundColor: 'rgba(255, 215, 0, 0.2)',
+          },
+        },
       },
-    },
-  },
     },
     MuiContainer: {
       styleOverrides: {
@@ -840,3 +840,28 @@ export const createGlassEffect = (theme, opacity = 0.1) => {
       : 'rgba(0, 0, 0, 0.15)'}`,
   };
 };
+
+export const GHANA_COLORS = {
+  red: '#DC143C',
+  gold: '#FFD700',
+  green: '#2E7D32',
+  blue: '#1976D2',
+  earth: '#8B4513',
+};
+
+export const KELMAH_DEPTH = {
+  elevation: {
+    low: '0 4px 12px rgba(0,0,0,0.25)',
+    medium: '0 12px 32px rgba(0,0,0,0.35)',
+    high: '0 24px 60px rgba(0,0,0,0.45)'
+  },
+  blur: {
+    glass: 'blur(10px)',
+  },
+  gradients: {
+    goldSheen: 'linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%)',
+    ghanaFlagSweep: 'linear-gradient(120deg, rgba(220,20,60,0.18), rgba(255,215,0,0.15), rgba(46,125,50,0.18))',
+  },
+};
+
+// augment theme with kelmah namespace via createTheme overrides below

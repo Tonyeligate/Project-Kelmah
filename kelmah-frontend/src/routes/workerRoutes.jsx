@@ -1,7 +1,40 @@
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
+
+// Error fallback component for route-level errors
+const RouteErrorFallback = ({ error, resetErrorBoundary }) => (
+  <div style={{
+    padding: 24,
+    backgroundColor: '#000000',
+    color: '#FFD700',
+    minHeight: '50vh',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+  }}>
+    <h2>Something went wrong</h2>
+    <p>{error.message}</p>
+    <button
+      onClick={resetErrorBoundary}
+      style={{
+        padding: '8px 16px',
+        backgroundColor: '#FFD700',
+        color: '#000000',
+        border: 'none',
+        borderRadius: 4,
+        cursor: 'pointer',
+        marginTop: 16,
+      }}
+    >
+      Try Again
+    </button>
+  </div>
+);
 import WorkerDashboardPage from '../modules/worker/pages/WorkerDashboardPage';
 import PortfolioPage from '../modules/worker/pages/PortfolioPage';
 import PortfolioManager from '../modules/worker/components/PortfolioManager';
@@ -63,37 +96,43 @@ const WorkerRoutes = () => {
       <Route
         path="/worker/dashboard"
         element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <WorkerDashboardPage />
-          </ProtectedRoute>
+          <ErrorBoundary FallbackComponent={RouteErrorFallback}>
+            <ProtectedRoute
+              isAllowed={isWorkerAllowed}
+              redirectPath="/login"
+              loading={loading}
+            >
+              <WorkerDashboardPage />
+            </ProtectedRoute>
+          </ErrorBoundary>
         }
       />
       <Route
         path="/worker/skills"
         element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <SkillsAssessmentPage />
-          </ProtectedRoute>
+          <ErrorBoundary FallbackComponent={RouteErrorFallback}>
+            <ProtectedRoute
+              isAllowed={isWorkerAllowed}
+              redirectPath="/login"
+              loading={loading}
+            >
+              <SkillsAssessmentPage />
+            </ProtectedRoute>
+          </ErrorBoundary>
         }
       />
       <Route
         path="/worker/skills/test/:testId"
         element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <SkillsAssessmentPage />
-          </ProtectedRoute>
+          <ErrorBoundary FallbackComponent={RouteErrorFallback}>
+            <ProtectedRoute
+              isAllowed={isWorkerAllowed}
+              redirectPath="/login"
+              loading={loading}
+            >
+              <SkillsAssessmentPage />
+            </ProtectedRoute>
+          </ErrorBoundary>
         }
       />
       <Route

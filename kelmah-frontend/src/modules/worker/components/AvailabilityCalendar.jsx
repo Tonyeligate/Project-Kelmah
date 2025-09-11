@@ -30,7 +30,7 @@ import {
   Close as CloseIcon,
   AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -38,7 +38,7 @@ import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 const AvailabilityCalendar = () => {
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());

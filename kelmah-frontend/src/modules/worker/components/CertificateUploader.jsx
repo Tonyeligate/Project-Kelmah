@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import certificateService from '../services/certificateService';
 import {
   Box,
@@ -54,7 +54,7 @@ import { useDropzone } from 'react-dropzone';
 import { formatFileSize, formatDate } from '../../../utils/formatters';
 
 const CertificateUploader = ({ onCertificatesChange }) => {
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 

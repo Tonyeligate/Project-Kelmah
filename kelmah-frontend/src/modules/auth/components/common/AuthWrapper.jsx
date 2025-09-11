@@ -27,7 +27,7 @@ const cartoonImages = [goodJobClip, plannerClip];
 const AuthWrapper = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
@@ -82,8 +82,7 @@ const AuthWrapper = ({ children }) => {
         backgroundColor: '#000',
         py: { xs: 2, sm: 3, md: 4 },
         px: { xs: 1, sm: 2 },
-        overflowY: 'auto',
-        overflowX: 'hidden',
+        overflow: 'auto', // Allow scrolling instead of hidden
       }}
     >
       {/* Enhanced background with animated overlay */}
@@ -196,7 +195,7 @@ const AuthWrapper = ({ children }) => {
                 xs: '1px solid rgba(255,215,0,0.15)',
                 sm: '1px solid rgba(255,215,0,0.2)',
               },
-              minHeight: { xs: '100vh', md: 650 },
+              minHeight: { xs: 'auto', md: 650 },
               position: 'relative',
               '&::before': {
                 content: '""',

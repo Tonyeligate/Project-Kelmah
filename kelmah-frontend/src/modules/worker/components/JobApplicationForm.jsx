@@ -43,6 +43,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import axios from '../../common/services/axios';
 
 const JobApplicationForm = () => {
   console.log('🎯 JobApplicationForm component rendering...');
@@ -67,30 +68,31 @@ const JobApplicationForm = () => {
     additionalInfo: '',
   });
 
-  // Sample job data (in real app, this would come from API)
-  const sampleJob = {
-    id: jobId,
-    title: 'Senior Electrical Engineer - Commercial Projects',
-    company: {
-      name: 'PowerTech Solutions Ghana',
-      logo: null,
-    },
-    location: 'Accra, Greater Accra',
-    type: 'Full-time',
-    budget: { min: 3500, max: 5500, type: 'monthly', currency: 'GHS' },
-    description: 'Seeking certified electrician for high-rise commercial installations. Must have 5+ years experience with industrial wiring and safety protocols.',
-    skills: ['Electrical Installation', 'Industrial Wiring', 'Safety Protocols', 'Project Management', 'Team Leadership'],
-    benefits: ['Health Insurance', 'Company Vehicle', 'Tool Allowance', 'Performance Bonus'],
-    postedDate: new Date('2024-01-11'),
-    applyBy: new Date('2024-09-08'),
-    urgency: 'high'
-  };
-
   useEffect(() => {
     console.log('🎯 JobApplicationForm mounted with jobId:', jobId);
     console.log('📍 Current location:', location.pathname);
-    // In a real app, fetch job details from API
-    setJob(sampleJob);
+
+    // Fetch job details from API
+    const fetchJobDetails = async () => {
+      if (!jobId) return;
+
+      setLoading(true);
+      try {
+        const response = await axios.get(`/api/jobs/${jobId}`);
+        if (response.data && response.data.success) {
+          setJob(response.data.data || response.data);
+        } else {
+          setError('Job not found or no longer available');
+        }
+      } catch (err) {
+        console.error('Error fetching job details:', err);
+        setError(err.response?.data?.message || 'Failed to load job details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobDetails();
   }, [jobId, location.pathname]);
 
   const handleInputChange = (field) => (event) => {
@@ -114,29 +116,41 @@ const JobApplicationForm = () => {
         throw new Error('Expected salary is required');
       }
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      console.log('📝 Application submitted:', {
+      // Prepare application data
+      const submissionData = {
         jobId,
-        applicationData,
-        timestamp: new Date().toISOString()
-      });
+        coverLetter: applicationData.coverLetter.trim(),
+        expectedSalary: parseFloat(applicationData.expectedSalary),
+        availability: applicationData.availability,
+        experience: applicationData.experience,
+        portfolio: applicationData.portfolio.trim(),
+        references: applicationData.references.trim(),
+        additionalInfo: applicationData.additionalInfo.trim(),
+      };
 
-      setSuccess(true);
-      
-      // Redirect after success
-      setTimeout(() => {
-        navigate('/worker/applications', { 
-          state: { 
-            message: 'Application submitted successfully!',
-            applicationId: `APP-${Date.now()}`
-          }
-        });
-      }, 2000);
+      // Submit application via API
+      const response = await axios.post(`/api/jobs/${jobId}/apply`, submissionData);
+
+      if (response.data && response.data.success) {
+        console.log('📝 Application submitted successfully:', response.data);
+        setSuccess(true);
+
+        // Redirect after success
+        setTimeout(() => {
+          navigate('/worker/applications', {
+            state: {
+              message: 'Application submitted successfully!',
+              applicationId: response.data.data?.applicationId || `APP-${Date.now()}`
+            }
+          });
+        }, 2000);
+      } else {
+        throw new Error(response.data?.message || 'Failed to submit application');
+      }
 
     } catch (err) {
-      setError(err.message);
+      console.error('Error submitting application:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to submit application');
     } finally {
       setSubmitting(false);
     }

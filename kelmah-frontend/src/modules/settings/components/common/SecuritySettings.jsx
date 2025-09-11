@@ -9,11 +9,11 @@ import {
   Alert,
 } from '@mui/material';
 import authService from '../../../auth/services/authService';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
 
 const SecuritySettings = () => {
-  const { user, disableMfa } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const [form, setForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -48,7 +48,7 @@ const SecuritySettings = () => {
     e.preventDefault();
     setDisableLoading(true);
     try {
-      await disableMfa(disableForm.password, disableForm.token);
+      await authService.disableMFA(disableForm.password, disableForm.token);
       setDisableSnackbar({
         open: true,
         message: 'Two-factor authentication disabled.',

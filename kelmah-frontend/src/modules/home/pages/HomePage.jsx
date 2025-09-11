@@ -20,7 +20,7 @@ import { styled } from '@mui/material/styles';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
 import GestureControl from '../../common/components/controls/GestureControl';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { checkApiHealth } from '../../common/utils/apiUtils';
 import { useResponsive, useResponsiveTypography, useResponsiveLayout } from '../../../hooks/useResponsive';
 import backgroundImg from '../../../assets/images/background.jpg';
@@ -208,7 +208,7 @@ const HomePage = () => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const responsiveTypography = useResponsiveTypography();
   const responsiveLayout = useResponsiveLayout();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [apiStatus, setApiStatus] = useState({
     isReachable: true,
     checking: false,

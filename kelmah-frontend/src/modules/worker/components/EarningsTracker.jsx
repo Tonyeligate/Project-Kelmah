@@ -98,7 +98,7 @@ import {
 } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import workerService from '../services/workerService';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
@@ -137,7 +137,7 @@ const CHART_COLORS = ['#FFD700', '#1a1a1a', '#666666', '#999999', '#cccccc'];
 
 const EarningsTracker = () => {
   const theme = useTheme();
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management

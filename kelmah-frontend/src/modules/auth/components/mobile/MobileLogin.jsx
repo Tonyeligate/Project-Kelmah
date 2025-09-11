@@ -144,12 +144,12 @@ const MobileLogin = () => {
   return (
     <Box
       sx={{
-        height: '100vh',
+        minHeight: '100vh', // Changed from fixed height
         backgroundColor: '#0F0F0F',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'auto', // Allow scrolling
       }}
     >
       {/* Background Pattern */}
@@ -193,7 +193,7 @@ const MobileLogin = () => {
           py: 0,
           position: 'relative',
           zIndex: 2,
-          overflow: 'hidden',
+          overflow: 'visible', // Allow content to flow naturally
         }}
       >
         <motion.div

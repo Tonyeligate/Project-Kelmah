@@ -43,10 +43,10 @@ import {
   Warning as WarningIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 
 const DocumentVerification = () => {
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);

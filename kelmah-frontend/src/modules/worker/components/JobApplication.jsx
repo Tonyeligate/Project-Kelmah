@@ -35,11 +35,11 @@ import {
   Send as SendIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
 
 const JobApplication = () => {
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
