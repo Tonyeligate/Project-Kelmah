@@ -144,11 +144,12 @@ const MobileLogin = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        height: '100vh',
         backgroundColor: '#0F0F0F',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        overflow: 'hidden',
       }}
     >
       {/* Background Pattern */}
@@ -168,45 +169,17 @@ const MobileLogin = () => {
         }}
       />
 
-      {/* Header */}
+      {/* Empty Header Space */}
       <Box
         sx={{
           position: 'relative',
           zIndex: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          p: 2,
-          pt: { xs: 4, sm: 2 },
+          p: 1,
+          pt: 1.5,
+          flexShrink: 0,
         }}
       >
-        <IconButton
-          onClick={() => navigate('/')}
-          sx={{
-            color: 'white',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            },
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-
-        <Typography
-          variant="h6"
-          sx={{
-            color: '#FFD700',
-            fontWeight: 700,
-            fontSize: '20px',
-            textAlign: 'center',
-            flex: 1,
-            pr: 6, // Balance the back button
-          }}
-        >
-          Kelmah
-        </Typography>
+        {/* Back arrow moved to branding section */}
       </Box>
 
       {/* Main Content */}
@@ -215,11 +188,12 @@ const MobileLogin = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          px: 3,
-          py: 2,
+          justifyContent: 'flex-start',
+          px: 2,
+          py: 0,
           position: 'relative',
           zIndex: 2,
+          overflow: 'hidden',
         }}
       >
         <motion.div
@@ -230,37 +204,61 @@ const MobileLogin = () => {
           <Paper
             elevation={8}
             sx={{
-              p: 4,
-              borderRadius: 4,
+              p: 1.5,
+              borderRadius: 2,
               background: 'rgba(26, 26, 26, 0.95)',
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 215, 0, 0.2)',
-              maxWidth: 400,
+              maxWidth: 380,
               mx: 'auto',
               width: '100%',
             }}
           >
-            {/* Welcome Text */}
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
+            {/* Back Arrow positioned near branding */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mb: 1,
+              }}
+            >
+              <IconButton
+                onClick={() => navigate('/')}
+                sx={{
+                  color: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  p: 0.5,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  },
+                }}
+              >
+                <ArrowBackIcon sx={{ fontSize: '18px' }} />
+              </IconButton>
+            </Box>
+
+            {/* Compact Welcome Text */}
+            <Box sx={{ textAlign: 'center', mb: 1 }}>
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                   color: 'white',
                   fontWeight: 700,
-                  fontSize: { xs: '24px', sm: '28px' },
-                  mb: 1,
+                  fontSize: '16px',
+                  mb: 0.25,
                 }}
               >
                 Welcome back
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
                   color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: '16px',
+                  fontSize: '11px',
                 }}
               >
-                Sign in to continue to Kelmah
+                Sign in to continue
               </Typography>
             </Box>
 
@@ -312,7 +310,7 @@ const MobileLogin = () => {
 
             {/* Login Form */}
             <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={3}>
+              <Stack spacing={1}>
                 {/* Email Field */}
                 <TextField
                   fullWidth
@@ -322,10 +320,12 @@ const MobileLogin = () => {
                   onChange={handleInputChange('email')}
                   error={Boolean(errors.email)}
                   helperText={errors.email}
+                  size="small"
+                  placeholder="Enter your email"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <EmailIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        <EmailIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '18px' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -344,10 +344,23 @@ const MobileLogin = () => {
                       },
                     },
                     '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: '#FFD700',
+                    },
+                    '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                      color: '#FFD700',
                     },
                     '& .MuiOutlinedInput-input': {
                       color: 'white',
+                      fontSize: '14px',
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        opacity: 1,
+                      },
                     },
                   }}
                 />
@@ -361,19 +374,22 @@ const MobileLogin = () => {
                   onChange={handleInputChange('password')}
                   error={Boolean(errors.password)}
                   helperText={errors.password}
+                  size="small"
+                  placeholder="Enter your password"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LockIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                        <LockIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '18px' }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
-                          sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                          sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
+                          size="small"
                         >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -393,10 +409,23 @@ const MobileLogin = () => {
                       },
                     },
                     '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: '#FFD700',
+                    },
+                    '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                      color: '#FFD700',
                     },
                     '& .MuiOutlinedInput-input': {
                       color: 'white',
+                      fontSize: '14px',
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        opacity: 1,
+                      },
                     },
                   }}
                 />
@@ -407,6 +436,7 @@ const MobileLogin = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    mt: -0.5,
                   }}
                 >
                   <FormControlLabel
@@ -414,6 +444,7 @@ const MobileLogin = () => {
                       <Checkbox
                         checked={formData.rememberMe}
                         onChange={handleInputChange('rememberMe')}
+                        size="small"
                         sx={{
                           color: 'rgba(255, 255, 255, 0.5)',
                           '&.Mui-checked': {
@@ -423,7 +454,7 @@ const MobileLogin = () => {
                       />
                     }
                     label={
-                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
+                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
                         Remember me
                       </Typography>
                     }
@@ -435,7 +466,9 @@ const MobileLogin = () => {
                     sx={{
                       color: '#FFD700',
                       textDecoration: 'none',
-                      fontSize: '14px',
+                      fontSize: '10px',
+                      p: 0.25,
+                      minWidth: 'auto',
                       '&:hover': {
                         textDecoration: 'underline',
                         backgroundColor: 'transparent',
@@ -453,9 +486,9 @@ const MobileLogin = () => {
                   variant="contained"
                   disabled={isSubmitting || authLoading}
                   sx={{
-                    height: 56,
+                    height: 38,
                     borderRadius: 2,
-                    fontSize: '16px',
+                    fontSize: '12px',
                     fontWeight: 600,
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                     color: '#000',
@@ -469,7 +502,7 @@ const MobileLogin = () => {
                   }}
                 >
                   {isSubmitting || authLoading ? (
-                    <CircularProgress size={24} sx={{ color: '#000' }} />
+                    <CircularProgress size={16} sx={{ color: '#000' }} />
                   ) : (
                     'Sign In'
                   )}
@@ -477,38 +510,9 @@ const MobileLogin = () => {
               </Stack>
             </Box>
 
-            {/* Divider */}
-            <Box sx={{ my: 3 }}>
-              <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
-                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', px: 2 }}>
-                  or continue with
-                </Typography>
-              </Divider>
-            </Box>
-
-            {/* Social Login */}
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => handleSocialLogin('Google')}
-              startIcon={<GoogleIcon />}
-              sx={{
-                height: 48,
-                borderRadius: 2,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                '&:hover': {
-                  borderColor: '#FFD700',
-                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                },
-              }}
-            >
-              Continue with Google
-            </Button>
-
             {/* Sign Up Link */}
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
+            <Box sx={{ textAlign: 'center', mt: 0.5 }}>
+              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
                 Don't have an account?{' '}
                 <Button
                   component={RouterLink}
@@ -516,8 +520,10 @@ const MobileLogin = () => {
                   sx={{
                     color: '#FFD700',
                     textDecoration: 'none',
-                    fontSize: '14px',
+                    fontSize: '10px',
                     fontWeight: 600,
+                    p: 0.25,
+                    minWidth: 'auto',
                     '&:hover': {
                       textDecoration: 'underline',
                       backgroundColor: 'transparent',

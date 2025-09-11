@@ -174,13 +174,13 @@ const Layout = ({ children, toggleTheme, mode }) => {
               maxWidth: '100vw',
               boxSizing: 'border-box',
             },
-            // Mobile-specific improvements
+            // Mobile-specific improvements - remove all padding for auth pages
             '@media (max-width: 768px)': {
-              py: { xs: 0.5, sm: 1 },
-              px: { xs: 0.5, sm: 1 },
+              py: 0,
+              px: 0,
             },
             // No bottom padding needed since footer is now dynamic and fixed
-            pb: { xs: 1, sm: 2, md: 3 },
+            pb: { xs: 0, sm: 2, md: 3 },
           }}
         >
           {children}

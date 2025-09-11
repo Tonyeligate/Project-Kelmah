@@ -280,11 +280,12 @@ const MobileRegister = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        height: '100vh',
         backgroundColor: '#0F0F0F',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        overflow: 'hidden',
       }}
     >
       {/* Background Pattern */}
@@ -312,8 +313,9 @@ const MobileRegister = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          p: 2,
-          pt: { xs: 4, sm: 2 },
+          p: 1.5,
+          pt: 2,
+          flexShrink: 0,
         }}
       >
         <IconButton
@@ -335,7 +337,7 @@ const MobileRegister = () => {
           sx={{
             color: '#FFD700',
             fontWeight: 700,
-            fontSize: '20px',
+            fontSize: '18px',
             textAlign: 'center',
             flex: 1,
             pr: 6,
@@ -349,11 +351,11 @@ const MobileRegister = () => {
       <Box
         sx={{
           flex: 1,
-          px: 3,
-          py: 2,
+          px: 2,
+          py: 0.5,
           position: 'relative',
           zIndex: 2,
-          overflow: 'auto',
+          overflow: 'hidden',
         }}
       >
         <motion.div
@@ -364,35 +366,35 @@ const MobileRegister = () => {
           <Paper
             elevation={8}
             sx={{
-              p: 4,
-              borderRadius: 4,
+              p: 2,
+              borderRadius: 3,
               background: 'rgba(26, 26, 26, 0.95)',
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 215, 0, 0.2)',
               maxWidth: 500,
               mx: 'auto',
               width: '100%',
-              mb: 4,
+              mb: 2,
             }}
           >
             {/* Welcome Text */}
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Box sx={{ textAlign: 'center', mb: 1 }}>
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                   color: 'white',
                   fontWeight: 700,
-                  fontSize: { xs: '24px', sm: '28px' },
-                  mb: 1,
+                  fontSize: '16px',
+                  mb: 0.5,
                 }}
               >
                 Create Account
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
                   color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: '16px',
+                  fontSize: '11px',
                 }}
               >
                 Join Ghana's premier skilled trades platform
@@ -446,99 +448,13 @@ const MobileRegister = () => {
 
             {/* Registration Form */}
             <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                {/* Account Type Selection */}
-                <FormControl error={Boolean(errors.role)}>
-                  <FormLabel sx={{ color: 'white', mb: 2, fontWeight: 600 }}>
-                    I want to:
-                  </FormLabel>
-                  <RadioGroup
-                    value={formData.role}
-                    onChange={handleRoleChange}
-                    sx={{ flexDirection: 'row', gap: 1 }}
-                  >
-                    <Paper
-                      sx={{
-                        p: 2,
-                        flex: 1,
-                        background: formData.role === 'worker' 
-                          ? 'rgba(255, 215, 0, 0.1)' 
-                          : 'rgba(255, 255, 255, 0.05)',
-                        border: formData.role === 'worker' 
-                          ? '2px solid #FFD700' 
-                          : '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: 2,
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => setFormData(prev => ({ ...prev, role: 'worker' }))}
-                    >
-                      <FormControlLabel
-                        value="worker"
-                        control={<Radio sx={{ color: '#FFD700' }} />}
-                        label={
-                          <Box>
-                            <WorkIcon sx={{ color: '#FFD700', mb: 1 }} />
-                            <Typography sx={{ color: 'white', fontWeight: 600 }}>
-                              Find Work
-                            </Typography>
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>
-                              As a skilled worker
-                            </Typography>
-                          </Box>
-                        }
-                        sx={{ margin: 0, width: '100%' }}
-                      />
-                    </Paper>
-
-                    <Paper
-                      sx={{
-                        p: 2,
-                        flex: 1,
-                        background: formData.role === 'hirer' 
-                          ? 'rgba(255, 215, 0, 0.1)' 
-                          : 'rgba(255, 255, 255, 0.05)',
-                        border: formData.role === 'hirer' 
-                          ? '2px solid #FFD700' 
-                          : '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: 2,
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => setFormData(prev => ({ ...prev, role: 'hirer' }))}
-                    >
-                      <FormControlLabel
-                        value="hirer"
-                        control={<Radio sx={{ color: '#FFD700' }} />}
-                        label={
-                          <Box>
-                            <BusinessIcon sx={{ color: '#FFD700', mb: 1 }} />
-                            <Typography sx={{ color: 'white', fontWeight: 600 }}>
-                              Hire Workers
-                            </Typography>
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>
-                              As a business/hirer
-                            </Typography>
-                          </Box>
-                        }
-                        sx={{ margin: 0, width: '100%' }}
-                      />
-                    </Paper>
-                  </RadioGroup>
-                  {errors.role && (
-                    <Typography sx={{ color: '#f44336', fontSize: '12px', mt: 1 }}>
-                      {errors.role}
-                    </Typography>
-                  )}
-                </FormControl>
+              <Stack spacing={1}>
 
                 {/* Personal Information */}
                 <Box>
-                  <Typography sx={{ color: 'white', fontWeight: 600, mb: 2 }}>
-                    Personal Information
-                  </Typography>
-                  
-                  <Stack spacing={2}>
+                  <Stack spacing={1}>
                     {/* Name Fields */}
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                       <TextField
                         fullWidth
                         label="First Name"
@@ -546,13 +462,8 @@ const MobileRegister = () => {
                         onChange={handleInputChange('firstName')}
                         error={Boolean(errors.firstName)}
                         helperText={errors.firstName}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <PersonIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                            </InputAdornment>
-                          ),
-                        }}
+                        size="small"
+                        placeholder="Enter first name"
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -561,8 +472,11 @@ const MobileRegister = () => {
                             '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
                             '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                           },
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                          '& .MuiOutlinedInput-input': { color: 'white' },
+                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                          '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
+                          '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
+                          '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
                         }}
                       />
 
@@ -573,6 +487,8 @@ const MobileRegister = () => {
                         onChange={handleInputChange('lastName')}
                         error={Boolean(errors.lastName)}
                         helperText={errors.lastName}
+                        size="small"
+                        placeholder="Enter last name"
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -581,8 +497,11 @@ const MobileRegister = () => {
                             '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
                             '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                           },
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                          '& .MuiOutlinedInput-input': { color: 'white' },
+                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
+                          '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                          '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
+                          '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
+                          '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
                         }}
                       />
                     </Box>
@@ -596,13 +515,8 @@ const MobileRegister = () => {
                       onChange={handleInputChange('email')}
                       error={Boolean(errors.email)}
                       helperText={errors.email}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <EmailIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                          </InputAdornment>
-                        ),
-                      }}
+                      size="small"
+                      placeholder="Enter your email"
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -611,8 +525,11 @@ const MobileRegister = () => {
                           '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
                           '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                         },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                        '& .MuiOutlinedInput-input': { color: 'white' },
+                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
+                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
+                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
                       }}
                     />
 
@@ -624,13 +541,8 @@ const MobileRegister = () => {
                       onChange={handleInputChange('phone')}
                       error={Boolean(errors.phone)}
                       helperText={errors.phone || 'Ghana phone number (e.g., 0XX XXX XXXX)'}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <PhoneIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                          </InputAdornment>
-                        ),
-                      }}
+                      size="small"
+                      placeholder="Enter phone number"
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -639,114 +551,21 @@ const MobileRegister = () => {
                           '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
                           '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                         },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                        '& .MuiOutlinedInput-input': { color: 'white' },
+                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
+                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
+                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
                       }}
                     />
                   </Stack>
                 </Box>
 
-                {/* Role-specific fields */}
-                <AnimatePresence>
-                  {formData.role === 'hirer' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
-                      <TextField
-                        fullWidth
-                        label="Company Name"
-                        value={formData.companyName}
-                        onChange={handleInputChange('companyName')}
-                        error={Boolean(errors.companyName)}
-                        helperText={errors.companyName}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <BusinessIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            borderRadius: 2,
-                            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                            '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
-                            '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                          },
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                          '& .MuiOutlinedInput-input': { color: 'white' },
-                        }}
-                      />
-                    </motion.div>
-                  )}
-
-                  {formData.role === 'worker' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
-                      <Box>
-                        <Typography sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
-                          Your Trades/Skills
-                        </Typography>
-                        <Autocomplete
-                          multiple
-                          options={COMMON_TRADES}
-                          value={formData.trades}
-                          onChange={handleTradesChange}
-                          freeSolo
-                          renderTags={(value, getTagProps) =>
-                            value.map((option, index) => (
-                              <Chip
-                                key={index}
-                                variant="outlined"
-                                label={option}
-                                {...getTagProps({ index })}
-                                sx={{
-                                  color: '#FFD700',
-                                  borderColor: '#FFD700',
-                                  '& .MuiChip-deleteIcon': { color: '#FFD700' },
-                                }}
-                              />
-                            ))
-                          }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              placeholder="Select or type your trades/skills"
-                              error={Boolean(errors.trades)}
-                              helperText={errors.trades || 'Select multiple trades/skills'}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                  borderRadius: 2,
-                                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                                  '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
-                                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                                },
-                                '& .MuiOutlinedInput-input': { color: 'white' },
-                              }}
-                            />
-                          )}
-                        />
-                      </Box>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* Password Fields */}
                 <Box>
-                  <Typography sx={{ color: 'white', fontWeight: 600, mb: 2 }}>
-                    Security
-                  </Typography>
-                  
-                  <Stack spacing={2}>
+                  <Stack spacing={1}>
                     {/* Password Field */}
-                    <Box>
                       <TextField
                         fullWidth
                         type={showPassword ? 'text' : 'password'}
@@ -755,19 +574,17 @@ const MobileRegister = () => {
                         onChange={handleInputChange('password')}
                         error={Boolean(errors.password)}
                         helperText={errors.password}
+                      size="small"
+                      placeholder="Enter password"
                         InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <LockIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                            </InputAdornment>
-                          ),
                           endAdornment: (
                             <InputAdornment position="end">
                               <IconButton
                                 onClick={() => setShowPassword(!showPassword)}
-                                sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                              sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
+                              size="small"
                               >
-                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                              {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                               </IconButton>
                             </InputAdornment>
                           ),
@@ -780,44 +597,13 @@ const MobileRegister = () => {
                             '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
                             '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                           },
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                          '& .MuiOutlinedInput-input': { color: 'white' },
-                        }}
-                      />
-                      
-                      {/* Password Strength Indicator */}
-                      {formData.password && (
-                        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              flex: 1,
-                              height: 4,
-                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                              borderRadius: 2,
-                              overflow: 'hidden',
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: `${(passwordStrength / 5) * 100}%`,
-                                height: '100%',
-                                backgroundColor: getPasswordStrengthColor(),
-                                transition: 'all 0.3s ease',
-                              }}
-                            />
-                          </Box>
-                          <Typography
-                            sx={{
-                              color: getPasswordStrengthColor(),
-                              fontSize: '12px',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {getPasswordStrengthText()}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
+                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
+                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
+                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                      }}
+                    />
 
                     {/* Confirm Password Field */}
                     <TextField
@@ -828,19 +614,17 @@ const MobileRegister = () => {
                       onChange={handleInputChange('confirmPassword')}
                       error={Boolean(errors.confirmPassword)}
                       helperText={errors.confirmPassword}
+                      size="small"
+                      placeholder="Confirm password"
                       InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LockIcon sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                          </InputAdornment>
-                        ),
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                              sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
+                              size="small"
                             >
-                              {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                              {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                             </IconButton>
                           </InputAdornment>
                         ),
@@ -853,8 +637,11 @@ const MobileRegister = () => {
                           '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
                           '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                         },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                        '& .MuiOutlinedInput-input': { color: 'white' },
+                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
+                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
+                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
+                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
                       }}
                     />
                   </Stack>
@@ -866,6 +653,7 @@ const MobileRegister = () => {
                     <Checkbox
                       checked={formData.acceptTerms}
                       onChange={handleInputChange('acceptTerms')}
+                      size="small"
                       sx={{
                         color: 'rgba(255, 255, 255, 0.5)',
                         '&.Mui-checked': { color: '#FFD700' },
@@ -873,7 +661,7 @@ const MobileRegister = () => {
                     />
                   }
                   label={
-                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
+                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
                       I agree to the{' '}
                       <Button
                         component={RouterLink}
@@ -881,12 +669,12 @@ const MobileRegister = () => {
                         sx={{
                           color: '#FFD700',
                           textDecoration: 'underline',
-                          fontSize: '14px',
+                          fontSize: '10px',
                           p: 0,
                           minWidth: 'auto',
                         }}
                       >
-                        Terms and Conditions
+                        Terms
                       </Button>
                       {' '}and{' '}
                       <Button
@@ -895,19 +683,19 @@ const MobileRegister = () => {
                         sx={{
                           color: '#FFD700',
                           textDecoration: 'underline',
-                          fontSize: '14px',
+                          fontSize: '10px',
                           p: 0,
                           minWidth: 'auto',
                         }}
                       >
-                        Privacy Policy
+                        Privacy
                       </Button>
                     </Typography>
                   }
                 />
 
                 {errors.acceptTerms && (
-                  <Typography sx={{ color: '#f44336', fontSize: '12px', mt: -2 }}>
+                  <Typography sx={{ color: '#f44336', fontSize: '10px', mt: -1 }}>
                     {errors.acceptTerms}
                   </Typography>
                 )}
@@ -919,13 +707,13 @@ const MobileRegister = () => {
                   variant="contained"
                   disabled={isSubmitting || authLoading}
                   sx={{
-                    height: 56,
+                    height: 40,
                     borderRadius: 2,
-                    fontSize: '16px',
+                    fontSize: '12px',
                     fontWeight: 600,
                     background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                     color: '#000',
-                    mt: 2,
+                    mt: 0.5,
                     '&:hover': {
                       background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                     },
@@ -936,7 +724,7 @@ const MobileRegister = () => {
                   }}
                 >
                   {isSubmitting || authLoading ? (
-                    <CircularProgress size={24} sx={{ color: '#000' }} />
+                    <CircularProgress size={18} sx={{ color: '#000' }} />
                   ) : (
                     'Create Account'
                   )}
@@ -944,37 +732,9 @@ const MobileRegister = () => {
               </Stack>
             </Box>
 
-            {/* Divider */}
-            <Box sx={{ my: 3 }}>
-              <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
-                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', px: 2 }}>
-                  or continue with
-                </Typography>
-              </Divider>
-            </Box>
-
-            {/* Social Login */}
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<GoogleIcon />}
-              sx={{
-                height: 48,
-                borderRadius: 2,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                '&:hover': {
-                  borderColor: '#FFD700',
-                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                },
-              }}
-            >
-              Continue with Google
-            </Button>
-
             {/* Sign In Link */}
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }}>
+            <Box sx={{ textAlign: 'center', mt: 1 }}>
+              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
                 Already have an account?{' '}
                 <Button
                   component={RouterLink}
@@ -982,8 +742,10 @@ const MobileRegister = () => {
                   sx={{
                     color: '#FFD700',
                     textDecoration: 'none',
-                    fontSize: '14px',
+                    fontSize: '10px',
                     fontWeight: 600,
+                    p: 0.5,
+                    minWidth: 'auto',
                     '&:hover': {
                       textDecoration: 'underline',
                       backgroundColor: 'transparent',
@@ -1002,12 +764,3 @@ const MobileRegister = () => {
 };
 
 export default MobileRegister;
-
-
-
-
-
-
-
-
-
