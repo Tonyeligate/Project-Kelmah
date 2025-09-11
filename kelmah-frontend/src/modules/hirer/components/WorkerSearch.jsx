@@ -299,21 +299,22 @@ const WorkerSearch = () => {
     }
   };
 
-  // Search Statistics
+  // Search Statistics with null safety
   const searchStats = {
-    totalWorkers: workers.length,
-    availableWorkers: workers.filter((w) => w.availability === 'available')
-      .length,
+    totalWorkers: Array.isArray(workers) ? workers.length : 0,
+    availableWorkers: Array.isArray(workers) 
+      ? workers.filter((w) => w?.availability === 'available').length
+      : 0,
     averageRating:
-      workers.length > 0
+      Array.isArray(workers) && workers.length > 0
         ? (
-            workers.reduce((sum, w) => sum + w.rating, 0) / workers.length
+            workers.reduce((sum, w) => sum + (w?.rating || 0), 0) / workers.length
           ).toFixed(1)
         : 0,
     averageRate:
-      workers.length > 0
+      Array.isArray(workers) && workers.length > 0
         ? Math.round(
-            workers.reduce((sum, w) => sum + w.hourlyRate, 0) / workers.length,
+            workers.reduce((sum, w) => sum + (w?.hourlyRate || 0), 0) / workers.length,
           )
         : 0,
   };
@@ -508,7 +509,7 @@ const WorkerSearch = () => {
                     Skills
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
-                    {skillOptions.map((skill) => (
+                    {(Array.isArray(skillOptions) ? skillOptions : []).map((skill) => (
                       <Chip
                         key={skill}
                         label={skill}
@@ -538,7 +539,7 @@ const WorkerSearch = () => {
                       displayEmpty
                     >
                       <MenuItem value="">All Locations</MenuItem>
-                      {locationOptions.map((location) => (
+                      {(Array.isArray(locationOptions) ? locationOptions : []).map((location) => (
                         <MenuItem key={location} value={location}>
                           {location}
                         </MenuItem>
@@ -643,7 +644,7 @@ const WorkerSearch = () => {
       ) : (
         <>
           <Grid container spacing={3}>
-            {workers.map((worker) => (
+            {(Array.isArray(workers) ? workers : []).map((worker) => (
               <Grid item xs={12} sm={6} md={4} key={worker.id}>
                 <Card
                   sx={{

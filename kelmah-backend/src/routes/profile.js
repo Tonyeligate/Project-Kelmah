@@ -12,6 +12,12 @@ router.use(authenticateUser);
 // Get profile of current user
 router.get('/', profileController.getMyProfile);
 
+// Get profile activity
+router.get('/activity', profileController.getProfileActivity);
+
+// Get profile statistics  
+router.get('/statistics', profileController.getProfileStatistics);
+
 // Get any user's profile by ID
 router.get('/:id', profileController.getUserProfile);
 

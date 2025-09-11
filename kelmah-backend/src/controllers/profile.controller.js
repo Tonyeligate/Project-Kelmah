@@ -17,6 +17,49 @@ exports.getMyProfile = async (req, res, next) => {
 };
 
 /**
+ * Get profile activity data
+ */
+exports.getProfileActivity = async (req, res, next) => {
+  try {
+    // TODO: Implement actual activity tracking
+    // For now, return mock activity data
+    const activity = {
+      recentJobs: [],
+      applications: [],
+      completedProjects: 0,
+      rating: 0,
+      reviewsCount: 0,
+      lastActive: new Date()
+    };
+    return successResponse(res, 200, 'Profile activity retrieved successfully', activity);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Get profile statistics
+ */
+exports.getProfileStatistics = async (req, res, next) => {
+  try {
+    // TODO: Implement actual statistics calculation
+    // For now, return mock statistics data
+    const statistics = {
+      totalProjects: 0,
+      completedProjects: 0,
+      activeApplications: 0,
+      totalEarnings: 0,
+      averageRating: 0,
+      responseRate: 100,
+      completionRate: 100
+    };
+    return successResponse(res, 200, 'Profile statistics retrieved successfully', statistics);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Get a specific user's profile by ID
  */
 exports.getUserProfile = async (req, res, next) => {

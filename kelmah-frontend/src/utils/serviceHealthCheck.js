@@ -11,7 +11,7 @@ import { SERVICES, getApiBaseUrl } from '../config/environment';
 const serviceHealthCache = new Map();
 const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-// Health check endpoints
+// Health check endpoints - Standardize to /api/health for consistency
 const HEALTH_ENDPOINTS = {
   [SERVICES.AUTH_SERVICE]: '/api/health',
   [SERVICES.USER_SERVICE]: '/api/health', 
@@ -24,7 +24,7 @@ const HEALTH_ENDPOINTS = {
  * Check if a service is healthy
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
-  const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/health';
+  const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/api/health'; // Default to /api/health
   // Prefer gateway-relative health checks to avoid mixed-content on HTTPS
   let base = '/api'; // Default fallback
   if (typeof window !== 'undefined' && window.location.protocol === 'https:') {

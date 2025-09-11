@@ -121,17 +121,19 @@ const addMainInterceptors = async () => {
 // Response interceptor
   instance.interceptors.response.use(
   (response) => {
-    // Calculate request duration
-    const duration = new Date() - response.config.metadata.startTime;
+    // Calculate request duration with null safety
+    const duration = response?.config?.metadata?.startTime
+      ? new Date() - response.config.metadata.startTime
+      : 'unknown';
 
     // Log response in development
     if (LOG_CONFIG.enableConsole) {
-      console.group(`✅ API Response: ${response.status} (${duration}ms)`);
+      console.group(`✅ API Response: ${response?.status || 'unknown'} (${duration}ms)`);
       console.log('Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        data: response.data,
+        status: response?.status,
+        statusText: response?.statusText,
+        headers: response?.headers,
+        data: response?.data,
       });
       console.groupEnd();
     }
@@ -139,37 +141,38 @@ const addMainInterceptors = async () => {
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error?.config;
 
-    // Calculate request duration if available
+    // Calculate request duration if available with null safety
     const duration = originalRequest?.metadata?.startTime
       ? new Date() - originalRequest.metadata.startTime
       : 'unknown';
 
-    // Enhanced error logging
+    // Enhanced error logging with null safety
     if (LOG_CONFIG.enableConsole) {
       console.group(
-        `❌ API Error: ${error.response?.status || 'Network'} (${duration}ms)`,
+        `❌ API Error: ${error?.response?.status || 'Network'} (${duration}ms)`,
       );
       console.error('Error details:', {
         url: originalRequest?.url,
         method: originalRequest?.method,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        message: error.message,
-        data: error.response?.data,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        message: error?.message,
+        data: error?.response?.data,
       });
       console.groupEnd();
     }
 
     // Handle 401 Unauthorized - attempt token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error?.response?.status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
 
       const refreshToken = secureStorage.getRefreshToken();
 
       if (refreshToken) {
         try {
+          console.log('🔄 Attempting token refresh...');
           // Use a new axios instance to avoid interceptor loops
             const baseURL = await getApiBaseUrl();
           const refreshResponse = await axios.post(
@@ -182,9 +185,10 @@ const addMainInterceptors = async () => {
           );
 
           const newToken =
-            refreshResponse.data.data?.token || refreshResponse.data.token;
+            refreshResponse?.data?.data?.token || refreshResponse?.data?.token;
 
           if (newToken) {
+            console.log('✅ Token refresh successful');
             // Update stored token securely
             secureStorage.setAuthToken(newToken);
 
@@ -193,21 +197,28 @@ const addMainInterceptors = async () => {
 
             // Retry the original request
               return instance(originalRequest);
+          } else {
+            console.warn('⚠️ Token refresh response missing token');
+            throw new Error('No token in refresh response');
           }
         } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
+          console.error('❌ Token refresh failed:', refreshError?.message || refreshError);
 
           // Clear auth data securely
           secureStorage.clear();
 
-          // Redirect to login page
+          // Redirect to login page with reason
           if (typeof window !== 'undefined') {
-            window.location.href = '/login?reason=session_expired';
+            const currentPath = window.location.pathname;
+            if (!currentPath.includes('/login')) {
+              window.location.href = '/login?reason=refresh_failed';
+            }
           }
 
           return Promise.reject(refreshError);
         }
       } else {
+        console.warn('⚠️ No refresh token available');
         // No refresh token available, redirect to login
         if (typeof window !== 'undefined') {
           window.location.href = '/login?reason=no_token';

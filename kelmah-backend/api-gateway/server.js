@@ -548,6 +548,22 @@ app.use('/api/notifications',
   }
 );
 
+// Conversations routes (protected) → messaging-service
+app.use('/api/conversations',
+  authMiddleware.authenticate,
+  (req, res, next) => {
+    if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
+      return res.status(503).json({ error: 'Messaging service unavailable' });
+    }
+    const proxy = createProxyMiddleware({
+      target: services.messaging,
+      changeOrigin: true,
+      pathRewrite: { '^/api/conversations': '/api/conversations' }
+    });
+    return proxy(req, res, next);
+  }
+);
+
 // Admin review moderation (admin only) → route to review-service
 app.use('/api/admin/reviews',
   authMiddleware.authenticate,

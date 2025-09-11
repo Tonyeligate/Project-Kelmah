@@ -7,15 +7,20 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-        "destination": "https://91ad20324cfa.ngrok-free.app/api/$1"
+      "destination": "https://91ad20324cfa.ngrok-free.app/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://d1d2f3df291c.ngrok-free.app/socket.io/$1"
+      "destination": "https://91ad20324cfa.ngrok-free.app/socket.io/$1"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "src/api/runtime-config.js": {
+      "memory": 128
+    }
+  }
 }
