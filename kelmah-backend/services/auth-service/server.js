@@ -400,7 +400,7 @@ app.post('/api/admin/unlock-account', async (req, res) => {
 // Removed temporary user/dashboard endpoints; API Gateway should route to user-service
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+const healthResponse = (req, res) => {
   res.status(200).json({
     service: "Auth Service",
     status: "OK",
@@ -411,7 +411,10 @@ app.get("/health", (req, res) => {
       verify: "/api/auth/verify"
     }
   });
-});
+};
+
+app.get("/health", healthResponse);
+app.get("/api/health", healthResponse); // API Gateway compatibility
 
 // Readiness and liveness endpoints
 app.get('/health/ready', (req, res) => {
@@ -419,7 +422,16 @@ app.get('/health/ready', (req, res) => {
   res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health/ready', (req, res) => {
+  const ready = mongoose.connection?.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
 app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 

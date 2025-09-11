@@ -215,20 +215,32 @@ app.use("/api/users/analytics", analyticsRoutes);
 // Removed temporary contracts endpoint; job-service should serve contracts
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+const healthResponse = (req, res) => {
   res.status(200).json({
     service: "User Service",
     status: "OK",
     timestamp: new Date().toISOString(),
   });
-});
+};
+
+app.get("/health", healthResponse);
+app.get("/api/health", healthResponse); // API Gateway compatibility
 
 app.get('/health/ready', (req, res) => {
   const ready = require('mongoose').connection?.readyState === 1;
   res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health/ready', (req, res) => {
+  const ready = require('mongoose').connection?.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
 app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 

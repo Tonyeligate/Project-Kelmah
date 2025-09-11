@@ -346,7 +346,7 @@ try {
 }
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+const healthResponse = (req, res) => {
   res.status(200).json({
     service: 'review-service',
     status: 'healthy',
@@ -356,14 +356,26 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     features: ['reviews', 'ratings', 'analytics', 'moderation']
   });
-});
+};
+
+app.get('/health', healthResponse);
+app.get('/api/health', healthResponse); // API Gateway compatibility
 
 app.get('/health/ready', (req, res) => {
   const ready = mongoose.connection?.readyState === 1;
   res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health/ready', (req, res) => {
+  const ready = mongoose.connection?.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
 app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 

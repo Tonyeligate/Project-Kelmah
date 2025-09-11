@@ -25,23 +25,35 @@ const HEALTH_ENDPOINTS = {
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
   const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/api/health'; // Default to /api/health
-  // Prefer gateway-relative health checks to avoid mixed-content on HTTPS
-  let base = '/api'; // Default fallback
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    base = '/api';
-  } else if (serviceUrl) {
-    base = serviceUrl;
-  } else {
+  
+  let base;
+  
+  // Special handling for aggregate health check - should go to API Gateway
+  const isAggregateCheck = serviceUrl === 'aggregate';
+  if (isAggregateCheck) {
     try {
-      base = await getApiBaseUrl();
+      base = await getApiBaseUrl(); // This should point to API Gateway
     } catch (error) {
-      console.warn('Failed to get API base URL, using fallback:', error);
+      console.warn('Failed to get API base URL for aggregate check, using fallback:', error);
       base = '/api';
+    }
+  } else {
+    // For other services, prefer gateway-relative health checks to avoid mixed-content on HTTPS
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      base = '/api';
+    } else if (serviceUrl) {
+      base = serviceUrl;
+    } else {
+      try {
+        base = await getApiBaseUrl();
+      } catch (error) {
+        console.warn('Failed to get API base URL, using fallback:', error);
+        base = '/api';
+      }
     }
   }
 
   // For aggregate health check, use the correct endpoint
-  const isAggregateCheck = serviceUrl === 'aggregate';
   const fullUrl = isAggregateCheck ? `${base}/health/aggregate` : `${base}${healthEndpoint}`;
 
   try {

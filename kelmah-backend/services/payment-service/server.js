@@ -131,7 +131,7 @@ app.use("/api/payments", paymentsRoutes);
 // Webhooks are mounted above JSON parser
 
 // Provider health endpoint for monitoring
-app.get('/health/providers', (req, res) => {
+const providersHealth = (req, res) => {
   const providers = {
     stripe: Boolean(process.env.STRIPE_SECRET_KEY),
     paystack: Boolean(process.env.PAYSTACK_SECRET_KEY),
@@ -140,20 +140,35 @@ app.get('/health/providers', (req, res) => {
     airteltigo: Boolean(process.env.AIRTELTIGO_CLIENT_ID || process.env.AIRTELTIGO_MERCHANT_ID),
   };
   res.json({ success: true, data: { providers } });
-});
+};
+
+app.get('/health/providers', providersHealth);
+app.get('/api/health/providers', providersHealth); // API Gateway compatibility
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+const healthResponse = (req, res) => {
   const dbReady = mongoose.connection?.readyState === 1;
   res.status(200).json({ service: 'payment-service', status: dbReady ? 'healthy' : 'degraded', db: dbReady ? 'connected' : 'disconnected', timestamp: new Date().toISOString() });
-});
+};
+
+app.get("/health", healthResponse);
+app.get("/api/health", healthResponse); // API Gateway compatibility
 
 app.get('/health/ready', (req, res) => {
   const ready = mongoose.connection?.readyState === 1;
   res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health/ready', (req, res) => {
+  const ready = mongoose.connection?.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
 app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 

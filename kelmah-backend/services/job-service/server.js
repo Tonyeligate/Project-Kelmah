@@ -109,13 +109,16 @@ app.use(cors(corsOptions));
 // Logging via createHttpLogger only
 
 // Health endpoints MUST be mounted before any rate limiting
-app.get("/health", (req, res) => {
+const healthResponse = (req, res) => {
   res.status(200).json({
     service: "Job Service",
     status: "OK",
     timestamp: new Date().toISOString(),
   });
-});
+};
+
+app.get("/health", healthResponse);
+app.get("/api/health", healthResponse); // API Gateway compatibility
 
 // Readiness and liveness endpoints (also before limiter)
 app.get('/health/ready', (req, res) => {
@@ -123,7 +126,16 @@ app.get('/health/ready', (req, res) => {
   res.status(isDbConnected ? 200 : 503).json({ ready: isDbConnected, timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health/ready', (req, res) => {
+  const isDbConnected = !!(require('mongoose').connection?.readyState === 1);
+  res.status(isDbConnected ? 200 : 503).json({ ready: isDbConnected, timestamp: new Date().toISOString() });
+});
+
 app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 

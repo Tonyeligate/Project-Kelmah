@@ -197,7 +197,7 @@ try {
 const messageSocketHandler = new MessageSocketHandler(io);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+const healthCheck = (req, res) => {
   const mongoState = mongoose.connection.readyState;
   const mongoStates = {
     0: 'disconnected',
@@ -230,7 +230,10 @@ app.get('/health', (req, res) => {
 
   const statusCode = mongoState === 1 ? 200 : 503;
   res.status(statusCode).json(healthStatus);
-});
+};
+
+app.get('/health', healthCheck);
+app.get('/api/health', healthCheck); // API Gateway compatibility
 
 // Readiness and liveness
 app.get('/health/ready', (req, res) => {
@@ -238,7 +241,16 @@ app.get('/health/ready', (req, res) => {
   res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health/ready', (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({ ready, timestamp: new Date().toISOString() });
+});
+
 app.get('/health/live', (req, res) => {
+  res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 
