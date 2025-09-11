@@ -34,7 +34,7 @@ router.get('/status', async (req, res) => {
   
   for (const [serviceName, url] of Object.entries(serviceUrls)) {
     try {
-      const response = await axios.get(`${url}/health`, { timeout: 5000 });
+      const response = await axios.get(`${url}/api/health`, { timeout: 5000 });
       serviceStatus[serviceName] = {
         status: 'healthy',
         url: url,

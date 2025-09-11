@@ -61,7 +61,7 @@ const createJobProxy = (targetUrl, options = {}) => {
  */
 const checkJobServiceHealth = async (targetUrl) => {
   try {
-    const response = await axios.get(`${targetUrl}/health`, { 
+    const response = await axios.get(`${targetUrl}/api/health`, { 
       timeout: 5000,
       headers: {
         'User-Agent': 'API-Gateway-Health-Check'

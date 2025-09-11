@@ -13,11 +13,11 @@ const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 // Health check endpoints
 const HEALTH_ENDPOINTS = {
-  [SERVICES.AUTH_SERVICE]: '/health',
-  [SERVICES.USER_SERVICE]: '/health', 
-  [SERVICES.JOB_SERVICE]: '/health',
-  [SERVICES.MESSAGING_SERVICE]: '/health',
-  [SERVICES.PAYMENT_SERVICE]: '/health',
+  [SERVICES.AUTH_SERVICE]: '/api/health',
+  [SERVICES.USER_SERVICE]: '/api/health', 
+  [SERVICES.JOB_SERVICE]: '/api/health',
+  [SERVICES.MESSAGING_SERVICE]: '/api/health',
+  [SERVICES.PAYMENT_SERVICE]: '/api/health',
 };
 
 /**

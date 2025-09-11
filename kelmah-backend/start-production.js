@@ -176,7 +176,7 @@ async function startAllServices() {
     log('✅ All services started successfully!');
     log('🌐 External Access URLs:');
     log(`  API Gateway: http://YOUR_IP:3000`);
-    log(`  Health Check: http://YOUR_IP:3000/health`);
+    log(`  Health Check: http://YOUR_IP:3000/api/health`);
     log(`  API Docs: http://YOUR_IP:3000/api/docs`);
     log('💡 To stop all services, press Ctrl+C');
     

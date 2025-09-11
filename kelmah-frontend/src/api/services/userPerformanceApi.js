@@ -17,6 +17,15 @@ class UserPerformanceApi {
   }
 
   /**
+   * Get current user's performance data
+   * @returns {Promise<Object>} Current user's performance data
+   */
+  async getMyPerformance() {
+    const response = await apiClient.get('/user-performance/me');
+    return response.data;
+  }
+
+  /**
    * Update user performance metrics
    * @param {string} userId - User ID
    * @param {Object} metrics - Performance metrics

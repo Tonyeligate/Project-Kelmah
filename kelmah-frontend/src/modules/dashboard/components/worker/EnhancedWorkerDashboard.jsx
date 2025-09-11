@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { GHANA_COLORS } from '../../../../theme/index';
 import {
   Box,
   Grid,
@@ -278,7 +279,7 @@ const EnhancedWorkerDashboard = () => {
       value: metrics?.totalJobs || 0,
       change: metrics?.jobsChange || 0,
       icon: <WorkIcon />,
-      color: GHANA.blue,
+      color: GHANA_COLORS.blue,
     },
     {
       id: 'active-applications',
@@ -286,7 +287,7 @@ const EnhancedWorkerDashboard = () => {
       value: metrics?.activeApplications || 0,
       change: metrics?.applicationsChange || 0,
       icon: <AssignmentIcon />,
-      color: GHANA.green,
+      color: GHANA_COLORS.green,
     },
     {
       id: 'total-earnings',
@@ -294,7 +295,7 @@ const EnhancedWorkerDashboard = () => {
       value: `GH₵ ${metrics?.totalEarnings || 0}`,
       change: metrics?.earningsChange || 0,
       icon: <MoneyIcon />,
-      color: GHANA.gold,
+      color: GHANA_COLORS.gold,
     },
     {
       id: 'profile-views',
@@ -302,7 +303,7 @@ const EnhancedWorkerDashboard = () => {
       value: metrics?.profileViews || 0,
       change: metrics?.viewsChange || 0,
       icon: <VisibilityIcon />,
-      color: GHANA.red,
+      color: GHANA_COLORS.red,
     },
   ];
     } catch (error) {
@@ -317,28 +318,28 @@ const EnhancedWorkerDashboard = () => {
       title: 'Find Jobs',
       description: 'Browse available opportunities',
       icon: <SearchIcon />,
-      gradient: `linear-gradient(135deg, ${GHANA.blue} 0%, ${alpha(GHANA.blue, 0.8)} 100%)`,
+      gradient: `linear-gradient(135deg, ${GHANA_COLORS.blue} 0%, ${alpha(GHANA_COLORS.blue, 0.8)} 100%)`,
       onClick: () => navigate('/worker/find-work'),
     },
     {
       title: 'My Applications',
       description: 'Track your job applications',
       icon: <AssignmentIcon />,
-      gradient: `linear-gradient(135deg, ${GHANA.green} 0%, ${alpha(GHANA.green, 0.8)} 100%)`,
+      gradient: `linear-gradient(135deg, ${GHANA_COLORS.green} 0%, ${alpha(GHANA_COLORS.green, 0.8)} 100%)`,
       onClick: () => navigate('/worker/applications'),
     },
     {
       title: 'Update Profile',
       description: 'Keep your profile current',
       icon: <EditIcon />,
-      gradient: `linear-gradient(135deg, ${GHANA.red} 0%, ${alpha(GHANA.red, 0.8)} 100%)`,
+      gradient: `linear-gradient(135deg, ${GHANA_COLORS.red} 0%, ${alpha(GHANA_COLORS.red, 0.8)} 100%)`,
       onClick: () => navigate('/worker/profile/edit'),
     },
     {
       title: 'Earnings',
       description: 'View your earnings',
       icon: <EarningsIcon />,
-      gradient: `linear-gradient(135deg, ${GHANA.gold} 0%, ${alpha(GHANA.gold, 0.8)} 100%)`,
+      gradient: `linear-gradient(135deg, ${GHANA_COLORS.gold} 0%, ${alpha(GHANA_COLORS.gold, 0.8)} 100%)`,
       onClick: () => navigate('/worker/earnings'),
     },
   ], [navigate]);
@@ -405,13 +406,13 @@ const EnhancedWorkerDashboard = () => {
                   onClick={handleRefresh}
                   disabled={refreshing}
                   sx={{
-                    bgcolor: alpha(GHANA.red, 0.1),
-                    '&:hover': { bgcolor: alpha(GHANA.red, 0.2) },
+                    bgcolor: alpha(GHANA_COLORS.red, 0.1),
+                    '&:hover': { bgcolor: alpha(GHANA_COLORS.red, 0.2) },
                   }}
                 >
                   <RefreshIcon
                     sx={{
-                      color: GHANA.red,
+                      color: GHANA_COLORS.red,
                       animation: refreshing ? 'spin 1s linear infinite' : 'none',
                       '@keyframes spin': {
                         '0%': { transform: 'rotate(0deg)' },
@@ -491,7 +492,7 @@ const EnhancedWorkerDashboard = () => {
                       <Button
                         size="small"
                         onClick={() => navigate('/worker/find-work')}
-                        sx={{ color: GHANA.red }}
+                        sx={{ color: GHANA_COLORS.red }}
                       >
                         View All
                       </Button>
@@ -516,12 +517,12 @@ const EnhancedWorkerDashboard = () => {
                             sx={{
                               borderRadius: 2,
                               mb: 1,
-                              bgcolor: alpha(GHANA.green, 0.05),
-                              '&:hover': { bgcolor: alpha(GHANA.green, 0.1) },
+                              bgcolor: alpha(GHANA_COLORS.green, 0.05),
+                              '&:hover': { bgcolor: alpha(GHANA_COLORS.green, 0.1) },
                             }}
                           >
                             <ListItemAvatar>
-                              <Avatar sx={{ bgcolor: GHANA.green }}>
+                              <Avatar sx={{ bgcolor: GHANA_COLORS.green }}>
                                 <WorkIcon />
                               </Avatar>
                             </ListItemAvatar>
@@ -555,7 +556,7 @@ const EnhancedWorkerDashboard = () => {
                       <Button
                         size="small"
                         onClick={() => navigate('/worker/analytics')}
-                        sx={{ color: GHANA.red }}
+                        sx={{ color: GHANA_COLORS.red }}
                       >
                         View Analytics
                       </Button>
@@ -578,10 +579,10 @@ const EnhancedWorkerDashboard = () => {
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            bgcolor: alpha(GHANA.blue, 0.1),
+                            bgcolor: alpha(GHANA_COLORS.blue, 0.1),
                             '& .MuiLinearProgress-bar': {
                               borderRadius: 4,
-                              bgcolor: GHANA.blue,
+                              bgcolor: GHANA_COLORS.blue,
                             },
                           }}
                         />
@@ -603,10 +604,10 @@ const EnhancedWorkerDashboard = () => {
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            bgcolor: alpha(GHANA.green, 0.1),
+                            bgcolor: alpha(GHANA_COLORS.green, 0.1),
                             '& .MuiLinearProgress-bar': {
                               borderRadius: 4,
-                              bgcolor: GHANA.green,
+                              bgcolor: GHANA_COLORS.green,
                             },
                           }}
                         />
@@ -628,10 +629,10 @@ const EnhancedWorkerDashboard = () => {
                           sx={{
                             height: 8,
                             borderRadius: 4,
-                            bgcolor: alpha(GHANA.gold, 0.1),
+                            bgcolor: alpha(GHANA_COLORS.gold, 0.1),
                             '& .MuiLinearProgress-bar': {
                               borderRadius: 4,
-                              bgcolor: GHANA.gold,
+                              bgcolor: GHANA_COLORS.gold,
                             },
                           }}
                         />

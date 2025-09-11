@@ -20,7 +20,7 @@ class ServiceHealthMonitor {
   }
 
   // Register a service for monitoring
-  registerService(serviceName, baseUrl, healthEndpoint = '/health') {
+  registerService(serviceName, baseUrl, healthEndpoint = '/api/health') {
     if (!baseUrl || typeof baseUrl !== 'string') {
       console.warn(`⚠️ Invalid URL for service ${serviceName}: ${baseUrl}`);
       return null;

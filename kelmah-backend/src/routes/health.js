@@ -1,5 +1,14 @@
 const express = require('express');
-const router = express.Router();
+// Aggregate health check endpoint for all services
+router.get('/aggregate', async (req, res) => {
+  const services = [
+    { name: 'auth-service', url: process.env.AUTH_SERVICE_URL || 'http://localhost:5001/api/health' },
+    { name: 'user-service', url: process.env.USER_SERVICE_URL || 'http://localhost:5002/api/health' },
+    { name: 'job-service', url: process.env.JOB_SERVICE_URL || 'http://localhost:5003/api/health' },
+    { name: 'messaging-service', url: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5004/api/health' },
+    { name: 'payment-service', url: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5005/api/health' },
+    { name: 'review-service', url: process.env.REVIEW_SERVICE_URL || 'http://localhost:5006/api/health' }
+  ];er = express.Router();
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -38,12 +47,12 @@ router.get('/status', (req, res) => {
 // Aggregate health check endpoint for all services
 router.get('/aggregate', async (req, res) => {
   const services = [
-    { name: 'auth-service', url: process.env.AUTH_SERVICE_URL || 'http://localhost:5001/health' },
-    { name: 'user-service', url: process.env.USER_SERVICE_URL || 'http://localhost:5002/health' },
-    { name: 'job-service', url: process.env.JOB_SERVICE_URL || 'http://localhost:5003/health' },
-    { name: 'messaging-service', url: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5004/health' },
-    { name: 'payment-service', url: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5005/health' },
-    { name: 'review-service', url: process.env.REVIEW_SERVICE_URL || 'http://localhost:5006/health' }
+    { name: 'auth-service', url: process.env.AUTH_SERVICE_URL || 'http://localhost:5001/api/health' },
+    { name: 'user-service', url: process.env.USER_SERVICE_URL || 'http://localhost:5002/api/health' },
+    { name: 'job-service', url: process.env.JOB_SERVICE_URL || 'http://localhost:5003/api/health' },
+    { name: 'messaging-service', url: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5004/api/health' },
+    { name: 'payment-service', url: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5005/api/health' },
+    { name: 'review-service', url: process.env.REVIEW_SERVICE_URL || 'http://localhost:5006/api/health' }
   ];
 
   const results = {};

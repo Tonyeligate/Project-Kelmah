@@ -70,7 +70,7 @@ async function runUserServiceTests() {
   const tests = [
     {
       name: 'Health Check',
-      url: `${API_BASE}/health`
+      url: `${API_BASE}/api/health`
     },
     {
       name: 'User Service Health',

@@ -217,12 +217,12 @@ app.get('/api/health/aggregate', async (req, res) => {
     const token = req.headers.authorization;
     const headers = token ? { Authorization: token } : undefined;
     const baseTargets = [
-      { name: 'auth', url: `${services.auth}/health` },
-      { name: 'user', url: `${services.user}/health` },
-      { name: 'job', url: `${services.job}/health` },
-      { name: 'payment', url: `${services.payment}/health` },
-      { name: 'messaging', url: `${services.messaging}/health` },
-      { name: 'review', url: `${services.review}/health` },
+      { name: 'auth', url: `${services.auth}/api/health` },
+      { name: 'user', url: `${services.user}/api/health` },
+      { name: 'job', url: `${services.job}/api/health` },
+      { name: 'payment', url: `${services.payment}/api/health` },
+      { name: 'messaging', url: `${services.messaging}/api/health` },
+      { name: 'review', url: `${services.review}/api/health` },
     ];
     const results = await Promise.all(baseTargets.map(async (t) => {
       try {
@@ -235,7 +235,7 @@ app.get('/api/health/aggregate', async (req, res) => {
     // Provider health from payment service
     let providers;
     try {
-      const r = await axios.get(`${services.payment}/health/providers`, { timeout: 4000, headers });
+      const r = await axios.get(`${services.payment}/api/health/providers`, { timeout: 4000, headers });
       providers = r.data;
     } catch (e) {
       providers = { success: false, error: e?.message };

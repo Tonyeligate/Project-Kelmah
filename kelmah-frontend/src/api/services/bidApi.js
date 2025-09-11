@@ -45,6 +45,16 @@ class BidApi {
   }
 
   /**
+   * Get current user's bids
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} User's bids
+   */
+  async getMyBids(params = {}) {
+    const response = await apiClient.get('/bids/me', { params });
+    return response.data;
+  }
+
+  /**
    * Get a specific bid by ID
    * @param {string} bidId - Bid ID
    * @returns {Promise<Object>} Bid data

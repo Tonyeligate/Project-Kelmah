@@ -117,7 +117,7 @@ const waitForService = (port, maxAttempts = 30) => {
     
     const check = () => {
       const http = require('http');
-      const req = http.get(`http://localhost:${port}/health`, (res) => {
+      const req = http.get(`http://localhost:${port}/api/health`, (res) => {
         if (res.statusCode === 200) {
           resolve(true);
         } else {
@@ -301,7 +301,7 @@ const startAllServices = async () => {
     log('', 'reset');
     log('📋 Health checks:', 'cyan');
     services.forEach(service => {
-      log(`   ${service.name}: http://localhost:${service.port}/health`, 'cyan');
+      log(`   ${service.name}: http://localhost:${service.port}/api/health`, 'cyan');
     });
     
     log('', 'reset');
