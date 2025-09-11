@@ -176,6 +176,14 @@ services/[service-name]/
 - **Navigation Source Verification**: Check both `useNavLinks.js` and `navLinks.js` when investigating navigation issues
 - **Route Component Validation**: Ensure public routes use appropriate public components, not authenticated ones
 
+### Proven Investigation Methodology (From Mobile Optimization Success)
+1. **List All Files Involved**: Identify every file in the error/problem report - no guesswork
+2. **Read All Listed Files**: Thoroughly examine each file to locate exact error lines
+3. **Scan Related Files**: Cross-reference other files to confirm the actual error cause
+4. **Confirm Process Flow**: Validate complete file process flow and logic before proposing fixes
+5. **Verify Solution Accuracy**: Scan ALL files in the process flow to confirm the fix is correct
+6. **Test Mobile Impact**: Ensure fixes improve mobile experience without breaking desktop functionality
+
 ## User Experience & Accessibility Guidelines
 
 ### Target User Considerations
@@ -395,6 +403,49 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 - **Rate Limiting**: Excessive requests trigger 429 responses with retry-after headers
 - **Service Unavailability**: Down services return 503/504 responses
 
+## Mobile Responsiveness & UI Optimization
+
+### Mobile-First Design Principles
+- **Single Screen Fit**: Mobile auth pages must fit in single viewport without scrolling
+- **Ultra-Compact Layout**: Minimize spacing, padding, and non-essential elements on mobile
+- **Touch-Friendly**: Ensure all interactive elements are properly sized for touch
+- **Professional Appearance**: Maintain clean, modern design while maximizing space efficiency
+
+### Mobile Authentication Optimization
+- **Mobile Login**: Ultra-compact design with minimal header, no excess space below form
+- **Mobile Register**: Remove role selection, streamline form for single-screen completion
+- **Layout Wrapper**: Use `justifyContent: { xs: 'flex-start', md: 'center' }` to prevent vertical centering on mobile
+- **Padding Control**: Remove mobile padding with `p: { xs: 0, sm: 3, md: 4 }` patterns
+- **Viewport Height**: Use `minHeight: { xs: '100vh', md: 650 }` for full mobile coverage
+
+### Mobile Component Patterns
+- **Responsive Typography**: Scale font sizes appropriately for mobile screens
+- **Compact Spacing**: Use minimal margins and padding on mobile breakpoints
+- **Essential Elements Only**: Remove decorative elements that waste mobile space
+- **Desktop Preservation**: Ensure desktop views remain unchanged when optimizing mobile
+
+### Mobile Layout Wrapper Patterns (Proven Solutions)
+- **AuthWrapper.jsx**: Use `justifyContent: { xs: 'flex-start', md: 'center' }` to prevent vertical centering on mobile
+- **Layout.jsx**: Remove mobile padding with `py: 0, px: 0` for auth pages
+- **Paper Components**: Use `minHeight: { xs: '100vh', md: 650 }` for full mobile coverage
+- **Flexbox Control**: Avoid `justifyContent: 'center'` on mobile - causes excess space below content
+- **Padding Management**: Use `p: { xs: 0, sm: 3, md: 4 }` patterns to remove mobile padding
+
+### Mobile Investigation Protocol
+1. **Identify Layout Wrappers**: Check AuthWrapper, Layout, and parent components for mobile spacing issues
+2. **Examine Flexbox Properties**: Look for `justifyContent: 'center'` causing vertical centering
+3. **Check Padding/Margin**: Review responsive padding patterns that may create excess space
+4. **Validate Breakpoints**: Ensure mobile-specific styles are properly applied
+5. **Test Single Screen Fit**: Verify content fits in viewport without scrolling
+
+### Mobile Optimization Success Patterns (From Kelmah Project)
+- **MobileLogin.jsx**: Ultra-compact design with minimal header, no excess space below form
+- **MobileRegister.jsx**: Removed role selection, streamlined for single-screen completion
+- **AuthWrapper.jsx**: Fixed vertical centering and padding issues for mobile
+- **Layout.jsx**: Removed mobile padding for auth pages to maximize space
+- **File Flow**: App.jsx → Layout.jsx → AuthWrapper.jsx → Login.jsx → MobileLogin.jsx
+- **Root Cause**: AuthWrapper.jsx was the main culprit causing excess space below mobile forms
+
 ## AI Agent Investigation Guidelines
 
 ### Systematic Problem Solving
@@ -409,9 +460,11 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 3. **Schema Validation**: Verify request payloads match required model fields
 4. **Database State**: Confirm data exists in collections before investigating empty responses
 5. **Network Connectivity**: Test service-to-service communication through health checks
+6. **Mobile Layout Issues**: Check wrapper components for spacing and centering problems
 
 ### Fix Implementation Standards
 - **Safe Defaults**: Always provide fallback values for required schema fields
 - **Backward Compatibility**: Support legacy payload formats while mapping to canonical models
 - **Error Handling**: Implement graceful error handling with meaningful error messages
 - **Testing**: Verify fixes work with both new and legacy payload formats
+- **Mobile Optimization**: Ensure fixes improve mobile experience without breaking desktop
