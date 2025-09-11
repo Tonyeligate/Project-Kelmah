@@ -446,6 +446,92 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 - **File Flow**: App.jsx → Layout.jsx → AuthWrapper.jsx → Login.jsx → MobileLogin.jsx
 - **Root Cause**: AuthWrapper.jsx was the main culprit causing excess space below mobile forms
 
+## Public Worker Search Flow & Critical Fixes
+
+### Public Worker Discovery Architecture
+- **Frontend Route**: `/find-talents` → `SearchPage` component (public, no auth required)
+- **API Endpoints**: 
+  - Public workers: `GET /api/workers` → proxies to user-service `/api/users/workers`
+  - Search suggestions: `GET /api/search/suggestions` → proxies to job-service `/api/search/suggestions`
+- **Data Flow**: Frontend → API Gateway → User Service → MongoDB → Response
+
+### Critical Gateway Configuration (Fixed Issues)
+- **Public Worker Proxy**: `/api/workers` must rewrite to `/api/users/workers` in gateway
+- **Search Suggestions Alias**: `/api/jobs/search/*` must alias to `/api/search/*` to prevent 404s
+- **Auth Bypass**: `GET /api/users/workers*` must bypass authentication for public access
+- **Route Ordering**: Public routes must be defined before protected routes in gateway
+
+### Frontend Data Mapping (Fixed Issues)
+- **API Response Structure**: User-service returns `{ data: { workers: [], pagination: {} } }`
+- **Frontend Mapping**: Must read `response.data.data.workers` not `response.data.data` as array
+- **Fallback Handling**: Support both `data.workers` and `results` for backward compatibility
+- **Error States**: Handle empty responses gracefully with appropriate user feedback
+
+### Investigation Protocol for Worker Search Issues
+1. **Check Gateway Proxies**: Verify `/api/workers` → `/api/users/workers` rewrite exists
+2. **Verify Auth Bypass**: Confirm `GET /api/users/workers*` bypasses authentication
+3. **Test Suggestions**: Ensure `/api/jobs/search/suggestions` aliases to `/api/search/suggestions`
+4. **Frontend Mapping**: Verify SearchPage reads `data.workers` from API response
+5. **Database Content**: Check MongoDB has worker documents in users collection
+6. **Service Health**: Verify user-service and job-service are running and healthy
+
+### Common Worker Search Failures
+- **404 Errors**: Missing gateway proxy rewrites or incorrect path mappings
+- **401 Errors**: Authentication middleware blocking public access
+- **Empty Results**: Frontend data mapping issues or empty database
+- **Suggestions 404**: Missing `/api/jobs/search/*` alias to `/api/search/*`
+- **CORS Issues**: Gateway CORS configuration problems
+
+### Proven Fixes Implemented (December 2024)
+1. **Gateway Worker Proxy Fix**:
+   ```javascript
+   // kelmah-backend/api-gateway/server.js
+   pathRewrite: { '^/api/workers': '/api/users/workers' }
+   ```
+
+2. **Search Suggestions Alias**:
+   ```javascript
+   // kelmah-backend/api-gateway/server.js
+   app.use('/api/jobs/search', createProxyMiddleware({
+     target: services.job,
+     pathRewrite: { '^/api/jobs/search': '/api/search' }
+   }));
+   ```
+
+3. **Auth Bypass for Public Workers**:
+   ```javascript
+   // kelmah-backend/api-gateway/server.js
+   app.use('/api/users', (req, res, next) => {
+     if (req.method === 'GET' && (req.path === '/workers' || /^\/workers\//.test(req.path))) {
+       return next(); // Skip auth for public worker access
+     }
+     return authMiddleware.authenticate(req, res, next);
+   });
+   ```
+
+4. **Frontend Data Mapping Fix**:
+   ```javascript
+   // kelmah-frontend/src/modules/search/pages/SearchPage.jsx
+   const workers = response.data?.data?.workers || response.data?.results || [];
+   ```
+
+5. **Suggestions Endpoint Update**:
+   ```javascript
+   // Changed from /api/jobs/search/suggestions to /api/search/suggestions
+   const response = await axios.get('/api/search/suggestions', { params: { query } });
+   ```
+
+### Git Workflow & Debugging Approach
+- **Investigation Protocol**: Follow the 5-step process for all error investigations
+  1. List all files involved in error reports (no guesswork)
+  2. Read all listed files to find exact error lines
+  3. Scan related files to confirm actual error cause
+  4. Confirm complete file process flow before proposing fixes
+  5. Verify fix accuracy by scanning all files in the process flow
+- **Git Conflict Resolution**: Use `git commit` then `git pull --rebase` then `git push` for merge conflicts
+- **Incremental Fixes**: Fix one issue at a time, test, then move to next issue
+- **Service Restart Policy**: Gateway changes require restart; service changes require owner approval
+
 ## AI Agent Investigation Guidelines
 
 ### Systematic Problem Solving
@@ -461,6 +547,7 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 4. **Database State**: Confirm data exists in collections before investigating empty responses
 5. **Network Connectivity**: Test service-to-service communication through health checks
 6. **Mobile Layout Issues**: Check wrapper components for spacing and centering problems
+7. **Public Route Flow**: Verify unauthenticated access works for public endpoints
 
 ### Fix Implementation Standards
 - **Safe Defaults**: Always provide fallback values for required schema fields
@@ -468,3 +555,4 @@ Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricia
 - **Error Handling**: Implement graceful error handling with meaningful error messages
 - **Testing**: Verify fixes work with both new and legacy payload formats
 - **Mobile Optimization**: Ensure fixes improve mobile experience without breaking desktop
+- **Public Access**: Ensure public routes work without authentication
