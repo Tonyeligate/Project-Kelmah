@@ -79,6 +79,16 @@ npm run build  # Creates build/ directory
   - API Gateway: `https://298fb9b8181e.ngrok-free.app` → remote port 5000
   - WebSocket: `https://e74c110076f4.ngrok-free.app` → remote port 5005
 
+### Ngrok URL Management Protocol ⚠️ DYNAMIC URLS
+- **URL Regeneration**: Ngrok URLs change every time ngrok is restarted
+- **Automatic Update System**: `start-ngrok.js` automatically updates configuration files
+- **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment
+- **Files Auto-Updated**: 
+  - `kelmah-frontend/src/config/runtime-config.json`
+  - `vercel.json` rewrites configuration
+- **Deployment Trigger**: Changes auto-deploy to Vercel for immediate availability
+- **Usage**: Run `node start-ngrok.js` to regenerate URLs and auto-update all configs
+
 ## Key Configuration Patterns
 
 ### Environment Management
@@ -295,6 +305,7 @@ spec-kit/
 3. **Fix Summaries**: Create complete fix documentation with before/after states
 4. **Issue Tracking**: Create dedicated documents for complex debugging sessions
 5. **Reference Material**: Use spec-kit documents as authoritative source for system understanding
+6. **Current State Tracking**: Always update spec-kit with current project status and ongoing work
 
 ### Spec-Kit Documentation Standards
 - **Comprehensive Analysis**: Include complete problem analysis, root cause identification, and solution details
@@ -302,12 +313,20 @@ spec-kit/
 - **Status Tracking**: Mark items as COMPLETED ✅, IN-PROGRESS 🔄, or PENDING ❌
 - **Cross-References**: Link related spec-kit documents and reference external dependencies
 - **Validation Steps**: Include verification commands and expected outputs
+- **Current State Documentation**: Always document what you're working on and current project status
+- **Progress Updates**: Update relevant spec-kit documents with progress on ongoing tasks
 
 ### Critical Spec-Kit Documents for Reference
 - **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
 - **Ngrok Protocol**: `NGROK_FIXES_COMPLETE.md` - Complete tunnel configuration and fixes
 - **System Status**: `STATUS_LOG.md` - Track of all completed system improvements
 - **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT.md` - Complete frontend/backend communication analysis
+
+### Continuous Spec-Kit Updates Required
+- **Before Starting Work**: Update STATUS_LOG.md with current task status
+- **During Development**: Document discoveries and interim findings
+- **After Completion**: Mark tasks as completed with verification details
+- **System Changes**: Update architecture documents when system understanding changes
 
 **⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues.**
 

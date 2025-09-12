@@ -73,9 +73,22 @@ npm run build  # Creates build/ directory
 ```
 
 ### Service Communication
-- **Frontend → API Gateway**: All API calls go through `/api/*` routes
-- **Gateway → Services**: Proxy routing with service registry pattern
-- **Real-time**: Socket.IO client connects to messaging service via gateway
+- **Frontend → API Gateway**: All API calls go through `/api/*` routes via ngrok tunnel
+- **Gateway → Services**: Proxy routing with service registry pattern to remote services
+- **Real-time**: Socket.IO client connects to remote messaging service via gateway proxy
+- **Ngrok Tunnels**: 
+  - API Gateway: `https://298fb9b8181e.ngrok-free.app` → remote port 5000
+  - WebSocket: `https://e74c110076f4.ngrok-free.app` → remote port 5005
+
+### Ngrok URL Management Protocol ⚠️ DYNAMIC URLS
+- **URL Regeneration**: Ngrok URLs change every time ngrok is restarted
+- **Automatic Update System**: `start-ngrok.js` automatically updates configuration files
+- **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment
+- **Files Auto-Updated**: 
+  - `kelmah-frontend/src/config/runtime-config.json`
+  - `vercel.json` rewrites configuration
+- **Deployment Trigger**: Changes auto-deploy to Vercel for immediate availability
+- **Usage**: Run `node start-ngrok.js` to regenerate URLs and auto-update all configs
 
 ## Key Configuration Patterns
 
@@ -334,6 +347,12 @@ spec-kit/
 - **Ngrok Protocol**: `NGROK_FIXES_COMPLETE.md` - Complete tunnel configuration and fixes
 - **System Status**: `STATUS_LOG.md` - Track of all completed system improvements
 - **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT.md` - Complete frontend/backend communication analysis
+
+### Continuous Spec-Kit Updates Required
+- **Before Starting Work**: Update STATUS_LOG.md with current task status
+- **During Development**: Document discoveries and interim findings
+- **After Completion**: Mark tasks as completed with verification details
+- **System Changes**: Update architecture documents when system understanding changes
 
 **⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues.**
 
