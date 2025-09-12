@@ -13,8 +13,13 @@ import {
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import axios from '../../common/services/axios';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  saveJobToServer,
+  unsaveJobFromServer,
+  selectSavedJobs,
+  fetchSavedJobs,
+} from '../../jobs/services/jobSlice';
 
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
@@ -45,10 +50,12 @@ const SearchPage = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // Get user authentication state
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const savedJobs = useSelector(selectSavedJobs) || [];
   const isHirer = user?.role === 'hirer' || user?.userType === 'hirer';
 
   // Search state
@@ -355,39 +362,24 @@ const SearchPage = () => {
 
   // Handle job saving
   const handleSaveJob = async (jobId) => {
-    try {
-      await axios.post(
-        `/api/jobs/${jobId}/save`,
-        {},
-        {
-          headers: await (async () => {
-            try {
-              const { secureStorage } = await import('../../../utils/secureStorage');
-              const token = secureStorage.getAuthToken();
-              return token ? { Authorization: `Bearer ${token}` } : {};
-            } catch { return {}; }
-          })(),
-        },
-      );
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
 
-      // Update saved status in results
-      setSearchResults((prevResults) =>
-        prevResults.map((job) =>
-          job.id === jobId ? { ...job, isSaved: true } : job,
-        ),
-      );
+    try {
+      const isCurrentlySaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
+      
+      if (isCurrentlySaved) {
+        await dispatch(unsaveJobFromServer(jobId));
+      } else {
+        await dispatch(saveJobToServer(jobId));
+      }
+      
+      // Refresh saved jobs list
+      await dispatch(fetchSavedJobs());
     } catch (error) {
       console.error('Error saving job:', error);
-
-      // Check if error is due to authentication
-      if (error.response?.status === 401) {
-        navigate('/login', {
-          state: {
-            from: location,
-            message: 'Please log in to save jobs',
-          },
-        });
-      }
     }
   };
 

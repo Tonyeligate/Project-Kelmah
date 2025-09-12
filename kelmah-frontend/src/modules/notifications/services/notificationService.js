@@ -68,8 +68,7 @@ class NotificationService {
       }
       return data;
     } catch (error) {
-      const serviceUrl = messagingServiceClient.defaults.baseURL;
-      const statusMsg = getServiceStatusMessage(serviceUrl);
+      const statusMsg = getServiceStatusMessage();
       
       // Enhanced error logging with service health context
       const errorMessage = error.response?.data?.message || 
@@ -90,7 +89,7 @@ class NotificationService {
       } else {
         console.log('🔔 Using empty notifications fallback during service timeout');
       }
-      return { notifications: [], pagination: { page: 1, limit: 20, total: 0, pages: 0 } };
+  return { notifications: [], pagination: { page: 1, limit: 20, total: 0, pages: 0 } };
     }
   }
 

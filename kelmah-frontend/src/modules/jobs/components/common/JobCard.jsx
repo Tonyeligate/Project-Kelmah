@@ -27,7 +27,10 @@ import {
   saveJobToServer,
   unsaveJobFromServer,
   selectSavedJobs,
+  selectSavedLoading,
+  fetchSavedJobs,
 } from '../../services/jobSlice';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const JobCard = ({ job, onViewDetails }) => {
   if (!job) return null;
@@ -35,6 +38,8 @@ const JobCard = ({ job, onViewDetails }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const navigate = useNavigate();
+  const locationHook = useLocation();
 
   const {
     id,
@@ -50,15 +55,34 @@ const JobCard = ({ job, onViewDetails }) => {
     hirerRating,
   } = job;
 
+  // Normalize job id from various API shapes
+  const jobId = job?.id || job?._id;
+
   const dispatch = useDispatch();
   const savedJobs = useSelector(selectSavedJobs) || [];
-  const isSaved = savedJobs.some((saved) => saved.id === id);
+  const savedLoading = useSelector(selectSavedLoading);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const isSaved = savedJobs.some(
+    (saved) => saved?.id === jobId || saved?._id === jobId,
+  );
 
-  const handleToggleSave = () => {
-    if (isSaved) {
-      dispatch(unsaveJobFromServer(id));
-    } else {
-      dispatch(saveJobToServer(id));
+  const handleToggleSave = async () => {
+    // Require authentication to save jobs
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: locationHook.pathname } });
+      return;
+    }
+
+    try {
+      if (isSaved) {
+        await dispatch(unsaveJobFromServer(jobId));
+      } else {
+        await dispatch(saveJobToServer(jobId));
+      }
+      // Refresh saved jobs list to reflect latest server state
+      await dispatch(fetchSavedJobs());
+    } catch (e) {
+      // No-op: errors handled by slice; keep UI stable
     }
   };
 
@@ -66,9 +90,9 @@ const JobCard = ({ job, onViewDetails }) => {
   const formatBudget = () => {
     if (budget && typeof budget === 'object') {
       const { min, max, currency } = budget;
-      return `${currency} ${min} - ${max}`;
+      return `${currency || 'GHS'} ${min} - ${max}`;
     }
-    return budget != null ? `$${budget}` : '';
+    return budget != null ? `GHS ${budget}` : '';
   };
 
   return (
@@ -194,13 +218,13 @@ const JobCard = ({ job, onViewDetails }) => {
       </CardContent>
 
       <CardActions>
-        <IconButton onClick={handleToggleSave}>
+        <IconButton onClick={handleToggleSave} disabled={savedLoading}>
           {isSaved ? <Bookmark color="primary" /> : <BookmarkBorder />}
         </IconButton>
         <Button
           size="small"
           variant="contained"
-          onClick={() => onViewDetails?.(id)}
+          onClick={() => onViewDetails?.(jobId)}
           fullWidth
         >
           View Details

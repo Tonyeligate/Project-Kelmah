@@ -139,6 +139,10 @@ import {
   selectJobFilters,
   setFilters,
   selectJobsPagination,
+  saveJobToServer,
+  unsaveJobFromServer,
+  selectSavedJobs,
+  fetchSavedJobs,
 } from '../../jobs/services/jobSlice';
 import { jobsApi, bidApi, userPerformanceApi } from '../../../api';
 import EnhancedJobCard from '../components/EnhancedJobCard';
@@ -606,14 +610,13 @@ const JobSearchPage = () => {
   const error = useSelector(selectJobsError);
   const filters = useSelector(selectJobFilters) || {};
   const { currentPage = 1, totalPages = 0 } = useSelector(selectJobsPagination) || {};
+  const savedJobs = useSelector(selectSavedJobs) || [];
 
   // Enhanced local state for better UX
   const [viewMode, setViewMode] = useState(isMobile ? 'list' : 'grid');
   const [userPosition, setUserPosition] = useState(null);
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [showSampleData, setShowSampleData] = useState(true);
-  const [savedJobs, setSavedJobs] = useState([]);
   const [filterDialog, setFilterDialog] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -882,20 +885,27 @@ const JobSearchPage = () => {
     dispatch(setFilters({}));
   }, [dispatch]);
 
-  const toggleSaveJob = useCallback((jobId) => {
-    if (!authState.isAuthenticated) {
+  const toggleSaveJob = useCallback(async (jobId) => {
+    if (!isAuthenticated) {
       navigate('/login', { state: { from: `/jobs/${jobId}` } });
       return;
     }
     
-    setSavedJobs(prev => 
-      prev.includes(jobId) 
-        ? prev.filter(id => id !== jobId)
-        : [...prev, jobId]
-    );
-    
-    // TODO: Sync with backend API
-  }, [isAuthenticated, navigate]);
+    try {
+      const isCurrentlySaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
+      
+      if (isCurrentlySaved) {
+        await dispatch(unsaveJobFromServer(jobId));
+      } else {
+        await dispatch(saveJobToServer(jobId));
+      }
+      
+      // Refresh saved jobs list to reflect latest server state
+      await dispatch(fetchSavedJobs());
+    } catch (error) {
+      console.error('Failed to toggle save job:', error);
+    }
+  }, [isAuthenticated, navigate, savedJobs, dispatch]);
 
   // Enhanced keyboard shortcuts
   useEffect(() => {

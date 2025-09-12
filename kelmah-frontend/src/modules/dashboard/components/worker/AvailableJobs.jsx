@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Box,
   Typography,
@@ -61,6 +61,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
 import jobsApi from '../../../jobs/services/jobsApi';
+import {
+  saveJobToServer,
+  unsaveJobFromServer,
+  selectSavedJobs,
+  fetchSavedJobs,
+} from '../../../jobs/services/jobSlice';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../../auth/contexts/AuthContext';
 
@@ -131,8 +137,10 @@ const getPriorityChip = (job) => {
 
 const EnhancedAvailableJobs = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
   // Use ONLY Redux auth state to prevent dual state management conflicts
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const savedJobs = useSelector(selectSavedJobs) || [];
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -141,7 +149,6 @@ const EnhancedAvailableJobs = () => {
   // REMOVED: filteredJobs state - use applyFiltersAndSearch directly
   // const [filteredJobs, setFilteredJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [savedJobs, setSavedJobs] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
@@ -200,7 +207,7 @@ const EnhancedAvailableJobs = () => {
         response.jobs.map((job) => ({
           ...job,
           ...getJobIconData(job),
-          status: savedJobs.has(job.id) ? 'saved' : 'idle',
+          status: savedJobs.some(saved => saved.id === job.id || saved._id === job.id) ? 'saved' : 'idle',
           distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
           salary: job.salary || job?.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
           applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
@@ -340,24 +347,29 @@ const EnhancedAvailableJobs = () => {
   };
 
   // Handle saving jobs
-  const handleSaveJob = (jobId) => {
-    const newSavedJobs = new Set(savedJobs);
-    if (newSavedJobs.has(jobId)) {
-      newSavedJobs.delete(jobId);
-      showFeedback('Job removed from saved list', 'info');
-    } else {
-      newSavedJobs.add(jobId);
-      showFeedback('Job saved successfully!', 'success');
+  const handleSaveJob = async (jobId) => {
+    // Require authentication to save jobs
+    if (!isAuthenticated) {
+      showFeedback('Please log in to save jobs', 'warning');
+      return;
     }
-    setSavedJobs(newSavedJobs);
 
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === jobId
-          ? { ...job, status: newSavedJobs.has(jobId) ? 'saved' : 'idle' }
-          : job,
-      ),
-    );
+    try {
+      const isCurrentlySaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
+
+      if (isCurrentlySaved) {
+        await dispatch(unsaveJobFromServer(jobId));
+        showFeedback('Job removed from saved list', 'info');
+      } else {
+        await dispatch(saveJobToServer(jobId));
+        showFeedback('Job saved successfully!', 'success');
+      }
+
+      // Refresh saved jobs list to reflect latest server state
+      await dispatch(fetchSavedJobs());
+    } catch (error) {
+      showFeedback('Failed to update saved jobs', 'error');
+    }
   };
 
   // Helper functions
@@ -373,7 +385,7 @@ const EnhancedAvailableJobs = () => {
   const JobCard = ({ job, index }) => {
     const priorityChip = getPriorityChip(job);
     const isApplied = job.status === 'applied';
-    const isSaved = savedJobs.has(job.id);
+    const isSaved = savedJobs.some(saved => saved.id === job.id || saved._id === job.id);
 
     return (
       <motion.div
@@ -984,14 +996,14 @@ const EnhancedAvailableJobs = () => {
           }}
         >
           <ListItemIcon>
-            {selectedJobForMenu && savedJobs.has(selectedJobForMenu.id) ? (
+            {selectedJobForMenu && savedJobs.some(saved => saved.id === selectedJobForMenu.id || saved._id === selectedJobForMenu.id) ? (
               <BookmarkIcon />
             ) : (
               <BookmarkBorderIcon />
             )}
           </ListItemIcon>
           <ListItemText>
-            {selectedJobForMenu && savedJobs.has(selectedJobForMenu.id)
+            {selectedJobForMenu && savedJobs.some(saved => saved.id === selectedJobForMenu.id || saved._id === selectedJobForMenu.id)
               ? 'Remove from Saved'
               : 'Save Job'}
           </ListItemText>
@@ -1160,7 +1172,7 @@ const EnhancedAvailableJobs = () => {
               <Button
                 onClick={() => handleSaveJob(selectedJob.id)}
                 startIcon={
-                  savedJobs.has(selectedJob.id) ? (
+                  savedJobs.some(saved => saved.id === selectedJob.id || saved._id === selectedJob.id) ? (
                     <BookmarkIcon />
                   ) : (
                     <BookmarkBorderIcon />
@@ -1175,7 +1187,7 @@ const EnhancedAvailableJobs = () => {
                   },
                 }}
               >
-                {savedJobs.has(selectedJob.id) ? 'Saved' : 'Save'}
+                {savedJobs.some(saved => saved.id === selectedJob.id || saved._id === selectedJob.id) ? 'Saved' : 'Save'}
               </Button>
 
               {selectedJob.status !== 'applied' ? (

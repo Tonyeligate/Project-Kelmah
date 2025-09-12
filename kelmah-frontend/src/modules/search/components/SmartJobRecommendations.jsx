@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import searchService from '../services/smartSearchService';
+import {
+  saveJobToServer,
+  unsaveJobFromServer,
+  selectSavedJobs,
+  fetchSavedJobs,
+} from '../../jobs/services/jobSlice';
 import {
   Box,
   Paper,
@@ -50,7 +57,10 @@ const SmartJobRecommendations = ({
   onJobSelect = null,
   filterCriteria = {}
 }) => {
-  const { user } = useAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const savedJobs = useSelector(selectSavedJobs) || [];
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 
@@ -58,7 +68,6 @@ const SmartJobRecommendations = ({
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [savedJobs, setSavedJobs] = useState(new Set());
   const [refreshing, setRefreshing] = useState(false);
   const [aiInsights, setAiInsights] = useState(null);
 
@@ -113,22 +122,24 @@ const SmartJobRecommendations = ({
 
   // Handle save/unsave job
   const handleToggleSave = async (jobId) => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: window.location.pathname } });
+      return;
+    }
+
     try {
-      const isSaved = savedJobs.has(jobId);
+      const isSaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
       
       if (isSaved) {
-        await searchService.unsaveJob(jobId);
-        setSavedJobs(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(jobId);
-          return newSet;
-        });
+        await dispatch(unsaveJobFromServer(jobId));
         enqueueSnackbar('Job removed from saved list', { variant: 'success' });
       } else {
-        await searchService.saveJob(jobId);
-        setSavedJobs(prev => new Set(prev).add(jobId));
+        await dispatch(saveJobToServer(jobId));
         enqueueSnackbar('Job saved successfully', { variant: 'success' });
       }
+
+      // Refresh saved jobs list
+      await dispatch(fetchSavedJobs());
     } catch (error) {
       enqueueSnackbar('Failed to update saved jobs', { variant: 'error' });
     }
@@ -238,7 +249,7 @@ const SmartJobRecommendations = ({
   const renderJobCard = (job) => {
     const matchColor = getMatchScoreColor(job.matchScore);
     const urgency = getUrgencyIndicator(job.urgency);
-    const isSaved = savedJobs.has(job.id);
+    const isSaved = savedJobs.some(saved => saved.id === job.id || saved._id === job.id);
 
     return (
       <Card

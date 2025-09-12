@@ -39,9 +39,7 @@ const jobsApi = {
    */
   async getJobs(params = {}) {
     try {
-      console.log('🔍 Calling job service API with params:', params);
-      console.log('🔍 Job service client baseURL:', jobServiceClient.defaults.baseURL);
-      console.log('🔍 Job service client headers:', jobServiceClient.defaults.headers);
+  console.log('🔍 Calling job service API with params:', params);
       const response = await jobServiceClient.get('/api/jobs', { params });
       console.log('📊 Raw API response:', response.data);
       
@@ -160,12 +158,39 @@ const jobsApi = {
         const job = response.data.items.find(item => item.id === jobId || item._id === jobId);
         if (job) {
           console.log('✅ Found job by ID:', job.title);
-          return job;
+          // Return non-destructively normalized job
+          const normalized = {
+            ...job,
+            // Provide compatibility fields used by UI
+            created_at: job.created_at || job.createdAt || job.postedDate,
+            hirer_name: job.hirer_name || job.hirer?.name,
+            postedDate: job.postedDate || (job.createdAt ? new Date(job.createdAt) : undefined),
+            deadline: job.deadline || (job.endDate ? new Date(job.endDate) : undefined),
+            skills: Array.isArray(job.skills)
+              ? job.skills
+              : (typeof job.skills_required === 'string'
+                ? job.skills_required.split(',').map(s => s.trim()).filter(Boolean)
+                : []),
+          };
+          return normalized;
         }
       }
       
-      // Fallback to old format
-      return response.data.data || response.data;
+      // Fallback to old format (return merged normalized fields without removing originals)
+      const raw = response.data.data || response.data;
+      const normalized = raw && typeof raw === 'object' ? {
+        ...raw,
+        created_at: raw.created_at || raw.createdAt || raw.postedDate,
+        hirer_name: raw.hirer_name || raw.hirer?.name,
+        postedDate: raw.postedDate || (raw.createdAt ? new Date(raw.createdAt) : undefined),
+        deadline: raw.deadline || (raw.endDate ? new Date(raw.endDate) : undefined),
+        skills: Array.isArray(raw.skills)
+          ? raw.skills
+          : (typeof raw.skills_required === 'string'
+            ? raw.skills_required.split(',').map(s => s.trim()).filter(Boolean)
+            : []),
+      } : raw;
+      return normalized;
     } catch (error) {
       console.warn(`Job service unavailable for job ${jobId}:`, error.message);
       return null;

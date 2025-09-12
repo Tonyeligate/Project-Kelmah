@@ -50,10 +50,10 @@ const JobCard = ({ job, onViewDetails }) => {
           {description?.length > 150 ? '...' : ''}
         </Typography>
 
-        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+  <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <AttachMoney fontSize="small" color="action" sx={{ mr: 0.5 }} />
-            <Typography variant="body2">${budget}</Typography>
+            <Typography variant="body2">GHS {budget}</Typography>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center' }}>

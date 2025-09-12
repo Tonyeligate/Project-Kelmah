@@ -146,7 +146,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
-import useAuth from '../../auth/hooks/useAuth';
+// Auth state via Redux only
+// import useAuth from '../../auth/hooks/useAuth';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchJobs,
@@ -160,6 +161,7 @@ import {
 import JobCard from '../components/common/JobCard';
 import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
+import { useSelector } from 'react-redux';
 
 // Advanced Animations with Smooth Transitions
 const float = keyframes`
@@ -394,6 +396,7 @@ const platformMetrics = [
 ];
 
 const JobsPage = () => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
   const authState = useAuthCheck();
@@ -409,6 +412,10 @@ const JobsPage = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Ghana-aware helpers for better UX and ranking
+  const GHANA_REGIONS = ['Greater Accra','Ashanti','Western','Eastern','Central','Volta','Northern','Upper East','Upper West','Bono'];
+  const GHANA_CITIES = ['Accra','Kumasi','Tema','Takoradi','Tamale','Ho','Koforidua','Cape Coast','Sunyani','Wa'];
+  const SKILL_MATCHING_WEIGHTS = { exact: 100, related: 60, category: 40, location: 30 };
   
   // Helper function to get category icon
   const getCategoryIcon = (category) => {
@@ -424,15 +431,20 @@ const JobsPage = () => {
     return iconMap[category] || WorkIcon;
   };
 
-  // Fetch jobs from API
+  // Fetch jobs from API (real backend)
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchFn = async () => {
       try {
         setLoading(true);
         console.log('🔍 Fetching jobs from API...');
         
         const response = await jobsApi.getJobs({
           status: 'open',
+          search: searchQuery || undefined,
+          category: selectedCategory || undefined,
+          location: selectedLocation || undefined,
+          min_budget: budgetRange?.[0],
+          max_budget: budgetRange?.[1],
           limit: 50
         });
         
@@ -464,8 +476,8 @@ const JobsPage = () => {
       }
     };
     
-    fetchJobs();
-  }, []);
+    fetchFn();
+  }, [searchQuery, selectedCategory, selectedLocation, budgetRange]);
   
   // Error boundary component for better error handling
   const ErrorBoundary = ({ children, fallback }) => {
