@@ -79,15 +79,24 @@ npm run build  # Creates build/ directory
   - API Gateway: `https://298fb9b8181e.ngrok-free.app` → remote port 5000
   - WebSocket: `https://e74c110076f4.ngrok-free.app` → remote port 5005
 
-### Ngrok URL Management Protocol ⚠️ DYNAMIC URLS
-- **URL Regeneration**: Ngrok URLs change every time ngrok is restarted
-- **Automatic Update System**: `start-ngrok.js` automatically updates configuration files
-- **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment
+### Ngrok URL Management Protocol ⚠️ DYNAMIC URLS - CRITICAL SYSTEM
+**⚠️ IMPORTANT**: Ngrok URLs change every time ngrok is restarted. This is WHY the automated ngrok protocol system exists.
+
+- **URL Regeneration**: Ngrok URLs change every restart - this is normal and expected behavior
+- **Automatic Update System**: `start-ngrok.js` automatically detects URL changes and updates all configuration files
+- **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment automatically
+- **Dual Tunnel Architecture**: 
+  - API Gateway tunnel (port 5000): `https://[id].ngrok-free.app` → All HTTP API requests
+  - WebSocket tunnel (port 5005): `https://[id].ngrok-free.app` → Real-time Socket.IO connections
 - **Files Auto-Updated**: 
-  - `kelmah-frontend/src/config/runtime-config.json`
-  - `vercel.json` rewrites configuration
+  - `kelmah-frontend/public/runtime-config.json` - Frontend runtime configuration
+  - `vercel.json` rewrites configuration - Deployment routing
+  - `ngrok-config.json` - Ngrok state tracking
+  - `kelmah-frontend/src/config/securityConfig.js` - Security headers
+- **Zero Manual Intervention**: Never manually edit these files - let the protocol handle all updates
 - **Deployment Trigger**: Changes auto-deploy to Vercel for immediate availability
-- **Usage**: Run `node start-ngrok.js` to regenerate URLs and auto-update all configs
+- **Usage**: Always run `node start-ngrok.js` to regenerate URLs and auto-update all configs
+- **Verification**: Use `spec-kit/NGROK_PROTOCOL_DOCUMENTATION.md` for complete protocol details
 
 ## Key Configuration Patterns
 
@@ -283,10 +292,19 @@ curl https://298fb9b8181e.ngrok-free.app/api/[endpoint-path] -H "ngrok-skip-brow
 
 ## Frontend Enhancement Protocol
 
-## Spec-Kit Documentation System ⚠️ NEW REQUIREMENT
+## Spec-Kit Documentation System ⚠️ MANDATORY REQUIREMENT
 
-### Mandatory Spec-Kit Usage
-All AI agents MUST use the `spec-kit/` directory for comprehensive project documentation and status tracking.
+### Continuous Spec-Kit Updates Required
+All AI agents MUST continuously update the `spec-kit/` directory with current work status and project state.
+
+**⚠️ CRITICAL**: Always update spec-kit documents when working on any system issues, fixes, or development work.
+
+### Required Spec-Kit Workflow for ALL Development Work
+1. **Before Starting Work**: Update relevant spec-kit documents with current task and status
+2. **During Development**: Document discoveries, issues found, and interim progress
+3. **After Completion**: Mark tasks as COMPLETED ✅ with verification details and current project state
+4. **System Changes**: Update architecture documents when system understanding changes
+5. **Status Tracking**: Always maintain current project status in `STATUS_LOG.md`
 
 ### Spec-Kit Structure
 ```
@@ -318,17 +336,18 @@ spec-kit/
 
 ### Critical Spec-Kit Documents for Reference
 - **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
-- **Ngrok Protocol**: `NGROK_FIXES_COMPLETE.md` - Complete tunnel configuration and fixes
-- **System Status**: `STATUS_LOG.md` - Track of all completed system improvements
-- **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT.md` - Complete frontend/backend communication analysis
+- **Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system
+- **System Status**: `STATUS_LOG.md` - Track of all completed system improvements and current project state
+- **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT_COMPLETE.md` - Complete frontend/backend communication analysis
 
 ### Continuous Spec-Kit Updates Required
-- **Before Starting Work**: Update STATUS_LOG.md with current task status
-- **During Development**: Document discoveries and interim findings
-- **After Completion**: Mark tasks as completed with verification details
+- **Before Starting Work**: Update STATUS_LOG.md with current task status and project state
+- **During Development**: Document discoveries, issues found, and interim findings in relevant spec-kit files
+- **After Completion**: Mark tasks as COMPLETED ✅ with verification details and current project state
 - **System Changes**: Update architecture documents when system understanding changes
+- **Ngrok Protocol**: Reference NGROK_PROTOCOL_DOCUMENTATION.md for URL management and automatic updates
 
-**⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues.**
+**⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues and maintain current project status.**
 
 ### Module Protection
 - **Preserve Structure**: Do NOT modify anything in `@/modules` directory

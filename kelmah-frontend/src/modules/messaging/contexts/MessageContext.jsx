@@ -64,14 +64,9 @@ export const MessageProvider = ({ children }) => {
     if (connectWebSocket._connecting) return;
     connectWebSocket._connecting = true;
 
-    // WebSocket URL based on environment with robust fallbacks
-    // Use dedicated WebSocket URL from runtime config
-    const wsUrl = import.meta.env.VITE_MESSAGING_SERVICE_URL || 
-                  (window.__RUNTIME_CONFIG__?.websocketUrl || 
-                   window.__RUNTIME_CONFIG__?.ngrokUrl?.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:') || 
-                   window.location.origin);
-
-    console.log('🔌 Connecting to messaging WebSocket:', wsUrl);
+    // ✅ FIXED: Simplified WebSocket URL - always use /socket.io to route via API Gateway
+    const wsUrl = '/socket.io';
+    console.log('🔌 Connecting to messaging WebSocket via API Gateway:', wsUrl);
 
     const newSocket = io(wsUrl, {
       auth: {
@@ -79,6 +74,7 @@ export const MessageProvider = ({ children }) => {
         userId: user.id,
         userRole: user.role
       },
+      path: '/socket.io',
       transports: ['websocket', 'polling'],
       upgrade: true,
       timeout: 20000,

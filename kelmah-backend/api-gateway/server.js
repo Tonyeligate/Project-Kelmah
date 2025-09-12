@@ -504,30 +504,47 @@ app.use('/api/uploads',
   }
 );
 
+// Messaging health alias for diagnostics → proxies to messaging-service /api/health
+app.use('/api/messaging/health', (req, res, next) => {
+  if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
+    return res.status(503).json({ error: 'Messaging service unavailable' });
+  }
+  const proxy = createProxyMiddleware({
+    target: services.messaging,
+    changeOrigin: true,
+    pathRewrite: { '^/api/messaging/health': '/api/health' }
+  });
+  return proxy(req, res, next);
+});
+
 // Socket.IO WebSocket proxy to messaging-service
+// IMPORTANT: Always mount on '/socket.io' path to avoid intercepting unrelated routes
 let socketIoProxy;
 try {
   if (services.messaging && typeof services.messaging === 'string' && services.messaging.length > 0) {
     socketIoProxy = createProxyMiddleware('/socket.io', {
       target: services.messaging,
       changeOrigin: true,
-      ws: true
+      ws: true,
     });
   } else {
     console.warn('Messaging service URL not configured, WebSocket proxy disabled');
-    socketIoProxy = (req, res, next) => {
+    // Only block socket.io path; let other routes proceed
+    socketIoProxy = (req, res) => {
       res.status(503).json({ error: 'WebSocket service unavailable' });
     };
-    socketIoProxy.upgrade = () => {}; // No-op upgrade handler
+    // No-op upgrade handler for server.on('upgrade') safety
+    socketIoProxy.upgrade = () => {};
   }
 } catch (error) {
   console.error('Failed to create Socket.IO proxy:', error.message);
-  socketIoProxy = (req, res, next) => {
+  // Only block socket.io path; let other routes proceed
+  socketIoProxy = (req, res) => {
     res.status(503).json({ error: 'WebSocket service configuration error' });
   };
-  socketIoProxy.upgrade = () => {}; // No-op upgrade handler
+  // No-op upgrade handler for server.on('upgrade') safety
+  socketIoProxy.upgrade = () => {};
 }
-app.use(socketIoProxy);
 
 // Socket metrics passthrough (admin validated upstream)
 app.use('/api/socket/metrics',
@@ -834,9 +851,20 @@ const server = app.listen(PORT, () => {
   logger.info(`📚 Docs: http://localhost:${PORT}/api/docs`);
 });
 
-// Enable WebSocket upgrade handling for Socket.IO proxy
+// Enable WebSocket upgrade handling for Socket.IO proxy (scope to '/socket.io')
 if (socketIoProxy && typeof socketIoProxy.upgrade === 'function') {
-  server.on('upgrade', socketIoProxy.upgrade);
+  server.on('upgrade', (req, socket, head) => {
+    try {
+      const url = req?.url || '';
+      if (url.startsWith('/socket.io')) {
+        return socketIoProxy.upgrade(req, socket, head);
+      }
+      // For non-socket.io upgrades, do nothing (let other handlers manage or close)
+    } catch (e) {
+      console.error('Socket.IO upgrade handling error:', e?.message || e);
+      try { socket.destroy(); } catch (_) {}
+    }
+  });
 } else {
   console.warn('Socket.IO proxy upgrade handler not available');
 }

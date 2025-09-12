@@ -12,10 +12,11 @@ const messagesApi = {
     }
   },
 
-  // Get messages for a specific conversation
+  // Get messages for a specific conversation - FIXED ENDPOINT
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
-      const { data } = await messagingServiceClient.get(`/api/conversations/${conversationId}/messages?page=${page}&limit=${limit}`);
+      // ✅ FIXED: Use correct endpoint pattern to match backend routing
+      const { data } = await messagingServiceClient.get(`/api/messages/conversations/${conversationId}/messages?page=${page}&limit=${limit}`);
       return {
         messages: Array.isArray(data?.data?.messages) ? data.data.messages : [],
         pagination: data?.data?.pagination || { page: 1, total: 0, hasMore: false }
@@ -26,10 +27,15 @@ const messagesApi = {
     }
   },
 
-  // Send a new message
+  // Send a new message - FIXED ENDPOINT
   async sendMessage(conversationId, messageData) {
     try {
-      const { data } = await messagingServiceClient.post(`/api/conversations/${conversationId}/messages`, messageData);
+      // ✅ FIXED: Send to messages endpoint, not conversation-specific endpoint
+      const payload = {
+        conversationId,
+        ...messageData
+      };
+      const { data } = await messagingServiceClient.post('/api/messages', payload);
       return data?.data || data;
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -51,10 +57,11 @@ const messagesApi = {
     }
   },
 
-  // Upload attachment
+  // Upload attachment - FIXED ENDPOINT
   async uploadAttachment(conversationId, formData, config = {}) {
     try {
-      const { data } = await messagingServiceClient.post(`/api/messages/${conversationId}/attachments`, formData, config);
+      // ✅ FIXED: Use uploads endpoint for attachments
+      const { data } = await messagingServiceClient.post(`/api/uploads`, formData, config);
       return data?.data || data;
     } catch (error) {
       console.error('Failed to upload attachment:', error);

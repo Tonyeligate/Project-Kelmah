@@ -31,10 +31,10 @@ class ChatService {
     }
   }
 
-  // Get messages for a conversation
+  // ✅ FIXED: Get messages for a conversation - Updated to match backend route
   async getMessages(conversationId, page = 1, limit = 20) {
     try {
-      const response = await messagingServiceClient.get(`/api/messages/conversation/${conversationId}`, { params: { page, limit } });
+      const response = await messagingServiceClient.get(`/api/messages/conversations/${conversationId}/messages`, { params: { page, limit } });
       return response.data.data;
     } catch (error) {
       console.error('Error fetching messages:', error);

@@ -38,11 +38,9 @@ class WebSocketService {
         this.disconnect();
       }
 
-      // Determine WebSocket URL using runtime config for consistency
-      const wsUrl = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || 
-                   (process.env.NODE_ENV === 'production' 
-                    ? '/socket.io' 
-                    : 'http://localhost:5005');
+      // ✅ FIXED: Simplified WebSocket URL - always use /socket.io to route via API Gateway
+      const wsUrl = '/socket.io';
+      console.log('🔌 WebSocket Service connecting via API Gateway:', wsUrl);
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {
