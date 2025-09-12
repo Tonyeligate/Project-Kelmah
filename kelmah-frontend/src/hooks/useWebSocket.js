@@ -1,74 +1,109 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import authService from '../modules/auth/services/authService';
 
-export const useWebSocket = (
-  url = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || 
-        (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.ngrokUrl?.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')) || 
-        (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')) || 
-        'ws://localhost:3005'),
-) => {
-  const [socket, setSocket] = useState(null);
+// Socket.IO based WebSocket compatibility hook
+export const useWebSocket = () => {
+  const [ioSocket, setIoSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
+  const onMessageHandler = useRef(null);
 
-  const connect = useCallback(() => {
-    const token = authService.getToken();
-    if (!token) {
-      setError(new Error('No authentication token found'));
-      return;
+  const connect = useCallback(async () => {
+    try {
+      const token = authService.getToken();
+      if (!token) {
+        setError(new Error('No authentication token found'));
+        return;
+      }
+
+      const { io } = await import('socket.io-client');
+      const socket = io('/socket.io', {
+        auth: { token },
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+      });
+
+      socket.on('connect', () => {
+        setIoSocket(socket);
+        setIsConnected(true);
+        setError(null);
+      });
+
+      socket.on('disconnect', () => {
+        setIsConnected(false);
+      });
+
+      // Generic adapter: map common events to a single onmessage(JSON)
+      const emitMessage = (payload) => {
+        if (onMessageHandler.current) {
+          try {
+            onMessageHandler.current({ data: JSON.stringify(payload) });
+          } catch (e) {
+            console.error('onmessage handler error:', e);
+          }
+        }
+      };
+
+      // Audit-related events compatibility
+      socket.on('audit_notification', (data) => emitMessage({ type: 'audit_notification', data }));
+      socket.on('audit_subscription_success', (data) => emitMessage({ type: 'audit_subscription_success', data }));
+
+      // Generic message passthrough if server emits 'message'
+      socket.on('message', (data) => emitMessage({ type: 'message', data }));
+
+      // Notifications passthrough
+      socket.on('notification', (data) => emitMessage({ type: 'notification', data }));
+
+      return socket;
+    } catch (e) {
+      console.error('Socket.IO connection failed:', e);
+      setError(e);
     }
-
-    const ws = new WebSocket(`${url}?token=${token}`);
-
-    ws.onopen = () => {
-      console.log('WebSocket connection established');
-      setSocket(ws);
-      setIsConnected(true);
-      setError(null);
-    };
-
-    ws.onclose = (event) => {
-      console.log('WebSocket connection closed:', event);
-      setSocket(null);
-      setIsConnected(false);
-
-      // Attempt to reconnect after a delay
-      setTimeout(connect, 5000);
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setError(error);
-      setSocket(null);
-      setIsConnected(false);
-    };
-
-    return ws;
-  }, [url]);
+  }, []);
 
   useEffect(() => {
-    const ws = connect();
-
+    let active;
+    connect().then((s) => (active = s));
     return () => {
-      if (ws) {
-        ws.close();
-      }
+      if (active) active.disconnect();
     };
   }, [connect]);
 
+  // API compatible wrapper expected by existing consumers
+  const ws = useRef({
+    set onmessage(handler) {
+      onMessageHandler.current = handler;
+    },
+    get onmessage() {
+      return onMessageHandler.current;
+    },
+    close: () => {
+      if (ioSocket) ioSocket.disconnect();
+    },
+  }).current;
+
   const sendMessage = useCallback(
     (message) => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(message));
-      } else {
-        console.warn('WebSocket is not open. Unable to send message.');
+      if (!ioSocket) return console.warn('Socket not connected');
+      // Support string shorthand used by useAuditNotifications
+      if (typeof message === 'string') {
+        if (message === 'subscribe_audit_notifications') ioSocket.emit('audit:subscribe');
+        else if (message === 'unsubscribe_audit_notifications') ioSocket.emit('audit:unsubscribe');
+        else ioSocket.emit('client:event', { message });
+        return;
       }
+      // Object messages emitted on a generic channel
+      ioSocket.emit('client:message', message);
     },
-    [socket],
+    [ioSocket],
   );
 
   return {
-    socket,
+    ws,
     isConnected,
     error,
     sendMessage,
@@ -76,5 +111,4 @@ export const useWebSocket = (
   };
 };
 
-// Add default export to fix import issue in useAuditNotifications.js
 export default useWebSocket;

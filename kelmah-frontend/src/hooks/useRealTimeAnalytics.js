@@ -1,83 +1,69 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 
-const WS_URL = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || 
-              (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.ngrokUrl?.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')) || 
-              (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')) || 
-              'ws://localhost:3005';
-
 export function useRealTimeAnalytics() {
   const [metrics, setMetrics] = useState(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
 
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     try {
-      const ws = new WebSocket(WS_URL);
+      const { io } = await import('socket.io-client');
+      const socket = io('/socket.io', {
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+      });
 
-      ws.onopen = () => {
+      socket.on('connect', () => {
         setConnected(true);
         setError(null);
+        // Join analytics room if needed
+        socket.emit('analytics:subscribe');
+      });
 
-        // Start heartbeat
-        const heartbeat = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 30000);
+      socket.on('disconnect', () => {
+        setConnected(false);
+      });
 
-        ws.onclose = () => {
-          setConnected(false);
-          clearInterval(heartbeat);
-          // Attempt to reconnect after 5 seconds
-          setTimeout(connect, 5000);
-        };
-      };
-
-      ws.onmessage = (event) => {
+      // Prefer explicit analytics events, fallback to generic
+      const handle = (payload) => {
         try {
-          const data = JSON.parse(event.data);
-
-          switch (data.type) {
-            case 'initial':
-            case 'metrics':
-              setMetrics(data.data);
-              break;
-            case 'error':
-              enqueueSnackbar(data.message, { variant: 'error' });
-              break;
-            case 'pong':
-              // Heartbeat response
-              break;
-          }
-        } catch (error) {
-          console.error('Error parsing message:', error);
+          if (payload?.data) setMetrics(payload.data);
+          else setMetrics(payload);
+        } catch (e) {
+          console.error('Analytics payload error:', e);
         }
       };
+      socket.on('analytics:metrics', handle);
+      socket.on('metrics', handle);
 
-      ws.onerror = (error) => {
-        setError('WebSocket connection error');
-        enqueueSnackbar('Connection error. Retrying...', { variant: 'error' });
-      };
+      socket.on('error', (err) => {
+        setError('Real-time analytics error');
+        console.error('Socket analytics error:', err);
+        enqueueSnackbar('Analytics connection error. Retrying...', { variant: 'error' });
+      });
 
       return () => {
-        ws.close();
+        socket.emit('analytics:unsubscribe');
+        socket.disconnect();
       };
-    } catch (error) {
-      setError('Failed to establish WebSocket connection');
+    } catch (e) {
+      setError('Failed to establish real-time analytics connection');
       enqueueSnackbar('Connection failed. Retrying...', { variant: 'error' });
     }
   }, [enqueueSnackbar]);
 
   useEffect(() => {
-    const cleanup = connect();
-    return cleanup;
+    const cleanupPromise = connect();
+    return () => {
+      if (typeof cleanupPromise === 'function') cleanupPromise();
+    };
   }, [connect]);
 
-  return {
-    metrics,
-    connected,
-    error,
-  };
+  return { metrics, connected, error };
 }

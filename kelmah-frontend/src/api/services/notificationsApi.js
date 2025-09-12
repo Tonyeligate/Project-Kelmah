@@ -25,10 +25,15 @@ class NotificationsApi {
    * @returns {Promise<Object>} Notification data
    */
   async getNotification(notificationId) {
-    const response = await apiClient.get(
-      `/api/notifications/${notificationId}`,
-    );
-    return response.data;
+    // Messaging-service does not expose GET /api/notifications/:id currently
+    // Fallback: fetch list and find client-side
+    try {
+      const resp = await apiClient.get('/api/notifications');
+      const list = resp.data?.data || resp.data?.notifications || resp.data || [];
+      return Array.isArray(list) ? list.find((n) => n.id === notificationId || n._id === notificationId) : null;
+    } catch (err) {
+      return null;
+    }
   }
 
   /**
@@ -37,7 +42,8 @@ class NotificationsApi {
    * @returns {Promise<Object>} Updated notification
    */
   async markAsRead(notificationId) {
-    const response = await apiClient.put(
+    // Backend expects PATCH /api/notifications/:notificationId/read
+    const response = await apiClient.patch(
       `/api/notifications/${notificationId}/read`,
     );
     return response.data;
@@ -48,13 +54,9 @@ class NotificationsApi {
    * @returns {Promise<Object>} Operation result
    */
   async markAllAsRead() {
-    // Note: backend does not support bulk, fallback to individual operations
-    const response = await apiClient.get('/api/notifications');
-    const ids = response.data.data.map((n) => n.id);
-    await Promise.all(
-      ids.map((id) => apiClient.put(`/api/notifications/${id}/read`)),
-    );
-    return { success: true };
+    // Supported endpoint in messaging-service: PATCH /api/notifications/read/all
+    const response = await apiClient.patch('/api/notifications/read/all');
+    return response.data;
   }
 
   /**
@@ -74,13 +76,9 @@ class NotificationsApi {
    * @returns {Promise<Object>} Operation result
    */
   async deleteAllNotifications() {
-    // Delete each notification since bulk endpoint is not available
-    const resp = await apiClient.get('/api/notifications');
-    const ids = resp.data.data.map((n) => n.id);
-    await Promise.all(
-      ids.map((id) => apiClient.delete(`/api/notifications/${id}`)),
-    );
-    return { success: true };
+    // Supported endpoint in messaging-service: DELETE /api/notifications/clear-all
+    const response = await apiClient.delete('/api/notifications/clear-all');
+    return response.data;
   }
 
   /**
@@ -88,7 +86,8 @@ class NotificationsApi {
    * @returns {Promise<Object>} Notification preferences
    */
   async getNotificationPreferences() {
-    const response = await apiClient.get('/notifications/preferences');
+    // Preferences are under /api/notifications/preferences
+    const response = await apiClient.get('/api/notifications/preferences');
     return response.data;
   }
 
@@ -99,7 +98,7 @@ class NotificationsApi {
    */
   async updateNotificationPreferences(preferences) {
     const response = await apiClient.put(
-      '/notifications/preferences',
+      '/api/notifications/preferences',
       preferences,
     );
     return response.data;
@@ -110,7 +109,8 @@ class NotificationsApi {
    * @returns {Promise<Object>} Unread count data
    */
   async getUnreadCount() {
-    const response = await apiClient.get('/notifications/unread-count');
+    // Messaging-service exposes /api/notifications/unread/count
+    const response = await apiClient.get('/api/notifications/unread/count');
     return response.data;
   }
 
@@ -120,11 +120,16 @@ class NotificationsApi {
    * @returns {Promise<Object>} Subscription result
    */
   async subscribeToPushNotifications(subscription) {
-    const response = await apiClient.post(
-      '/api/notifications/push/subscribe',
-      subscription,
-    );
-    return response.data;
+    // If push endpoints are not implemented server-side, fail softly
+    try {
+      const response = await apiClient.post(
+        '/api/notifications/push/subscribe',
+        subscription,
+      );
+      return response.data;
+    } catch (err) {
+      return { success: false, message: 'Push subscribe not available' };
+    }
   }
 
   /**
@@ -132,10 +137,14 @@ class NotificationsApi {
    * @returns {Promise<Object>} Unsubscription result
    */
   async unsubscribeFromPushNotifications() {
-    const response = await apiClient.post(
-      '/api/notifications/push/unsubscribe',
-    );
-    return response.data;
+    try {
+      const response = await apiClient.post(
+        '/api/notifications/push/unsubscribe',
+      );
+      return response.data;
+    } catch (err) {
+      return { success: false, message: 'Push unsubscribe not available' };
+    }
   }
 }
 

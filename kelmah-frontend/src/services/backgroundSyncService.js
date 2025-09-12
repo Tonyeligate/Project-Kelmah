@@ -589,17 +589,41 @@ class BackgroundSyncService {
   }
 
   async syncNotificationRead(data) {
-    const response = await fetch('/api/notifications/mark-read', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Notification read sync failed: ${response.statusText}`);
+    try {
+      // data may contain { id } or { ids: [] }
+      const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('token') : null;
+      const baseHeaders = {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      };
+      const headers = token ? { ...baseHeaders, Authorization: `Bearer ${token}` } : baseHeaders;
+
+      if (Array.isArray(data?.ids) && data.ids.length > 0) {
+        // Bulk mark all as read when many ids are queued
+        const resp = await fetch('/api/notifications/read/all', { method: 'PATCH', headers });
+        if (!resp.ok) throw new Error(`Notification bulk read failed: ${resp.statusText}`);
+        return resp.json();
+      }
+
+      const id = data?.id || data?.notificationId;
+      if (!id) {
+        // Nothing to do
+        return { success: true, skipped: true };
+      }
+
+      const response = await fetch(`/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers
+      });
+      if (!response.ok) {
+        throw new Error(`Notification read sync failed: ${response.statusText}`);
+      }
+      return response.json();
+    } catch (err) {
+      console.warn('Notification read sync soft-failed:', err?.message || err);
+      // Do not block other sync actions
+      return { success: false, reason: 'deferred' };
     }
-    
-    return response.json();
   }
 
   async syncAnalyticsTrack(data) {

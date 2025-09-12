@@ -17,7 +17,8 @@ class NotificationService {
   async connect(token) {
     if (this.isConnected) return;
     try {
-      const wsUrl = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || '/socket.io';
+  // Prefer gateway-relative path so Vercel/ngrok rewrites route correctly
+  const wsUrl = '/socket.io';
       const { io } = await import('socket.io-client');
       this.socket = io(wsUrl, {
         auth: { token },

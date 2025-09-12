@@ -394,21 +394,24 @@ const urlBase64ToUint8Array = (base64String) => {
 // Send subscription to server
 const sendSubscriptionToServer = async (subscription) => {
   try {
-    const response = await fetch('/api/notifications/subscribe', {
+    const response = await fetch('/api/notifications/push/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify(subscription)
     });
-    
     if (!response.ok) {
-      throw new Error('Failed to send subscription to server');
+      // Fail softly; push endpoints may not be active yet
+      console.warn('Push subscribe endpoint not available:', response.status, await response.text().catch(() => ''));
+      return { success: false };
     }
-    
     console.log('Subscription sent to server successfully');
+    return { success: true };
   } catch (error) {
-    console.error('Failed to send subscription to server:', error);
+    console.warn('Push subscription send failed (non-blocking):', error?.message || error);
+    return { success: false };
   }
 };
 
