@@ -46,8 +46,7 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-// Indexes for better query performance
-UserSchema.index({ email: 1 });
+// Indexes for better query performance (email index is automatic due to unique: true)
 UserSchema.index({ role: 1 });
 UserSchema.index({ isActive: 1 });
 

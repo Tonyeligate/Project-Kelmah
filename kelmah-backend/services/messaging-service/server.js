@@ -75,7 +75,7 @@ try {
   }
 } catch {}
 
-const PORT = process.env.MESSAGING_SERVICE_PORT || 3005;
+const PORT = process.env.PORT || process.env.MESSAGING_SERVICE_PORT || 5005;
 
 // MongoDB Connection Setup
 const connectDB = async () => {
@@ -83,8 +83,6 @@ const connectDB = async () => {
     const mongoUri = process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/kelmah-messaging';
     
     const conn = await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       bufferCommands: false,
       // Fix: Enhanced MongoDB connection settings to prevent buffering timeouts
       serverSelectionTimeoutMS: 60000, // Increased to 60 seconds for Render cold starts
@@ -501,17 +499,6 @@ const startServer = async () => {
 
 // Start the server
 startServer();
-
-// Enable WebSocket upgrade handling when behind proxies/gateways
-server.on('upgrade', (req, socket, head) => {
-  try {
-    io.engine.handleUpgrade(req, socket, head, (ws) => {
-      io.engine.emit('connection', ws, req);
-    });
-  } catch (err) {
-    console.error('WebSocket upgrade error:', err);
-  }
-});
 
 // Export for testing
 module.exports = { app, server, io, messageSocketHandler };
