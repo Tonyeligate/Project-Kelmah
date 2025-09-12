@@ -24,8 +24,8 @@ class NgrokManager {
       const apiUrl = await ngrok.connect(5000);
       console.log('✅ API Gateway tunnel started:', apiUrl);
       
-      // Start ngrok tunnel on port 3005 (Messaging Service) for WebSocket connections
-      const wsUrl = await ngrok.connect(3005);
+      // Start ngrok tunnel on port 5005 (Messaging Service) for WebSocket connections
+      const wsUrl = await ngrok.connect(5005);
       console.log('✅ WebSocket tunnel started:', wsUrl);
 
       // Use API Gateway URL as primary for HTTP requests

@@ -51,7 +51,7 @@ async function testJobCreation(token) {
     console.log('📝 Testing job creation...');
     console.log('Job data:', JSON.stringify(simpleJob, null, 2));
     
-    const response = await axios.post(`${API_BASE_URL}/api/jobs/api/jobs`, simpleJob, {
+    const response = await axios.post(`${API_BASE_URL}/api/jobs`, simpleJob, {
       headers: { 
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'

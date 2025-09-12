@@ -42,7 +42,7 @@ class WebSocketService {
       const wsUrl = (typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || 
                    (process.env.NODE_ENV === 'production' 
                     ? '/socket.io' 
-                    : 'http://localhost:3003');
+                    : 'http://localhost:5005');
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {

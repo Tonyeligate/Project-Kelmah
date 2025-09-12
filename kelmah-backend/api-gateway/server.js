@@ -215,21 +215,35 @@ app.get('/api/health/aggregate', async (req, res) => {
   try {
     const axios = require('axios');
     const token = req.headers.authorization;
-    const headers = token ? { Authorization: token } : undefined;
+    const headers = {
+      ...(token ? { Authorization: token } : {}),
+      'ngrok-skip-browser-warning': 'true',
+      'User-Agent': 'API-Gateway-Health-Check'
+    };
     const baseTargets = [
-      { name: 'auth', url: `${services.auth}/api/health` },
-      { name: 'user', url: `${services.user}/api/health` },
-      { name: 'job', url: `${services.job}/api/health` },
-      { name: 'payment', url: `${services.payment}/api/health` },
-      { name: 'messaging', url: `${services.messaging}/api/health` },
-      { name: 'review', url: `${services.review}/api/health` },
+      { name: 'auth', base: services.auth },
+      { name: 'user', base: services.user },
+      { name: 'job', base: services.job },
+      { name: 'payment', base: services.payment },
+      { name: 'messaging', base: services.messaging },
+      { name: 'review', base: services.review },
     ];
     const results = await Promise.all(baseTargets.map(async (t) => {
+      const tryGet = async (url) => axios.get(url, { timeout: 5000, headers });
       try {
-        const r = await axios.get(t.url, { timeout: 5000, headers });
-        return { service: t.name, ok: true, data: r.data };
+        const r = await tryGet(`${t.base}/api/health`);
+        return { service: t.name, ok: true, data: r.data, endpoint: '/api/health' };
       } catch (e) {
-        return { service: t.name, ok: false, error: e?.message };
+        const status = e?.response?.status;
+        if (status === 404 || status === 405 || status === 501) {
+          try {
+            const r2 = await tryGet(`${t.base}/health`);
+            return { service: t.name, ok: true, data: r2.data, endpoint: '/health' };
+          } catch (e2) {
+            return { service: t.name, ok: false, error: e2?.message, status: e2?.response?.status, tried: ['/api/health', '/health'] };
+          }
+        }
+        return { service: t.name, ok: false, error: e?.message, status, tried: ['/api/health'] };
       }
     }));
     // Provider health from payment service

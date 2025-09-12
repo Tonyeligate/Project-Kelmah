@@ -145,9 +145,10 @@ try {
   const defaultLimiter = createLimiter('default');
 
   app.use((req, res, next) => {
-    if (req.path.startsWith('/health')) return next();
-    if (req.path.startsWith('/api/jobs/my-jobs')) return next();
-    if (req.path === '/my-jobs' || req.path.startsWith('/my-jobs')) return next();
+    const p = req.path || '';
+    if (p.startsWith('/health') || p.startsWith('/api/health')) return next();
+    if (p.startsWith('/api/jobs/my-jobs')) return next();
+    if (p === '/my-jobs' || p.startsWith('/my-jobs')) return next();
     return defaultLimiter(req, res, next);
   });
 } catch (err) {
@@ -160,9 +161,10 @@ try {
     message: { success: false, message: 'Too many requests. Please try again later.' }
   });
   app.use((req, res, next) => {
-    if (req.path.startsWith('/health')) return next();
-    if (req.path.startsWith('/api/jobs/my-jobs')) return next();
-    if (req.path === '/my-jobs' || req.path.startsWith('/my-jobs')) return next();
+    const p = req.path || '';
+    if (p.startsWith('/health') || p.startsWith('/api/health')) return next();
+    if (p.startsWith('/api/jobs/my-jobs')) return next();
+    if (p === '/my-jobs' || p.startsWith('/my-jobs')) return next();
     return defaultLimiter(req, res, next);
   });
 }

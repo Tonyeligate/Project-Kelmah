@@ -7,11 +7,13 @@ alwaysApply: true
 
 Kelmah is a **freelance marketplace** with a **microservices backend** and **modular React frontend**. The system uses an **API Gateway pattern** with service-specific microservices, all routing through a central gateway for the frontend.
 
-### Backend: Microservices Architecture
-- **API Gateway** (`kelmah-backend/api-gateway/`) - Central routing hub on port 3000
+### Backend: Remote Microservices Architecture ⚠️ UPDATED
+- **API Gateway** (`kelmah-backend/api-gateway/`) - Central routing hub on **remote server** port 5000
 - **Services** (`kelmah-backend/services/`): auth, user, job, payment, messaging, review
 - **Tech Stack**: Express.js, MongoDB/Mongoose, Socket.IO, JWT auth, Winston logging
 - **Key Pattern**: Each service has `server.js`, `routes/`, `controllers/`, `models/`, `services/`
+- **⚠️ CRITICAL**: All microservices run on **remote server**, NOT localhost
+- **Development Access**: Via ngrok tunnels to remote server ports 5001-5006
 
 ### Frontend: Domain-Driven Modules
 - **Modular Structure** (`kelmah-frontend/src/modules/`): auth, jobs, dashboard, worker, hirer, etc.
@@ -20,23 +22,45 @@ Kelmah is a **freelance marketplace** with a **microservices backend** and **mod
 
 ## Critical Development Workflows
 
+### Remote Server Architecture ⚠️ UPDATED
+```
+Local Development Machine:
+├── Frontend development (Vite dev server)
+├── ngrok tunnel management  
+├── Configuration files
+└── Testing/debugging scripts
+
+Remote Production Server:
+├── API Gateway (port 5000)
+├── Auth Service (port 5001) ✅ Running
+├── User Service (port 5002) ✅ Running  
+├── Job Service (port 5003) ❌ Needs restart
+├── Payment Service (port 5004) ❌ Needs restart
+├── Messaging Service (port 5005) ❌ Needs restart
+└── Review Service (port 5006) ❌ Needs restart
+```
+
 ### Backend Development
 ```bash
-# Start all services in development
+# ⚠️ IMPORTANT: Services run on REMOTE SERVER, not locally
+# These commands are for REFERENCE ONLY - run on remote server
+
+# Start all services (REMOTE SERVER ONLY)
 npm run dev  # from kelmah-backend/
 
-# Start individual services
-npm run start:gateway  # API Gateway on :3000
+# Start individual services (REMOTE SERVER ONLY) 
+npm run start:gateway  # API Gateway on :5000
 npm run start:auth     # Auth service on :5001
-npm run start:messaging # Messaging service on :5004 (Socket.IO)
+npm run start:messaging # Messaging service on :5005 (Socket.IO)
 
-# Testing and debugging
+# Testing and debugging (can run locally)
 npm test              # Run all tests
 npm run test:coverage # Run tests with coverage
 node test-*.js        # Run specific debug scripts
 ```
 
-**⚠️ IMPORTANT: Server restart/shutdown operations must be performed only by the project owner.**
+**⚠️ CRITICAL: Server restart/shutdown operations must be performed only by the project owner.**
+**⚠️ ARCHITECTURE: All backend services run on remote server, accessed via ngrok tunnels.**
 
 ### Frontend Development
 ```bash
@@ -48,9 +72,12 @@ npm run build  # Creates build/ directory
 ```
 
 ### Service Communication
-- **Frontend → API Gateway**: All API calls go through `/api/*` routes
-- **Gateway → Services**: Proxy routing with service registry pattern
-- **Real-time**: Socket.IO client connects to messaging service via gateway
+- **Frontend → API Gateway**: All API calls go through `/api/*` routes via ngrok tunnel
+- **Gateway → Services**: Proxy routing with service registry pattern to remote services
+- **Real-time**: Socket.IO client connects to remote messaging service via gateway proxy
+- **Ngrok Tunnels**: 
+  - API Gateway: `https://298fb9b8181e.ngrok-free.app` → remote port 5000
+  - WebSocket: `https://e74c110076f4.ngrok-free.app` → remote port 5005
 
 ## Key Configuration Patterns
 
@@ -175,7 +202,7 @@ services/[service-name]/
 
 ### Agent Diagnostics Policy
 - Agents MUST perform diagnostics themselves (terminal/web requests) and must NOT ask the user to run commands.
-- Use the current ngrok host to access services; servers are not hosted on this machine externally.
+- Use the current ngrok host to access remote services; servers are not hosted on this machine.
 - Always test via the API Gateway (`/api/*`) and include `ngrok-skip-browser-warning: true` where needed.
 - Use provided credentials for auth flows:
   - Gifty password: `1122112Ga`
@@ -201,18 +228,18 @@ services/[service-name]/
 
 **Diagnosis Steps:**
 ```bash
-# 1. Check Gateway health
-curl http://localhost:3000/health
+# 1. Check Gateway health (via ngrok)
+curl https://298fb9b8181e.ngrok-free.app/health -H "ngrok-skip-browser-warning: true"
 
-# 2. Check specific service health directly
-curl https://[service-ngrok-url]/health
+# 2. Check specific service health via gateway
+curl https://298fb9b8181e.ngrok-free.app/api/health/aggregate -H "ngrok-skip-browser-warning: true"
 
-# 3. Test problematic endpoint directly on service
-curl https://[service-ngrok-url]/[endpoint-path]
+# 3. Test problematic endpoint via gateway
+curl https://298fb9b8181e.ngrok-free.app/api/[endpoint-path] -H "ngrok-skip-browser-warning: true"
 
 # 4. Compare local vs deployed routes
 # Local: check kelmah-backend/services/[service]/routes/
-# Deployed: check actual service response structure
+# Remote: test actual service behavior via ngrok
 ```
 
 **⚠️ DIAGNOSTIC TESTING PROTOCOL: AI agents should PERFORM diagnostic tests themselves using terminal commands, not ask the user to run them. Use run_in_terminal or terminal-tools to execute verification commands directly.**
@@ -245,6 +272,44 @@ curl https://[service-ngrok-url]/[endpoint-path]
 - **Flow Validation**: Check navigation and user flow patterns work correctly
 
 ## Frontend Enhancement Protocol
+
+## Spec-Kit Documentation System ⚠️ NEW REQUIREMENT
+
+### Mandatory Spec-Kit Usage
+All AI agents MUST use the `spec-kit/` directory for comprehensive project documentation and status tracking.
+
+### Spec-Kit Structure
+```
+spec-kit/
+├── STATUS_LOG.md              # Completed fixes and their status
+├── MESSAGING_SYSTEM_AUDIT.md  # Complete messaging architecture audit
+├── NGROK_ARCHITECTURE_ANALYSIS.md # Ngrok protocol and routing analysis  
+├── NGROK_FIXES_COMPLETE.md    # Summary of all ngrok-related fixes
+├── REMOTE_SERVER_ARCHITECTURE.md # Updated architecture documentation
+└── [issue-specific].md        # Individual problem analysis and fixes
+```
+
+### Required Spec-Kit Workflows
+1. **Status Logging**: Document all completed fixes in `STATUS_LOG.md`
+2. **Architecture Updates**: Create comprehensive analysis documents for major architectural discoveries
+3. **Fix Summaries**: Create complete fix documentation with before/after states
+4. **Issue Tracking**: Create dedicated documents for complex debugging sessions
+5. **Reference Material**: Use spec-kit documents as authoritative source for system understanding
+
+### Spec-Kit Documentation Standards
+- **Comprehensive Analysis**: Include complete problem analysis, root cause identification, and solution details
+- **Executable Examples**: Include working curl commands, code snippets, and configuration examples
+- **Status Tracking**: Mark items as COMPLETED ✅, IN-PROGRESS 🔄, or PENDING ❌
+- **Cross-References**: Link related spec-kit documents and reference external dependencies
+- **Validation Steps**: Include verification commands and expected outputs
+
+### Critical Spec-Kit Documents for Reference
+- **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
+- **Ngrok Protocol**: `NGROK_FIXES_COMPLETE.md` - Complete tunnel configuration and fixes
+- **System Status**: `STATUS_LOG.md` - Track of all completed system improvements
+- **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT.md` - Complete frontend/backend communication analysis
+
+**⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues.**
 
 ### Module Protection
 - **Preserve Structure**: Do NOT modify anything in `@/modules` directory

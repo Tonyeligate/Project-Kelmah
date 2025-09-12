@@ -192,7 +192,7 @@ const UserPerformanceSchema = new Schema(
 );
 
 // Indexes for performance queries
-UserPerformanceSchema.index({ userId: 1 });
+// userId already has a unique index via the schema definition above; avoid duplicate index
 UserPerformanceSchema.index({ performanceTier: 1 });
 UserPerformanceSchema.index({ "metrics.jobCompletionRate": -1 });
 UserPerformanceSchema.index({ "metrics.clientSatisfaction": -1 });

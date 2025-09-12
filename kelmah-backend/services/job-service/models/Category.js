@@ -45,7 +45,7 @@ const CategorySchema = new Schema(
 );
 
 // Create indexes for better query performance
-CategorySchema.index({ slug: 1 });
+// 'slug' already has a unique index from schema; avoid duplicate index warning
 CategorySchema.index({ parentCategory: 1 });
 
 // Virtual for getting child categories

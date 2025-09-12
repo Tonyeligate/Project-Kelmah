@@ -102,4 +102,113 @@ router.get('/aggregate', async (req, res) => {
   res.status(overallStatus === 'healthy' ? 200 : 503).json(aggregateHealth);
 });
 
-module.exports = router; 
+module.exports = router;
+  const results = {};
+  let overallStatus = 'healthy';
+// Aggregate health check endpoint for all services
+router.get('/aggregate', async (req, res) => {
+  const services = [  { name: 'auth-service', url: process.env.AUTH_SERVICE_URL || 'http://localhost:5001/api/health' },
+    { name: 'auth-service', url: process.env.AUTH_SERVICE_URL || 'http://localhost:5001/api/health' },
+    { name: 'user-service', url: process.env.USER_SERVICE_URL || 'http://localhost:5002/api/health' },
+    { name: 'job-service', url: process.env.JOB_SERVICE_URL || 'http://localhost:5003/api/health' },
+    { name: 'messaging-service', url: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5004/api/health' },
+    { name: 'payment-service', url: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5005/api/health' },
+    { name: 'review-service', url: process.env.REVIEW_SERVICE_URL || 'http://localhost:5006/api/health' }
+  ];
+
+  const results = {};
+  let overallStatus = 'healthy';
+
+  // Check each service
+  for (const service of services) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch(service.url, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      clearTimeout(timeoutId);
+
+      results[service.name] = {
+        status: response.ok ? 'healthy' : 'unhealthy',
+        response_time: Date.now(),
+        http_status: response.status
+      };
+
+      if (!response.ok) {
+        overallStatus = 'degraded';
+      }
+    } catch (error) {
+      results[service.name] = {
+        status: 'unhealthy',
+        error: error.message,
+        response_time: Date.now()
+      };
+      overallStatus = 'degraded';
+    }
+  }
+
+  const aggregateHealth = {
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    services: results,
+    environment: process.env.NODE_ENV || 'development'
+  };
+
+  res.status(overallStatus === 'healthy' ? 200 : 503).json(aggregateHealth);
+});
+
+module.exports = router;
+  // Check each service
+  for (const service of services) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch(service.url, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      clearTimeout(timeoutId);
+
+      results[service.name] = {
+        status: response.ok ? 'healthy' : 'unhealthy',
+        response_time: Date.now(),
+        http_status: response.status
+      };
+
+      if (!response.ok) {
+        overallStatus = 'degraded';
+      }
+    } catch (error) {
+      results[service.name] = {
+        status: 'unhealthy',
+        error: error.message,
+        response_time: Date.now()
+      };
+      overallStatus = 'degraded';
+    }
+  }
+
+  const aggregateHealth = {
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    services: results,
+    environment: process.env.NODE_ENV || 'development'
+  };
+
+  res.status(overallStatus === 'healthy' ? 200 : 503).json(aggregateHealth);
+});
+
+module.exports = router;
+  const results = {};
+  let overallStatus = 'healthy';
+  

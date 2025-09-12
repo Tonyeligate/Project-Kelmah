@@ -60,25 +60,50 @@ const createJobProxy = (targetUrl, options = {}) => {
  * @returns {Promise<Object>} Health status
  */
 const checkJobServiceHealth = async (targetUrl) => {
+  // Try preferred /api/health, fall back to legacy /health on 404
+  const headers = {
+    'User-Agent': 'API-Gateway-Health-Check',
+    'ngrok-skip-browser-warning': 'true'
+  };
   try {
-    const response = await axios.get(`${targetUrl}/api/health`, { 
-      timeout: 5000,
-      headers: {
-        'User-Agent': 'API-Gateway-Health-Check'
-      }
-    });
-    
+    const response = await axios.get(`${targetUrl}/api/health`, { timeout: 5000, headers });
     return {
       healthy: true,
       status: response.status,
       data: response.data,
+      endpoint: '/api/health',
       timestamp: new Date().toISOString()
     };
-  } catch (error) {
+  } catch (primaryError) {
+    // Only fall back on 404 (endpoint missing) or 501/405 (not implemented)
+    const status = primaryError?.response?.status;
+    if (status === 404 || status === 405 || status === 501) {
+      try {
+        const response = await axios.get(`${targetUrl}/health`, { timeout: 5000, headers });
+        return {
+          healthy: true,
+          status: response.status,
+          data: response.data,
+          endpoint: '/health',
+          timestamp: new Date().toISOString()
+        };
+      } catch (fallbackError) {
+        return {
+          healthy: false,
+          error: fallbackError.message,
+          code: fallbackError.code,
+          status: fallbackError?.response?.status,
+          tried: ['/api/health', '/health'],
+          timestamp: new Date().toISOString()
+        };
+      }
+    }
     return {
       healthy: false,
-      error: error.message,
-      code: error.code,
+      error: primaryError.message,
+      code: primaryError.code,
+      status,
+      tried: ['/api/health'],
       timestamp: new Date().toISOString()
     };
   }
