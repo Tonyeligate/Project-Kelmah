@@ -52,9 +52,12 @@ import {
 import { useSnackbar } from 'notistack';
 import { useDropzone } from 'react-dropzone';
 import { formatFileSize, formatDate } from '../../../utils/formatters';
+import { normalizeUser } from '../../../utils/userUtils';
 
 const CertificateUploader = ({ onCertificatesChange }) => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 

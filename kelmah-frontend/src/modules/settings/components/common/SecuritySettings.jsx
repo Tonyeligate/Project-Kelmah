@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../../utils/userUtils';
 import {
   Box,
   Typography,
@@ -13,7 +15,9 @@ import { useSelector } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
 
 const SecuritySettings = () => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const [form, setForm] = useState({
     currentPassword: '',
     newPassword: '',

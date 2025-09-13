@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import {
   Container,
   Typography,
@@ -106,7 +108,9 @@ const PaymentMethodsPage = () => {
 
   const [methodToDelete, setMethodToDelete] = useState(null);
 
-  const user = useSelector((state) => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector((state) => state.auth);
+  const user = normalizeUser(rawUser);
   const theme = useTheme();
 
   // Fetch payment methods from server

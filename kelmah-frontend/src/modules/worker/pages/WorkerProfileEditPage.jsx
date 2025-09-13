@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import {
   Box,
   Container,
@@ -62,7 +63,9 @@ const WorkerProfileEditPage = () => {
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { user } = useSelector((state) => state.auth);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector((state) => state.auth);
+  const user = normalizeUser(rawUser);
   // loading and error are objects with domain keys; access specific flags to avoid passing objects into UI props
   const { profile, loading, error } = useSelector((state) => state.worker);
 
@@ -128,7 +131,7 @@ const WorkerProfileEditPage = () => {
   useEffect(() => {
     const fetchCompleteness = async () => {
       try {
-        const id = user?.id || user?.userId;
+        const id = user?.id;
         if (!id) return;
         const resp = await fetch(`/api/users/workers/${id}/completeness`, {
           headers: { 'Content-Type': 'application/json' },
@@ -146,7 +149,7 @@ const WorkerProfileEditPage = () => {
 
   // Load profile data when component mounts
   useEffect(() => {
-    const id = user?.id || user?.userId;
+    const id = user?.id;
     if (!id) return;
     dispatch(fetchWorkerProfile(id))
       .unwrap()
@@ -193,7 +196,7 @@ const WorkerProfileEditPage = () => {
 
   // Load availability (authoritative from API)
   useEffect(() => {
-    const id = user?.id || user?.userId;
+    const id = user?.id;
     if (!id) return;
     (async () => {
       try {
@@ -390,7 +393,7 @@ const WorkerProfileEditPage = () => {
     });
 
     try {
-      const id = user?.id || user?.userId;
+      const id = user?.id;
       await dispatch(updateWorkerProfile({ workerId: id, profileData: profileFormData })).unwrap();
       setSnackbar({
         open: true,
@@ -450,7 +453,7 @@ const WorkerProfileEditPage = () => {
 
   const handleSaveAvailability = async () => {
     try {
-      const id = user?.id || user?.userId;
+      const id = user?.id;
       await dispatch(
         updateWorkerAvailability({
           workerId: id,

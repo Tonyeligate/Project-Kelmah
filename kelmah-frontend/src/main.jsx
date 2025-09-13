@@ -4,9 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
 import store from './store';
-// Temporary AuthProvider import to prevent useAuth errors during transition
-import { AuthProvider } from './modules/auth/contexts/AuthContext';
-import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
+// FIXED: Remove AuthProvider import since we're using Redux-only state management
+// import { AuthProvider } from './modules/auth/contexts/AuthContext';
+import { NotificationProvider } from './modules/notifications/contexts/NotificationProvider';
 import { PaymentProvider } from './modules/payment/contexts/PaymentContext';
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
 import { ContractProvider } from './modules/contracts/contexts/ContractContext';
@@ -114,21 +114,20 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           }}
           dense
         >
-          <AuthProvider>
-            <NotificationProvider>
-              <MessageProvider>
-                <PaymentProvider>
-                  <ContractProvider>
-                    <ErrorBoundary FallbackComponent={ErrorFallback}>
-                      <HelmetProvider>
-                        <App />
-                      </HelmetProvider>
-                    </ErrorBoundary>
-                  </ContractProvider>
-                </PaymentProvider>
-              </MessageProvider>
-            </NotificationProvider>
-          </AuthProvider>
+          {/* FIXED: Removed AuthProvider wrapper since we're using Redux-only state management */}
+          <NotificationProvider>
+            <MessageProvider>
+              <PaymentProvider>
+                <ContractProvider>
+                  <ErrorBoundary FallbackComponent={ErrorFallback}>
+                    <HelmetProvider>
+                      <App />
+                    </HelmetProvider>
+                  </ErrorBoundary>
+                </ContractProvider>
+              </PaymentProvider>
+            </MessageProvider>
+          </NotificationProvider>
         </SnackbarProvider>
       </BrowserRouter>
     </Provider>

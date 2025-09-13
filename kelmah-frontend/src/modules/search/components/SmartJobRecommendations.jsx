@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { normalizeUser } from '../../../utils/userUtils';
 import searchService from '../services/smartSearchService';
 import {
   saveJobToServer,
@@ -59,7 +60,9 @@ const SmartJobRecommendations = ({
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser, isAuthenticated } = useSelector((state) => state.auth);
+  const user = normalizeUser(rawUser);
   const savedJobs = useSelector(selectSavedJobs) || [];
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();

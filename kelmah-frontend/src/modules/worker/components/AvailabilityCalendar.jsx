@@ -31,6 +31,7 @@ import {
   AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -38,7 +39,9 @@ import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 const AvailabilityCalendar = () => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
