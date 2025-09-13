@@ -11,7 +11,6 @@ import {
   Alert,
 } from '@mui/material';
 import authService from '../../../auth/services/authService';
-import { useSelector } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
 
 const SecuritySettings = () => {

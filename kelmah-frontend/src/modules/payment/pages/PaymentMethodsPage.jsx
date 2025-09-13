@@ -31,7 +31,6 @@ import {
   MobileFriendly as MobileIcon,
   AccountBalance as BankIcon,
 } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
 import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
 

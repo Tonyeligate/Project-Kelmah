@@ -9,7 +9,6 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { useSelector } from 'react-redux';
 import EnhancedWorkerDashboard from '../../dashboard/components/worker/EnhancedWorkerDashboard';
 import workerImage from '../../../assets/cartoon-worker.jpeg';
 
