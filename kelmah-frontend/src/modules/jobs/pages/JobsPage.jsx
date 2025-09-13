@@ -161,7 +161,6 @@ import {
 import JobCard from '../components/common/JobCard';
 import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
-import { useSelector } from 'react-redux';
 
 // Advanced Animations with Smooth Transitions
 const float = keyframes`

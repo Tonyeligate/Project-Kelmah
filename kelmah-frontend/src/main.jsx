@@ -6,7 +6,7 @@ import { SnackbarProvider } from 'notistack';
 import store from './store';
 // Temporary AuthProvider import to prevent useAuth errors during transition
 import { AuthProvider } from './modules/auth/contexts/AuthContext';
-import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
+import { NotificationProvider } from './modules/notifications/contexts/NotificationProvider';
 import { PaymentProvider } from './modules/payment/contexts/PaymentContext';
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
 import { ContractProvider } from './modules/contracts/contexts/ContractContext';
