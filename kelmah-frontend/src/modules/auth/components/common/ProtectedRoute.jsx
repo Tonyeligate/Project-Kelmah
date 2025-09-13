@@ -2,13 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Navigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
-import { setOAuthLogin } from '../../services/authSlice';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSelector } from 'react-redux';
 
 /**
  * A route wrapper that redirects unauthenticated users
  * Displays a loading indicator while authentication is being checked
+ * FIXED: Uses ONLY Redux authentication state to prevent dual state management conflicts
  */
 const ProtectedRoute = ({
   isAllowed: isAllowedProp,
@@ -17,21 +16,8 @@ const ProtectedRoute = ({
   children,
   loading = false,
 }) => {
-  const dispatch = useDispatch();
-  // Prefer AuthContext when available to avoid Redux/AuthContext conflicts
-  let ctxUser = null;
-  let ctxIsAuthenticated = false;
-  try {
-    const auth = useAuth();
-    ctxUser = auth?.user || null;
-    ctxIsAuthenticated = typeof auth?.isAuthenticated === 'function' ? auth.isAuthenticated() : !!auth?.user;
-  } catch (_) {
-    // Context not available; fallback to Redux below
-  }
-
-  const { user: reduxUser, isAuthenticated: reduxIsAuthenticated } = useSelector((state) => state.auth);
-  const user = ctxUser || reduxUser;
-  const isAuthenticated = ctxIsAuthenticated || reduxIsAuthenticated;
+  // Use ONLY Redux auth state - removed dual AuthContext/Redux conflicts
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   // Determine if the route is allowed based on roles or directly from prop
   const isAllowed = Array.isArray(roles)
