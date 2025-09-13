@@ -4,8 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
 import store from './store';
-// FIXED: Remove AuthProvider import since we're using Redux-only state management
-// import { AuthProvider } from './modules/auth/contexts/AuthContext';
+// Keep AuthProvider for backward compatibility with existing useAuth hooks
+import { AuthProvider } from './modules/auth/contexts/AuthContext';
 import { NotificationProvider } from './modules/notifications/contexts/NotificationProvider';
 import { PaymentProvider } from './modules/payment/contexts/PaymentContext';
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
@@ -114,8 +114,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           }}
           dense
         >
-          {/* FIXED: Removed AuthProvider wrapper since we're using Redux-only state management */}
-          <NotificationProvider>
+          <AuthProvider>
+            <NotificationProvider>
             <MessageProvider>
               <PaymentProvider>
                 <ContractProvider>
@@ -128,6 +128,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
               </PaymentProvider>
             </MessageProvider>
           </NotificationProvider>
+          </AuthProvider>
         </SnackbarProvider>
       </BrowserRouter>
     </Provider>
