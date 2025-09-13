@@ -7,12 +7,15 @@ import React, {
 } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import { Snackbar, Alert } from '@mui/material';
 import notificationServiceUser, { notificationService } from '../services/notificationService';
 const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });

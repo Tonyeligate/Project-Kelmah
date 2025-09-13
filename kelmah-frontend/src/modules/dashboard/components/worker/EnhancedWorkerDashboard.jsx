@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+// FIXED: Use standardized user normalization for consistent user data access
+import { normalizeUser } from '../../../../utils/userUtils';
 import { GHANA_COLORS } from '../../../../theme/index';
 import {
   Box,
@@ -151,7 +153,9 @@ const EnhancedWorkerDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // Use ONLY Redux auth state to prevent dual state management conflicts
-  const { user } = useSelector((state) => state.auth);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector((state) => state.auth);
+  const user = normalizeUser(rawUser);
   const { data = {}, loading, error } = useSelector((state) => state.dashboard);
   const theme = useTheme();
   const brand = theme.palette; // use brand tokens
@@ -163,11 +167,8 @@ const EnhancedWorkerDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Stable user ID to prevent unnecessary effects
-  const userId = useMemo(() => 
-    user?.id || user?._id || user?.userId, 
-    [user?.id, user?._id, user?.userId]
-  );
+  // Stable user ID using normalized user data
+  const userId = useMemo(() => user?.id, [user?.id]);
 
   // Load initial data - properly memoized to prevent infinite re-renders
   useEffect(() => {

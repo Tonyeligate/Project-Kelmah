@@ -4,6 +4,8 @@
  */
 
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import {
   Card,
   CardContent,
@@ -57,11 +59,13 @@ const EnhancedJobCard = ({
   onApply, 
   onSave, 
   onShare, 
-  user,
   showBiddingInfo = true,
   showPerformanceTier = true 
 }) => {
   const theme = useTheme();
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const [bidData, setBidData] = useState({
     bidAmount: job?.bidding?.minBidAmount || 0,

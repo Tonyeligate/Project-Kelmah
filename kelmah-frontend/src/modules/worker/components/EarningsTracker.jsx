@@ -99,6 +99,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import workerService from '../services/workerService';
 import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
@@ -137,7 +138,9 @@ const CHART_COLORS = ['#FFD700', '#1a1a1a', '#666666', '#999999', '#cccccc'];
 
 const EarningsTracker = () => {
   const theme = useTheme();
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management

@@ -44,9 +44,12 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 
 const DocumentVerification = () => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documents, setDocuments] = useState([]);

@@ -1,4 +1,6 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import {
   Box,
   Grid,
@@ -15,7 +17,9 @@ const WorkerDashboardPage = () => {
   const theme = useTheme();
   const isSm = false; // Disabled responsive behavior as per user requirement
   const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size for styling
-  const user = useSelector((state) => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector((state) => state.auth);
+  const user = normalizeUser(rawUser);
   const defaultUser = {
     firstName: 'Demo',
     role: 'worker',

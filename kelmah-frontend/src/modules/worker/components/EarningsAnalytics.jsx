@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import earningsService from '../services/earningsService';
+import { normalizeUser } from '../../../utils/userUtils';
 import {
   Box,
   Paper,
@@ -69,7 +70,9 @@ import { useSnackbar } from 'notistack';
 import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
 
 const EarningsAnalytics = () => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 

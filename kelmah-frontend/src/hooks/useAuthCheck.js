@@ -1,12 +1,12 @@
 /**
  * Custom hook for robust authentication checking
  * Provides standardized auth state checking across all components
+ * FIXED: Uses centralized user normalization utility for consistent user data structure
  */
 
 import { useMemo } from 'react';
-// Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../modules/auth/contexts/AuthContext';
 import { useSelector } from 'react-redux';
+import { normalizeUser } from '../utils/userUtils';
 
 export const useAuthCheck = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts
@@ -24,23 +24,9 @@ export const useAuthCheck = () => {
     }
   }, [isAuthenticated]);
 
-  // Enhanced user data extraction
+  // Enhanced user data extraction using standardized normalization
   const userData = useMemo(() => {
-    if (!user) return null;
-    
-    return {
-      id: user.id || user._id,
-      email: user.email,
-      firstName: user.firstName || user.name?.split(' ')[0] || '',
-      lastName: user.lastName || user.name?.split(' ')[1] || '',
-      fullName: user.firstName && user.lastName 
-        ? `${user.firstName} ${user.lastName}` 
-        : user.name || user.email || 'User',
-      role: user.role || user.userType || user.userRole || 'user',
-      profileImage: user.profileImage || user.avatar,
-      isVerified: user.isVerified || false,
-      isOnline: true // Default to online, will be updated by real-time status
-    };
+    return normalizeUser(user);
   }, [user]);
 
   // Auth state summary

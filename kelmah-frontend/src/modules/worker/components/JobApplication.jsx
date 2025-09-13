@@ -1,4 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { normalizeUser } from '../../../utils/userUtils';
 import {
   Box,
   Paper,
@@ -39,7 +41,9 @@ import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
 
 const JobApplication = () => {
-  const user = useSelector(state => state.auth.user);
+  // FIXED: Use standardized user normalization for consistent user data access
+  const { user: rawUser } = useSelector(state => state.auth);
+  const user = normalizeUser(rawUser);
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
