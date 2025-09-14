@@ -632,6 +632,7 @@ const JobSearchPage = () => {
   const [careerInsights, setCareerInsights] = useState(null);
   const [skillGaps, setSkillGaps] = useState([]);
   const [animateCards, setAnimateCards] = useState(false);
+  const [showSampleData, setShowSampleData] = useState(true);
 
   // Enhanced state for new bidding system
   const [userPerformance, setUserPerformance] = useState(null);

@@ -1,8 +1,9 @@
 const expressRateLimit = require('express-rate-limit');
 
 const LIMITS = {
-  messaging: { windowMs: 15 * 60 * 1000, max: 100 },
-  default: { windowMs: 15 * 60 * 1000, max: 50 },
+  messaging: { windowMs: 15 * 60 * 1000, max: 500 }, // Increased for notification polling
+  notifications: { windowMs: 5 * 60 * 1000, max: 200 }, // Special limit for notifications: 200 requests per 5 minutes
+  default: { windowMs: 15 * 60 * 1000, max: 200 }, // Increased default limit
 };
 
 function createLimiter(key = 'default') {
