@@ -24,12 +24,12 @@ const initializeAxios = async () => {
     const baseURL = await getApiBaseUrl();
     axiosInstance = axios.create({
       baseURL,
-  timeout: PERFORMANCE_CONFIG.apiTimeout,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'ngrok-skip-browser-warning': 'true',
-  },
+      timeout: PERFORMANCE_CONFIG.apiTimeout,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
       withCredentials: false, // Disable credentials for ngrok compatibility
     });
   }
@@ -40,15 +40,25 @@ const initializeAxios = async () => {
 const createAxiosProxy = () => {
   return new Proxy({}, {
     get(target, prop) {
-      if (typeof axiosInstance?.[prop] === 'function') {
-        return (...args) => {
-          if (!axiosInstance) {
-            return initializeAxios().then(instance => instance[prop](...args));
-          }
-          return axiosInstance[prop](...args);
+      // Handle async initialization for method calls
+      if (typeof prop === 'string' && ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'].includes(prop)) {
+        return async (...args) => {
+          const instance = axiosInstance || await initializeAxios();
+          return instance[prop](...args);
         };
       }
-      return axiosInstance?.[prop];
+
+      // Handle other properties and methods
+      if (axiosInstance && typeof axiosInstance[prop] === 'function') {
+        return (...args) => axiosInstance[prop](...args);
+      }
+
+      if (axiosInstance) {
+        return axiosInstance[prop];
+      }
+
+      // For non-initialized instance, return a promise that resolves when ready
+      return initializeAxios().then(instance => instance[prop]);
     }
   });
 };
@@ -63,13 +73,13 @@ const normalizeUrlForGateway = (config) => {
     const url = typeof config.url === 'string' ? config.url : '';
     const baseEndsWithApi = base === '/api' || base.endsWith('/api');
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
-    
+
     if (baseEndsWithApi && urlStartsWithApi) {
       // Remove the leading /api from the url to avoid /api/api duplication
       config.url = url.replace(/^\/api\/?/, '/');
       console.log(`🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`);
     }
-  } catch (_) {}
+  } catch (_) { }
   return config;
 };
 
@@ -77,188 +87,188 @@ const normalizeUrlForGateway = (config) => {
 const addMainInterceptors = async () => {
   const instance = await initializeAxios();
 
-// Request interceptor
+  // Request interceptor
   instance.interceptors.request.use(
-  (config) => {
-    // Normalize to avoid /api/api duplication
-    config = normalizeUrlForGateway(config);
-    // Add auth token securely
-    const token = secureStorage.getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    (config) => {
+      // Normalize to avoid /api/api duplication
+      config = normalizeUrlForGateway(config);
+      // Add auth token securely
+      const token = secureStorage.getAuthToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
 
-    // Add security headers
-    config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    config.headers['X-Client-Version'] = '1.0.0';
+      // Add security headers
+      config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      config.headers['X-Client-Version'] = '1.0.0';
 
-    // Add request timestamp for debugging
-    config.metadata = { startTime: new Date() };
+      // Add request timestamp for debugging
+      config.metadata = { startTime: new Date() };
 
-    // Log request in development
-    if (LOG_CONFIG.enableConsole) {
-      console.group(
-        `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-      );
-      console.log('Config:', {
-        baseURL: config.baseURL,
-        url: config.url,
-        method: config.method,
-        headers: config.headers,
-        data: config.data,
-      });
-      console.groupEnd();
-    }
+      // Log request in development
+      if (LOG_CONFIG.enableConsole) {
+        console.group(
+          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+        );
+        console.log('Config:', {
+          baseURL: config.baseURL,
+          url: config.url,
+          method: config.method,
+          headers: config.headers,
+          data: config.data,
+        });
+        console.groupEnd();
+      }
 
-    return config;
-  },
-  (error) => {
-    console.error('❌ Request Error:', error);
-    return Promise.reject(error);
-  },
-);
+      return config;
+    },
+    (error) => {
+      console.error('❌ Request Error:', error);
+      return Promise.reject(error);
+    },
+  );
 
-// Response interceptor
+  // Response interceptor
   instance.interceptors.response.use(
-  (response) => {
-    // Calculate request duration with null safety
-    const duration = response?.config?.metadata?.startTime
-      ? new Date() - response.config.metadata.startTime
-      : 'unknown';
+    (response) => {
+      // Calculate request duration with null safety
+      const duration = response?.config?.metadata?.startTime
+        ? new Date() - response.config.metadata.startTime
+        : 'unknown';
 
-    // Log response in development
-    if (LOG_CONFIG.enableConsole) {
-      console.group(`✅ API Response: ${response?.status || 'unknown'} (${duration}ms)`);
-      console.log('Response:', {
-        status: response?.status,
-        statusText: response?.statusText,
-        headers: response?.headers,
-        data: response?.data,
-      });
-      console.groupEnd();
-    }
+      // Log response in development
+      if (LOG_CONFIG.enableConsole) {
+        console.group(`✅ API Response: ${response?.status || 'unknown'} (${duration}ms)`);
+        console.log('Response:', {
+          status: response?.status,
+          statusText: response?.statusText,
+          headers: response?.headers,
+          data: response?.data,
+        });
+        console.groupEnd();
+      }
 
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error?.config;
+      return response;
+    },
+    async (error) => {
+      const originalRequest = error?.config;
 
-    // Calculate request duration if available with null safety
-    const duration = originalRequest?.metadata?.startTime
-      ? new Date() - originalRequest.metadata.startTime
-      : 'unknown';
+      // Calculate request duration if available with null safety
+      const duration = originalRequest?.metadata?.startTime
+        ? new Date() - originalRequest.metadata.startTime
+        : 'unknown';
 
-    // Enhanced error logging with null safety
-    if (LOG_CONFIG.enableConsole) {
-      console.group(
-        `❌ API Error: ${error?.response?.status || 'Network'} (${duration}ms)`,
-      );
-      console.error('Error details:', {
-        url: originalRequest?.url,
-        method: originalRequest?.method,
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        message: error?.message,
-        data: error?.response?.data,
-      });
-      console.groupEnd();
-    }
+      // Enhanced error logging with null safety
+      if (LOG_CONFIG.enableConsole) {
+        console.group(
+          `❌ API Error: ${error?.response?.status || 'Network'} (${duration}ms)`,
+        );
+        console.error('Error details:', {
+          url: originalRequest?.url,
+          method: originalRequest?.method,
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          message: error?.message,
+          data: error?.response?.data,
+        });
+        console.groupEnd();
+      }
 
-    // Handle 401 Unauthorized - attempt token refresh
-    if (error?.response?.status === 401 && !originalRequest?._retry) {
-      originalRequest._retry = true;
+      // Handle 401 Unauthorized - attempt token refresh
+      if (error?.response?.status === 401 && !originalRequest?._retry) {
+        originalRequest._retry = true;
 
-      const refreshToken = secureStorage.getRefreshToken();
+        const refreshToken = secureStorage.getRefreshToken();
 
-      if (refreshToken) {
-        try {
-          console.log('🔄 Attempting token refresh...');
-          // Use a new axios instance to avoid interceptor loops
+        if (refreshToken) {
+          try {
+            console.log('🔄 Attempting token refresh...');
+            // Use a new axios instance to avoid interceptor loops
             const baseURL = await getApiBaseUrl();
-          const refreshResponse = await axios.post(
+            const refreshResponse = await axios.post(
               `${baseURL}/api/auth/refresh-token`,
-            { refreshToken },
-            {
-              headers: { 'Content-Type': 'application/json' },
-              timeout: PERFORMANCE_CONFIG.apiTimeout,
-            },
-          );
+              { refreshToken },
+              {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: PERFORMANCE_CONFIG.apiTimeout,
+              },
+            );
 
-          const newToken =
-            refreshResponse?.data?.data?.token || refreshResponse?.data?.token;
+            const newToken =
+              refreshResponse?.data?.data?.token || refreshResponse?.data?.token;
 
-          if (newToken) {
-            console.log('✅ Token refresh successful');
-            // Update stored token securely
-            secureStorage.setAuthToken(newToken);
+            if (newToken) {
+              console.log('✅ Token refresh successful');
+              // Update stored token securely
+              secureStorage.setAuthToken(newToken);
 
-            // Update the failed request with new token
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              // Update the failed request with new token
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
-            // Retry the original request
+              // Retry the original request
               return instance(originalRequest);
-          } else {
-            console.warn('⚠️ Token refresh response missing token');
-            throw new Error('No token in refresh response');
-          }
-        } catch (refreshError) {
-          console.error('❌ Token refresh failed:', refreshError?.message || refreshError);
-
-          // Clear auth data securely
-          secureStorage.clear();
-
-          // Redirect to login page with reason
-          if (typeof window !== 'undefined') {
-            const currentPath = window.location.pathname;
-            if (!currentPath.includes('/login')) {
-              window.location.href = '/login?reason=refresh_failed';
+            } else {
+              console.warn('⚠️ Token refresh response missing token');
+              throw new Error('No token in refresh response');
             }
+          } catch (refreshError) {
+            console.error('❌ Token refresh failed:', refreshError?.message || refreshError);
+
+            // Clear auth data securely
+            secureStorage.clear();
+
+            // Redirect to login page with reason
+            if (typeof window !== 'undefined') {
+              const currentPath = window.location.pathname;
+              if (!currentPath.includes('/login')) {
+                window.location.href = '/login?reason=refresh_failed';
+              }
+            }
+
+            return Promise.reject(refreshError);
           }
-
-          return Promise.reject(refreshError);
-        }
-      } else {
-        console.warn('⚠️ No refresh token available');
-        // No refresh token available, redirect to login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login?reason=no_token';
+        } else {
+          console.warn('⚠️ No refresh token available');
+          // No refresh token available, redirect to login
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?reason=no_token';
+          }
         }
       }
-    }
 
-    // Handle 403 Forbidden
-    if (error.response?.status === 403) {
-      console.warn('Access forbidden - insufficient permissions');
+      // Handle 403 Forbidden
+      if (error.response?.status === 403) {
+        console.warn('Access forbidden - insufficient permissions');
 
-      // You might want to redirect to an unauthorized page
-      if (
-        typeof window !== 'undefined' &&
-        window.location.pathname !== '/unauthorized'
-      ) {
-        window.location.href = '/unauthorized';
+        // You might want to redirect to an unauthorized page
+        if (
+          typeof window !== 'undefined' &&
+          window.location.pathname !== '/unauthorized'
+        ) {
+          window.location.href = '/unauthorized';
+        }
       }
-    }
 
-    // Handle 404 Not Found
-    if (error.response?.status === 404) {
-      console.warn('Resource not found:', originalRequest?.url);
-    }
+      // Handle 404 Not Found
+      if (error.response?.status === 404) {
+        console.warn('Resource not found:', originalRequest?.url);
+      }
 
-    // Handle 500 Server Error
-    if (error.response?.status >= 500) {
-      console.error('Server error occurred');
+      // Handle 500 Server Error
+      if (error.response?.status >= 500) {
+        console.error('Server error occurred');
 
-      // You might want to show a global error notification here
-    }
+        // You might want to show a global error notification here
+      }
 
-    // Network errors
-    if (!error.response) {
-      console.error('Network error - check your internet connection');
-    }
+      // Network errors
+      if (!error.response) {
+        console.error('Network error - check your internet connection');
+      }
 
-    return Promise.reject(error);
-  },
-);
+      return Promise.reject(error);
+    },
+  );
 };
 
 // Initialize interceptors
@@ -325,7 +335,7 @@ export const uploadFile = (url, file, onProgress = null) => {
 const getTimeoutConfig = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-  
+
   // For Render services (production), use longer timeout to handle cold starts
   if (!isDevelopment && !isLocal) {
     return {
@@ -335,7 +345,7 @@ const getTimeoutConfig = () => {
       maxRetryDelay: 30000, // Max 30 seconds
     };
   }
-  
+
   // For local development or localhost
   return {
     timeout: 15000, // 15 seconds for local services (increased)
@@ -354,14 +364,14 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
     async (error) => {
       const { config } = error;
       const serviceUrl = config.baseURL;
-      
+
       // Don't retry if we've already retried or if it's not a timeout/network error
       if (!config || config.__retryCount >= maxRetries) {
         // Add service health context to final error
         const enhancedError = handleServiceError(error, serviceUrl);
         return Promise.reject(enhancedError);
       }
-      
+
       // Special-case: Treat known Not Implemented endpoints as successful no-op
       // Avoid noisy errors for escrow listing while backend is not implemented
       if (
@@ -391,7 +401,7 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         return Promise.reject(enhancedError);
       }
 
-      const shouldRetry = 
+      const shouldRetry =
         error.code === 'ECONNABORTED' || // timeout
         error.code === 'NETWORK_ERROR' ||
         error.message?.includes('timeout') ||
@@ -400,23 +410,23 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         status === 429 || // Rate limiting
         status === 408 || // Request timeout
         !error.response; // No response usually means network/timeout issue
-      
+
       if (!shouldRetry) {
         const enhancedError = handleServiceError(error, serviceUrl);
         return Promise.reject(enhancedError);
       }
-      
+
       config.__retryCount = (config.__retryCount || 0) + 1;
-      
+
       // Enhanced exponential backoff with jitter and max delay
       const baseDelay = timeoutConfig.retryDelay;
       const exponentialDelay = baseDelay * Math.pow(2, config.__retryCount - 1);
       const jitter = Math.random() * 1000; // Add up to 1 second jitter
       const delay = Math.min(exponentialDelay + jitter, timeoutConfig.maxRetryDelay);
-      
+
       // Get service status for better logging
       const statusMsg = getServiceStatusMessage(serviceUrl);
-      
+
       console.warn(`🔄 Retrying request (${config.__retryCount}/${maxRetries}) after ${delay}ms delay:`, {
         url: config.url,
         method: config.method,
@@ -424,9 +434,9 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         serviceStatus: statusMsg.status,
         reason: statusMsg.message,
       });
-      
+
       await new Promise(resolve => setTimeout(resolve, delay));
-      
+
       return client.request(config);
     }
   );
@@ -437,16 +447,16 @@ const getClientBaseUrl = async (serviceUrl) => {
   // If a global gateway URL is set, use it for all services
   const hasGatewayEnv = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL;
   const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
-  
+
   if (hasGatewayEnv) {
     const baseURL = await getApiBaseUrl();
-  // Avoid mixed-content by preferring relative /api over http:// base when on https
+    // Avoid mixed-content by preferring relative /api over http:// base when on https
     if (isHttps && typeof baseURL === 'string' && baseURL.startsWith('http:')) {
       return '/api';
     }
     return baseURL; // e.g., http(s)://gateway or '/api'
   }
-  
+
   // Fallback to service-specific URL (production direct service)
   return serviceUrl;
 };
@@ -456,10 +466,10 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
   const baseURL = await getClientBaseUrl(serviceUrl);
   const client = axios.create({
     baseURL,
-  timeout: timeoutConfig.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
+    timeout: timeoutConfig.timeout,
+    headers: {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
       ...extraHeaders,
     },
     withCredentials: false, // Disable credentials for ngrok compatibility
@@ -548,71 +558,71 @@ export const schedulingClient = new Proxy({}, {
 const addInterceptorsToClients = async () => {
   const clients = await initializeServiceClients();
   Object.values(clients).forEach(client => {
-  // Request interceptor
-  client.interceptors.request.use(
-    (config) => {
-      // Normalize to avoid /api/api duplication
-      config = normalizeUrlForGateway(config);
-      // Add auth token securely
-      const token = secureStorage.getAuthToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    // Request interceptor
+    client.interceptors.request.use(
+      (config) => {
+        // Normalize to avoid /api/api duplication
+        config = normalizeUrlForGateway(config);
+        // Add auth token securely
+        const token = secureStorage.getAuthToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
 
-      // Add request timestamp for debugging
-      config.metadata = { startTime: new Date() };
+        // Add request timestamp for debugging
+        config.metadata = { startTime: new Date() };
 
-      // Log request in development
-      if (LOG_CONFIG.enableConsole) {
-        console.group(
-          `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-        );
-        console.log('Config:', {
-          baseURL: config.baseURL,
-          url: config.url,
-          method: config.method,
-          headers: config.headers,
-          data: config.data,
-        });
-        console.groupEnd();
-      }
+        // Log request in development
+        if (LOG_CONFIG.enableConsole) {
+          console.group(
+            `🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+          );
+          console.log('Config:', {
+            baseURL: config.baseURL,
+            url: config.url,
+            method: config.method,
+            headers: config.headers,
+            data: config.data,
+          });
+          console.groupEnd();
+        }
 
-      return config;
-    },
-    (error) => {
-      console.error('❌ Request Error:', error);
-      return Promise.reject(error);
-    },
-  );
+        return config;
+      },
+      (error) => {
+        console.error('❌ Request Error:', error);
+        return Promise.reject(error);
+      },
+    );
 
-  // Response interceptor
-  client.interceptors.response.use(
-    (response) => {
-      // Log response time in development
-      if (LOG_CONFIG.enableConsole && response.config.metadata) {
-        const duration = new Date() - response.config.metadata.startTime;
-        console.log(
-          `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
-        );
-      }
+    // Response interceptor
+    client.interceptors.response.use(
+      (response) => {
+        // Log response time in development
+        if (LOG_CONFIG.enableConsole && response.config.metadata) {
+          const duration = new Date() - response.config.metadata.startTime;
+          console.log(
+            `✅ Response received in ${duration}ms for ${response.config.method?.toUpperCase()} ${response.config.url}`,
+          );
+        }
 
-      return response;
-    },
-    (error) => {
-      // Log error in development
-      if (LOG_CONFIG.enableConsole) {
-        console.error('❌ API Error:', {
-          url: error.config?.url,
-          method: error.config?.method,
-          status: error.response?.status,
-          message: error.response?.data?.message || error.message,
-        });
-      }
+        return response;
+      },
+      (error) => {
+        // Log error in development
+        if (LOG_CONFIG.enableConsole) {
+          console.error('❌ API Error:', {
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            message: error.response?.data?.message || error.message,
+          });
+        }
 
-      return Promise.reject(error);
-    },
-  );
-});
+        return Promise.reject(error);
+      },
+    );
+  });
 };
 
 // Initialize interceptors
@@ -627,14 +637,14 @@ export const getAuthToken = () => {
 const addGlobalInterceptors = async () => {
   const instance = await initializeAxios();
   instance.interceptors.response.use(
-  (r) => r,
-  (error) => {
-    if (error?.response?.status === 401 && typeof window !== 'undefined') {
-      try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) {}
+    (r) => r,
+    (error) => {
+      if (error?.response?.status === 401 && typeof window !== 'undefined') {
+        try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) { }
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
+  );
 };
 
 addGlobalInterceptors();

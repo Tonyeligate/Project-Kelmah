@@ -117,17 +117,17 @@ const corsOriginHandler = (origin, callback) => {
   ];
 
   if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
-  
+
   if (allowedOrigins.includes(origin)) {
     return callback(null, true);
   }
-  
+
   const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
   if (isVercelPreview) {
     logger.info(`✅ API Gateway CORS allowed Vercel preview: ${origin}`);
     return callback(null, true);
   }
-  
+
   logger.warn(`🚨 API Gateway CORS blocked origin: ${origin}`);
   callback(new Error('Not allowed by CORS'));
 };
@@ -135,8 +135,16 @@ const corsOriginHandler = (origin, callback) => {
 app.use(cors({
   origin: corsOriginHandler,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-requested-with'],
+  exposedHeaders: ['ngrok-skip-browser-warning']
 }));
+
+// Add ngrok-skip-browser-warning header to all responses
+app.use((req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -187,7 +195,7 @@ app.get('/', (req, res) => {
     },
     features: [
       'Microservices Architecture',
-      'Authentication & Authorization', 
+      'Authentication & Authorization',
       'CORS & Security',
       'Rate Limiting & Monitoring',
       'Real-time Messaging Support'
@@ -197,7 +205,7 @@ app.get('/', (req, res) => {
 
 // Health check endpoints (both /health and /api/health for compatibility)
 const healthResponse = (req, res) => {
-  res.json({ 
+  res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     services: Object.keys(services),
@@ -371,11 +379,11 @@ app.use(
     }
     return celebrate({
       [Segments.BODY]: Joi.object({
-        availabilityStatus: Joi.string().valid('available','busy','unavailable','vacation').optional(),
+        availabilityStatus: Joi.string().valid('available', 'busy', 'unavailable', 'vacation').optional(),
         pausedUntil: Joi.string().isoDate().optional(),
         availableHours: Joi.object()
           .pattern(
-            Joi.string().valid('monday','tuesday','wednesday','thursday','friday','saturday','sunday'),
+            Joi.string().valid('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'),
             Joi.object({
               available: Joi.boolean().required(),
               start: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d$/).when('available', { is: true, then: Joi.required() }),
@@ -390,7 +398,7 @@ app.use(
     target: services.user,
     changeOrigin: true,
     // Rewrite paths: / -> /workers, /search -> /workers/search, etc.
-    pathRewrite: { 
+    pathRewrite: {
       '^/$': '/workers',  // Root path to /workers
       '^/(.*)': '/workers/$1'  // Sub-paths like /search to /workers/search
     },
@@ -433,7 +441,7 @@ app.use('/api/jobs', (req, res, next) => {
 app.use('/api/jobs', createEnhancedJobProxy(services.job, {
   onError: (err, req, res) => {
     console.error('[API Gateway] Job service error:', err.message);
-    res.status(503).json({ 
+    res.status(503).json({
       error: 'Job service temporarily unavailable',
       message: 'Please try again later',
       timestamp: new Date().toISOString()
@@ -534,7 +542,7 @@ try {
       res.status(503).json({ error: 'WebSocket service unavailable' });
     };
     // No-op upgrade handler for server.on('upgrade') safety
-    socketIoProxy.upgrade = () => {};
+    socketIoProxy.upgrade = () => { };
   }
 } catch (error) {
   console.error('Failed to create Socket.IO proxy:', error.message);
@@ -543,7 +551,7 @@ try {
     res.status(503).json({ error: 'WebSocket service configuration error' });
   };
   // No-op upgrade handler for server.on('upgrade') safety
-  socketIoProxy.upgrade = () => {};
+  socketIoProxy.upgrade = () => { };
 }
 
 // Socket metrics passthrough (admin validated upstream)
@@ -637,12 +645,12 @@ app.use('/api/reviews',
       target: services.review,
       changeOrigin: true,
       pathRewrite: { '^/api/reviews': '/api/reviews' },
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('X-User-ID', req.user.id);
-        proxyReq.setHeader('X-User-Role', req.user.role);
-      }
-    },
+      onProxyReq: (proxyReq, req) => {
+        if (req.user) {
+          proxyReq.setHeader('X-User-ID', req.user.id);
+          proxyReq.setHeader('X-User-Role', req.user.role);
+        }
+      },
       onError: (err, req, res) => {
         logger.error('Review service error:', err);
         res.status(503).json({ error: 'Review service unavailable' });
@@ -711,7 +719,7 @@ app.get('/api/docs', (req, res) => {
     description: 'Centralized API Gateway for Kelmah Platform',
     version: '2.0.0',
     timestamp: new Date().toISOString(),
-    
+
     // Essential endpoints
     system: {
       health: {
@@ -727,7 +735,7 @@ app.get('/api/docs', (req, res) => {
         authentication: 'None'
       }
     },
-    
+
     // Main API endpoints
     endpoints: {
       auth: {
@@ -738,7 +746,7 @@ app.get('/api/docs', (req, res) => {
         examples: ['/api/auth/login', '/api/auth/register', '/api/auth/verify']
       },
       users: {
-        path: '/api/users/*', 
+        path: '/api/users/*',
         description: 'User management',
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
         authentication: 'Required',
@@ -755,7 +763,7 @@ app.get('/api/docs', (req, res) => {
         path: '/api/jobs/*',
         description: 'Job postings & applications',
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        authentication: 'GET: None, Others: Required', 
+        authentication: 'GET: None, Others: Required',
         examples: ['/api/jobs', '/api/jobs/{id}/apply']
       },
       search: {
@@ -794,12 +802,12 @@ app.get('/api/docs', (req, res) => {
       configured: Object.keys(services),
       urls: services
     },
-    
+
     // Platform features
     features: [
       'Microservices Architecture',
       'Authentication & Authorization',
-      'User & Worker Management', 
+      'User & Worker Management',
       'Job Posting & Applications',
       'Payment Processing & Escrow',
       'Real-time Messaging & WebSocket',
@@ -812,18 +820,18 @@ app.get('/api/docs', (req, res) => {
       'Request/Response Logging',
       'Error Handling & Monitoring'
     ],
-    
+
     // Usage information
     usage: {
       cors: 'Configured for Vercel deployments and localhost',
       rateLimit: '1000 requests per 15 minutes (global)',
       headers: {
-        'X-Request-ID': 'Unique request identifier', 
+        'X-Request-ID': 'Unique request identifier',
         'X-User-ID': 'User ID (for authenticated requests)',
         'X-User-Role': 'User role (for authorized requests)'
       }
     },
-    
+
     contact: {
       platform: 'Kelmah - Professional Services Marketplace',
       support: 'For API support, contact the development team'
@@ -862,7 +870,7 @@ if (socketIoProxy && typeof socketIoProxy.upgrade === 'function') {
       // For non-socket.io upgrades, do nothing (let other handlers manage or close)
     } catch (e) {
       console.error('Socket.IO upgrade handling error:', e?.message || e);
-      try { socket.destroy(); } catch (_) {}
+      try { socket.destroy(); } catch (_) { }
     }
   });
 } else {

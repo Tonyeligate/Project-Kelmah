@@ -14,7 +14,7 @@ const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 // Health check endpoints - Standardize to /api/health for consistency
 const HEALTH_ENDPOINTS = {
   [SERVICES.AUTH_SERVICE]: '/api/health',
-  [SERVICES.USER_SERVICE]: '/api/health', 
+  [SERVICES.USER_SERVICE]: '/api/health',
   [SERVICES.JOB_SERVICE]: '/api/health',
   [SERVICES.MESSAGING_SERVICE]: '/api/health',
   [SERVICES.PAYMENT_SERVICE]: '/api/health',
@@ -25,9 +25,9 @@ const HEALTH_ENDPOINTS = {
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
   const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/api/health'; // Default to /api/health
-  
+
   let base;
-  
+
   // Special handling for aggregate health check - should go to API Gateway
   const isAggregateCheck = serviceUrl === 'aggregate';
   if (isAggregateCheck) {
@@ -112,16 +112,22 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
  */
 export const warmUpService = async (serviceUrl) => {
   console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
-  
+
   try {
-    // Warm up via gateway health to avoid mixed content and ensure path exists
-    const response = await fetch('/api/health', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    // Import axios dynamically to avoid circular dependency
+    const { default: axios } = await import('../modules/common/services/axios.js');
+
+    // Warm up via axios with proper base URL configuration
+    const response = await axios.get('/api/health', {
+      timeout: 5000,
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      },
     });
-    
+
     console.log(`🔥 Service warmed up - ${serviceUrl || 'gateway'}: ${response.status}`);
-    return response.ok;
+    return response.status === 200;
   } catch (error) {
     console.warn(`🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`, error.message);
     return false;
@@ -176,7 +182,7 @@ export const getServiceHealth = (serviceUrl) => {
 export const isServiceRecentlyHealthy = (serviceUrl, maxAgeMs = HEALTH_CHECK_INTERVAL) => {
   const health = getServiceHealth(serviceUrl);
   if (!health) return false;
-  
+
   const age = Date.now() - health.lastChecked;
   return health.isHealthy && age < maxAgeMs;
 };
@@ -186,7 +192,7 @@ export const isServiceRecentlyHealthy = (serviceUrl, maxAgeMs = HEALTH_CHECK_INT
  */
 export const getServiceStatusMessage = (serviceUrl) => {
   const health = getServiceHealth(serviceUrl);
-  
+
   if (!health) {
     return {
       status: 'unknown',
@@ -194,7 +200,7 @@ export const getServiceStatusMessage = (serviceUrl) => {
       action: 'Checking service availability...',
     };
   }
-  
+
   if (health.isHealthy) {
     return {
       status: 'healthy',
@@ -202,7 +208,7 @@ export const getServiceStatusMessage = (serviceUrl) => {
       action: 'Loading data...',
     };
   }
-  
+
   if (health.error?.includes('timeout')) {
     return {
       status: 'cold',
@@ -210,9 +216,9 @@ export const getServiceStatusMessage = (serviceUrl) => {
       action: 'Please wait 30-60 seconds while the service wakes up...',
     };
   }
-  
+
   return {
-    status: 'error', 
+    status: 'error',
     message: 'Service is currently unavailable',
     action: 'Using cached data. Please try again in a few minutes.',
   };
@@ -223,10 +229,10 @@ export const getServiceStatusMessage = (serviceUrl) => {
  */
 export const initializeServiceHealth = () => {
   console.log('🏥 Initializing service health monitoring...');
-  
+
   // Warm up services immediately
   warmUpAllServices();
-  
+
   // Set up periodic health checks
   setInterval(() => {
     console.log('🏥 Running periodic service health checks...');
@@ -234,7 +240,7 @@ export const initializeServiceHealth = () => {
       checkServiceHealth(service);
     });
   }, HEALTH_CHECK_INTERVAL);
-  
+
   // Warm up services on page focus (user returns)
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -250,13 +256,13 @@ export const initializeServiceHealth = () => {
 export const handleServiceError = (error, serviceUrl) => {
   const health = getServiceHealth(serviceUrl);
   const statusMsg = getServiceStatusMessage(serviceUrl);
-  
+
   console.error(`🚨 Service Error - ${serviceUrl}:`, {
     error: error.message,
     health,
     statusMessage: statusMsg,
   });
-  
+
   // If it's a timeout error and service might be cold starting, provide helpful context
   if (error.message?.includes('timeout') && statusMsg.status === 'cold') {
     return {
@@ -266,7 +272,7 @@ export const handleServiceError = (error, serviceUrl) => {
       isRecoverable: true,
     };
   }
-  
+
   return {
     ...error,
     userMessage: statusMsg.message,
