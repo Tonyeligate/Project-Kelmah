@@ -102,7 +102,9 @@ router.use('/notifications', monolithRoutes);
 router.use('/profile', monolithRoutes);
 router.use('/search', monolithRoutes);
 router.use('/settings', monolithRoutes);
-router.use('/api/dashboard', monolithRoutes);
+
+// Dashboard routes - redirect to user service instead of monolith
+router.use('/api/dashboard', userRoutes);
 
 // Catch-all for undefined routes
 router.use('*', (req, res) => {
