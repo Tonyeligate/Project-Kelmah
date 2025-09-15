@@ -38,7 +38,7 @@ const logger = createLogger('user-service');
 // Setup global error handlers
 setupGlobalErrorHandlers(logger);
 
-logger.info('user-service starting...', { 
+logger.info('user-service starting...', {
   nodeVersion: process.version,
   environment: process.env.NODE_ENV || 'development'
 });
@@ -64,8 +64,8 @@ if (process.env.ENABLE_WORKER_SQL === 'true') {
 
 const app = express();
 // Optional tracing
-try { require('./utils/tracing').initTracing('user-service'); } catch {}
-try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('user-service'); monitoring.initTracing('user-service'); } catch {}
+try { require('./utils/tracing').initTracing('user-service'); } catch { }
+try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('user-service'); monitoring.initTracing('user-service'); } catch { }
 
 // Middleware
 
@@ -91,14 +91,14 @@ const corsOptions = {
       process.env.FRONTEND_URL,
       ...envAllow,
     ].filter(Boolean);
-    
+
     const vercelPatterns = [
       /^https:\/\/.*\.vercel\.app$/,
       /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
       /^https:\/\/project-kelmah.*\.vercel\.app$/,
       /^https:\/\/kelmah-frontend.*\.vercel\.app$/
     ];
-    
+
     if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
     if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
       return callback(null, true);
@@ -134,6 +134,12 @@ try {
 // API routes
 app.use("/api/users", userRoutes);
 app.use("/api/availability", availabilityRoutes);
+
+// Dashboard routes (direct mounting for compatibility)
+const { getDashboardMetrics, getDashboardWorkers, getDashboardAnalytics } = require('./controllers/user.controller');
+app.get("/dashboard/metrics", getDashboardMetrics);
+app.get("/dashboard/workers", getDashboardWorkers);
+app.get("/dashboard/analytics", getDashboardAnalytics);
 
 // Debug middleware to log all incoming requests
 app.use((req, res, next) => {
@@ -200,7 +206,7 @@ app.get('/api/appointments', (req, res) => {
       notes: 'Initial consultation for bathroom renovation',
     },
   ];
-  
+
   res.json({
     success: true,
     data: appointments,
@@ -249,15 +255,15 @@ app.get("/", (req, res) => {
   const actualService = 'user-service';
   const expectedAtThisURL = process.env.SERVICE_NAME || 'unknown';
   const isCorrectDeployment = actualService === expectedAtThisURL;
-  
+
   res.status(200).json({
     name: "User Service API",
-    version: "1.0.0", 
+    version: "1.0.0",
     description: "User management service for the Kelmah platform",
     health: "/health",
     endpoints: [
       "/api/users",
-      "/api/profile", 
+      "/api/profile",
       "/api/settings",
       "/api/jobs/contracts" // TEMP FIX for deployment mixup
     ],
@@ -302,7 +308,7 @@ if (require.main === module) {
   connectDB()
     .then(() => {
       logger.info("✅ User Service connected to MongoDB");
-      
+
       // Error logging middleware (must be last)
       app.use(createErrorLogger(logger));
 

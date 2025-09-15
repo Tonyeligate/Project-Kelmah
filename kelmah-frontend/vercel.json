@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://c0e9d514fa18.ngrok-free.app/api/$1"
+      "destination": "https://kelmah-api.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://3b122d601003.ngrok-free.app/socket.io/$1"
+      "destination": "https://kelmah-ws.loca.lt/socket.io/$1"
     },
     {
       "source": "/(.*)",

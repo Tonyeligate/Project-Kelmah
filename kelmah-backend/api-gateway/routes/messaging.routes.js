@@ -92,6 +92,9 @@ router.get('/search', messagingProxy); // Search messages
 router.get('/notifications', messagingProxy); // Get message notifications
 router.put('/notifications/:notificationId/read', messagingProxy); // Mark notification as read
 
+// For /api/notifications route (direct notifications endpoint)
+router.get('/', messagingProxy); // Handle /api/notifications as root for this router
+
 // Real-time endpoints (handled by WebSocket in server.js)
 // These are just for REST fallbacks
 router.get('/online-users', messagingProxy); // Get online users

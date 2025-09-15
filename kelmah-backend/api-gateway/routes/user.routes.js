@@ -15,10 +15,7 @@ const getServiceUrl = (req) => req.app.get('serviceUrls').USER_SERVICE;
 const userProxy = (req, res, next) => {
   const proxy = createServiceProxy({
     target: getServiceUrl(req),
-    // Preserve full prefix so user-service receives /api/users/*
-    pathPrefix: '/api/users',
-    // Force preserving the ORIGINAL full URL (including /api/users)
-    pathRewrite: (path, request) => request.originalUrl,
+    // Don't preserve the /api/users prefix - let it be stripped
     requireAuth: true,
   });
   return proxy(req, res, next);

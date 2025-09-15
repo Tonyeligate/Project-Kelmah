@@ -25,13 +25,13 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Service status endpoint
-router.get('/status', async (req, res) => {
+// Aggregate health check endpoint
+router.get('/health/aggregate', async (req, res) => {
   const serviceUrls = req.app.get('serviceUrls');
   const axios = require('axios');
-  
+
   const serviceStatus = {};
-  
+
   for (const [serviceName, url] of Object.entries(serviceUrls)) {
     try {
       const response = await axios.get(`${url}/api/health`, { timeout: 5000 });
@@ -48,7 +48,38 @@ router.get('/status', async (req, res) => {
       };
     }
   }
-  
+
+  res.json({
+    gateway: 'healthy',
+    services: serviceStatus,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Service status endpoint
+router.get('/status', async (req, res) => {
+  const serviceUrls = req.app.get('serviceUrls');
+  const axios = require('axios');
+
+  const serviceStatus = {};
+
+  for (const [serviceName, url] of Object.entries(serviceUrls)) {
+    try {
+      const response = await axios.get(`${url}/api/health`, { timeout: 5000 });
+      serviceStatus[serviceName] = {
+        status: 'healthy',
+        url: url,
+        responseTime: response.headers['x-response-time'] || 'N/A'
+      };
+    } catch (error) {
+      serviceStatus[serviceName] = {
+        status: 'unhealthy',
+        url: url,
+        error: error.message
+      };
+    }
+  }
+
   res.json({
     gateway: 'healthy',
     services: serviceStatus,
@@ -62,6 +93,7 @@ router.use('/api/users', userRoutes);
 router.use('/api/jobs', jobRoutes);
 router.use('/api/messages', messagingRoutes);
 router.use('/api/conversations', messagingRoutes);
+router.use('/api/notifications', messagingRoutes); // Add notifications route
 router.use('/api/payments', paymentRoutes);
 router.use('/api/reviews', reviewRoutes);
 
