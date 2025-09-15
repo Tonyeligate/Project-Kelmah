@@ -12,28 +12,26 @@ async function testConnections() {
         console.log('❌ Local API Gateway: FAILED -', error.message);
     }
 
-    // Test 2: Ngrok tunnel
+    // Test 2: LocalTunnel tunnel
     try {
-        const ngrokResponse = await axios.get('https://c0e9d514fa18.ngrok-free.app/health', {
-            headers: { 'ngrok-skip-browser-warning': 'true' },
+        const tunnelResponse = await axios.get('https://kelmah-api.loca.lt/health', {
             timeout: 10000
         });
-        console.log('✅ Ngrok Tunnel: WORKING');
-        console.log('   Response:', ngrokResponse.data);
+        console.log('✅ LocalTunnel Tunnel: WORKING');
+        console.log('   Response:', tunnelResponse.data);
     } catch (error) {
-        console.log('❌ Ngrok Tunnel: FAILED -', error.message);
+        console.log('❌ LocalTunnel Tunnel: FAILED -', error.message);
         if (error.code) console.log('   Error Code:', error.code);
     }
 
-    // Test 3: Job service endpoint
+    // Test 3: Job service endpoint via LocalTunnel
     try {
-        const jobResponse = await axios.get('https://c0e9d514fa18.ngrok-free.app/api/jobs?limit=1', {
-            headers: { 'ngrok-skip-browser-warning': 'true' },
+        const jobResponse = await axios.get('https://kelmah-api.loca.lt/api/jobs?limit=1', {
             timeout: 10000
         });
-        console.log('✅ Job API through ngrok: WORKING');
+        console.log('✅ Job API through LocalTunnel: WORKING');
     } catch (error) {
-        console.log('❌ Job API through ngrok: FAILED -', error.message);
+        console.log('❌ Job API through LocalTunnel: FAILED -', error.message);
     }
 
     // Test 4: Local job service direct
