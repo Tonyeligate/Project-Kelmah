@@ -218,8 +218,8 @@ const healthResponse = (req, res) => {
 app.get('/health', healthResponse);
 app.get('/api/health', healthResponse);
 
-// Aggregated health (services + providers)
-app.get('/api/health/aggregate', async (req, res) => {
+// Aggregated health (services + providers) - Both /health/aggregate and /api/health/aggregate
+const aggregatedHealthHandler = async (req, res) => {
   try {
     const axios = require('axios');
     const token = req.headers.authorization;
@@ -266,7 +266,11 @@ app.get('/api/health/aggregate', async (req, res) => {
   } catch (e) {
     res.status(500).json({ success: false, error: e?.message });
   }
-});
+};
+
+// Mount aggregated health on both paths to support frontend expectations
+app.get('/health/aggregate', aggregatedHealthHandler);
+app.get('/api/health/aggregate', aggregatedHealthHandler);
 
 // Authentication routes (public) — use dedicated router to support aliases like /refresh-token
 const authRouter = require('./routes/auth.routes');
