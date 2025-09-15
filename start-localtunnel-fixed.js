@@ -72,20 +72,20 @@ class LocalTunnelManager {
     createTunnel(port, subdomain) {
         return new Promise((resolve, reject) => {
             console.log(`🚀 Starting tunnel for port ${port}...`);
-            
+
             // Try with specific subdomain first using npx
-            const process = spawn('npx', ['localtunnel', '--port', port.toString(), '--subdomain', subdomain], { 
+            const process = spawn('npx', ['localtunnel', '--port', port.toString(), '--subdomain', subdomain], {
                 stdio: ['pipe', 'pipe', 'pipe'],
-                shell: true 
+                shell: true
             });
-            
+
             let output = '';
             let resolved = false;
 
             process.stdout.on('data', (data) => {
                 output += data.toString();
                 const urlMatch = output.match(/your url is: (https:\/\/[^\s]+)/);
-                
+
                 if (urlMatch && !resolved) {
                     resolved = true;
                     this.tunnels.push(process);
@@ -122,19 +122,19 @@ class LocalTunnelManager {
     createTunnelRandomSubdomain(port) {
         return new Promise((resolve, reject) => {
             console.log(`🔄 Trying random subdomain for port ${port}...`);
-            
-            const process = spawn('npx', ['localtunnel', '--port', port.toString()], { 
+
+            const process = spawn('npx', ['localtunnel', '--port', port.toString()], {
                 stdio: ['pipe', 'pipe', 'pipe'],
                 shell: true
             });
-            
+
             let output = '';
             let resolved = false;
 
             process.stdout.on('data', (data) => {
                 output += data.toString();
                 const urlMatch = output.match(/your url is: (https:\/\/[^\s]+)/);
-                
+
                 if (urlMatch && !resolved) {
                     resolved = true;
                     this.tunnels.push(process);
@@ -160,7 +160,7 @@ class LocalTunnelManager {
                 }
             }, 15000);
         });
-    }    async updateConfigFiles(config) {
+    } async updateConfigFiles(config) {
         try {
             // Update vercel.json exactly like ngrok script
             const vercelPath = path.join(__dirname, 'vercel.json');
