@@ -209,11 +209,15 @@ class LocalTunnelManager {
             }
 
             const runtimeConfig = {
-                API_URL: config.apiDomain,
-                WS_URL: config.wsDomain,
+                ngrokUrl: config.apiDomain,              // Frontend looks for 'ngrokUrl'
+                websocketUrl: config.wsDomain.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:'),  // Convert to WebSocket URL
+                API_URL: config.apiDomain,               // Backup field
+                WS_URL: config.wsDomain,                 // Backup field
                 NODE_ENV: 'production',
                 TUNNEL_TYPE: 'localtunnel',
-                timestamp: config.timestamp
+                isDevelopment: true,                     // Mark as development to enable tunnel usage
+                timestamp: config.timestamp,
+                version: '1.0.0'
             };
 
             fs.writeFileSync(runtimeConfigPath, JSON.stringify(runtimeConfig, null, 2));
