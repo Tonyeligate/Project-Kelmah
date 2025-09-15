@@ -7,8 +7,8 @@ const { authenticate, validateAvailabilityPayload } = require('../middlewares/au
 const createLimiter = (options) => (req, res, next) => next(); // Simplified for containerized deployment
 
 // Import controllers for user operations
-const { 
-  getAllUsers, 
+const {
+  getAllUsers,
   createUser,
   getDashboardMetrics,
   getDashboardWorkers,
@@ -29,6 +29,13 @@ router.post("/", createLimiter('admin'), createUser);
 router.get("/dashboard/metrics", getDashboardMetrics);
 router.get("/dashboard/workers", getDashboardWorkers);
 router.get("/dashboard/analytics", getDashboardAnalytics);
+
+// Worker-specific routes that need to be under /api/users path
+router.get("/workers/:id/availability", WorkerController.getWorkerAvailability);
+router.get("/workers/:id/completeness", WorkerController.getProfileCompletion);
+
+// Recent jobs route for workers
+router.get("/workers/jobs/recent", WorkerController.getRecentJobs);
 
 // User profile routes
 router.get("/me/availability", getUserAvailability);

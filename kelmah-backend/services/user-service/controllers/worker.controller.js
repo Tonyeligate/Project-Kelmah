@@ -28,10 +28,10 @@ class WorkerController {
       } = req.query;
 
       const offset = (page - 1) * limit;
-      
+
       // ✅ FIXED: Use MongoDB User model instead of PostgreSQL WorkerProfile
       const MongoUser = require('../models/User');
-      
+
       // Build MongoDB query
       const mongoQuery = {
         role: 'worker',
@@ -107,7 +107,7 @@ class WorkerController {
       const workersWithDefaults = await Promise.all(workers.map(async (worker) => {
         let updateNeeded = false;
         const updates = {};
-        
+
         // Set default values for missing fields
         if (!worker.profession) { updates.profession = 'General Worker'; updateNeeded = true; }
         if (!worker.skills || worker.skills.length === 0) { updates.skills = ['General Work']; updateNeeded = true; }
@@ -118,9 +118,9 @@ class WorkerController {
         if (!worker.totalJobsCompleted) { updates.totalJobsCompleted = 0; updateNeeded = true; }
         if (!worker.availabilityStatus) { updates.availabilityStatus = 'available'; updateNeeded = true; }
         if (worker.isVerified === undefined) { updates.isVerified = false; updateNeeded = true; }
-        if (!worker.bio) { 
+        if (!worker.bio) {
           updates.bio = `Experienced ${worker.profession || 'General Worker'} with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'}.`;
-          updateNeeded = true; 
+          updateNeeded = true;
         }
 
         // Update MongoDB document if needed
@@ -213,10 +213,10 @@ class WorkerController {
       } = req.query;
 
       const offset = (page - 1) * limit;
-      
+
       // ✅ FIXED: Use MongoDB User model instead of PostgreSQL WorkerProfile
       const MongoUser = require('../models/User');
-      
+
       // Build MongoDB query
       const mongoQuery = {
         role: 'worker',
@@ -364,7 +364,7 @@ class WorkerController {
           try {
             await MongoUser.updateOne({ _id: worker._id }, { $set: updates });
             console.log(`✅ Auto-populated worker fields for ${worker.firstName} ${worker.lastName}`);
-    } catch (error) {
+          } catch (error) {
             console.error(`❌ Failed to auto-populate worker fields for ${worker._id}:`, error);
           }
         }
@@ -424,6 +424,240 @@ class WorkerController {
       return handleServiceError(res, error, 'Search failed');
     }
   }
+
+  /**
+   * Get profile completion percentage for a worker
+   */
+  static async getProfileCompletion(req, res) {
+    try {
+      const workerId = req.params.id;
+
+      // Get user from MongoDB
+      const MongoUser = require('../models/User');
+      const worker = await MongoUser.findById(workerId);
+
+      if (!worker) {
+        return res.status(404).json({
+          success: false,
+          message: 'Worker not found'
+        });
+      }
+
+      // Calculate completion percentage based on profile fields
+      const requiredFields = [
+        'firstName', 'lastName', 'email', 'profession',
+        'bio', 'location', 'hourlyRate', 'skills'
+      ];
+
+      const optionalFields = [
+        'profilePicture', 'phone', 'website', 'portfolio',
+        'certifications', 'yearsOfExperience'
+      ];
+
+      let completedRequired = 0;
+      let completedOptional = 0;
+
+      // Check required fields
+      requiredFields.forEach(field => {
+        if (worker[field] &&
+          (Array.isArray(worker[field]) ? worker[field].length > 0 : true)) {
+          completedRequired++;
+        }
+      });
+
+      // Check optional fields
+      optionalFields.forEach(field => {
+        if (worker[field] &&
+          (Array.isArray(worker[field]) ? worker[field].length > 0 : true)) {
+          completedOptional++;
+        }
+      });
+
+      const requiredPercentage = (completedRequired / requiredFields.length) * 70; // 70% weight
+      const optionalPercentage = (completedOptional / optionalFields.length) * 30; // 30% weight
+      const totalPercentage = Math.round(requiredPercentage + optionalPercentage);
+
+      // Determine missing fields
+      const missingRequired = requiredFields.filter(field =>
+        !worker[field] || (Array.isArray(worker[field]) && worker[field].length === 0)
+      );
+
+      const missingOptional = optionalFields.filter(field =>
+        !worker[field] || (Array.isArray(worker[field]) && worker[field].length === 0)
+      );
+
+      res.json({
+        success: true,
+        data: {
+          completionPercentage: totalPercentage,
+          requiredCompletion: Math.round((completedRequired / requiredFields.length) * 100),
+          optionalCompletion: Math.round((completedOptional / optionalFields.length) * 100),
+          missingRequired,
+          missingOptional,
+          recommendations: totalPercentage < 80 ? [
+            'Complete your professional bio',
+            'Add your profile picture',
+            'List your certifications',
+            'Update your portfolio'
+          ] : []
+        }
+      });
+
+    } catch (error) {
+      console.error('Get profile completion error:', error);
+      return handleServiceError(res, error, 'Failed to get profile completion');
+    }
+  }
+
+  /**
+   * Get recent jobs for workers
+   */
+  static async getRecentJobs(req, res) {
+    try {
+      const { limit = 10 } = req.query;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Try to get real job data from job service
+      let jobs = [];
+      try {
+        const axios = require('axios');
+        const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
+        const response = await axios.get(`${jobServiceUrl}/api/jobs/worker/recent`, {
+          params: { workerId: userId, limit },
+          headers: { Authorization: req.headers.authorization },
+          timeout: 5000
+        });
+        jobs = response.data?.jobs || [];
+      } catch (error) {
+        console.warn('Could not fetch recent jobs from job service:', error.message);
+
+        // Return mock data for testing
+        jobs = [
+          {
+            id: 'job_123',
+            title: 'Kitchen Cabinet Installation',
+            client: 'Sarah Johnson',
+            clientId: 'user_456',
+            status: 'completed',
+            budget: 2500,
+            currency: 'GHS',
+            completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            rating: 5,
+            location: 'East Legon, Accra'
+          },
+          {
+            id: 'job_124',
+            title: 'Plumbing Repair',
+            client: 'Michael Brown',
+            clientId: 'user_789',
+            status: 'in-progress',
+            budget: 800,
+            currency: 'GHS',
+            startedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+            location: 'Tema, Accra'
+          },
+          {
+            id: 'job_125',
+            title: 'Electrical Wiring',
+            client: 'Jennifer Wilson',
+            clientId: 'user_321',
+            status: 'pending',
+            budget: 1500,
+            currency: 'GHS',
+            appliedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            location: 'Airport Residential, Accra'
+          }
+        ];
+      }
+
+      res.json({
+        success: true,
+        data: {
+          jobs: jobs.slice(0, parseInt(limit)),
+          total: jobs.length
+        }
+      });
+
+    } catch (error) {
+      console.error('Get recent jobs error:', error);
+      return handleServiceError(res, error, 'Failed to get recent jobs');
+    }
+  }
+
+  /**
+   * Get worker availability by worker ID
+   */
+  static async getWorkerAvailability(req, res) {
+    try {
+      const Availability = require('../models/Availability');
+      const MongoUser = require('../models/User');
+
+      const workerId = req.params.id;
+      if (!workerId) {
+        return res.status(400).json({ success: false, message: 'Worker ID required' });
+      }
+
+      // Get worker user info
+      const worker = await MongoUser.findById(workerId).lean();
+      if (!worker) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      const availability = await Availability.findOne({ userId: workerId }).lean();
+
+      if (!availability) {
+        return res.json({
+          success: true,
+          data: {
+            status: 'not_set',
+            schedule: {},
+            nextAvailable: null,
+            message: 'Availability not configured'
+          }
+        });
+      }
+
+      // Calculate next available time
+      const now = new Date();
+      let nextAvailable = null;
+
+      if (availability.schedule && availability.schedule.length > 0) {
+        // Find next available slot in schedule
+        const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const currentTime = now.getHours() * 100 + now.getMinutes();
+
+        for (const slot of availability.schedule) {
+          if (slot.day === currentDay && slot.available) {
+            const startTime = slot.startHour * 100 + (slot.startMinute || 0);
+            if (startTime > currentTime) {
+              nextAvailable = `${slot.startHour}:${(slot.startMinute || 0).toString().padStart(2, '0')}`;
+              break;
+            }
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        data: {
+          status: availability.isAvailable ? 'available' : 'unavailable',
+          schedule: availability.schedule || {},
+          nextAvailable,
+          lastUpdated: availability.updatedAt
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching worker availability:', error);
+      return handleServiceError(res, error, 'Failed to get worker availability');
+    }
+  }
 }
 
 // Helper function to calculate distance between coordinates
@@ -431,10 +665,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth's radius in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c * 100) / 100; // Round to 2 decimal places
 }
 

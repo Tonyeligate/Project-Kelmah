@@ -10,7 +10,23 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://4a65b7df9cc5.ngrok-free.app/api/$1" },
-    { "source": "/socket.io/(.*)", "destination": "https://09102012e1ed.ngrok-free.app/socket.io/$1" }
-  ]
+    {
+      "source": "/api/(.*)",
+      "destination": "https://298fb9b8181e.ngrok-free.app/api/$1"
+    },
+    {
+      "source": "/socket.io/(.*)",
+      "destination": "https://e74c110076f4.ngrok-free.app/socket.io/$1"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://kelmah-api.loca.lt",
+    "VITE_WS_URL": "https://kelmah-ws.loca.lt"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://kelmah-api.loca.lt",
+      "VITE_WS_URL": "https://kelmah-ws.loca.lt"
+    }
+  }
 }

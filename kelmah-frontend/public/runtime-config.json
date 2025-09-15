@@ -1,7 +1,7 @@
 {
-  "ngrokUrl": "https://c0e9d514fa18.ngrok-free.app",
-  "websocketUrl": "wss://3b122d601003.ngrok-free.app",
-  "timestamp": "2025-09-15T20:10:56.046Z",
-  "version": "1.0.0",
-  "isDevelopment": true
+  "API_URL": "https://kelmah-api.loca.lt",
+  "WS_URL": "https://kelmah-ws.loca.lt",
+  "NODE_ENV": "production",
+  "TUNNEL_TYPE": "localtunnel",
+  "timestamp": "2025-09-15T20:53:36.141Z"
 }
