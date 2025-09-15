@@ -160,12 +160,14 @@ class LocalTunnelManager {
                 }
             }, 15000);
         });
-    } async updateConfigFiles(config) {
+    }
+
+    async updateConfigFiles(config) {
         try {
-            // Update vercel.json exactly like ngrok script
-            const vercelPath = path.join(__dirname, 'vercel.json');
-            if (fs.existsSync(vercelPath)) {
-                let vercelConfig = JSON.parse(fs.readFileSync(vercelPath, 'utf8'));
+            // Update root vercel.json (main project config)
+            const rootVercelPath = path.join(__dirname, 'vercel.json');
+            if (fs.existsSync(rootVercelPath)) {
+                let vercelConfig = JSON.parse(fs.readFileSync(rootVercelPath, 'utf8'));
 
                 // Update environment variables
                 if (!vercelConfig.env) vercelConfig.env = {};
@@ -178,8 +180,55 @@ class LocalTunnelManager {
                 vercelConfig.build.env.VITE_API_URL = config.apiDomain;
                 vercelConfig.build.env.VITE_WS_URL = config.wsDomain;
 
-                fs.writeFileSync(vercelPath, JSON.stringify(vercelConfig, null, 2));
-                console.log('✅ Updated vercel.json');
+                // Update rewrites section
+                if (vercelConfig.rewrites && Array.isArray(vercelConfig.rewrites)) {
+                    vercelConfig.rewrites = vercelConfig.rewrites.map(rewrite => {
+                        if (rewrite.source === "/api/(.*)") {
+                            return {
+                                ...rewrite,
+                                destination: `${config.apiDomain}/api/$1`
+                            };
+                        }
+                        if (rewrite.source === "/socket.io/(.*)") {
+                            return {
+                                ...rewrite,
+                                destination: `${config.wsDomain}/socket.io/$1`
+                            };
+                        }
+                        return rewrite;
+                    });
+                }
+
+                fs.writeFileSync(rootVercelPath, JSON.stringify(vercelConfig, null, 2));
+                console.log('✅ Updated root vercel.json');
+            }
+
+            // Update frontend vercel.json (specific to frontend deployment)
+            const frontendVercelPath = path.join(__dirname, 'kelmah-frontend', 'vercel.json');
+            if (fs.existsSync(frontendVercelPath)) {
+                let frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
+
+                // Update rewrites section
+                if (frontendVercelConfig.rewrites && Array.isArray(frontendVercelConfig.rewrites)) {
+                    frontendVercelConfig.rewrites = frontendVercelConfig.rewrites.map(rewrite => {
+                        if (rewrite.source === "/api/(.*)") {
+                            return {
+                                ...rewrite,
+                                destination: `${config.apiDomain}/api/$1`
+                            };
+                        }
+                        if (rewrite.source === "/socket.io/(.*)") {
+                            return {
+                                ...rewrite,
+                                destination: `${config.wsDomain}/socket.io/$1`
+                            };
+                        }
+                        return rewrite;
+                    });
+                }
+
+                fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
+                console.log('✅ Updated frontend vercel.json');
             }
 
             // Update securityConfig.js exactly like ngrok script
@@ -230,7 +279,7 @@ class LocalTunnelManager {
 
     async commitAndPush() {
         return new Promise((resolve) => {
-            exec('git add . && git commit -m "Update LocalTunnel URLs" && git push origin main',
+            exec('git add . && git commit -m "Update LocalTunnel URLs and Vercel configs" && git push origin main',
                 { cwd: __dirname },
                 (error, stdout, stderr) => {
                     if (error) {
