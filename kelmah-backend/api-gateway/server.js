@@ -570,6 +570,9 @@ try {
   socketIoProxy.upgrade = () => { };
 }
 
+// Mount the Socket.IO proxy
+app.use('/socket.io', socketIoProxy);
+
 // Socket metrics passthrough (admin validated upstream)
 app.use('/api/socket/metrics',
   authMiddleware.authenticate,

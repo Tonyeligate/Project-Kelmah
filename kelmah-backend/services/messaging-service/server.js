@@ -29,8 +29,8 @@ const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 
 const app = express();
 // Optional tracing
-try { require('./utils/tracing').initTracing('messaging-service'); } catch {}
-try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('messaging-service'); monitoring.initTracing('messaging-service'); } catch {}
+try { require('./utils/tracing').initTracing('messaging-service'); } catch { }
+try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('messaging-service'); monitoring.initTracing('messaging-service'); } catch { }
 const server = http.createServer(app);
 
 // ✅ ADDED: Trust proxy for production deployment (Render, Heroku, etc.)
@@ -73,7 +73,7 @@ try {
     console.error('Messaging Service missing JWT_SECRET. Exiting.');
     process.exit(1);
   }
-} catch {}
+} catch { }
 
 const PORT = process.env.PORT || process.env.MESSAGING_SERVICE_PORT || 5005;
 
@@ -81,7 +81,7 @@ const PORT = process.env.PORT || process.env.MESSAGING_SERVICE_PORT || 5005;
 const connectDB = async () => {
   try {
     const mongoUri = process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/kelmah-messaging';
-    
+
     const conn = await mongoose.connect(mongoUri, {
       bufferCommands: false,
       // Fix: Enhanced MongoDB connection settings to prevent buffering timeouts
@@ -101,16 +101,16 @@ const connectDB = async () => {
     });
 
     console.info('MongoDB connected', { host: conn.connection.host, name: conn.connection.name, state: conn.connection.readyState });
-    
+
     return conn;
   } catch (error) {
     console.error('MongoDB connection failed', { message: error.message, mongoUriSet: !!process.env.DATABASE_URL, nodeEnv: process.env.NODE_ENV, service: 'messaging-service' });
-    
+
     // In production, exit on connection failure
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
     }
-    
+
     throw error;
   }
 };
@@ -182,8 +182,8 @@ try {
   app.use(createLimiter('default'));
 } catch (_) {
   const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 1000,
+    windowMs: 1 * 60 * 1000, // 1 minute window (was 15 minutes)
+    max: 100, // 100 requests per minute per IP (reasonable for messaging)
     message: { success: false, message: 'Too many requests from this IP, please try again later.', code: 'RATE_LIMIT_EXCEEDED' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -262,13 +262,13 @@ app.use('/api/notifications', authMiddleware, notificationRoutes);
 try {
   const attachmentsRoutes = require('./routes/attachments.routes');
   app.use('/', attachmentsRoutes);
-} catch (_) {}
+} catch (_) { }
 
 // Socket.IO status endpoint
 app.get('/api/socket/status', authMiddleware, (req, res) => {
   const userId = req.user.id;
   const userStatus = messageSocketHandler.getUserStatus(userId);
-  
+
   res.json({
     success: true,
     data: {
@@ -284,7 +284,7 @@ app.get('/api/socket/status', authMiddleware, (req, res) => {
 app.post('/api/socket/send-to-user', authMiddleware, (req, res) => {
   try {
     const { userId, event, data } = req.body;
-    
+
     if (!userId || !event || !data) {
       return res.status(400).json({
         success: false,
@@ -293,7 +293,7 @@ app.post('/api/socket/send-to-user', authMiddleware, (req, res) => {
     }
 
     const sent = messageSocketHandler.sendToUser(userId, event, data);
-    
+
     res.json({
       success: true,
       message: sent ? 'Message sent successfully' : 'User is offline',
@@ -321,7 +321,7 @@ app.post('/api/socket/broadcast', authMiddleware, (req, res) => {
     }
 
     const { event, data } = req.body;
-    
+
     if (!event || !data) {
       return res.status(400).json({
         success: false,
@@ -330,11 +330,11 @@ app.post('/api/socket/broadcast', authMiddleware, (req, res) => {
     }
 
     messageSocketHandler.broadcast(event, data);
-    
+
     res.json({
       success: true,
       message: 'Broadcast sent successfully',
-      data: { 
+      data: {
         recipients: messageSocketHandler.getOnlineUsersCount(),
         event,
         timestamp: new Date().toISOString()
@@ -430,12 +430,12 @@ io.engine.on('connection_error', (err) => {
 // Graceful shutdown handling
 const gracefulShutdown = (signal) => {
   console.log(`Received ${signal}. Starting graceful shutdown...`);
-  
+
   // Close Socket.IO server
   io.close(() => {
     console.log('Socket.IO server closed');
   });
-  
+
   // Close HTTP server
   server.close(() => {
     console.log('HTTP server closed');
@@ -469,7 +469,7 @@ const startServer = async () => {
     // Connect to MongoDB first
     await connectDB();
     console.log('📦 MongoDB connection established');
-    
+
     // Start the server after successful DB connection
     server.listen(PORT, () => {
       console.log(`🚀 Messaging Service running on port ${PORT}`);
@@ -480,10 +480,10 @@ const startServer = async () => {
       console.log(`🔗 CORS origins: ${process.env.ALLOWED_ORIGINS || 'localhost:5173, localhost:3000'}`);
       console.log(`✅ Messaging Service fully initialized and ready!`);
     });
-    
+
   } catch (error) {
     console.error('💥 Failed to start Messaging Service:', error);
-    
+
     if (process.env.NODE_ENV === 'production') {
       console.error('🚨 Exiting due to startup failure in production');
       process.exit(1);

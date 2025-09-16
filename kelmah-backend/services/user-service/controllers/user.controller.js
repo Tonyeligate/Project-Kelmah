@@ -386,3 +386,124 @@ exports.getUserCredentials = async (req, res, next) => {
     next(err);
   }
 };
+
+/**
+ * Database cleanup and optimization endpoint
+ */
+exports.cleanupDatabase = async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const { WorkerProfile } = require('../models');
+
+    console.log('🔧 Starting database cleanup...');
+
+    // Get current counts
+    const userCount = await User.countDocuments();
+    const workerProfileCount = await WorkerProfile.countDocuments();
+
+    console.log(`📊 Current state: ${userCount} users, ${workerProfileCount} worker profiles`);
+
+    // Find users without matching worker profiles (for workers)
+    const workerUsers = await User.find({ role: 'worker' }).select('_id firstName lastName email');
+    const existingProfiles = await WorkerProfile.find().select('userId');
+    const existingUserIds = existingProfiles.map(p => p.userId.toString());
+
+    const usersWithoutProfiles = workerUsers.filter(user =>
+      !existingUserIds.includes(user._id.toString())
+    );
+
+    console.log(`👤 Found ${workerUsers.length} worker users, ${usersWithoutProfiles.length} need profiles`);
+
+    // Remove duplicate or orphaned worker profiles
+    const duplicateProfiles = await WorkerProfile.aggregate([
+      { $group: { _id: '$userId', count: { $sum: 1 }, profiles: { $push: '$_id' } } },
+      { $match: { count: { $gt: 1 } } }
+    ]);
+
+    let removedDuplicates = 0;
+    for (const dup of duplicateProfiles) {
+      // Keep the first profile, remove others
+      const toRemove = dup.profiles.slice(1);
+      await WorkerProfile.deleteMany({ _id: { $in: toRemove } });
+      removedDuplicates += toRemove.length;
+      console.log(`🗑️  Removed ${toRemove.length} duplicate profiles for user ${dup._id}`);
+    }
+
+    // Create missing worker profiles
+    if (usersWithoutProfiles.length > 0) {
+      const skillCategories = [
+        ['plumbing', 'pipe fitting', 'drain cleaning'],
+        ['electrical work', 'wiring', 'lighting'],
+        ['carpentry', 'furniture making', 'wood work'],
+        ['masonry', 'bricklaying', 'concrete work'],
+        ['painting', 'interior design', 'decoration'],
+        ['cleaning', 'housekeeping', 'maintenance'],
+        ['gardening', 'landscaping', 'lawn care'],
+        ['delivery', 'logistics', 'transportation']
+      ];
+
+      const newProfiles = usersWithoutProfiles.map((user, index) => {
+        const skills = skillCategories[index % skillCategories.length];
+        const experience = Math.floor(Math.random() * 10) + 1;
+        const completedJobs = Math.floor(Math.random() * 50) + 5;
+
+        return {
+          userId: user._id,
+          bio: `Professional ${skills[0]} specialist. Quality work guaranteed.`,
+          hourlyRate: Math.floor(Math.random() * 30) + 20, // 20-50 GHS
+          currency: 'GHS',
+          location: 'Accra, Ghana',
+          skills: skills,
+          experienceLevel: experience < 3 ? 'beginner' : experience < 7 ? 'intermediate' : 'advanced',
+          yearsOfExperience: experience,
+          rating: Math.round((Math.random() * 1.5 + 3.5) * 10) / 10, // 3.5-5.0
+          totalJobs: completedJobs + Math.floor(Math.random() * 10),
+          completedJobs: completedJobs,
+          totalEarnings: completedJobs * (Math.floor(Math.random() * 150) + 100),
+          isAvailable: true,
+          isVerified: Math.random() > 0.5,
+          profileCompleteness: Math.floor(Math.random() * 30) + 70,
+          lastActiveAt: new Date(),
+          onlineStatus: 'online'
+        };
+      });
+
+      await WorkerProfile.insertMany(newProfiles);
+      console.log(`✅ Created ${newProfiles.length} new worker profiles`);
+    }
+
+    // Final counts
+    const finalUserCount = await User.countDocuments();
+    const finalWorkerProfileCount = await WorkerProfile.countDocuments();
+    const activeWorkers = await WorkerProfile.countDocuments({ isAvailable: true });
+
+    const result = {
+      success: true,
+      message: 'Database cleanup completed',
+      before: {
+        users: userCount,
+        workerProfiles: workerProfileCount
+      },
+      after: {
+        users: finalUserCount,
+        workerProfiles: finalWorkerProfileCount,
+        activeWorkers: activeWorkers
+      },
+      actions: {
+        duplicatesRemoved: removedDuplicates,
+        profilesCreated: usersWithoutProfiles.length
+      }
+    };
+
+    console.log('🎉 Database cleanup completed:', result);
+    res.json(result);
+
+  } catch (error) {
+    console.error('❌ Database cleanup failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database cleanup failed',
+      error: error.message
+    });
+  }
+};

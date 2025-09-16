@@ -12,7 +12,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://curly-chefs-arrive.loca.lt/api/$1"
+      "destination": "https://wonderful-mouse-71.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
@@ -20,12 +20,12 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://curly-chefs-arrive.loca.lt",
+    "VITE_API_URL": "https://wonderful-mouse-71.loca.lt",
     "VITE_WS_URL": "https://kelmah-ws.loca.lt"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://curly-chefs-arrive.loca.lt",
+      "VITE_API_URL": "https://wonderful-mouse-71.loca.lt",
       "VITE_WS_URL": "https://kelmah-ws.loca.lt"
     }
   }

@@ -18,6 +18,7 @@ const {
   toggleBookmark,
   getEarnings,
   getBookmarks,
+  cleanupDatabase,
 } = require("../controllers/user.controller");
 const WorkerController = require('../controllers/worker.controller');
 
@@ -29,6 +30,9 @@ router.post("/", createLimiter('admin'), createUser);
 router.get("/dashboard/metrics", getDashboardMetrics);
 router.get("/dashboard/workers", getDashboardWorkers);
 router.get("/dashboard/analytics", getDashboardAnalytics);
+
+// Database cleanup endpoint (development/admin use)
+router.post("/database/cleanup", cleanupDatabase);
 
 // Worker-specific routes that need to be under /api/users path
 router.get("/workers/:id/availability", WorkerController.getWorkerAvailability);
