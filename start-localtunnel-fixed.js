@@ -8,7 +8,8 @@ class LocalTunnelManager {
         this.tunnels = [];
         this.isRunning = false;
         // NEW: Support for unified vs dual tunnel modes
-        this.unifiedMode = process.env.UNIFIED_WEBSOCKET === 'true' || process.argv.includes('--unified');
+        // UNIFIED MODE is now the DEFAULT for best practices
+        this.unifiedMode = process.env.DUAL_WEBSOCKET !== 'true' && !process.argv.includes('--dual');
     }
 
     async startTunnels() {
@@ -204,18 +205,18 @@ class LocalTunnelManager {
             if (fs.existsSync(rootVercelPath)) {
                 let vercelConfig = JSON.parse(fs.readFileSync(rootVercelPath, 'utf8'));
 
-                // Update environment variables
+                // Update environment variables based on mode
                 if (!vercelConfig.env) vercelConfig.env = {};
                 vercelConfig.env.VITE_API_URL = config.apiDomain;
-                vercelConfig.env.VITE_WS_URL = config.wsDomain;
+                vercelConfig.env.VITE_WS_URL = config.mode === 'unified' ? config.apiDomain : config.wsDomain;
 
-                // Update build environment
+                // Update build environment based on mode
                 if (!vercelConfig.build) vercelConfig.build = {};
                 if (!vercelConfig.build.env) vercelConfig.build.env = {};
                 vercelConfig.build.env.VITE_API_URL = config.apiDomain;
-                vercelConfig.build.env.VITE_WS_URL = config.wsDomain;
+                vercelConfig.build.env.VITE_WS_URL = config.mode === 'unified' ? config.apiDomain : config.wsDomain;
 
-                // Update rewrites section
+                // Update rewrites section based on mode
                 if (vercelConfig.rewrites && Array.isArray(vercelConfig.rewrites)) {
                     vercelConfig.rewrites = vercelConfig.rewrites.map(rewrite => {
                         if (rewrite.source === "/api/(.*)") {
@@ -227,7 +228,9 @@ class LocalTunnelManager {
                         if (rewrite.source === "/socket.io/(.*)") {
                             return {
                                 ...rewrite,
-                                destination: `${config.wsDomain}/socket.io/$1`
+                                destination: config.mode === 'unified'
+                                    ? `${config.apiDomain}/socket.io/$1`  // UNIFIED: Route WebSocket through API Gateway
+                                    : `${config.wsDomain}/socket.io/$1`   // DUAL: Use separate WebSocket tunnel
                             };
                         }
                         return rewrite;
@@ -243,7 +246,7 @@ class LocalTunnelManager {
             if (fs.existsSync(frontendVercelPath)) {
                 let frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
 
-                // Update rewrites section
+                // Update rewrites section based on mode
                 if (frontendVercelConfig.rewrites && Array.isArray(frontendVercelConfig.rewrites)) {
                     frontendVercelConfig.rewrites = frontendVercelConfig.rewrites.map(rewrite => {
                         if (rewrite.source === "/api/(.*)") {
@@ -255,7 +258,9 @@ class LocalTunnelManager {
                         if (rewrite.source === "/socket.io/(.*)") {
                             return {
                                 ...rewrite,
-                                destination: `${config.wsDomain}/socket.io/$1`
+                                destination: config.mode === 'unified'
+                                    ? `${config.apiDomain}/socket.io/$1`  // UNIFIED: Route WebSocket through API Gateway
+                                    : `${config.wsDomain}/socket.io/$1`   // DUAL: Use separate WebSocket tunnel
                             };
                         }
                         return rewrite;
@@ -263,7 +268,7 @@ class LocalTunnelManager {
                 }
 
                 fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
-                console.log('✅ Updated frontend vercel.json');
+                console.log(`✅ Updated frontend vercel.json for ${config.mode?.toUpperCase() || 'DUAL'} mode`);
             }
 
             // Update securityConfig.js exactly like ngrok script
@@ -308,41 +313,7 @@ class LocalTunnelManager {
             };
 
             fs.writeFileSync(runtimeConfigPath, JSON.stringify(runtimeConfig, null, 2));
-            console.log('✅ Created frontend runtime config');
-
-            // Update Vercel rewrites to support unified mode
-            if (config.mode === 'unified') {
-                console.log('🔗 Updating Vercel config for UNIFIED mode...');
-
-                // Update frontend vercel.json for unified WebSocket routing
-                const frontendVercelPath = path.join(__dirname, 'kelmah-frontend', 'vercel.json');
-                if (fs.existsSync(frontendVercelPath)) {
-                    let frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
-
-                    // Update rewrites to route WebSocket through API Gateway
-                    if (frontendVercelConfig.rewrites && Array.isArray(frontendVercelConfig.rewrites)) {
-                        frontendVercelConfig.rewrites = frontendVercelConfig.rewrites.map(rewrite => {
-                            if (rewrite.source === "/api/(.*)") {
-                                return {
-                                    ...rewrite,
-                                    destination: `${config.apiDomain}/api/$1`
-                                };
-                            }
-                            if (rewrite.source === "/socket.io/(.*)") {
-                                // UNIFIED MODE: Route WebSocket through API Gateway
-                                return {
-                                    ...rewrite,
-                                    destination: `${config.apiDomain}/socket.io/$1`  // Same domain as API
-                                };
-                            }
-                            return rewrite;
-                        });
-                    }
-
-                    fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
-                    console.log('✅ Updated frontend vercel.json for unified WebSocket routing');
-                }
-            }
+            console.log(`✅ Created frontend runtime config for ${config.mode?.toUpperCase() || 'DUAL'} mode`);
 
         } catch (error) {
             console.warn('⚠️  Could not update all config files:', error.message);

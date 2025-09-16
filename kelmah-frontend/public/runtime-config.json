@@ -1,12 +1,12 @@
 {
-  "ngrokUrl": "https://kelmah-api.loca.lt",
-  "websocketUrl": "wss://kelmah-ws.loca.lt",
-  "API_URL": "https://kelmah-api.loca.lt",
-  "WS_URL": "https://kelmah-ws.loca.lt",
+  "ngrokUrl": "https://friendly-dolphin-97.loca.lt",
+  "websocketUrl": "wss://friendly-dolphin-97.loca.lt",
+  "API_URL": "https://friendly-dolphin-97.loca.lt",
+  "WS_URL": "https://friendly-dolphin-97.loca.lt",
   "NODE_ENV": "production",
   "TUNNEL_TYPE": "localtunnel",
-  "WEBSOCKET_MODE": "dual",
+  "WEBSOCKET_MODE": "unified",
   "isDevelopment": true,
-  "timestamp": "2025-09-16T12:20:11.111Z",
+  "timestamp": "2025-09-16T12:49:19.542Z",
   "version": "1.0.0"
 }

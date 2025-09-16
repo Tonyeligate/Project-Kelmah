@@ -1,7 +1,7 @@
 {
-  "apiDomain": "https://kelmah-api.loca.lt",
-  "wsDomain": "https://kelmah-ws.loca.lt",
-  "mode": "dual",
-  "timestamp": "2025-09-16T12:20:10.835Z",
+  "apiDomain": "https://friendly-dolphin-97.loca.lt",
+  "wsDomain": "https://friendly-dolphin-97.loca.lt",
+  "mode": "unified",
+  "timestamp": "2025-09-16T12:49:19.406Z",
   "status": "active"
 }
