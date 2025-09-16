@@ -12,7 +12,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://kelmah-api.loca.lt/api/$1"
+      "destination": "https://fat-cobra-14.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
@@ -20,12 +20,12 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://kelmah-api.loca.lt",
+    "VITE_API_URL": "https://fat-cobra-14.loca.lt",
     "VITE_WS_URL": "https://kelmah-ws.loca.lt"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://kelmah-api.loca.lt",
+      "VITE_API_URL": "https://fat-cobra-14.loca.lt",
       "VITE_WS_URL": "https://kelmah-ws.loca.lt"
     }
   }

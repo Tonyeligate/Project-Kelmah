@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://kelmah-api.loca.lt/api/$1"
+      "destination": "https://fat-cobra-14.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",

@@ -14,6 +14,7 @@ const messagingRoutes = require('./messaging.routes');
 const reviewRoutes = require('./review.routes');
 const paymentRoutes = require('./payment.routes');
 const monolithRoutes = require('./monolith.routes');
+const dashboardRoutes = require('./dashboard.routes');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -102,9 +103,8 @@ router.use('/notifications', monolithRoutes);
 router.use('/profile', monolithRoutes);
 router.use('/search', monolithRoutes);
 router.use('/settings', monolithRoutes);
-
-// Dashboard routes - redirect to user service instead of monolith
-router.use('/api/dashboard', userRoutes);
+// New dashboard proxy (user-service) — legacy monolith mappings remain for older endpoints
+router.use('/api/dashboard', dashboardRoutes);
 
 // Catch-all for undefined routes
 router.use('*', (req, res) => {

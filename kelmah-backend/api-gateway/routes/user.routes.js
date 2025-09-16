@@ -73,12 +73,6 @@ router.put('/settings', userProxy);
 router.put('/settings/notifications', userProxy);
 router.put('/settings/privacy', userProxy);
 
-// Dashboard routes 
-router.get('/dashboard/metrics', userProxy);
-router.get('/dashboard/workers', userProxy);
-router.get('/dashboard/analytics', userProxy);
-router.get('/dashboard/stats', userProxy); // Alias for metrics
-
 // Fallback: proxy any other /api/users/* paths to user-service preserving prefix
 router.use('/', userProxy);
 
