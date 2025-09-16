@@ -37,7 +37,7 @@ const server = http.createServer(app);
 // This fixes the "X-Forwarded-For header is set but trust proxy is false" error
 app.set('trust proxy', true);
 
-// CORS configuration (env-driven allowlist + Vercel previews)
+// CORS configuration (env-driven allowlist + Vercel previews + LocalTunnel)
 const envAllow = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((s) => s.trim())
@@ -47,6 +47,10 @@ const allowedOrigins = [
   'http://localhost:3000',
   process.env.FRONTEND_URL,
   ...envAllow,
+  // Allow all LocalTunnel URLs for development
+  /^https:\/\/.*\.loca\.lt$/,
+  // Allow specific LocalTunnel URL if set
+  process.env.LOCALTUNNEL_URL,
 ].filter(Boolean);
 
 // Socket.IO setup with CORS

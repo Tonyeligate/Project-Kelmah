@@ -266,6 +266,18 @@ const aggregatedHealthHandler = async (req, res) => {
         return { service: t.name, ok: false, error: e?.message, status, tried: ['/api/health'] };
       }
     }));
+    // Convert results array to object with service names as keys
+    const servicesObj = {};
+    results.forEach(result => {
+      servicesObj[result.service] = {
+        status: result.ok ? 'healthy' : 'unhealthy',
+        data: result.data,
+        error: result.error,
+        endpoint: result.endpoint,
+        tried: result.tried
+      };
+    });
+
     // Provider health from payment service
     let providers;
     try {
@@ -274,7 +286,7 @@ const aggregatedHealthHandler = async (req, res) => {
     } catch (e) {
       providers = { success: false, error: e?.message };
     }
-    res.json({ success: true, services: results, providers });
+    res.json({ success: true, services: servicesObj, providers });
   } catch (e) {
     res.status(500).json({ success: false, error: e?.message });
   }
