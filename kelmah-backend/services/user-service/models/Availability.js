@@ -18,7 +18,7 @@ const HolidaySchema = new Schema({
 
 const AvailabilitySchema = new Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     timezone: { type: String, default: 'Africa/Accra' },
     isAvailable: { type: Boolean, default: true },
     pausedUntil: { type: Date },

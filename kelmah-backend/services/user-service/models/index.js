@@ -31,6 +31,7 @@ const Certificate = require('./Certificate');
 const Notification = require('./Notification');
 const Portfolio = require('./Portfolio');
 const Setting = require('./Setting');
+const WorkerProfileMongo = require('./WorkerProfileMongo');
 
 // PostgreSQL/Sequelize Models (if database is configured)
 let WorkerProfile, WorkerSkill, Skill, SkillCategory;
@@ -44,7 +45,7 @@ if (sequelize) {
 
     // Set up associations
     const models = { WorkerProfile, WorkerSkill, Skill, SkillCategory, User };
-    
+
     Object.keys(models).forEach(modelName => {
       if (models[modelName].associate) {
         models[modelName].associate(models);
@@ -81,13 +82,17 @@ module.exports = {
   Notification,
   Portfolio,
   Setting,
-  
+  WorkerProfileMongo,
+
+  // Use MongoDB WorkerProfile as primary (for dashboard compatibility)
+  WorkerProfile: WorkerProfileMongo,
+
   // PostgreSQL/Sequelize Models (may be null if not configured)
-  WorkerProfile,
+  WorkerProfileSQL: WorkerProfile,
   WorkerSkill,
   Skill,
   SkillCategory,
-  
+
   // Database connections
   sequelize,
   mongoose

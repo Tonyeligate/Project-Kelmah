@@ -1,9 +1,8 @@
 // Bookmark persistence and earnings endpoint
-const { Op } = require('sequelize');
 const Bookmark = require('../models/Bookmark');
-// WorkerProfile remains Sequelize-backed for now
+// Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
-const WorkerProfile = db.WorkerProfile;
+const WorkerProfile = db.WorkerProfile; // Now points to MongoDB model
 
 exports.toggleBookmark = async (req, res) => {
   try {
@@ -43,7 +42,7 @@ exports.getEarnings = async (req, res) => {
   try {
     const userId = req.params.workerId || req.user?.id;
     if (!userId) return res.status(400).json({ success: false, message: 'workerId required' });
-    const worker = await WorkerProfile.findOne({ where: { [Op.or]: [{ userId }, { id: userId }] } });
+    const worker = await WorkerProfile.findOne({ userId });
     if (!worker) return res.status(404).json({ success: false, message: 'Worker not found' });
 
     // Try to aggregate real transactions from payment-service if available
@@ -127,7 +126,8 @@ exports.createUser = async (req, res, next) => {
 exports.getDashboardMetrics = async (req, res, next) => {
   try {
     const User = require('../models/User');
-    const WorkerProfile = require('../models/WorkerProfile');
+    // Use the MongoDB WorkerProfile from our models index
+    const { WorkerProfile } = require('../models');
 
     // Get real metrics from database
     const [totalUsers, totalWorkers, activeWorkers] = await Promise.all([
@@ -172,7 +172,8 @@ exports.getDashboardMetrics = async (req, res, next) => {
  */
 exports.getDashboardWorkers = async (req, res, next) => {
   try {
-    const WorkerProfile = require('../models/WorkerProfile');
+    // Use the MongoDB WorkerProfile from our models index
+    const { WorkerProfile } = require('../models');
 
     const workers = await WorkerProfile.find()
       .populate('userId', 'firstName lastName profilePicture')
@@ -206,7 +207,8 @@ exports.getDashboardWorkers = async (req, res, next) => {
 exports.getDashboardAnalytics = async (req, res, next) => {
   try {
     const User = require('../models/User');
-    const WorkerProfile = require('../models/WorkerProfile');
+    // Use the MongoDB WorkerProfile from our models index
+    const { WorkerProfile } = require('../models');
 
     // Get user growth data (last 12 months)
     const userGrowth = [];
@@ -331,7 +333,8 @@ exports.getUserAvailability = async (req, res, next) => {
  */
 exports.getUserCredentials = async (req, res, next) => {
   try {
-    const WorkerProfile = require('../models/WorkerProfile');
+    // Use the MongoDB WorkerProfile from our models index
+    const { WorkerProfile } = require('../models');
     const WorkerSkill = require('../models/WorkerSkill');
     const Certificate = require('../models/Certificate');
 
