@@ -7,37 +7,63 @@ class LocalTunnelManager {
         this.configPath = path.join(__dirname, 'ngrok-config.json'); // Use same config file as ngrok
         this.tunnels = [];
         this.isRunning = false;
+        // NEW: Support for unified vs dual tunnel modes
+        this.unifiedMode = process.env.UNIFIED_WEBSOCKET === 'true' || process.argv.includes('--unified');
     }
 
     async startTunnels() {
         console.log('🎯 Kelmah LocalTunnel Manager');
         console.log('============================');
-        console.log('🚀 Starting LocalTunnel tunnels...');
+
+        if (this.unifiedMode) {
+            console.log('� UNIFIED MODE: Single tunnel for HTTP + WebSocket');
+        } else {
+            console.log('🔀 DUAL MODE: Separate tunnels for HTTP and WebSocket');
+        }
+
+        console.log('�🚀 Starting LocalTunnel tunnels...');
 
         try {
             // Start API Gateway tunnel (port 5000)
             const apiTunnel = await this.createTunnel(5000, 'kelmah-api');
             console.log(`✅ API Gateway tunnel started: ${apiTunnel}`);
 
-            // Start WebSocket tunnel (port 5005 for messaging service)  
-            const wsTunnel = await this.createTunnel(5005, 'kelmah-ws');
-            console.log(`✅ WebSocket tunnel started: ${wsTunnel}`);
+            let wsTunnel;
+            let config;
+
+            if (this.unifiedMode) {
+                // UNIFIED MODE: Use API Gateway for everything
+                wsTunnel = apiTunnel; // Same URL for WebSocket
+                console.log(`🔗 WebSocket will use API Gateway: ${apiTunnel}/socket.io`);
+
+                config = {
+                    apiDomain: apiTunnel,
+                    wsDomain: apiTunnel, // Same URL
+                    mode: 'unified',
+                    timestamp: new Date().toISOString(),
+                    status: 'active'
+                };
+            } else {
+                // DUAL MODE: Separate tunnel for WebSocket
+                wsTunnel = await this.createTunnel(5005, 'kelmah-ws');
+                console.log(`✅ WebSocket tunnel started: ${wsTunnel}`);
+
+                config = {
+                    apiDomain: apiTunnel,
+                    wsDomain: wsTunnel,
+                    mode: 'dual',
+                    timestamp: new Date().toISOString(),
+                    status: 'active'
+                };
+            }
 
             console.log(`📡 Primary URL (API): ${apiTunnel}`);
             console.log(`🔌 WebSocket URL: ${wsTunnel}`);
 
-            // Save configuration
-            const config = {
-                apiDomain: apiTunnel,
-                wsDomain: wsTunnel,
-                timestamp: new Date().toISOString(),
-                status: 'active'
-            };
-
             fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
             console.log(`💾 Config saved to: ${this.configPath}`);
 
-            // Update configuration files exactly like ngrok
+            // Update configuration files
             await this.updateConfigFiles(config);
             await this.commitAndPush();
 
@@ -46,6 +72,15 @@ class LocalTunnelManager {
             console.log('');
             console.log('🎉 SUCCESS! Your backend is now accessible at:');
             console.log(`🌐 ${apiTunnel}`);
+
+            if (this.unifiedMode) {
+                console.log('');
+                console.log('🔗 UNIFIED ARCHITECTURE:');
+                console.log(`   HTTP API: ${apiTunnel}/api/*`);
+                console.log(`   WebSocket: ${apiTunnel}/socket.io`);
+                console.log('   ✅ Single domain for all traffic');
+            }
+
             console.log('');
             console.log('📋 What happens next:');
             console.log('1. ✅ localtunnel tunnels are running');
@@ -248,7 +283,7 @@ class LocalTunnelManager {
                 console.log('✅ Updated securityConfig.js');
             }
 
-            // Create frontend runtime config exactly like ngrok script
+            // Create frontend runtime config with unified mode support
             const frontendConfigDir = path.join(__dirname, 'kelmah-frontend', 'public');
             const runtimeConfigPath = path.join(frontendConfigDir, 'runtime-config.json');
 
@@ -259,18 +294,55 @@ class LocalTunnelManager {
 
             const runtimeConfig = {
                 ngrokUrl: config.apiDomain,              // Frontend looks for 'ngrokUrl'
-                websocketUrl: config.wsDomain.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:'),  // Convert to WebSocket URL
+                websocketUrl: config.mode === 'unified'
+                    ? config.apiDomain.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')  // Use API Gateway for WebSocket
+                    : config.wsDomain.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:'),  // Use dedicated WebSocket tunnel
                 API_URL: config.apiDomain,               // Backup field
-                WS_URL: config.wsDomain,                 // Backup field
+                WS_URL: config.mode === 'unified' ? config.apiDomain : config.wsDomain, // Unified or separate
                 NODE_ENV: 'production',
                 TUNNEL_TYPE: 'localtunnel',
-                isDevelopment: true,                     // Mark as development to enable tunnel usage
-                timestamp: config.timestamp,
+                WEBSOCKET_MODE: config.mode || 'dual',   // Track which mode we're using
+                isDevelopment: true,                     // Indicate this is dev setup
+                timestamp: new Date().toISOString(),
                 version: '1.0.0'
             };
 
             fs.writeFileSync(runtimeConfigPath, JSON.stringify(runtimeConfig, null, 2));
             console.log('✅ Created frontend runtime config');
+
+            // Update Vercel rewrites to support unified mode
+            if (config.mode === 'unified') {
+                console.log('🔗 Updating Vercel config for UNIFIED mode...');
+
+                // Update frontend vercel.json for unified WebSocket routing
+                const frontendVercelPath = path.join(__dirname, 'kelmah-frontend', 'vercel.json');
+                if (fs.existsSync(frontendVercelPath)) {
+                    let frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
+
+                    // Update rewrites to route WebSocket through API Gateway
+                    if (frontendVercelConfig.rewrites && Array.isArray(frontendVercelConfig.rewrites)) {
+                        frontendVercelConfig.rewrites = frontendVercelConfig.rewrites.map(rewrite => {
+                            if (rewrite.source === "/api/(.*)") {
+                                return {
+                                    ...rewrite,
+                                    destination: `${config.apiDomain}/api/$1`
+                                };
+                            }
+                            if (rewrite.source === "/socket.io/(.*)") {
+                                // UNIFIED MODE: Route WebSocket through API Gateway
+                                return {
+                                    ...rewrite,
+                                    destination: `${config.apiDomain}/socket.io/$1`  // Same domain as API
+                                };
+                            }
+                            return rewrite;
+                        });
+                    }
+
+                    fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
+                    console.log('✅ Updated frontend vercel.json for unified WebSocket routing');
+                }
+            }
 
         } catch (error) {
             console.warn('⚠️  Could not update all config files:', error.message);

@@ -1,6 +1,7 @@
 {
-  "apiDomain": "https://tall-eagle-17.loca.lt",
+  "apiDomain": "https://kelmah-api.loca.lt",
   "wsDomain": "https://kelmah-ws.loca.lt",
-  "timestamp": "2025-09-16T11:59:25.998Z",
+  "mode": "dual",
+  "timestamp": "2025-09-16T12:20:10.835Z",
   "status": "active"
 }

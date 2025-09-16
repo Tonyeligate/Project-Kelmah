@@ -543,35 +543,61 @@ app.use('/api/messaging/health', (req, res, next) => {
 
 // Socket.IO WebSocket proxy to messaging-service
 // IMPORTANT: Always mount on '/socket.io' path to avoid intercepting unrelated routes
-let socketIoProxy;
-try {
+// Dynamic proxy creation with health checking and fallback
+const createSocketIoProxy = () => {
   if (services.messaging && typeof services.messaging === 'string' && services.messaging.length > 0) {
-    socketIoProxy = createProxyMiddleware('/socket.io', {
-      target: services.messaging,
-      changeOrigin: true,
-      ws: true,
-    });
-  } else {
-    console.warn('Messaging service URL not configured, WebSocket proxy disabled');
-    // Only block socket.io path; let other routes proceed
-    socketIoProxy = (req, res) => {
-      res.status(503).json({ error: 'WebSocket service unavailable' });
-    };
-    // No-op upgrade handler for server.on('upgrade') safety
-    socketIoProxy.upgrade = () => { };
+    try {
+      console.log(`🔌 Creating Socket.IO proxy to: ${services.messaging}`);
+      return createProxyMiddleware('/socket.io', {
+        target: services.messaging,
+        changeOrigin: true,
+        ws: true,
+        timeout: 30000,
+        proxyTimeout: 30000,
+        // Enhanced error handling
+        onError: (err, req, res) => {
+          console.error('🚨 Socket.IO proxy error:', err.message);
+          if (res && !res.headersSent) {
+            res.status(503).json({
+              error: 'WebSocket service temporarily unavailable',
+              code: 'WEBSOCKET_PROXY_ERROR',
+              retry: true
+            });
+          }
+        },
+        onProxyReqWs: (proxyReq, req, socket) => {
+          console.log('🔄 WebSocket upgrade request:', req.url);
+        },
+        onProxyReq: (proxyReq, req, res) => {
+          console.log('📡 Socket.IO HTTP request:', req.method, req.url);
+        }
+      });
+    } catch (error) {
+      console.error('❌ Failed to create Socket.IO proxy:', error.message);
+      return null;
+    }
   }
-} catch (error) {
-  console.error('Failed to create Socket.IO proxy:', error.message);
-  // Only block socket.io path; let other routes proceed
-  socketIoProxy = (req, res) => {
-    res.status(503).json({ error: 'WebSocket service configuration error' });
-  };
-  // No-op upgrade handler for server.on('upgrade') safety
-  socketIoProxy.upgrade = () => { };
-}
+  return null;
+};
 
-// Mount the Socket.IO proxy
-app.use('/socket.io', socketIoProxy);
+// Create dynamic Socket.IO proxy handler
+const socketIoProxyHandler = (req, res, next) => {
+  const proxy = createSocketIoProxy();
+  if (proxy) {
+    return proxy(req, res, next);
+  } else {
+    console.warn('⚠️ Socket.IO proxy unavailable, messaging service not ready');
+    return res.status(503).json({
+      error: 'WebSocket service unavailable',
+      code: 'MESSAGING_SERVICE_DOWN',
+      message: 'The messaging service is not available. Please try again later.',
+      retry: true
+    });
+  }
+};
+
+// Mount the dynamic Socket.IO proxy
+app.use('/socket.io', socketIoProxyHandler);
 
 // Socket metrics passthrough (admin validated upstream)
 app.use('/api/socket/metrics',
@@ -878,22 +904,33 @@ const server = app.listen(PORT, () => {
   logger.info(`📚 Docs: http://localhost:${PORT}/api/docs`);
 });
 
-// Enable WebSocket upgrade handling for Socket.IO proxy (scope to '/socket.io')
-if (socketIoProxy && typeof socketIoProxy.upgrade === 'function') {
-  server.on('upgrade', (req, socket, head) => {
-    try {
-      const url = req?.url || '';
-      if (url.startsWith('/socket.io')) {
-        return socketIoProxy.upgrade(req, socket, head);
+// Enable WebSocket upgrade handling for Socket.IO proxy (dynamic)
+server.on('upgrade', (req, socket, head) => {
+  try {
+    const url = req?.url || '';
+    if (url.startsWith('/socket.io')) {
+      console.log('🔄 WebSocket upgrade request:', url);
+      const proxy = createSocketIoProxy();
+      if (proxy && typeof proxy.upgrade === 'function') {
+        return proxy.upgrade(req, socket, head);
+      } else {
+        console.warn('⚠️ Socket.IO proxy not available for upgrade');
+        socket.write('HTTP/1.1 503 Service Unavailable\r\n' +
+          'Content-Type: text/plain\r\n' +
+          'Connection: close\r\n\r\n' +
+          'WebSocket service unavailable');
+        socket.destroy();
       }
-      // For non-socket.io upgrades, do nothing (let other handlers manage or close)
-    } catch (e) {
-      console.error('Socket.IO upgrade handling error:', e?.message || e);
-      try { socket.destroy(); } catch (_) { }
     }
-  });
-} else {
-  console.warn('Socket.IO proxy upgrade handler not available');
-}
+    // For non-socket.io upgrades, do nothing (let other handlers manage or close)
+  } catch (e) {
+    console.error('🚨 Socket.IO upgrade handling error:', e?.message || e);
+    try {
+      socket.write('HTTP/1.1 500 Internal Server Error\r\n' +
+        'Connection: close\r\n\r\n');
+      socket.destroy();
+    } catch (_) { }
+  }
+});
 
 module.exports = app;
