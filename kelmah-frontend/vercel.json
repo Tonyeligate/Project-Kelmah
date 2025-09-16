@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://wicked-warthog-18.loca.lt/api/$1"
+      "destination": "https://curly-chefs-arrive.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
