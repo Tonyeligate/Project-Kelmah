@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://tame-cow-36.loca.lt/api/$1"
+      "destination": "https://kelmah-api.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
