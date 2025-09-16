@@ -21,14 +21,14 @@ export const useMessages = () => {
 
 export const MessageProvider = ({ children }) => {
   const { user, getToken } = useAuth();
-  
+
   // Real-time WebSocket state
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   // Map<conversationId, Map<userId, userInfo>>
   const [typingUsers, setTypingUsers] = useState(new Map());
-  
+
   // Messaging state
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -54,7 +54,7 @@ export const MessageProvider = ({ children }) => {
   }, []);
 
   // WebSocket connection setup with singleton pattern to prevent multiple connections
-  const connectWebSocket = useCallback(() => {
+  const connectWebSocket = useCallback(async () => {
     if (!user || socket) return;
 
     const token = getToken();
@@ -64,9 +64,18 @@ export const MessageProvider = ({ children }) => {
     if (connectWebSocket._connecting) return;
     connectWebSocket._connecting = true;
 
-    // ✅ FIXED: Simplified WebSocket URL - always use /socket.io to route via API Gateway
-    const wsUrl = '/socket.io';
-    console.log('🔌 Connecting to messaging WebSocket via API Gateway:', wsUrl);
+    // ✅ FIXED: Get WebSocket URL from runtime config
+    let wsUrl = '/socket.io'; // Default fallback
+    try {
+      const response = await fetch('/runtime-config.json');
+      if (response.ok) {
+        const config = await response.json();
+        wsUrl = config.websocketUrl || config.ngrokUrl || '/socket.io';
+        console.log('🔌 Connecting to messaging WebSocket via:', wsUrl);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to load runtime config for WebSocket:', error);
+    }
 
     const newSocket = io(wsUrl, {
       auth: {
@@ -114,7 +123,7 @@ export const MessageProvider = ({ children }) => {
     // Real-time message events
     newSocket.on('new_message', (messageData) => {
       console.log('📨 New message received:', messageData);
-      
+
       // Add to messages if it's for the current conversation
       if (selectedConversation && messageData.conversationId === selectedConversation.id) {
         setMessages(prev => {
@@ -131,11 +140,11 @@ export const MessageProvider = ({ children }) => {
           return [...prev, messageData];
         });
       }
-      
+
       // Update conversation's last message
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === messageData.conversationId 
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.id === messageData.conversationId
             ? { ...conv, lastMessage: messageData, updatedAt: messageData.createdAt }
             : conv
         )
@@ -170,8 +179,8 @@ export const MessageProvider = ({ children }) => {
       console.log('📖 Messages marked as read:', data);
       // Update message read status
       if (selectedConversation && data.conversationId === selectedConversation.id) {
-        setMessages(prev => 
-          prev.map(msg => 
+        setMessages(prev =>
+          prev.map(msg =>
             data.messageIds === 'all_unread' || data.messageIds.includes(msg.id)
               ? { ...msg, isRead: true, readAt: data.readAt }
               : msg
@@ -206,7 +215,7 @@ export const MessageProvider = ({ children }) => {
   const disconnectWebSocket = useCallback(() => {
     if (socket) {
       console.log('🔌 Disconnecting WebSocket');
-      try { socket.removeAllListeners && socket.removeAllListeners(); } catch {}
+      try { socket.removeAllListeners && socket.removeAllListeners(); } catch { }
       socket.disconnect();
       setSocket(null);
       setIsConnected(false);
@@ -241,14 +250,14 @@ export const MessageProvider = ({ children }) => {
         // Join new conversation room via WebSocket
         if (socket && isConnected) {
           socket.emit('join_conversation', { conversationId: conversation.id });
-          
+
           // Listen for conversation joined event
           socket.once('conversation_joined', (data) => {
             console.log('🏠 Joined conversation:', data);
             setMessages(data.messages || []);
             setLoadingMessages(false);
           });
-          
+
           // Fallback timeout
           setTimeout(() => {
             if (loadingMessages) {
@@ -302,20 +311,20 @@ export const MessageProvider = ({ children }) => {
           const eventName = useEncrypted ? 'send_encrypted' : 'send_message';
           const payload = useEncrypted
             ? {
-                conversationId: selectedConversation.id,
-                encryptedBody: content.trim(),
-                encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
-                messageType,
-                attachments,
-                clientId,
-              }
+              conversationId: selectedConversation.id,
+              encryptedBody: content.trim(),
+              encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
+              messageType,
+              attachments,
+              clientId,
+            }
             : {
-                conversationId: selectedConversation.id,
-                content: content.trim(),
-                messageType,
-                attachments,
-                clientId,
-              };
+              conversationId: selectedConversation.id,
+              content: content.trim(),
+              messageType,
+              attachments,
+              clientId,
+            };
 
           socket.emit(
             eventName,
@@ -424,9 +433,9 @@ export const MessageProvider = ({ children }) => {
   // Mark messages as read
   const markMessagesAsRead = useCallback((messageIds = []) => {
     if (selectedConversation && socket && isConnected) {
-      socket.emit('mark_read', { 
-        conversationId: selectedConversation.id, 
-        messageIds 
+      socket.emit('mark_read', {
+        conversationId: selectedConversation.id,
+        messageIds
       });
     }
   }, [selectedConversation, socket, isConnected]);
@@ -452,13 +461,13 @@ export const MessageProvider = ({ children }) => {
     loadingMessages,
     sendingMessage,
     unreadCount,
-    
+
     // Core messaging actions
     selectConversation,
     sendMessage,
     createConversation,
     clearConversation,
-    
+
     // Real-time WebSocket features
     isConnected,
     onlineUsers,
@@ -468,7 +477,7 @@ export const MessageProvider = ({ children }) => {
     markMessagesAsRead,
     getTypingUsers,
     isUserOnline,
-    
+
     // Legacy support
     messagingService, // expose raw service for convenience (legacy components)
   };

@@ -27,7 +27,7 @@ class WebSocketService {
    * @param {string} userRole - User role (worker, hirer, admin)
    * @param {string} token - Authentication token
    */
-  connect(userId, userRole, token) {
+  async connect(userId, userRole, token) {
     try {
       // Prevent multiple concurrent connections
       if (this._connecting) return;
@@ -38,9 +38,18 @@ class WebSocketService {
         this.disconnect();
       }
 
-      // ✅ FIXED: Simplified WebSocket URL - always use /socket.io to route via API Gateway
-      const wsUrl = '/socket.io';
-      console.log('🔌 WebSocket Service connecting via API Gateway:', wsUrl);
+      // ✅ FIXED: Get WebSocket URL from runtime config
+      let wsUrl = '/socket.io'; // Default fallback
+      try {
+        const response = await fetch('/runtime-config.json');
+        if (response.ok) {
+          const config = await response.json();
+          wsUrl = config.websocketUrl || config.ngrokUrl || '/socket.io';
+          console.log('🔌 WebSocket Service connecting to:', wsUrl);
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to load runtime config for WebSocket:', error);
+      }
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {
@@ -59,7 +68,7 @@ class WebSocketService {
       });
 
       this.setupEventListeners(userId, userRole);
-      
+
       console.log('WebSocket connection initiated for user:', userId);
     } catch (error) {
       console.error('WebSocket connection error:', error);
@@ -78,7 +87,7 @@ class WebSocketService {
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this._connecting = false;
-      
+
       // Join user-specific room
       this.socket.emit('join-room', {
         userId,
@@ -88,10 +97,10 @@ class WebSocketService {
 
       // Process queued messages
       this.processMessageQueue();
-      
+
       // Start ping monitoring
       this.startPingMonitoring();
-      
+
       // Dispatch connection success
       store.dispatch(addNotification({
         id: Date.now(),
@@ -108,7 +117,7 @@ class WebSocketService {
       this.isConnected = false;
       this._connecting = false;
       this.stopPingMonitoring();
-      
+
       store.dispatch(addNotification({
         id: Date.now(),
         type: 'system',
@@ -220,7 +229,7 @@ class WebSocketService {
    */
   handleNewMessage(data) {
     console.log('📨 New message received:', data);
-    
+
     // Add to Redux store
     store.dispatch(addNotification({
       id: data.messageId,
@@ -238,7 +247,7 @@ class WebSocketService {
 
     // Trigger custom event listeners
     this.triggerEvent('message:new', data);
-    
+
     // Browser notification if permission granted
     this.showBrowserNotification('New Message', data.content, {
       icon: '/assets/icons/message-icon.png',
@@ -267,7 +276,7 @@ class WebSocketService {
    */
   handleJobNotification(data) {
     console.log('💼 Job notification:', data);
-    
+
     const notificationMap = {
       'new-job': {
         title: 'New Job Available',
@@ -320,7 +329,7 @@ class WebSocketService {
    */
   handleJobApplication(data) {
     console.log('📋 Job application event:', data);
-    
+
     store.dispatch(addNotification({
       id: Date.now(),
       type: 'job-application',
@@ -343,7 +352,7 @@ class WebSocketService {
    */
   handleJobStatusUpdate(data) {
     console.log('🔄 Job status update:', data);
-    
+
     const statusMap = {
       'accepted': { severity: 'success', icon: '✅' },
       'rejected': { severity: 'error', icon: '❌' },
@@ -374,7 +383,7 @@ class WebSocketService {
    */
   handlePaymentNotification(data) {
     console.log('💰 Payment notification:', data);
-    
+
     const paymentMap = {
       'payment-received': {
         title: 'Payment Received',
@@ -435,7 +444,7 @@ class WebSocketService {
    */
   handleSystemNotification(data) {
     console.log('🔔 System notification:', data);
-    
+
     store.dispatch(addNotification({
       id: Date.now(),
       type: 'system',
@@ -542,11 +551,11 @@ class WebSocketService {
    */
   processMessageQueue() {
     console.log('📨 Processing', this.messageQueue.length, 'queued messages');
-    
+
     this.messageQueue.forEach(({ event, data }) => {
       this.socket.emit(event, data);
     });
-    
+
     this.messageQueue = [];
   }
 
@@ -655,7 +664,7 @@ class WebSocketService {
   handleConnectionError(error) {
     this.reconnectAttempts++;
     console.error(`WebSocket connection error (attempt ${this.reconnectAttempts}):`, error);
-    
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       store.dispatch(addNotification({
         id: Date.now(),

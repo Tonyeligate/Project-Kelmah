@@ -34,12 +34,25 @@ class DashboardService {
   /**
    * Initialize WebSocket connection for dashboard
    */
-  connect() {
+  async connect() {
     if (this.socket) return;
 
     if (!this.token) return;
 
-    this.socket = io((typeof window !== 'undefined' && window.__RUNTIME_CONFIG__?.websocketUrl) || '/socket.io', {
+    // Get WebSocket URL from runtime config
+    let wsUrl = '/socket.io'; // Default fallback
+    try {
+      const response = await fetch('/runtime-config.json');
+      if (response.ok) {
+        const config = await response.json();
+        wsUrl = config.websocketUrl || config.ngrokUrl || '/socket.io';
+        console.log('📡 Dashboard WebSocket connecting to:', wsUrl);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to load runtime config for WebSocket:', error);
+    }
+
+    this.socket = io(wsUrl, {
       auth: { token: this.token },
       path: '/socket.io',
       transports: ['websocket', 'polling'],
