@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://friendly-dolphin-97.loca.lt/api/$1"
+      "destination": "https://smart-hound-41.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://friendly-dolphin-97.loca.lt/socket.io/$1"
+      "destination": "https://smart-hound-41.loca.lt/socket.io/$1"
     },
     {
       "source": "/(.*)",

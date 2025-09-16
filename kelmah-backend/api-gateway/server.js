@@ -549,11 +549,12 @@ const createSocketIoProxy = () => {
     try {
       console.log(`🔌 Creating Socket.IO proxy to: ${services.messaging}`);
       return createProxyMiddleware('/socket.io', {
-        target: services.messaging,
+        target: services.messaging,  // This should be http://localhost:5005
         changeOrigin: true,
         ws: true,
         timeout: 30000,
         proxyTimeout: 30000,
+        logLevel: 'debug',
         // Enhanced error handling
         onError: (err, req, res) => {
           console.error('🚨 Socket.IO proxy error:', err.message);
@@ -566,7 +567,7 @@ const createSocketIoProxy = () => {
           }
         },
         onProxyReqWs: (proxyReq, req, socket) => {
-          console.log('🔄 WebSocket upgrade request:', req.url);
+          console.log('🔄 WebSocket proxying to messaging service:', req.url);
         },
         onProxyReq: (proxyReq, req, res) => {
           console.log('📡 Socket.IO HTTP request:', req.method, req.url);
@@ -576,8 +577,10 @@ const createSocketIoProxy = () => {
       console.error('❌ Failed to create Socket.IO proxy:', error.message);
       return null;
     }
+  } else {
+    console.error('❌ Missing messaging service URL for Socket.IO proxy:', services.messaging);
+    return null;
   }
-  return null;
 };
 
 // Create dynamic Socket.IO proxy handler

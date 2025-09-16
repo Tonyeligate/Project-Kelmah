@@ -12,21 +12,21 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://friendly-dolphin-97.loca.lt/api/$1"
+      "destination": "https://smart-hound-41.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://friendly-dolphin-97.loca.lt/socket.io/$1"
+      "destination": "https://smart-hound-41.loca.lt/socket.io/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "https://friendly-dolphin-97.loca.lt",
-    "VITE_WS_URL": "https://friendly-dolphin-97.loca.lt"
+    "VITE_API_URL": "https://smart-hound-41.loca.lt",
+    "VITE_WS_URL": "https://smart-hound-41.loca.lt"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://friendly-dolphin-97.loca.lt",
-      "VITE_WS_URL": "https://friendly-dolphin-97.loca.lt"
+      "VITE_API_URL": "https://smart-hound-41.loca.lt",
+      "VITE_WS_URL": "https://smart-hound-41.loca.lt"
     }
   }
 }
