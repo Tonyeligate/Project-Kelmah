@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://wonderful-mouse-71.loca.lt/api/$1"
+      "destination": "https://tall-eagle-17.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",

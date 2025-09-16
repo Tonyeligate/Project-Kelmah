@@ -11,7 +11,7 @@ async function testIntegration() {
     console.log('🔧 Testing Frontend-Backend Integration...\n');
 
     // Test configuration
-    const baseUrl = 'https://curly-chefs-arrive.loca.lt';
+    const baseUrl = 'https://wonderful-mouse-71.loca.lt';
     const headers = {
         'ngrok-skip-browser-warning': 'true',
         'User-Agent': 'Integration-Test-Script'
