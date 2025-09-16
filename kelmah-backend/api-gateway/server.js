@@ -560,7 +560,7 @@ const createSocketIoProxy = () => {
   if (services.messaging && typeof services.messaging === 'string' && services.messaging.length > 0) {
     try {
       console.log(`🔌 Creating Socket.IO proxy to: ${services.messaging}`);
-      return createProxyMiddleware('/socket.io', {
+      return createProxyMiddleware({
         target: services.messaging,  // This should be http://localhost:5005
         changeOrigin: true,
         ws: true,
