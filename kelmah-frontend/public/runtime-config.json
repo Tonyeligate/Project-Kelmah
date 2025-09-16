@@ -1,12 +1,12 @@
 {
-  "ngrokUrl": "https://slippery-vampirebat-33.loca.lt",
-  "websocketUrl": "wss://slippery-vampirebat-33.loca.lt",
-  "API_URL": "https://slippery-vampirebat-33.loca.lt",
-  "WS_URL": "https://slippery-vampirebat-33.loca.lt",
+  "ngrokUrl": "https://red-bobcat-90.loca.lt",
+  "websocketUrl": "wss://red-bobcat-90.loca.lt",
+  "API_URL": "https://red-bobcat-90.loca.lt",
+  "WS_URL": "https://red-bobcat-90.loca.lt",
   "NODE_ENV": "production",
   "TUNNEL_TYPE": "localtunnel",
   "WEBSOCKET_MODE": "unified",
   "isDevelopment": true,
-  "timestamp": "2025-09-16T13:52:32.477Z",
+  "timestamp": "2025-09-16T14:02:01.574Z",
   "version": "1.0.0"
 }

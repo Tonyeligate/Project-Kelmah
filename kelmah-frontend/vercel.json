@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://slippery-vampirebat-33.loca.lt/api/$1"
+      "destination": "https://red-bobcat-90.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://slippery-vampirebat-33.loca.lt/socket.io/$1"
+      "destination": "https://red-bobcat-90.loca.lt/socket.io/$1"
     },
     {
       "source": "/(.*)",

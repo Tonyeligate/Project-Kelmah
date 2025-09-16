@@ -12,21 +12,21 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://slippery-vampirebat-33.loca.lt/api/$1"
+      "destination": "https://red-bobcat-90.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://slippery-vampirebat-33.loca.lt/socket.io/$1"
+      "destination": "https://red-bobcat-90.loca.lt/socket.io/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "https://slippery-vampirebat-33.loca.lt",
-    "VITE_WS_URL": "https://slippery-vampirebat-33.loca.lt"
+    "VITE_API_URL": "https://red-bobcat-90.loca.lt",
+    "VITE_WS_URL": "https://red-bobcat-90.loca.lt"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://slippery-vampirebat-33.loca.lt",
-      "VITE_WS_URL": "https://slippery-vampirebat-33.loca.lt"
+      "VITE_API_URL": "https://red-bobcat-90.loca.lt",
+      "VITE_WS_URL": "https://red-bobcat-90.loca.lt"
     }
   }
 }
