@@ -116,6 +116,12 @@ const corsOriginHandler = (origin, callback) => {
     /^https:\/\/kelmah-frontend.*\.vercel\.app$/
   ];
 
+  // Allow LocalTunnel domains
+  const localtunnelPatterns = [
+    /^https:\/\/.*\.loca\.lt$/,
+    /^https:\/\/.*\.ngrok-free\.app$/
+  ];
+
   if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
 
   if (allowedOrigins.includes(origin)) {
@@ -125,6 +131,12 @@ const corsOriginHandler = (origin, callback) => {
   const isVercelPreview = vercelPatterns.some(pattern => pattern.test(origin));
   if (isVercelPreview) {
     logger.info(`✅ API Gateway CORS allowed Vercel preview: ${origin}`);
+    return callback(null, true);
+  }
+
+  const isLocalTunnel = localtunnelPatterns.some(pattern => pattern.test(origin));
+  if (isLocalTunnel) {
+    logger.info(`✅ API Gateway CORS allowed tunnel: ${origin}`);
     return callback(null, true);
   }
 

@@ -1,11 +1,11 @@
 {
-  "ngrokUrl": "https://kelmah-api.loca.lt",
+  "ngrokUrl": "https://tame-cow-36.loca.lt",
   "websocketUrl": "wss://kelmah-ws.loca.lt",
-  "API_URL": "https://kelmah-api.loca.lt",
+  "API_URL": "https://tame-cow-36.loca.lt",
   "WS_URL": "https://kelmah-ws.loca.lt",
   "NODE_ENV": "production",
   "TUNNEL_TYPE": "localtunnel",
   "isDevelopment": true,
-  "timestamp": "2025-09-16T01:06:37.311Z",
+  "timestamp": "2025-09-16T09:22:10.740Z",
   "version": "1.0.0"
 }
