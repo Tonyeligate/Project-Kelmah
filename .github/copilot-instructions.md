@@ -7,13 +7,13 @@ alwaysApply: true
 
 Kelmah is a **freelance marketplace** with a **microservices backend** and **modular React frontend**. The system uses an **API Gateway pattern** with service-specific microservices, all routing through a central gateway for the frontend.
 
-### Backend: Remote Microservices Architecture ⚠️ UPDATED
-- **API Gateway** (`kelmah-backend/api-gateway/`) - Central routing hub on **remote server** port 5000
+### Backend: Local Microservices Architecture ⚠️ UPDATED 2025-09-16
+- **API Gateway** (`kelmah-backend/api-gateway/`) - Central routing hub on **localhost** port 5000
 - **Services** (`kelmah-backend/services/`): auth, user, job, payment, messaging, review
 - **Tech Stack**: Express.js, MongoDB/Mongoose, Socket.IO, JWT auth, Winston logging
 - **Key Pattern**: Each service has `server.js`, `routes/`, `controllers/`, `models/`, `services/`
-- **⚠️ CRITICAL**: All microservices run on **remote server**, NOT localhost
-- **Development Access**: Via ngrok tunnels to remote server ports 5001-5006
+- **⚠️ ARCHITECTURE UPDATE**: All microservices run on **localhost** during development
+- **External Access**: Via LocalTunnel (replaced ngrok) to localhost ports 5000-5006
 
 ### Frontend: Domain-Driven Modules
 - **Modular Structure** (`kelmah-frontend/src/modules/`): auth, jobs, dashboard, worker, hirer, etc.
@@ -22,45 +22,35 @@ Kelmah is a **freelance marketplace** with a **microservices backend** and **mod
 
 ## Critical Development Workflows
 
-### Remote Server Architecture ⚠️ UPDATED
+### Local Development Architecture ⚠️ UPDATED 2025-09-16
 ```
 Local Development Machine:
 ├── Frontend development (Vite dev server)
-├── ngrok tunnel management  
-├── Configuration files
+├── Backend microservices (all localhost)
+│   ├── API Gateway (port 5000) ✅ Running
+│   ├── Auth Service (port 5001) ✅ Running  
+│   ├── User Service (port 5002) ✅ Running
+│   ├── Job Service (port 5003) ✅ Running
+│   ├── Payment Service (port 5004) ❌ Unhealthy (non-critical)
+│   ├── Messaging Service (port 5005) ✅ Running
+│   └── Review Service (port 5006) ✅ Running
+├── LocalTunnel management (replaced ngrok)
 └── Testing/debugging scripts
-
-Remote Production Server:
-├── API Gateway (port 5000)
-├── Auth Service (port 5001) ✅ Running
-├── User Service (port 5002) ✅ Running  
-├── Job Service (port 5003) ❌ Needs restart
-├── Payment Service (port 5004) ❌ Needs restart
-├── Messaging Service (port 5005) ❌ Needs restart
-└── Review Service (port 5006) ❌ Needs restart
 ```
 
-### Backend Development
+### Backend Development ⚠️ UPDATED
 ```bash
-# ⚠️ IMPORTANT: Services run on REMOTE SERVER, not locally
-# These commands are for REFERENCE ONLY - run on remote server
+# All services run LOCALLY now - start with provided scripts
+node start-api-gateway.js     # API Gateway on localhost:5000
+node start-auth-service.js    # Auth service on localhost:5001  
+node start-user-service.js    # User service on localhost:5002
+node start-job-service.js     # Job service on localhost:5003
+node start-messaging-service.js # Messaging service on localhost:5005
 
-# Start all services (REMOTE SERVER ONLY)
-npm run dev  # from kelmah-backend/
-
-# Start individual services (REMOTE SERVER ONLY) 
-npm run start:gateway  # API Gateway on :5000
-npm run start:auth     # Auth service on :5001
-npm run start:messaging # Messaging service on :5005 (Socket.IO)
-
-# Testing and debugging (can run locally)
-npm test              # Run all tests
-npm run test:coverage # Run tests with coverage
-node test-*.js        # Run specific debug scripts
+# Testing and debugging scripts
+node test-auth-and-notifications.js  # Comprehensive auth testing
+node create-gifty-user.js           # User setup for testing
 ```
-
-**⚠️ CRITICAL: Server restart/shutdown operations must be performed only by the project owner.**
-**⚠️ ARCHITECTURE: All backend services run on remote server, accessed via ngrok tunnels.**
 
 ### Frontend Development
 ```bash
@@ -71,32 +61,35 @@ npm run dev  # Vite dev server on :3000
 npm run build  # Creates build/ directory
 ```
 
-### Service Communication
-- **Frontend → API Gateway**: All API calls go through `/api/*` routes via ngrok tunnel
-- **Gateway → Services**: Proxy routing with service registry pattern to remote services
-- **Real-time**: Socket.IO client connects to remote messaging service via gateway proxy
-- **Ngrok Tunnels**: 
-  - API Gateway: `https://298fb9b8181e.ngrok-free.app` → remote port 5000
-  - WebSocket: `https://e74c110076f4.ngrok-free.app` → remote port 5005
+### Service Communication ⚠️ UPDATED TO LOCALTUNNEL
+- **Frontend → API Gateway**: All API calls go through `/api/*` routes via LocalTunnel
+- **Gateway → Services**: Proxy routing with service registry pattern to localhost services
+- **Real-time**: Socket.IO client connects to messaging service via gateway proxy
+- **Current LocalTunnel**: `https://red-bobcat-90.loca.lt` (unified mode) - **CHANGES ON RESTART**
+- **Architecture**: Single tunnel for both HTTP and WebSocket traffic
+- **⚠️ URL Behavior**: LocalTunnel URL changes every time `start-localtunnel-fixed.js` is restarted - this is normal
 
-### Ngrok URL Management Protocol ⚠️ DYNAMIC URLS - CRITICAL SYSTEM
-**⚠️ IMPORTANT**: Ngrok URLs change every time ngrok is restarted. This is WHY the automated ngrok protocol system exists.
+### LocalTunnel URL Management Protocol ⚠️ REPLACED NGROK - CRITICAL SYSTEM
+**⚠️ CRITICAL BEHAVIOR**: LocalTunnel URLs change every time `start-localtunnel-fixed.js` is restarted. This is normal and expected.
 
-- **URL Regeneration**: Ngrok URLs change every restart - this is normal and expected behavior
-- **Automatic Update System**: `start-ngrok.js` automatically detects URL changes and updates all configuration files
+- **Current Active URL**: `https://red-bobcat-90.loca.lt` (changes on restart)
+- **URL Change Pattern**: `https://[random-words-numbers].loca.lt` assigned on each restart
+- **Mode**: Unified (HTTP + WebSocket on single domain)
+- **Automatic Update System**: `start-localtunnel-fixed.js` automatically detects URL changes and updates all configuration files
 - **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment automatically
-- **Dual Tunnel Architecture**: 
-  - API Gateway tunnel (port 5000): `https://[id].ngrok-free.app` → All HTTP API requests
-  - WebSocket tunnel (port 5005): `https://[id].ngrok-free.app` → Real-time Socket.IO connections
-- **Files Auto-Updated**: 
+- **Unified Architecture**: 
+  - API Gateway tunnel (port 5000): `https://[subdomain].loca.lt` → All HTTP API requests
+  - WebSocket tunnel: Same URL with `/socket.io` → Real-time Socket.IO connections
+- **Files Auto-Updated on URL Change**: 
   - `kelmah-frontend/public/runtime-config.json` - Frontend runtime configuration
   - `vercel.json` rewrites configuration - Deployment routing
-  - `ngrok-config.json` - Ngrok state tracking
+  - `ngrok-config.json` - LocalTunnel state tracking (kept same filename)
   - `kelmah-frontend/src/config/securityConfig.js` - Security headers
 - **Zero Manual Intervention**: Never manually edit these files - let the protocol handle all updates
-- **Deployment Trigger**: Changes auto-deploy to Vercel for immediate availability
-- **Usage**: Always run `node start-ngrok.js` to regenerate URLs and auto-update all configs
-- **Verification**: Use `spec-kit/NGROK_PROTOCOL_DOCUMENTATION.md` for complete protocol details
+- **Deployment Trigger**: URL changes auto-deploy to Vercel for immediate availability
+- **Usage**: Always run `node start-localtunnel-fixed.js` to start tunnels and auto-update all configs
+- **Advantages**: No browser warning pages, faster access, better development workflow
+- **⚠️ Expected Behavior**: If APIs stop working after restart, check if URL changed and verify auto-update process completed
 
 ## Key Configuration Patterns
 
@@ -160,11 +153,36 @@ services/[service-name]/
 - **Global store**: `src/store/index.js` combines all domain slices
 - **Async actions**: Use Redux Toolkit's `createAsyncThunk` pattern
 
-### Authentication Flow
+### Authentication Flow ⚠️ UPDATED 2025-09-16
 1. **Login**: Frontend → Gateway `/api/auth/login` → Auth Service
 2. **JWT Storage**: Uses `secureStorage` utility (localStorage/sessionStorage)
 3. **Axios Interceptors**: Auto-attach tokens, handle refresh logic
 4. **Socket.IO Auth**: Token passed via connection auth
+
+### Authentication Debugging Protocol ⚠️ CRITICAL
+**Common Issues & Solutions:**
+
+#### Credential Management
+- **Test User**: `giftyafisa@gmail.com` with password `1221122Ga`
+- **Email Verification**: Must be set to `true` in database to avoid 403 errors
+- **Password Hashing**: Uses bcrypt with 12 salt rounds
+- **Setup Script**: Use `node create-gifty-user.js` to ensure test user exists
+
+#### Authentication Testing
+- **Comprehensive Test**: Use `node test-auth-and-notifications.js` for full auth flow
+- **Health Checks**: Verify all services running before auth testing
+- **Token Validation**: Check JWT tokens work for protected endpoints
+- **Common Errors**:
+  - 401 "Incorrect email or password" → Check credentials and user existence
+  - 403 "Email not verified" → Set `isEmailVerified: true` in database
+  - 404 on protected endpoints → Check API Gateway routing
+  - 401 on protected endpoints → Check JWT token validity
+
+#### Service Dependencies
+- **Auth Service**: Must be running on localhost:5001
+- **User Service**: Required for profile data (localhost:5002)
+- **Messaging Service**: Required for notifications (localhost:5005)
+- **Database**: MongoDB connection required for user authentication
 
 ## Deployment & Infrastructure
 
@@ -179,12 +197,14 @@ services/[service-name]/
 - `kelmah-backend/api-gateway/server.js` - Service registry and routing
 - `.env` files - Service-specific environment variables
 
-### Development Debugging
+### Development Debugging ⚠️ UPDATED 2025-09-16
 - **Health Checks**: All services expose `/health`, `/health/ready`, `/health/live` endpoints
 - **Logging**: Winston logger with structured JSON output
 - **Service Status**: Use `src/utils/serviceHealthCheck.js` for frontend service monitoring
 - **Testing**: Jest-based testing with coverage thresholds (90% critical, 70% non-critical)
 - **Debug Scripts**: Use dedicated scripts for service testing (`test-*.js` files in root)
+- **Authentication Testing**: Use `test-auth-and-notifications.js` for comprehensive auth flow testing
+- **User Management**: Use `create-gifty-user.js` for test user setup and credential management
 
 ## Common Gotchas
 
