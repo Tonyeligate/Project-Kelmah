@@ -69,27 +69,45 @@ npm run build  # Creates build/ directory
 - **Architecture**: Single tunnel for both HTTP and WebSocket traffic
 - **⚠️ URL Behavior**: LocalTunnel URL changes every time `start-localtunnel-fixed.js` is restarted - this is normal
 
-### LocalTunnel URL Management Protocol ⚠️ REPLACED NGROK - CRITICAL SYSTEM
-**⚠️ CRITICAL BEHAVIOR**: LocalTunnel URLs change every time `start-localtunnel-fixed.js` is restarted. This is normal and expected.
+### LocalTunnel URL Management Protocol ⚠️ CURRENT PRIMARY SYSTEM - CRITICAL
 
-- **Current Active URL**: `https://red-bobcat-90.loca.lt` (changes on restart)
+### Current LocalTunnel Configuration (September 2025)
+The platform has transitioned to LocalTunnel as the primary development tunnel solution, offering improved reliability and unified mode operation.
+
+**⚠️ CURRENT SYSTEM**: LocalTunnel unified mode is now the default configuration for all development work.
+
+- **Current Active URL**: `https://shaggy-snake-43.loca.lt` (changes on restart)
 - **URL Change Pattern**: `https://[random-words-numbers].loca.lt` assigned on each restart
 - **Mode**: Unified (HTTP + WebSocket on single domain)
 - **Automatic Update System**: `start-localtunnel-fixed.js` automatically detects URL changes and updates all configuration files
 - **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment automatically
 - **Unified Architecture**: 
   - API Gateway tunnel (port 5000): `https://[subdomain].loca.lt` → All HTTP API requests
-  - WebSocket tunnel: Same URL with `/socket.io` → Real-time Socket.IO connections
+  - WebSocket traffic: Same URL with `/socket.io` → Real-time Socket.IO connections (routed through API Gateway)
 - **Files Auto-Updated on URL Change**: 
   - `kelmah-frontend/public/runtime-config.json` - Frontend runtime configuration
-  - `vercel.json` rewrites configuration - Deployment routing
-  - `ngrok-config.json` - LocalTunnel state tracking (kept same filename)
-  - `kelmah-frontend/src/config/securityConfig.js` - Security headers
+  - Root `vercel.json` and `kelmah-frontend/vercel.json` rewrites configuration - Deployment routing
+  - `ngrok-config.json` - LocalTunnel state tracking (kept same filename for compatibility)
+  - `kelmah-frontend/src/config/securityConfig.js` - Security headers and CSP connect-src
 - **Zero Manual Intervention**: Never manually edit these files - let the protocol handle all updates
 - **Deployment Trigger**: URL changes auto-deploy to Vercel for immediate availability
 - **Usage**: Always run `node start-localtunnel-fixed.js` to start tunnels and auto-update all configs
-- **Advantages**: No browser warning pages, faster access, better development workflow
+- **Advantages**: No browser warning pages, faster access, better development workflow, unified routing
 - **⚠️ Expected Behavior**: If APIs stop working after restart, check if URL changed and verify auto-update process completed
+
+### LocalTunnel vs Ngrok Comparison
+- **LocalTunnel Advantages**: No browser warnings, unified mode default, simpler setup
+- **Ngrok Legacy**: Still documented below for reference, but LocalTunnel is now preferred
+- **Compatibility**: Both systems use the same config file structure and update protocols
+
+### Ngrok Protocol Documentation (LEGACY REFERENCE)
+
+### Ngrok URL Management Protocol ⚠️ REPLACED BY LOCALTUNNEL - LEGACY REFERENCE
+**⚠️ LEGACY SYSTEM**: The information below is kept for reference. LocalTunnel is now the primary system.
+
+- **Legacy URL Pattern**: `https://[random-id].ngrok-free.app` assigned on each restart
+- **Legacy Mode**: Dual tunnels (separate HTTP and WebSocket)
+- **Legacy Script**: `start-ngrok.js` (replaced by `start-localtunnel-fixed.js`)
 
 ## Key Configuration Patterns
 
@@ -241,8 +259,10 @@ services/[service-name]/
 
 ### Agent Diagnostics Policy
 - Agents MUST perform diagnostics themselves (terminal/web requests) and must NOT ask the user to run commands.
-- Use the current ngrok host to access remote services; servers are not hosted on this machine.
-- Always test via the API Gateway (`/api/*`) and include `ngrok-skip-browser-warning: true` where needed.
+- Use the current LocalTunnel host to access remote services; servers may be hosted locally or remotely.
+- Always test via the API Gateway (`/api/*`) routes through the current tunnel URL.
+- For LocalTunnel: No special headers required (advantage over ngrok)
+- For Legacy Ngrok: Include `ngrok-skip-browser-warning: true` header when needed
 - Use provided credentials for auth flows:
   - Gifty password: `1122112Ga`
   - All other users: `TestUser123!`
@@ -267,18 +287,30 @@ services/[service-name]/
 
 **Diagnosis Steps:**
 ```bash
-# 1. Check Gateway health (via ngrok)
+# 1. Check Gateway health (via current tunnel - LocalTunnel or ngrok)
+# LocalTunnel example:
+curl https://shaggy-snake-43.loca.lt/health
+
+# Legacy ngrok example:
 curl https://298fb9b8181e.ngrok-free.app/health -H "ngrok-skip-browser-warning: true"
 
 # 2. Check specific service health via gateway
+# LocalTunnel:
+curl https://shaggy-snake-43.loca.lt/api/health/aggregate
+
+# Legacy ngrok:
 curl https://298fb9b8181e.ngrok-free.app/api/health/aggregate -H "ngrok-skip-browser-warning: true"
 
 # 3. Test problematic endpoint via gateway
+# LocalTunnel:
+curl https://shaggy-snake-43.loca.lt/api/[endpoint-path]
+
+# Legacy ngrok:
 curl https://298fb9b8181e.ngrok-free.app/api/[endpoint-path] -H "ngrok-skip-browser-warning: true"
 
 # 4. Compare local vs deployed routes
 # Local: check kelmah-backend/services/[service]/routes/
-# Remote: test actual service behavior via ngrok
+# Remote: test actual service behavior via current tunnel
 ```
 
 **⚠️ DIAGNOSTIC TESTING PROTOCOL: AI agents should PERFORM diagnostic tests themselves using terminal commands, not ask the user to run them. Use run_in_terminal or terminal-tools to execute verification commands directly.**
@@ -356,7 +388,8 @@ spec-kit/
 
 ### Critical Spec-Kit Documents for Reference
 - **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
-- **Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system
+- **LocalTunnel Protocol**: `LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md` - Complete unified tunnel configuration and automated update system
+- **Legacy Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system (legacy reference)
 - **System Status**: `STATUS_LOG.md` - Track of all completed system improvements and current project state
 - **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT_COMPLETE.md` - Complete frontend/backend communication analysis
 
@@ -365,7 +398,8 @@ spec-kit/
 - **During Development**: Document discoveries, issues found, and interim findings in relevant spec-kit files
 - **After Completion**: Mark tasks as COMPLETED ✅ with verification details and current project state
 - **System Changes**: Update architecture documents when system understanding changes
-- **Ngrok Protocol**: Reference NGROK_PROTOCOL_DOCUMENTATION.md for URL management and automatic updates
+- **LocalTunnel Protocol**: Reference LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md for URL management and automatic updates
+- **Legacy Ngrok Protocol**: Reference NGROK_PROTOCOL_DOCUMENTATION.md for legacy tunnel configuration (historical reference)
 
 **⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues and maintain current project status.**
 
