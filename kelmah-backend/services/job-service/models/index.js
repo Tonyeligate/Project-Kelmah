@@ -4,7 +4,7 @@
  */
 
 // Import from shared models
-const { Job, Application, User } = require('../../../shared/models');
+const { Job, Application, User, SavedJob } = require('../../../shared/models');
 
 // Import service-specific models
 const Bid = require('./Bid');
@@ -13,7 +13,6 @@ const Category = require('./Category');
 const Contract = require('./Contract');
 const ContractDispute = require('./ContractDispute');
 const ContractTemplate = require('./ContractTemplate');
-const SavedJob = require('./SavedJob');
 
 // Export models
 module.exports = {
@@ -21,7 +20,8 @@ module.exports = {
   Job,
   Application,
   User,
-  
+  SavedJob,
+
   // Service-specific models
   Bid,
   UserPerformance,
@@ -29,5 +29,4 @@ module.exports = {
   Contract,
   ContractDispute,
   ContractTemplate,
-  SavedJob
 };

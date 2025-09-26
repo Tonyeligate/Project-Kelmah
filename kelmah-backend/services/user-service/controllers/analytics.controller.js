@@ -4,8 +4,7 @@
  */
 
 // Use shared models via models index
-const { User } = require('../models');
-const WorkerProfile = require('../models/WorkerProfile');
+const { User, WorkerProfile } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
 const axios = require('axios');
 
@@ -61,42 +60,42 @@ class AnalyticsController {
       ] = await Promise.all([
         // Total users
         User.count({ where: { isActive: true } }),
-        
+
         // Active users (logged in within last 30 days)
-        User.count({ 
-          where: { 
+        User.count({
+          where: {
             isActive: true,
             lastLoginAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) }
-          } 
+          }
         }),
-        
+
         // New users in time range
-        User.count({ 
-          where: { 
+        User.count({
+          where: {
             createdAt: { $gte: startDate },
             isActive: true
-          } 
+          }
         }),
-        
+
         // Total workers
         WorkerProfile.count({ where: { isActive: true } }),
-        
+
         // Active workers (available for work)
-        WorkerProfile.count({ 
-          where: { 
+        WorkerProfile.count({
+          where: {
             isActive: true,
             availabilityStatus: ['available', 'partially_available']
-          } 
+          }
         }),
-        
+
         // Verified workers
-        WorkerProfile.count({ 
-          where: { 
+        WorkerProfile.count({
+          where: {
             isActive: true,
             verificationStatus: 'verified'
-          } 
+          }
         }),
-        
+
         // User growth data (last 12 months)
         User.aggregate([
           {
@@ -122,7 +121,7 @@ class AnalyticsController {
           },
           { $sort: { '_id.year': 1, '_id.month': 1 } }
         ]),
-        
+
         // Location statistics
         User.aggregate([
           { $match: { isActive: true, 'location.city': { $exists: true } } },
@@ -137,7 +136,7 @@ class AnalyticsController {
           { $sort: { count: -1 } },
           { $limit: 10 }
         ]),
-        
+
         // Skill statistics (from worker profiles)
         WorkerProfile.aggregate([
           { $match: { isActive: true, skills: { $exists: true, $ne: [] } } },
@@ -153,7 +152,7 @@ class AnalyticsController {
           { $sort: { count: -1 } },
           { $limit: 15 }
         ]),
-        
+
         // Rating distribution
         WorkerProfile.aggregate([
           { $match: { isActive: true, rating: { $exists: true } } },
@@ -195,7 +194,7 @@ class AnalyticsController {
           const tx = await axios.get(`${gateway}/api/payments/transactions`, { headers: { Authorization: token } });
           payoutsSummary = { recentCount: (tx.data?.data || []).length };
         }
-      } catch (_) {}
+      } catch (_) { }
 
       const analytics = {
         overview: {
@@ -252,29 +251,29 @@ class AnalyticsController {
         responseTime
       ] = await Promise.all([
         // Users active in last hour
-        User.count({ 
-          where: { 
+        User.count({
+          where: {
             lastLoginAt: { $gte: new Date(now.getTime() - 60 * 60 * 1000) }
-          } 
+          }
         }),
-        
+
         // Signups in last 24h
-        User.count({ 
-          where: { 
+        User.count({
+          where: {
             createdAt: { $gte: last24h }
-          } 
+          }
         }),
-        
+
         // System load (Node.js process info)
         Promise.resolve({
           memory: process.memoryUsage(),
           cpu: process.cpuUsage(),
           uptime: process.uptime()
         }),
-        
+
         // Mock error rate (in real implementation, get from logging service)
         Promise.resolve(Math.random() * 0.01), // 0-1% error rate
-        
+
         // Mock average response time
         Promise.resolve(Math.random() * 200 + 50) // 50-250ms
       ]);
@@ -300,9 +299,9 @@ class AnalyticsController {
           avgResponseTime: Math.round(responseTime)
         },
         health: {
-          status: errorRate < 0.005 && responseTime < 200 ? 'excellent' : 
-                  errorRate < 0.01 && responseTime < 300 ? 'good' :
-                  errorRate < 0.02 && responseTime < 500 ? 'warning' : 'critical',
+          status: errorRate < 0.005 && responseTime < 200 ? 'excellent' :
+            errorRate < 0.01 && responseTime < 300 ? 'good' :
+              errorRate < 0.02 && responseTime < 500 ? 'warning' : 'critical',
           database: 'connected', // In real implementation, check DB connection
           cache: 'operational', // In real implementation, check Redis/cache
           external_apis: 'operational' // In real implementation, check external services
@@ -355,9 +354,9 @@ class AnalyticsController {
           { updatedAt: { $gte: startDate } }
         ]
       })
-      .select('firstName lastName email role createdAt lastLoginAt updatedAt')
-      .sort({ updatedAt: -1 })
-      .limit(parseInt(limit));
+        .select('firstName lastName email role createdAt lastLoginAt updatedAt')
+        .sort({ updatedAt: -1 })
+        .limit(parseInt(limit));
 
       // Activity summary
       const activitySummary = await User.aggregate([
@@ -393,8 +392,8 @@ class AnalyticsController {
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
           role: user.role,
-          type: user.createdAt >= startDate ? 'registration' : 
-                user.lastLoginAt >= startDate ? 'login' : 'profile_update',
+          type: user.createdAt >= startDate ? 'registration' :
+            user.lastLoginAt >= startDate ? 'login' : 'profile_update',
           timestamp: user.updatedAt || user.lastLoginAt || user.createdAt
         })),
         summary: activitySummary,

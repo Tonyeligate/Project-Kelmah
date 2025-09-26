@@ -20,5 +20,13 @@ const Bookmark = require('./Bookmark');
 // Export models
 module.exports = {
   User,
+  WorkerProfile,
+  Portfolio,
+  Certificate,
+  Skill,
+  SkillCategory,
+  WorkerSkill,
+  Availability,
+  Bookmark,
   // Note: Notification model not used in user-service - handled by messaging-service
 };

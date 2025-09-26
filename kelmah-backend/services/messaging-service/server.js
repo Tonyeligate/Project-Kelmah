@@ -26,6 +26,8 @@ const notificationRoutes = require('./routes/notification.routes');
 // Import middleware
 const { verifyGatewayRequest } = require('../../shared/middlewares/serviceTrust');
 const { createHttpLogger, createErrorLogger } = require('./utils/logger');
+const { authenticate } = require('./middlewares/auth.middleware');
+const authMiddleware = authenticate; // Alias for consistency
 
 const app = express();
 // Optional tracing
@@ -269,7 +271,7 @@ try {
 } catch (_) { }
 
 // Socket.IO status endpoint
-app.get('/api/socket/status', authMiddleware, (req, res) => {
+app.get('/api/socket/status', authenticate, (req, res) => {
   const userId = req.user.id;
   const userStatus = messageSocketHandler.getUserStatus(userId);
 
@@ -285,7 +287,7 @@ app.get('/api/socket/status', authMiddleware, (req, res) => {
 });
 
 // Send message to user via API (for system messages)
-app.post('/api/socket/send-to-user', authMiddleware, (req, res) => {
+app.post('/api/socket/send-to-user', authenticate, (req, res) => {
   try {
     const { userId, event, data } = req.body;
 
@@ -314,7 +316,7 @@ app.post('/api/socket/send-to-user', authMiddleware, (req, res) => {
 });
 
 // Broadcast message to all users (admin only)
-app.post('/api/socket/broadcast', authMiddleware, (req, res) => {
+app.post('/api/socket/broadcast', authenticate, (req, res) => {
   try {
     // Check if user is admin
     if (req.user.role !== 'admin') {
@@ -355,7 +357,7 @@ app.post('/api/socket/broadcast', authMiddleware, (req, res) => {
 });
 
 // WebSocket metrics endpoint
-app.get('/api/socket/metrics', authMiddleware, (req, res) => {
+app.get('/api/socket/metrics', authenticate, (req, res) => {
   try {
     // Only allow admin access
     if (req.user.role !== 'admin') {

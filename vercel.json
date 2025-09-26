@@ -12,21 +12,21 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://192.168.1.1:3000/api/$1"
+      "destination": "http://154.161.138.112:5000/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "http://192.168.1.1:3000/socket.io/$1"
+      "destination": "http://154.161.138.112:5000/socket.io/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "http://192.168.1.1:3000",
-    "VITE_WS_URL": "http://192.168.1.1:3000"
+    "VITE_API_URL": "http://154.161.138.112:5000",
+    "VITE_WS_URL": "http://154.161.138.112:5000"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "http://192.168.1.1:3000",
-      "VITE_WS_URL": "http://192.168.1.1:3000"
+      "VITE_API_URL": "http://154.161.138.112:5000",
+      "VITE_WS_URL": "http://154.161.138.112:5000"
     }
   }
 }

@@ -94,7 +94,7 @@ exports.getEarnings = async (req, res) => {
 };
 
 // Use shared models via models index
-const { User, WorkerProfile } = require('../models');
+const { User } = require('../models');
 
 /**
  * Get all users (MongoDB)

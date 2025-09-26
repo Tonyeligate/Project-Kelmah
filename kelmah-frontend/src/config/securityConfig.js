@@ -51,8 +51,8 @@ export const SECURITY_CONFIG = {
     'img-src': ["'self'", "data:", "https:"],
     'connect-src': [
       "'self'",
-      'http://192.168.1.1:3000',
-      'http://192.168.1.1:3000',
+      'http://154.161.138.112:5000',
+      'http://154.161.138.112:5000',
       // Legacy URLs (kept for compatibility)
       'https://shaggy-snake-43.loca.lt',
       "https://kelmah-auth-service.onrender.com",
