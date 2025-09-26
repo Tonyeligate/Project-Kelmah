@@ -1,12 +1,12 @@
 {
-  "ngrokUrl": "https://shaggy-snake-43.loca.lt",
-  "websocketUrl": "wss://shaggy-snake-43.loca.lt",
-  "API_URL": "https://shaggy-snake-43.loca.lt",
-  "WS_URL": "https://shaggy-snake-43.loca.lt",
+  "ngrokUrl": "http://192.168.1.1:3000",
+  "websocketUrl": "ws://192.168.1.1:3000",
+  "API_URL": "http://192.168.1.1:3000",
+  "WS_URL": "http://192.168.1.1:3000",
   "NODE_ENV": "production",
-  "TUNNEL_TYPE": "localtunnel",
+  "TUNNEL_TYPE": "router",
   "WEBSOCKET_MODE": "unified",
-  "isDevelopment": true,
-  "timestamp": "2025-09-16T23:29:03.644Z",
+  "isDevelopment": false,
+  "timestamp": "2025-09-26T18:38:18.638Z",
   "version": "1.0.0"
 }

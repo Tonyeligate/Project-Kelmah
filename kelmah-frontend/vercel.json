@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://shaggy-snake-43.loca.lt/api/$1"
+      "destination": "http://192.168.1.1:3000/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://shaggy-snake-43.loca.lt/socket.io/$1"
+      "destination": "http://192.168.1.1:3000/socket.io/$1"
     },
     {
       "source": "/(.*)",
