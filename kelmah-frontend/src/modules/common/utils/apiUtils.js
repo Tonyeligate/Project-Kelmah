@@ -1,4 +1,4 @@
-import axiosInstance from '../services/axios';
+import { gatewayClient } from '../services/axios';
 
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
@@ -21,7 +21,7 @@ export const checkApiHealth = async (showLoading = true) => {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const timeout = baseTimeoutMs * attempt; // simple linear backoff
     try {
-      const response = await axiosInstance.get('/api/health', {
+      const response = await gatewayClient.get('/api/health', {
         timeout,
         skipAuthRefresh: true,
         skipErrorHandling: true,
@@ -56,7 +56,7 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   get: (url, params = {}, options = {}) => {
-    return axiosInstance
+    return gatewayClient
       .get(url, { params, ...options })
       .then((response) => response.data);
   },
@@ -69,7 +69,7 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   post: (url, data = {}, options = {}) => {
-    return axiosInstance
+    return gatewayClient
       .post(url, data, options)
       .then((response) => response.data);
   },
@@ -82,7 +82,7 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   put: (url, data = {}, options = {}) => {
-    return axiosInstance
+    return gatewayClient
       .put(url, data, options)
       .then((response) => response.data);
   },
@@ -94,6 +94,6 @@ export const apiService = {
    * @returns {Promise<any>} - Promise with response data
    */
   delete: (url, options = {}) => {
-    return axiosInstance.delete(url, options).then((response) => response.data);
+    return gatewayClient.delete(url, options).then((response) => response.data);
   },
 };

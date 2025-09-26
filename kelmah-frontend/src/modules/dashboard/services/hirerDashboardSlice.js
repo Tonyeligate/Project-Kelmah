@@ -1,13 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import hirersApi from '../../../api/services/hirersApi';
+import hirerService from './hirerService';
 
 // Async thunk for fetching hirer dashboard data
 export const fetchHirerDashboardData = createAsyncThunk(
   'hirerDashboard/fetchData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await hirersApi.getDashboardData();
-      return response.data;
+      const response = await hirerService.getDashboardData();
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch dashboard data');
     }
@@ -19,8 +19,8 @@ export const fetchHirerMetrics = createAsyncThunk(
   'hirerDashboard/fetchMetrics',
   async (timeframe = '30d', { rejectWithValue }) => {
     try {
-      const response = await hirersApi.getMetrics(timeframe);
-      return response.data;
+      const response = await hirerService.getStats(timeframe);
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch metrics');
     }
@@ -32,8 +32,8 @@ export const fetchActiveJobs = createAsyncThunk(
   'hirerDashboard/fetchActiveJobs',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await hirersApi.getActiveJobs();
-      return response.data;
+      const response = await hirerService.getRecentJobs();
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch active jobs');
     }
@@ -45,8 +45,8 @@ export const fetchRecentApplications = createAsyncThunk(
   'hirerDashboard/fetchRecentApplications',
   async (limit = 10, { rejectWithValue }) => {
     try {
-      const response = await hirersApi.getRecentApplications(limit);
-      return response.data;
+      const response = await hirerService.getApplications({ limit });
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch applications');
     }

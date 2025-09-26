@@ -18,7 +18,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { MapOutlined as MapIcon } from '@mui/icons-material';
-import JobCard from '../../../jobs/components/common/JobCard';
+import { InteractiveJobCard as JobCard } from '../../../common/components/cards';
 
 const SearchResults = ({
   jobs = [],

@@ -1,11 +1,12 @@
-const router = require('express').Router();
+const r// Service trust middleware - verify requests from API Gateway
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust'); = require('express').Router();
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: (parseInt(process.env.MAX_UPLOAD_MB || '25', 10)) * 1024 * 1024 } });
 const path = require('path');
 const fs = require('fs');
 
 // Simple auth pass-through (assumes gateway validated JWT and set headers)
-const authenticate = (req, res, next) => {
+const verifyGatewayRequest = (req, res, next) => {
   const authHeader = req.headers.authorization || '';
   if (!authHeader.startsWith('Bearer ')) return res.status(401).json({ success: false, message: 'Unauthorized' });
   next();
@@ -14,14 +15,14 @@ const authenticate = (req, res, next) => {
 // Rate limiter
 let uploadLimiter = null;
 try {
-  const { createLimiter } = require('../../auth-service/middlewares/rateLimiter');
+  const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
   uploadLimiter = createLimiter('uploads');
 } catch (_) {
   uploadLimiter = (req, res, next) => next();
 }
 
 // Basic server-side validation. In production, direct uploads are disabled.
-router.post('/api/messages/:conversationId/attachments', authenticate, uploadLimiter, upload.array('files', 10), async (req, res) => {
+router.post('/api/messages/:conversationId/attachments', verifyGatewayRequest, uploadLimiter, upload.array('files', 10), async (req, res) => {
   try {
     if (process.env.NODE_ENV === 'production' || process.env.ENABLE_S3_UPLOADS === 'true') {
       return res.status(400).json({ success: false, message: 'Direct uploads disabled in this environment. Use presigned URLs.' });
@@ -75,7 +76,7 @@ router.post('/api/messages/:conversationId/attachments', authenticate, uploadLim
 
 // Presign endpoint for messaging attachments (AWS S3 v3)
 // POST presign (body)
-router.post('/api/uploads/presign', authenticate, uploadLimiter, async (req, res) => {
+router.post('/api/uploads/presign', verifyGatewayRequest, uploadLimiter, async (req, res) => {
   try {
     const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
     const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
@@ -107,7 +108,7 @@ router.post('/api/uploads/presign', authenticate, uploadLimiter, async (req, res
 });
 
 // GET presign (query)
-router.get('/api/uploads/presign', authenticate, uploadLimiter, async (req, res) => {
+router.get('/api/uploads/presign', verifyGatewayRequest, uploadLimiter, async (req, res) => {
   try {
     const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
     const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');

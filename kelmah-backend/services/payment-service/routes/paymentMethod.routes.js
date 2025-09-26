@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const paymentMethodController = require("../controllers/paymentMethod.controller");
-const { authenticate } = require("../middlewares/auth");
+const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 
 // Apply authentication middleware to all routes
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 // Payment method routes
 router.get("/", paymentMethodController.getPaymentMethods);

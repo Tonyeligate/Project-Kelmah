@@ -1,6 +1,4 @@
-const Escrow = require('../models/Escrow');
-const Wallet = require('../models/Wallet');
-const Transaction = require('../models/Transaction');
+const { Escrow, Wallet, Transaction, User } = require('../models');
 
 exports.getEscrows = async (req, res, next) => {
   try {

@@ -144,7 +144,8 @@ import {
   selectSavedJobs,
   fetchSavedJobs,
 } from '../../jobs/services/jobSlice';
-import { jobsApi, bidApi, userPerformanceApi } from '../../../api';
+import jobsApi from '../../jobs/services/jobsApi';
+// TODO: Integrate bid and user performance functionality into appropriate module services
 import EnhancedJobCard from '../components/EnhancedJobCard';
 import UserPerformanceDashboard from '../components/UserPerformanceDashboard';
 // Removed AuthContext import to prevent dual state management conflicts
@@ -647,7 +648,8 @@ const JobSearchPage = () => {
     
     setPerformanceLoading(true);
     try {
-      const response = await userPerformanceApi.getMyPerformance();
+      // TODO: Integrate into worker service
+      // const response = await userPerformanceApi.getMyPerformance();
       setUserPerformance(response.data);
     } catch (error) {
       console.error('Error fetching user performance:', error);
@@ -661,7 +663,8 @@ const JobSearchPage = () => {
     
     setBidsLoading(true);
     try {
-      const response = await bidApi.getMyBids();
+      // TODO: Integrate into worker service  
+      // const response = await bidApi.getMyBids();
       setMyBids(response.data || []);
     } catch (error) {
       console.error('Error fetching my bids:', error);

@@ -1,99 +1,24 @@
 /**
- * Models Index - User Service
- * Exports all models with support for mixed MongoDB/PostgreSQL architecture
+ * User Service Models Index - Uses Shared Models
+ * Updated to use centralized shared models and MongoDB only
  */
 
-const mongoose = require('mongoose');
-const { Sequelize, DataTypes } = require('sequelize');
+// Import from shared models
+const { User } = require('../../../shared/models');
 
-// Initialize database connections
-let sequelize;
-
-// Initialize Sequelize connection if configured
-if (process.env.DATABASE_URL || process.env.USER_SQL_URL) {
-  const dbUrl = process.env.USER_SQL_URL || process.env.DATABASE_URL;
-  sequelize = new Sequelize(dbUrl, {
-    dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
-  });
-}
-
-// MongoDB/Mongoose Models
-const User = require('./User');
-const Bookmark = require('./Bookmark');
-const Certificate = require('./Certificate');
-const Notification = require('./Notification');
+// Import service-specific models
+const WorkerProfile = require('./WorkerProfileMongo'); // Use the MongoDB version
 const Portfolio = require('./Portfolio');
-const Setting = require('./Setting');
-const WorkerProfileMongo = require('./WorkerProfileMongo');
+const Certificate = require('./Certificate');
+const Skill = require('./Skill');
+const SkillCategory = require('./SkillCategory');
+const WorkerSkill = require('./WorkerSkill');
+const Availability = require('./Availability');
+const Bookmark = require('./Bookmark');
+// const Setting = require('./Setting'); // Removed - using in-memory storage for now
 
-// PostgreSQL/Sequelize Models (if database is configured)
-let WorkerProfile, WorkerSkill, Skill, SkillCategory;
-
-if (sequelize) {
-  try {
-    WorkerProfile = require('./WorkerProfile')(sequelize, DataTypes);
-    WorkerSkill = require('./WorkerSkill')(sequelize, DataTypes);
-    Skill = require('./Skill')(sequelize, DataTypes);
-    SkillCategory = require('./SkillCategory')(sequelize, DataTypes);
-
-    // Set up associations
-    const models = { WorkerProfile, WorkerSkill, Skill, SkillCategory, User };
-
-    Object.keys(models).forEach(modelName => {
-      if (models[modelName].associate) {
-        models[modelName].associate(models);
-      }
-    });
-
-    // Sync database (in development only)
-    if (process.env.NODE_ENV === 'development') {
-      sequelize.sync({ alter: false }).catch(err => {
-        console.warn('Sequelize sync failed (non-critical):', err.message);
-      });
-    }
-  } catch (error) {
-    console.warn('Sequelize models initialization failed (non-critical):', error.message);
-    // Provide fallback empty models
-    WorkerProfile = null;
-    WorkerSkill = null;
-    Skill = null;
-    SkillCategory = null;
-  }
-} else {
-  console.log('PostgreSQL not configured, using MongoDB-only models');
-  WorkerProfile = null;
-  WorkerSkill = null;
-  Skill = null;
-  SkillCategory = null;
-}
-
+// Export models
 module.exports = {
-  // MongoDB/Mongoose Models
   User,
-  Bookmark,
-  Certificate,
-  Notification,
-  Portfolio,
-  Setting,
-  WorkerProfileMongo,
-
-  // Use MongoDB WorkerProfile as primary (for dashboard compatibility)
-  WorkerProfile: WorkerProfileMongo,
-
-  // PostgreSQL/Sequelize Models (may be null if not configured)
-  WorkerProfileSQL: WorkerProfile,
-  WorkerSkill,
-  Skill,
-  SkillCategory,
-
-  // Database connections
-  sequelize,
-  mongoose
+  // Note: Notification model not used in user-service - handled by messaging-service
 };

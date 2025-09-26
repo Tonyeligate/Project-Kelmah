@@ -6,7 +6,7 @@
 const MTNMoMoService = require('../integrations/mtn-momo');
 const VodafoneCashService = require('../integrations/vodafone-cash');
 const PaystackService = require('../integrations/paystack');
-const { Payment, Transaction, Wallet, Escrow } = require('../models');
+const { Transaction, Wallet, Escrow, User } = require('../models');
 const { notifyPaymentEvent } = require('../utils/notifier');
 const { v4: uuidv4 } = require('uuid');
 const auditLogger = require('../../../shared/utils/audit-logger');

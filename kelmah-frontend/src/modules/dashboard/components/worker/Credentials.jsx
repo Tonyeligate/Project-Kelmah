@@ -25,8 +25,8 @@ import GppBadIcon from '@mui/icons-material/GppBad';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-// Temporarily comment out API import until workers service is implemented  
-import workersApi from '../../../../api/services/workersApi';
+// Updated to use proper module service architecture
+import workerService from '../../../worker/services/workerService';
 
 const Credentials = () => {
   const [skills, setSkills] = useState([]);
@@ -55,7 +55,7 @@ const Credentials = () => {
     const fetchCredentials = async () => {
       try {
         setIsLoading(true);
-        const response = await workersApi.getSkillsAndLicenses();
+        const response = await workerService.getWorkerSkills();
 
         // Handle both API response formats
         const data = response.data || response;
@@ -97,7 +97,7 @@ const Credentials = () => {
 
       try {
         // Send verification request to API
-        await workersApi.requestSkillVerification(activeSkill.id, {
+        await workerService.requestSkillVerification(activeSkill.id, {
           // Include verification data if needed
           documentUrls: [], // Would be populated in a real implementation
           notes: 'Verification requested through worker dashboard',

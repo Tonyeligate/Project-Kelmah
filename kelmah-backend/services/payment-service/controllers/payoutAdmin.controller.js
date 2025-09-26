@@ -1,6 +1,4 @@
-const PayoutQueue = require('../models/PayoutQueue');
-const Transaction = require('../models/Transaction');
-const PaymentMethod = require('../models/PaymentMethod');
+const { PayoutQueue, Transaction, PaymentMethod, User } = require('../models');
 
 // Enqueue a payout (admin)
 exports.enqueuePayout = async (req, res) => {

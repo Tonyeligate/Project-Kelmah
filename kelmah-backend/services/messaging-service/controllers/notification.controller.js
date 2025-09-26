@@ -1,5 +1,4 @@
-const Notification = require("../models/Notification");
-const NotificationPreference = require('../models/NotificationPreference');
+const { Notification, NotificationPreference } = require('../models');
 const { handleError } = require("../utils/errorHandler");
 
 // Get user notifications

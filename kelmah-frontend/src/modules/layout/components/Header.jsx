@@ -50,7 +50,7 @@ import MobileNav from './MobileNav';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
-import workersApi from '../../../api/services/workersApi';
+import workerService from '../../worker/services/workerService';
 import { secureStorage } from '../../../utils/secureStorage';
 
 // Enhanced Styled Components
@@ -409,8 +409,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         const id = user?.id || user?._id || user?.userId;
         if (id) {
           const [avail, comp] = await Promise.all([
-            workersApi.getAvailabilityStatus(id).catch(() => null),
-            workersApi.getProfileCompletion().catch(() => null),
+            workerService.getWorkerAvailability(id).catch(() => null),
+            workerService.getWorkerStats().catch(() => null),
           ]);
           if (avail) setHeaderAvailability(avail);
           if (comp) setHeaderCompletion(comp);

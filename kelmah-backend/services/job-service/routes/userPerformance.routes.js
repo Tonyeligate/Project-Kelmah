@@ -4,14 +4,25 @@
 
 const express = require("express");
 const { validate } = require("../middlewares/validator");
-const { authenticateUser, authorizeRoles } = require("../middlewares/auth");
+const { verifyGatewayRequest, optionalGatewayVerification } = require("../../../shared/middlewares/serviceTrust");
 
 const userPerformanceController = require("../controllers/userPerformance.controller");
+
+// Authorization helper function
+const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!req.user || !req.user.role) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden: insufficient role" });
+  }
+  next();
+};
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(authenticateUser);
+router.use(verifyGatewayRequest);
 
 // User performance management
 router.get(

@@ -1,12 +1,10 @@
 /**
- * Auth Service Models Index - MongoDB/Mongoose
- * Exports all Mongoose models for the auth service
- * Updated for MongoDB migration
+ * Auth Service Models Index - Uses Shared Models
+ * Updated to use centralized shared models instead of local duplicates
  */
 
-// Import Mongoose models
-const User = require('./User');
-const RefreshToken = require('./RefreshToken');
+// Import from shared models
+const { User, RefreshToken } = require('../../../shared/models');
 const RevokedToken = require('./RevokedToken');
 
 // Export models
@@ -16,6 +14,6 @@ module.exports = {
   RevokedToken
 };
 
-// Note: Mongoose handles relationships differently than Sequelize
-// The RefreshToken model already references User via ObjectId and populate()
+// Note: User and RefreshToken now come from shared models directory
+// Only service-specific models like RevokedToken remain local
 // No additional association setup is needed like in Sequelize

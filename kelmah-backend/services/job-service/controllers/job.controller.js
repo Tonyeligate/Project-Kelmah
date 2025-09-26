@@ -2,15 +2,18 @@
  * Job Controller
  */
 
-const Job = require("../models/Job");
-const User = require("../models/User");
-const Contract = require("../models/Contract");
-const ContractDispute = require("../models/ContractDispute");
-const Application = require("../models/Application");
-const Bid = require("../models/Bid");
-const UserPerformance = require("../models/UserPerformance");
-const SavedJob = require("../models/SavedJob");
-const Category = require("../models/Category");
+// Use shared and service-specific models via index
+const { 
+  Job, 
+  User, 
+  Application, 
+  SavedJob,
+  Bid,
+  UserPerformance,
+  Category,
+  Contract,
+  ContractDispute
+} = require("../models");
 const { AppError } = require("../middlewares/error");
 const {
   successResponse,

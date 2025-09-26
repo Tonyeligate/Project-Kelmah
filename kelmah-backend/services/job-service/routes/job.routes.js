@@ -4,16 +4,27 @@
 
 const express = require("express");
 const { validate } = require("../middlewares/validator");
-const { authenticateUser, authorizeRoles } = require("../middlewares/auth");
+const { verifyGatewayRequest, optionalGatewayVerification } = require("../../../shared/middlewares/serviceTrust");
 let createLimiter;
 try {
-  ({ createLimiter } = require('../../auth-service/middlewares/rateLimiter'));
+  ({ createLimiter } = require('../../../shared/middlewares/rateLimiter'));
 } catch (_) {
   // Fallback: no-op limiter to avoid crashing when shared limiter isn't available in the image
   createLimiter = () => (req, res, next) => next();
 }
 const jobValidation = require("../validations/job.validation");
 const jobController = require("../controllers/job.controller");
+
+// Authorization helper function
+const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!req.user || !req.user.role) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden: insufficient role" });
+  }
+  next();
+};
 
 const router = express.Router();
 
@@ -24,10 +35,10 @@ router.get("/dashboard", jobController.getDashboardJobs);
 router.get("/categories", jobController.getJobCategories);
 router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
 router.get("/contracts/:id", jobController.getContractById);
-router.post("/contracts/:id/disputes", authenticateUser, jobController.createContractDispute);
+router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
 
 // Protected routes
-router.use(authenticateUser);
+router.use(verifyGatewayRequest);
 
 // Hirer only routes
 router.post(

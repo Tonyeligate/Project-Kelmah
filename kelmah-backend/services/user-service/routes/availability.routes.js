@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const { authenticate } = require('../middlewares/auth');
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 const controller = require('../controllers/availability.controller');
 
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 router.get('/:userId?', controller.getAvailability);
 router.put('/:userId?', controller.upsertAvailability);

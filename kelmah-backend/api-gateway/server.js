@@ -16,10 +16,10 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const winston = require('winston');
 
 // Import middleware
-const authMiddleware = require('./middleware/auth');
-const loggingMiddleware = require('./middleware/logging');
-const errorHandler = require('./middleware/error-handler');
-const requestValidator = require('./middleware/request-validator');
+const { authenticate, authorizeRoles, optionalAuth } = require('./middlewares/auth');
+const loggingMiddleware = require('./middlewares/logging');
+const errorHandler = require('./middlewares/error-handler');
+const requestValidator = require('./middlewares/request-validator');
 
 const app = express();
 const PORT = process.env.API_GATEWAY_PORT || 3000;
@@ -41,24 +41,15 @@ const logger = winston.createLogger({
   ]
 });
 
-// Service registry
-// Prefer AWS internal NLB endpoints when env points to Render
-const INTERNAL_NLB = process.env.INTERNAL_NLB_DNS || 'http://localhost';
-const preferAws = (envUrl, fallbackAwsUrl) => {
-  if (typeof envUrl === 'string' && envUrl.length > 0 && !/onrender\.com/.test(envUrl)) {
-    return envUrl;
-  }
-  return fallbackAwsUrl;
-};
-
+// Service registry - Simplified URL resolution
 const services = {
-  auth: preferAws(process.env.AUTH_SERVICE_URL, `${INTERNAL_NLB}:5001`),
-  user: preferAws(process.env.USER_SERVICE_URL, `${INTERNAL_NLB}:5002`),
-  job: preferAws(process.env.JOB_SERVICE_URL, `${INTERNAL_NLB}:5003`),
-  payment: preferAws(process.env.PAYMENT_SERVICE_URL, `${INTERNAL_NLB}:5004`),
-  messaging: preferAws(process.env.MESSAGING_SERVICE_URL, `${INTERNAL_NLB}:5005`),
-  notification: preferAws(process.env.NOTIFICATION_SERVICE_URL, `${INTERNAL_NLB}:5006`),
-  review: preferAws(process.env.REVIEW_SERVICE_URL, `${INTERNAL_NLB}:5007`)
+  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
+  user: process.env.USER_SERVICE_URL || 'http://localhost:5002',
+  job: process.env.JOB_SERVICE_URL || 'http://localhost:5003',
+  payment: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5004',
+  messaging: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5005',
+  notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:5006',
+  review: process.env.REVIEW_SERVICE_URL || 'http://localhost:5007'
 };
 
 // Expose service URLs to route modules
@@ -311,7 +302,7 @@ app.use(
         return next();
       }
     }
-    return authMiddleware.authenticate(req, res, next);
+    return authenticate(req, res, next);
   },
   celebrate({
     [Segments.QUERY]: Joi.object({
@@ -325,8 +316,8 @@ app.use(
     pathRewrite: { '^/api/users': '/api/users' },
     onProxyReq: (proxyReq, req) => {
       if (req.user) {
-        proxyReq.setHeader('X-User-ID', req.user.id);
-        proxyReq.setHeader('X-User-Role', req.user.role);
+        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        proxyReq.setHeader('x-auth-source', 'api-gateway');
       }
     },
   })
@@ -347,7 +338,7 @@ app.use('/api/profile',
         return next();
       }
     }
-    return authMiddleware.authenticate(req, res, next);
+    return authenticate(req, res, next);
   },
   createProxyMiddleware({
     target: services.user,
@@ -358,7 +349,7 @@ app.use('/api/profile',
 
 // Profile upload & presign routes (protected) → user-service
 app.use('/api/profile/uploads',
-  authMiddleware.authenticate,
+  authenticate,
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
@@ -368,7 +359,7 @@ app.use('/api/profile/uploads',
 
 // Settings routes (protected) → user-service
 app.use('/api/settings',
-  authMiddleware.authenticate,
+  authenticate,
   createProxyMiddleware({
     target: services.user,
     changeOrigin: true,
@@ -382,7 +373,7 @@ app.use(
   (req, res, next) => {
     console.log('🌐 API Gateway: Worker route hit -', req.method, req.originalUrl);
     if (req.method === 'GET') return next();
-    return authMiddleware.authenticate(req, res, next);
+    return authenticate(req, res, next);
   },
   (req, res, next) => {
     if (req.method !== 'GET') return next();
@@ -514,7 +505,7 @@ app.use('/api/jobs/search', createProxyMiddleware({
 const paymentRouter = require('./routes/payment.routes');
 app.use('/api/payments',
   rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }),
-  authMiddleware.authenticate,
+  authenticate,
   requestValidator.enforceTierLimits(),
   requestValidator.validatePayment,
   paymentRouter
@@ -522,11 +513,11 @@ app.use('/api/payments',
 
 // Messaging routes (protected) — mount dedicated router to support aliases and granular endpoints
 const messagingRouter = require('./routes/messaging.routes');
-app.use('/api/messages', authMiddleware.authenticate, messagingRouter);
+app.use('/api/messages', authenticate, messagingRouter);
 
 // Upload routes for messaging (protected) → messaging-service
 app.use('/api/uploads',
-  authMiddleware.authenticate,
+  authenticate,
   (req, res, next) => {
     if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
       return res.status(503).json({ error: 'Messaging service unavailable' });
@@ -616,8 +607,8 @@ app.use('/socket.io', socketIoProxyHandler);
 
 // Socket metrics passthrough (admin validated upstream)
 app.use('/api/socket/metrics',
-  authMiddleware.authenticate,
-  authMiddleware.authorize('admin'),
+  authenticate,
+  authorizeRoles('admin'),
   (req, res, next) => {
     if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
       return res.status(503).json({ error: 'Messaging service unavailable' });
@@ -633,7 +624,7 @@ app.use('/api/socket/metrics',
 
 // Notification routes (protected) → messaging-service (hosts notifications API)
 app.use('/api/notifications',
-  authMiddleware.authenticate,
+  authenticate,
   (req, res, next) => {
     if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
       return res.status(503).json({ error: 'Messaging service unavailable' });
@@ -649,7 +640,7 @@ app.use('/api/notifications',
 
 // Conversations routes (protected) → messaging-service
 app.use('/api/conversations',
-  authMiddleware.authenticate,
+  authenticate,
   (req, res, next) => {
     if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
       return res.status(503).json({ error: 'Messaging service unavailable' });
@@ -665,8 +656,8 @@ app.use('/api/conversations',
 
 // Admin review moderation (admin only) → route to review-service
 app.use('/api/admin/reviews',
-  authMiddleware.authenticate,
-  authMiddleware.authorize('admin'),
+  authenticate,
+  authorizeRoles('admin'),
   (req, res, next) => {
     if (!services.review || typeof services.review !== 'string' || services.review.length === 0) {
       return res.status(503).json({ error: 'Review service unavailable' });
@@ -694,7 +685,7 @@ app.use('/api/reviews',
       return next();
     }
     // Protected routes: Submit, respond, helpful/report, can-review (requires identity)
-    return authMiddleware.authenticate(req, res, next);
+    return authenticate(req, res, next);
   },
   rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }), // Review-specific rate limiting
   (req, res, next) => {
@@ -707,8 +698,8 @@ app.use('/api/reviews',
       pathRewrite: { '^/api/reviews': '/api/reviews' },
       onProxyReq: (proxyReq, req) => {
         if (req.user) {
-          proxyReq.setHeader('X-User-ID', req.user.id);
-          proxyReq.setHeader('X-User-Role', req.user.role);
+          proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+          proxyReq.setHeader('x-auth-source', 'api-gateway');
         }
       },
       onError: (err, req, res) => {
@@ -741,8 +732,8 @@ app.use('/api/ratings',
 
 // Admin routes (admin only)
 app.use('/api/admin',
-  authMiddleware.authenticate,
-  authMiddleware.authorize('admin'),
+  authenticate,
+  authorizeRoles('admin'),
   (req, res, next) => {
     if (!services.user || typeof services.user !== 'string' || services.user.length === 0) {
       return res.status(503).json({ error: 'User service unavailable' });
@@ -772,131 +763,61 @@ app.use('/api/webhooks',
   }
 );
 
-// API documentation endpoint  
+// API documentation endpoints
 app.get('/api/docs', (req, res) => {
-  res.json({
-    name: 'Kelmah API Gateway',
-    description: 'Centralized API Gateway for Kelmah Platform',
-    version: '2.0.0',
-    timestamp: new Date().toISOString(),
+  const path = require('path');
+  const fs = require('fs');
 
-    // Essential endpoints
-    system: {
-      health: {
-        endpoints: ['/health', '/api/health'],
-        description: 'System health check',
-        method: 'GET',
-        authentication: 'None'
-      },
-      docs: {
-        endpoint: '/api/docs',
-        description: 'API documentation',
-        method: 'GET',
-        authentication: 'None'
-      }
-    },
-
-    // Main API endpoints
-    endpoints: {
-      auth: {
-        path: '/api/auth/*',
-        description: 'User authentication & registration',
-        methods: ['POST', 'GET'],
-        authentication: 'None (for login/register)',
-        examples: ['/api/auth/login', '/api/auth/register', '/api/auth/verify']
-      },
-      users: {
-        path: '/api/users/*',
-        description: 'User management',
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        authentication: 'Required',
-        examples: ['/api/users/profile', '/api/users/settings']
-      },
-      workers: {
-        path: '/api/workers/*',
-        description: 'Worker profiles & skills',
-        methods: ['GET', 'POST', 'PUT'],
-        authentication: 'GET: None, POST/PUT: Required',
-        examples: ['/api/workers', '/api/workers/{id}']
-      },
-      jobs: {
-        path: '/api/jobs/*',
-        description: 'Job postings & applications',
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        authentication: 'GET: None, Others: Required',
-        examples: ['/api/jobs', '/api/jobs/{id}/apply']
-      },
-      search: {
-        path: '/api/search/*',
-        description: 'Search jobs & workers',
-        methods: ['GET'],
-        authentication: 'None',
-        examples: ['/api/search/jobs?q=developer', '/api/search/workers?skills=js']
-      },
-      payments: {
-        path: '/api/payments/*',
-        description: 'Payment processing & escrow',
-        methods: ['GET', 'POST'],
-        authentication: 'Required',
-        examples: ['/api/payments/create', '/api/payments/history']
-      },
-      messages: {
-        path: '/api/messages/*',
-        description: 'Real-time messaging',
-        methods: ['GET', 'POST', 'DELETE'],
-        authentication: 'Required',
-        features: ['WebSocket Support', 'File Sharing']
-      },
-      reviews: {
-        path: '/api/reviews/*',
-        description: 'Review & rating system',
-        methods: ['GET', 'POST', 'PUT'],
-        authentication: 'GET: None, POST/PUT: Required',
-        examples: ['/api/reviews/worker/{id}', '/api/reviews/submit']
-      }
-    },
-
-    // Microservices status
-    services: {
-      total: Object.keys(services).length,
-      configured: Object.keys(services),
-      urls: services
-    },
-
-    // Platform features
-    features: [
-      'Microservices Architecture',
-      'Authentication & Authorization',
-      'User & Worker Management',
-      'Job Posting & Applications',
-      'Payment Processing & Escrow',
-      'Real-time Messaging & WebSocket',
-      'Push Notifications',
-      'Review & Rating System',
-      'Advanced Search & Filtering',
-      'Admin Dashboard & Moderation',
-      'CORS & Security Headers',
-      'Rate Limiting & DDoS Protection',
-      'Request/Response Logging',
-      'Error Handling & Monitoring'
-    ],
-
-    // Usage information
-    usage: {
-      cors: 'Configured for Vercel deployments and localhost',
-      rateLimit: '1000 requests per 15 minutes (global)',
-      headers: {
-        'X-Request-ID': 'Unique request identifier',
-        'X-User-ID': 'User ID (for authenticated requests)',
-        'X-User-Role': 'User role (for authorized requests)'
-      }
-    },
-
-    contact: {
-      platform: 'Kelmah - Professional Services Marketplace',
-      support: 'For API support, contact the development team'
+  try {
+    const openApiPath = path.join(__dirname, '../../kelmah-api-openapi.yaml');
+    if (fs.existsSync(openApiPath)) {
+      res.setHeader('Content-Type', 'application/yaml');
+      res.sendFile(openApiPath);
+    } else {
+      // Fallback to JSON response if YAML file not found
+      res.json({
+        name: 'Kelmah API Gateway',
+        description: 'Centralized API Gateway for Kelmah Platform - Enterprise Freelance Marketplace',
+        version: '2.0.0',
+        timestamp: new Date().toISOString(),
+        openapi: '3.0.3',
+        servers: [
+          { url: 'https://shaggy-snake-43.loca.lt/api', description: 'LocalTunnel Development Server' },
+          { url: 'http://localhost:5000/api', description: 'Local Development Server' }
+        ],
+        endpoints: {
+          auth: '/api/auth/* - User authentication & registration',
+          users: '/api/users/* - User profile management',
+          jobs: '/api/jobs/* - Job posting, applications & management',
+          messages: '/api/messages/* - Real-time messaging & conversations',
+          payments: '/api/payments/* - Payment processing & escrow',
+          reviews: '/api/reviews/* - Review & rating system'
+        },
+        documentation: 'See /api/docs.html for interactive API documentation',
+        health: '/health - System health check',
+        contact: 'Kelmah Development Team'
+      });
     }
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Documentation not available', details: error.message });
+  }
+});
+
+// Interactive API documentation
+app.get('/api/docs.html', (req, res) => {
+  const path = require('path');
+  const fs = require('fs');
+
+  try {
+    const htmlPath = path.join(__dirname, '../../api-docs.html');
+    if (fs.existsSync(htmlPath)) {
+      res.sendFile(htmlPath);
+    } else {
+      res.status(404).json({ error: 'Interactive documentation not available' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Documentation not available', details: error.message });
+  }
 });
 
 // 404 handler

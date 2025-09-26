@@ -55,7 +55,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import jobsService from '../../jobs/services/jobsApi';
 // Import workersApi for user loading functionality
-import workersApi from '../../../api/services/workersApi';
+import workerService from '../../worker/services/workerService';
 import { FEATURES } from '../../../config/environment';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -365,11 +365,11 @@ const SchedulingPage = () => {
       let workers = [];
       try {
         // Try to use workersApi if available
-        if (workersApi && workersApi.searchWorkers) {
-          workers = await workersApi.searchWorkers({ limit: 20 });
+        if (workerService && workerService.searchWorkers) {
+          workers = await workerService.searchWorkers({ limit: 20 });
         }
       } catch (apiError) {
-        console.warn('workersApi.searchWorkers not available, using mock data:', apiError.message);
+        console.warn('workerService.searchWorkers not available, using mock data:', apiError.message);
       }
       
       // Use mock data only if explicitly enabled in development

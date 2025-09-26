@@ -45,6 +45,26 @@ function verifyRefreshToken(token, options = {}) {
   return jwt.verify(token, secret, { issuer, audience });
 }
 
+function generateAuthTokens(user) {
+  const jti = cryptoRandomString();
+  const accessToken = signAccessToken(user, { jwtid: jti });
+  const refreshToken = signRefreshToken(user, { jwtid: jti });
+  return { accessToken, refreshToken };
+}
+
+function verifyAuthToken(token) {
+  return verifyAccessToken(token);
+}
+
+function cryptoRandomString() {
+  try {
+    const crypto = require('crypto');
+    return crypto.randomBytes(16).toString('hex');
+  } catch (_) {
+    return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  }
+}
+
 function decodeUserFromClaims(decoded) {
   const id = decoded.sub || decoded.id || decoded.userId;
   return {
@@ -64,6 +84,8 @@ module.exports = {
   verifyAccessToken,
   verifyRefreshToken,
   decodeUserFromClaims,
+  generateAuthTokens,
+  verifyAuthToken,
 };
 
 

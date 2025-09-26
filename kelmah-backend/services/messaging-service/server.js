@@ -24,7 +24,7 @@ const notificationRoutes = require('./routes/notification.routes');
 // const uploadRoutes = require('./routes/upload.routes'); // Check if exists
 
 // Import middleware
-const { authenticate: authMiddleware } = require('./middlewares/auth.middleware');
+const { verifyGatewayRequest } = require('../../shared/middlewares/serviceTrust');
 const { createHttpLogger, createErrorLogger } = require('./utils/logger');
 
 const app = express();
@@ -182,7 +182,7 @@ app.use(createHttpLogger(require('./utils/logger').createLogger('messaging-servi
 
 // Rate limiting (prefer Redis store if available via shared limiter)
 try {
-  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  const { createLimiter } = require('../../shared/middlewares/rateLimiter');
   app.use(createLimiter('default'));
 } catch (_) {
   const limiter = rateLimit({
@@ -257,12 +257,12 @@ app.get('/api/health/live', (req, res) => {
 });
 
 // API Routes with authentication  
-app.use('/api/conversations', authMiddleware, conversationRoutes);
+app.use('/api/conversations', verifyGatewayRequest, conversationRoutes);
 
 // Removed temporary conversation stubs; proper routes/controllers should handle these
 
-app.use('/api/messages', authMiddleware, messageRoutes);
-app.use('/api/notifications', authMiddleware, notificationRoutes);
+app.use('/api/messages', verifyGatewayRequest, messageRoutes);
+app.use('/api/notifications', verifyGatewayRequest, notificationRoutes);
 try {
   const attachmentsRoutes = require('./routes/attachments.routes');
   app.use('/', attachmentsRoutes);

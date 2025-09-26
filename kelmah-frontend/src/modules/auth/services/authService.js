@@ -6,13 +6,13 @@
  */
 
 import { AUTH_CONFIG } from '../../../config/environment';
-import axiosInstance from '../../../api';
+import { authServiceClient } from '../../common/services/axios';
 import { secureStorage } from '../../../utils/secureStorage';
 
-// Use centralized axiosInstance with standard interceptors
+// Use centralized authServiceClient with standard interceptors
 
-// Response interceptors are handled by the main axios configuration
-// in api/index.js to avoid circular dependency issues
+// Response interceptors are handled by the centralized service client configuration
+// in modules/common/services/axios.js
 
 // Token refresh tracking
 let tokenRefreshTimeout = null;
@@ -21,7 +21,7 @@ const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await axiosInstance.post('/api/auth/login', credentials);
+      const response = await authServiceClient.post('/api/auth/login', credentials);
       
       // Extract data from response (handle different response structures)
       const responseData = response.data.data || response.data;
@@ -83,7 +83,7 @@ const authService = {
   // Register user
   register: async (userData) => {
     try {
-      const response = await axiosInstance.post(
+      const response = await authServiceClient.post(
         '/api/auth/register',
         userData,
       );
@@ -106,7 +106,7 @@ const authService = {
   // Verify authentication
   verifyAuth: async () => {
     try {
-      const response = await axiosInstance.get('/api/auth/verify');
+      const response = await authServiceClient.get('/api/auth/verify');
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -132,7 +132,7 @@ const authService = {
       const refreshToken = secureStorage.getRefreshToken();
       const logoutData = refreshToken ? { refreshToken } : {};
       
-      await axiosInstance.post('/api/auth/logout', logoutData);
+      await authServiceClient.post('/api/auth/logout', logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
@@ -174,7 +174,7 @@ const authService = {
         throw new Error('No refresh token available');
       }
 
-      const response = await axiosInstance.post('/api/auth/refresh-token', {
+      const response = await authServiceClient.post('/api/auth/refresh-token', {
         refreshToken
       });
       
@@ -210,7 +210,7 @@ const authService = {
   // Forgot password
   forgotPassword: async (email) => {
     try {
-      const response = await axiosInstance.post(
+      const response = await authServiceClient.post(
         '/api/auth/forgot-password',
         { email },
       );
@@ -224,7 +224,7 @@ const authService = {
   // Reset password
   resetPassword: async (token, password) => {
     try {
-      const response = await axiosInstance.post(
+      const response = await authServiceClient.post(
         '/api/auth/reset-password',
         { token, password },
       );
@@ -238,7 +238,7 @@ const authService = {
   // Update profile
   updateProfile: async (profileData) => {
     try {
-      const response = await axiosInstance.put('/api/auth/profile', profileData);
+      const response = await authServiceClient.put('/api/auth/profile', profileData);
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -255,7 +255,7 @@ const authService = {
   // Change password
   changePassword: async (currentPassword, newPassword) => {
     try {
-      const response = await axiosInstance.post(
+      const response = await authServiceClient.post(
         '/api/auth/change-password',
         {
           currentPassword,
@@ -301,7 +301,7 @@ const authService = {
   // Email Verification Methods
   verifyEmail: async (token) => {
     try {
-      const response = await axiosInstance.get(`/api/auth/verify-email/${token}`);
+      const response = await authServiceClient.get(`/api/auth/verify-email/${token}`);
       return {
         success: true,
         message: response.data.message || 'Email verified successfully',
@@ -318,7 +318,7 @@ const authService = {
 
   resendVerificationEmail: async (email) => {
     try {
-      const response = await axiosInstance.post('/api/auth/resend-verification-email', {
+      const response = await authServiceClient.post('/api/auth/resend-verification-email', {
         email,
       });
       return {
@@ -337,7 +337,7 @@ const authService = {
   // MFA Setup (placeholder for future implementation)
   setupMFA: async () => {
     try {
-      const response = await axiosInstance.post('/api/auth/setup-mfa');
+      const response = await authServiceClient.post('/api/auth/setup-mfa');
       // Expect { success, data: { secret, otpauthUrl, qrCode? } }
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
@@ -351,7 +351,7 @@ const authService = {
   // Verify MFA (placeholder for future implementation)
   verifyMFA: async (token) => {
     try {
-      const response = await axiosInstance.post('/api/auth/verify-mfa', { token });
+      const response = await authServiceClient.post('/api/auth/verify-mfa', { token });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
@@ -364,7 +364,7 @@ const authService = {
   // Disable MFA (placeholder for future implementation)
   disableMFA: async (password, token) => {
     try {
-      const response = await axiosInstance.post('/api/auth/disable-mfa', { password, token });
+      const response = await authServiceClient.post('/api/auth/disable-mfa', { password, token });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {

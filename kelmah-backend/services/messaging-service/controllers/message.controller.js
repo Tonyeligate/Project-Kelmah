@@ -1,6 +1,4 @@
-const Message = require("../models/Message");
-const Conversation = require("../models/Conversation");
-const Notification = require("../models/Notification");
+const { Message, Conversation, Notification } = require('../models');
 const { validateMessage } = require("../utils/validation");
 const { handleError } = require("../utils/errorHandler");
 

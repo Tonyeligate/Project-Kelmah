@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const billController = require("../controllers/bill.controller");
-const { authenticate } = require("../middlewares/auth");
+const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 
 // Apply authentication middleware to all routes
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 // Get all bills for current user
 router.get("/", billController.getBills);

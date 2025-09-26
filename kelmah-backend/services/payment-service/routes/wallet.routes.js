@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const walletController = require("../controllers/wallet.controller");
-const { authenticate } = require("../middlewares/auth");
+const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 
 // Apply authentication middleware to all routes
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 // Wallet routes
 router.get("/", walletController.getWallet);

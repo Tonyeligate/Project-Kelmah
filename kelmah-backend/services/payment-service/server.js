@@ -101,7 +101,7 @@ app.use(createHttpLogger(logger));
 
 // Rate limiting (shared Redis-backed limiter with fallback)
 try {
-  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  const { createLimiter } = require('../../shared/middlewares/rateLimiter');
   app.use(createLimiter('default'));
 } catch (err) {
   const rateLimit = require('express-rate-limit');

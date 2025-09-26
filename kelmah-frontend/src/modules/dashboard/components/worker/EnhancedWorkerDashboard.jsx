@@ -57,7 +57,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../../auth/contexts/AuthContext';
-import workersApi from '../../../../api/services/workersApi';
+import workerService from '../../../worker/services/workerService';
 import VocationalJobCategories from './VocationalJobCategories';
 import VisualQuickActions from './VisualQuickActions';
 import ErrorBoundary from '../../../../components/common/ErrorBoundary';
@@ -209,7 +209,7 @@ const EnhancedWorkerDashboard = () => {
       if (!userId || profileCompletion !== null) return;
       
       try {
-        const completion = await workersApi.getProfileCompletion();
+        const completion = await workerService.getWorkerStats();
         if (isMounted) {
           setProfileCompletion(completion);
         }
@@ -236,7 +236,7 @@ const EnhancedWorkerDashboard = () => {
       if (!userId || recentJobs.length > 0) return;
       
       try {
-        const jobs = await workersApi.getRecentJobs();
+        const jobs = await workerService.getWorkerJobs();
         if (isMounted) {
           // Ensure jobs is always an array
           const jobsArray = Array.isArray(jobs) ? jobs : (jobs?.data ? jobs.data : []);

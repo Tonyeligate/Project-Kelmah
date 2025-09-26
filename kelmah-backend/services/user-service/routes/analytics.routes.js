@@ -5,20 +5,35 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate, authorizeRoles } = require('../middlewares/auth');
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 const AnalyticsController = require('../controllers/analytics.controller');
 
-// All analytics routes require admin authentication
-router.use(authenticate);
+// All analytics routes require gateway authentication
+router.use(verifyGatewayRequest);
 
 // Platform analytics (admin only)
-router.get('/platform', authorizeRoles('admin'), AnalyticsController.getPlatformAnalytics);
+router.get('/platform', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}, AnalyticsController.getPlatformAnalytics);
 
 // System metrics (admin only)
-router.get('/system-metrics', authorizeRoles('admin'), AnalyticsController.getSystemMetrics);
+router.get('/system-metrics', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}, AnalyticsController.getSystemMetrics);
 
 // User activity (admin only)
-router.get('/user-activity', authorizeRoles('admin'), AnalyticsController.getUserActivity);
+router.get('/user-activity', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}, AnalyticsController.getUserActivity);
 
 // Worker analytics (jobs/payments/reviews)
 router.get('/worker/:workerId', AnalyticsController.getWorkerAnalytics);

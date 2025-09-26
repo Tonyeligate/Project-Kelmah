@@ -34,11 +34,10 @@ const createJobProxy = (targetUrl, options = {}) => {
       });
     },
     onProxyReq: (proxyReq, req, res) => {
-      // Add user information if available
+      // Add user information if available (serviceTrust format)
       if (req.user) {
-        proxyReq.setHeader('X-User-ID', req.user.id);
-        proxyReq.setHeader('X-User-Role', req.user.role);
-        proxyReq.setHeader('X-User-Email', req.user.email);
+        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        proxyReq.setHeader('x-auth-source', 'api-gateway');
       }
       
       // Add request ID for tracing

@@ -3,15 +3,30 @@ alwaysApply: true
 ---
 # Kelmah Platform - AI Coding Agent Instructions
 
+**Last Updated**: September 21, 2025  
+**Architecture Status**: FULLY CONSOLIDATED ✅  
+**Critical Backend Fixes**: COMPLETED September 2025
+
 ## Architecture Overview
 
-Kelmah is a **freelance marketplace** with a **microservices backend** and **modular React frontend**. The system uses an **API Gateway pattern** with service-specific microservices, all routing through a central gateway for the frontend.
+Kelmah is a **freelance marketplace** with a **fully consolidated microservices backend** and **modular React frontend**. The system uses an **API Gateway pattern** with service-specific microservices, all routing through a central gateway for the frontend.
 
-### Backend: Local Microservices Architecture ⚠️ UPDATED 2025-09-16
+### 🏆 Architectural Consolidation Status (September 2025)
+- ✅ **Database Standardization**: 100% MongoDB/Mongoose across ALL services
+- ✅ **Shared Models**: Centralized models in `kelmah-backend/shared/models/`
+- ✅ **Authentication**: API Gateway-based centralized authentication with service trust
+- ✅ **Service Boundaries**: Clean microservice separation with no cross-service dependencies
+- ✅ **Component Library**: Ghana-inspired design system with reusable UI components
+- ✅ **Legacy Cleanup**: All orphaned code and architectural remnants removed
+
+### Backend: Local Microservices Architecture ⚠️ FULLY CONSOLIDATED SEPTEMBER 2025
 - **API Gateway** (`kelmah-backend/api-gateway/`) - Central routing hub on **localhost** port 5000
 - **Services** (`kelmah-backend/services/`): auth, user, job, payment, messaging, review
-- **Tech Stack**: Express.js, MongoDB/Mongoose, Socket.IO, JWT auth, Winston logging
+- **Tech Stack**: Express.js, **PURE MongoDB/Mongoose**, Socket.IO, JWT auth, Winston logging
 - **Key Pattern**: Each service has `server.js`, `routes/`, `controllers/`, `models/`, `services/`
+- **Shared Resources**: `kelmah-backend/shared/` contains models, middleware, and utilities
+- **Model Architecture**: All services use shared models via `require('../../../shared/models')`
+- **Authentication**: Centralized at API Gateway with service trust middleware
 - **⚠️ ARCHITECTURE UPDATE**: All microservices run on **localhost** during development
 - **External Access**: Via LocalTunnel (replaced ngrok) to localhost ports 5000-5006
 
@@ -19,6 +34,35 @@ Kelmah is a **freelance marketplace** with a **microservices backend** and **mod
 - **Modular Structure** (`kelmah-frontend/src/modules/`): auth, jobs, dashboard, worker, hirer, etc.
 - **Tech Stack**: React 18, Vite, Redux Toolkit, Material-UI, React Query, Socket.IO client
 - **Key Pattern**: Each module has `components/`, `pages/`, `services/`, `contexts/`, `hooks/`
+
+## Critical Architectural Patterns ⚠️ MANDATORY COMPLIANCE
+
+### Model Usage Patterns ✅ COMPLETED SEPTEMBER 2025
+- **ALWAYS USE**: `const { User, Job, Application } = require('../models')` for shared models
+- **NEVER USE**: `const User = require('../models/User')` (bypasses consolidation)
+- **Pattern**: All controllers must import from service's `models/index.js`
+- **Location**: Shared models centralized in `kelmah-backend/shared/models/`
+- **Verification**: All services use shared models via service model index
+
+### Database Patterns ✅ COMPLETED SEPTEMBER 2025
+- **ONLY MongoDB/Mongoose**: Zero SQL or Sequelize code permitted
+- **NEVER MIX**: No mixed database code in controllers
+- **Pattern**: Pure `Model.findById()`, `Model.create()`, etc.
+- **Configuration**: Database configs are MongoDB-only
+- **Verification**: 100% MongoDB standardization achieved
+
+### Service Boundary Patterns ✅ COMPLETED SEPTEMBER 2025
+- **Shared Resources**: Use `require('../../shared/middlewares/rateLimiter')`
+- **NEVER Cross-Service**: No `require('../../auth-service/middlewares/...')`
+- **Pattern**: All shared utilities in `kelmah-backend/shared/`
+- **Architecture**: Clean microservice boundaries with no violations
+- **Verification**: All cross-service imports eliminated
+
+### Import Path Conventions ✅ VERIFIED
+- **Frontend**: Use `@/modules/[domain]/...` for absolute imports
+- **Backend Models**: `const { Model } = require('../models')` (service index)
+- **Backend Shared**: `require('../../shared/[type]/[utility]')` pattern
+- **Verification**: Consistent import patterns across all services
 
 ## Critical Development Workflows
 
@@ -114,19 +158,22 @@ The platform has transitioned to LocalTunnel as the primary development tunnel s
 ### Environment Management
 - **Frontend**: `src/config/environment.js` - Centralized config with service URL detection
 - **Backend**: Each service has its own `.env` with shared patterns
-- **Production**: Uses ngrok tunneling for external API access (see `vercel.json` rewrites)
+- **Production**: Uses LocalTunnel tunneling for external API access (see `vercel.json` rewrites)
 
-### Service Registry (API Gateway)
+### Service Registry (API Gateway) ✅ CONSOLIDATED
 ```javascript
-// From api-gateway/server.js
+// From api-gateway/server.js - All services properly registered
 const SERVICES = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
-  user: process.env.USER_SERVICE_URL || 'http://localhost:5002'
-  // ... other services
+  user: process.env.USER_SERVICE_URL || 'http://localhost:5002',
+  job: process.env.JOB_SERVICE_URL || 'http://localhost:5003',
+  messaging: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5005',
+  payment: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5004',
+  review: process.env.REVIEW_SERVICE_URL || 'http://localhost:5006'
 };
 ```
 
-### Frontend API Configuration
+### Frontend API Configuration ✅ CONSOLIDATED
 ```javascript
 // Centralized axios in src/modules/common/services/axios.js
 // Auto-detects environment and routes via gateway in production
@@ -147,22 +194,36 @@ src/modules/[domain]/
 └── utils/            # Domain utilities
 ```
 
-### Backend Service Structure  
+### Backend Service Structure ✅ CONSOLIDATED
 ```
 services/[service-name]/
 ├── server.js         # Express app entry point
 ├── routes/           # Route definitions
 ├── controllers/      # Request handlers  
-├── models/           # Mongoose schemas
+├── models/           # Service model index (imports shared models)
+│   └── index.js      # Imports from ../../../shared/models/
 ├── services/         # Business logic
 ├── middleware/       # Service-specific middleware
 └── utils/           # Utilities, logging, validation
 ```
 
-### Import Path Conventions
+### Shared Resources Structure ✅ CONSOLIDATED
+```
+shared/
+├── models/           # Centralized Mongoose schemas
+│   ├── User.js       # Shared User model
+│   ├── Job.js        # Shared Job model
+│   ├── Application.js# Shared Application model
+│   └── index.js      # Export all shared models
+├── middlewares/      # Shared middleware (rateLimiter, etc.)
+└── utils/           # Shared utilities and helpers
+```
+
+### Import Path Conventions ✅ UPDATED
 - **Frontend**: Use `@/modules/[domain]/...` for absolute imports
 - **Module imports**: `import { Component } from '@/modules/common/components/Component'`
-- **Backend**: Relative imports within services, shared utilities in `../../shared/`
+- **Backend Models**: `const { User } = require('../models')` (service index)
+- **Backend Shared**: `require('../../shared/[type]/[utility]')` pattern
 
 ## State Management Patterns
 
@@ -358,10 +419,11 @@ All AI agents MUST continuously update the `spec-kit/` directory with current wo
 4. **System Changes**: Update architecture documents when system understanding changes
 5. **Status Tracking**: Always maintain current project status in `STATUS_LOG.md`
 
-### Spec-Kit Structure
+### Spec-Kit Structure ✅ UPDATED SEPTEMBER 2025
 ```
 spec-kit/
 ├── STATUS_LOG.md              # Completed fixes and their status
+├── SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md # Complete critical fixes documentation
 ├── MESSAGING_SYSTEM_AUDIT.md  # Complete messaging architecture audit
 ├── NGROK_ARCHITECTURE_ANALYSIS.md # Ngrok protocol and routing analysis  
 ├── NGROK_FIXES_COMPLETE.md    # Summary of all ngrok-related fixes
@@ -392,6 +454,14 @@ spec-kit/
 - **Legacy Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system (legacy reference)
 - **System Status**: `STATUS_LOG.md` - Track of all completed system improvements and current project state
 - **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT_COMPLETE.md` - Complete frontend/backend communication analysis
+
+### Critical Spec-Kit Documents for Reference
+- **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
+- **LocalTunnel Protocol**: `LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md` - Complete unified tunnel configuration and automated update system
+- **Legacy Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system (legacy reference)
+- **System Status**: `STATUS_LOG.md` - Track of all completed system improvements and current project state
+- **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT_COMPLETE.md` - Complete frontend/backend communication analysis
+- **Critical Fixes**: `SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md` - Comprehensive documentation of architectural consolidation completion
 
 ### Continuous Spec-Kit Updates Required
 - **Before Starting Work**: Update STATUS_LOG.md with current task status and project state

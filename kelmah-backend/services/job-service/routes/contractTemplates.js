@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ContractTemplate = require('../models/ContractTemplate');
 const Contract = require('../models/Contract');
-const { authenticate, authorize } = require('../middlewares/auth');
+const { verifyGatewayRequest, authorize } = require('../../../shared/middlewares/serviceTrust');
 const { validationResult, body, param, query } = require('express-validator');
 
 /**
@@ -285,7 +285,7 @@ router.get('/:id', [
  * @access  Private (Admin or verified professionals)
  */
 router.post('/', [
-  authenticate,
+  verifyGatewayRequest,
   authorize(['admin', 'verified_professional']),
   ...validateTemplate
 ], handleValidationErrors, async (req, res) => {
@@ -330,7 +330,7 @@ router.post('/', [
  * @access  Private (Admin or template creator)
  */
 router.put('/:id', [
-  authenticate,
+  verifyGatewayRequest,
   param('id').isMongoId().withMessage('Invalid template ID'),
   ...validateTemplate
 ], handleValidationErrors, async (req, res) => {
@@ -391,7 +391,7 @@ router.put('/:id', [
  * @access  Private (Admin or template creator)
  */
 router.delete('/:id', [
-  authenticate,
+  verifyGatewayRequest,
   param('id').isMongoId().withMessage('Invalid template ID')
 ], handleValidationErrors, async (req, res) => {
   try {
@@ -437,7 +437,7 @@ router.delete('/:id', [
  * @access  Private
  */
 router.post('/:id/generate-contract', [
-  authenticate,
+  verifyGatewayRequest,
   param('id').isMongoId().withMessage('Invalid template ID'),
   ...validateContractGeneration
 ], handleValidationErrors, async (req, res) => {
@@ -495,7 +495,7 @@ router.post('/:id/generate-contract', [
  * @access  Private
  */
 router.post('/:id/increment-usage', [
-  authenticate,
+  verifyGatewayRequest,
   param('id').isMongoId().withMessage('Invalid template ID')
 ], handleValidationErrors, async (req, res) => {
   try {
@@ -539,7 +539,7 @@ router.post('/:id/increment-usage', [
  * @access  Private (Admin only)
  */
 router.put('/:id/approve', [
-  authenticate,
+  verifyGatewayRequest,
   authorize(['admin']),
   param('id').isMongoId().withMessage('Invalid template ID')
 ], handleValidationErrors, async (req, res) => {
@@ -582,7 +582,7 @@ router.put('/:id/approve', [
  * @access  Private (Admin only)
  */
 router.put('/:id/reject', [
-  authenticate,
+  verifyGatewayRequest,
   authorize(['admin']),
   param('id').isMongoId().withMessage('Invalid template ID'),
   body('reason').notEmpty().withMessage('Rejection reason is required')

@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-// Minimal auth (trust gateway) – verify presence of Bearer for protected ops
-const { authenticate, validateAvailabilityPayload } = require('../middlewares/auth');
+// Service trust middleware - verify requests from API Gateway
+const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');
+const { validateAvailabilityPayload } = require('../middlewares/auth');
 // Rate limiter - simple implementation for user service
 const createLimiter = (options) => (req, res, next) => next(); // Simplified for containerized deployment
 
@@ -52,9 +53,9 @@ router.get('/workers', WorkerController.getAllWorkers);
 // Duplicate routes (cleanup) — already defined above; keeping single source of truth
 
 // Placeholder bookmark toggle (requires controller/DB impl)
-router.post('/workers/:id/bookmark', authenticate, createLimiter('default'), toggleBookmark);
-router.delete('/workers/:id/bookmark', authenticate, createLimiter('default'), toggleBookmark);
-router.get('/bookmarks', authenticate, getBookmarks);
-router.get('/workers/:workerId/earnings', authenticate, getEarnings);
+router.post('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
+router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
+router.get('/bookmarks', verifyGatewayRequest, getBookmarks);
+router.get('/workers/:workerId/earnings', verifyGatewayRequest, getEarnings);
 
 module.exports = router;

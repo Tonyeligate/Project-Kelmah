@@ -68,7 +68,7 @@ import axios from 'axios';
 import { getApiBaseUrl } from '../../../config/environment';
 import { Helmet } from 'react-helmet-async';
 import { useSelector } from 'react-redux';
-import JobCard from '../../jobs/components/listing/JobCard';
+import { ListingJobCard as JobCard } from '../../common/components/cards';
 import WorkerCard from '../../worker/components/WorkerCard';
 
 // Use centralized API base (defaults to '/api') to ensure requests go through the gateway

@@ -92,16 +92,16 @@ exports.getEarnings = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to get earnings' });
   }
 };
-const initUserModel = require("../models/User");
-const { sequelize } = require("../config/db");
-const User = initUserModel(sequelize);
+
+// Use shared models via models index
+const { User, WorkerProfile } = require('../models');
 
 /**
- * Get all users
+ * Get all users (MongoDB)
  */
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.findAll();
+    const users = await User.find({}).select('-password -refreshToken');
     res.json(users);
   } catch (err) {
     next(err);
@@ -109,25 +109,27 @@ exports.getAllUsers = async (req, res, next) => {
 };
 
 /**
- * Create a new user
+ * Create a new user (MongoDB)
  */
 exports.createUser = async (req, res, next) => {
   try {
     const user = await User.create(req.body);
-    res.status(201).json(user);
+    // Remove sensitive data before sending response
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    delete userResponse.refreshToken;
+    res.status(201).json(userResponse);
   } catch (err) {
     next(err);
   }
 };
 
 /**
- * Get dashboard metrics
+ * Get dashboard metrics (MongoDB)
  */
 exports.getDashboardMetrics = async (req, res, next) => {
   try {
-    const User = require('../models/User');
-    // Use the MongoDB WorkerProfile from our models index
-    const { WorkerProfile } = require('../models');
+    // Use shared models from index
 
     // Get real metrics from database
     const [totalUsers, totalWorkers, activeWorkers] = await Promise.all([
@@ -202,12 +204,11 @@ exports.getDashboardWorkers = async (req, res, next) => {
 };
 
 /**
- * Get dashboard analytics
+ * Get dashboard analytics (MongoDB)
  */
 exports.getDashboardAnalytics = async (req, res, next) => {
   try {
-    const User = require('../models/User');
-    // Use the MongoDB WorkerProfile from our models index
+    // Use shared models from top import
     const { WorkerProfile } = require('../models');
 
     // Get user growth data (last 12 months)
@@ -392,7 +393,7 @@ exports.getUserCredentials = async (req, res, next) => {
  */
 exports.cleanupDatabase = async (req, res) => {
   try {
-    const User = require('../models/User');
+    // Use shared models from top import
     const { WorkerProfile } = require('../models');
 
     console.log('🔧 Starting database cleanup...');

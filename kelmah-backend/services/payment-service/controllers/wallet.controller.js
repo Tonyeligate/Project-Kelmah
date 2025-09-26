@@ -1,7 +1,4 @@
-const Wallet = require("../models/Wallet");
-const Transaction = require("../models/Transaction");
-const { handleError } = require("../utils/errorHandler");
-const { validateWallet } = require("../utils/validation");
+const { Wallet, Transaction, PaymentMethod, User } = require("../models");
 
 // Get user's wallet
 exports.getWallet = async (req, res) => {

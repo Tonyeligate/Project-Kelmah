@@ -1,5 +1,4 @@
-const Bill = require("../models/Bill");
-const BillAudit = require("../models/BillAudit");
+const { Bill, BillAudit, User } = require("../models");
 
 exports.getBills = async (req, res) => {
   try {

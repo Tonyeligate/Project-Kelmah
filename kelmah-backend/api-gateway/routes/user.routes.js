@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
-const { authenticate } = require('../middleware/auth');
+const { authenticate } = require('../middlewares/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').USER_SERVICE;

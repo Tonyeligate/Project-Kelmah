@@ -3,7 +3,8 @@
  * Provides comprehensive platform analytics for admin dashboard
  */
 
-const User = require('../models/User');
+// Use shared models via models index
+const { User } = require('../models');
 const WorkerProfile = require('../models/WorkerProfile');
 const { successResponse, errorResponse } = require('../utils/response');
 const axios = require('axios');

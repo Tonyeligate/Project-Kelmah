@@ -34,7 +34,7 @@ const protectedAuthProxy = (req, res, next) => {
 };
 
 // Authentication middleware for protected routes
-const { authenticate } = require('../middleware/auth');
+const { authenticate } = require('../middlewares/auth');
 
 // Public routes
 // Bypass proxy for login/register to avoid body/timeout issues

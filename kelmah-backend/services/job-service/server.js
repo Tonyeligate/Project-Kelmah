@@ -141,7 +141,7 @@ app.get('/api/health/live', (req, res) => {
 
 // Rate limiting (shared Redis-backed limiter with fallback) — create ONCE
 try {
-  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  const { createLimiter } = require('../../shared/middlewares/rateLimiter');
   const defaultLimiter = createLimiter('default');
 
   app.use((req, res, next) => {

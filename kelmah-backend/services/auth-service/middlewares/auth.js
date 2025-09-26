@@ -1,4 +1,4 @@
-const jwtUtils = require('../utils/shared-jwt');
+const jwtUtils = require('../../../shared/utils/jwt');
 const { AppError } = require('../utils/errorTypes');
 const User = require('../models').User;
 

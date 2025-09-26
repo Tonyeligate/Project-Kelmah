@@ -1,6 +1,6 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const auth = require('../middleware/auth');
+const auth = require('../middlewares/auth');
 
 // Dashboard proxy router
 // Maps /api/dashboard/* -> user-service /api/users/dashboard/*

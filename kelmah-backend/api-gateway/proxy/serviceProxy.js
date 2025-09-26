@@ -72,10 +72,10 @@ const createServiceProxy = (options) => {
       }
     },
     onProxyReq: (proxyReq, req, res) => {
-      // Forward user information to services
+      // Forward user information to services (serviceTrust format)
       if (req.user) {
-        proxyReq.setHeader('X-User-ID', req.user.id);
-        proxyReq.setHeader('X-User-Role', req.user.role);
+        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        proxyReq.setHeader('x-auth-source', 'api-gateway');
       }
       
       // Forward Authorization header/token to upstream

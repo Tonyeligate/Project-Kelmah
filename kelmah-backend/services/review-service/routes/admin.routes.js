@@ -2,15 +2,14 @@ const express = require('express');
 const router = express.Router();
 let adminLimiter = null;
 try {
-  const { createLimiter } = require('../../auth-service/middlewares/rateLimiter');
+  const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
   adminLimiter = createLimiter('admin');
 } catch (_) {
   adminLimiter = (req, res, next) => next();
 }
-const mongoose = require('mongoose');
 
-// Models
-const Review = mongoose.model('Review');
+// Import shared models
+const { Review } = require('../models');
 
 // Auth middleware is expected to be applied at app level for /api/admin
 

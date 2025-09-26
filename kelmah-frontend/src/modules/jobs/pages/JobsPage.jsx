@@ -158,7 +158,7 @@ import {
   selectJobFilters,
   selectJobsPagination,
 } from '../services/jobSlice';
-import JobCard from '../components/common/JobCard';
+import { InteractiveJobCard as JobCard } from '../../common/components/cards';
 import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 

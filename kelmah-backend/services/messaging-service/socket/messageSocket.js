@@ -3,7 +3,7 @@
  * Handles WebSocket connections for real-time messaging
  */
 
-const jwt = require('jsonwebtoken');
+const { verifyAccessToken } = require('../../../shared/utils/jwt');
 const { Conversation, Message, User } = require('../models');
 const auditLogger = require('../utils/audit-logger');
 
@@ -31,8 +31,8 @@ class MessageSocketHandler {
           return next(new Error('Authentication token required'));
         }
 
-        // Verify JWT token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Verify JWT token using shared utility
+        const decoded = verifyAccessToken(token);
         const claims = {
           id: decoded.id || decoded.sub,
           email: decoded.email,

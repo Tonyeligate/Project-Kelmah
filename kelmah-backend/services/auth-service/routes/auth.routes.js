@@ -5,7 +5,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const authController = require("../controllers/auth.controller");
-const { authenticate } = require("../middlewares/auth");
+const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 const { createLimiter } = require("../middlewares/rateLimiter");
 const { validate } = require("../utils/validation");
 const passport = require("../config/passport");
@@ -108,7 +108,7 @@ router.post(
 );
 
 // Logout route
-router.post("/logout", authenticate, authController.logout);
+router.post("/logout", verifyGatewayRequest, authController.logout);
 
 // Refresh token
 router.post(
@@ -121,7 +121,7 @@ router.post(
 // Change password (protected route)
 router.post(
   "/change-password",
-  authenticate,
+  verifyGatewayRequest,
   [
     body("currentPassword")
       .notEmpty()
@@ -139,10 +139,10 @@ router.post(
 );
 
 // Get current user profile
-router.get("/me", authenticate, authController.getMe);
+router.get("/me", verifyGatewayRequest, authController.getMe);
 
 // Verify authentication token and get user data
-router.get("/verify", authenticate, authController.verifyAuth);
+router.get("/verify", verifyGatewayRequest, authController.verifyAuth);
 router.post("/validate", authController.validateAuthToken);
 
 // Google OAuth routes - only if credentials are configured
@@ -245,19 +245,19 @@ if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
 }
 
 // MFA routes (protected by authentication)
-router.post("/mfa/setup", authenticate, authController.mfaSetup);
-router.post("/mfa/verify", authenticate, authController.verifyTwoFactor);
-router.post("/mfa/disable", authenticate, authController.disableTwoFactor);
+router.post("/mfa/setup", verifyGatewayRequest, authController.mfaSetup);
+router.post("/mfa/verify", verifyGatewayRequest, authController.verifyTwoFactor);
+router.post("/mfa/disable", verifyGatewayRequest, authController.disableTwoFactor);
 
 // Session management routes
-router.get("/sessions", authenticate, authController.getSessions);
-router.delete("/sessions", authenticate, authController.endAllSessions);
-router.delete("/sessions/:sessionId", authenticate, authController.endSession);
+router.get("/sessions", verifyGatewayRequest, authController.getSessions);
+router.delete("/sessions", verifyGatewayRequest, authController.endAllSessions);
+router.delete("/sessions/:sessionId", verifyGatewayRequest, authController.endSession);
 
 // User account management routes
 router.post(
   "/account/deactivate",
-  authenticate,
+  verifyGatewayRequest,
   authController.deactivateAccount,
 );
 router.post("/account/reactivate", authController.reactivateAccount);
@@ -271,6 +271,6 @@ router.get("/health", (req, res) => {
 });
 
 // Admin/monitoring routes
-router.get("/stats", authenticate, authController.getAuthStats);
+router.get("/stats", verifyGatewayRequest, authController.getAuthStats);
 
 module.exports = router;

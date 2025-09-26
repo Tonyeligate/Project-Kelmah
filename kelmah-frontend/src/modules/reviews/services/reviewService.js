@@ -1,11 +1,11 @@
-import axiosInstance from '../../common/services/axios';
+import { reviewServiceClient } from '../../common/services/axios';
 
 class ReviewService {
   // Get reviews for a specific user
   async getUserReviews(userId, page = 1, limit = 10, filters = {}) {
     try {
       // Call backend for reviews of a worker
-      const response = await axiosInstance.get(
+      const response = await reviewServiceClient.get(
         `/api/reviews/worker/${userId}`,
         {
           params: { page, limit, ...filters },
@@ -25,7 +25,7 @@ class ReviewService {
   // Get reviews for a specific job
   async getJobReviews(jobId, page = 1, limit = 10) {
     try {
-      const response = await axiosInstance.get(`/api/reviews/job/${jobId}`, {
+      const response = await reviewServiceClient.get(`/api/reviews/job/${jobId}`, {
         params: { page, limit },
       });
       const raw = response.data;
@@ -44,7 +44,7 @@ class ReviewService {
   // Create a new review
   async createReview(reviewData) {
     try {
-      const response = await axiosInstance.post('/api/reviews', reviewData);
+      const response = await reviewServiceClient.post('/api/reviews', reviewData);
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Error creating review:', error);
@@ -55,7 +55,7 @@ class ReviewService {
   // Update a review
   async updateReview(reviewId, reviewData) {
     try {
-      const response = await axiosInstance.put(
+      const response = await reviewServiceClient.put(
         `/api/reviews/${reviewId}`,
         reviewData,
       );
@@ -69,7 +69,7 @@ class ReviewService {
   // Delete a review
   async deleteReview(reviewId) {
     try {
-      await axiosInstance.delete(`/api/reviews/${reviewId}`);
+      await reviewServiceClient.delete(`/api/reviews/${reviewId}`);
       return true;
     } catch (error) {
       console.error('Error deleting review:', error);

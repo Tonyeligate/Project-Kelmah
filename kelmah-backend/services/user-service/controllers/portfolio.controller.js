@@ -3,7 +3,6 @@
  * Handles portfolio management for workers
  */
 
-const { Op } = require('sequelize');
 const { Portfolio, WorkerProfile, Skill, User } = require('../models');
 const { validateInput, handleServiceError, generatePagination } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');

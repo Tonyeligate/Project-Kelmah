@@ -1,70 +1,166 @@
 /**
- * Authentication Middleware
- * Validates JWT tokens and adds user info to request
+ * Centralized Authentication Middleware - API Gateway
+ * Handles all authentication for the entire Kelmah platform
+ * Uses shared JWT utility for consistency across services
  */
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
 
-// Auth service URL
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
+const jwtUtils = require('../../shared/utils/jwt');
+const { User } = require('../../shared/models');
+const { AppError, AuthenticationError, AuthorizationError } = require('../../shared/utils/errorTypes');
+
+// User cache to reduce database lookups
+const userCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Middleware to authenticate requests
+ * Main authentication middleware
+ * Validates JWT tokens and populates req.user for downstream services
  */
 const authenticate = async (req, res, next) => {
   try {
-    // Get token from header
+    // Get token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'No token provided' });
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'No token provided' 
+      });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     if (!token) {
-      return res.status(401).json({ message: 'Invalid token format' });
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'Invalid token format' 
+      });
     }
 
-    // Verify token locally first
+    // Verify JWT token using shared utility
+    let decoded;
     try {
-      // Preliminary check using HS256 with shared secret
-      jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-
-    // Validate token with auth service
-    // This is more secure as it also checks if the token has been revoked
-    const verifyResponse = await axios.post(`${AUTH_SERVICE_URL}/api/auth/validate`, 
-      { token },
-      { 
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-Internal-Request': process.env.INTERNAL_API_KEY
-        }
+      decoded = jwtUtils.verifyAccessToken(token);
+    } catch (jwtError) {
+      if (jwtError.name === 'TokenExpiredError') {
+        return res.status(401).json({ 
+          error: 'Token expired',
+          message: 'Please refresh your token' 
+        });
       }
-    );
-
-    if (!verifyResponse.data || !verifyResponse.data.valid) {
-      return res.status(401).json({ message: 'Invalid or expired token' });
+      if (jwtError.name === 'JsonWebTokenError') {
+        return res.status(401).json({ 
+          error: 'Invalid token',
+          message: 'Token verification failed' 
+        });
+      }
+      throw jwtError; // Re-throw unexpected errors
     }
 
-    // Add user info to request
-    req.user = verifyResponse.data.user;
+    // Extract user ID from token
+    const userId = decoded.sub || decoded.id;
+    if (!userId) {
+      return res.status(401).json({ 
+        error: 'Invalid token',
+        message: 'Token missing user ID' 
+      });
+    }
+
+    // Check cache first
+    const cacheKey = `user:${userId}`;
+    let user = userCache.get(cacheKey);
     
-    // Add token to request for downstream services
-    req.token = token;
-    
+    if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
+      // Lookup user in database
+      try {
+        user = await User.findById(userId).select('-password');
+        if (!user) {
+          return res.status(401).json({ 
+            error: 'User not found',
+            message: 'Token references non-existent user' 
+          });
+        }
+
+        // Cache user for performance
+        userCache.set(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
+      } catch (dbError) {
+        console.error('Database error during authentication:', dbError);
+        return res.status(500).json({ 
+          error: 'Authentication error',
+          message: 'Unable to verify user' 
+        });
+      }
+    }
+
+    // Populate request with user info for downstream services
+    req.user = {
+      id: user._id || user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isEmailVerified: user.isEmailVerified,
+      tokenVersion: decoded.version || 0
+    };
+
+    // Add authentication headers for service-to-service communication
+    req.headers['x-authenticated-user'] = JSON.stringify(req.user);
+    req.headers['x-auth-source'] = 'api-gateway';
+
     next();
   } catch (error) {
-    console.error('Authentication error:', error.message);
-    
-    // Handle auth service being down
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      return res.status(503).json({ message: 'Authentication service unavailable' });
-    }
-    
-    return res.status(401).json({ message: 'Authentication failed' });
+    console.error('Authentication middleware error:', error);
+    return res.status(500).json({ 
+      error: 'Authentication error',
+      message: 'Internal authentication failure' 
+    });
   }
 };
 
-module.exports = authenticate; 
+/**
+ * Authorization middleware for role-based access control
+ * Usage: authorizeRoles('admin', 'hirer')
+ */
+const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'User not authenticated' 
+      });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        error: 'Access denied',
+        message: `Access denied. Required roles: ${allowedRoles.join(', ')}` 
+      });
+    }
+
+    next();
+  };
+};
+
+/**
+ * Optional authentication middleware
+ * Populates req.user if token is present but doesn't require it
+ */
+const optionalAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next(); // No token provided, continue without authentication
+  }
+
+  // Use main authenticate middleware but suppress errors
+  authenticate(req, res, (err) => {
+    // If authentication fails, continue without user info
+    if (err || !req.user) {
+      req.user = null;
+    }
+    next();
+  });
+};
+
+module.exports = {
+  authenticate,
+  authorizeRoles,
+  optionalAuth
+}; 

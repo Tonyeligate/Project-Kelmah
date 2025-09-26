@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Box, Typography, CircularProgress } from '@mui/material';
-import JobCard from './JobCard';
+import { InteractiveJobCard as JobCard } from '../../../common/components/cards';
 import Pagination from '@mui/material/Pagination';
 
 function JobList({ jobs, loading, error, pagination, onPageChange }) {

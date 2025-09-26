@@ -17,7 +17,7 @@ const { notFound } = require("./utils/errorTypes");
 const { connectDB } = require("./config/db");
 
 // Import Mongoose models
-const User = require("./models/User");
+const { User } = require("./models");
 // Note: Setting and Notification models need to be converted to Mongoose as well
 
 // Import routes
@@ -117,7 +117,7 @@ app.use(cors(corsOptions));
 
 // Rate limiting (shared Redis-backed limiter with fallback)
 try {
-  const { createLimiter } = require('../auth-service/middlewares/rateLimiter');
+  const { createLimiter } = require('../../shared/middlewares/rateLimiter');
   app.use(createLimiter('default'));
 } catch (err) {
   const rateLimit = require('express-rate-limit');

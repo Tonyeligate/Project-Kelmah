@@ -1,19 +1,33 @@
 /**
- * MongoDB Models Index for Job Service
+ * Job Service Models Index - Uses Shared Models
+ * Updated to use centralized shared models instead of local duplicates
  */
 
-// Export models without initiating a DB connection here.
-// The application is responsible for establishing the MongoDB connection
-// via `config/db.js` with retry/backoff logic.
+// Import from shared models
+const { Job, Application, User } = require('../../../shared/models');
+
+// Import service-specific models
+const Bid = require('./Bid');
+const UserPerformance = require('./UserPerformance');
+const Category = require('./Category');
+const Contract = require('./Contract');
+const ContractDispute = require('./ContractDispute');
+const ContractTemplate = require('./ContractTemplate');
+const SavedJob = require('./SavedJob');
+
+// Export models
 module.exports = {
-  Job: require('./Job'),
-  Application: require('./Application'), // Keep for backward compatibility
-  Bid: require('./Bid'), // New bidding system
-  UserPerformance: require('./UserPerformance'), // New performance tracking
-  Category: require('./Category'),
-  Contract: require('./Contract'),
-  ContractDispute: require('./ContractDispute'),
-  ContractTemplate: require('./ContractTemplate'),
-  SavedJob: require('./SavedJob'),
-  User: require('./User')
+  // Shared models
+  Job,
+  Application,
+  User,
+  
+  // Service-specific models
+  Bid,
+  UserPerformance,
+  Category,
+  Contract,
+  ContractDispute,
+  ContractTemplate,
+  SavedJob
 };

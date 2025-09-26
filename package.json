@@ -7,6 +7,8 @@
     "test": "jest --config jest.config.js",
     "test:watch": "jest --config jest.config.js --watch",
     "test:coverage": "jest --config jest.config.js --coverage",
+    "test:integration": "node integration-tests.js",
+    "monitor": "node performance-monitor.js",
     "test:frontend": "cd kelmah-frontend && npm test",
     "test:backend": "for dir in kelmah-backend/services/*/; do (cd \"$dir\" && npm test); done",
     "test:auth": "jest --config jest.config.js --selectProjects auth-service",

@@ -11,7 +11,7 @@ import {
 import DashboardCard from '../common/DashboardCard';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
-import workersApi from '../../../../api/services/workersApi';
+import workerService from '../../../worker/services/workerService';
 import { useSelector } from 'react-redux';
 
 const AvailabilityStatus = () => {
@@ -45,7 +45,7 @@ const AvailabilityStatus = () => {
         setIsLoading(true);
         const id = await getUserId();
         if (!id) throw new Error('Missing user id');
-        const response = await workersApi.getAvailabilityStatus(id);
+        const response = await workerService.getWorkerAvailability(id);
         setIsAvailable(!!response.isAvailable);
       } catch (error) {
         console.error('Error fetching availability status:', error);
@@ -65,7 +65,7 @@ const AvailabilityStatus = () => {
 
     try {
       const id = await getUserId();
-      await workersApi.updateAvailability(id, { isAvailable: newStatus });
+      await workerService.updateWorkerAvailability(id, { isAvailable: newStatus });
 
       setIsAvailable(newStatus);
       setFeedback({

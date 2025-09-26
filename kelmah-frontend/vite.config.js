@@ -73,6 +73,11 @@ export default defineConfig({
     ],
     force: true,
   },
+  esbuild: {
+    loader: 'jsx',
+    include: /src\/.*\.[jt]sx?$/,
+    exclude: [],
+  },
   test: {
     globals: true,
     environment: 'jsdom',

@@ -1,6 +1,4 @@
-const PaymentMethod = require("../models/PaymentMethod");
-const { handleError } = require("../utils/errorHandler");
-const { validatePaymentMethod } = require("../utils/validation");
+const { PaymentMethod, User } = require("../models");
 const stripe = require("../services/stripe");
 const paypal = require("../services/paypal");
 

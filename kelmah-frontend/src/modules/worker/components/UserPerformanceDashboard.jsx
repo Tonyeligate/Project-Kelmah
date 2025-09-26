@@ -31,7 +31,7 @@ import {
   Timeline as TimelineIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { userPerformanceApi } from '../../../api';
+// TODO: Integrate user performance functionality into worker service
 
 const UserPerformanceDashboard = ({ userId, onRefresh }) => {
   const theme = useTheme();
@@ -48,7 +48,8 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
     
     setLoading(true);
     try {
-      const response = await userPerformanceApi.getUserPerformance(userId);
+      // TODO: Integrate into worker service
+      // const response = await userPerformanceApi.getUserPerformance(userId);
       setPerformance(response.data);
       setError(null);
     } catch (err) {

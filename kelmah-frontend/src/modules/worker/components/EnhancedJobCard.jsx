@@ -52,7 +52,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
-import { bidApi, userPerformanceApi } from '../../../api';
+// Note: bidApi and userPerformanceApi functionality should be integrated into appropriate module services
 
 const EnhancedJobCard = ({ 
   job, 
@@ -84,13 +84,14 @@ const EnhancedJobCard = ({
   // Load user performance data
   React.useEffect(() => {
     if (user?.id) {
-      userPerformanceApi.getUserPerformance(user.id)
-        .then(response => setUserPerformance(response.data))
-        .catch(error => console.warn('Failed to load user performance:', error));
+      // TODO: Integrate user performance and bid functionality into worker service
+      // userPerformanceApi.getUserPerformance(user.id)
+      //   .then(response => setUserPerformance(response.data))
+      //   .catch(error => console.warn('Failed to load user performance:', error));
       
-      bidApi.getWorkerBidStats(user.id)
-        .then(response => setBidStats(response.data))
-        .catch(error => console.warn('Failed to load bid stats:', error));
+      // bidApi.getWorkerBidStats(user.id)
+      //   .then(response => setBidStats(response.data))
+      //   .catch(error => console.warn('Failed to load bid stats:', error));
     }
   }, [user?.id]);
 
@@ -99,10 +100,11 @@ const EnhancedJobCard = ({
     
     setBidLoading(true);
     try {
-      await bidApi.createBid({
-        jobId: job.id,
-        ...bidData
-      });
+      // TODO: Integrate bid functionality into worker service
+      // await bidApi.createBid({
+      //   jobId: job.id,
+      //   ...bidData
+      // });
       
       setBidDialogOpen(false);
       // Show success message

@@ -1,5 +1,5 @@
 const express = require("express");
-const { authenticate } = require("../middlewares/auth");
+const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 const stripeService = require("../services/stripe");
 const paypalService = require("../services/paypal");
 const ghanaPayments = require("../controllers/ghana.controller");
@@ -9,9 +9,9 @@ const PaystackService = require("../integrations/paystack");
 const paystack = new PaystackService();
 
 // Protect all payment endpoints
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 // Per-route policies
-const { createLimiter } = require('../../auth-service/middlewares/rateLimiter');
+const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
 
 // Create a new payment intent/order
 // Durable idempotency store (MongoDB model, optionally Redis)
@@ -120,7 +120,7 @@ module.exports = router;
 // ---------------------------------------------
 // 🇬🇭 Ghana Mobile Money Endpoints (frontend expects these)
 // Apply auth to these routes as well
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 // MTN MoMo
 router.post('/mtn-momo/request-to-pay', createLimiter('payments'), ghanaPayments.mtnRequestToPay);

@@ -197,7 +197,7 @@ app.post("/api/admin/verify-user", async (req, res) => {
       });
     }
     // Find user by email (Mongoose)
-    const User = require("./models/User");
+    const { User } = require("./models");
     const user = await User.findOne({ email: email.toLowerCase() });
     
     if (!user) {
@@ -247,7 +247,7 @@ app.post("/api/admin/verify-users-batch", async (req, res) => {
         message: "Emails array is required"
       });
     }
-    const User = require("./models/User");
+    const { User } = require("./models");
     const results = [];
 
     for (const email of emails) {
@@ -313,7 +313,7 @@ app.post("/api/auth/admin/verify-user", async (req, res) => {
       return res.status(400).json({ success: false, message: "Email is required" });
     }
 
-    const User = require("./models/User");
+    const { User } = require("./models");
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -342,7 +342,7 @@ app.post("/api/auth/admin/verify-users", async (req, res) => {
       return res.status(400).json({ success: false, message: "Emails array is required" });
     }
 
-    const User = require("./models/User");
+    const { User } = require("./models");
     const results = [];
     for (const email of emails) {
       try {
@@ -379,7 +379,7 @@ app.post('/api/admin/unlock-account', async (req, res) => {
     if (!email) {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
-    const User = require('./models/User');
+    const { User } = require('./models');
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

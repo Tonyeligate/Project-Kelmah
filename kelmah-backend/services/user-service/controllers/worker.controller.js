@@ -3,7 +3,6 @@
  * Handles all worker-related operations
  */
 
-const { Op } = require('sequelize');
 const { WorkerProfile, WorkerSkill, Portfolio, Skill, User } = require('../models');
 const { validateInput, handleServiceError } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
@@ -29,8 +28,8 @@ class WorkerController {
 
       const offset = (page - 1) * limit;
 
-      // ✅ FIXED: Use MongoDB User model instead of PostgreSQL WorkerProfile
-      const MongoUser = require('../models/User');
+      // ✅ FIXED: Use shared MongoDB User model
+      const { User: MongoUser } = require('../models');
 
       // Build MongoDB query
       const mongoQuery = {
@@ -214,8 +213,8 @@ class WorkerController {
 
       const offset = (page - 1) * limit;
 
-      // ✅ FIXED: Use MongoDB User model instead of PostgreSQL WorkerProfile
-      const MongoUser = require('../models/User');
+      // ✅ FIXED: Use shared MongoDB User model (already imported at top)
+      const MongoUser = User;
 
       // Build MongoDB query
       const mongoQuery = {
@@ -432,8 +431,8 @@ class WorkerController {
     try {
       const workerId = req.params.id;
 
-      // Get user from MongoDB
-      const MongoUser = require('../models/User');
+      // Get user from MongoDB (using shared model from top import)
+      const MongoUser = User;
       const worker = await MongoUser.findById(workerId);
 
       if (!worker) {
@@ -597,7 +596,8 @@ class WorkerController {
   static async getWorkerAvailability(req, res) {
     try {
       const Availability = require('../models/Availability');
-      const MongoUser = require('../models/User');
+      // Use shared model from top import
+      const MongoUser = User;
 
       const workerId = req.params.id;
       if (!workerId) {

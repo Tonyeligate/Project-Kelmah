@@ -60,7 +60,13 @@ import { fetchHirerDashboardData } from '../../services/hirerDashboardSlice';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../../auth/contexts/AuthContext';
 import ErrorBoundary from '../../../../components/common/ErrorBoundary';
-import hirersApi from '../../../../api/services/hirersApi';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  fetchHirerDashboardData,
+  fetchHirerMetrics,
+  fetchActiveJobs,
+  fetchRecentApplications
+} from '../../services/hirerDashboardSlice';
 
 // Ghana-inspired theme
 const GhanaTheme = {
@@ -230,9 +236,9 @@ const EnhancedHirerDashboard = () => {
       if (!userId || activeJobs.length > 0) return;
       
       try {
-        const jobs = await hirersApi.getActiveJobs();
+        const result = await dispatch(fetchActiveJobs()).unwrap();
         if (isMounted) {
-          setActiveJobs(jobs || []);
+          setActiveJobs(result || []);
         }
       } catch (error) {
         console.warn('Failed to load active jobs:', error);
@@ -257,9 +263,9 @@ const EnhancedHirerDashboard = () => {
       if (!userId || recentApplications.length > 0) return;
       
       try {
-        const applications = await hirersApi.getRecentApplications();
+        const result = await dispatch(fetchRecentApplications()).unwrap();
         if (isMounted) {
-          setRecentApplications(applications || []);
+          setRecentApplications(result || []);
         }
       } catch (error) {
         console.warn('Failed to load recent applications:', error);

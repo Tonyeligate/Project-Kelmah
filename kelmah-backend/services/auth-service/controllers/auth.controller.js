@@ -6,7 +6,7 @@
 const models = require("../models");
 const { User, RefreshToken, RevokedToken } = models;
 const { AppError } = require("../utils/errorTypes");
-const jwtUtils = require("../utils/shared-jwt");
+const jwtUtils = require("../../../shared/utils/jwt");
 const emailService = require("../services/email.service");
 const crypto = require("crypto");
 const secure = require('../utils/jwt-secure');

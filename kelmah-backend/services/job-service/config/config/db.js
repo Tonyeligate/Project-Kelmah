@@ -3,7 +3,6 @@
  */
 
 const mongoose = require('mongoose');
-const { Sequelize } = require('sequelize');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -37,39 +36,6 @@ const getConnectionString = () => {
   return `mongodb://${dbHost}:${dbPort}/${dbName}`;
 };
 
-// Sequelize (SQL) database setup
-const sqlDialect = process.env.SQL_DIALECT || 'postgres';
-const sqlHost = process.env.SQL_DB_HOST || 'localhost';
-const sqlPort = process.env.SQL_DB_PORT || '5432';
-const sqlDbName = process.env.SQL_DB_NAME || 'kelmah';
-const sqlUser = process.env.SQL_DB_USER || '';
-const sqlPassword = process.env.SQL_DB_PASSWORD || '';
-const getSQLConnectionString = () => {
-  // Use single connection URL if provided
-  if (process.env.SQL_URL) {
-    return process.env.SQL_URL;
-  }
-  // Service-specific URLs
-  if (process.env.AUTH_SQL_URL) {
-    return process.env.AUTH_SQL_URL;
-  }
-  if (process.env.JOB_SQL_URL) {
-    return process.env.JOB_SQL_URL;
-  }
-  if (process.env.USER_SQL_URL) {
-    return process.env.USER_SQL_URL;
-  }
-  // Fallback to legacy individual credentials
-  if (sqlUser && sqlPassword) {
-    return `${sqlDialect}://${sqlUser}:${sqlPassword}@${sqlHost}:${sqlPort}/${sqlDbName}`;
-  }
-  return `${sqlDialect}://${sqlHost}:${sqlPort}/${sqlDbName}`;
-};
-const sequelize = new Sequelize(getSQLConnectionString(), {
-  dialect: sqlDialect,
-  logging: false,
-});
-
 /**
  * Connect to MongoDB
  */
@@ -85,4 +51,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = { connectDB, sequelize }; 
+module.exports = { connectDB }; 

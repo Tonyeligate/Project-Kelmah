@@ -29,7 +29,7 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import CloseIcon from '@mui/icons-material/Close';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import workersApi from '../../../../api/services/workersApi';
+import workerService from '../../../worker/services/workerService';
 
 // Transition for dialog
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -49,7 +49,7 @@ const Portfolio = () => {
     const fetchPortfolio = async () => {
       try {
         setIsLoading(true);
-        const data = await workersApi.getPortfolioProjects();
+        const data = await workerService.getWorkerPortfolio();
         setProjects(data);
         setError(null);
       } catch (err) {

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middlewares/auth');
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 const transactionController = require('../controllers/transaction.controller');
 
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 // Mirror of transaction.routes for naming compatibility
 router.post('/', transactionController.createTransaction);

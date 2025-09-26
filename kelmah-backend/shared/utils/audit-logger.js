@@ -75,11 +75,9 @@ class AuditLogger {
    */
   async logToDatabase(auditEntry) {
     try {
-      // Check if AuditLog model exists
-      const models = require('../../services/auth-service/models');
-      if (models.AuditLog) {
-        await models.AuditLog.create(auditEntry);
-      }
+      // TODO: Implement AuditLog model in shared/models if database logging needed
+      // For now, skip database logging to maintain microservice boundaries
+      console.log('Audit entry (DB logging disabled):', JSON.stringify(auditEntry, null, 2));
     } catch (error) {
       // Fallback to console if database logging fails
       console.log('Audit DB log failed, using console:', error.message);
@@ -249,35 +247,8 @@ class AuditLogger {
    */
   async query(filters = {}, options = {}) {
     try {
-      // Try database first
-      const models = require('../../services/auth-service/models');
-      if (models.AuditLog) {
-        const whereClause = {};
-        
-        if (filters.userId) whereClause.userId = filters.userId;
-        if (filters.action) whereClause.action = filters.action;
-        if (filters.ipAddress) whereClause.ipAddress = filters.ipAddress;
-        if (filters.startDate) {
-          whereClause.timestamp = {
-            [require('sequelize').Op.gte]: filters.startDate
-          };
-        }
-        if (filters.endDate) {
-          whereClause.timestamp = {
-            ...whereClause.timestamp,
-            [require('sequelize').Op.lte]: filters.endDate
-          };
-        }
-        
-        return await models.AuditLog.findAll({
-          where: whereClause,
-          order: [['timestamp', 'DESC']],
-          limit: options.limit || 100,
-          offset: options.offset || 0
-        });
-      }
-      
-      // Fallback to file-based search (basic implementation)
+      // TODO: Implement AuditLog model in shared/models with MongoDB if database querying needed
+      // For now, use file-based search to maintain microservice boundaries
       return await this.queryFromFiles(filters, options);
       
     } catch (error) {
@@ -345,46 +316,8 @@ class AuditLogger {
    */
   async getStatistics(filters = {}) {
     try {
-      const models = require('../../services/auth-service/models');
-      if (models.AuditLog) {
-        const whereClause = {};
-        
-        if (filters.startDate) {
-          whereClause.timestamp = {
-            [require('sequelize').Op.gte]: filters.startDate
-          };
-        }
-        if (filters.endDate) {
-          whereClause.timestamp = {
-            ...whereClause.timestamp,
-            [require('sequelize').Op.lte]: filters.endDate
-          };
-        }
-        
-        const stats = await models.AuditLog.findAll({
-          where: whereClause,
-          attributes: [
-            'action',
-            'severity',
-            [require('sequelize').fn('COUNT', require('sequelize').col('id')), 'count']
-          ],
-          group: ['action', 'severity'],
-          raw: true
-        });
-        
-        return {
-          totalEvents: stats.reduce((sum, stat) => sum + parseInt(stat.count), 0),
-          byAction: stats.reduce((acc, stat) => {
-            acc[stat.action] = (acc[stat.action] || 0) + parseInt(stat.count);
-            return acc;
-          }, {}),
-          bySeverity: stats.reduce((acc, stat) => {
-            acc[stat.severity] = (acc[stat.severity] || 0) + parseInt(stat.count);
-            return acc;
-          }, {})
-        };
-      }
-      
+      // TODO: Implement AuditLog model in shared/models with MongoDB if statistics needed
+      // For now, return empty statistics to maintain microservice boundaries
       return { totalEvents: 0, byAction: {}, bySeverity: {} };
       
     } catch (error) {

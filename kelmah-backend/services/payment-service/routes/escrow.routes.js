@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { authenticate } = require("../middlewares/auth");
+const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 const escrowController = require("../controllers/escrow.controller");
 
 // Protect all escrow endpoints
-router.use(authenticate);
+router.use(verifyGatewayRequest);
 
 // List escrows for current user
 router.get("/", escrowController.getEscrows);

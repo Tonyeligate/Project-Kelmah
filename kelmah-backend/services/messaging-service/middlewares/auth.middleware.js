@@ -3,8 +3,8 @@
  * Validates JWT tokens for messaging API requests
  */
 
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { verifyAccessToken } = require('../../../shared/utils/jwt');
+const { User } = require('../models');
 
 /**
  * Authentication middleware
@@ -44,8 +44,8 @@ const authenticate = async (req, res, next) => {
       });
     }
     
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify JWT token using shared utility
+    const decoded = verifyAccessToken(token);
     
     console.log('🔓 Token decoded successfully:', {
       userId: decoded.sub || decoded.id || decoded.userId,
