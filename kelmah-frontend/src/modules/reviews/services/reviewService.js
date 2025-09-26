@@ -1,4 +1,4 @@
-import { reviewServiceClient } from '../../common/services/axios';
+import reviewServiceClient from '../../common/services/axios';
 
 class ReviewService {
   // Get reviews for a specific user

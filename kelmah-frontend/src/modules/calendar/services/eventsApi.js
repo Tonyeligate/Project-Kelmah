@@ -1,4 +1,4 @@
-import { gatewayClient } from '../../common/services/axios';
+import gatewayClient from '../../common/services/axios';
 
 /**
  * Calendar events API service

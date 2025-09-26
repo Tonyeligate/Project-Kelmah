@@ -1,4 +1,4 @@
-import { gatewayClient } from '../services/axios';
+import gatewayClient from '../services/axios';
 
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
