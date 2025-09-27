@@ -21,6 +21,47 @@ const loggingMiddleware = require('./middlewares/logging');
 const errorHandler = require('./middlewares/error-handler');
 const requestValidator = require('./middlewares/request-validator');
 
+// Import intelligent service discovery
+const {
+  initializeServiceRegistry,
+  getServiceUrlsForApp,
+  detectEnvironment
+} = require('./utils/serviceDiscovery');
+
+/**
+ * Dynamic Proxy Middleware Creator
+ * Creates proxy middleware that resolves service URLs at runtime
+ */
+const createDynamicProxy = (serviceName, options = {}) => {
+  return (req, res, next) => {
+    try {
+      const targetUrl = services[serviceName] || getServiceUrl(serviceName);
+
+      if (!targetUrl) {
+        console.error(`❌ No URL found for service: ${serviceName}`);
+        return res.status(503).json({
+          error: 'Service temporarily unavailable',
+          service: serviceName
+        });
+      }
+
+      const proxy = createProxyMiddleware({
+        target: targetUrl,
+        changeOrigin: true,
+        ...options
+      });
+
+      return proxy(req, res, next);
+    } catch (error) {
+      console.error(`❌ Proxy error for ${serviceName}:`, error);
+      return res.status(500).json({
+        error: 'Proxy configuration error',
+        service: serviceName
+      });
+    }
+  };
+};
+
 const app = express();
 const PORT = process.env.API_GATEWAY_PORT || 3000;
 
@@ -41,27 +82,36 @@ const logger = winston.createLogger({
   ]
 });
 
-// Service registry - Simplified URL resolution
-const services = {
-  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
-  user: process.env.USER_SERVICE_URL || 'http://localhost:5002',
-  job: process.env.JOB_SERVICE_URL || 'http://localhost:5003',
-  payment: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5004',
-  messaging: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5005',
-  notification: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:5006',
-  review: process.env.REVIEW_SERVICE_URL || 'http://localhost:5007'
-};
+// Global service registry - will be populated by intelligent discovery
+let services = {};
 
-// Expose service URLs to route modules
-app.set('serviceUrls', {
-  AUTH_SERVICE: services.auth,
-  USER_SERVICE: services.user,
-  JOB_SERVICE: services.job,
-  PAYMENT_SERVICE: services.payment,
-  MESSAGING_SERVICE: services.messaging,
-  NOTIFICATION_SERVICE: services.notification,
-  REVIEW_SERVICE: services.review,
-});
+// Initialize services on startup
+const initializeServices = async () => {
+  try {
+    console.log('🔧 API Gateway starting service discovery...');
+    services = await initializeServiceRegistry();
+
+    // Expose service URLs to route modules
+    app.set('serviceUrls', getServiceUrlsForApp(services));
+
+    console.log('✅ Service discovery completed successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Service discovery failed:', error);
+    // Fallback to localhost URLs
+    services = {
+      auth: 'http://localhost:5001',
+      user: 'http://localhost:5002',
+      job: 'http://localhost:5003',
+      payment: 'http://localhost:5004',
+      messaging: 'http://localhost:5005',
+      review: 'http://localhost:5006'
+    };
+    app.set('serviceUrls', getServiceUrlsForApp(services));
+    console.log('⚠️ Using fallback localhost URLs');
+    return false;
+  }
+};
 
 // Fail-fast: ensure critical environment variables are present
 (() => {
@@ -310,9 +360,7 @@ app.use(
       limit: Joi.number().integer().min(1).max(100).default(20),
     }).unknown(true),
   }),
-  createProxyMiddleware({
-    target: services.user,
-    changeOrigin: true,
+  createDynamicProxy('user', {
     pathRewrite: { '^/api/users': '/api/users' },
     onProxyReq: (proxyReq, req) => {
       if (req.user) {
@@ -340,9 +388,7 @@ app.use('/api/profile',
     }
     return authenticate(req, res, next);
   },
-  createProxyMiddleware({
-    target: services.user,
-    changeOrigin: true,
+  createDynamicProxy('user', {
     pathRewrite: { '^/api/profile': '/api/profile' }
   })
 );
@@ -350,9 +396,7 @@ app.use('/api/profile',
 // Profile upload & presign routes (protected) → user-service
 app.use('/api/profile/uploads',
   authenticate,
-  createProxyMiddleware({
-    target: services.user,
-    changeOrigin: true,
+  createDynamicProxy('user', {
     pathRewrite: { '^/api/profile/uploads': '/api/profile/uploads' }
   })
 );
@@ -360,9 +404,7 @@ app.use('/api/profile/uploads',
 // Settings routes (protected) → user-service
 app.use('/api/settings',
   authenticate,
-  createProxyMiddleware({
-    target: services.user,
-    changeOrigin: true,
+  createDynamicProxy('user', {
     pathRewrite: { '^/api/settings': '/api/settings' }
   })
 );
@@ -413,9 +455,7 @@ app.use(
       }).unknown(false),
     })(req, res, next);
   },
-  createProxyMiddleware({
-    target: services.user,
-    changeOrigin: true,
+  createDynamicProxy('user', {
     // Rewrite paths: / -> /workers, /search -> /workers/search, etc.
     pathRewrite: {
       '^/$': '/workers',  // Root path to /workers
@@ -470,9 +510,7 @@ app.use('/api/jobs', createEnhancedJobProxy(services.job, {
 
 // Search routes (public) with rate limiting
 app.use('/api/search', getRateLimiter('search'));
-app.use('/api/search', createProxyMiddleware({
-  target: services.job,
-  changeOrigin: true,
+app.use('/api/search', createDynamicProxy('job', {
   pathRewrite: { '^/api/search': '/api/search' },
   onError: (err, req, res) => {
     console.error('[API Gateway] Search service error:', err.message);
@@ -487,9 +525,7 @@ app.use('/api/search', createProxyMiddleware({
 // Compatibility alias: some clients still call /api/jobs/search/*
 // Route them to the same search proxy to avoid 404s
 app.use('/api/jobs/search', getRateLimiter('search'));
-app.use('/api/jobs/search', createProxyMiddleware({
-  target: services.job,
-  changeOrigin: true,
+app.use('/api/jobs/search', createDynamicProxy('job', {
   pathRewrite: { '^/api/jobs/search': '/api/search' },
   onError: (err, req, res) => {
     console.error('[API Gateway] Search alias error:', err.message);
@@ -833,40 +869,57 @@ app.use('*', (req, res) => {
 app.use(celebrateErrors());
 app.use(errorHandler(logger));
 
-// Start server
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 Kelmah API Gateway running on port ${PORT}`);
-  logger.info(`📋 Health: http://localhost:${PORT}/health`);
-  logger.info(`📚 Docs: http://localhost:${PORT}/api/docs`);
-});
-
-// Enable WebSocket upgrade handling for Socket.IO proxy (dynamic)
-server.on('upgrade', (req, socket, head) => {
+// Start server with service discovery
+const startServer = async () => {
   try {
-    const url = req?.url || '';
-    if (url.startsWith('/socket.io')) {
-      console.log('🔄 WebSocket upgrade request:', url);
-      const proxy = createSocketIoProxy();
-      if (proxy && typeof proxy.upgrade === 'function') {
-        return proxy.upgrade(req, socket, head);
-      } else {
-        console.warn('⚠️ Socket.IO proxy not available for upgrade');
-        socket.write('HTTP/1.1 503 Service Unavailable\r\n' +
-          'Content-Type: text/plain\r\n' +
-          'Connection: close\r\n\r\n' +
-          'WebSocket service unavailable');
-        socket.destroy();
+    // Initialize service discovery first
+    await initializeServices();
+
+    const server = app.listen(PORT, () => {
+      const environment = detectEnvironment();
+      logger.info(`🚀 Kelmah API Gateway running on port ${PORT} (${environment} mode)`);
+      logger.info(`📋 Health: http://localhost:${PORT}/health`);
+      logger.info(`📚 Docs: http://localhost:${PORT}/api/docs`);
+      logger.info(`🔍 Service URLs:`, getServiceUrlsForApp(services));
+    });
+
+    // Enable WebSocket upgrade handling for Socket.IO proxy (dynamic)
+    server.on('upgrade', (req, socket, head) => {
+      try {
+        const url = req?.url || '';
+        if (url.startsWith('/socket.io')) {
+          console.log('🔄 WebSocket upgrade request:', url);
+          const proxy = createSocketIoProxy();
+          if (proxy && typeof proxy.upgrade === 'function') {
+            return proxy.upgrade(req, socket, head);
+          } else {
+            console.warn('⚠️ Socket.IO proxy not available for upgrade');
+            socket.write('HTTP/1.1 503 Service Unavailable\r\n' +
+              'Content-Type: text/plain\r\n' +
+              'Connection: close\r\n\r\n' +
+              'WebSocket service unavailable');
+            socket.destroy();
+          }
+        }
+        // For non-socket.io upgrades, do nothing (let other handlers manage or close)
+      } catch (e) {
+        console.error('🚨 Socket.IO upgrade handling error:', e?.message || e);
+        try {
+          socket.write('HTTP/1.1 500 Internal Server Error\r\n' +
+            'Connection: close\r\n\r\n');
+          socket.destroy();
+        } catch (_) { }
       }
-    }
-    // For non-socket.io upgrades, do nothing (let other handlers manage or close)
-  } catch (e) {
-    console.error('🚨 Socket.IO upgrade handling error:', e?.message || e);
-    try {
-      socket.write('HTTP/1.1 500 Internal Server Error\r\n' +
-        'Connection: close\r\n\r\n');
-      socket.destroy();
-    } catch (_) { }
+    });
+
+    return server;
+  } catch (error) {
+    logger.error('❌ Failed to start API Gateway:', error);
+    process.exit(1);
   }
-});
+};
+
+// Start the server
+startServer();
 
 module.exports = app;
