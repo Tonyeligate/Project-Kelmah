@@ -13,6 +13,17 @@ const axios = require('axios');
  * @returns {Function} Express middleware
  */
 const createJobProxy = (targetUrl, options = {}) => {
+  // Handle null targetUrl (service not available in production)
+  if (!targetUrl) {
+    return (req, res, next) => {
+      res.status(503).json({
+        error: 'Job service is not available',
+        message: 'This service is currently not deployed in production',
+        timestamp: new Date().toISOString()
+      });
+    };
+  }
+
   const defaultOptions = {
     target: targetUrl,
     changeOrigin: true,
@@ -115,6 +126,17 @@ const checkJobServiceHealth = async (targetUrl) => {
  * @returns {Function} Express middleware
  */
 const createEnhancedJobProxy = (targetUrl, options = {}) => {
+  // Handle null targetUrl (service not available in production)
+  if (!targetUrl) {
+    return (req, res, next) => {
+      res.status(503).json({
+        error: 'Job service is not available',
+        message: 'This service is currently not deployed in production',
+        timestamp: new Date().toISOString()
+      });
+    };
+  }
+
   let isHealthy = true;
   let lastHealthCheck = 0;
   const HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
