@@ -44,6 +44,7 @@ import {
   Fingerprint as FingerprintIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EXTERNAL_SERVICES } from '../../config/services';
 
 /**
  * Digital Signature Component for Ghana Contract Management
@@ -295,7 +296,7 @@ const DigitalSignature = ({
   // Get IP address for verification
   const getIPAddress = async () => {
     try {
-      const response = await fetch('https://api.ipify.org?format=json');
+      const response = await fetch(`${EXTERNAL_SERVICES.IP_GEOLOCATION}?format=json`);
       const data = await response.json();
       return data.ip;
     } catch (error) {

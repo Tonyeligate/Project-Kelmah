@@ -139,15 +139,9 @@ const resolveServiceUrl = async (serviceName) => {
     }
   }
 
-  // If both fail, return null for production (service not available)
-  // or primary URL for development (let it fail at runtime for debugging)
-  if (environment === 'production') {
-    console.log(`❌ ${config.name} not available in production, returning null`);
-    return null;
-  } else {
-    console.log(`❌ ${config.name} no healthy URLs found, using primary: ${primaryUrl}`);
-    return primaryUrl;
-  }
+  // If both fail, return primary URL anyway (let it fail at runtime)
+  console.log(`❌ ${config.name} no healthy URLs found, using primary: ${primaryUrl}`);
+  return primaryUrl;
 };
 
 /**

@@ -2,6 +2,7 @@ import io from 'socket.io-client';
 import { store } from '../store/store';
 import { addNotification, updateOnlineUsers } from '../store/slices/notificationSlice';
 import { WS_CONFIG } from '../config/environment';
+import { API_ENDPOINTS } from '../config/services';
 
 /**
  * WebSocket service for real-time communication
@@ -38,18 +39,9 @@ class WebSocketService {
         this.disconnect();
       }
 
-      // ✅ FIXED: Get WebSocket URL from runtime config
-      let wsUrl = '/socket.io'; // Default fallback
-      try {
-        const response = await fetch('/runtime-config.json');
-        if (response.ok) {
-          const config = await response.json();
-          wsUrl = config.websocketUrl || config.ngrokUrl || '/socket.io';
-          console.log('🔌 WebSocket Service connecting to:', wsUrl);
-        }
-      } catch (error) {
-        console.warn('⚠️ Failed to load runtime config for WebSocket:', error);
-      }
+  // Use centralized WebSocket URL from config/services.js
+  let wsUrl = API_ENDPOINTS.MESSAGING.BASE || '/socket.io';
+  console.log('🔌 WebSocket Service connecting to:', wsUrl);
 
       // Create Socket.io connection
       this.socket = io(wsUrl, {

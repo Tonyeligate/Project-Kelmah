@@ -14,50 +14,11 @@ const isTesting = import.meta.env.MODE === 'test';
 // API CONFIGURATION
 // ===============================================
 
-// Default service URLs for different environments
-const DEFAULT_SERVICES = {
-  development: {
-    AUTH_SERVICE: 'http://localhost:5001',
-    USER_SERVICE: 'http://localhost:5002',
-    JOB_SERVICE: 'http://localhost:5003',
-    MESSAGING_SERVICE: 'http://localhost:5004',
-    PAYMENT_SERVICE: 'http://localhost:5005',
-    REVIEW_SERVICE: 'http://localhost:5006',
-  },
-  production: {
-    // Leave empty by default to route via API Gateway (/api) unless overridden via VITE_*_URL
-    AUTH_SERVICE: '',
-    USER_SERVICE: '',
-    JOB_SERVICE: '',
-    MESSAGING_SERVICE: '',
-    PAYMENT_SERVICE: '',
-    REVIEW_SERVICE: '',
-  },
-};
+// Import service URLs from centralized services.js
+import SERVICES from './services';
 
-// Get service URLs (environment variables override defaults)
-const getServiceUrl = (serviceName) => {
-  const envVar = `VITE_${serviceName}_URL`;
-  const envValue = import.meta.env[envVar];
-
-  if (envValue) {
-    return envValue;
-  }
-
-  // Prefer gateway proxy in development and production unless explicitly overridden
-  // Returning empty string forces buildEndpoint to use '/api' relative to current origin
-  return '';
-};
-
-// Service URLs
-export const SERVICES = {
-  AUTH_SERVICE: getServiceUrl('AUTH_SERVICE'),
-  USER_SERVICE: getServiceUrl('USER_SERVICE'),
-  JOB_SERVICE: getServiceUrl('JOB_SERVICE'),
-  MESSAGING_SERVICE: getServiceUrl('MESSAGING_SERVICE'),
-  PAYMENT_SERVICE: getServiceUrl('PAYMENT_SERVICE'),
-  REVIEW_SERVICE: getServiceUrl('REVIEW_SERVICE'),
-};
+// Re-export SERVICES for backward compatibility
+export { SERVICES };
 
 // Load runtime config for dynamic ngrok URL
 let runtimeConfig = null;

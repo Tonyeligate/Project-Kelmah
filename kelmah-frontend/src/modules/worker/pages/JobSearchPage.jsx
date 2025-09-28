@@ -151,6 +151,7 @@ import UserPerformanceDashboard from '../components/UserPerformanceDashboard';
 // Removed AuthContext import to prevent dual state management conflicts
 // import useAuth from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
+import { EXTERNAL_SERVICES } from '../../../config/services';
 
 // Enhanced Animations with Worker-focused Themes
 const float = keyframes`
@@ -1756,7 +1757,7 @@ const JobSearchPage = () => {
           zoom={userPosition ? 13 : 4}
           style={{ height: '100%', width: '100%' }}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />
           
               {/* User Location Marker */}
               {userPosition && (

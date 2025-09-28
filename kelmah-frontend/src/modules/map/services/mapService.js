@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { EXTERNAL_SERVICES } from '../../../config/services';
 
 /**
  * Professional Map Service for Vocational Job Platform
@@ -328,7 +329,7 @@ class MapService {
 
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse`,
+        EXTERNAL_SERVICES.OPENSTREETMAP.NOMINATIM_REVERSE,
         {
           params: {
             lat: latitude,
@@ -372,7 +373,7 @@ class MapService {
 
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search`,
+        EXTERNAL_SERVICES.OPENSTREETMAP.NOMINATIM_SEARCH,
         {
           params: {
             q: address,

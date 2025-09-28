@@ -20,6 +20,7 @@ import { Send, AttachFile } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
+import { API_ENDPOINTS } from '../../../../config/services';
 
 function Messages() {
   const { user, token } = useAuth();
@@ -45,7 +46,9 @@ function Messages() {
 
   const initializeWebSocket = () => {
     try {
-      ws.current = new WebSocket(`ws://localhost:3000/ws?token=${token}`);
+      // Use centralized WebSocket URL from config
+      const wsBaseUrl = API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';
+      ws.current = new WebSocket(`${wsBaseUrl}/ws?token=${token}`);
 
       ws.current.onopen = () => {
         console.log('WebSocket connection established');

@@ -5,6 +5,8 @@
  * Values can be overridden by environment variables.
  */
 
+import { getApiBaseUrl, SERVICES } from './environment';
+
 // Read Vite environment variables at build time
 const {
   VITE_API_URL,
@@ -17,18 +19,41 @@ const {
   VITE_ENV,
   VITE_DEBUG_MODE,
 } = import.meta.env;
-// Construct API and WebSocket URLs and flags (no `/api` suffix, service methods include it)
-const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-const API_BASE_URL = VITE_API_URL
-  ? (isHttps && VITE_API_URL.startsWith('http:') ? '/api' : `${VITE_API_URL}/api`)
-  : '/api';
-const WS_URL = VITE_WS_URL || 'http://localhost:5000';
-const USE_MOCK_DATA = false; // Force disable mocks to use real API data
 
+// Get API base URL from centralized config
+const getApiBase = async () => await getApiBaseUrl();
+
+// Import centralized services
+import { getApiBaseUrl } from './environment';
+import { API_ENDPOINTS } from './services';
+
+// Async function to get API base URL
+const getAPIBaseUrl = async () => {
+  try {
+    return await getApiBaseUrl();
+  } catch (error) {
+    console.warn('Failed to get API base URL from centralized config:', error);
+    return '/api';
+  }
+};
+
+// Construct API and WebSocket URLs using centralized config
+const getEnvConfig = async () => {
+  const apiBaseUrl = await getAPIBaseUrl();
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+  return {
+    // API configuration
+    API_URL: apiBaseUrl,
+    SOCKET_URL: API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io',
+  };
+};
+
+// For backward compatibility, provide sync fallbacks
 const env = {
-  // API configuration
-  API_URL: VITE_API_URL || '/api',
-  SOCKET_URL: VITE_SOCKET_URL || 'http://localhost:3000',
+  // API configuration - use centralized config
+  API_URL: '/api', // Use getEnvConfig() for async access
+  SOCKET_URL: '/socket.io', // Use getEnvConfig() for async access
 
   // Feature flags
   ENABLE_ANALYTICS: VITE_ENABLE_ANALYTICS === 'true',

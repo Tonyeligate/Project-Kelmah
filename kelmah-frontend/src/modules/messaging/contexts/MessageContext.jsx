@@ -8,6 +8,7 @@ import React, {
 import { messagingService } from '../services/messagingService';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import io from 'socket.io-client';
+import { API_ENDPOINTS } from '../../../config/services';
 
 const MessageContext = createContext(null);
 
@@ -64,18 +65,9 @@ export const MessageProvider = ({ children }) => {
     if (connectWebSocket._connecting) return;
     connectWebSocket._connecting = true;
 
-    // ✅ FIXED: Get WebSocket URL from runtime config
-    let wsUrl = '/socket.io'; // Default fallback
-    try {
-      const response = await fetch('/runtime-config.json');
-      if (response.ok) {
-        const config = await response.json();
-        wsUrl = config.websocketUrl || config.ngrokUrl || '/socket.io';
-        console.log('🔌 Connecting to messaging WebSocket via:', wsUrl);
-      }
-    } catch (error) {
-      console.warn('⚠️ Failed to load runtime config for WebSocket:', error);
-    }
+    // Use centralized WebSocket URL from config
+    let wsUrl = API_ENDPOINTS.MESSAGING.BASE || '/socket.io';
+    console.log('🔌 Connecting to messaging WebSocket via:', wsUrl);
 
     const newSocket = io(wsUrl, {
       auth: {

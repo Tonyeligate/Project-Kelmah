@@ -33,6 +33,7 @@ import { format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import axiosInstance from '../../common/services/axios';
 import reviewsApi from '../../../services/reviewsApi';
+import { EXTERNAL_SERVICES } from '../../../config/services';
 
 function UserProfilePage() {
   const { userId } = useParams();
@@ -201,7 +202,7 @@ function UserProfilePage() {
                   >
                     <iframe
                       title="User Location"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(user.location)}&output=embed`}
+                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(user.location)}&output=embed`}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}

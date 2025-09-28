@@ -67,13 +67,14 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import mapService from '../../services/mapService';
+import { EXTERNAL_SERVICES } from '../../../../config/services';
 
 // Enhanced marker icons with sophisticated styling
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl: EXTERNAL_SERVICES.LEAFLET.MARKER_ICON_RETINA,
+  iconUrl: EXTERNAL_SERVICES.LEAFLET.MARKER_ICON,
+  shadowUrl: EXTERNAL_SERVICES.LEAFLET.MARKER_SHADOW,
 });
 
 // Professional 3D-style markers with advanced animations
@@ -815,22 +816,22 @@ const InteractiveMap = ({
   // Professional tile layers with enhanced options
   const tileLayers = {
     osm: {
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      url: EXTERNAL_SERVICES.OPENSTREETMAP.TILES,
       attribution: '© OpenStreetMap contributors',
       name: 'Standard'
     },
     dark: {
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      url: EXTERNAL_SERVICES.CARTODB.DARK_ALL,
       attribution: '© CARTO',
       name: 'Dark Mode'
     },
     satellite: {
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      url: EXTERNAL_SERVICES.ARCGIS.WORLD_IMAGERY,
       attribution: '© Esri',
       name: 'Satellite'
     },
     terrain: {
-      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      url: EXTERNAL_SERVICES.OPENTOPOMAP.TILES,
       attribution: '© OpenTopoMap',
       name: 'Terrain'
     },

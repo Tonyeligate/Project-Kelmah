@@ -26,57 +26,66 @@ import settingsApi from './services/settingsApi';
 const USE_MOCK_MODE = true; // Set to true to use mock APIs
 
 // Create axios instance with default config
-const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api', // Hardcoded to ensure correct port
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const createAxiosInstance = async () => {
+  const baseURL = await getApiBaseUrl();
+  return axios.create({
+    baseURL: baseURL || '/api', // Fallback to relative API path
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
 
-// Request interceptor for adding auth token
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Initialize axios instance asynchronously
+let axiosInstance = null;
+const initializeAxios = async () => {
+  if (!axiosInstance) {
+    axiosInstance = await createAxiosInstance();
 
-// Response interceptor for error handling
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+    // Add interceptors after instance creation
+    // Request interceptor for adding auth token
+    axiosInstance.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem(JWT_LOCAL_STORAGE_KEY);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
 
-    // Handle token expiration (401 errors)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // Response interceptor for error handling
+    axiosInstance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
 
-      try {
-        // Implement refresh token logic here if needed
-        // const refreshToken = localStorage.getItem(JWT_REFRESH_KEY);
-        // const baseURL = await getApiBaseUrl();
-        // const response = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
-        // localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
-        // originalRequest.headers.Authorization = `Bearer ${response.data.token}`;
-        // return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Handle refresh failure - redirect to login
-        localStorage.removeItem(JWT_LOCAL_STORAGE_KEY);
-        window.location.href = '/login';
-      }
-    }
+        // Handle token expiration (401 errors)
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
 
-    return Promise.reject(error);
-  },
-);
+          try {
+            // Implement refresh token logic here if needed
+            // const refreshToken = localStorage.getItem(JWT_REFRESH_KEY);
+            // const baseURL = await getApiBaseUrl();
+            // const response = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
+            // localStorage.setItem(JWT_LOCAL_STORAGE_KEY, response.data.token);
+            // originalRequest.headers.Authorization = `Bearer ${response.data.token}`;
+            // return axiosInstance(originalRequest);
+          } catch (refreshError) {
+            // Handle refresh failure - redirect to login
+            localStorage.removeItem(JWT_LOCAL_STORAGE_KEY);
+            window.location.href = '/login';
+          }
+        }
 
-// Export configured axios instance
-export default axiosInstance;
+        return Promise.reject(error);
+      },
+    );
+  }
+};
 
 // Import and export all API services
 export { default as authApi } from './services/authApi';
@@ -96,3 +105,4 @@ export { reviewsApi };
 export { contractsApi };
 export { searchApi };
 export { settingsApi };
+

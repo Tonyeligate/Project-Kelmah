@@ -41,6 +41,7 @@ import {
   selectJobsError,
 } from '../services/jobSlice';
 import { secureStorage } from '../../../utils/secureStorage';
+import { EXTERNAL_SERVICES } from '../../../config/services';
 
 // Styled components
 const DetailsPaper = styled(Paper)(({ theme }) => ({
@@ -328,7 +329,7 @@ const JobDetailsPage = () => {
                   >
                     <iframe
                       title="Job Location"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(job.location?.address || job.location?.city || job.location || 'Ghana')}&output=embed`}
+                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(job.location?.address || job.location?.city || job.location || 'Ghana')}&output=embed`}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}

@@ -2,20 +2,56 @@
 const ENV = process.env.NODE_ENV || 'development';
 const isDevelopment = ENV === 'development';
 
-// API URLs for different environments
-const API_URLS = {
-  development: '/api', // Use proxy; ensure base includes /api for modules using API_URL
-  test: 'http://localhost:5000',
-  production: process.env.VITE_API_URL || '/api',
+// Import centralized services
+import { getApiBaseUrl } from './environment';
+
+// API URLs - use centralized configuration instead of hardcoded URLs
+const getAPIUrls = async () => {
+  try {
+    const baseUrl = await getApiBaseUrl();
+    return {
+      development: baseUrl,
+      test: baseUrl,
+      production: baseUrl,
+    };
+  } catch (error) {
+    console.warn('Failed to get centralized API URLs:', error);
+    return {
+      development: '/api',
+      test: '/api',
+      production: '/api',
+    };
+  }
 };
 
-// Determine API_BASE_URL: use VITE_API_URL if provided, otherwise fallback to environment-specific defaults
-export const API_BASE_URL = process.env.VITE_API_URL || API_URLS[ENV];
-// Keep API_URL aligned with API_BASE_URL; most services build full paths by appending resource paths
-export const API_URL = API_BASE_URL;
-export const SOCKET_URL = isDevelopment
-  ? 'http://localhost:3003'
-  : process.env.VITE_MESSAGING_URL || (typeof window !== 'undefined' && window.location.origin.replace(/^http:/, 'https:'));
+// Async function to get API base URL
+const getAPIBaseUrl = async () => {
+  const urls = await getAPIUrls();
+  return process.env.VITE_API_URL || urls[ENV];
+};
+
+// Determine API_BASE_URL: use centralized config
+export const getAPI_BASE_URL = getAPIBaseUrl;
+// Keep API_URL aligned with API_BASE_URL for backward compatibility
+export const getAPI_URL = getAPIBaseUrl;
+
+// For backward compatibility (deprecated - use async getters)
+export const API_BASE_URL = '/api';
+export const API_URL = '/api';
+
+// Socket URL - use centralized messaging service
+import { API_ENDPOINTS } from './services';
+export const getSOCKET_URL = async () => {
+  try {
+    return API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';
+  } catch (error) {
+    console.warn('Failed to get socket URL:', error);
+    return '/socket.io';
+  }
+};
+
+// For backward compatibility (deprecated - use async getter)
+export const SOCKET_URL = '/socket.io';
 export const APP_NAME = 'Kelmah';
 
 // Authentication related

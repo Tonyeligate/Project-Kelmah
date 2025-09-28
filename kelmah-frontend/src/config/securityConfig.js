@@ -1,8 +1,34 @@
 /**
  * Security Configuration
- * 
+ *
  * Centralized security settings and policies for the Kelmah application.
  */
+
+import { getApiBaseUrl } from './environment';
+import { SERVICES } from './services';
+
+// Helper function to get allowed connect-src URLs
+const getAllowedConnectSrc = async () => {
+  const baseUrl = await getApiBaseUrl();
+  const urls = ["'self'"];
+
+  // Add the current API base URL
+  if (baseUrl && baseUrl !== '/api') {
+    urls.push(baseUrl);
+  }
+
+  // Add service-specific URLs from config
+  Object.values(SERVICES).forEach(serviceUrl => {
+    if (serviceUrl && serviceUrl !== '' && /^https?:\/\//.test(serviceUrl)) {
+      urls.push(serviceUrl);
+    }
+  });
+
+  // All service URLs are now handled by the centralized SERVICES config
+  // No need for hardcoded fallback URLs
+
+  return [...new Set(urls)]; // Remove duplicates
+};
 
 export const SECURITY_CONFIG = {
   // Authentication settings
@@ -42,25 +68,14 @@ export const SECURITY_CONFIG = {
     ]
   },
 
-  // Content Security Policy
+  // Content Security Policy - Dynamic connect-src based on environment
   CSP: {
     'default-src': ["'self'"],
     'script-src': ["'self'", "'unsafe-inline'"],
     'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     'font-src': ["'self'", "https://fonts.gstatic.com"],
     'img-src': ["'self'", "data:", "https:"],
-    'connect-src': [
-      "'self'",
-      'http://154.161.138.112:5000',
-      'http://154.161.138.112:5000',
-      // Legacy URLs (kept for compatibility)
-      'https://kelmah-api.loca.lt',
-      "https://kelmah-auth-service.onrender.com",
-      "https://kelmah-user-service.onrender.com",
-      "https://kelmah-job-service.onrender.com",
-      "https://kelmah-messaging-service.onrender.com",
-      "https://kelmah-payment-service.onrender.com"
-    ]
+    'connect-src': getAllowedConnectSrc // Dynamic function instead of static array
   },
 
   // Session Management

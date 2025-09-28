@@ -12,10 +12,33 @@ export const AUTH_USER_KEY = 'kelmah_user_data';
 
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
-// API configuration
-const baseUrl = metaEnv.VITE_API_URL || 'http://localhost:8080';
-export const API_BASE_URL = `${baseUrl}/api`;
-export const WS_URL = baseUrl;
+// API configuration - use centralized services instead of hardcoded URLs
+import { getApiBaseUrl } from './environment';
+
+// Async function to get API base URL
+const getBaseUrl = async () => {
+  try {
+    return await getApiBaseUrl();
+  } catch (error) {
+    console.warn('Failed to get API base URL from centralized config:', error);
+    return '/api'; // Fallback to relative API path
+  }
+};
+
+// Export async getters for dynamic URLs
+export const getAPI_BASE_URL = async () => {
+  const baseUrl = await getBaseUrl();
+  return baseUrl;
+};
+
+export const getWS_URL = async () => {
+  const baseUrl = await getBaseUrl();
+  return baseUrl;
+};
+
+// For backward compatibility, provide sync fallbacks (deprecated)
+export const API_BASE_URL = '/api'; // Use getAPI_BASE_URL() instead
+export const WS_URL = '/api'; // Use getWS_URL() instead
 
 // Application-level constants
 export const APP_NAME = 'Kelmah';

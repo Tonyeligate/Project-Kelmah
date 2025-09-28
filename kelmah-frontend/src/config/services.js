@@ -16,19 +16,36 @@ const PRODUCTION_SERVICES = {
   JOB_SERVICE: '',
   MESSAGING_SERVICE: '',
   PAYMENT_SERVICE: '',
+  REVIEW_SERVICE: '',
 };
 
-// Development URLs (through Vite proxy)
+// Development URLs (localhost services)
 const DEVELOPMENT_SERVICES = {
-  AUTH_SERVICE: '', // Uses /api/auth proxy to auth service
-  USER_SERVICE: '', // Uses /api/users proxy to user service
-  JOB_SERVICE: '', // Uses /api/jobs proxy to job service
-  MESSAGING_SERVICE: '', // Uses /api/messages proxy to messaging service
-  PAYMENT_SERVICE: '', // Uses /api/payments proxy to payment service
+  AUTH_SERVICE: 'http://localhost:5001',
+  USER_SERVICE: 'http://localhost:5002',
+  JOB_SERVICE: 'http://localhost:5003',
+  MESSAGING_SERVICE: 'http://localhost:5004',
+  PAYMENT_SERVICE: 'http://localhost:5005',
+  REVIEW_SERVICE: 'http://localhost:5006',
 };
 
 // Select services based on environment
 const SERVICES = isDevelopment ? DEVELOPMENT_SERVICES : PRODUCTION_SERVICES;
+
+// WebSocket URL helper
+const getWebSocketUrl = (service) => {
+  if (isDevelopment) {
+    // Development: convert HTTP URLs to WebSocket URLs
+    const httpUrl = SERVICES[service];
+    if (httpUrl) {
+      return httpUrl.replace(/^http/, 'ws');
+    }
+    return null;
+  } else {
+    // Production: WebSocket connections go through the API gateway
+    return null; // Will use relative WebSocket URL or Socket.IO default
+  }
+};
 
 // Base API paths for each service
 const getServicePath = (service, path) => {
@@ -58,8 +75,46 @@ const getServicePath = (service, path) => {
   }
 };
 
+// External services (third-party APIs)
+export const EXTERNAL_SERVICES = {
+  IP_GEOLOCATION: 'https://api.ipify.org',
+  // Map services
+  OPENSTREETMAP: {
+    TILES: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    NOMINATIM_REVERSE: 'https://nominatim.openstreetmap.org/reverse',
+    NOMINATIM_SEARCH: 'https://nominatim.openstreetmap.org/search',
+  },
+  LEAFLET: {
+    MARKER_ICON_RETINA: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    MARKER_ICON: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    MARKER_SHADOW: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  },
+  GOOGLE_MAPS: {
+    EMBED: 'https://maps.google.com/maps',
+    SEARCH: 'https://www.google.com/maps/search/',
+  },
+  ARCGIS: {
+    WORLD_IMAGERY: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  },
+  CARTODB: {
+    DARK_ALL: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  },
+  OPENTOPOMAP: {
+    TILES: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+  },
+  // Image services (for demo/placeholder data)
+  UNSPLASH: 'https://images.unsplash.com',
+  PEXELS: 'https://images.pexels.com',
+};
+
 // API endpoints for each service
 export const API_ENDPOINTS = {
+  // WebSocket URLs
+  WEBSOCKET: {
+    MESSAGING: getWebSocketUrl('MESSAGING_SERVICE'),
+  },
+
+  // Auth Service
   // Auth Service
   AUTH: {
     BASE: getServicePath('AUTH_SERVICE', ''),

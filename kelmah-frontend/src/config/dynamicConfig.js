@@ -3,36 +3,44 @@
  * Automatically reads current ngrok URL and other dynamic configurations
  */
 
-// Function to get current ngrok URL from config file
+import { getApiBaseUrl } from './environment';
+
+// Function to get current ngrok URL from centralized config
 const getCurrentNgrokUrl = async () => {
   try {
-    // In production mode, prefer explicit environment variables over ngrok
+    // Use centralized API base URL instead of fetching from runtime-config.json
+    const baseUrl = await getApiBaseUrl();
+    if (baseUrl && baseUrl !== '/api') {
+      return baseUrl;
+    }
+
+    // Fallback to legacy ngrok detection for development
     const isProduction = import.meta.env.MODE === 'production';
     const hasExplicitApiUrl = import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http');
-    
+
     if (isProduction && hasExplicitApiUrl) {
       console.log('🎯 Production mode: Using explicit API URL instead of ngrok');
       return null; // Don't use ngrok in production when explicit URL is set
     }
-    
+
     if (typeof window !== 'undefined') {
       // Browser environment - try to get from localStorage first
       const storedUrl = localStorage.getItem('kelmah_ngrok_url');
       if (storedUrl && !isProduction) {
         return storedUrl;
       }
-      
+
       // Try to fetch from runtime config file (only in development)
       if (!isProduction) {
         try {
           const response = await fetch('/runtime-config.json');
           if (response.ok) {
             const config = await response.json();
-            
+
             // Check if this runtime config is for development
             if (config.isDevelopment !== false) {
               const url = config.ngrokUrl;
-              
+
               // Store in localStorage for future use
               if (url) {
                 localStorage.setItem('kelmah_ngrok_url', url);

@@ -57,6 +57,7 @@ import jobsService from '../../jobs/services/jobsApi';
 // Import workersApi for user loading functionality
 import workerService from '../../worker/services/workerService';
 import { FEATURES } from '../../../config/environment';
+import { EXTERNAL_SERVICES } from '../../../config/services';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -197,7 +198,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   window.open(
-                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(appointment.location)}`,
+                    `${EXTERNAL_SERVICES.GOOGLE_MAPS.SEARCH}?api=1&query=${encodeURIComponent(appointment.location)}`,
                     '_blank',
                   );
                 }}
@@ -793,7 +794,7 @@ const SchedulingPage = () => {
             zoom={2}
             style={{ height: '100%', width: '100%' }}
           >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />
             {appointments
               .filter((a) => a.coordinates)
               .map((app) => (
