@@ -12,21 +12,21 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://154.161.138.112:5000/api/$1"
+      "destination": "https://kelmah-api-gateway-si57.onrender.com/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "http://154.161.138.112:5000/socket.io/$1"
+      "destination": "https://kelmah-api-gateway-si57.onrender.com/socket.io/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "http://154.161.138.112:5000",
-    "VITE_WS_URL": "http://154.161.138.112:5000"
+    "VITE_API_URL": "https://kelmah-api-gateway-si57.onrender.com",
+    "VITE_WS_URL": "https://kelmah-api-gateway-si57.onrender.com"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "http://154.161.138.112:5000",
-      "VITE_WS_URL": "http://154.161.138.112:5000"
+      "VITE_API_URL": "https://kelmah-api-gateway-si57.onrender.com",
+      "VITE_WS_URL": "https://kelmah-api-gateway-si57.onrender.com"
     }
   }
 }
