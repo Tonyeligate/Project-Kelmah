@@ -99,17 +99,22 @@ const resolveServiceUrl = async (serviceName) => {
   const environment = detectEnvironment();
   console.log(`🔍 Service Discovery: ${config.name} - Environment: ${environment}`);
 
-  // Environment-specific URL selection
-  let primaryUrl, fallbackUrl;
+  // Flexible URL selection for production - both local and cloud are valid options
+  let urlsToTry;
 
   if (environment === 'production') {
-    // In production, prefer cloud URLs, fallback to local
-    primaryUrl = config.cloud || config.local;
-    fallbackUrl = config.local;
+    // In production, try both cloud and local - use whichever is available
+    // This allows local testing and cloud deployment flexibility
+    urlsToTry = [
+      { url: config.cloud, type: 'cloud' },
+      { url: config.local, type: 'local' }
+    ].filter(option => option.url); // Remove null/undefined URLs
   } else {
-    // In development, prefer local URLs, fallback to cloud
-    primaryUrl = config.local;
-    fallbackUrl = config.cloud;
+    // In development, prefer local, fallback to cloud
+    urlsToTry = [
+      { url: config.local, type: 'local' },
+      { url: config.cloud, type: 'cloud' }
+    ].filter(option => option.url);
   }
 
   // Manual override via environment variables (highest priority)
@@ -119,29 +124,21 @@ const resolveServiceUrl = async (serviceName) => {
     return manualUrl;
   }
 
-  // Test primary URL
-  console.log(`🩺 Testing ${config.name} primary URL: ${primaryUrl}`);
-  const primaryHealthy = await checkServiceHealth(primaryUrl);
+  // Test URLs in order and return the first healthy one
+  for (const { url, type } of urlsToTry) {
+    console.log(`🩺 Testing ${config.name} ${type} URL: ${url}`);
+    const isHealthy = await checkServiceHealth(url);
 
-  if (primaryHealthy) {
-    console.log(`✅ ${config.name} using primary URL: ${primaryUrl}`);
-    return primaryUrl;
-  }
-
-  // If primary fails and we have a fallback, test it
-  if (fallbackUrl) {
-    console.log(`🩺 Testing ${config.name} fallback URL: ${fallbackUrl}`);
-    const fallbackHealthy = await checkServiceHealth(fallbackUrl);
-
-    if (fallbackHealthy) {
-      console.log(`⚠️ ${config.name} using fallback URL: ${fallbackUrl}`);
-      return fallbackUrl;
+    if (isHealthy) {
+      console.log(`✅ ${config.name} using ${type} URL: ${url}`);
+      return url;
     }
   }
 
-  // If both fail, return primary URL anyway (let it fail at runtime)
-  console.log(`❌ ${config.name} no healthy URLs found, using primary: ${primaryUrl}`);
-  return primaryUrl;
+  // If no URLs are healthy, return the first available URL (let it fail at runtime)
+  const fallbackUrl = urlsToTry[0]?.url;
+  console.log(`❌ ${config.name} no healthy URLs found, using fallback: ${fallbackUrl}`);
+  return fallbackUrl;
 };
 
 /**
