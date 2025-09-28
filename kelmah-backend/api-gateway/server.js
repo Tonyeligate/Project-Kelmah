@@ -38,10 +38,11 @@ const createDynamicProxy = (serviceName, options = {}) => {
       const targetUrl = services[serviceName] || getServiceUrl(serviceName);
 
       if (!targetUrl) {
-        console.error(`❌ No URL found for service: ${serviceName}`);
+        console.warn(`⚠️ Service ${serviceName} is not available`);
         return res.status(503).json({
           error: 'Service temporarily unavailable',
-          service: serviceName
+          service: serviceName,
+          message: 'This service is not currently deployed or accessible'
         });
       }
 
