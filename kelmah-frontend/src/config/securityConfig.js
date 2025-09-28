@@ -54,7 +54,7 @@ export const SECURITY_CONFIG = {
       'http://154.161.138.112:5000',
       'http://154.161.138.112:5000',
       // Legacy URLs (kept for compatibility)
-      'https://shaggy-snake-43.loca.lt',
+      'https://kelmah-api.loca.lt',
       "https://kelmah-auth-service.onrender.com",
       "https://kelmah-user-service.onrender.com",
       "https://kelmah-job-service.onrender.com",

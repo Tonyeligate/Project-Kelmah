@@ -12,21 +12,21 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://kelmah-api-gateway-si57.onrender.com/api/$1,http://154.161.138.112:5000/api/$1"
+      "destination": "https://kelmah-api.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://kelmah-api-gateway-si57.onrender.com/socket.io/$1,http://154.161.138.112:5000/socket.io/$1"
+      "destination": "https://kelmah-api.loca.lt/socket.io/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "https://kelmah-api-gateway-si57.onrender.com",
-    "VITE_WS_URL": "https://kelmah-api-gateway-si57.onrender.com"
+    "VITE_API_URL": "https://kelmah-api.loca.lt",
+    "VITE_WS_URL": "https://kelmah-api.loca.lt"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://kelmah-api-gateway-si57.onrender.com",
-      "VITE_WS_URL": "https://kelmah-api-gateway-si57.onrender.com"
+      "VITE_API_URL": "https://kelmah-api.loca.lt",
+      "VITE_WS_URL": "https://kelmah-api.loca.lt"
     }
   }
 }
