@@ -471,7 +471,7 @@ app.use(
   })
 );
 
-// Import job proxy and rate limiter
+// Import job proxy (will be created dynamically after service discovery)
 const { createEnhancedJobProxy } = require('./proxy/job.proxy');
 const { getRateLimiter } = require('./middlewares/rate-limiter');
 
@@ -497,16 +497,8 @@ app.use('/api/jobs', (req, res, next) => {
 
 // Apply enhanced job proxy with health checking
 // Note: Do NOT pass pathRewrite here; the proxy already ensures '/api/jobs' prefix is preserved
-app.use('/api/jobs', createEnhancedJobProxy(services.job, {
-  onError: (err, req, res) => {
-    console.error('[API Gateway] Job service error:', err.message);
-    res.status(503).json({
-      error: 'Job service temporarily unavailable',
-      message: 'Please try again later',
-      timestamp: new Date().toISOString()
-    });
-  }
-}));
+// Job proxy will be created after service discovery completes
+let jobProxyMiddleware = null;
 
 // Search routes (public) with rate limiting
 app.use('/api/search', getRateLimiter('search'));
@@ -874,6 +866,30 @@ const startServer = async () => {
   try {
     // Initialize service discovery first
     await initializeServices();
+
+    // Create job proxy now that services are discovered
+    jobProxyMiddleware = createEnhancedJobProxy(services.job, {
+      onError: (err, req, res) => {
+        console.error('[API Gateway] Job service error:', err.message);
+        res.status(503).json({
+          error: 'Job service temporarily unavailable',
+          message: 'Please try again later',
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+
+    // Apply job proxy middleware to /api/jobs routes
+    app.use('/api/jobs', (req, res, next) => {
+      if (jobProxyMiddleware) {
+        return jobProxyMiddleware(req, res, next);
+      } else {
+        return res.status(503).json({
+          error: 'Job service not initialized',
+          message: 'Service discovery in progress'
+        });
+      }
+    });
 
     const server = app.listen(PORT, () => {
       const environment = detectEnvironment();
