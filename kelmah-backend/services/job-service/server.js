@@ -47,6 +47,8 @@ if (!process.env.JWT_SECRET) {
 }
 
 const app = express();
+// Trust proxy headers (required for correct client IP when behind Render/API Gateway)
+app.set('trust proxy', 1);
 // Optional tracing and error monitoring (disabled for containerized deployment)
 // try { const monitoring = require('../../shared/utils/monitoring'); monitoring.initErrorMonitoring('job-service'); monitoring.initTracing('job-service'); } catch {}
 
@@ -169,10 +171,16 @@ try {
   });
 }
 
-// API routes
-app.use("/api/jobs", jobRoutes);
-app.use("/api/bids", bidRoutes);
-app.use("/api/user-performance", userPerformanceRoutes);
+// Defer mounting API routes until DB is connected to avoid Mongoose buffering timeouts
+let apiRoutesMounted = false;
+const mountApiRoutes = () => {
+  if (apiRoutesMounted) return;
+  app.use("/api/jobs", jobRoutes);
+  app.use("/api/bids", bidRoutes);
+  app.use("/api/user-performance", userPerformanceRoutes);
+  apiRoutesMounted = true;
+  logger.info('✅ API routes mounted after DB connection');
+};
 
 // Deployment verification
 const { verifyDeployment } = require('./verify-deployment');
@@ -244,6 +252,8 @@ async function startServerWithDbRetry() {
           logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
         });
       }
+      // Mount API routes once DB connection is ready
+      mountApiRoutes();
       break;
     } catch (err) {
       attempt += 1;

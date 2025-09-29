@@ -76,6 +76,12 @@ const checkJobServiceHealth = async (targetUrl) => {
   } catch (primaryError) {
     // Only fall back on 404 (endpoint missing) or 501/405 (not implemented)
     const status = primaryError?.response?.status;
+    console.warn('[Job Proxy] Primary health check failed', {
+      targetUrl,
+      endpoint: '/api/health',
+      status,
+      message: primaryError?.message
+    });
     if (status === 404 || status === 405 || status === 501) {
       try {
         const response = await axios.get(`${targetUrl}/health`, { timeout: 5000, headers });
@@ -87,6 +93,12 @@ const checkJobServiceHealth = async (targetUrl) => {
           timestamp: new Date().toISOString()
         };
       } catch (fallbackError) {
+        console.warn('[Job Proxy] Fallback health check failed', {
+          targetUrl,
+          endpoint: '/health',
+          status: fallbackError?.response?.status,
+          message: fallbackError?.message
+        });
         return {
           healthy: false,
           error: fallbackError.message,

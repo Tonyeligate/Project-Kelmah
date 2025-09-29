@@ -41,8 +41,9 @@ const { authenticate } = require('../middlewares/auth');
 router.post('/login', async (req, res) => {
   try {
     // Direct connection to auth service avoiding proxy
-    const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
-    const url = `${authUrl}/api/auth/login`;
+    // Use resolved service URL from service discovery (supports cloud + local)
+    const upstream = getServiceUrl(req);
+    const url = `${upstream}/api/auth/login`;
     
     console.log(`[LOGIN] Attempting login to: ${url}`);
     console.log(`[LOGIN] Body:`, JSON.stringify(req.body));
@@ -51,7 +52,8 @@ router.post('/login', async (req, res) => {
       headers: { 
         'Content-Type': 'application/json', 
         'X-Request-ID': req.id || '',
-        'User-Agent': 'kelmah-api-gateway'
+        'User-Agent': 'kelmah-api-gateway',
+        'ngrok-skip-browser-warning': 'true'
       },
       timeout: 30000,
       validateStatus: () => true,

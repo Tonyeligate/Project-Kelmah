@@ -25,7 +25,8 @@ const requestValidator = require('./middlewares/request-validator');
 const {
   initializeServiceRegistry,
   getServiceUrlsForApp,
-  detectEnvironment
+  detectEnvironment,
+  getServiceUrl
 } = require('./utils/serviceDiscovery');
 
 /**
