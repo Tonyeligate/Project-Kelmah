@@ -500,6 +500,19 @@ app.use('/api/jobs', (req, res, next) => {
 // Job proxy will be created after service discovery completes
 let jobProxyMiddleware = null;
 
+// Mount the job proxy route BEFORE the 404 handler so it isn't shadowed
+// The middleware instance is assigned after service discovery; until then we return 503
+app.use('/api/jobs', (req, res, next) => {
+  if (jobProxyMiddleware) {
+    return jobProxyMiddleware(req, res, next);
+  } else {
+    return res.status(503).json({
+      error: 'Job service not initialized',
+      message: 'Service discovery in progress'
+    });
+  }
+});
+
 // Search routes (public) with rate limiting
 app.use('/api/search', getRateLimiter('search'));
 app.use('/api/search', createDynamicProxy('job', {
@@ -879,17 +892,7 @@ const startServer = async () => {
       }
     });
 
-    // Apply job proxy middleware to /api/jobs routes
-    app.use('/api/jobs', (req, res, next) => {
-      if (jobProxyMiddleware) {
-        return jobProxyMiddleware(req, res, next);
-      } else {
-        return res.status(503).json({
-          error: 'Job service not initialized',
-          message: 'Service discovery in progress'
-        });
-      }
-    });
+    // Job proxy route is already mounted above; we only needed to assign the middleware here
 
     const server = app.listen(PORT, () => {
       const environment = detectEnvironment();
