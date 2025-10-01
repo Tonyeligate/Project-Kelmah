@@ -17,7 +17,10 @@ const jobProxy = (req, res, next) => {
     target: getServiceUrl(req),
     pathPrefix: '/api/jobs',
     requireAuth: true,
-    pathRewrite: { '^/api/jobs': '/api/jobs' }
+    pathRewrite: (path) => {
+      // Remove double slashes and normalize path
+      return path.replace(/\/\/+/g, '/');
+    }
   });
   return proxy(req, res, next);
 };
@@ -28,7 +31,10 @@ const publicJobProxy = (req, res, next) => {
     target: getServiceUrl(req),
     pathPrefix: '/api/jobs',
     requireAuth: false,
-    pathRewrite: { '^/api/jobs': '/api/jobs' }
+    pathRewrite: (path) => {
+      // Remove double slashes and normalize path
+      return path.replace(/\/\/+/g, '/');
+    }
   });
   return proxy(req, res, next);
 };
