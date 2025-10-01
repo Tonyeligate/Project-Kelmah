@@ -33,20 +33,20 @@ const publicJobProxy = (req, res, next) => {
   return proxy(req, res, next);
 };
 
-// Public routes - job browsing
-router.get('/public', publicJobProxy); // Browse jobs without login
-router.get('/public/:jobId', publicJobProxy); // View job details without login
+// Public routes - job browsing (NO AUTH REQUIRED)
+router.get('/public', publicJobProxy); // Browse jobs without login (legacy)
+router.get('/public/:jobId', publicJobProxy); // View job details without login (legacy)
 router.get('/categories', publicJobProxy); // Get job categories
 router.get('/search', publicJobProxy); // Search jobs
+router.get('/', publicJobProxy); // ⚠️ FIX: Browse jobs list publicly (main homepage)
+router.get('/:jobId([0-9a-fA-F]{24})', publicJobProxy); // ⚠️ FIX: View job details publicly (MongoDB ObjectId pattern)
 
 // All other routes require authentication
 router.use(authenticate);
 
-// Job CRUD operations
-router.get('/', jobProxy); // Get jobs (with filters)
+// Job CRUD operations (PROTECTED)
 router.post('/', jobProxy); // Create new job
 router.get('/my-jobs', jobProxy); // Hirer: my jobs
-router.get('/:jobId', jobProxy); // Get specific job
 router.put('/:jobId', jobProxy); // Update job
 router.delete('/:jobId', jobProxy); // Delete job
 
