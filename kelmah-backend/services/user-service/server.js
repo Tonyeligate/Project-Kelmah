@@ -26,6 +26,7 @@ const profileRoutes = require("./routes/profile.routes");
 const settingsRoutes = require("./routes/settings.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
 const availabilityRoutes = require("./routes/availability.routes");
+const { ensureDbReadyMiddleware } = require('./middlewares/ensureDbReady');
 
 // Initialize express app
 
@@ -130,6 +131,9 @@ try {
   });
   app.use(limiter);
 }
+
+// Ensure database connection is ready before handling API traffic (health endpoints bypassed)
+app.use(ensureDbReadyMiddleware);
 
 // API routes
 app.use("/api/users", userRoutes);

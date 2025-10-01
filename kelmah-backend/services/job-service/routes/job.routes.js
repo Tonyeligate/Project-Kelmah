@@ -28,7 +28,7 @@ const authorizeRoles = (...roles) => (req, res, next) => {
 
 const router = express.Router();
 
-// Public routes
+// Public routes - handle both with and without trailing slashes
 router.get("/", jobController.getJobs);
 router.get("/search", jobController.advancedJobSearch);
 router.get("/dashboard", jobController.getDashboardJobs);

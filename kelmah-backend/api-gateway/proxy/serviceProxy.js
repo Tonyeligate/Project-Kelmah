@@ -40,6 +40,60 @@ const createServiceProxy = (options) => {
     return rewritten;
   };
 
+  const normalizeSlashes = (value) => {
+    if (!value) return '/';
+    return value.replace(/\/{2,}/g, '/');
+  };
+
+  const resolveBasePrefix = (req) => {
+    if (typeof pathPrefix === 'string' && pathPrefix.length > 0) {
+      return pathPrefix;
+    }
+    if (req && typeof req.baseUrl === 'string' && req.baseUrl.length > 0) {
+      return req.baseUrl;
+    }
+    return '';
+  };
+
+  const ensureBasePrefix = (incomingPath, req) => {
+    let normalizedPath = normalizeSlashes(incomingPath || '/');
+    const base = resolveBasePrefix(req);
+
+    if (!base) {
+      return normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    }
+
+    const trimmedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+    const normalizedBase = trimmedBase.startsWith('/') ? trimmedBase : `/${trimmedBase}`;
+
+    if (!normalizedPath.startsWith('/')) {
+      normalizedPath = `/${normalizedPath}`;
+    }
+
+    if (!normalizedPath.startsWith(normalizedBase)) {
+      const baseSegments = normalizedBase.split('/').filter(Boolean);
+      const trailingSegment = baseSegments[baseSegments.length - 1];
+
+      if (trailingSegment && normalizedPath.startsWith(`/${trailingSegment}`)) {
+        const remainder = normalizedPath.slice(trailingSegment.length + 1);
+        normalizedPath = normalizeSlashes(`${normalizedBase}${remainder}`);
+      } else {
+        normalizedPath = normalizeSlashes(`${normalizedBase}${normalizedPath}`);
+      }
+    }
+
+    const duplicatePrefix = `${normalizedBase}${normalizedBase}`;
+    while (normalizedPath.startsWith(duplicatePrefix)) {
+      normalizedPath = normalizedPath.replace(normalizedBase, '');
+    }
+
+    if (!normalizedPath.startsWith(normalizedBase)) {
+      normalizedPath = normalizeSlashes(`${normalizedBase}${normalizedPath}`);
+    }
+
+    return normalizedPath;
+  };
+
   const proxyOptions = {
     target,
     changeOrigin: true,
@@ -49,23 +103,17 @@ const createServiceProxy = (options) => {
     // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
     pathRewrite: (path, req) => {
       try {
-        // If caller supplied a function, use it directly
+        let baseAppliedPath = ensureBasePrefix(path, req);
+
+        // If caller supplied a function, use it directly (after base correction)
         if (typeof providedPathRewrite === 'function') {
-          return providedPathRewrite(path, req);
-        }
-
-        const base = typeof pathPrefix === 'string' && pathPrefix.length > 0
-          ? pathPrefix
-          : (req && typeof req.baseUrl === 'string' ? req.baseUrl : '');
-
-        // Normalize and join
-        let joinedPath = path || '/';
-        if (base && !joinedPath.startsWith(base)) {
-          joinedPath = `${base}${joinedPath.startsWith('/') ? '' : '/'}${joinedPath}`;
+          const rewritten = providedPathRewrite(baseAppliedPath, req);
+          return normalizeSlashes(rewritten || baseAppliedPath);
         }
 
         // Apply any explicit rewrite rules last (object form)
-        return applyObjectRewrite(joinedPath);
+        const rewritten = applyObjectRewrite(baseAppliedPath);
+        return normalizeSlashes(rewritten);
       } catch (_) {
         // Fallback to original
         return path;

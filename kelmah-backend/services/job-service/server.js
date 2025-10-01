@@ -47,6 +47,8 @@ if (!process.env.JWT_SECRET) {
 }
 
 const app = express();
+// Disable strict routing to handle trailing slashes (treats /api/jobs and /api/jobs/ as same)
+app.set('strict routing', false);
 // Trust proxy headers (required for correct client IP when behind Render/API Gateway)
 app.set('trust proxy', 1);
 // Optional tracing and error monitoring (disabled for containerized deployment)
