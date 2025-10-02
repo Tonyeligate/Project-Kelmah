@@ -220,22 +220,9 @@ app.get("/", (req, res) => {
   });
 });
 
-// 404 handler
-app.use(notFound);
-
-// Error handler
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const status = err.status || "error";
-
-  res.status(statusCode).json({
-    success: false,
-    status,
-    message: err.message,
-    errors: err.errors || null,
-    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
-  });
-});
+// ⚠️ REMOVED 404 and error handlers from here!
+// They must be registered AFTER routes are mounted
+// Otherwise they catch requests before routes exist!
 
 // Start server
 const PORT = process.env.JOB_SERVICE_PORT || 5003;
@@ -297,6 +284,24 @@ app.use((req, res, next) => {
 console.log('[EMERGENCY FIX] Mounting routes IMMEDIATELY at startup');
 mountApiRoutes();
 console.log('[EMERGENCY FIX] Routes mounted before DB connection');
+
+// ✅ NOW register 404 and error handlers AFTER routes mounted
+console.log('[MIDDLEWARE] Registering 404 handler after routes');
+app.use(notFound);
+
+console.log('[MIDDLEWARE] Registering error handler after routes');
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const status = err.status || "error";
+
+  res.status(statusCode).json({
+    success: false,
+    status,
+    message: err.message,
+    errors: err.errors || null,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
 
 // Only start the server if this file is run directly
 if (require.main === module) {
