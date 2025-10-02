@@ -328,18 +328,45 @@ const getJobs = async (req, res, next) => {
     console.log('[GET JOBS] Final query:', JSON.stringify(query));
     console.log('[GET JOBS] Sort:', req.query.sort || "-createdAt");
     
-    const jobs = await Job.find(query)
-      .populate("hirer", "firstName lastName profileImage")
+    // WORKAROUND: Use direct MongoDB driver because Mongoose model is disconnected
+    const client = mongoose.connection.getClient();
+    const db = client.db();
+    const jobsCollection = db.collection('jobs');
+    const usersCollection = db.collection('users');
+    
+    // Get jobs using native MongoDB driver
+    const sortField = req.query.sort || "-createdAt";
+    const sortOrder = sortField.startsWith('-') ? -1 : 1;
+    const sortKey = sortField.replace(/^-/, '');
+    
+    const jobsCursor = jobsCollection
+      .find(query)
+      .sort({ [sortKey]: sortOrder })
       .skip(startIndex)
-      .limit(limit)
-      .sort(req.query.sort || "-createdAt");
-
-    console.log('[GET JOBS] Query executed successfully');
+      .limit(limit);
+    
+    const jobs = await jobsCursor.toArray();
+    console.log('[GET JOBS] Direct driver query executed successfully');
     console.log('[GET JOBS] Jobs found:', jobs.length);
+    
+    // Manually populate hirer data
+    const hirerIds = [...new Set(jobs.map(j => j.hirer).filter(Boolean))];
+    const hirers = await usersCollection
+      .find({ _id: { $in: hirerIds } })
+      .project({ firstName: 1, lastName: 1, profileImage: 1 })
+      .toArray();
+    
+    const hirerMap = new Map(hirers.map(h => [h._id.toString(), h]));
+    jobs.forEach(job => {
+      if (job.hirer) {
+        job.hirer = hirerMap.get(job.hirer.toString());
+      }
+    });
 
     // Transform jobs to match frontend expectations
     const transformedJobs = jobs.map(job => ({
-      ...job.toObject(),
+      ...job,
+      _id: job._id.toString(), // Convert ObjectId to string
       // Add budget object for complex budget display
       budget: {
         min: job.bidding?.minBidAmount || job.budget || 0,
@@ -354,16 +381,17 @@ const getJobs = async (req, res, next) => {
       skills_required: job.skills ? job.skills.join(', ') : '',
       created_at: job.createdAt,
       // Add avatar field for hirer
-      hirer: {
-        ...job.hirer?.toObject(),
-        avatar: job.hirer?.profileImage,
-        name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown'
-      }
+      hirer: job.hirer ? {
+        ...job.hirer,
+        _id: job.hirer._id.toString(),
+        avatar: job.hirer.profileImage,
+        name: `${job.hirer.firstName} ${job.hirer.lastName}`
+      } : null
     }));
 
-    // Get total count
+    // Get total count using direct driver
     console.log('[GET JOBS] Getting total count...');
-    const total = await Job.countDocuments(query);
+    const total = await jobsCollection.countDocuments(query);
     console.log('[GET JOBS] Total jobs:', total);
 
     console.log('[GET JOBS] Sending response...');
