@@ -64,6 +64,8 @@ if (process.env.ENABLE_WORKER_SQL === 'true') {
 }
 
 const app = express();
+// Trust proxy headers (Render forwards X-Forwarded-For)
+app.set('trust proxy', 1);
 // Optional tracing
 try { require('./utils/tracing').initTracing('user-service'); } catch { }
 try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('user-service'); monitoring.initTracing('user-service'); } catch { }
@@ -116,6 +118,9 @@ app.use(cors(corsOptions));
 
 // Use shared JSON logger; remove morgan
 
+// Ensure database connection is ready before handling API traffic (health endpoints bypassed)
+app.use(ensureDbReadyMiddleware);
+
 // Rate limiting (shared Redis-backed limiter with fallback)
 try {
   const { createLimiter } = require('../../shared/middlewares/rateLimiter');
@@ -131,9 +136,6 @@ try {
   });
   app.use(limiter);
 }
-
-// Ensure database connection is ready before handling API traffic (health endpoints bypassed)
-app.use(ensureDbReadyMiddleware);
 
 // API routes
 app.use("/api/users", userRoutes);

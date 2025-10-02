@@ -19,7 +19,8 @@ const jobProxy = (req, res, next) => {
     requireAuth: true,
     pathRewrite: (path) => {
       // Remove double slashes and normalize path
-      return path.replace(/\/\/+/g, '/');
+      const normalized = path.replace(/\/\/+/g, '/');
+      return normalized.replace('/?', '?');
     }
   });
   return proxy(req, res, next);
@@ -33,13 +34,15 @@ const publicJobProxy = (req, res, next) => {
     requireAuth: false,
     pathRewrite: (path) => {
       // Remove double slashes and normalize path
-      return path.replace(/\/\/+/g, '/');
+      const normalized = path.replace(/\/\/+/g, '/');
+      return normalized.replace('/?', '?');
     }
   });
   return proxy(req, res, next);
 };
 
 // Public routes - job browsing (NO AUTH REQUIRED)
+router.get('', publicJobProxy); // Handle /api/jobs without trailing slash
 router.get('/public', publicJobProxy); // Browse jobs without login (legacy)
 router.get('/public/:jobId', publicJobProxy); // View job details without login (legacy)
 router.get('/categories', publicJobProxy); // Get job categories

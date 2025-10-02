@@ -4,6 +4,7 @@
  */
 
 const { WorkerProfile, WorkerSkill, Portfolio, Skill, User } = require('../models');
+const { ensureConnection } = require('../config/db');
 const { validateInput, handleServiceError } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
 
@@ -14,6 +15,7 @@ class WorkerController {
   static async getAllWorkers(req, res) {
     try {
       console.log('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
+      await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
         page = 1,
         limit = 20,
@@ -187,6 +189,13 @@ class WorkerController {
 
     } catch (error) {
       console.error('Get all workers error:', error);
+      if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
+        return res.status(503).json({
+          success: false,
+          message: 'User Service database is reconnecting. Please try again shortly.',
+          code: 'USER_DB_NOT_READY'
+        });
+      }
       return handleServiceError(res, error, 'Failed to retrieve workers');
     }
   }
@@ -196,6 +205,7 @@ class WorkerController {
    */
   static async searchWorkers(req, res) {
     try {
+      await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
         query = '',
         location,
@@ -420,6 +430,13 @@ class WorkerController {
 
     } catch (error) {
       console.error('Search workers error:', error);
+      if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
+        return res.status(503).json({
+          success: false,
+          message: 'User Service database is reconnecting. Please try again shortly.',
+          code: 'USER_DB_NOT_READY'
+        });
+      }
       return handleServiceError(res, error, 'Search failed');
     }
   }
