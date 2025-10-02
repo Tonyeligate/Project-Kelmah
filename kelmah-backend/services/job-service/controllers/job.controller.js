@@ -190,13 +190,19 @@ const createContractDispute = async (req, res, next) => {
  */
 const getJobs = async (req, res, next) => {
   try {
+    console.log('[GET JOBS] Starting getJobs function');
+    console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
+    
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
 
+    console.log('[GET JOBS] Pagination:', { page, limit, startIndex });
+
     // Build query
     let query = { status: "open", visibility: "public" };
+    console.log('[GET JOBS] Initial query:', JSON.stringify(query));
 
     // Filtering
     if (req.query.category) {
@@ -293,11 +299,18 @@ const getJobs = async (req, res, next) => {
     }
 
     // Execute query with pagination
+    console.log('[GET JOBS] About to execute query...');
+    console.log('[GET JOBS] Final query:', JSON.stringify(query));
+    console.log('[GET JOBS] Sort:', req.query.sort || "-createdAt");
+    
     const jobs = await Job.find(query)
       .populate("hirer", "firstName lastName profileImage")
       .skip(startIndex)
       .limit(limit)
       .sort(req.query.sort || "-createdAt");
+
+    console.log('[GET JOBS] Query executed successfully');
+    console.log('[GET JOBS] Jobs found:', jobs.length);
 
     // Transform jobs to match frontend expectations
     const transformedJobs = jobs.map(job => ({
@@ -324,8 +337,11 @@ const getJobs = async (req, res, next) => {
     }));
 
     // Get total count
+    console.log('[GET JOBS] Getting total count...');
     const total = await Job.countDocuments(query);
+    console.log('[GET JOBS] Total jobs:', total);
 
+    console.log('[GET JOBS] Sending response...');
     return paginatedResponse(
       res,
       200,
@@ -336,6 +352,8 @@ const getJobs = async (req, res, next) => {
       total,
     );
   } catch (error) {
+    console.error('[GET JOBS ERROR]', error);
+    console.error('[GET JOBS ERROR] Stack:', error.stack);
     next(error);
   }
 };
