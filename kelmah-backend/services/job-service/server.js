@@ -176,11 +176,20 @@ try {
 // Defer mounting API routes until DB is connected to avoid Mongoose buffering timeouts
 let apiRoutesMounted = false;
 const mountApiRoutes = () => {
-  if (apiRoutesMounted) return;
+  console.log('[ROUTE MOUNTING] mountApiRoutes() function called!');
+  console.log('[ROUTE MOUNTING] apiRoutesMounted flag:', apiRoutesMounted);
+  if (apiRoutesMounted) {
+    console.log('[ROUTE MOUNTING] Routes already mounted, skipping');
+    return;
+  }
+  console.log('[ROUTE MOUNTING] Mounting /api/jobs routes...');
   app.use("/api/jobs", jobRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /api/bids routes...');
   app.use("/api/bids", bidRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /api/user-performance routes...');
   app.use("/api/user-performance", userPerformanceRoutes);
   apiRoutesMounted = true;
+  console.log('[ROUTE MOUNTING] ✅ All API routes mounted successfully!');
   logger.info('✅ API routes mounted after DB connection');
 };
 
@@ -241,7 +250,9 @@ async function startServerWithDbRetry() {
   // for network allowlisting or DB availability.
   for (;;) {
     try {
+      console.log('[DB CONNECTION] Attempting MongoDB connection...');
       await connectDB();
+      console.log('[DB CONNECTION] ✅ MongoDB connection successful!');
       logger.info('✅ Job Service connected to MongoDB');
 
       // Error logging middleware (must be last)
@@ -255,7 +266,9 @@ async function startServerWithDbRetry() {
         });
       }
       // Mount API routes once DB connection is ready
+      console.log('[DB CONNECTION] About to mount API routes...');
       mountApiRoutes();
+      console.log('[DB CONNECTION] Routes mounted, breaking retry loop');
       break;
     } catch (err) {
       attempt += 1;
@@ -269,16 +282,21 @@ async function startServerWithDbRetry() {
 
 // Only start the server if this file is run directly
 if (require.main === module) {
+  console.log('[SERVER START] Starting Job Service...');
+  console.log('[SERVER START] Port:', PORT);
+  console.log('[SERVER START] Environment:', process.env.NODE_ENV);
   // Start HTTP server immediately so /health is available while DB connects
   if (!httpServerStarted) {
     app.use(createErrorLogger(logger));
     app.listen(PORT, () => {
       httpServerStarted = true;
+      console.log('[SERVER START] HTTP server listening on port', PORT);
       logger.info(`🚀 Job Service running on port ${PORT}`);
       logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
       logger.info('⏳ Waiting for MongoDB connection...');
     });
   }
+  console.log('[SERVER START] Calling startServerWithDbRetry()...');
   startServerWithDbRetry();
 }
 
