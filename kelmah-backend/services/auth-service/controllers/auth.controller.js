@@ -136,8 +136,14 @@ exports.login = async (req, res, next) => {
     const rateLimitKey = `login:${req.ip}:${sanitizedEmail}`;
     // TODO: Implement proper rate limiting with Redis
     
-    // Find user
-    const user = await User.findByEmail(sanitizedEmail);
+    // Find user using direct MongoDB driver (bypass disconnected Mongoose model)
+    const client = mongoose.connection.getClient();
+    const db = client.db();
+    const usersCollection = db.collection('users');
+    
+    let user = await usersCollection.findOne({ 
+      email: sanitizedEmail 
+    });
     
     // Generic error message to prevent user enumeration
     if (!user) {
@@ -155,21 +161,34 @@ exports.login = async (req, res, next) => {
       return next(new AppError("Please verify your email before logging in", 403));
     }
 
-    // Verify password
-    const isPasswordValid = await user.validatePassword(password);
+    // Verify password using bcrypt directly
+    const bcrypt = require('bcryptjs');
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
     if (!isPasswordValid) {
       // Increment failed login attempts
-      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
       
       // Lock account after 5 failed attempts
-      if (user.failedLoginAttempts >= 5) {
-        user.accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-        await user.save();
+      if (failedAttempts >= 5) {
+        const accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+        await usersCollection.updateOne(
+          { _id: user._id },
+          { 
+            $set: { 
+              failedLoginAttempts: failedAttempts,
+              accountLockedUntil: accountLockedUntil
+            } 
+          }
+        );
         
         return next(new AppError("Account locked due to too many failed login attempts. Try again in 30 minutes.", 423));
       }
       
-      await user.save();
+      await usersCollection.updateOne(
+        { _id: user._id },
+        { $set: { failedLoginAttempts: failedAttempts } }
+      );
       return next(new AppError("Incorrect email or password", 401));
     }
 
@@ -179,20 +198,35 @@ exports.login = async (req, res, next) => {
       return next(new AppError(`Account locked. Try again in ${minutesLeft} minutes`, 423));
     }
 
-    // Reset failed login attempts and unlock account
-    user.failedLoginAttempts = 0;
-    user.accountLockedUntil = null;
+    // Reset failed login attempts and unlock account (direct update)
+    await usersCollection.updateOne(
+      { _id: user._id },
+      { 
+        $set: { 
+          failedLoginAttempts: 0,
+          accountLockedUntil: null,
+          lastLogin: new Date(),
+          lastLoginIp: req.ip
+        } 
+      }
+    );
 
     // Generate access token via local JWT utils
     const accessToken = jwtUtils.signAccessToken({
-      id: user.id,
+      id: user._id.toString(),
       email: user.email,
       role: user.role,
       version: user.tokenVersion || 0,
     });
 
     // Generate secure composite refresh token (signed_jwt.raw)
-    const refreshData = await secure.generateRefreshToken(user, {
+    const refreshData = await secure.generateRefreshToken({
+      _id: user._id,
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      tokenVersion: user.tokenVersion || 0
+    }, {
       ipAddress: req.ip,
       deviceInfo: {
         userAgent: req.headers['user-agent'],
@@ -200,10 +234,11 @@ exports.login = async (req, res, next) => {
       }
     });
 
-    // Store only hashed part + tokenId
+    // Store only hashed part + tokenId (using direct driver)
     try {
-      await RefreshToken.create({
-        userId: user.id,
+      const refreshTokensCollection = db.collection('refreshtokens');
+      await refreshTokensCollection.insertOne({
+        userId: user._id,
         tokenId: refreshData.tokenId,
         tokenHash: refreshData.tokenHash,
         version: user.tokenVersion || 0,
@@ -216,7 +251,7 @@ exports.login = async (req, res, next) => {
       // Handle duplicate key errors gracefully
       if (dbError.code === 11000) {
         logger.warn('Duplicate refresh token detected, continuing with login', { 
-          userId: user.id, 
+          userId: user._id.toString(), 
           tokenId: refreshData.tokenId 
         });
         // Continue with login even if refresh token creation fails
@@ -224,11 +259,6 @@ exports.login = async (req, res, next) => {
         throw dbError;
       }
     }
-
-    // Update user login information
-    user.lastLogin = new Date();
-    user.lastLoginIp = req.ip;
-    await user.save();
 
     // Log successful login for audit purposes
     logger.info('User logged in', { email: user.email, ip: req.ip });
@@ -239,13 +269,13 @@ exports.login = async (req, res, next) => {
         token: accessToken,
         refreshToken: refreshData.token,
         user: {
-          id: user.id,
+          id: user._id.toString(),
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
           role: user.role,
           isEmailVerified: user.isEmailVerified,
-          lastLogin: user.lastLogin,
+          lastLogin: new Date(),
         },
       },
     });

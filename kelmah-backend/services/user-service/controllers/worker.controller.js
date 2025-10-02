@@ -30,8 +30,11 @@ class WorkerController {
 
       const offset = (page - 1) * limit;
 
-      // ✅ FIXED: Use shared MongoDB User model
-      const { User: MongoUser } = require('../models');
+      // ✅ FIXED: Use direct MongoDB driver (bypass disconnected Mongoose models)
+      const mongoose = require('mongoose');
+      const client = mongoose.connection.getClient();
+      const db = client.db();
+      const usersCollection = db.collection('users');
 
       // Build MongoDB query
       const mongoQuery = {
@@ -76,14 +79,15 @@ class WorkerController {
         mongoQuery.skills = { $in: skillsArray };
       }
 
-      // Execute MongoDB query
+      // Execute MongoDB query using direct driver
       const [workers, totalCount] = await Promise.all([
-        MongoUser.find(mongoQuery)
+        usersCollection
+          .find(mongoQuery)
           .sort({ updatedAt: -1 })
           .skip(offset)
           .limit(parseInt(limit))
-          .lean(),
-        MongoUser.countDocuments(mongoQuery)
+          .toArray(),
+        usersCollection.countDocuments(mongoQuery)
       ]);
 
       // Ranking weights from env or defaults
@@ -124,10 +128,13 @@ class WorkerController {
           updateNeeded = true;
         }
 
-        // Update MongoDB document if needed
+        // Update MongoDB document if needed (using direct driver)
         if (updateNeeded) {
           try {
-            await MongoUser.updateOne({ _id: worker._id }, { $set: updates });
+            await usersCollection.updateOne(
+              { _id: worker._id },
+              { $set: updates }
+            );
             console.log(`✅ Auto-populated worker fields for ${worker.firstName} ${worker.lastName}`);
           } catch (error) {
             console.error(`❌ Failed to auto-populate worker fields for ${worker._id}:`, error);
