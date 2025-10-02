@@ -19,12 +19,17 @@ const jobProxy = (req, res, next) => {
     requireAuth: true,
     pathRewrite: (path) => {
       console.log(`[JOB PROXY] Original path: ${path}`);
-      // Remove double slashes only
+      // Remove double slashes
       let normalized = path.replace(/\/\/+/g, '/');
-      console.log(`[JOB PROXY] After normalization: ${normalized}`);
-      // DO NOT remove slash before query string!
-      // Express needs /api/jobs/?query so that after stripping /api/jobs, it leaves /?query
-      // If we send /api/jobs?query, Express strips /api/jobs and leaves ?query (no leading slash) → 404
+      console.log(`[JOB PROXY] After double slash removal: ${normalized}`);
+      // ADD slash before query string if missing!
+      // Frontend sends: /api/jobs?query
+      // We need: /api/jobs/?query
+      // So Express strips /api/jobs and leaves /?query (with leading slash for route matching)
+      if (normalized.includes('?') && !normalized.includes('/?')) {
+        normalized = normalized.replace('?', '/?');
+      }
+      console.log(`[JOB PROXY] Final path: ${normalized}`);
       return normalized;
     }
   });
@@ -39,12 +44,17 @@ const publicJobProxy = (req, res, next) => {
     requireAuth: false,
     pathRewrite: (path) => {
       console.log(`[PUBLIC JOB PROXY] Original path: ${path}`);
-      // Remove double slashes only
+      // Remove double slashes
       let normalized = path.replace(/\/\/+/g, '/');
-      console.log(`[PUBLIC JOB PROXY] After normalization: ${normalized}`);
-      // DO NOT remove slash before query string!
-      // Express needs /api/jobs/?query so that after stripping /api/jobs, it leaves /?query
-      // If we send /api/jobs?query, Express strips /api/jobs and leaves ?query (no leading slash) → 404
+      console.log(`[PUBLIC JOB PROXY] After double slash removal: ${normalized}`);
+      // ADD slash before query string if missing!
+      // Frontend sends: /api/jobs?query
+      // We need: /api/jobs/?query
+      // So Express strips /api/jobs and leaves /?query (with leading slash for route matching)
+      if (normalized.includes('?') && !normalized.includes('/?')) {
+        normalized = normalized.replace('?', '/?');
+      }
+      console.log(`[PUBLIC JOB PROXY] Final path: ${normalized}`);
       return normalized;
     }
   });
