@@ -19,13 +19,12 @@ const jobProxy = (req, res, next) => {
     requireAuth: true,
     pathRewrite: (path) => {
       console.log(`[JOB PROXY] Original path: ${path}`);
-      // The job-service mounts routes at /api/jobs, so we need to PRESERVE that prefix
-      // but strip the extra slash before query string
+      // Remove double slashes only
       let normalized = path.replace(/\/\/+/g, '/');
-      console.log(`[JOB PROXY] After double slash removal: ${normalized}`);
-      // Remove slash before query string (handles /api/jobs/?query → /api/jobs?query)
-      normalized = normalized.replace(/\/\?/g, '?');
-      console.log(`[JOB PROXY] After slash-before-query removal: ${normalized}`);
+      console.log(`[JOB PROXY] After normalization: ${normalized}`);
+      // DO NOT remove slash before query string!
+      // Express needs /api/jobs/?query so that after stripping /api/jobs, it leaves /?query
+      // If we send /api/jobs?query, Express strips /api/jobs and leaves ?query (no leading slash) → 404
       return normalized;
     }
   });
@@ -40,12 +39,12 @@ const publicJobProxy = (req, res, next) => {
     requireAuth: false,
     pathRewrite: (path) => {
       console.log(`[PUBLIC JOB PROXY] Original path: ${path}`);
-      // Remove double slashes and normalize path
+      // Remove double slashes only
       let normalized = path.replace(/\/\/+/g, '/');
-      console.log(`[PUBLIC JOB PROXY] After double slash removal: ${normalized}`);
-      // Remove slash before query string (handles /api/jobs/?query → /api/jobs?query)
-      normalized = normalized.replace(/\/\?/g, '?');
-      console.log(`[PUBLIC JOB PROXY] After slash-before-query removal: ${normalized}`);
+      console.log(`[PUBLIC JOB PROXY] After normalization: ${normalized}`);
+      // DO NOT remove slash before query string!
+      // Express needs /api/jobs/?query so that after stripping /api/jobs, it leaves /?query
+      // If we send /api/jobs?query, Express strips /api/jobs and leaves ?query (no leading slash) → 404
       return normalized;
     }
   });
