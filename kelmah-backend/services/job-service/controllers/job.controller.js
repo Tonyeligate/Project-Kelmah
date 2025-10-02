@@ -194,6 +194,26 @@ const getJobs = async (req, res, next) => {
     console.log('[GET JOBS] Starting getJobs function');
     console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
     console.log('[GET JOBS] Connection states: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting');
+    console.log('[GET JOBS] Connection name (database):', mongoose.connection.name);
+    console.log('[GET JOBS] Connection host:', mongoose.connection.host);
+    
+    // Check if we can access the underlying MongoDB client
+    try {
+      const client = mongoose.connection.getClient();
+      console.log('[GET JOBS] MongoDB client exists:', !!client);
+      if (client) {
+        const db = client.db();
+        console.log('[GET JOBS] Database name from client:', db.databaseName);
+        
+        // Try to list collections to verify connection works
+        const collections = await db.listCollections().toArray();
+        console.log('[GET JOBS] Collections in database:', collections.map(c => c.name).join(', '));
+        console.log('[GET JOBS] Total collections:', collections.length);
+      }
+    } catch (clientError) {
+      console.error('[GET JOBS] Error checking MongoDB client:', clientError.message);
+    }
+    
     console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
     
     // Pagination
