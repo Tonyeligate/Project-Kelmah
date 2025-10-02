@@ -280,6 +280,12 @@ async function startServerWithDbRetry() {
   }
 }
 
+// EMERGENCY FIX: Mount routes IMMEDIATELY (don't wait for DB)
+// Routes will work; only the DB queries inside controllers need DB
+console.log('[EMERGENCY FIX] Mounting routes IMMEDIATELY at startup');
+mountApiRoutes();
+console.log('[EMERGENCY FIX] Routes mounted before DB connection');
+
 // Only start the server if this file is run directly
 if (require.main === module) {
   console.log('[SERVER START] Starting Job Service...');
