@@ -190,7 +190,10 @@ const createContractDispute = async (req, res, next) => {
  */
 const getJobs = async (req, res, next) => {
   try {
+    const mongoose = require('mongoose');
     console.log('[GET JOBS] Starting getJobs function');
+    console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
+    console.log('[GET JOBS] Connection states: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting');
     console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
     
     // Pagination
