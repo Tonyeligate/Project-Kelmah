@@ -280,13 +280,7 @@ async function startServerWithDbRetry() {
   }
 }
 
-// EMERGENCY FIX: Mount routes IMMEDIATELY (don't wait for DB)
-// Routes will work; only the DB queries inside controllers need DB
-console.log('[EMERGENCY FIX] Mounting routes IMMEDIATELY at startup');
-mountApiRoutes();
-console.log('[EMERGENCY FIX] Routes mounted before DB connection');
-
-// Add middleware to log ALL incoming requests before they hit routes
+// Add middleware to log ALL incoming requests BEFORE mounting routes
 app.use((req, res, next) => {
   console.log('[REQUEST DEBUG] Incoming request:');
   console.log('  - Method:', req.method);
@@ -297,6 +291,12 @@ app.use((req, res, next) => {
   console.log('  - Query:', JSON.stringify(req.query));
   next();
 });
+
+// EMERGENCY FIX: Mount routes IMMEDIATELY (don't wait for DB)
+// Routes will work; only the DB queries inside controllers need DB
+console.log('[EMERGENCY FIX] Mounting routes IMMEDIATELY at startup');
+mountApiRoutes();
+console.log('[EMERGENCY FIX] Routes mounted before DB connection');
 
 // Only start the server if this file is run directly
 if (require.main === module) {
