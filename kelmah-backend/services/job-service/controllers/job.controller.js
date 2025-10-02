@@ -193,25 +193,27 @@ const getJobs = async (req, res, next) => {
     const mongoose = require('mongoose');
     console.log('[GET JOBS] Starting getJobs function');
     console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
-    console.log('[GET JOBS] Connection states: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting');
-    console.log('[GET JOBS] Connection name (database):', mongoose.connection.name);
-    console.log('[GET JOBS] Connection host:', mongoose.connection.host);
     
-    // Check if we can access the underlying MongoDB client
+    // CHECK IF JOB MODEL IS USING THE CONNECTED MONGOOSE INSTANCE
+    console.log('[GET JOBS] Job model database:', Job.db ? Job.db.databaseName : 'NO DB');
+    console.log('[GET JOBS] Job model connection state:', Job.db ? Job.db.readyState : 'NO DB');
+    console.log('[GET JOBS] Main mongoose database:', mongoose.connection.name);
+    console.log('[GET JOBS] Same connection?:', Job.db === mongoose.connection);
+    
+    // Try direct MongoDB driver query to bypass Mongoose
     try {
       const client = mongoose.connection.getClient();
-      console.log('[GET JOBS] MongoDB client exists:', !!client);
-      if (client) {
-        const db = client.db();
-        console.log('[GET JOBS] Database name from client:', db.databaseName);
-        
-        // Try to list collections to verify connection works
-        const collections = await db.listCollections().toArray();
-        console.log('[GET JOBS] Collections in database:', collections.map(c => c.name).join(', '));
-        console.log('[GET JOBS] Total collections:', collections.length);
+      const db = client.db();
+      const jobsCollection = db.collection('jobs');
+      const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
+      console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
+      
+      // If direct query works, try to use it
+      if (directCount > 0) {
+        console.log('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
       }
     } catch (clientError) {
-      console.error('[GET JOBS] Error checking MongoDB client:', clientError.message);
+      console.error('[GET JOBS] Error with direct driver query:', clientError.message);
     }
     
     console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
