@@ -18,10 +18,14 @@ const jobProxy = (req, res, next) => {
     pathPrefix: '/api/jobs',
     requireAuth: true,
     pathRewrite: (path) => {
-      // Remove double slashes and normalize path
+      console.log(`[JOB PROXY] Original path: ${path}`);
+      // The job-service mounts routes at /api/jobs, so we need to PRESERVE that prefix
+      // but strip the extra slash before query string
       let normalized = path.replace(/\/\/+/g, '/');
+      console.log(`[JOB PROXY] After double slash removal: ${normalized}`);
       // Remove slash before query string (handles /api/jobs/?query → /api/jobs?query)
       normalized = normalized.replace(/\/\?/g, '?');
+      console.log(`[JOB PROXY] After slash-before-query removal: ${normalized}`);
       return normalized;
     }
   });
@@ -35,10 +39,13 @@ const publicJobProxy = (req, res, next) => {
     pathPrefix: '/api/jobs',
     requireAuth: false,
     pathRewrite: (path) => {
+      console.log(`[PUBLIC JOB PROXY] Original path: ${path}`);
       // Remove double slashes and normalize path
       let normalized = path.replace(/\/\/+/g, '/');
+      console.log(`[PUBLIC JOB PROXY] After double slash removal: ${normalized}`);
       // Remove slash before query string (handles /api/jobs/?query → /api/jobs?query)
       normalized = normalized.replace(/\/\?/g, '?');
+      console.log(`[PUBLIC JOB PROXY] After slash-before-query removal: ${normalized}`);
       return normalized;
     }
   });

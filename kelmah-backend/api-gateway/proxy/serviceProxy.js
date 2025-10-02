@@ -103,18 +103,24 @@ const createServiceProxy = (options) => {
     // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
     pathRewrite: (path, req) => {
       try {
+        console.log(`[SERVICE PROXY] Input path: ${path}, baseUrl: ${req.baseUrl}`);
         let baseAppliedPath = ensureBasePrefix(path, req);
+        console.log(`[SERVICE PROXY] After ensureBasePrefix: ${baseAppliedPath}`);
 
         // If caller supplied a function, use it directly (after base correction)
         if (typeof providedPathRewrite === 'function') {
           const rewritten = providedPathRewrite(baseAppliedPath, req);
-          return normalizeSlashes(rewritten || baseAppliedPath);
+          console.log(`[SERVICE PROXY] After custom rewrite function: ${rewritten}`);
+          const normalized = normalizeSlashes(rewritten || baseAppliedPath);
+          console.log(`[SERVICE PROXY] After normalizeSlashes: ${normalized}`);
+          return normalized;
         }
 
         // Apply any explicit rewrite rules last (object form)
         const rewritten = applyObjectRewrite(baseAppliedPath);
         return normalizeSlashes(rewritten);
-      } catch (_) {
+      } catch (error) {
+        console.error(`[SERVICE PROXY] Error in pathRewrite:`, error);
         // Fallback to original
         return path;
       }
