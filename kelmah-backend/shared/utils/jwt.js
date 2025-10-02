@@ -20,7 +20,12 @@ function signAccessToken(payload, options = {}) {
     role: payload.role,
     version: payload.version ?? payload.tokenVersion ?? 0,
   };
-  return jwt.sign(body, secret, { expiresIn, issuer, audience, jwtid });
+  // Only include jwtid if it's provided and is a string
+  const signOptions = { expiresIn, issuer, audience };
+  if (jwtid && typeof jwtid === 'string') {
+    signOptions.jwtid = jwtid;
+  }
+  return jwt.sign(body, secret, signOptions);
 }
 
 function signRefreshToken(payload, options = {}) {
@@ -30,7 +35,12 @@ function signRefreshToken(payload, options = {}) {
     sub: String(payload.id || payload.sub),
     version: payload.version ?? payload.tokenVersion ?? 0,
   };
-  return jwt.sign(body, secret, { expiresIn, issuer, audience, jwtid });
+  // Only include jwtid if it's provided and is a string
+  const signOptions = { expiresIn, issuer, audience };
+  if (jwtid && typeof jwtid === 'string') {
+    signOptions.jwtid = jwtid;
+  }
+  return jwt.sign(body, secret, signOptions);
 }
 
 function verifyAccessToken(token, options = {}) {
