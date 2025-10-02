@@ -19,8 +19,10 @@ const jobProxy = (req, res, next) => {
     requireAuth: true,
     pathRewrite: (path) => {
       // Remove double slashes and normalize path
-      const normalized = path.replace(/\/\/+/g, '/');
-      return normalized.replace('/?', '?');
+      let normalized = path.replace(/\/\/+/g, '/');
+      // Remove slash before query string (handles /api/jobs/?query → /api/jobs?query)
+      normalized = normalized.replace(/\/\?/g, '?');
+      return normalized;
     }
   });
   return proxy(req, res, next);
@@ -34,8 +36,10 @@ const publicJobProxy = (req, res, next) => {
     requireAuth: false,
     pathRewrite: (path) => {
       // Remove double slashes and normalize path
-      const normalized = path.replace(/\/\/+/g, '/');
-      return normalized.replace('/?', '?');
+      let normalized = path.replace(/\/\/+/g, '/');
+      // Remove slash before query string (handles /api/jobs/?query → /api/jobs?query)
+      normalized = normalized.replace(/\/\?/g, '?');
+      return normalized;
     }
   });
   return proxy(req, res, next);
