@@ -5,6 +5,7 @@
 const express = require("express");
 const { validate } = require("../middlewares/validator");
 const { verifyGatewayRequest, optionalGatewayVerification } = require("../../../shared/middlewares/serviceTrust");
+const { dbReady } = require("../middlewares/dbReady");
 let createLimiter;
 try {
   ({ createLimiter } = require('../../../shared/middlewares/rateLimiter'));
@@ -27,6 +28,9 @@ const authorizeRoles = (...roles) => (req, res, next) => {
 };
 
 const router = express.Router();
+
+// Apply DB ready check to ALL routes
+router.use(dbReady);
 
 // Public routes - handle both with and without trailing slashes
 router.get("/", (req, res, next) => {
