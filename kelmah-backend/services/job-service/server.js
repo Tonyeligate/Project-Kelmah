@@ -286,6 +286,18 @@ console.log('[EMERGENCY FIX] Mounting routes IMMEDIATELY at startup');
 mountApiRoutes();
 console.log('[EMERGENCY FIX] Routes mounted before DB connection');
 
+// Add middleware to log ALL incoming requests before they hit routes
+app.use((req, res, next) => {
+  console.log('[REQUEST DEBUG] Incoming request:');
+  console.log('  - Method:', req.method);
+  console.log('  - Path (req.path):', req.path);
+  console.log('  - URL (req.url):', req.url);
+  console.log('  - Original URL:', req.originalUrl);
+  console.log('  - Base URL:', req.baseUrl);
+  console.log('  - Query:', JSON.stringify(req.query));
+  next();
+});
+
 // Only start the server if this file is run directly
 if (require.main === module) {
   console.log('[SERVER START] Starting Job Service...');
