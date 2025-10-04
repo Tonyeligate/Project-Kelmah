@@ -248,6 +248,29 @@ const jobsApi = {
       console.warn('Job service unavailable for job categories:', error.message);
       return [];
     }
+  },
+
+  /**
+   * Personalized job recommendations for workers
+   */
+  async getPersonalizedJobRecommendations(params = {}) {
+    try {
+      const response = await jobServiceClient.get('/api/jobs/recommendations/personalized', {
+        params,
+      });
+      const payload = response.data?.data || response.data;
+      if (Array.isArray(payload?.recommendations)) {
+        return payload.recommendations.map(transformJobListItem);
+      }
+      if (Array.isArray(payload)) {
+        return payload.map(transformJobListItem);
+      }
+      const items = Array.isArray(payload?.items) ? payload.items : [];
+      return items.map(transformJobListItem);
+    } catch (error) {
+      console.warn('Job service unavailable for personalized recommendations:', error.message);
+      return [];
+    }
   }
 };
 

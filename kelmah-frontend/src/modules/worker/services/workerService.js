@@ -1,6 +1,10 @@
-import { userServiceClient, jobServiceClient } from '../../common/services/axios';
+import {
+  userServiceClient,
+  jobServiceClient,
+  getUserServiceClient,
+} from '../../common/services/axios';
 
-const API_URL = '/api/workers';
+const API_URL = '/api/users/workers';
 
 /**
  * Service for making API calls related to workers
@@ -77,6 +81,23 @@ const workerService = {
    */
   getWorkerSkills: (workerId) => {
     return userServiceClient.get(`${API_URL}/${workerId}/skills`);
+  },
+
+  /**
+   * Get credentials (skills, licenses, certifications) for the authenticated worker
+   * @returns {Promise<{ skills: Array, licenses: Array, certifications: Array }>}
+   */
+  getMyCredentials: async () => {
+    const response = await userServiceClient.get('/api/users/me/credentials');
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    return {
+      skills: Array.isArray(payload.skills) ? payload.skills : [],
+      licenses: Array.isArray(payload.licenses) ? payload.licenses : [],
+      certifications: Array.isArray(payload.certifications)
+        ? payload.certifications
+        : [],
+    };
   },
 
   /**
@@ -237,8 +258,39 @@ const workerService = {
    * @param {string} workerId - Worker ID
    * @returns {Promise<Object>} - Availability information
    */
-  getWorkerAvailability: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/availability`);
+  getWorkerAvailability: async (workerId) => {
+    if (!workerId) {
+      throw new Error('workerId is required to fetch availability');
+    }
+
+    let response;
+    try {
+      response = await userServiceClient.get(
+        `${API_URL}/${workerId}/availability`,
+      );
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status && status !== 404 && status !== 405) {
+        throw error;
+      }
+
+      const client = await getUserServiceClient();
+      const baseUrl = client?.defaults?.baseURL ?? '';
+      const prefix =
+        typeof baseUrl === 'string' && baseUrl.endsWith('/api') ? '' : '/api';
+      response = await client.get(`${prefix}/availability/${workerId}`);
+    }
+    const payload = response?.data?.data ?? response?.data ?? {};
+    const status = payload.status;
+
+    return {
+      ...payload,
+      status,
+      isAvailable:
+        typeof payload.isAvailable === 'boolean'
+          ? payload.isAvailable
+          : status === 'available' || status === true,
+    };
   },
 
   /**
@@ -247,11 +299,44 @@ const workerService = {
    * @param {Object} availabilityData - Availability data
    * @returns {Promise<Object>} - Updated availability
    */
-  updateWorkerAvailability: (workerId, availabilityData) => {
-    return userServiceClient.put(
-      `${API_URL}/${workerId}/availability`,
-      availabilityData,
-    );
+  updateWorkerAvailability: async (workerId, availabilityData) => {
+    if (!workerId) {
+      throw new Error('workerId is required to update availability');
+    }
+
+    let response;
+    try {
+      response = await userServiceClient.put(
+        `${API_URL}/${workerId}/availability`,
+        availabilityData,
+      );
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status && status !== 404 && status !== 405) {
+        throw error;
+      }
+
+      const client = await getUserServiceClient();
+      const baseUrl = client?.defaults?.baseURL ?? '';
+      const prefix =
+        typeof baseUrl === 'string' && baseUrl.endsWith('/api') ? '' : '/api';
+      response = await client.put(
+        `${prefix}/availability/${workerId}`,
+        availabilityData,
+      );
+    }
+
+    const payload = response?.data?.data ?? response?.data ?? {};
+    const status = payload.status;
+
+    return {
+      ...payload,
+      status,
+      isAvailable:
+        typeof payload.isAvailable === 'boolean'
+          ? payload.isAvailable
+          : status === 'available' || status === true,
+    };
   },
 
   /**
@@ -259,8 +344,49 @@ const workerService = {
    * @param {string} workerId - Worker ID
    * @returns {Promise<Object>} - Worker statistics
    */
-  getWorkerStats: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/stats`);
+  getWorkerStats: async (workerId) => {
+    if (!workerId) {
+      throw new Error('workerId is required to fetch statistics');
+    }
+
+    const response = await userServiceClient.get(
+      `${API_URL}/${workerId}/completeness`,
+    );
+    const payload = response?.data?.data ?? response?.data ?? {};
+    const completion = payload.completionPercentage ?? payload.percentage ?? 0;
+
+    return {
+      ...payload,
+      completionPercentage: completion,
+      percentage: completion,
+      requiredCompletion: payload.requiredCompletion ?? 0,
+      optionalCompletion: payload.optionalCompletion ?? 0,
+      missingRequired: payload.missingRequired ?? [],
+      missingOptional: payload.missingOptional ?? [],
+      recommendations: payload.recommendations ?? [],
+    };
+  },
+
+  /**
+   * Get recent jobs for the authenticated worker
+   * @param {{ limit?: number }} options - Optional query params
+   * @returns {Promise<Array>} - Array of recent jobs
+   */
+  getWorkerJobs: async ({ limit = 10 } = {}) => {
+    const response = await userServiceClient.get(`${API_URL}/jobs/recent`, {
+      params: { limit },
+    });
+
+    const payload = response?.data?.data ?? response?.data ?? {};
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (Array.isArray(payload.jobs)) {
+      return payload.jobs;
+    }
+
+    return [];
   },
 
   /**
@@ -273,6 +399,23 @@ const workerService = {
     return userServiceClient.get(`${API_URL}/${workerId}/earnings`, {
       params: filters,
     });
+  },
+
+  /**
+   * Get analytics summary (jobs, payments, reviews) for a worker
+   * @param {string} workerId - Worker ID or user ID
+   * @returns {Promise<Object>} - Analytics summary
+   */
+  getWorkerAnalytics: async (workerId) => {
+    if (!workerId) {
+      throw new Error('workerId is required to fetch analytics');
+    }
+
+    const response = await userServiceClient.get(
+      `/api/analytics/worker/${workerId}`,
+    );
+
+    return response?.data?.data ?? response?.data ?? {};
   },
 
   /**
@@ -357,7 +500,9 @@ const workerService = {
    * @returns {Promise<Array>} - Array of recommended workers
    */
   getRecommendedWorkers: (preferences = {}) => {
-    return userServiceClient.get(`${API_URL}/recommended`, { params: preferences });
+    return userServiceClient.get(`${API_URL}/recommended`, {
+      params: preferences,
+    });
   },
 
   /**
@@ -365,12 +510,8 @@ const workerService = {
    * @returns {Promise<Array>} - Array of saved jobs
    */
   getSavedJobs: async () => {
-    try {
-      const response = await jobServiceClient.get('/api/jobs/saved');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await jobServiceClient.get('/api/jobs/saved');
+    return response.data;
   },
 
   /**
@@ -397,14 +538,10 @@ const workerService = {
    * @returns {Promise<Array>} - Array of job applications
    */
   getApplications: async (filters = {}) => {
-    try {
-      const response = await jobServiceClient.get('/api/jobs/applications/me', {
-        params: filters,
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await jobServiceClient.get('/api/jobs/applications/me', {
+      params: filters,
+    });
+    return response.data;
   },
 
   /**

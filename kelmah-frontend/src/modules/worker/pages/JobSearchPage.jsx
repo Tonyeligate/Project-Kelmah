@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import {
   ToggleButton,
   ToggleButtonGroup,
@@ -58,6 +64,7 @@ import {
   StepLabel,
   Breadcrumbs,
   Link,
+  Alert,
 } from '@mui/material';
 import {
   Timeline,
@@ -192,7 +199,8 @@ const StatCard = styled(motion.div)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+    background:
+      'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
     pointerEvents: 'none',
   },
 }));
@@ -214,7 +222,8 @@ const SearchInterface = styled(Paper)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+    background:
+      'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
     pointerEvents: 'none',
   },
 }));
@@ -234,29 +243,32 @@ const GlassCard = styled(Card)(({ theme }) => ({
 }));
 
 // JobOpportunityCard styled component for job listings
-const JobOpportunityCard = styled(Card)(({ theme, featured, urgent, premium }) => ({
-  background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-  border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.divider, 0.2)}`,
-  borderRadius: 16,
-  overflow: 'hidden',
-  position: 'relative',
-  cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `0 8px 25px ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.3)}`,
-    border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.4)}`,
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '3px',
-    background: `linear-gradient(90deg, ${featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main} 0%, ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.8)} 100%)`,
-  },
-}));
+const JobOpportunityCard = styled(Card)(
+  ({ theme, featured, urgent, premium }) => ({
+    background:
+      'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
+    border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.divider, 0.2)}`,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: `0 8px 25px ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.3)}`,
+      border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.4)}`,
+    },
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '3px',
+      background: `linear-gradient(90deg, ${featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main} 0%, ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.8)} 100%)`,
+    },
+  }),
+);
 
 const shimmer = keyframes`
   0% { background-position: -200px 0; }
@@ -342,16 +354,16 @@ const HeroGradientSection = styled(Box)(({ theme }) => {
       height: '160%',
       background: `conic-gradient(from 45deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.15)} 90deg, transparent 180deg, ${alpha('#4ECDC4', 0.15)} 270deg, transparent 360deg)`,
       animation: `${rotateGlow} 40s linear infinite`,
-    }
+    },
   };
 });
 
 const jobCategories = [
-  { 
-    name: 'Electrical', 
-    icon: <ElectricalIcon />, 
-    count: 18450, 
-    color: '#FFD700', 
+  {
+    name: 'Electrical',
+    icon: <ElectricalIcon />,
+    count: 18450,
+    color: '#FFD700',
     trending: true,
     description: 'Smart systems, renewable energy & automation',
     avgSalary: '$85,000',
@@ -359,11 +371,11 @@ const jobCategories = [
     demandLevel: 'Explosive',
     topSkills: ['Smart Home Tech', 'Solar Systems', 'Industrial Automation'],
   },
-  { 
-    name: 'Plumbing', 
-    icon: <PlumbingIcon />, 
-    count: 14240, 
-    color: '#4A90E2', 
+  {
+    name: 'Plumbing',
+    icon: <PlumbingIcon />,
+    count: 14240,
+    color: '#4A90E2',
     hot: true,
     description: 'Water systems, green solutions & emergency response',
     avgSalary: '$78,000',
@@ -371,21 +383,25 @@ const jobCategories = [
     demandLevel: 'Very High',
     topSkills: ['Green Plumbing', 'Emergency Repair', 'Water Treatment'],
   },
-  { 
-    name: 'Construction', 
-    icon: <ConstructionIcon />, 
-    count: 32890, 
+  {
+    name: 'Construction',
+    icon: <ConstructionIcon />,
+    count: 32890,
     color: '#E74C3C',
     description: 'Smart buildings, infrastructure & sustainable construction',
     avgSalary: '$82,000',
     growth: '+18%',
     demandLevel: 'Very High',
-    topSkills: ['Smart Buildings', 'Sustainable Construction', 'Project Management'],
+    topSkills: [
+      'Smart Buildings',
+      'Sustainable Construction',
+      'Project Management',
+    ],
   },
-  { 
-    name: 'HVAC', 
-    icon: <SpeedIcon />, 
-    count: 11560, 
+  {
+    name: 'HVAC',
+    icon: <SpeedIcon />,
+    count: 11560,
     color: '#2ECC71',
     description: 'Climate control, energy efficiency & smart systems',
     avgSalary: '$80,000',
@@ -393,11 +409,11 @@ const jobCategories = [
     demandLevel: 'High',
     topSkills: ['Smart Climate', 'Energy Efficiency', 'System Integration'],
   },
-  { 
-    name: 'Smart Tech', 
-    icon: <HomeIcon />, 
-    count: 8780, 
-    color: '#9B59B6', 
+  {
+    name: 'Smart Tech',
+    icon: <HomeIcon />,
+    count: 8780,
+    color: '#9B59B6',
     newest: true,
     description: 'IoT integration, automation & AI systems',
     avgSalary: '$95,000',
@@ -405,10 +421,10 @@ const jobCategories = [
     demandLevel: 'Explosive',
     topSkills: ['IoT Systems', 'AI Integration', 'Home Automation'],
   },
-  { 
-    name: 'Design', 
-    icon: <PsychologyIcon />, 
-    count: 12340, 
+  {
+    name: 'Design',
+    icon: <PsychologyIcon />,
+    count: 12340,
     color: '#E67E22',
     description: 'Interior design, space planning & creative solutions',
     avgSalary: '$72,000',
@@ -419,9 +435,9 @@ const jobCategories = [
 ];
 
 const workerStats = [
-  { 
-    icon: <WorkIcon sx={{ fontSize: 56 }} />, 
-    value: '125,000+', 
+  {
+    icon: <WorkIcon sx={{ fontSize: 56 }} />,
+    value: '125,000+',
     label: 'Dream Opportunities',
     subtitle: 'Updated every minute',
     color: '#FFD700',
@@ -430,9 +446,9 @@ const workerStats = [
     animation: pulse,
     gradient: 'primary',
   },
-  { 
-    icon: <AttachMoneyIcon sx={{ fontSize: 56 }} />, 
-    value: '$145K', 
+  {
+    icon: <AttachMoneyIcon sx={{ fontSize: 56 }} />,
+    value: '$145K',
     label: 'Average Salary',
     subtitle: 'For skilled professionals',
     color: '#2ECC71',
@@ -441,9 +457,9 @@ const workerStats = [
     animation: float,
     gradient: 'success',
   },
-  { 
-    icon: <TrendingUpIcon sx={{ fontSize: 56 }} />, 
-    value: '3.2x', 
+  {
+    icon: <TrendingUpIcon sx={{ fontSize: 56 }} />,
+    value: '3.2x',
     label: 'Career Growth Rate',
     subtitle: 'Faster than other industries',
     color: '#3498DB',
@@ -452,9 +468,9 @@ const workerStats = [
     animation: shimmer,
     gradient: 'info',
   },
-  { 
-    icon: <StarIcon sx={{ fontSize: 56 }} />, 
-    value: '4.92/5', 
+  {
+    icon: <StarIcon sx={{ fontSize: 56 }} />,
+    value: '4.92/5',
     label: 'Worker Satisfaction',
     subtitle: 'Job fulfillment rating',
     color: '#E74C3C',
@@ -463,9 +479,9 @@ const workerStats = [
     animation: sparkle,
     gradient: 'error',
   },
-  { 
-    icon: <RocketIcon sx={{ fontSize: 56 }} />, 
-    value: '24hrs', 
+  {
+    icon: <RocketIcon sx={{ fontSize: 56 }} />,
+    value: '24hrs',
     label: 'Average Hire Time',
     subtitle: 'From application to offer',
     color: '#9C27B0',
@@ -474,9 +490,9 @@ const workerStats = [
     animation: rotateGlow,
     gradient: 'primary',
   },
-  { 
-    icon: <DiamondIcon sx={{ fontSize: 56 }} />, 
-    value: '89%', 
+  {
+    icon: <DiamondIcon sx={{ fontSize: 56 }} />,
+    value: '89%',
     label: 'Premium Job Rate',
     subtitle: 'High-quality opportunities',
     color: '#FF5722',
@@ -496,15 +512,26 @@ const creativeJobOpportunities = [
     location: 'Accra, Ghana',
     type: 'Full-time',
     budget: { min: 8000, max: 12000, type: 'monthly', currency: 'GHS' },
-    description: 'Lead smart home automation projects for luxury residential and commercial properties.',
-    skills: ['IoT Systems', 'Home Automation', 'Smart Home Integration', 'Project Management'],
-    benefits: ['Health Insurance', 'Flexible Hours', 'Professional Development', 'Performance Bonus'],
+    description:
+      'Lead smart home automation projects for luxury residential and commercial properties.',
+    skills: [
+      'IoT Systems',
+      'Home Automation',
+      'Smart Home Integration',
+      'Project Management',
+    ],
+    benefits: [
+      'Health Insurance',
+      'Flexible Hours',
+      'Professional Development',
+      'Performance Bonus',
+    ],
     featured: true,
     urgent: false,
     premium: true,
-    coordinates: { lat: 5.6037, lng: -0.1870 },
+    coordinates: { lat: 5.6037, lng: -0.187 },
     postedDate: new Date('2024-01-15'),
-    urgency: 'medium'
+    urgency: 'medium',
   },
   {
     id: 2,
@@ -513,15 +540,25 @@ const creativeJobOpportunities = [
     location: 'Kumasi, Ghana',
     type: 'Contract',
     budget: { min: 15000, max: 25000, type: 'project', currency: 'GHS' },
-    description: 'Install and maintain solar panel systems for residential and commercial clients.',
-    skills: ['Solar Installation', 'Electrical Systems', 'Renewable Energy', 'Safety Protocols'],
-    benefits: ['Project Bonuses', 'Equipment Provided', 'Training Opportunities'],
+    description:
+      'Install and maintain solar panel systems for residential and commercial clients.',
+    skills: [
+      'Solar Installation',
+      'Electrical Systems',
+      'Renewable Energy',
+      'Safety Protocols',
+    ],
+    benefits: [
+      'Project Bonuses',
+      'Equipment Provided',
+      'Training Opportunities',
+    ],
     featured: false,
     urgent: true,
     premium: false,
     coordinates: { lat: 6.6885, lng: -1.6244 },
     postedDate: new Date('2024-01-14'),
-    urgency: 'high'
+    urgency: 'high',
   },
   {
     id: 3,
@@ -530,7 +567,8 @@ const creativeJobOpportunities = [
     location: 'Cape Coast, Ghana',
     type: 'Part-time',
     budget: { min: 5000, max: 8000, type: 'monthly', currency: 'GHS' },
-    description: 'Create bespoke furniture pieces using traditional and modern techniques.',
+    description:
+      'Create bespoke furniture pieces using traditional and modern techniques.',
     skills: ['Woodworking', 'Furniture Design', 'Carpentry', '3D Design'],
     benefits: ['Creative Freedom', 'Flexible Schedule', 'Material Allowance'],
     featured: true,
@@ -538,7 +576,7 @@ const creativeJobOpportunities = [
     premium: false,
     coordinates: { lat: 5.1053, lng: -1.2466 },
     postedDate: new Date('2024-01-13'),
-    urgency: 'low'
+    urgency: 'low',
   },
   {
     id: 4,
@@ -548,14 +586,24 @@ const creativeJobOpportunities = [
     type: 'Full-time',
     budget: { min: 10000, max: 15000, type: 'monthly', currency: 'GHS' },
     description: 'Maintain and upgrade automated manufacturing systems.',
-    skills: ['Industrial Automation', 'PLC Programming', 'Mechanical Systems', 'Troubleshooting'],
-    benefits: ['Health Insurance', 'Retirement Plan', 'Overtime Pay', 'Safety Equipment'],
+    skills: [
+      'Industrial Automation',
+      'PLC Programming',
+      'Mechanical Systems',
+      'Troubleshooting',
+    ],
+    benefits: [
+      'Health Insurance',
+      'Retirement Plan',
+      'Overtime Pay',
+      'Safety Equipment',
+    ],
     featured: false,
     urgent: false,
     premium: true,
     coordinates: { lat: 5.6833, lng: -0.0167 },
     postedDate: new Date('2024-01-12'),
-    urgency: 'medium'
+    urgency: 'medium',
   },
   {
     id: 5,
@@ -564,15 +612,25 @@ const creativeJobOpportunities = [
     location: 'Tamale, Ghana',
     type: 'Contract',
     budget: { min: 12000, max: 18000, type: 'monthly', currency: 'GHS' },
-    description: 'Advise on sustainable construction practices and green building materials.',
-    skills: ['Sustainable Building', 'Construction', 'Environmental Design', 'Project Management'],
-    benefits: ['Travel Allowance', 'Professional Development', 'Flexible Hours'],
+    description:
+      'Advise on sustainable construction practices and green building materials.',
+    skills: [
+      'Sustainable Building',
+      'Construction',
+      'Environmental Design',
+      'Project Management',
+    ],
+    benefits: [
+      'Travel Allowance',
+      'Professional Development',
+      'Flexible Hours',
+    ],
     featured: true,
     urgent: true,
     premium: false,
     coordinates: { lat: 9.4008, lng: -0.8393 },
     postedDate: new Date('2024-01-11'),
-    urgency: 'high'
+    urgency: 'high',
   },
   {
     id: 6,
@@ -581,17 +639,173 @@ const creativeJobOpportunities = [
     location: 'Takoradi, Ghana',
     type: 'Full-time',
     budget: { min: 9000, max: 13000, type: 'monthly', currency: 'GHS' },
-    description: 'Install and maintain advanced heating, ventilation, and air conditioning systems.',
-    skills: ['HVAC Systems', 'Climate Control', 'Energy Efficiency', 'System Design'],
-    benefits: ['Company Vehicle', 'Tool Allowance', 'Health Insurance', 'Performance Bonus'],
+    description:
+      'Install and maintain advanced heating, ventilation, and air conditioning systems.',
+    skills: [
+      'HVAC Systems',
+      'Climate Control',
+      'Energy Efficiency',
+      'System Design',
+    ],
+    benefits: [
+      'Company Vehicle',
+      'Tool Allowance',
+      'Health Insurance',
+      'Performance Bonus',
+    ],
     featured: false,
     urgent: false,
     premium: true,
     coordinates: { lat: 4.8845, lng: -1.7553 },
     postedDate: new Date('2024-01-10'),
-    urgency: 'medium'
-  }
+    urgency: 'medium',
+  },
 ];
+
+const deriveCompanyInfo = (job = {}) => {
+  const company = job.company || {};
+  const hirer = job.hirer || {};
+  const contact = job.contactPerson || job.client || {};
+
+  return {
+    name:
+      company.name ||
+      hirer.name ||
+      hirer.displayName ||
+      job.hirer_name ||
+      contact.name ||
+      job.organization ||
+      job.clientName ||
+      'Unknown Company',
+    logo:
+      company.logo ||
+      hirer.logo ||
+      hirer.profileImage ||
+      job.companyLogo ||
+      job.logo ||
+      null,
+    rating: company.rating ?? hirer.rating ?? contact.rating ?? job.rating ?? 0,
+    verified:
+      company.verified ??
+      hirer.verified ??
+      contact.verified ??
+      job.verified ??
+      false,
+  };
+};
+
+const normalizeSkills = (skills) => {
+  if (Array.isArray(skills)) return skills.filter(Boolean);
+  if (typeof skills === 'string') {
+    return skills
+      .split(',')
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+  }
+  if (skills && typeof skills === 'object') {
+    return Object.values(skills)
+      .map((skill) => (typeof skill === 'string' ? skill.trim() : skill))
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const extractBudgetRange = (job) => {
+  const budget =
+    job.budget ||
+    job.paymentDetails?.budget ||
+    job.budgetRange ||
+    job.salaryRange ||
+    job.payRange;
+  if (!budget) {
+    if (typeof job.budgetAmount === 'number') {
+      return { min: job.budgetAmount, max: job.budgetAmount };
+    }
+    if (typeof job.budget === 'number') {
+      return { min: job.budget, max: job.budget };
+    }
+    return null;
+  }
+
+  if (typeof budget === 'number') {
+    return { min: budget, max: budget };
+  }
+
+  const min = budget.min ?? budget.amount ?? budget.start ?? budget.from ?? 0;
+  const max = budget.max ?? budget.amount ?? budget.end ?? budget.to ?? min;
+  const currency = budget.currency || job.currency || 'GHS';
+  const type = budget.type || job.paymentType || 'fixed';
+
+  return { min, max, currency, type };
+};
+
+const normalizeJobForUi = (job) => {
+  if (!job) return null;
+
+  const normalizedBudget = extractBudgetRange(job);
+  const locationValue = (() => {
+    if (typeof job.location === 'string') return job.location;
+    if (job.location?.city || job.location?.region || job.location?.country) {
+      return [job.location.city, job.location.region, job.location.country]
+        .filter(Boolean)
+        .join(', ');
+    }
+    if (job.locationDetails?.city || job.locationDetails?.region) {
+      return [job.locationDetails.city, job.locationDetails.region]
+        .filter(Boolean)
+        .join(', ');
+    }
+    if (job.location?.name) return job.location.name;
+    return job.remote ? 'Remote' : 'Location not specified';
+  })();
+
+  return {
+    ...job,
+    id: job.id || job._id || job.jobId,
+    company: deriveCompanyInfo(job),
+    skills: normalizeSkills(job.skills || job.skills_required),
+    location: locationValue,
+    postedDate: job.postedDate
+      ? new Date(job.postedDate)
+      : job.createdAt
+        ? new Date(job.createdAt)
+        : job.created_at
+          ? new Date(job.created_at)
+          : undefined,
+    deadline: job.deadline
+      ? new Date(job.deadline)
+      : job.endDate
+        ? new Date(job.endDate)
+        : job.closingDate
+          ? new Date(job.closingDate)
+          : undefined,
+    budget: normalizedBudget,
+  };
+};
+
+const mapSortOptionToApi = (value) => {
+  switch (value) {
+    case 'newest':
+      return '-createdAt';
+    case 'salary_high':
+      return '-budget.max';
+    case 'salary_low':
+      return 'budget.min';
+    case 'deadline':
+      return 'deadline';
+    default:
+      return '-createdAt';
+  }
+};
+
+const isRemoteJob = (job) => {
+  if (job.remote === true) return true;
+  const location =
+    typeof job.location === 'string' ? job.location : job.location?.name;
+  return (
+    typeof location === 'string' && location.toLowerCase().includes('remote')
+  );
+};
 
 const JobSearchPage = () => {
   const theme = useTheme();
@@ -605,14 +819,33 @@ const JobSearchPage = () => {
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const heroRef = useRef(null);
   const searchRef = useRef(null);
-  
+
   // Redux state with enhanced safety
-  const jobs = useSelector(selectJobs) || [];
+  const rawJobs = useSelector(selectJobs) || [];
   const loading = useSelector(selectJobsLoading) || false;
   const error = useSelector(selectJobsError);
   const filters = useSelector(selectJobFilters) || {};
-  const { currentPage = 1, totalPages = 0 } = useSelector(selectJobsPagination) || {};
-  const savedJobs = useSelector(selectSavedJobs) || [];
+  const { currentPage = 1, totalPages = 0 } =
+    useSelector(selectJobsPagination) || {};
+  const rawSavedJobs = useSelector(selectSavedJobs) || [];
+
+  const normalizedJobs = useMemo(
+    () => rawJobs.map(normalizeJobForUi).filter(Boolean),
+    [rawJobs],
+  );
+  const fallbackJobs = useMemo(
+    () => creativeJobOpportunities.map(normalizeJobForUi).filter(Boolean),
+    [],
+  );
+  const savedJobIds = useMemo(
+    () => rawSavedJobs.map((job) => job?.id || job?._id).filter(Boolean),
+    [rawSavedJobs],
+  );
+  const hasLiveJobs = normalizedJobs.length > 0;
+  const availableJobsForPersonalization = useMemo(
+    () => (hasLiveJobs ? normalizedJobs : fallbackJobs),
+    [hasLiveJobs, normalizedJobs, fallbackJobs],
+  );
 
   // Enhanced local state for better UX
   const [viewMode, setViewMode] = useState(isMobile ? 'list' : 'grid');
@@ -630,11 +863,23 @@ const JobSearchPage = () => {
   const [jobType, setJobType] = useState('');
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [matchingJobs, setMatchingJobs] = useState([]);
-  const [personalizedRecommendations, setPersonalizedRecommendations] = useState([]);
+  const [personalizedRecommendations, setPersonalizedRecommendations] =
+    useState([]);
   const [careerInsights, setCareerInsights] = useState(null);
   const [skillGaps, setSkillGaps] = useState([]);
   const [animateCards, setAnimateCards] = useState(false);
   const [showSampleData, setShowSampleData] = useState(true);
+
+  const jobsToRender = useMemo(() => {
+    if (showSampleData) {
+      return matchingJobs.length > 0 ? matchingJobs : fallbackJobs;
+    }
+    if (matchingJobs.length > 0) {
+      return matchingJobs;
+    }
+    return normalizedJobs;
+  }, [showSampleData, matchingJobs, fallbackJobs, normalizedJobs]);
+  const totalJobsFound = jobsToRender.length;
 
   // Enhanced state for new bidding system
   const [userPerformance, setUserPerformance] = useState(null);
@@ -642,16 +887,17 @@ const JobSearchPage = () => {
   const [biddingJobs, setBiddingJobs] = useState([]);
   const [performanceLoading, setPerformanceLoading] = useState(false);
   const [bidsLoading, setBidsLoading] = useState(false);
+  const initialFetchTriggeredRef = useRef(false);
 
   // Enhanced functions for new system
   const fetchUserPerformance = async () => {
     if (!authState.isAuthenticated) return;
-    
+
     setPerformanceLoading(true);
     try {
       // TODO: Integrate into worker service
       // const response = await userPerformanceApi.getMyPerformance();
-      setUserPerformance(response.data);
+      setUserPerformance(null);
     } catch (error) {
       console.error('Error fetching user performance:', error);
     } finally {
@@ -661,12 +907,12 @@ const JobSearchPage = () => {
 
   const fetchMyBids = async () => {
     if (!authState.isAuthenticated) return;
-    
+
     setBidsLoading(true);
     try {
-      // TODO: Integrate into worker service  
+      // TODO: Integrate into worker service
       // const response = await bidApi.getMyBids();
-      setMyBids(response.data || []);
+      setMyBids([]);
     } catch (error) {
       console.error('Error fetching my bids:', error);
     } finally {
@@ -676,10 +922,17 @@ const JobSearchPage = () => {
 
   const fetchBiddingJobs = async () => {
     if (!authState.isAuthenticated) return;
-    
+
     try {
       const response = await jobsApi.getPersonalizedJobRecommendations();
-      setBiddingJobs(response.data || []);
+      const jobs = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.jobs)
+          ? response.jobs
+          : Array.isArray(response?.data)
+            ? response.data
+            : [];
+      setBiddingJobs(jobs.map(normalizeJobForUi).filter(Boolean));
     } catch (error) {
       console.error('Error fetching bidding jobs:', error);
     }
@@ -687,14 +940,38 @@ const JobSearchPage = () => {
 
   // Skill options for autocomplete
   const skillOptions = [
-    'Electrical Wiring', 'Smart Home Integration', 'Solar Installation', 'Industrial Automation',
-    'Plumbing Repair', 'Water Systems', 'Emergency Response', 'Green Plumbing',
-    'Project Management', 'Construction', 'Renovation', 'Sustainable Building',
-    'HVAC Systems', 'Climate Control', 'Energy Efficiency', 'Smart Climate',
-    'Interior Design', 'Custom Furniture', 'Space Planning', '3D Design',
-    'Carpentry', 'Woodworking', 'Cabinet Making', 'Custom Millwork',
-    'IoT Systems', 'Home Automation', 'AI Integration', 'Smart Buildings',
-    'Welding', 'Fabrication', 'Metal Working', 'Precision Manufacturing',
+    'Electrical Wiring',
+    'Smart Home Integration',
+    'Solar Installation',
+    'Industrial Automation',
+    'Plumbing Repair',
+    'Water Systems',
+    'Emergency Response',
+    'Green Plumbing',
+    'Project Management',
+    'Construction',
+    'Renovation',
+    'Sustainable Building',
+    'HVAC Systems',
+    'Climate Control',
+    'Energy Efficiency',
+    'Smart Climate',
+    'Interior Design',
+    'Custom Furniture',
+    'Space Planning',
+    '3D Design',
+    'Carpentry',
+    'Woodworking',
+    'Cabinet Making',
+    'Custom Millwork',
+    'IoT Systems',
+    'Home Automation',
+    'AI Integration',
+    'Smart Buildings',
+    'Welding',
+    'Fabrication',
+    'Metal Working',
+    'Precision Manufacturing',
   ];
 
   // Get user location for personalized job matching
@@ -706,10 +983,25 @@ const JobSearchPage = () => {
         },
         (error) => {
           console.log('Location access denied:', error);
-        }
+        },
       );
     }
   }, [isAuthenticated]);
+
+  // Fetch jobs on initial load if store is empty
+  useEffect(() => {
+    if (initialFetchTriggeredRef.current) return;
+    if (!loading && rawJobs.length === 0) {
+      initialFetchTriggeredRef.current = true;
+      dispatch(
+        fetchJobs(
+          Object.keys(filters).length > 0
+            ? { ...filters, page: filters.page || currentPage || 1 }
+            : { page: currentPage || 1 },
+        ),
+      );
+    }
+  }, [dispatch, filters, loading, rawJobs.length, currentPage]);
 
   // Fetch enhanced data when component mounts
   useEffect(() => {
@@ -727,84 +1019,192 @@ const JobSearchPage = () => {
     }
   }, [isMobile, viewMode]);
 
+  const generatePersonalizedRecommendations = useCallback(() => {
+    if (!user) {
+      setPersonalizedRecommendations([]);
+      return;
+    }
+
+    const dataset = availableJobsForPersonalization;
+    if (!Array.isArray(dataset) || dataset.length === 0) {
+      setPersonalizedRecommendations([]);
+      return;
+    }
+
+    const userSkills = Array.isArray(user.skills) ? user.skills : [];
+    const userExperience = user.experience || 'mid';
+
+    const recommendations = dataset.filter((job) => {
+      const jobSkills = Array.isArray(job.skills) ? job.skills : [];
+      const skillMatch =
+        userSkills.length === 0 ||
+        jobSkills.some((skill) =>
+          userSkills.some(
+            (userSkill) =>
+              skill.toLowerCase().includes(userSkill.toLowerCase()) ||
+              userSkill.toLowerCase().includes(skill.toLowerCase()),
+          ),
+        );
+
+      const jobExperience = job.experienceLevel || job.experience || 'mid';
+      const experienceMatch =
+        jobExperience === userExperience ||
+        (userExperience === 'expert' &&
+          ['senior', 'mid'].includes(jobExperience)) ||
+        (userExperience === 'senior' && jobExperience === 'mid');
+
+      return skillMatch && experienceMatch;
+    });
+
+    setPersonalizedRecommendations(recommendations.slice(0, 10));
+  }, [availableJobsForPersonalization, user]);
+
+  const analyzeCareerGrowth = useCallback(() => {
+    if (!user) {
+      setCareerInsights(null);
+      return;
+    }
+
+    const insights = {
+      currentLevel: user.experience || 'mid',
+      nextLevel:
+        user.experience === 'entry'
+          ? 'mid'
+          : user.experience === 'mid'
+            ? 'senior'
+            : 'expert',
+      avgSalaryIncrease:
+        user.experience === 'entry'
+          ? '35%'
+          : user.experience === 'mid'
+            ? '28%'
+            : '22%',
+      timeToPromotion:
+        user.experience === 'entry'
+          ? '18 months'
+          : user.experience === 'mid'
+            ? '2-3 years'
+            : '3-5 years',
+      recommendedSkills: [
+        'Smart Home Tech',
+        'Project Management',
+        'Advanced Certification',
+      ],
+      marketDemand: 'Very High',
+      growthPotential:
+        user.experience === 'entry'
+          ? 'Excellent'
+          : user.experience === 'mid'
+            ? 'Strong'
+            : 'Moderate',
+    };
+
+    setCareerInsights(insights);
+  }, [user]);
+
+  const identifySkillGaps = useCallback(() => {
+    if (!user) {
+      setSkillGaps([]);
+      return;
+    }
+
+    const userSkills = Array.isArray(user.skills) ? user.skills : [];
+    const demandedSkills = [
+      'Smart Home Integration',
+      'IoT Systems',
+      'Project Management',
+      'Renewable Energy',
+      'AI Integration',
+    ];
+
+    const gaps = demandedSkills.filter(
+      (skill) =>
+        !userSkills.some(
+          (userSkill) =>
+            userSkill.toLowerCase().includes(skill.toLowerCase()) ||
+            skill.toLowerCase().includes(userSkill.toLowerCase()),
+        ),
+    );
+
+    setSkillGaps(gaps);
+  }, [user]);
+
   // Enhanced search with AI-powered matching
   const handleSearch = useCallback(async () => {
-    console.log('🔍 Search initiated:', { searchQuery, selectedCategory, sortBy });
-    setShowSampleData(false);
-    setAnimateCards(true);
-    
-    const searchParams = {
-      search: searchQuery.trim(),
-      category: selectedCategory,
+    console.log('🔍 Search initiated:', {
+      searchQuery,
+      selectedCategory,
       sortBy,
-      remote: onlyRemote,
-      urgent: onlyUrgent,
-      featured: onlyFeatured,
-      experience: experienceLevel,
-      jobType,
-      minSalary: salaryRange[0],
-      maxSalary: salaryRange[1],
-      skills: selectedSkills,
-      location: userPosition,
+    });
+    setAnimateCards(true);
+
+    const params = {
+      search: searchQuery.trim() || undefined,
+      category: selectedCategory || undefined,
+      type: jobType || undefined,
+      remote: onlyRemote ? 'true' : undefined,
+      urgent: onlyUrgent ? 'true' : undefined,
+      featured: onlyFeatured ? 'true' : undefined,
+      experience: experienceLevel || undefined,
+      skills: selectedSkills.length ? selectedSkills.join(',') : undefined,
+      sort: mapSortOptionToApi(sortBy),
       page: 1,
     };
 
+    if (Array.isArray(salaryRange) && salaryRange.length === 2) {
+      const [minSalary, maxSalary] = salaryRange;
+      if (minSalary || maxSalary) {
+        const normalizedMin =
+          typeof minSalary === 'number' ? Math.max(minSalary, 0) : 0;
+        const normalizedMax =
+          typeof maxSalary === 'number' && maxSalary > 0
+            ? maxSalary
+            : undefined;
+        params.budget = normalizedMax
+          ? `${normalizedMin}-${normalizedMax}`
+          : `${normalizedMin}-`;
+      }
+    }
+
+    if (userPosition) {
+      params.latitude = userPosition[0];
+      params.longitude = userPosition[1];
+    }
+
+    const cleanedParams = Object.fromEntries(
+      Object.entries(params).filter(
+        ([, value]) =>
+          value !== undefined &&
+          value !== '' &&
+          !(Array.isArray(value) && value.length === 0),
+      ),
+    );
+
+    dispatch(
+      setFilters({
+        ...filters,
+        search: searchQuery.trim(),
+        profession: selectedCategory || '',
+        job_type: jobType || '',
+        min_budget: salaryRange?.[0] ?? '',
+        max_budget: salaryRange?.[1] ?? '',
+        sort: sortBy,
+        page: 1,
+      }),
+    );
+
     try {
-      // For now, let's use the sample data and filter it
-      let filteredJobs = [...creativeJobOpportunities];
-      
-      // Apply search filter
-      if (searchQuery.trim()) {
-        filteredJobs = filteredJobs.filter(job => 
-          job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-      }
-      
-      // Apply category filter
-      if (selectedCategory) {
-        filteredJobs = filteredJobs.filter(job => 
-          job.skills.some(skill => skill.toLowerCase().includes(selectedCategory.toLowerCase()))
-        );
-      }
-      
-      // Apply urgent filter
-      if (onlyUrgent) {
-        filteredJobs = filteredJobs.filter(job => job.urgency === 'high');
-      }
-      
-      // Apply featured filter
-      if (onlyFeatured) {
-        filteredJobs = filteredJobs.filter(job => job.featured);
-      }
-      
-      console.log('📊 Filtered jobs:', filteredJobs.length);
-      
-      // Update the jobs state with filtered results
-      // For now, we'll use a simple state update since Redux might not be connected
-      setMatchingJobs(filteredJobs);
-      
-      // Try Redux dispatch if available
-      try {
-        const newFilters = { ...filters, ...searchParams };
-        dispatch(setFilters(newFilters));
-        dispatch(fetchJobs(newFilters));
-      } catch (reduxError) {
-        console.log('Redux not available, using local state:', reduxError);
-      }
-      
-      // Analytics tracking
+      await dispatch(fetchJobs(cleanedParams)).unwrap();
+
       if (typeof gtag !== 'undefined') {
         gtag('event', 'job_search', {
           search_term: searchQuery,
           category: selectedCategory,
           skills_count: selectedSkills.length,
-          filters_applied: Object.keys(searchParams).filter(key => searchParams[key]).length,
+          filters_applied: Object.keys(cleanedParams).length,
         });
       }
-      
-      // Personalized recommendations based on user profile
+
       if (authState.isAuthenticated && user) {
         generatePersonalizedRecommendations();
         analyzeCareerGrowth();
@@ -813,67 +1213,163 @@ const JobSearchPage = () => {
     } catch (error) {
       console.error('Search error:', error);
     }
-  }, [searchQuery, selectedCategory, sortBy, onlyRemote, onlyUrgent, onlyFeatured, experienceLevel, jobType, salaryRange, selectedSkills, userPosition, filters, dispatch, isAuthenticated, user]);
+  }, [
+    dispatch,
+    filters,
+    searchQuery,
+    selectedCategory,
+    sortBy,
+    jobType,
+    onlyRemote,
+    onlyUrgent,
+    onlyFeatured,
+    experienceLevel,
+    salaryRange,
+    selectedSkills,
+    userPosition,
+    authState.isAuthenticated,
+    user,
+    generatePersonalizedRecommendations,
+    analyzeCareerGrowth,
+    identifySkillGaps,
+  ]);
 
-  // Generate personalized job recommendations
-  const generatePersonalizedRecommendations = useCallback(() => {
-    if (!user) return;
-    
-    // Mock AI-powered recommendations based on user profile
-    const userSkills = user.skills || [];
-    const userExperience = user.experience || 'mid';
-    const userLocation = user.location || 'Remote';
-    
-    const recommendations = creativeJobOpportunities.filter(job => {
-      const skillMatch = job.skills.some(skill => 
-        userSkills.some(userSkill => 
-          skill.toLowerCase().includes(userSkill.toLowerCase()) ||
-          userSkill.toLowerCase().includes(skill.toLowerCase())
-        )
-      );
-      const experienceMatch = job.experience === userExperience || 
-        (userExperience === 'expert' && ['senior', 'mid'].includes(job.experience)) ||
-        (userExperience === 'senior' && job.experience === 'mid');
-      
-      return skillMatch && experienceMatch;
+  useEffect(() => {
+    setShowSampleData(!hasLiveJobs);
+  }, [hasLiveJobs]);
+
+  useEffect(() => {
+    const dataset = hasLiveJobs ? normalizedJobs : fallbackJobs;
+    if (!Array.isArray(dataset) || dataset.length === 0) {
+      setMatchingJobs([]);
+      return;
+    }
+
+    const searchTerm = searchQuery.trim().toLowerCase();
+    const normalizedCategory = selectedCategory.toLowerCase();
+    const normalizedExperience = experienceLevel.toLowerCase();
+    const normalizedJobType = jobType.toLowerCase();
+    const salaryRangeMin = Array.isArray(salaryRange) ? salaryRange[0] : 0;
+    const salaryRangeMax = Array.isArray(salaryRange) ? salaryRange[1] : 0;
+
+    const filteredJobs = dataset.filter((job) => {
+      const title = job.title?.toLowerCase() || '';
+      const companyName = job.company?.name?.toLowerCase() || '';
+      const description = job.description?.toLowerCase() || '';
+      const jobCategory = job.category?.toLowerCase() || '';
+      const jobExperience = (
+        job.experienceLevel ||
+        job.experience ||
+        ''
+      ).toLowerCase();
+      const jobTypeValue = (
+        job.type ||
+        job.jobType ||
+        job.employmentType ||
+        ''
+      ).toLowerCase();
+      const jobSkills = Array.isArray(job.skills) ? job.skills : [];
+      const jobBudget = job.budget || {};
+      const jobMinBudget = jobBudget?.min ?? jobBudget?.amount ?? 0;
+      const jobMaxBudget = jobBudget?.max ?? jobBudget?.amount ?? jobMinBudget;
+
+      if (searchTerm) {
+        const matchesSearch =
+          title.includes(searchTerm) ||
+          companyName.includes(searchTerm) ||
+          description.includes(searchTerm) ||
+          jobSkills.some((skill) => skill.toLowerCase().includes(searchTerm));
+        if (!matchesSearch) return false;
+      }
+
+      if (selectedCategory && jobCategory !== normalizedCategory) {
+        return false;
+      }
+
+      if (onlyRemote && !isRemoteJob(job)) {
+        return false;
+      }
+
+      if (onlyUrgent && !(job.urgent || job.urgency === 'high')) {
+        return false;
+      }
+
+      if (onlyFeatured && !job.featured) {
+        return false;
+      }
+
+      if (experienceLevel && jobExperience !== normalizedExperience) {
+        return false;
+      }
+
+      if (jobType && jobTypeValue !== normalizedJobType) {
+        return false;
+      }
+
+      if (Array.isArray(salaryRange) && (salaryRangeMin || salaryRangeMax)) {
+        if (jobMinBudget < salaryRangeMin) return false;
+        if (salaryRangeMax && jobMaxBudget > salaryRangeMax) return false;
+      }
+
+      if (selectedSkills.length > 0) {
+        const matchesSkills = selectedSkills.every((skill) =>
+          jobSkills.some((jobSkill) =>
+            jobSkill.toLowerCase().includes(skill.toLowerCase()),
+          ),
+        );
+        if (!matchesSkills) return false;
+      }
+
+      return true;
     });
-    
-    setPersonalizedRecommendations(recommendations);
-  }, [user]);
 
-  // Analyze career growth opportunities
-  const analyzeCareerGrowth = useCallback(() => {
-    if (!user) return;
-    
-    const insights = {
-      currentLevel: user.experience || 'mid',
-      nextLevel: user.experience === 'entry' ? 'mid' : user.experience === 'mid' ? 'senior' : 'expert',
-      avgSalaryIncrease: user.experience === 'entry' ? '35%' : user.experience === 'mid' ? '28%' : '22%',
-      timeToPromotion: user.experience === 'entry' ? '18 months' : user.experience === 'mid' ? '2-3 years' : '3-5 years',
-      recommendedSkills: ['Smart Home Tech', 'Project Management', 'Advanced Certification'],
-      marketDemand: 'Very High',
-      growthPotential: user.experience === 'entry' ? 'Excellent' : user.experience === 'mid' ? 'Strong' : 'Moderate',
-    };
-    
-    setCareerInsights(insights);
-  }, [user]);
+    const sortedJobs = [...filteredJobs].sort((a, b) => {
+      const toTimestamp = (value) => {
+        if (!value) return 0;
+        const date = value instanceof Date ? value : new Date(value);
+        return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+      };
+      const maxBudget = (job) => {
+        const budget = job.budget || {};
+        return budget?.max ?? budget?.amount ?? budget?.min ?? 0;
+      };
+      const minBudget = (job) => {
+        const budget = job.budget || {};
+        return budget?.min ?? budget?.amount ?? budget?.max ?? 0;
+      };
 
-  // Identify skill gaps for career advancement
-  const identifySkillGaps = useCallback(() => {
-    if (!user) return;
-    
-    const userSkills = user.skills || [];
-    const demandedSkills = ['Smart Home Integration', 'IoT Systems', 'Project Management', 'Renewable Energy', 'AI Integration'];
-    
-    const gaps = demandedSkills.filter(skill => 
-      !userSkills.some(userSkill => 
-        userSkill.toLowerCase().includes(skill.toLowerCase()) ||
-        skill.toLowerCase().includes(userSkill.toLowerCase())
-      )
-    );
-    
-    setSkillGaps(gaps);
-  }, [user]);
+      switch (sortBy) {
+        case 'newest':
+          return toTimestamp(b.postedDate) - toTimestamp(a.postedDate);
+        case 'salary_high':
+          return maxBudget(b) - maxBudget(a);
+        case 'salary_low':
+          return minBudget(a) - minBudget(b);
+        case 'match':
+          return (b.matchScore || 0) - (a.matchScore || 0);
+        case 'deadline':
+          return toTimestamp(a.deadline) - toTimestamp(b.deadline);
+        default:
+          return 0;
+      }
+    });
+
+    setMatchingJobs(sortedJobs);
+  }, [
+    fallbackJobs,
+    hasLiveJobs,
+    normalizedJobs,
+    searchQuery,
+    selectedCategory,
+    onlyRemote,
+    onlyUrgent,
+    onlyFeatured,
+    experienceLevel,
+    jobType,
+    salaryRange,
+    selectedSkills,
+    sortBy,
+  ]);
 
   const clearFilters = useCallback(() => {
     setSearchQuery('');
@@ -886,31 +1382,45 @@ const JobSearchPage = () => {
     setJobType('');
     setSalaryRange([0, 200]);
     setSelectedSkills([]);
-    setShowSampleData(true);
-    dispatch(setFilters({}));
+    setMatchingJobs([]);
+    dispatch(
+      setFilters({
+        search: '',
+        profession: '',
+        job_type: '',
+        min_budget: '',
+        max_budget: '',
+        sort: 'relevance',
+        page: 1,
+      }),
+    );
+    dispatch(fetchJobs({ page: 1 }));
   }, [dispatch]);
 
-  const toggleSaveJob = useCallback(async (jobId) => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/jobs/${jobId}` } });
-      return;
-    }
-    
-    try {
-      const isCurrentlySaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
-      
-      if (isCurrentlySaved) {
-        await dispatch(unsaveJobFromServer(jobId));
-      } else {
-        await dispatch(saveJobToServer(jobId));
+  const toggleSaveJob = useCallback(
+    async (jobId) => {
+      if (!isAuthenticated) {
+        navigate('/login', { state: { from: `/jobs/${jobId}` } });
+        return;
       }
-      
-      // Refresh saved jobs list to reflect latest server state
-      await dispatch(fetchSavedJobs());
-    } catch (error) {
-      console.error('Failed to toggle save job:', error);
-    }
-  }, [isAuthenticated, navigate, savedJobs, dispatch]);
+
+      try {
+        const isCurrentlySaved = savedJobIds.includes(jobId);
+
+        if (isCurrentlySaved) {
+          await dispatch(unsaveJobFromServer(jobId));
+        } else {
+          await dispatch(saveJobToServer(jobId));
+        }
+
+        // Refresh saved jobs list to reflect latest server state
+        await dispatch(fetchSavedJobs());
+      } catch (error) {
+        console.error('Failed to toggle save job:', error);
+      }
+    },
+    [isAuthenticated, navigate, savedJobIds, dispatch],
+  );
 
   // Enhanced keyboard shortcuts
   useEffect(() => {
@@ -954,9 +1464,20 @@ const JobSearchPage = () => {
         experienceLevel,
         jobType,
       };
-      localStorage.setItem('workerJobSearchPreferences', JSON.stringify(preferences));
+      localStorage.setItem(
+        'workerJobSearchPreferences',
+        JSON.stringify(preferences),
+      );
     }
-  }, [viewMode, sortBy, salaryRange, selectedSkills, experienceLevel, jobType, isAuthenticated]);
+  }, [
+    viewMode,
+    sortBy,
+    salaryRange,
+    selectedSkills,
+    experienceLevel,
+    jobType,
+    isAuthenticated,
+  ]);
 
   // Load saved preferences
   useEffect(() => {
@@ -985,7 +1506,14 @@ const JobSearchPage = () => {
       analyzeCareerGrowth();
       identifySkillGaps();
     }
-  }, [authState.isAuthenticated, user, isAuthenticated, generatePersonalizedRecommendations, analyzeCareerGrowth, identifySkillGaps]);
+  }, [
+    authState.isAuthenticated,
+    user,
+    isAuthenticated,
+    generatePersonalizedRecommendations,
+    analyzeCareerGrowth,
+    identifySkillGaps,
+  ]);
 
   const renderHeroSection = () => (
     <HeroGradientSection ref={heroRef}>
@@ -1003,7 +1531,8 @@ const JobSearchPage = () => {
                   fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
                   fontWeight: 900,
                   mb: 3,
-                  background: 'linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B)',
+                  background:
+                    'linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -1028,15 +1557,21 @@ const JobSearchPage = () => {
                 <br />
                 🌟 Build your career with meaningful work
               </Typography>
-              
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 6 }}>
+
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={3}
+                sx={{ mb: 6 }}
+              >
                 <AnimatedButton
                   size="large"
                   startIcon={<SearchIcon />}
-                  onClick={() => window.scrollTo({ 
-                    top: heroRef.current?.offsetHeight || 600, 
-                    behavior: 'smooth' 
-                  })}
+                  onClick={() =>
+                    window.scrollTo({
+                      top: heroRef.current?.offsetHeight || 600,
+                      behavior: 'smooth',
+                    })
+                  }
                 >
                   Explore Opportunities
                 </AnimatedButton>
@@ -1062,17 +1597,23 @@ const JobSearchPage = () => {
                 <Typography variant="h6" sx={{ mb: 2, opacity: 0.8 }}>
                   🏆 Join professionals working with:
                 </Typography>
-                <Stack direction="row" spacing={3} sx={{ opacity: 0.7, flexWrap: 'wrap' }}>
-                  {['Tesla', 'Apple', 'Google', 'Microsoft', 'SpaceX'].map((company) => (
-                    <Typography key={company} variant="h6" fontWeight={300}>
-                      {company}
-                    </Typography>
-                  ))}
+                <Stack
+                  direction="row"
+                  spacing={3}
+                  sx={{ opacity: 0.7, flexWrap: 'wrap' }}
+                >
+                  {['Tesla', 'Apple', 'Google', 'Microsoft', 'SpaceX'].map(
+                    (company) => (
+                      <Typography key={company} variant="h6" fontWeight={300}>
+                        {company}
+                      </Typography>
+                    ),
+                  )}
                 </Stack>
               </Box>
             </motion.div>
           </Grid>
-          
+
           <Grid item xs={12} lg={6}>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -1088,18 +1629,29 @@ const JobSearchPage = () => {
                       transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
                       whileHover={{ scale: 1.05, rotateY: 5 }}
                     >
-                      <Box sx={{ color: stat.color, mb: 2 }}>
-                        {stat.icon}
-                      </Box>
-                      <Typography variant="h3" fontWeight={900} sx={{ color: stat.color, mb: 1 }}>
+                      <Box sx={{ color: stat.color, mb: 2 }}>{stat.icon}</Box>
+                      <Typography
+                        variant="h3"
+                        fontWeight={900}
+                        sx={{ color: stat.color, mb: 1 }}
+                      >
                         {stat.value}
                       </Typography>
-                      <Typography variant="h6" fontWeight={600} color="white" sx={{ mb: 0.5 }}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        color="white"
+                        sx={{ mb: 0.5 }}
+                      >
                         {stat.label}
                       </Typography>
-                      <Typography variant="body2" color="rgba(255,255,255,0.8)" sx={{ mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        color="rgba(255,255,255,0.8)"
+                        sx={{ mb: 1 }}
+                      >
                         {stat.subtitle}
-                    </Typography>
+                      </Typography>
                       <Chip
                         label={stat.trend}
                         size="small"
@@ -1123,10 +1675,15 @@ const JobSearchPage = () => {
   const renderSearchInterface = () => (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <SearchInterface elevation={12}>
-        <Typography variant="h4" fontWeight={700} textAlign="center" sx={{ mb: 4, color: theme.palette.secondary.main }}>
+        <Typography
+          variant="h4"
+          fontWeight={700}
+          textAlign="center"
+          sx={{ mb: 4, color: theme.palette.secondary.main }}
+        >
           🎯 Smart Job Discovery Engine
         </Typography>
-        
+
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <TextField
@@ -1142,14 +1699,16 @@ const JobSearchPage = () => {
                 ),
                 sx: {
                   borderRadius: 3,
-                  '& fieldset': { borderColor: alpha(theme.palette.secondary.main, 0.3) },
+                  '& fieldset': {
+                    borderColor: alpha(theme.palette.secondary.main, 0.3),
+                  },
                   bgcolor: alpha(theme.palette.background.default, 0.5),
                 },
               }}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
           </Grid>
-          
+
           <Grid item xs={12} md={2}>
             <FormControl fullWidth>
               <Select
@@ -1158,7 +1717,9 @@ const JobSearchPage = () => {
                 displayEmpty
                 sx={{
                   borderRadius: 3,
-                  '& fieldset': { borderColor: alpha(theme.palette.secondary.main, 0.3) },
+                  '& fieldset': {
+                    borderColor: alpha(theme.palette.secondary.main, 0.3),
+                  },
                   bgcolor: alpha(theme.palette.background.default, 0.5),
                 }}
               >
@@ -1171,7 +1732,7 @@ const JobSearchPage = () => {
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} md={3}>
             <Stack direction="row" spacing={1}>
               <FormControlLabel
@@ -1196,7 +1757,7 @@ const JobSearchPage = () => {
               />
             </Stack>
           </Grid>
-          
+
           <Grid item xs={12} md={3}>
             <Stack direction="row" spacing={1}>
               <Button
@@ -1216,7 +1777,7 @@ const JobSearchPage = () => {
               >
                 Find Jobs
               </Button>
-              
+
               {/* Test Navigation Button */}
               <Button
                 variant="outlined"
@@ -1229,7 +1790,7 @@ const JobSearchPage = () => {
               >
                 Test Apply
               </Button>
-              
+
               {/* Test Search Button */}
               <Button
                 variant="outlined"
@@ -1243,7 +1804,7 @@ const JobSearchPage = () => {
               >
                 Test Search
               </Button>
-              
+
               <ToggleButtonGroup
                 value={viewMode}
                 exclusive
@@ -1285,7 +1846,7 @@ const JobSearchPage = () => {
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Job Type</InputLabel>
@@ -1303,9 +1864,11 @@ const JobSearchPage = () => {
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
-              <Typography gutterBottom>Hourly Rate: ${salaryRange[0]} - ${salaryRange[1]}</Typography>
+              <Typography gutterBottom>
+                Hourly Rate: ${salaryRange[0]} - ${salaryRange[1]}
+              </Typography>
               <Slider
                 value={salaryRange}
                 onChange={(e, newValue) => setSalaryRange(newValue)}
@@ -1321,13 +1884,20 @@ const JobSearchPage = () => {
                 ]}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button onClick={clearFilters} startIcon={<ClearIcon />} variant="outlined">
+                <Button
+                  onClick={clearFilters}
+                  startIcon={<ClearIcon />}
+                  variant="outlined"
+                >
                   Clear All
                 </Button>
-                <AnimatedButton onClick={handleSearch} startIcon={<SearchIcon />}>
+                <AnimatedButton
+                  onClick={handleSearch}
+                  startIcon={<SearchIcon />}
+                >
                   Apply Filters
                 </AnimatedButton>
               </Stack>
@@ -1338,7 +1908,9 @@ const JobSearchPage = () => {
         <Box sx={{ textAlign: 'center', mt: 2 }}>
           <Button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            endIcon={showAdvancedFilters ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            endIcon={
+              showAdvancedFilters ? <ExpandLessIcon /> : <ExpandMoreIcon />
+            }
             sx={{ color: theme.palette.secondary.main }}
           >
             {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
@@ -1358,7 +1930,7 @@ const JobSearchPage = () => {
       >
         🎯 Explore Job Categories
       </Typography>
-      
+
       <Grid container spacing={3} justifyContent="center">
         {jobCategories.map((category, index) => (
           <Grid item xs={12} sm={6} md={4} lg={2} key={category.name}>
@@ -1374,18 +1946,24 @@ const JobSearchPage = () => {
                   p: 3,
                   textAlign: 'center',
                   cursor: 'pointer',
-                  background: selectedCategory === category.name 
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.1)})`
-                    : 'background.paper',
-                  border: selectedCategory === category.name 
-                    ? `2px solid ${theme.palette.secondary.main}`
-                    : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  background:
+                    selectedCategory === category.name
+                      ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.1)})`
+                      : 'background.paper',
+                  border:
+                    selectedCategory === category.name
+                      ? `2px solid ${theme.palette.secondary.main}`
+                      : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                   minHeight: 180,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
                 }}
-                onClick={() => setSelectedCategory(category.name === selectedCategory ? '' : category.name)}
+                onClick={() =>
+                  setSelectedCategory(
+                    category.name === selectedCategory ? '' : category.name,
+                  )
+                }
               >
                 <Box sx={{ color: category.color, mb: 2, fontSize: 48 }}>
                   {category.icon}
@@ -1393,7 +1971,11 @@ const JobSearchPage = () => {
                 <Typography variant="h6" fontWeight={700} gutterBottom>
                   {category.name}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
                   {category.description}
                 </Typography>
                 <Chip
@@ -1402,10 +1984,18 @@ const JobSearchPage = () => {
                   sx={{ mb: 1 }}
                 />
                 <Box>
-                  {category.trending && <Chip label="🔥" size="small" sx={{ m: 0.25 }} />}
-                  {category.hot && <Chip label="💎" size="small" sx={{ m: 0.25 }} />}
-                  {category.newest && <Chip label="✨" size="small" sx={{ m: 0.25 }} />}
-                  {category.premium && <Chip label="👑" size="small" sx={{ m: 0.25 }} />}
+                  {category.trending && (
+                    <Chip label="🔥" size="small" sx={{ m: 0.25 }} />
+                  )}
+                  {category.hot && (
+                    <Chip label="💎" size="small" sx={{ m: 0.25 }} />
+                  )}
+                  {category.newest && (
+                    <Chip label="✨" size="small" sx={{ m: 0.25 }} />
+                  )}
+                  {category.premium && (
+                    <Chip label="👑" size="small" sx={{ m: 0.25 }} />
+                  )}
                 </Box>
               </GlassCard>
             </motion.div>
@@ -1431,14 +2021,21 @@ const JobSearchPage = () => {
           elevation={job.featured ? 12 : 4}
           sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         >
-          <CardContent sx={{ 
-            p: 3, 
-            pt: job.featured && job.premium ? 7 : job.featured || job.premium ? 5 : 3,
-            pb: 2,
-            flexGrow: 1,
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
+          <CardContent
+            sx={{
+              p: 3,
+              pt:
+                job.featured && job.premium
+                  ? 7
+                  : job.featured || job.premium
+                    ? 5
+                    : 3,
+              pb: 2,
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             {/* Job Header */}
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
               <Avatar
@@ -1451,21 +2048,33 @@ const JobSearchPage = () => {
                   boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.3)}`,
                 }}
               />
-              
+
               <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
                   {job.title}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{ mb: 1 }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     {job.company.name}
                   </Typography>
                   {job.company.verified && (
-                    <VerifiedIcon sx={{ fontSize: 16, color: theme.palette.secondary.main }} />
+                    <VerifiedIcon
+                      sx={{ fontSize: 16, color: theme.palette.secondary.main }}
+                    />
                   )}
-                  <Rating value={job.company.rating} precision={0.1} size="small" readOnly />
+                  <Rating
+                    value={job.company.rating}
+                    precision={0.1}
+                    size="small"
+                    readOnly
+                  />
                 </Stack>
-                
+
                 {job.matchScore && (
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Typography variant="body2" sx={{ mr: 1 }}>
@@ -1474,36 +2083,47 @@ const JobSearchPage = () => {
                     <LinearProgress
                       variant="determinate"
                       value={job.matchScore}
-                      sx={{ 
-                        flexGrow: 1, 
-                        mr: 1, 
-                        height: 8, 
+                      sx={{
+                        flexGrow: 1,
+                        mr: 1,
+                        height: 8,
                         borderRadius: 4,
                         bgcolor: alpha(theme.palette.secondary.main, 0.2),
                         '& .MuiLinearProgress-bar': {
-                          bgcolor: job.matchScore >= 90 ? theme.palette.success.main : 
-                                   job.matchScore >= 70 ? theme.palette.warning.main : 
-                                   theme.palette.error.main,
+                          bgcolor:
+                            job.matchScore >= 90
+                              ? theme.palette.success.main
+                              : job.matchScore >= 70
+                                ? theme.palette.warning.main
+                                : theme.palette.error.main,
                           borderRadius: 4,
-                        }
+                        },
                       }}
                     />
-                    <Typography variant="body2" fontWeight={600} color="secondary.main">
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      color="secondary.main"
+                    >
                       {job.matchScore}%
                     </Typography>
                   </Box>
                 )}
               </Box>
-              
+
               <IconButton
                 onClick={() => toggleSaveJob(job.id)}
                 sx={{
-                  color: savedJobs.includes(job.id)
+                  color: savedJobIds.includes(job.id)
                     ? theme.palette.secondary.main
                     : theme.palette.text.secondary,
                 }}
               >
-                {savedJobs.includes(job.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                {savedJobIds.includes(job.id) ? (
+                  <BookmarkIcon />
+                ) : (
+                  <BookmarkBorderIcon />
+                )}
               </IconButton>
             </Box>
 
@@ -1527,7 +2147,11 @@ const JobSearchPage = () => {
               <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                 Required Skills
               </Typography>
-              <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+              <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{ flexWrap: 'wrap', gap: 0.5 }}
+              >
                 {job.skills.slice(0, 4).map((skill) => (
                   <Chip
                     key={skill}
@@ -1555,7 +2179,11 @@ const JobSearchPage = () => {
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h5" fontWeight={700} color="secondary.main">
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color="secondary.main"
+                  >
                     ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -1584,12 +2212,12 @@ const JobSearchPage = () => {
                   <Chip label="Remote" size="small" color="success" />
                 )}
               </Stack>
-              
+
               <Stack direction="row" spacing={1} alignItems="center">
                 <ScheduleIcon fontSize="small" color="secondary" />
                 <Typography variant="body2">{job.estimatedDuration}</Typography>
               </Stack>
-              
+
               <Stack direction="row" spacing={1} alignItems="center">
                 <AccessTimeIcon fontSize="small" color="secondary" />
                 <Typography variant="body2">{job.responseTime}</Typography>
@@ -1598,7 +2226,11 @@ const JobSearchPage = () => {
 
             {/* Tags */}
             {job.tags && (
-              <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+              <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
+              >
                 {job.tags.map((tag) => (
                   <Chip
                     key={tag}
@@ -1617,7 +2249,11 @@ const JobSearchPage = () => {
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                   Benefits & Perks
                 </Typography>
-                <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  sx={{ flexWrap: 'wrap', gap: 0.5 }}
+                >
                   {job.benefits.slice(0, 3).map((benefit) => (
                     <Chip
                       key={benefit}
@@ -1662,24 +2298,29 @@ const JobSearchPage = () => {
                 startIcon={<HandshakeIcon />}
                 onClick={() => {
                   console.log('📝 Apply Now clicked for job:', job.id);
-                  console.log('🔐 Auth state:', { 
-                    isAuthenticated: authState.isAuthenticated, 
+                  console.log('🔐 Auth state:', {
+                    isAuthenticated: authState.isAuthenticated,
                     user: authState.user,
-                    authState: authState 
+                    authState: authState,
                   });
-                  
+
                   if (!authState.isAuthenticated) {
-                    console.log('🔒 User not authenticated, redirecting to login');
-                    navigate('/login', { 
-                      state: { 
+                    console.log(
+                      '🔒 User not authenticated, redirecting to login',
+                    );
+                    navigate('/login', {
+                      state: {
                         from: `/jobs/${job.id}/apply`,
-                        message: 'Please sign in to apply for this job'
-                      } 
+                        message: 'Please sign in to apply for this job',
+                      },
                     });
                     return;
                   }
-                  
-                  console.log('🚀 Navigating to application form:', `/jobs/${job.id}/apply`);
+
+                  console.log(
+                    '🚀 Navigating to application form:',
+                    `/jobs/${job.id}/apply`,
+                  );
                   navigate(`/jobs/${job.id}/apply`);
                 }}
                 sx={{
@@ -1689,13 +2330,13 @@ const JobSearchPage = () => {
                   '&:hover': {
                     borderColor: theme.palette.secondary.dark,
                     backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                  }
+                  },
                 }}
               >
                 {authState.isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
               </Button>
             </Box>
-            <IconButton 
+            <IconButton
               color="primary"
               size="small"
               onClick={() => {
@@ -1703,11 +2344,13 @@ const JobSearchPage = () => {
                   navigator.share({
                     title: job.title,
                     text: `Check out this job opportunity: ${job.title} at ${job.company.name}`,
-                    url: window.location.href
+                    url: window.location.href,
                   });
                 } else {
                   // Fallback: copy to clipboard
-                  navigator.clipboard.writeText(`${job.title} at ${job.company.name} - ${window.location.origin}/jobs/${job.id}`);
+                  navigator.clipboard.writeText(
+                    `${job.title} at ${job.company.name} - ${window.location.origin}/jobs/${job.id}`,
+                  );
                   console.log('Job link copied to clipboard');
                 }
               }}
@@ -1720,36 +2363,7 @@ const JobSearchPage = () => {
     </Grid>
   );
 
-  const renderFeaturedJobs = () => (
-    <Container maxWidth="xl" sx={{ py: 6 }}>
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography
-          variant="h2"
-          fontWeight={900}
-          sx={{
-            background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            mb: 2,
-          }}
-        >
-          🌟 Premium Opportunities
-        </Typography>
-        <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
-          Hand-picked jobs from top employers with exceptional benefits
-        </Typography>
-      </Box>
-
-      <Grid container spacing={4}>
-        {creativeJobOpportunities.map((job, index) => 
-          renderJobCard(job, index)
-        )}
-      </Grid>
-    </Container>
-  );
-
-  const renderMapView = () => (
+  const renderMapView = (mapJobs = []) => (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ height: 600, borderRadius: 3, overflow: 'hidden' }}>
         <MapContainer
@@ -1758,32 +2372,40 @@ const JobSearchPage = () => {
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />
-          
-              {/* User Location Marker */}
-              {userPosition && (
-                <Marker position={userPosition}>
+
+          {/* User Location Marker */}
+          {userPosition && (
+            <Marker position={userPosition}>
               <Popup>📍 You are here</Popup>
-                </Marker>
-              )}
-          
+            </Marker>
+          )}
+
           {/* Job Markers */}
-          {(showSampleData ? creativeJobOpportunities : jobs)
-            .filter(job => job.coordinates)
-                .map((job) => (
-                  <Marker
-                    key={job.id}
-                position={[job.coordinates?.lat || 37.7749, job.coordinates?.lng || -122.4194]}
-                  >
-                    <Popup>
+          {mapJobs
+            .filter((job) => job?.coordinates)
+            .map((job) => (
+              <Marker
+                key={job.id}
+                position={[
+                  job.coordinates?.lat || 37.7749,
+                  job.coordinates?.lng || -122.4194,
+                ]}
+              >
+                <Popup>
                   <Box sx={{ minWidth: 200 }}>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        {job.title}
-                      </Typography>
+                      {job.title}
+                    </Typography>
                     <Typography variant="body2" gutterBottom>
                       {job.company?.name || 'Company Name'}
                     </Typography>
-                    <Typography variant="body2" color="secondary.main" fontWeight="bold">
-                      ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}/{job.budget?.type || 'N/A'}
+                    <Typography
+                      variant="body2"
+                      color="secondary.main"
+                      fontWeight="bold"
+                    >
+                      ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}/
+                      {job.budget?.type || 'N/A'}
                     </Typography>
                     <Button
                       size="small"
@@ -1794,67 +2416,114 @@ const JobSearchPage = () => {
                       View Details
                     </Button>
                   </Box>
-                    </Popup>
-                  </Marker>
-                ))}
-            </MapContainer>
-          </Box>
+                </Popup>
+              </Marker>
+            ))}
+        </MapContainer>
+      </Box>
     </Container>
   );
 
   return (
     <>
       <Helmet>
-        <title>Find Your Dream Job - Professional Opportunities for Workers | Kelmah</title>
-        <meta name="description" content="Discover high-paying jobs in skilled trades. Find opportunities in electrical, plumbing, construction, HVAC, and specialized fields. Build your career with top employers." />
+        <title>
+          Find Your Dream Job - Professional Opportunities for Workers | Kelmah
+        </title>
+        <meta
+          name="description"
+          content="Discover high-paying jobs in skilled trades. Find opportunities in electrical, plumbing, construction, HVAC, and specialized fields. Build your career with top employers."
+        />
       </Helmet>
 
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         {/* Authentication Notice */}
         {!authState.isAuthenticated && (
-          <Alert 
-            severity="info" 
-            sx={{ 
+          <Alert
+            severity="info"
+            sx={{
               borderRadius: 0,
               '& .MuiAlert-message': {
                 width: '100%',
-                textAlign: 'center'
-              }
+                textAlign: 'center',
+              },
             }}
           >
             <Typography variant="body2">
-              <strong>Sign in to apply for jobs!</strong> Create an account or log in to start applying for opportunities.
+              <strong>Sign in to apply for jobs!</strong> Create an account or
+              log in to start applying for opportunities.
             </Typography>
           </Alert>
         )}
-        
+
         {renderHeroSection()}
         {renderSearchInterface()}
         {renderCategories()}
-        
+
         {/* Content Area */}
         {viewMode === 'map' ? (
-          renderMapView()
+          renderMapView(jobsToRender)
         ) : loading ? (
           <Container maxWidth="xl" sx={{ py: 4 }}>
             <Grid container spacing={3}>
               {Array.from(new Array(6)).map((_, idx) => (
                 <Grid item xs={12} sm={6} lg={4} key={idx}>
-                  <Skeleton variant="rectangular" height={450} sx={{ borderRadius: 3 }} />
+                  <Skeleton
+                    variant="rectangular"
+                    height={450}
+                    sx={{ borderRadius: 3 }}
+                  />
                 </Grid>
               ))}
             </Grid>
           </Container>
-        ) : showSampleData ? (
-          renderFeaturedJobs()
         ) : (
           <Container maxWidth="xl" sx={{ py: 4 }}>
             <Typography variant="h4" gutterBottom>
-              Search Results ({matchingJobs.length > 0 ? matchingJobs.length : jobs.length} jobs found)
+              {showSampleData && !hasLiveJobs
+                ? 'Sample Opportunities'
+                : 'Search Results'}{' '}
+              ({totalJobsFound} jobs found)
             </Typography>
-            <Grid container spacing={3}>
-              {(matchingJobs.length > 0 ? matchingJobs : jobs).map((job, index) => renderJobCard(job, index))}
-            </Grid>
+            {totalJobsFound > 0 ? (
+              <Grid container spacing={3}>
+                {jobsToRender.map((job, index) => renderJobCard(job, index))}
+              </Grid>
+            ) : (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 6,
+                  borderRadius: 4,
+                  textAlign: 'center',
+                  border: (theme) =>
+                    `1px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
+                  backgroundColor: (theme) =>
+                    alpha(theme.palette.primary.main, 0.04),
+                }}
+              >
+                <Typography variant="h5" gutterBottom fontWeight={700}>
+                  No jobs match your filters yet
+                </Typography>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ maxWidth: 520, mx: 'auto' }}
+                >
+                  Try adjusting your filters or keywords to explore more
+                  opportunities. You can also clear all filters to restart your
+                  search.
+                </Typography>
+                <Button
+                  variant="contained"
+                  sx={{ mt: 3 }}
+                  onClick={clearFilters}
+                  startIcon={<RefreshIcon />}
+                >
+                  Clear Filters
+                </Button>
+              </Paper>
+            )}
           </Container>
         )}
 
@@ -1885,7 +2554,7 @@ const JobSearchPage = () => {
             onClick={() => navigate('/worker/dashboard')}
           />
         </SpeedDial>
-    </Box>
+      </Box>
     </>
   );
 };
