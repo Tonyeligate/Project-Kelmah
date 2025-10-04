@@ -16,10 +16,23 @@ export const useWebSocket = () => {
         return;
       }
 
+      // Get backend WebSocket URL from runtime config
+      let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
+      try {
+        const response = await fetch('/runtime-config.json');
+        if (response.ok) {
+          const config = await response.json();
+          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+          console.log('📡 WebSocket connecting to backend:', wsUrl);
+        }
+      } catch (configError) {
+        console.warn('⚠️ Failed to load runtime config, using fallback:', wsUrl);
+      }
+
       const { io } = await import('socket.io-client');
-      const socket = io('/socket.io', {
+      // Connect to backend server - Socket.IO handles /socket.io path automatically
+      const socket = io(wsUrl, {
         auth: { token },
-        path: '/socket.io',
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,

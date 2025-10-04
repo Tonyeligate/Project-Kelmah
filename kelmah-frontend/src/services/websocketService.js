@@ -39,11 +39,21 @@ class WebSocketService {
         this.disconnect();
       }
 
-  // Use centralized WebSocket URL from config/services.js
-  let wsUrl = API_ENDPOINTS.MESSAGING.BASE || '/socket.io';
-  console.log('🔌 WebSocket Service connecting to:', wsUrl);
+      // Get backend WebSocket URL from runtime config
+      let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
+      try {
+        const response = await fetch('/runtime-config.json');
+        if (response.ok) {
+          const config = await response.json();
+          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+        }
+      } catch (configError) {
+        console.warn('⚠️ WebSocketService: Failed to load runtime config, using fallback');
+      }
 
-      // Create Socket.io connection
+      console.log('🔌 WebSocket Service connecting to backend:', wsUrl);
+
+      // Create Socket.io connection to backend server
       this.socket = io(wsUrl, {
         auth: {
           token,

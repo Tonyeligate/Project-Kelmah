@@ -17,12 +17,23 @@ class NotificationService {
   async connect(token) {
     if (this.isConnected) return;
     try {
-  // Prefer gateway-relative path so Vercel/ngrok rewrites route correctly
-  const wsUrl = '/socket.io';
+      // Get backend WebSocket URL from runtime config
+      let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
+      try {
+        const response = await fetch('/runtime-config.json');
+        if (response.ok) {
+          const config = await response.json();
+          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+          console.log('📡 Notifications WebSocket connecting to:', wsUrl);
+        }
+      } catch (configError) {
+        console.warn('⚠️ Notifications: Failed to load runtime config, using fallback');
+      }
+
       const { io } = await import('socket.io-client');
+      // Connect to backend messaging service via API Gateway
       this.socket = io(wsUrl, {
         auth: { token },
-        path: '/socket.io',
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,

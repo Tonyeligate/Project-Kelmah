@@ -30,21 +30,23 @@ class DashboardService {
     if (!this.token) return;
 
     // Get WebSocket URL from runtime config
-    let wsUrl = '/socket.io'; // Default fallback
+    let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
     try {
       const response = await fetch('/runtime-config.json');
       if (response.ok) {
         const config = await response.json();
-        wsUrl = config.websocketUrl || config.ngrokUrl || '/socket.io';
+        // Use websocketUrl, ngrokUrl, or API_URL from runtime config
+        wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
         console.log('📡 Dashboard WebSocket connecting to:', wsUrl);
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load runtime config for WebSocket:', error);
+      console.warn('⚠️ Failed to load runtime config for WebSocket, using fallback:', wsUrl, error);
     }
 
+    // Connect to backend WebSocket server
+    // When passing full URL, Socket.IO automatically handles the path
     this.socket = io(wsUrl, {
       auth: { token: this.token },
-      path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,

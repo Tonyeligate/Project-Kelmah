@@ -65,9 +65,19 @@ export const MessageProvider = ({ children }) => {
     if (connectWebSocket._connecting) return;
     connectWebSocket._connecting = true;
 
-    // Use centralized WebSocket URL from config
-    let wsUrl = API_ENDPOINTS.MESSAGING.BASE || '/socket.io';
-    console.log('🔌 Connecting to messaging WebSocket via:', wsUrl);
+    // Get backend WebSocket URL from runtime config
+    let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
+    try {
+      const response = await fetch('/runtime-config.json');
+      if (response.ok) {
+        const config = await response.json();
+        wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+      }
+    } catch (configError) {
+      console.warn('⚠️ MessageContext: Failed to load runtime config, using fallback');
+    }
+
+    console.log('🔌 Connecting to messaging WebSocket backend:', wsUrl);
 
     const newSocket = io(wsUrl, {
       auth: {
@@ -75,7 +85,6 @@ export const MessageProvider = ({ children }) => {
         userId: user.id,
         userRole: user.role
       },
-      path: '/socket.io',
       transports: ['websocket', 'polling'],
       upgrade: true,
       timeout: 20000,

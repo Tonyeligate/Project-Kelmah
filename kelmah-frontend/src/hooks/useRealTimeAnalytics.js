@@ -9,9 +9,21 @@ export function useRealTimeAnalytics() {
 
   const connect = useCallback(async () => {
     try {
+      // Get backend WebSocket URL from runtime config
+      let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
+      try {
+        const response = await fetch('/runtime-config.json');
+        if (response.ok) {
+          const config = await response.json();
+          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+        }
+      } catch (configError) {
+        console.warn('⚠️ Analytics: Failed to load runtime config, using fallback');
+      }
+
       const { io } = await import('socket.io-client');
-      const socket = io('/socket.io', {
-        path: '/socket.io',
+      // Connect to backend server for analytics
+      const socket = io(wsUrl, {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,
