@@ -487,6 +487,22 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
     },
     withCredentials: false, // Disable credentials for ngrok compatibility
   });
+
+  // 🔥 FIX: Add request interceptor for auth token
+  client.interceptors.request.use(
+    (config) => {
+      // Add auth token securely
+      const token = secureStorage.getAuthToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
   retryInterceptor(client);
   return client;
 };
