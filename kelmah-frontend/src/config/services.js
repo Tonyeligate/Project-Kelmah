@@ -1,77 +1,55 @@
 /**
  * Microservices Configuration
  *
- * This file contains the URLs for all backend microservices.
- * In development, these go through Vite proxy.
- * In production, these point directly to Render services.
+ * ✅ UPDATED: All requests route through API Gateway (/api) in both development and production
+ * 
+ * The API Gateway handles:
+ * - Intelligent service discovery (localhost OR cloud URLs)
+ * - Health checks and automatic fallback
+ * - Request routing to appropriate microservices
+ * 
+ * No need for hardcoded service URLs in frontend!
  */
 
 const isDevelopment = import.meta.env.MODE === 'development';
 
-// Production URLs: by default route via API Gateway (relative '/api').
-// These can be overridden via VITE_*_URL if you need to target a specific service directly.
-const PRODUCTION_SERVICES = {
-  AUTH_SERVICE: '',
-  USER_SERVICE: '',
-  JOB_SERVICE: '',
-  MESSAGING_SERVICE: '',
-  PAYMENT_SERVICE: '',
-  REVIEW_SERVICE: '',
+// ✅ ALL ENVIRONMENTS: Use API Gateway routing
+// In development: /api → localhost:5000 (API Gateway) → localhost:500X (services)
+// In production: /api → Vercel rewrite → LocalTunnel → localhost:5000 (API Gateway) → Render services
+const SERVICES = {
+  AUTH_SERVICE: '/api/auth',
+  USER_SERVICE: '/api/users', 
+  JOB_SERVICE: '/api/jobs',
+  MESSAGING_SERVICE: '/api/messaging',
+  PAYMENT_SERVICE: '/api/payments',
+  REVIEW_SERVICE: '/api/reviews',
 };
 
-// Development URLs (localhost services)
-const DEVELOPMENT_SERVICES = {
-  AUTH_SERVICE: 'http://localhost:5001',
-  USER_SERVICE: 'http://localhost:5002',
-  JOB_SERVICE: 'http://localhost:5003',
-  MESSAGING_SERVICE: 'http://localhost:5004',
-  PAYMENT_SERVICE: 'http://localhost:5005',
-  REVIEW_SERVICE: 'http://localhost:5006',
-};
-
-// Select services based on environment
-const SERVICES = isDevelopment ? DEVELOPMENT_SERVICES : PRODUCTION_SERVICES;
-
-// WebSocket URL helper
+// WebSocket URL helper - routes through API Gateway
 const getWebSocketUrl = (service) => {
-  if (isDevelopment) {
-    // Development: convert HTTP URLs to WebSocket URLs
-    const httpUrl = SERVICES[service];
-    if (httpUrl) {
-      return httpUrl.replace(/^http/, 'ws');
-    }
-    return null;
-  } else {
-    // Production: WebSocket connections go through the API gateway
-    return null; // Will use relative WebSocket URL or Socket.IO default
-  }
+  // All WebSocket connections go through the API gateway
+  // Socket.IO will automatically handle protocol upgrade
+  return null; // Let Socket.IO use default URL (same origin)
 };
 
 // Base API paths for each service
 const getServicePath = (service, path) => {
-  if (isDevelopment) {
-    // Development: use proxy paths
-    switch (service) {
-      case 'AUTH_SERVICE':
-        return `/api/auth${path}`;
-      case 'USER_SERVICE':
-        return `/api/users${path}`;
-      case 'JOB_SERVICE':
-        return `/api/jobs${path}`;
-      case 'MESSAGING_SERVICE':
-        return `/api/messages${path}`;
-      case 'PAYMENT_SERVICE':
-        return `/api/payments${path}`;
-      default:
-        return `/api${path}`;
-    }
-  } else {
-    // Production: if a direct service URL is provided via env override, use it; otherwise go through gateway
-    const direct = SERVICES[service];
-    if (direct && /^https?:\/\//.test(direct)) {
-      return `${direct}${path}`;
-    }
-    return `/api${path}`;
+  // ✅ All services route through API Gateway
+  switch (service) {
+    case 'AUTH_SERVICE':
+      return `/api/auth${path}`;
+    case 'USER_SERVICE':
+      return `/api/users${path}`;
+    case 'JOB_SERVICE':
+      return `/api/jobs${path}`;
+    case 'MESSAGING_SERVICE':
+      return `/api/messages${path}`;
+    case 'PAYMENT_SERVICE':
+      return `/api/payments${path}`;
+    case 'REVIEW_SERVICE':
+      return `/api/reviews${path}`;
+    default:
+      return `/api${path}`;
   }
 };
 

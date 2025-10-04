@@ -1,21 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { getApiBaseUrl } from '../../../config/environment';
+import axiosInstance from '../../common/services/axios';
 
 // Create async thunk for submitting reviews
 export const submitReview = createAsyncThunk(
   'reviews/submit',
-  async (reviewData, { rejectWithValue, getState }) => {
+  async (reviewData, { rejectWithValue }) => {
     try {
-      const { auth } = getState();
-
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.post(`${baseURL}/api/reviews`, reviewData, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      });
-
+      const response = await axiosInstance.post('/api/reviews', reviewData);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -31,21 +22,15 @@ export const fetchReviewsByRecipient = createAsyncThunk(
   'reviews/fetchByRecipient',
   async (
     { recipientId, recipientType, page = 1, limit = 10 },
-    { rejectWithValue, getState },
+    { rejectWithValue },
   ) => {
     try {
-      const { auth } = getState();
-
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.get(`${baseURL}/api/reviews`, {
+      const response = await axiosInstance.get('/api/reviews', {
         params: {
           recipientId,
           recipientType,
           page,
           limit,
-        },
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
         },
       });
 
@@ -62,18 +47,10 @@ export const fetchReviewsByRecipient = createAsyncThunk(
 // Create async thunk for fetching reviews by contract ID
 export const fetchReviewsByContract = createAsyncThunk(
   'reviews/fetchByContract',
-  async (contractId, { rejectWithValue, getState }) => {
+  async (contractId, { rejectWithValue }) => {
     try {
-      const { auth } = getState();
-
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.get(
-        `${baseURL}/api/reviews/contract/${contractId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${auth.token}`,
-          },
-        },
+      const response = await axiosInstance.get(
+        `/api/reviews/contract/${contractId}`,
       );
 
       return response.data;

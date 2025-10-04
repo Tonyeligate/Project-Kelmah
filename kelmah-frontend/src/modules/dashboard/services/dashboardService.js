@@ -1,20 +1,10 @@
-import axios from 'axios';
-import { getApiBaseUrl, WS_CONFIG } from '../../../config/environment';
+import axiosInstance from '../../common/services/axios';
+import { WS_CONFIG } from '../../../config/environment';
 import { io } from 'socket.io-client';
 
 /**
  * Dashboard service to handle dashboard data fetching and real-time updates
  */
-
-// Helper function to get API base URL
-const getApiUrl = async () => {
-  try {
-    return await getApiBaseUrl();
-  } catch (error) {
-    console.warn('Failed to get API base URL, using fallback:', error);
-    return '/api';
-  }
-};
 class DashboardService {
   constructor() {
     this.token = null;

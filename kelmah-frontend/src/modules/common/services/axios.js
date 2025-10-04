@@ -89,9 +89,22 @@ const addMainInterceptors = async () => {
 
   // Request interceptor
   instance.interceptors.request.use(
-    (config) => {
+    async (config) => {
+      // 🔥 FIX: Dynamically update baseURL from runtime-config.json
+      // This solves the tunnel URL caching issue when LocalTunnel restarts
+      try {
+        const currentBaseURL = await getApiBaseUrl();
+        if (currentBaseURL && currentBaseURL !== config.baseURL) {
+          console.log(`🔄 Updating baseURL: ${config.baseURL} → ${currentBaseURL}`);
+          config.baseURL = currentBaseURL;
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to update baseURL dynamically:', error.message);
+      }
+
       // Normalize to avoid /api/api duplication
       config = normalizeUrlForGateway(config);
+      
       // Add auth token securely
       const token = secureStorage.getAuthToken();
       if (token) {

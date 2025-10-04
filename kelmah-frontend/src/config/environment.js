@@ -20,7 +20,7 @@ import SERVICES from './services';
 // Re-export SERVICES for backward compatibility
 export { SERVICES };
 
-// Load runtime config for dynamic ngrok URL
+// Load runtime config for dynamic LocalTunnel URL
 let runtimeConfig = null;
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
@@ -43,26 +43,26 @@ const computeApiBase = async () => {
   const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
   const isVercel = isBrowser && window.location.hostname.includes('vercel.app');
 
-  // Load runtime config for dynamic ngrok URL
+  // Load runtime config for dynamic LocalTunnel URL (replaces ngrok)
   const config = await loadRuntimeConfig();
-  const ngrokUrl = config?.ngrokUrl;
+  const localtunnelUrl = config?.localtunnelUrl || config?.ngrokUrl; // Support both keys for backward compatibility
 
-  // For Vercel deployments, use ngrok URL from runtime config
+  // For Vercel deployments, use LocalTunnel URL from runtime config
   if (isVercel) {
-    console.log('🔗 Vercel deployment detected, using ngrok URL from runtime config');
-    if (ngrokUrl) {
-      return ngrokUrl;
+    console.log('🔗 Vercel deployment detected, using LocalTunnel URL from runtime config');
+    if (localtunnelUrl) {
+      return localtunnelUrl;
     }
-    console.warn('⚠️ No ngrok URL in runtime config, falling back to /api');
+    console.warn('⚠️ No LocalTunnel URL in runtime config, falling back to /api');
     return '/api';
   }
 
-  // For production, use ngrok URL from runtime config
+  // For production, use LocalTunnel URL from runtime config
   if (isProduction) {
-    if (ngrokUrl) {
-      return ngrokUrl;
+    if (localtunnelUrl) {
+      return localtunnelUrl;
     }
-    console.warn('⚠️ No ngrok URL in runtime config, falling back to /api');
+    console.warn('⚠️ No LocalTunnel URL in runtime config, falling back to /api');
     return '/api';
   }
 
@@ -70,14 +70,14 @@ const computeApiBase = async () => {
   if (envUrl) {
     // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
     if (isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn('⚠️ Rejecting http URL on https page, using relative /api for ngrok routing');
+      console.warn('⚠️ Rejecting http URL on https page, using relative /api for LocalTunnel routing');
       return '/api';
     }
     return envUrl;
   }
   
-  // No environment URL set - use relative /api to trigger Vercel rewrites to ngrok
-  console.log('🔗 No VITE_API_URL set, using /api for Vercel→ngrok routing');
+  // No environment URL set - use relative /api to trigger Vercel rewrites to LocalTunnel
+  console.log('🔗 No VITE_API_URL set, using /api for Vercel→LocalTunnel routing');
   return '/api';
 };
 
