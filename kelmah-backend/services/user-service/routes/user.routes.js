@@ -35,12 +35,13 @@ router.get("/dashboard/analytics", getDashboardAnalytics);
 // Database cleanup endpoint (development/admin use)
 router.post("/database/cleanup", cleanupDatabase);
 
+// 🔥 FIX: Recent jobs route MUST come BEFORE parameterized routes
+// to prevent "/workers/jobs" being matched as "/workers/:id" where id="jobs"
+router.get("/workers/jobs/recent", WorkerController.getRecentJobs);
+
 // Worker-specific routes that need to be under /api/users path
 router.get("/workers/:id/availability", WorkerController.getWorkerAvailability);
 router.get("/workers/:id/completeness", WorkerController.getProfileCompletion);
-
-// Recent jobs route for workers
-router.get("/workers/jobs/recent", WorkerController.getRecentJobs);
 
 // User profile routes
 router.get("/me/availability", getUserAvailability);

@@ -176,13 +176,34 @@ exports.getDashboardWorkers = async (req, res, next) => {
   try {
     // Use the MongoDB WorkerProfile from our models index
     const { WorkerProfile } = require('../models');
+    const mongoose = require('mongoose');
+
+    // Check MongoDB connection status
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+      return res.status(503).json({ 
+        error: 'Database connection not ready',
+        message: 'Service temporarily unavailable. Please try again in a moment.' 
+      });
+    }
 
     const workers = await WorkerProfile.find()
-      .populate('userId', 'firstName lastName profilePicture')
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName profilePicture',
+        options: { strictPopulate: false } // Prevent errors on missing references
+      })
       .select('skills hourlyRate isAvailable rating totalJobs completedJobs')
       .sort({ rating: -1, totalJobs: -1 })
       .limit(10)
-      .lean();
+      .lean()
+      .maxTimeMS(5000); // Add 5-second timeout to prevent hanging
+
+    // Handle empty result set
+    if (!workers || workers.length === 0) {
+      console.log('No workers found in database');
+      return res.json({ workers: [] });
+    }
 
     const formattedWorkers = workers.map(worker => ({
       id: worker._id,
@@ -199,7 +220,20 @@ exports.getDashboardWorkers = async (req, res, next) => {
     res.json({ workers: formattedWorkers });
   } catch (err) {
     console.error('Dashboard workers error:', err);
-    next(err);
+    console.error('Error stack:', err.stack);
+    
+    // Provide detailed error information
+    const errorResponse = {
+      error: 'Failed to fetch dashboard workers',
+      message: err.message
+    };
+    
+    // Include stack trace in development only
+    if (process.env.NODE_ENV === 'development') {
+      errorResponse.stack = err.stack;
+    }
+    
+    res.status(500).json(errorResponse);
   }
 };
 

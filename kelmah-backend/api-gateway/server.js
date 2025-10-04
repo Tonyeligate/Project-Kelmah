@@ -374,6 +374,27 @@ app.use(
   })
 );
 
+// 🔥 FIX: Availability route alias - frontend expects /api/availability/{userId}
+// but actual route is /api/users/workers/{userId}/availability
+app.use('/api/availability',
+  authenticate,
+  (req, res, next) => {
+    // Rewrite /api/availability/{userId} to /api/users/workers/{userId}/availability
+    const workerId = req.path.replace(/^\//, ''); // Remove leading slash
+    req.url = `/api/users/workers/${workerId}/availability`;
+    next();
+  },
+  createDynamicProxy('user', {
+    pathRewrite: { '^/api/users': '/api/users' },
+    onProxyReq: (proxyReq, req) => {
+      if (req.user) {
+        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        proxyReq.setHeader('x-auth-source', 'api-gateway');
+      }
+    },
+  })
+);
+
 // Profile routes → user-service
 // Allow public GET access for portfolio reads; protect all other routes
 app.use('/api/profile',
