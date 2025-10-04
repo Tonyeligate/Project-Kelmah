@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { Send, AttachFile } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../../common/services/axios';
 import { formatDistanceToNow } from 'date-fns';
 import { API_ENDPOINTS } from '../../../../config/services';
 
@@ -90,9 +90,7 @@ function Messages() {
 
   const fetchConversations = async () => {
     try {
-      const response = await axios.get('/api/conversations', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get('/api/conversations');
       setConversations(response.data);
       setError(null);
     } catch (err) {
@@ -106,9 +104,7 @@ function Messages() {
   const fetchMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/messages/conversation/${conversationId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get(`/api/messages/conversation/${conversationId}`);
       setMessages(response.data);
       scrollToBottom();
     } catch (err) {

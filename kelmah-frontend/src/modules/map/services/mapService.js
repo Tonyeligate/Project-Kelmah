@@ -1,4 +1,5 @@
 import axios from 'axios';
+import axiosInstance from '../../common/services/axios';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 
 /**
@@ -113,9 +114,8 @@ class MapService {
         searchParams.maxBudget = budget[1];
       }
 
-      const response = await axios.get(`${API_URL}/jobs/search/location`, {
+      const response = await axiosInstance.get('/api/jobs/search/location', {
         params: searchParams,
-        headers: this.getAuthHeaders(),
       });
 
       return this.transformJobsForMap(response.data.data || []);
@@ -154,9 +154,8 @@ class MapService {
       if (skills) searchParams.skills = skills.join(',');
       if (rating) searchParams.minRating = rating;
 
-      const response = await axios.get(`${API_URL}/workers/search/location`, {
+      const response = await axiosInstance.get('/api/workers/search/location', {
         params: searchParams,
-        headers: this.getAuthHeaders(),
       });
 
       return this.transformWorkersForMap(response.data.data || []);

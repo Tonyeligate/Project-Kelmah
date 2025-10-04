@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import { LocationOn, Work, AttachMoney, AccessTime } from '@mui/icons-material';
 import { useAuth } from '../../auth/contexts/AuthContext';
-import axios from 'axios';
 import axiosInstance from '../../../common/services/axios';
 import { formatDistanceToNow } from 'date-fns';
 

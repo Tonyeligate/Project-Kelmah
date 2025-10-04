@@ -138,13 +138,7 @@ class DashboardService {
   // Get dashboard overview data
   async getOverview() {
     try {
-      const apiUrl = await getApiUrl();
-      const response = await axios.get(
-        `${apiUrl}/api/dashboard/overview`,
-        {
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/overview');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
@@ -155,13 +149,9 @@ class DashboardService {
   // Get recent activity
   async getRecentActivity(page = 1, limit = 10) {
     try {
-      const response = await axios.get(
-        `${await getApiUrl()}/api/dashboard/activity`,
-        {
-          params: { page, limit },
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/activity', {
+        params: { page, limit },
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error fetching recent activity:', error);
@@ -172,13 +162,9 @@ class DashboardService {
   // Get statistics
   async getStatistics(timeframe = 'week') {
     try {
-      const response = await axios.get(
-        `${await getApiUrl()}/api/dashboard/statistics`,
-        {
-          params: { timeframe },
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/statistics', {
+        params: { timeframe },
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error fetching statistics:', error);
@@ -189,10 +175,7 @@ class DashboardService {
   // Get upcoming tasks
   async getUpcomingTasks() {
     try {
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.get(`${baseURL}/api/dashboard/tasks`, {
-        headers: { Authorization: `Bearer ${this.token}` },
-      });
+      const response = await axiosInstance.get('/api/dashboard/tasks');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching upcoming tasks:', error);
@@ -203,12 +186,7 @@ class DashboardService {
   // Get recent messages
   async getRecentMessages() {
     try {
-      const response = await axios.get(
-        `${await getApiUrl()}/api/dashboard/messages`,
-        {
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/messages');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching recent messages:', error);
@@ -219,12 +197,7 @@ class DashboardService {
   // Get performance metrics
   async getPerformanceMetrics() {
     try {
-      const response = await axios.get(
-        `${await getApiUrl()}/api/dashboard/performance`,
-        {
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/performance');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching performance metrics:', error);
@@ -235,12 +208,7 @@ class DashboardService {
   // Get quick actions
   async getQuickActions() {
     try {
-      const response = await axios.get(
-        `${await getApiUrl()}/api/dashboard/quick-actions`,
-        {
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/quick-actions');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching quick actions:', error);
@@ -251,12 +219,7 @@ class DashboardService {
   // Get notifications summary
   async getNotificationsSummary() {
     try {
-      const response = await axios.get(
-        `${await getApiUrl()}/api/dashboard/notifications-summary`,
-        {
-          headers: { Authorization: `Bearer ${this.token}` },
-        },
-      );
+      const response = await axiosInstance.get('/api/dashboard/notifications-summary');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching notifications summary:', error);
@@ -267,10 +230,7 @@ class DashboardService {
   // Get real-time stats
   async getRealTimeStats() {
     try {
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.get(`${baseURL}/api/dashboard/stats`, {
-        headers: { Authorization: `Bearer ${this.token}` },
-      });
+      const response = await axiosInstance.get('/api/dashboard/stats');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching real-time stats:', error);
@@ -281,10 +241,7 @@ class DashboardService {
   // Get job matches for workers
   async getJobMatches() {
     try {
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.get(`${baseURL}/api/dashboard/job-matches`, {
-        headers: { Authorization: `Bearer ${this.token}` },
-      });
+      const response = await axiosInstance.get('/api/dashboard/job-matches');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching job matches:', error);
@@ -295,10 +252,7 @@ class DashboardService {
   // Get personalized recommendations
   async getRecommendations() {
     try {
-      const baseURL = await getApiBaseUrl();
-      const response = await axios.get(`${baseURL}/api/dashboard/recommendations`, {
-        headers: { Authorization: `Bearer ${this.token}` },
-      });
+      const response = await axiosInstance.get('/api/dashboard/recommendations');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching recommendations:', error);

@@ -28,18 +28,7 @@ import {
   Clear,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { getApiBaseUrl } from '../../../../config/environment';
-
-// Use centralized API base (defaults to '/api') to ensure requests go through the gateway
-const getBackendUrl = async () => {
-  try {
-    return await getApiBaseUrl();
-  } catch (error) {
-    console.warn('Failed to get API base URL, using fallback:', error);
-    return '/api';
-  }
-};
+import axiosInstance from '../../../common/services/axios';
 
 const JobSearch = () => {
   const navigate = useNavigate();
@@ -85,16 +74,8 @@ const JobSearch = () => {
     setLoading(true);
     setError(null);
     try {
-      const backendUrl = await getBackendUrl();
-      const response = await axios.get(`${backendUrl}/jobs/search`, {
+      const response = await axiosInstance.get('/api/jobs/search', {
         params: filters,
-        headers: await (async () => {
-          try {
-            const { secureStorage } = await import('../../../utils/secureStorage');
-            const token = secureStorage.getAuthToken();
-            return token ? { Authorization: `Bearer ${token}` } : {};
-          } catch { return {}; }
-        })(),
       });
       setJobs(response.data.data);
     } catch (err) {
@@ -127,20 +108,7 @@ const JobSearch = () => {
 
   const handleApplyJob = async (jobId) => {
     try {
-      const backendUrl = await getBackendUrl();
-      await axios.post(
-        `${backendUrl}/jobs/${jobId}/apply`,
-        {},
-        {
-          headers: await (async () => {
-            try {
-              const { secureStorage } = await import('../../../utils/secureStorage');
-              const token = secureStorage.getAuthToken();
-              return token ? { Authorization: `Bearer ${token}` } : {};
-            } catch { return {}; }
-          })(),
-        },
-      );
+      await axiosInstance.post(`/api/jobs/${jobId}/apply`, {});
       // Show success message or update UI
     } catch (err) {
       console.error('Error applying for job:', err);
