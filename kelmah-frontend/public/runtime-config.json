@@ -1,14 +1,14 @@
 {
-  "ngrokUrl": "https://kelmah-backend-api.loca.lt",
-  "localtunnelUrl": "https://kelmah-backend-api.loca.lt",
-  "websocketUrl": "https://kelmah-backend-api.loca.lt",
-  "API_URL": "https://kelmah-backend-api.loca.lt",
-  "WS_URL": "https://kelmah-backend-api.loca.lt",
+  "ngrokUrl": "https://kelmah-api-gateway.loca.lt",
+  "localtunnelUrl": "https://kelmah-api-gateway.loca.lt",
+  "websocketUrl": "https://kelmah-api-gateway.loca.lt",
+  "API_URL": "https://kelmah-api-gateway.loca.lt",
+  "WS_URL": "https://kelmah-api-gateway.loca.lt",
   "NODE_ENV": "production",
   "TUNNEL_TYPE": "localtunnel",
   "WEBSOCKET_MODE": "unified",
   "isDevelopment": true,
-  "timestamp": "2025-10-05T01:00:00.000Z",
+  "timestamp": "2025-10-05T03:30:00.000Z",
   "version": "1.0.0",
-  "note": "Frontend tries LocalTunnel first (kelmah-backend-api.loca.lt), falls back to Render if unavailable"
+  "note": "Fixed subdomain: kelmah-api-gateway.loca.lt - Frontend tries LocalTunnel first, falls back to Render if unavailable"
 }

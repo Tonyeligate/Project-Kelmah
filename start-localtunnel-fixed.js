@@ -11,15 +11,8 @@ class LocalTunnelManager {
         // UNIFIED MODE is now the DEFAULT for best practices
         this.unifiedMode = process.env.DUAL_WEBSOCKET !== 'true' && !process.argv.includes('--dual');
         
-        // FIXED SUBDOMAINS: Try these in order to maintain consistent URL
-        this.preferredSubdomains = [
-            'kelmah-backend-api',     // Primary choice
-            'kelmah-platform-api',    // Backup 1
-            'kelmah-gateway-api',     // Backup 2
-            'kelmah-api-gateway',     // Backup 3
-            'kelmah-api-2025'         // Backup 4
-        ];
-        this.currentSubdomainIndex = 0;
+        // FIXED SUBDOMAIN: Use only the working subdomain to avoid confusion
+        this.fixedSubdomain = 'kelmah-api-gateway';  // The confirmed working subdomain
     }
 
     async startTunnels() {
@@ -168,31 +161,20 @@ class LocalTunnelManager {
 
     createTunnelWithFixedSubdomain(port) {
         return new Promise(async (resolve, reject) => {
-            console.log(`🚀 Starting tunnel for port ${port} with fixed subdomain...`);
+            console.log(`🚀 Starting tunnel for port ${port} with fixed subdomain: ${this.fixedSubdomain}...`);
             
-            // Try each preferred subdomain in order
-            for (let i = 0; i < this.preferredSubdomains.length; i++) {
-                const subdomain = this.preferredSubdomains[i];
-                console.log(`🔍 Trying subdomain: ${subdomain} (${i + 1}/${this.preferredSubdomains.length})`);
-                
-                try {
-                    const url = await this.trySubdomain(port, subdomain);
-                    console.log(`✅ Success! Locked subdomain: ${subdomain}`);
-                    this.currentSubdomainIndex = i;
-                    return resolve(url);
-                } catch (error) {
-                    console.log(`❌ ${subdomain} unavailable, trying next...`);
-                    continue;
-                }
-            }
-            
-            // If all fixed subdomains fail, fall back to random
-            console.warn('⚠️  All fixed subdomains taken, using random subdomain...');
             try {
-                const url = await this.createTunnelRandomSubdomain(port);
-                resolve(url);
+                const url = await this.trySubdomain(port, this.fixedSubdomain);
+                console.log(`✅ Success! Using locked subdomain: ${this.fixedSubdomain}`);
+                return resolve(url);
             } catch (error) {
-                reject(error);
+                console.error(`❌ ${this.fixedSubdomain} unavailable!`);
+                console.error('⚠️  ERROR: The configured subdomain is not available.');
+                console.error('💡 Solution: Either:');
+                console.error('   1. Wait a moment and restart the script');
+                console.error('   2. Stop any other LocalTunnel processes using this subdomain');
+                console.error(`   3. Update this.fixedSubdomain in the script to a different subdomain`);
+                reject(new Error(`Fixed subdomain ${this.fixedSubdomain} is not available`));
             }
         });
     }
