@@ -321,31 +321,15 @@ class LocalTunnelManager {
     }
 
     async commitAndPush() {
-        return new Promise((resolve) => {
-            exec('git add . && git commit -m "Update LocalTunnel URLs and Vercel configs" && git push origin main',
-                { cwd: __dirname },
-                (error, stdout, stderr) => {
-                    if (error) {
-                        console.log('📝 Committed localtunnel URL update');
-                        console.log('⬆️  Pushing to origin/main...');
-                        // Try just the push
-                        exec('git push origin main', { cwd: __dirname }, (pushError) => {
-                            if (pushError) {
-                                console.log('⚠️  Manual git push may be needed');
-                            } else {
-                                console.log('✅ Pushed to origin/main');
-                            }
-                            resolve();
-                        });
-                    } else {
-                        console.log('📝 Committed localtunnel URL update');
-                        console.log('⬆️  Pushing to origin/main...');
-                        console.log('✅ Pushed to origin/main');
-                        resolve();
-                    }
-                }
-            );
-        });
+        console.log('\n⚠️  SKIPPING AUTO-COMMIT: Frontend now intelligently detects available backends');
+        console.log('ℹ️  The frontend will automatically use:');
+        console.log('   1. Render backend (if available)');
+        console.log('   2. LocalTunnel backend (if Render is down)');
+        console.log('\n💡 To manually update config, run:');
+        console.log('   git add .');
+        console.log('   git commit -m "Update LocalTunnel URL"');
+        console.log('   git push origin main');
+        return Promise.resolve();
     }
 
     keepAlive() {
