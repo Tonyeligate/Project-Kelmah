@@ -11,8 +11,8 @@ class LocalTunnelManager {
         // UNIFIED MODE is now the DEFAULT for best practices
         this.unifiedMode = process.env.DUAL_WEBSOCKET !== 'true' && !process.argv.includes('--dual');
         
-        // FIXED SUBDOMAIN: Use only the working subdomain to avoid confusion
-        this.fixedSubdomain = 'kelmah-api-gateway';  // The confirmed working subdomain
+        // FIXED SUBDOMAIN: Use only this subdomain to maintain consistent URL
+        this.fixedSubdomain = 'kelmah-backend-api';  // Fixed subdomain - always use this one
     }
 
     async startTunnels() {
