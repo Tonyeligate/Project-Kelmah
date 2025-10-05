@@ -35,10 +35,10 @@ const loadRuntimeConfig = async () => {
   return runtimeConfig;
 };
 
-// Multiple backend URLs to try in order
+// Multiple backend URLs to try in order (LocalTunnel first for faster local development)
 const BACKEND_OPTIONS = [
-  'https://kelmah-api-gateway-si57.onrender.com', // Render production (always available)
-  null, // Will be replaced with LocalTunnel URL from runtime config
+  null, // Will be replaced with LocalTunnel URL from runtime config (try first - fastest when available)
+  'https://kelmah-api-gateway-si57.onrender.com', // Render production (fallback - always available)
 ];
 
 // Health check a backend URL
@@ -79,9 +79,9 @@ const computeApiBase = async () => {
   const config = await loadRuntimeConfig();
   const localtunnelUrl = config?.localtunnelUrl || config?.ngrokUrl; // Support both keys for backward compatibility
 
-  // Add LocalTunnel URL to options if available
+  // Add LocalTunnel URL to options if available (FIRST position for priority)
   if (localtunnelUrl) {
-    BACKEND_OPTIONS[1] = localtunnelUrl;
+    BACKEND_OPTIONS[0] = localtunnelUrl;
   }
 
   // For Vercel/Production deployments, try backends in order of preference

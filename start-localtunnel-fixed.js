@@ -10,6 +10,16 @@ class LocalTunnelManager {
         // NEW: Support for unified vs dual tunnel modes
         // UNIFIED MODE is now the DEFAULT for best practices
         this.unifiedMode = process.env.DUAL_WEBSOCKET !== 'true' && !process.argv.includes('--dual');
+        
+        // FIXED SUBDOMAINS: Try these in order to maintain consistent URL
+        this.preferredSubdomains = [
+            'kelmah-backend-api',     // Primary choice
+            'kelmah-platform-api',    // Backup 1
+            'kelmah-gateway-api',     // Backup 2
+            'kelmah-api-gateway',     // Backup 3
+            'kelmah-api-2025'         // Backup 4
+        ];
+        this.currentSubdomainIndex = 0;
     }
 
     async startTunnels() {
@@ -25,9 +35,10 @@ class LocalTunnelManager {
         console.log('�🚀 Starting LocalTunnel tunnels...');
 
         try {
-            // Start API Gateway tunnel (port 5000)
-            const apiTunnel = await this.createTunnel(5000, 'kelmah-api');
+            // Start API Gateway tunnel (port 5000) with fixed subdomain
+            const apiTunnel = await this.createTunnelWithFixedSubdomain(5000);
             console.log(`✅ API Gateway tunnel started: ${apiTunnel}`);
+            console.log(`🔒 Using fixed subdomain - URL will stay consistent!`);
 
             let wsTunnel;
             let config;
@@ -152,6 +163,87 @@ class LocalTunnelManager {
                     this.createTunnelRandomSubdomain(port).then(resolve).catch(reject);
                 }
             }, 10000);
+        });
+    }
+
+    createTunnelWithFixedSubdomain(port) {
+        return new Promise(async (resolve, reject) => {
+            console.log(`🚀 Starting tunnel for port ${port} with fixed subdomain...`);
+            
+            // Try each preferred subdomain in order
+            for (let i = 0; i < this.preferredSubdomains.length; i++) {
+                const subdomain = this.preferredSubdomains[i];
+                console.log(`🔍 Trying subdomain: ${subdomain} (${i + 1}/${this.preferredSubdomains.length})`);
+                
+                try {
+                    const url = await this.trySubdomain(port, subdomain);
+                    console.log(`✅ Success! Locked subdomain: ${subdomain}`);
+                    this.currentSubdomainIndex = i;
+                    return resolve(url);
+                } catch (error) {
+                    console.log(`❌ ${subdomain} unavailable, trying next...`);
+                    continue;
+                }
+            }
+            
+            // If all fixed subdomains fail, fall back to random
+            console.warn('⚠️  All fixed subdomains taken, using random subdomain...');
+            try {
+                const url = await this.createTunnelRandomSubdomain(port);
+                resolve(url);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    trySubdomain(port, subdomain) {
+        return new Promise((resolve, reject) => {
+            const process = spawn('npx', ['localtunnel', '--port', port.toString(), '--subdomain', subdomain], {
+                stdio: ['pipe', 'pipe', 'pipe'],
+                shell: true
+            });
+
+            let output = '';
+            let resolved = false;
+            let failed = false;
+
+            process.stdout.on('data', (data) => {
+                output += data.toString();
+                const urlMatch = output.match(/your url is: (https:\/\/[^\s]+)/);
+
+                if (urlMatch && !resolved && !failed) {
+                    resolved = true;
+                    this.tunnels.push(process);
+                    resolve(urlMatch[1]);
+                }
+            });
+
+            process.stderr.on('data', (data) => {
+                const errorMsg = data.toString();
+                if (errorMsg.includes('subdomain is not available') || 
+                    errorMsg.includes('already in use') ||
+                    errorMsg.includes('in use')) {
+                    failed = true;
+                    process.kill();
+                    reject(new Error('Subdomain unavailable'));
+                }
+            });
+
+            process.on('exit', (code) => {
+                if (!resolved && !failed) {
+                    reject(new Error('Tunnel process exited'));
+                }
+            });
+
+            // Timeout after 8 seconds
+            setTimeout(() => {
+                if (!resolved && !failed) {
+                    failed = true;
+                    process.kill();
+                    reject(new Error('Subdomain timeout'));
+                }
+            }, 8000);
         });
     }
 

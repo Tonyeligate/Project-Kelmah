@@ -1,14 +1,14 @@
 {
-  "ngrokUrl": null,
-  "localtunnelUrl": null,
-  "websocketUrl": null,
-  "API_URL": "https://kelmah-api-gateway-si57.onrender.com",
-  "WS_URL": "https://kelmah-api-gateway-si57.onrender.com",
+  "ngrokUrl": "https://kelmah-backend-api.loca.lt",
+  "localtunnelUrl": "https://kelmah-backend-api.loca.lt",
+  "websocketUrl": "https://kelmah-backend-api.loca.lt",
+  "API_URL": "https://kelmah-backend-api.loca.lt",
+  "WS_URL": "https://kelmah-backend-api.loca.lt",
   "NODE_ENV": "production",
-  "TUNNEL_TYPE": "none",
+  "TUNNEL_TYPE": "localtunnel",
   "WEBSOCKET_MODE": "unified",
-  "isDevelopment": false,
-  "timestamp": "2025-10-05T00:50:00.000Z",
+  "isDevelopment": true,
+  "timestamp": "2025-10-05T01:00:00.000Z",
   "version": "1.0.0",
-  "note": "Frontend will auto-detect available backend (Render or LocalTunnel)"
+  "note": "Frontend tries LocalTunnel first (kelmah-backend-api.loca.lt), falls back to Render if unavailable"
 }
