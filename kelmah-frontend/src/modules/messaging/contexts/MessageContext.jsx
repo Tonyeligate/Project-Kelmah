@@ -66,7 +66,7 @@ export const MessageProvider = ({ children }) => {
     connectWebSocket._connecting = true;
 
     // Get backend WebSocket URL from runtime config
-    let wsUrl = 'https://kelmah-api-gateway-si57.onrender.com'; // Production fallback
+  let wsUrl = 'https://kelmah-api-gateway-5loa.onrender.com'; // Production fallback
     try {
       const response = await fetch('/runtime-config.json');
       if (response.ok) {
