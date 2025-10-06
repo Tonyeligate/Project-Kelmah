@@ -697,7 +697,13 @@ app.use('/api/notifications',
     const proxy = createProxyMiddleware({
       target: services.messaging,
       changeOrigin: true,
-      pathRewrite: { '^/api/notifications': '/api/notifications' }
+      pathRewrite: { '^/api/notifications': '/api/notifications' },
+      onProxyReq: (proxyReq, req) => {
+        if (req.user) {
+          proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+          proxyReq.setHeader('x-auth-source', 'api-gateway');
+        }
+      }
     });
     return proxy(req, res, next);
   }
@@ -713,7 +719,13 @@ app.use('/api/conversations',
     const proxy = createProxyMiddleware({
       target: services.messaging,
       changeOrigin: true,
-      pathRewrite: { '^/api/conversations': '/api/conversations' }
+      pathRewrite: { '^/api/conversations': '/api/conversations' },
+      onProxyReq: (proxyReq, req) => {
+        if (req.user) {
+          proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+          proxyReq.setHeader('x-auth-source', 'api-gateway');
+        }
+      }
     });
     return proxy(req, res, next);
   }

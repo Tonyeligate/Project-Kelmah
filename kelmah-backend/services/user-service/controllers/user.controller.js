@@ -3,6 +3,7 @@ const Bookmark = require('../models/Bookmark');
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
 const WorkerProfile = db.WorkerProfile; // Now points to MongoDB model
+const { User } = require('../models'); // Import User model at top level
 
 exports.toggleBookmark = async (req, res) => {
   try {
@@ -92,9 +93,6 @@ exports.getEarnings = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to get earnings' });
   }
 };
-
-// Use shared models via models index
-const { User } = require('../models');
 
 /**
  * Get all users (MongoDB)
