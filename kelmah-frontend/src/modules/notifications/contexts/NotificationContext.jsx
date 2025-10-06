@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import { Snackbar, Alert } from '@mui/material';
 import notificationServiceUser, { notificationService } from '../services/notificationService';
+import { secureStorage } from '../../../utils/secureStorage';
 const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
@@ -30,7 +31,14 @@ export const NotificationProvider = ({ children }) => {
   const unreadCount = (notifications || []).filter((n) => !n.read && n.readStatus?.isRead !== true).length;
 
   const fetchNotifications = useCallback(async (params = {}) => {
+    // ✅ FIX: Check both user AND token availability before making API call
     if (!user) return;
+    const token = secureStorage.getAuthToken();
+    if (!token) {
+      console.log('⏸️ Skipping notifications fetch - no auth token available yet');
+      return;
+    }
+    
     setLoading(true);
     console.log('🔄 Fetching real notification data from API...');
 
