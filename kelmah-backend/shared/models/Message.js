@@ -39,7 +39,9 @@ const MessageSchema = new Schema(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+    autoCreate: true
   }
 );
 

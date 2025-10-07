@@ -218,7 +218,9 @@ const userSchema = new mongoose.Schema({
   deletedAt: Date
 }, {
   timestamps: true, // Adds createdAt and updatedAt
-  collection: 'users'
+  collection: 'users',
+  bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+  autoCreate: true // Ensure collection is created
 });
 
 // ✅ FIXED: Clean indexes without duplicates (removed unique: true from explicit indexes)

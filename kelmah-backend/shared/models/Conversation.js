@@ -45,7 +45,11 @@ const ConversationSchema = new Schema(
       tags: [String],
     },
   },
-  { timestamps: true },
+  { 
+    timestamps: true,
+    bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+    autoCreate: true
+  },
 );
 
 // Indexes for better query performance

@@ -55,7 +55,11 @@ const ApplicationSchema = new Schema(
       default: false,
     },
   },
-  { timestamps: true },
+  { 
+    timestamps: true,
+    bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+    autoCreate: true
+  },
 );
 
 // Ensure a worker can't apply to the same job multiple times

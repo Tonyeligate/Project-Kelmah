@@ -28,7 +28,12 @@ const RefreshTokenSchema = new mongoose.Schema({
     browser: String,
     os: String,
   },
-}, { timestamps: true, collection: 'refreshtokens' });
+}, { 
+  timestamps: true, 
+  collection: 'refreshtokens',
+  bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+  autoCreate: true
+});
 
 RefreshTokenSchema.index({ userId: 1, tokenId: 1 }, { unique: true });
 RefreshTokenSchema.index({ tokenHash: 1 }, { unique: true, sparse: true });

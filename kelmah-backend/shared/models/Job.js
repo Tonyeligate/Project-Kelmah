@@ -233,6 +233,8 @@ const JobSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+    autoCreate: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   },
