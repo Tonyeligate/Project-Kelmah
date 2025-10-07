@@ -694,9 +694,19 @@ const notificationsProxy = createProxyMiddleware({
   changeOrigin: true,
   pathRewrite: { '^/api/notifications': '/api/notifications' },
   onProxyReq: (proxyReq, req) => {
+    // Ensure authentication headers are set for gateway trust
     if (req.user) {
       proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
       proxyReq.setHeader('x-auth-source', 'api-gateway');
+    }
+    
+    // CRITICAL: Preserve original headers from authenticate middleware
+    // http-proxy-middleware doesn't auto-forward custom headers
+    if (req.headers['x-authenticated-user']) {
+      proxyReq.setHeader('x-authenticated-user', req.headers['x-authenticated-user']);
+    }
+    if (req.headers['x-auth-source']) {
+      proxyReq.setHeader('x-auth-source', req.headers['x-auth-source']);
     }
   },
   logLevel: 'debug'
