@@ -173,21 +173,8 @@ exports.getDashboardMetrics = async (req, res, next) => {
 exports.getDashboardWorkers = async (req, res, next) => {
   try {
     // Use the MongoDB WorkerProfile from our models index
-    const { WorkerProfile } = require('../models');
+    const { WorkerProfile, User } = require('../models');
     const mongoose = require('mongoose');
-
-    // Get User model from mongoose registry (not from our models import)
-    // This ensures we're using the model that's actually registered with mongoose
-    const User = mongoose.models.User || mongoose.model('User');
-    
-    if (!User) {
-      console.error('User model not found in mongoose.models');
-      console.error('Available models:', Object.keys(mongoose.models));
-      return res.status(500).json({
-        error: 'Model configuration error',
-        message: 'User model not registered'
-      });
-    }
 
     // Check MongoDB connection status
     if (mongoose.connection.readyState !== 1) {
@@ -198,18 +185,13 @@ exports.getDashboardWorkers = async (req, res, next) => {
       });
     }
 
+    // Get workers WITHOUT populate to avoid model registration issues
     const workers = await WorkerProfile.find()
-      .populate({
-        path: 'userId',
-        model: User, // Pass the actual model constructor from mongoose.models
-        select: 'firstName lastName profilePicture',
-        options: { strictPopulate: false } // Prevent errors on missing references
-      })
-      .select('skills hourlyRate isAvailable rating totalJobs completedJobs')
+      .select('userId skills hourlyRate isAvailable rating totalJobs completedJobs')
       .sort({ rating: -1, totalJobs: -1 })
       .limit(10)
       .lean()
-      .maxTimeMS(5000); // Add 5-second timeout to prevent hanging
+      .maxTimeMS(5000);
 
     // Handle empty result set
     if (!workers || workers.length === 0) {
@@ -217,17 +199,33 @@ exports.getDashboardWorkers = async (req, res, next) => {
       return res.json({ workers: [] });
     }
 
-    const formattedWorkers = workers.map(worker => ({
-      id: worker._id,
-      name: worker.userId ? `${worker.userId.firstName} ${worker.userId.lastName}` : 'Unknown',
-      skills: worker.skills || [],
-      rating: worker.rating || 0,
-      totalJobs: worker.totalJobs || 0,
-      completedJobs: worker.completedJobs || 0,
-      hourlyRate: worker.hourlyRate || 0,
-      isAvailable: worker.isAvailable || false,
-      profilePicture: worker.userId?.profilePicture || null
-    }));
+    // Manually fetch user data for each worker to avoid populate issues
+    const userIds = workers.map(w => w.userId).filter(Boolean);
+    const users = await User.find({ _id: { $in: userIds } })
+      .select('firstName lastName profilePicture')
+      .lean();
+
+    // Create a map of userId to user data
+    const userMap = {};
+    users.forEach(user => {
+      userMap[user._id.toString()] = user;
+    });
+
+    // Format workers with user data
+    const formattedWorkers = workers.map(worker => {
+      const user = userMap[worker.userId?.toString()];
+      return {
+        id: worker._id,
+        name: user ? `${user.firstName} ${user.lastName}` : 'Unknown',
+        skills: worker.skills || [],
+        rating: worker.rating || 0,
+        totalJobs: worker.totalJobs || 0,
+        completedJobs: worker.completedJobs || 0,
+        hourlyRate: worker.hourlyRate || 0,
+        isAvailable: worker.isAvailable || false,
+        profilePicture: user?.profilePicture || null
+      };
+    });
 
     res.json({ workers: formattedWorkers });
   } catch (err) {
