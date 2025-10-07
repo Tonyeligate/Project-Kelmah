@@ -13,6 +13,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { celebrate, Joi, errors: celebrateErrors, Segments } = require('celebrate');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const axios = require('axios');
 const winston = require('winston');
 const mongoose = require('mongoose');
 const { connectDB } = require('./config/db');
