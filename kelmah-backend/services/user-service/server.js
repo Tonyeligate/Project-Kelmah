@@ -179,12 +179,17 @@ app.use((req, res, next) => {
 });
 
 // Direct worker routes for public access (needed for frontend /api/workers calls)
+// ✅ FIX: Handle both with and without trailing slash due to proxy forwarding
 const WorkerController = require('./controllers/worker.controller');
-app.get('/api/workers', (req, res) => {
-  console.log('✅ [DIRECT] /api/workers route hit');
+
+// Worker list endpoint - handle both /api/workers and /api/workers/
+app.get(['/api/workers', '/api/workers/'], (req, res) => {
+  console.log('✅ [DIRECT] /api/workers route hit (with/without trailing slash)');
   WorkerController.getAllWorkers(req, res);
 });
-app.get('/api/workers/search', (req, res) => {
+
+// Worker search endpoint - handle both variants
+app.get(['/api/workers/search', '/api/workers/search/'], (req, res) => {
   console.log('✅ [DIRECT] /api/workers/search route hit');
   WorkerController.searchWorkers(req, res);
 });

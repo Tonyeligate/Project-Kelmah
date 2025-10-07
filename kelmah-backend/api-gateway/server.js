@@ -519,16 +519,22 @@ app.use(
     })(req, res, next);
   },
   createDynamicProxy('user', {
-    // Rewrite paths: / -> /workers, /search -> /workers/search, etc.
+    // When Gateway strips /api/workers, req.url becomes / or /search or /:id
+    // We need to forward to user service as /api/workers, /api/workers/search, /api/workers/:id
     pathRewrite: {
-      '^/$': '/workers',  // Root path to /workers
-      '^/(.*)': '/workers/$1'  // Sub-paths like /search to /workers/search
+      '^/$': '/api/workers',           // Root -> /api/workers
+      '^/search': '/api/workers/search', // /search -> /api/workers/search
+      '^/(.+)': '/api/workers/$1'      // Other paths -> /api/workers/{path}
     },
     onProxyReq: (proxyReq, req) => {
-      console.log('🔄 API Gateway: Proxying worker request to user service -', req.originalUrl, '→', proxyReq.path);
+      console.log('🔄 [API Gateway] Proxying worker request:', {
+        originalUrl: req.originalUrl,
+        strippedPath: req.url,
+        targetPath: proxyReq.path
+      });
     },
     onError: (err, req, res) => {
-      console.error('❌ API Gateway: Worker proxy error -', err.message);
+      console.error('❌ [API Gateway] Worker proxy error:', err.message);
       res.status(500).json({ error: 'Worker service unavailable', details: err.message });
     }
   })
