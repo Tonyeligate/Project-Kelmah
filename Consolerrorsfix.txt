@@ -1,36 +1,61 @@
-Complete Error List from Console Logs
-Based on your console output, here are all the distinct errors after successful login:
+Complete Error List from Console Logs - UPDATED October 7, 2025
+Based on latest console output after fixing runtime-config URL:
 
-🔴 Category 1: 404 Errors (Not Found)
-These endpoints exist in code but Render deployment isn't finding them:
+🔴 Category 1: CORS Errors (Critical - Blocking All Requests)
+Multiple endpoints blocked by CORS policy:
 
-GET /api/notifications → 404
+GET /api/notifications → CORS blocked
+Error: "No 'Access-Control-Allow-Origin' header is present on the requested resource"
+Impact: Notifications completely blocked
+Also returns 502 Bad Gateway and 404 alternating
 
-Error: "Messaging service endpoint not found"
-Impact: Notifications widget shows empty
-Repeated: 3 times in logs
-GET /api/users/workers/{userId}/completeness → 404
+GET /api/users/workers/{userId}/availability → CORS blocked  
+Error: "No 'Access-Control-Allow-Origin' header is present on the requested resource"
+Impact: Availability status not displayed
+Returns 502 Bad Gateway after CORS
 
-Error: Request failed with status code 404
+GET /api/users/workers/{userId}/completeness → CORS blocked
+Error: "No 'Access-Control-Allow-Origin' header is present on the requested resource"
 Impact: Profile completion percentage not showing
-GET /api/users/workers/jobs/recent?limit=6 → 404
 
+🔴 Category 2: 404 Errors (Routes Not Found After CORS)
+GET /api/notifications → 404 (when CORS doesn't block)
+Error: "Messaging service endpoint not found"
+Alternates with 502 and CORS errors
+
+GET /api/users/workers/jobs/recent?limit=6 → 404
 Error: Request failed with status code 404
 Impact: Recent jobs widget empty
-GET /api/users/workers/{userId}/availability → 404
 
-Error: Request failed with status code 404
-Impact: Availability status not displayed
-🔴 Category 2: 500 Errors (Internal Server Error)
-Backend code error causing crashes:
-
+🔴 Category 3: 500 Errors (Internal Server Error)
 GET /api/users/dashboard/workers → 500
 Error: Internal Server Error
-Impact: Dashboard worker stats failing, triggers retry logic
+Impact: Dashboard worker stats failing
 Note: Automatic retry attempted (1/5 retries shown)
-🔴 Category 3: WebSocket Connection Failures
+
+🔴 Category 4: 502 Bad Gateway (Service Unavailable)
+GET /api/notifications → 502 Bad Gateway
+Alternates with 404 and CORS errors
+Indicates messaging service is down or unreachable
+
+GET /api/users/workers/{userId}/availability → 502 Bad Gateway
+After CORS preflight
+
+🔴 Category 5: 429 Rate Limit Errors (Too Many Requests)
+GET /api/notifications → 429 Too Many Requests
+Impact: Multiple retry attempts hitting rate limit
+Causing exponential backoff (3s → 6s delays)
+Repeated: 5+ times with increasing delays
+
+🔴 Category 6: WebSocket Connection Failures
 WebSocket connection failed
 Error: "WebSocket is closed before the connection is established"
 URL: wss://kelmah-api-gateway-5loa.onrender.com
 Impact: Real-time notifications won't work
-Repeated: Multiple connection attempts (59+ warnings)
+Repeated: 51+ connection attempts
+
+🔴 ROOT CAUSE ANALYSIS:
+1. CORS is the primary blocker - API Gateway not sending CORS headers to Vercel origin
+2. Backend services returning 502/404 even when CORS passes
+3. Rate limiting triggering due to retry loops
+4. WebSocket upgrades failing (separate from CORS)
