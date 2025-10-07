@@ -46,4 +46,4 @@ const MessageSchema = new Schema(
 // Index for fast retrieval
 MessageSchema.index({ conversation: 1, createdAt: 1 });
 
-module.exports = mongoose.model('Message', MessageSchema); 
+module.exports = mongoose.models.Message || mongoose.model('Message', MessageSchema); 

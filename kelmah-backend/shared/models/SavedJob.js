@@ -25,4 +25,4 @@ const SavedJobSchema = new Schema({
 // Ensure one save per user per job
 SavedJobSchema.index({ job: 1, user: 1 }, { unique: true });
 
-module.exports = mongoose.model("SavedJob", SavedJobSchema);
+module.exports = mongoose.models.SavedJob || mongoose.model("SavedJob", SavedJobSchema);

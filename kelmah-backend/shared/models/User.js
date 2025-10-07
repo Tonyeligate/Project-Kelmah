@@ -362,4 +362,5 @@ userSchema.statics.findByRole = function(role) {
   return this.find({ role: role, isActive: true, deletedAt: { $exists: false } });
 };
 
-module.exports = mongoose.model('User', userSchema);
+// Export model - check if already registered to prevent "Cannot overwrite model" errors
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

@@ -38,4 +38,4 @@ const NotificationSchema = new Schema(
 // Index for fast lookups
 NotificationSchema.index({ user: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Notification', NotificationSchema); 
+module.exports = mongoose.models.Notification || mongoose.model('Notification', NotificationSchema); 

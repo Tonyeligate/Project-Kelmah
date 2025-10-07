@@ -67,6 +67,6 @@ ApplicationSchema.methods.updateStatus = function (newStatus) {
   return this.save();
 };
 
-const Application = mongoose.model("Application", ApplicationSchema);
+const Application = mongoose.models.Application || mongoose.model("Application", ApplicationSchema);
 
 module.exports = Application;

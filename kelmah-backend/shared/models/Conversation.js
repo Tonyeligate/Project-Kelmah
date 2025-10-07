@@ -77,6 +77,6 @@ ConversationSchema.methods.resetUnreadCount = function (userId) {
   return this.save();
 };
 
-const Conversation = mongoose.model("Conversation", ConversationSchema);
+const Conversation = mongoose.models.Conversation || mongoose.model("Conversation", ConversationSchema);
 
 module.exports = Conversation;
