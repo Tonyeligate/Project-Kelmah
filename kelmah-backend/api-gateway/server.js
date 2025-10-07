@@ -688,9 +688,9 @@ app.use('/api/socket/metrics',
 );
 
 // Notification routes (protected) → messaging-service (hosts notifications API)
-// Create static proxy once at startup for better performance
-const notificationsProxyOptions = {
-  target: '', // Will be set dynamically
+// CRITICAL: Must use router for pathRewrite to work correctly with createProxyMiddleware
+const notificationsProxy = createProxyMiddleware({
+  target: process.env.MESSAGING_SERVICE_CLOUD_URL || 'http://localhost:5005',
   changeOrigin: true,
   pathRewrite: { '^/api/notifications': '/api/notifications' },
   onProxyReq: (proxyReq, req) => {
@@ -700,30 +700,9 @@ const notificationsProxyOptions = {
     }
   },
   logLevel: 'debug'
-};
+});
 
-app.use('/api/notifications',
-  authenticate,
-  (req, res, next) => {
-    // Get messaging service URL at request time
-    const targetUrl = services.messaging || getServiceUrl('messaging');
-    
-    if (!targetUrl) {
-      return res.status(503).json({ 
-        error: 'Messaging service unavailable',
-        service: 'messaging'
-      });
-    }
-    
-    // Create proxy with current target
-    const proxy = createProxyMiddleware({
-      ...notificationsProxyOptions,
-      target: targetUrl
-    });
-    
-    proxy(req, res, next);
-  }
-);
+app.use('/api/notifications', authenticate, notificationsProxy);
 
 // Conversations routes (protected) → messaging-service
 app.use('/api/conversations',
