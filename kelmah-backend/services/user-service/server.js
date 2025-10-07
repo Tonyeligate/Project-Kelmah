@@ -333,8 +333,31 @@ const PORT = process.env.USER_SERVICE_PORT || 5002;
 // Only start the server if this file is run directly
 if (require.main === module) {
   connectDB()
-    .then(() => {
+    .then(async () => {
       logger.info("✅ User Service connected to MongoDB");
+      
+      // CRITICAL: Wait for connection to be fully ready before starting server
+      const mongoose = require('mongoose');
+      if (mongoose.connection.readyState !== 1) {
+        logger.info("⏳ Waiting for MongoDB connection to be fully ready...");
+        await new Promise((resolve) => {
+          const checkReady = setInterval(() => {
+            if (mongoose.connection.readyState === 1) {
+              clearInterval(checkReady);
+              resolve();
+            }
+          }, 100);
+          
+          // Safety timeout after 10 seconds
+          setTimeout(() => {
+            clearInterval(checkReady);
+            logger.warn("⚠️ MongoDB connection readyState check timed out, proceeding anyway");
+            resolve();
+          }, 10000);
+        });
+      }
+      
+      logger.info(`✅ MongoDB connection fully ready (readyState: ${mongoose.connection.readyState})`);
 
       // Error logging middleware (must be last)
       app.use(createErrorLogger(logger));
