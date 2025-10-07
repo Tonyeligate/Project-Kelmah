@@ -687,64 +687,72 @@ app.use('/api/socket/metrics',
   }
 );
 
-// Notification routes (protected) → messaging-service (hosts notifications API)
-// CRITICAL: Must use router for pathRewrite to work correctly with createProxyMiddleware
-const notificationsProxy = createProxyMiddleware({
-  target: process.env.MESSAGING_SERVICE_CLOUD_URL || 'http://localhost:5005',
-  changeOrigin: true,
-  pathRewrite: { '^/api/notifications': '/api/notifications' },
-  onProxyReq: (proxyReq, req) => {
-    // DEBUG: Log what headers we're receiving from authenticate middleware
-    console.log('[NOTIFICATIONS PROXY] Incoming headers:', {
-      hasUser: !!req.user,
-      hasAuthHeader: !!req.headers['x-authenticated-user'],
-      hasAuthSource: !!req.headers['x-auth-source'],
-      authorization: !!req.headers.authorization
-    });
-    
-    // Ensure authentication headers are set for gateway trust
-    if (req.user) {
-      const userJson = JSON.stringify(req.user);
-      proxyReq.setHeader('x-authenticated-user', userJson);
-      proxyReq.setHeader('x-auth-source', 'api-gateway');
-      console.log('[NOTIFICATIONS PROXY] Set headers from req.user:', {
-        userJsonLength: userJson.length,
-        userId: req.user.id
+// Notification routes (protected) → messaging-service (hosts notifications API)  
+// NOTE: Using manual axios proxy instead of http-proxy-middleware
+// because http-proxy-middleware was not reliably forwarding custom headers
+app.use('/api/notifications', authenticate, async (req, res, next) => {
+  try {
+    // Ensure user is authenticated
+    if (!req.user) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'No user information available'
       });
     }
-    
-    // CRITICAL: Preserve original headers from authenticate middleware
-    // http-proxy-middleware doesn't auto-forward custom headers
-    if (req.headers['x-authenticated-user']) {
-      proxyReq.setHeader('x-authenticated-user', req.headers['x-authenticated-user']);
-      console.log('[NOTIFICATIONS PROXY] Preserved x-authenticated-user from headers');
-    }
-    if (req.headers['x-auth-source']) {
-      proxyReq.setHeader('x-auth-source', req.headers['x-auth-source']);
-      console.log('[NOTIFICATIONS PROXY] Preserved x-auth-source from headers');
-    }
-    
-    // DEBUG: Log final headers being sent to messaging service
-    console.log('[NOTIFICATIONS PROXY] Final proxy headers:', {
-      'x-authenticated-user': !!proxyReq.getHeader('x-authenticated-user'),
-      'x-auth-source': !!proxyReq.getHeader('x-auth-source')
-    });
-  },
-  onProxyRes: (proxyRes, req, res) => {
-    // DEBUG: Log response from messaging service
-    console.log('[NOTIFICATIONS PROXY] Response from messaging service:', {
-      status: proxyRes.statusCode,
-      statusMessage: proxyRes.statusMessage
-    });
-  },
-  onError: (err, req, res) => {
-    // DEBUG: Log any proxy errors
-    console.error('[NOTIFICATIONS PROXY] Proxy error:', err.message);
-  },
-  logLevel: 'debug'
-});
 
-app.use('/api/notifications', authenticate, notificationsProxy);
+    const messagingUrl = process.env.MESSAGING_SERVICE_CLOUD_URL || 'http://localhost:5005';
+    const targetUrl = `${messagingUrl}${req.url}`;
+    
+    console.log('[NOTIFICATIONS MANUAL PROXY] Request:', {
+      method: req.method,
+      url: req.url,
+      targetUrl,
+      hasUser: !!req.user,
+      userId: req.user.id
+    });
+
+    // Make request to messaging service with proper headers
+    const axiosConfig = {
+      method: req.method,
+      url: targetUrl,
+      headers: {
+        'x-authenticated-user': JSON.stringify(req.user),
+        'x-auth-source': 'api-gateway',
+        'content-type': req.headers['content-type'] || 'application/json'
+      },
+      ...(req.method !== 'GET' && req.method !== 'HEAD' && { data: req.body })
+    };
+
+    console.log('[NOTIFICATIONS MANUAL PROXY] Sending headers:', {
+      'x-authenticated-user': !!axiosConfig.headers['x-authenticated-user'],
+      'x-auth-source': axiosConfig.headers['x-auth-source'],
+      userJsonLength: axiosConfig.headers['x-authenticated-user'].length
+    });
+
+    const response = await axios(axiosConfig);
+    
+    console.log('[NOTIFICATIONS MANUAL PROXY] Response:', {
+      status: response.status,
+      hasData: !!response.data
+    });
+
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error('[NOTIFICATIONS MANUAL PROXY] Error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+
+    if (error.response) {
+      return res.status(error.response.status).json(error.response.data);
+    }
+    return res.status(500).json({ 
+      error: 'Proxy error',
+      message: 'Failed to forward request to messaging service'
+    });
+  }
+});
 
 // Conversations routes (protected) → messaging-service
 app.use('/api/conversations',
