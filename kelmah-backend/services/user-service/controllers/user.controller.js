@@ -194,7 +194,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
     const workers = await WorkerProfile.find()
       .populate({
         path: 'userId',
-        model: User, // Explicitly pass the model instead of string reference
+        model: 'User', // Use string reference to let Mongoose resolve the model
         select: 'firstName lastName profilePicture',
         options: { strictPopulate: false } // Prevent errors on missing references
       })
