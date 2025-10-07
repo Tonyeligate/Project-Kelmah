@@ -219,8 +219,7 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true, // Adds createdAt and updatedAt
   collection: 'users',
-  bufferCommands: true,
-  bufferTimeoutMS: 30000, // Increased from default 10s // Keep buffering enabled
+  bufferCommands: true, // Keep buffering enabled for connection establishment
   bufferTimeoutMS: 30000, // Increase timeout to 30 seconds (from default 10s)
   autoCreate: true // Ensure collection is created
 });
