@@ -348,11 +348,26 @@ app.use('/api/auth', authRouter);
 // User routes (protected) with validation
 app.use(
   '/api/users',
+  // Debug logging middleware
+  (req, res, next) => {
+    console.log('🔍 [API Gateway] /api/users route hit:', {
+      method: req.method,
+      originalUrl: req.originalUrl,
+      path: req.path,
+      url: req.url,
+      hasUser: !!req.user,
+      headers: {
+        authorization: req.headers.authorization ? 'Bearer ***' : 'none'
+      }
+    });
+    next();
+  },
   // Allow-list public GET access for worker listings & details
   (req, res, next) => {
     if (req.method === 'GET') {
       const p = req.path || '';
       if (p === '/workers' || /^\/workers\//.test(p)) {
+        console.log('✅ [API Gateway] Public worker route - skipping auth:', p);
         return next();
       }
     }
@@ -367,11 +382,34 @@ app.use(
   createDynamicProxy('user', {
     pathRewrite: { '^/api/users': '/api/users' },
     onProxyReq: (proxyReq, req) => {
+      console.log('📤 [API Gateway] Proxying to user service:', {
+        method: proxyReq.method,
+        path: proxyReq.path,
+        host: proxyReq.getHeader('host'),
+        hasAuth: !!req.user
+      });
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
         proxyReq.setHeader('x-auth-source', 'api-gateway');
       }
     },
+    onProxyRes: (proxyRes, req, res) => {
+      console.log('📥 [API Gateway] Response from user service:', {
+        statusCode: proxyRes.statusCode,
+        path: req.originalUrl
+      });
+    },
+    onError: (err, req, res) => {
+      console.error('❌ [API Gateway] Proxy error:', {
+        message: err.message,
+        path: req.originalUrl,
+        code: err.code
+      });
+      res.status(503).json({
+        error: 'User service unavailable',
+        message: err.message
+      });
+    }
   })
 );
 

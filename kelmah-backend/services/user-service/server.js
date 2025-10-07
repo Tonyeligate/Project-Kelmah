@@ -164,7 +164,17 @@ app.get("/dashboard/analytics", getDashboardAnalytics);
 
 // Debug middleware to log all incoming requests
 app.use((req, res, next) => {
-  console.log(`🌐 Incoming request: ${req.method} ${req.originalUrl} - Path: ${req.path}`);
+  console.log('🌐 [USER-SERVICE] Incoming request:', {
+    method: req.method,
+    originalUrl: req.originalUrl,
+    path: req.path,
+    url: req.url,
+    headers: {
+      'x-authenticated-user': !!req.headers['x-authenticated-user'],
+      'x-auth-source': req.headers['x-auth-source'] || 'none',
+      authorization: req.headers.authorization ? 'Bearer ***' : 'none'
+    }
+  });
   next();
 });
 
