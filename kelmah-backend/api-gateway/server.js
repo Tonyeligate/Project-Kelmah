@@ -688,17 +688,41 @@ app.use('/api/socket/metrics',
 );
 
 // Notification routes (protected) → messaging-service (hosts notifications API)
+// Create static proxy once at startup for better performance
+const notificationsProxyOptions = {
+  target: '', // Will be set dynamically
+  changeOrigin: true,
+  pathRewrite: { '^/api/notifications': '/api/notifications' },
+  onProxyReq: (proxyReq, req) => {
+    if (req.user) {
+      proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+      proxyReq.setHeader('x-auth-source', 'api-gateway');
+    }
+  },
+  logLevel: 'debug'
+};
+
 app.use('/api/notifications',
   authenticate,
-  createDynamicProxy('messaging', {
-    pathRewrite: { '^/api/notifications': '/api/notifications' },
-    onProxyReq: (proxyReq, req) => {
-      if (req.user) {
-        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
-        proxyReq.setHeader('x-auth-source', 'api-gateway');
-      }
+  (req, res, next) => {
+    // Get messaging service URL at request time
+    const targetUrl = services.messaging || getServiceUrl('messaging');
+    
+    if (!targetUrl) {
+      return res.status(503).json({ 
+        error: 'Messaging service unavailable',
+        service: 'messaging'
+      });
     }
-  })
+    
+    // Create proxy with current target
+    const proxy = createProxyMiddleware({
+      ...notificationsProxyOptions,
+      target: targetUrl
+    });
+    
+    proxy(req, res, next);
+  }
 );
 
 // Conversations routes (protected) → messaging-service
