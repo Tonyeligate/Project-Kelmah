@@ -380,7 +380,9 @@ app.use(
     }).unknown(true),
   }),
   createDynamicProxy('user', {
-    pathRewrite: { '^/api/users': '/api/users' },
+    // ✅ FIX: Don't strip /api/users - keep the full path for user-service
+    // Express app.use() already strips the mount path, so we need to add it back
+    pathRewrite: { '^/': '/api/users/' },
     onProxyReq: (proxyReq, req) => {
       console.log('📤 [API Gateway] Proxying to user service:', {
         method: proxyReq.method,
@@ -424,7 +426,8 @@ app.use('/api/availability',
     next();
   },
   createDynamicProxy('user', {
-    pathRewrite: { '^/api/users': '/api/users' },
+    // ✅ FIX: Keep the full path - don't strip anything
+    pathRewrite: { '^/': '/' },
     onProxyReq: (proxyReq, req) => {
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
