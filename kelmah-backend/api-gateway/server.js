@@ -702,7 +702,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
     }
 
     const messagingUrl = process.env.MESSAGING_SERVICE_CLOUD_URL || 'http://localhost:5005';
-    const targetUrl = `${messagingUrl}${req.url}`;
+    const targetUrl = `${messagingUrl}/api/notifications${req.url}`;
     
     console.log('[NOTIFICATIONS MANUAL PROXY] Request:', {
       method: req.method,
