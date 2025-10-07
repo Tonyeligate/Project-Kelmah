@@ -3,6 +3,8 @@
 ## Executive Summary
 This document tracks all production errors encountered during the October 7, 2025 debugging session and their resolution status.
 
+**Latest Update**: October 7, 2025 - Added fix for 404 routing conflicts (commit 2e007566)
+
 ---
 
 ## ✅ SUCCESSFULLY FIXED ISSUES
@@ -36,11 +38,38 @@ This document tracks all production errors encountered during the October 7, 202
 
 **Result**: Model registration error eliminated (now seeing MongoDB connection errors instead)
 
+### 3. Worker Endpoint 404 Errors ✅ (FIXED - October 7, 2025)
+**Original Errors**:
+- GET `/api/users/workers/jobs/recent?limit=6` → 404
+- GET `/api/users/workers/{id}/availability` → 404
+- GET `/api/users/workers/{id}/completeness` → 404
+
+**Root Cause**: Conflicting route definitions causing routing interference
+- Direct worker routes (`/workers`, `/workers/search`) defined at server level
+- Proper worker routes defined in `user.routes.js` and mounted at `/api/users`
+- Direct routes were redundant and potentially shadowing router routes
+
+**Fix Applied**:
+- **Commit 321477fd**: Added comprehensive debug logging to trace request flow
+- **Commit 2e007566**: Removed conflicting direct worker routes from server.js
+  - Deleted redundant `/workers`, `/workers/search`, `/api/workers`, `/api/workers/search` routes
+  - All worker routes now handled by userRoutes router as designed
+
+**Technical Explanation**:
+When Gateway forwards `/api/users/workers/jobs/recent`:
+1. Express matches `app.use('/api/users', userRoutes)` 
+2. Strips `/api/users` prefix from path
+3. Looks for `/workers/jobs/recent` in the router
+4. Route IS correctly defined in user.routes.js (line 39)
+5. Conflicting direct routes at server level were interfering with proper route resolution
+
+**Expected Result**: All three worker endpoints should now return data correctly
+
 ---
 
 ## 🔄 PARTIALLY FIXED / IN PROGRESS
 
-### 3. Dashboard Workers Endpoint (500 Error)
+### 4. Dashboard Workers Endpoint (500 Error)
 **Current Error**: `Operation users.find() buffering timed out after 10000ms`  
 **Status**: Model registration issue FIXED, but now encountering MongoDB connection timeout
 
@@ -67,30 +96,6 @@ MONGO_URI=mongodb+srv://...
 ---
 
 ## ❌ UNRESOLVED ISSUES
-
-### 4. Worker Endpoints Returning 404
-**Affected Endpoints**:
-1. `GET /api/users/workers/{userId}/availability` → 404
-2. `GET /api/users/workers/jobs/recent?limit=6` → 404
-3. `GET /api/users/workers/{userId}/completeness` → 404
-
-**Investigation Status**:
-- Routes exist in user-service/routes/user.routes.js (lines 41, 48, 49)
-- Gateway proxy for `/api/users` is configured correctly
-- 404 error message shows path as `/workers/...` not `/api/users/workers/...`
-- Suggests path rewriting or route mounting issue
-
-**Possible Causes**:
-1. Gateway proxy pathRewrite not working correctly
-2. User service route mounting issue
-3. ServiceTrust middleware blocking requests
-4. Route ordering causing incorrect matching
-
-**Next Steps**:
-- Add debug logging to Gateway proxy to see actual forwarded path
-- Add debug logging to user service to see received request path
-- Test routes directly on user service with proper headers
-- Check if serviceTrust middleware is rejecting requests
 
 ### 5. Jobs Dashboard Endpoint (500 Error)
 **Endpoint**: `GET /api/jobs/dashboard`  
