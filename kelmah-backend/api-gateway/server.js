@@ -694,20 +694,52 @@ const notificationsProxy = createProxyMiddleware({
   changeOrigin: true,
   pathRewrite: { '^/api/notifications': '/api/notifications' },
   onProxyReq: (proxyReq, req) => {
+    // DEBUG: Log what headers we're receiving from authenticate middleware
+    console.log('[NOTIFICATIONS PROXY] Incoming headers:', {
+      hasUser: !!req.user,
+      hasAuthHeader: !!req.headers['x-authenticated-user'],
+      hasAuthSource: !!req.headers['x-auth-source'],
+      authorization: !!req.headers.authorization
+    });
+    
     // Ensure authentication headers are set for gateway trust
     if (req.user) {
-      proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+      const userJson = JSON.stringify(req.user);
+      proxyReq.setHeader('x-authenticated-user', userJson);
       proxyReq.setHeader('x-auth-source', 'api-gateway');
+      console.log('[NOTIFICATIONS PROXY] Set headers from req.user:', {
+        userJsonLength: userJson.length,
+        userId: req.user.id
+      });
     }
     
     // CRITICAL: Preserve original headers from authenticate middleware
     // http-proxy-middleware doesn't auto-forward custom headers
     if (req.headers['x-authenticated-user']) {
       proxyReq.setHeader('x-authenticated-user', req.headers['x-authenticated-user']);
+      console.log('[NOTIFICATIONS PROXY] Preserved x-authenticated-user from headers');
     }
     if (req.headers['x-auth-source']) {
       proxyReq.setHeader('x-auth-source', req.headers['x-auth-source']);
+      console.log('[NOTIFICATIONS PROXY] Preserved x-auth-source from headers');
     }
+    
+    // DEBUG: Log final headers being sent to messaging service
+    console.log('[NOTIFICATIONS PROXY] Final proxy headers:', {
+      'x-authenticated-user': !!proxyReq.getHeader('x-authenticated-user'),
+      'x-auth-source': !!proxyReq.getHeader('x-auth-source')
+    });
+  },
+  onProxyRes: (proxyRes, req, res) => {
+    // DEBUG: Log response from messaging service
+    console.log('[NOTIFICATIONS PROXY] Response from messaging service:', {
+      status: proxyRes.statusCode,
+      statusMessage: proxyRes.statusMessage
+    });
+  },
+  onError: (err, req, res) => {
+    // DEBUG: Log any proxy errors
+    console.error('[NOTIFICATIONS PROXY] Proxy error:', err.message);
   },
   logLevel: 'debug'
 });
