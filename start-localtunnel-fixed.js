@@ -10,9 +10,6 @@ class LocalTunnelManager {
         // NEW: Support for unified vs dual tunnel modes
         // UNIFIED MODE is now the DEFAULT for best practices
         this.unifiedMode = process.env.DUAL_WEBSOCKET !== 'true' && !process.argv.includes('--dual');
-        
-        // FIXED SUBDOMAIN: Use only this subdomain to maintain consistent URL
-        this.fixedSubdomain = 'kelmah-backend-api';  // Fixed subdomain - always use this one
     }
 
     async startTunnels() {
@@ -28,10 +25,9 @@ class LocalTunnelManager {
         console.log('�🚀 Starting LocalTunnel tunnels...');
 
         try {
-            // Start API Gateway tunnel (port 5000) with fixed subdomain
-            const apiTunnel = await this.createTunnelWithFixedSubdomain(5000);
+            // Start API Gateway tunnel (port 5000)
+            const apiTunnel = await this.createTunnel(5000, 'kelmah-api');
             console.log(`✅ API Gateway tunnel started: ${apiTunnel}`);
-            console.log(`🔒 Using fixed subdomain - URL will stay consistent!`);
 
             let wsTunnel;
             let config;
@@ -156,76 +152,6 @@ class LocalTunnelManager {
                     this.createTunnelRandomSubdomain(port).then(resolve).catch(reject);
                 }
             }, 10000);
-        });
-    }
-
-    createTunnelWithFixedSubdomain(port) {
-        return new Promise(async (resolve, reject) => {
-            console.log(`🚀 Starting tunnel for port ${port} with fixed subdomain: ${this.fixedSubdomain}...`);
-            
-            try {
-                const url = await this.trySubdomain(port, this.fixedSubdomain);
-                console.log(`✅ Success! Using locked subdomain: ${this.fixedSubdomain}`);
-                return resolve(url);
-            } catch (error) {
-                console.error(`❌ ${this.fixedSubdomain} unavailable!`);
-                console.error('⚠️  ERROR: The configured subdomain is not available.');
-                console.error('💡 Solution: Either:');
-                console.error('   1. Wait a moment and restart the script');
-                console.error('   2. Stop any other LocalTunnel processes using this subdomain');
-                console.error(`   3. Update this.fixedSubdomain in the script to a different subdomain`);
-                reject(new Error(`Fixed subdomain ${this.fixedSubdomain} is not available`));
-            }
-        });
-    }
-
-    trySubdomain(port, subdomain) {
-        return new Promise((resolve, reject) => {
-            const process = spawn('npx', ['localtunnel', '--port', port.toString(), '--subdomain', subdomain], {
-                stdio: ['pipe', 'pipe', 'pipe'],
-                shell: true
-            });
-
-            let output = '';
-            let resolved = false;
-            let failed = false;
-
-            process.stdout.on('data', (data) => {
-                output += data.toString();
-                const urlMatch = output.match(/your url is: (https:\/\/[^\s]+)/);
-
-                if (urlMatch && !resolved && !failed) {
-                    resolved = true;
-                    this.tunnels.push(process);
-                    resolve(urlMatch[1]);
-                }
-            });
-
-            process.stderr.on('data', (data) => {
-                const errorMsg = data.toString();
-                if (errorMsg.includes('subdomain is not available') || 
-                    errorMsg.includes('already in use') ||
-                    errorMsg.includes('in use')) {
-                    failed = true;
-                    process.kill();
-                    reject(new Error('Subdomain unavailable'));
-                }
-            });
-
-            process.on('exit', (code) => {
-                if (!resolved && !failed) {
-                    reject(new Error('Tunnel process exited'));
-                }
-            });
-
-            // Timeout after 8 seconds
-            setTimeout(() => {
-                if (!resolved && !failed) {
-                    failed = true;
-                    process.kill();
-                    reject(new Error('Subdomain timeout'));
-                }
-            }, 8000);
         });
     }
 
@@ -395,15 +321,31 @@ class LocalTunnelManager {
     }
 
     async commitAndPush() {
-        console.log('\n⚠️  SKIPPING AUTO-COMMIT: Frontend now intelligently detects available backends');
-        console.log('ℹ️  The frontend will automatically use:');
-        console.log('   1. Render backend (if available)');
-        console.log('   2. LocalTunnel backend (if Render is down)');
-        console.log('\n💡 To manually update config, run:');
-        console.log('   git add .');
-        console.log('   git commit -m "Update LocalTunnel URL"');
-        console.log('   git push origin main');
-        return Promise.resolve();
+        return new Promise((resolve) => {
+            exec('git add . && git commit -m "Update LocalTunnel URLs and Vercel configs" && git push origin main',
+                { cwd: __dirname },
+                (error, stdout, stderr) => {
+                    if (error) {
+                        console.log('📝 Committed localtunnel URL update');
+                        console.log('⬆️  Pushing to origin/main...');
+                        // Try just the push
+                        exec('git push origin main', { cwd: __dirname }, (pushError) => {
+                            if (pushError) {
+                                console.log('⚠️  Manual git push may be needed');
+                            } else {
+                                console.log('✅ Pushed to origin/main');
+                            }
+                            resolve();
+                        });
+                    } else {
+                        console.log('📝 Committed localtunnel URL update');
+                        console.log('⬆️  Pushing to origin/main...');
+                        console.log('✅ Pushed to origin/main');
+                        resolve();
+                    }
+                }
+            );
+        });
     }
 
     keepAlive() {

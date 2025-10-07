@@ -13,41 +13,22 @@ const axios = require('axios');
 const detectEnvironment = () => {
   const nodeEnv = process.env.NODE_ENV;
   const hostname = require('os').hostname();
-  
-  // Check for Render-specific environment variables
+  const isLocalhost = hostname.includes('localhost') || hostname.includes('DESKTOP') || hostname.includes('LAPTOP');
   const hasRenderEnv = process.env.RENDER || process.env.RENDER_SERVICE_ID;
   const hasRailwayEnv = process.env.RAILWAY_ENVIRONMENT;
   const hasVercelEnv = process.env.VERCEL;
-  
-  // More comprehensive local detection
-  const isLocalhost = hostname.includes('localhost') || 
-                      hostname.includes('DESKTOP') || 
-                      hostname.includes('LAPTOP') ||
-                      hostname.includes('SAMSUNG') ||  // Added SAMSUNG for your machine
-                      hostname.toUpperCase().includes('PC');
-  
-  // PRIORITY 1: If running on Render/Railway/Vercel - definitely production
-  if (hasRenderEnv || hasRailwayEnv || hasVercelEnv) {
+
+  // Production indicators
+  if (nodeEnv === 'production' || hasRenderEnv || hasRailwayEnv || hasVercelEnv) {
     return 'production';
   }
 
-  // PRIORITY 2: If hostname indicates local machine - definitely development
-  if (isLocalhost) {
+  // Local development indicators
+  if (nodeEnv === 'development' || isLocalhost || !process.env.CLOUD_SERVICE_URLS) {
     return 'development';
   }
 
-  // PRIORITY 3: Check NODE_ENV only after environment checks
-  if (nodeEnv === 'development') {
-    return 'development';
-  }
-
-  // PRIORITY 4: If NODE_ENV is production but no cloud indicators - could be local production test
-  // Check if cloud URLs are configured - if not, assume local
-  if (nodeEnv === 'production' && !process.env.AUTH_SERVICE_CLOUD_URL) {
-    return 'development'; // Running locally in production mode
-  }
-
-  return nodeEnv === 'production' ? 'production' : 'development';
+  return 'development'; // Default to development
 };
 
 /**
@@ -107,7 +88,7 @@ const checkServiceHealth = async (url, timeout = 3000) => {
 
 /**
  * Resolve Service URL
- * Intelligently chooses between local and cloud URLs based on environment
+ * Intelligently chooses between local and cloud URLs
  */
 const resolveServiceUrl = async (serviceName) => {
   const config = SERVICE_CONFIG[serviceName];
@@ -118,30 +99,29 @@ const resolveServiceUrl = async (serviceName) => {
   const environment = detectEnvironment();
   console.log(`🔍 Service Discovery: ${config.name} - Environment: ${environment}`);
 
+  // Flexible URL selection for production - both local and cloud are valid options
+  let urlsToTry;
+
+  if (environment === 'production') {
+    // In production, try both cloud and local - use whichever is available
+    // This allows local testing and cloud deployment flexibility
+    urlsToTry = [
+      { url: config.cloud, type: 'cloud' },
+      { url: config.local, type: 'local' }
+    ].filter(option => option.url); // Remove null/undefined URLs
+  } else {
+    // In development, prefer local, fallback to cloud
+    urlsToTry = [
+      { url: config.local, type: 'local' },
+      { url: config.cloud, type: 'cloud' }
+    ].filter(option => option.url);
+  }
+
   // Manual override via environment variables (highest priority)
   const manualUrl = process.env[`${serviceName.toUpperCase()}_SERVICE_URL`];
   if (manualUrl) {
     console.log(`🔧 Manual override for ${config.name}: ${manualUrl}`);
     return manualUrl;
-  }
-
-  // Environment-specific URL selection strategy
-  let urlsToTry;
-
-  if (environment === 'development') {
-    // LOCAL ENVIRONMENT: Prefer local services, fallback to cloud
-    console.log(`🏠 Local environment detected - prioritizing localhost services`);
-    urlsToTry = [
-      { url: config.local, type: 'local' },
-      { url: config.cloud, type: 'cloud' }
-    ].filter(option => option.url); // Remove null/undefined URLs
-  } else {
-    // PRODUCTION ENVIRONMENT: Prefer cloud services, fallback to local (for Render deployments)
-    console.log(`☁️  Production environment detected - prioritizing cloud services`);
-    urlsToTry = [
-      { url: config.cloud, type: 'cloud' },
-      { url: config.local, type: 'local' }
-    ].filter(option => option.url);
   }
 
   // Test URLs in order and return the first healthy one
@@ -155,7 +135,7 @@ const resolveServiceUrl = async (serviceName) => {
     }
   }
 
-  // If no URLs are healthy, return the first available URL as fallback
+  // If no URLs are healthy, return the first available URL (let it fail at runtime)
   const fallbackUrl = urlsToTry[0]?.url;
   console.log(`❌ ${config.name} no healthy URLs found, using fallback: ${fallbackUrl}`);
   return fallbackUrl;

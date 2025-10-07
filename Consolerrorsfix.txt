@@ -1,317 +1,36 @@
-# Kelmah PWA Console Errors Analysis & File Mapping
+Complete Error List from Console Logs
+Based on your console output, here are all the distinct errors after successful login:
 
-## Error Investigation Summary
-This document lists all errors identified from the Kelmah PWA frontend console logs, along with the code files involved in each error. Errors are numbered and categorized by type.
+🔴 Category 1: 404 Errors (Not Found)
+These endpoints exist in code but Render deployment isn't finding them:
 
-## Error List with Involved Files
+GET /api/notifications → 404
 
-### 1. 503 Service Unavailable - /api/notifications
-**Description**: Service unavailable error when fetching notifications
-**Involved Files**:
-- `kelmah-frontend/src/utils/axios.js` - Axios interceptors and retry logic
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` - Service health monitoring
-- `kelmah-frontend/src/config/environment.js` - Environment configuration and service URLs
-- `kelmah-backend/api-gateway/server.js` - API Gateway routing and service proxy
-- `kelmah-backend/services/messaging/routes/notifications.js` - Notifications endpoint handler
-- `kelmah-backend/services/messaging/server.js` - Messaging service entry point
+Error: "Messaging service endpoint not found"
+Impact: Notifications widget shows empty
+Repeated: 3 times in logs
+GET /api/users/workers/{userId}/completeness → 404
 
-### 2. 503 Service Unavailable - /api/auth/refresh-token
-**Description**: Service unavailable error during token refresh
-**Involved Files**:
-- `kelmah-frontend/src/utils/axios.js` - Axios instance and authentication interceptors
-- `kelmah-frontend/src/modules/auth/services/authService.js` - Authentication service calls
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` - Health check integration
-- `kelmah-backend/services/auth/routes/auth.js` - Authentication routes including refresh-token
-- `kelmah-backend/services/auth/controllers/authController.js` - Token refresh logic
-- `kelmah-backend/services/auth/server.js` - Auth service entry point
-- `kelmah-backend/api-gateway/server.js` - Gateway proxy routing
+Error: Request failed with status code 404
+Impact: Profile completion percentage not showing
+GET /api/users/workers/jobs/recent?limit=6 → 404
 
-### 3. 404 Not Found - /api/users/me/credentials
-**Description**: Endpoint not found when fetching the authenticated user's credentials (seen while loading hirer profile). Console: "User service unavailable for hirer profile: Request failed with status code 404".
-**Involved Files**:
-- `kelmah-frontend/src/modules/hirer/services/hirerService.js` — `getProfile()` calls `/api/users/me/credentials`
-- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js` — `fetchHirerProfile` thunk uses the same path
-- `kelmah-frontend/src/modules/user/services/userService.js` — Any shared user API helpers (if present)
-- `kelmah-frontend/src/utils/axios.js` — HTTP client configuration/interceptors
-- `kelmah-backend/services/user/routes/user.js` — User routes (credentials endpoint likely missing)
-- `kelmah-backend/services/user/controllers/userController.js` — User controller logic
-- `kelmah-backend/services/user/server.js` — User service entry point
-- `kelmah-backend/api-gateway/server.js` — API Gateway routing
+Error: Request failed with status code 404
+Impact: Recent jobs widget empty
+GET /api/users/workers/{userId}/availability → 404
 
-### 4. 404 Not Found - /api/users/bookmarks and /api/users/workers/:id/bookmark
-**Description**: Bookmarks API not found. Console shows repeated "WorkerSearch - fetching bookmarks" followed by `GET /api/users/bookmarks 404`, and `POST /api/users/workers/:workerId/bookmark 404` when saving a worker.
-**Involved Files**:
-- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx` — fetches `/api/users/bookmarks` and toggles bookmark via `/api/users/workers/:id/bookmark`
-- `kelmah-frontend/src/modules/worker/services/workerService.js` — Calls `/api/users/bookmarks` (shared usage)
-- `kelmah-frontend/src/utils/axios.js` — HTTP client configuration
-- `kelmah-backend/services/user/routes/user.js` — Should expose bookmarks endpoints under `/api/users/*`
-- `kelmah-backend/services/user/controllers/userController.js` — Implement handlers for list/toggle
-- `kelmah-backend/services/user/server.js` — User service entry point
-- `kelmah-backend/api-gateway/server.js` — Ensure proxy routes for `/api/users/*`
+Error: Request failed with status code 404
+Impact: Availability status not displayed
+🔴 Category 2: 500 Errors (Internal Server Error)
+Backend code error causing crashes:
 
-### 5. 404 Not Found - /api/user/settings
-**Description**: Endpoint not found when fetching user settings
-**Involved Files**:
-- `kelmah-frontend/src/modules/user/services/userService.js` - User API calls
-- `kelmah-frontend/src/utils/axios.js` - HTTP client configuration
-- `kelmah-backend/services/user/routes/user.js` - User routes (missing settings endpoint)
-- `kelmah-backend/services/user/controllers/userController.js` - User controller logic
-- `kelmah-backend/services/user/server.js` - User service entry point
-- `kelmah-backend/api-gateway/server.js` - API Gateway routing
-
-### 6. TypeError: Cannot read properties of null (reading 'data')
-**Description**: Null reference error when accessing response data
-**Involved Files**:
-- `kelmah-frontend/src/utils/axios.js` - Response interceptors and error handling
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` - Service health check response processing
-- `kelmah-frontend/src/modules/common/services/axios.js` - Centralized axios configuration
-- `kelmah-frontend/src/config/environment.js` - Environment and service URL configuration
-
-### 7. AxiosError: Network Error
-**Description**: Network connectivity or timeout errors
-**Involved Files**:
-- `kelmah-frontend/src/utils/axios.js` - Axios retry logic and timeout handling
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` - Network error handling in health checks
-- `kelmah-frontend/src/config/environment.js` - Service URL configuration
-- `kelmah-backend/api-gateway/server.js` - Gateway connectivity and routing
-- `kelmah-backend/src/routes/health.js` - Health endpoint availability
-
-### 8. WebSocket Connection Errors
-**Description**: Failed to connect to WebSocket server. In production the client uses `/socket.io`, which is rewritten by Vercel to the active backend tunnel. Console shows attempts to `wss://kelmah-frontend-cyan.vercel.app/socket.io/?EIO=4...` failing.
-**Involved Files**:
-- `kelmah-frontend/src/services/websocketService.js` - WebSocket connection logic
-- `kelmah-frontend/src/config/environment.js` - WebSocket URL configuration
-- `kelmah-backend/services/messaging/server.js` - Socket.IO server setup
-- `kelmah-backend/api-gateway/server.js` - WebSocket proxy routing
-- `kelmah-frontend/src/store/websocketSlice.js` - WebSocket state management
-Notes:
-- Verify `vercel.json` rewrites for `/socket.io` point to the live ngrok/render URL. Current mapping exists; failures likely indicate the tunnel/backend is down or blocked by CORS/auth.
-
-### 9. CORS Policy Blocks
-**Description**: Cross-Origin Resource Sharing policy violations
-**Involved Files**:
-- `kelmah-backend/api-gateway/server.js` - CORS configuration and headers
-- `kelmah-backend/services/*/server.js` - Individual service CORS setup
-- `kelmah-frontend/src/config/environment.js` - Frontend origin configuration
-- `kelmah-frontend/vercel.json` - Deployment CORS configuration
-
-### 10. Service Health Check Failures
-**Description**: Proactive health monitoring failures
-**Involved Files**:
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` - Health check implementation
-- `kelmah-frontend/src/config/environment.js` - Service registry and URLs
-- `kelmah-backend/src/routes/health.js` - Backend health endpoints
-- `kelmah-backend/api-gateway/server.js` - Gateway health routing
-- `kelmah-frontend/src/utils/axios.js` - Health check HTTP client
-Notes:
-- For notifications, the app falls back to an empty list on service timeout: "🔔 Using empty notifications fallback during service timeout".
-
-## Root Cause Analysis
-
-### Primary Issues Identified:
-1. **Missing API Endpoints**: Several 404 errors indicate missing route implementations
-2. **Service Availability**: 503 errors suggest service deployment or connectivity issues
-3. **Configuration Mismatches**: WebSocket ports and service URLs may be misconfigured
-4. **Error Handling Gaps**: Null reference errors indicate inadequate error handling
-5. **CORS Configuration**: Frontend-backend communication blocked by CORS policies
-
-### Files Requiring Immediate Attention:
-- `kelmah-backend/services/user/routes/user.js` - Add missing credentials/settings endpoints
-- `kelmah-backend/services/job/routes/job.js` - Add missing bookmarks endpoint
-- `kelmah-frontend/src/services/websocketService.js` - Verify WebSocket configuration
-- `kelmah-backend/api-gateway/server.js` - Ensure proper CORS and routing
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` - Enhance error handling
-
-## Investigation Status
-- ✅ Errors listed and categorized
-- ✅ Involved files identified for each error
-- 🔄 Root cause analysis completed
-- ⏳ Fixes implementation pending
-- ⏳ Testing and validation pending
-
-## Next Steps
-1. Review and implement missing API endpoints
-2. Verify service deployment and connectivity
-3. Test WebSocket configuration
-4. Enhance error handling mechanisms
-5. Validate CORS configuration
-6. Perform end-to-end testing
-
-## Additional Errors (Appended)
-
-### 11. 401 Unauthorized - /api/jobs/:id (View Details flow)
-Description: When a user clicks "View Details" for a job, the app logs "No token found in storage" and the request to `/api/jobs/:id` fails with 401. Service health wrapper logs "🚨 Service Error - <ngrok-url>" and "Job service unavailable for job ...: Request failed with status code 401".
-Involved Files:
-- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx` — Dispatches `fetchJobById(id)` on mount to load job
-- `kelmah-frontend/src/modules/jobs/services/jobSlice.js` — Thunk `fetchJobById` that calls API
-- `kelmah-frontend/src/modules/jobs/services/jobsApi.js` — `getJobById(jobId)` issues `GET /api/jobs/:id`
-- `kelmah-frontend/src/modules/common/services/axios.js` — Attaches Authorization header from storage; handles 401/refresh
-- `kelmah-frontend/src/utils/secureStorage.js` — Source of `getAuthToken()`; empty token triggers 401
-- `kelmah-frontend/src/modules/auth/services/authService.js` — Emits "No token found in storage"; dual-storage fallback
-- `kelmah-frontend/src/utils/serviceHealthCheck.js` — Logs "🚨 Service Error - {url}" wrapper on failures
-- `kelmah-frontend/src/routes/publicRoutes.jsx` — Declares route `/jobs/:id` to `JobDetailsPage`
-- `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx` and `src/modules/jobs/pages/JobsPage.jsx` — Contain "🔍 View Details clicked for job:" console log hooks initiating navigation
-- Backend (for completeness):
-	- `kelmah-backend/api-gateway/server.js` — Proxies `/api/jobs/:id` and enforces auth
-	- `kelmah-backend/services/job/routes/job.js` — Route for `GET /api/jobs/:id`
-	- `kelmah-backend/services/job/controllers/jobController.js` — Job fetch logic and 401 propagation
-	- `kelmah-backend/services/job/server.js` — Service bootstrap and middleware (auth)
-
-Notes:
-- Root cause is missing/expired token, not service unavailability. Ensure login flow persists tokens via `secureStorage` and that axios attaches `Authorization: Bearer <token>`.
-
-### 12. Uncaught TypeError in inject.js (external script)
-Description: `inject.js:254 Uncaught TypeError: e.target.className.indexOf is not a function at HTMLDocument.mouseup`. This is from a third‑party injected script (likely a browser extension) and not part of the app bundle.
-Involved Files:
-- External: `inject.js` (browser extension/content script). Not in repository.
-- Mitigation within app (optional):
-	- Audit global document event listeners in app components, but no matching code found in repo; treat as external.
-Notes:
-- Reproduce in an incognito window with extensions disabled to confirm it disappears. No code change required in this repository. The specific failure happens when `className` is an object (e.g., SVGAnimatedString) rather than a string; extension should coerce to `String(e.target.className)`.
-
-### 13. 503 Service Unavailable - /profile, /profile/activity, /profile/statistics
-**Description**: User profile data endpoints intermittently return 503. Console shows retries with exponential backoff for these three endpoints.
-**Involved Files**:
-- `kelmah-frontend/src/modules/profile/services/profileService.js` — Calls `/profile`, `/profile/activity`, `/profile/statistics` via `userServiceClient`
-- `kelmah-frontend/src/config/services.js` and `src/config/config.js` — Service path definitions for profile endpoints
-- `kelmah-backend/api-gateway/routes/user.routes.js` and `routes/index.js` — Proxy routes for `/profile/*`
-- `kelmah-backend/api-gateway/routes/monolith.routes.js` — Monolith proxy used by some profile routes
-- Backend user/monolith services — Ensure handlers are deployed and healthy
-Notes:
-- If the gateway proxies `/profile` to a monolith, ensure that service is online; otherwise route to user-service implementation.
-
-### 14. 503 Service Unavailable - /api/conversations (Messaging)
-**Description**: Creating or listing conversations fails with 503. Console lines include `POST /api/conversations 503` and "Messaging service unavailable for creating direct conversation" followed by "Failed to start conversation".
-**Involved Files**:
-- `kelmah-frontend/src/modules/messaging/services/messagingService.js` — `createDirectConversation`, `createConversation`, `getConversations`
-- `kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx` — Triggers conversation creation
-- `kelmah-frontend/src/utils/axios.js` — Messaging client configuration
-- `kelmah-backend/services/messaging/server.js` — Messaging service entry (Socket.IO + REST)
-- `kelmah-backend/services/messaging/routes/conversations.js` — REST routes for conversations
-- `kelmah-backend/api-gateway/server.js` — Ensure proxy for `/api/conversations` exists and targets the live service
-Notes:
-- Old docs mention the gateway sometimes only proxied `/api/messages` but not `/api/conversations`. Confirm both paths are proxied.
-
-### 15. TypeError: Cannot read properties of undefined (reading 'map') — WorkerSearch render crash
-**Description**: On the Find Talent page, a crash occurs with "Cannot read properties of undefined (reading 'map')". This happens when a UI section tries to map over data that is undefined due to upstream API errors (404 bookmarks or empty worker list).
-**Involved Files**:
-- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx` — Renders worker cards, skills, and saved states; ensure arrays before `.map`
-- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx` — Fetches bookmarks; set `[]` on failure (already logs "bookmarks fetch failed")
-- `kelmah-frontend/src/modules/hirer/services/hirerService.js` — Related profile calls that may influence initial state
-Mitigation:
-- Guard all `.map` usages with `Array.isArray(x) ? x : []` and default optional chains e.g., `(worker.skills || [])`. Ensure state like `workers`, `savedWorkers`, and any derived arrays are initialized as `[]` and never `undefined`.
-
----
-
-## Sector Grouping & Action Plan
-
-This section groups the errors by project sector, lists the key files, and describes exactly how to remediate and verify each group. Error numbers reference items above.
-
-### A) Frontend infrastructure (HTTP clients, retries, error wrappers)
-- Errors: #1, #2, #6, #7, #10
-- Files:
-	- `kelmah-frontend/src/utils/axios.js`
-	- `kelmah-frontend/src/modules/common/services/axios.js`
-	- `kelmah-frontend/src/utils/serviceHealthCheck.js`
-	- `kelmah-frontend/src/config/environment.js`
-- What to do:
-	1) Harden null-safety: everywhere we read responses, use `res?.data ?? {}` and guard `error.response?.data` (#6).
-	2) Refresh policy: on 5xx during refresh, perform a single attempt; avoid looping retries; display a non-blocking toast; on failure, sign out gracefully (#2).
-	3) Retries/backoff: keep 3–5 attempts with jitter; stop when health check marks the service as down to avoid user-facing spam (#1, #7, #10).
-	4) UX: when a service is degraded for >15s, show a subtle banner (“Some services are temporarily unavailable.”).
-- How to verify:
-	- Simulate 503s and confirm: single refresh attempt, limited retries, banner appears, and no `null.data` TypeError.
-
-### B) Frontend UI (pages/components robustness)
-- Errors: #15
-- Files: `src/modules/hirer/components/WorkerSearch.jsx`
-- What to do:
-	1) Wrap all `.map` with array guards: `Array.isArray(items) ? items : []`.
-	2) Initialize `workers`, `savedWorkers`, and derived arrays to `[]`.
-	3) For optional fields (e.g., `worker.skills`), use `(worker.skills ?? [])`.
-- How to verify:
-	- Force bookmarks 404 and workers empty; page should render without crashing and show fallback UI.
-
-### C) User service (credentials, bookmarks, profile)
-- Errors: #3, #4, #13
-- Files (FE): `hirerService.js`, `hirerSlice.js`, `workerService.js`, `WorkerSearch.jsx`, `profileService.js`, `config/services.js`, `config/config.js`
-- Files (BE): `services/user/*`, `api-gateway/routes/user.routes.js`, `api-gateway/routes/index.js`, `api-gateway/routes/monolith.routes.js`
-- What to do:
-	1) Implement or re-enable endpoints:
-		 - GET `/api/users/me/credentials` → `{ data: {...user} }` (#3)
-		 - GET `/api/users/bookmarks` → `{ data: { workerIds: string[] } }` (#4)
-		 - POST `/api/users/workers/:id/bookmark` → `{ data: { bookmarked: boolean } }` (#4)
-	2) Gateway: ensure `/api/users/*` is proxied to user-service.
-	3) Profile 503s: decide between monolith vs user-service. If monolith is down, route `/profile*` to user-service or bring monolith up (#13).
-- How to verify:
-	- Call each endpoint via the FE flows; confirm 2xx with expected shapes and that WorkerSearch no longer logs 404s.
-
-### D) Job service (authorization on job details)
-- Errors: #11
-- Files (FE): `JobDetailsPage.jsx`, `jobSlice.js`, `jobsApi.js`, `modules/common/services/axios.js`, `utils/secureStorage.js`, `modules/auth/services/authService.js`
-- Files (BE): `api-gateway/server.js`, `services/job/*`
-- What to do:
-	1) Add an auth guard: if no token, don’t call `/api/jobs/:id`; redirect to login or show a sign-in prompt.
-	2) Confirm axios attaches `Authorization` for the job client.
-	3) Verify gateway/auth middleware alignment and 401 propagation.
-- How to verify:
-	- Clear token and open a job detail → no 401 network call; user is prompted to sign in. With a valid token, job details load 200.
-
-### E) Messaging & realtime (Socket.IO + conversations)
-- Errors: #1, #8, #14
-- Files (FE): `services/websocketService.js`, `modules/messaging/services/messagingService.js`, `modules/messaging/components/common/ConversationList.jsx`, `vercel.json`
-- Files (BE): `services/messaging/server.js`, `services/messaging/routes/conversations.js`, `api-gateway/server.js`
-- What to do:
-	1) Socket.IO endpoint: keep production client at `/socket.io` but ensure `vercel.json` rewrite targets the current gateway/backend. Optionally support `window.__RUNTIME_CONFIG__.websocketUrl` for hot-swapping (#8).
-	2) Gateway WS upgrade: ensure upgrade handling and CORS allow the Vercel domain.
-	3) REST proxy: add/confirm `/api/conversations` proxy to messaging-service (#14).
-	4) Notifications: once WebSocket is healthy, the `/api/notifications` 503 noise should drop; retain fallback.
-- How to verify:
-	- Connect from production domain; see Socket.IO connect event; create a direct conversation returns 201/200 instead of 503.
-
-### F) Auth service (refresh reliability)
-- Errors: #2
-- Files: FE auth client/interceptors; BE auth routes/controllers
-- What to do:
-	1) Ensure `POST /api/auth/refresh-token` is deployed and reachable via gateway.
-	2) Implement single-attempt refresh with exponential backoff only for initial call; on failure, logout and route to sign-in with a toast.
-- How to verify:
-	- Expire token; first protected call triggers one refresh attempt; subsequent calls don’t loop; user is redirected gracefully if refresh fails.
-
-### G) Gateway / CORS / deploy
-- Errors: #8, #9, #13, #14
-- Files: `api-gateway/server.js` (+ route modules), `vercel.json`
-- What to do:
-	1) Proxies: ensure `/api/users/*`, `/api/conversations`, `/socket.io`, `/profile*` are all present and point to live services.
-	2) CORS: allow Vercel and ngrok origins with credentials; handle `OPTIONS` preflight and expose Socket.IO headers.
-	3) Monitoring: log targets and status codes for quick triage of 404 vs 503.
-- How to verify:
-	- From production, perform requests and confirm correct upstreams and CORS headers; Socket.IO upgrade succeeds.
-
-### H) Health monitoring UX
-- Errors: #10
-- Files: `frontend serviceHealthCheck`, `backend /health` routes
-- What to do:
-	1) Use `/api/health/aggregate` to determine if a dependency is down and short-circuit retries with a clear user message.
-	2) Add a global degraded-mode banner.
-- How to verify:
-	- Take a service down; frontend quickly shows degraded mode and avoids long retry chains.
-
-### I) External (browser extension)
-- Errors: #12
-- Files: External `inject.js` (not in repo)
-- What to do:
-	- Confirm it disappears with extensions disabled. If needed, request the extension owner to coerce `String(e.target.className)` before `.indexOf`.
-
-## Quick, prioritized remediation path (suggested order)
-1) Gateway & deploy glue: add/confirm `/api/users/*`, `/api/conversations`, `/socket.io`, `/profile*` proxies; update `vercel.json` rewrite URL.
-2) Backend endpoints: implement user-service credentials and bookmarks.
-3) Frontend guards: add auth guard for job details; harden WorkerSearch array `.map` usage.
-4) CORS & health: ensure allowed origins; leverage aggregate health for smarter retries.
-
-## Verification checklist (high level)
-- WorkerSearch renders without crashes when bookmarks 404 (now handled).
-- Job details does not hit network without a token; with token it loads 200.
-- Conversations POST returns 2xx; WebSocket connects from Vercel domain.
-- Credentials/bookmarks endpoints return expected shapes and no longer 404.
-- Refresh flow attempts once on 5xx and signs out on failure without loops.
+GET /api/users/dashboard/workers → 500
+Error: Internal Server Error
+Impact: Dashboard worker stats failing, triggers retry logic
+Note: Automatic retry attempted (1/5 retries shown)
+🔴 Category 3: WebSocket Connection Failures
+WebSocket connection failed
+Error: "WebSocket is closed before the connection is established"
+URL: wss://kelmah-api-gateway-5loa.onrender.com
+Impact: Real-time notifications won't work
+Repeated: Multiple connection attempts (59+ warnings)

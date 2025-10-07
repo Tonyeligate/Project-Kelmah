@@ -173,8 +173,14 @@ exports.getDashboardMetrics = async (req, res, next) => {
 exports.getDashboardWorkers = async (req, res, next) => {
   try {
     // Use the MongoDB WorkerProfile from our models index
-    const { WorkerProfile } = require('../models');
+    // Also ensure User model is registered before populate
+    const { WorkerProfile, User } = require('../models');
     const mongoose = require('mongoose');
+
+    // Explicitly register User model if not already registered
+    if (!mongoose.models.User && User) {
+      console.log('Registering User model for populate');
+    }
 
     // Check MongoDB connection status
     if (mongoose.connection.readyState !== 1) {
@@ -188,6 +194,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
     const workers = await WorkerProfile.find()
       .populate({
         path: 'userId',
+        model: User, // Explicitly pass the model instead of string reference
         select: 'firstName lastName profilePicture',
         options: { strictPopulate: false } // Prevent errors on missing references
       })

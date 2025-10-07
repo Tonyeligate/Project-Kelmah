@@ -35,39 +35,7 @@ const loadRuntimeConfig = async () => {
   return runtimeConfig;
 };
 
-// Multiple backend URLs to try in order (LocalTunnel first for faster local development)
-const BACKEND_OPTIONS = [
-  null, // Will be replaced with LocalTunnel URL from runtime config (try first - fastest when available)
-  'https://kelmah-api-gateway-si57.onrender.com', // Render production (fallback - always available)
-];
-
-// Health check a backend URL
-const checkBackendHealth = async (url) => {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-    
-    const response = await fetch(`${url}/health`, {
-      method: 'GET',
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-      }
-    });
-    
-    clearTimeout(timeout);
-    
-    if (response.ok) {
-      const data = await response.json();
-      return data.status === 'healthy';
-    }
-    return false;
-  } catch (error) {
-    return false;
-  }
-};
-
-// Primary API URL selection with intelligent fallback
+// Primary API URL selection with mixed-content protection
 const computeApiBase = async () => {
   const envUrl = import.meta.env.VITE_API_URL;
   const isProduction = import.meta.env.PROD;
@@ -79,47 +47,37 @@ const computeApiBase = async () => {
   const config = await loadRuntimeConfig();
   const localtunnelUrl = config?.localtunnelUrl || config?.ngrokUrl; // Support both keys for backward compatibility
 
-  // Add LocalTunnel URL to options if available (FIRST position for priority)
-  if (localtunnelUrl) {
-    BACKEND_OPTIONS[0] = localtunnelUrl;
-  }
-
-  // For Vercel/Production deployments, try backends in order of preference
-  if (isVercel || isProduction) {
-    console.log('� Intelligent backend selection: Testing available backends...');
-    
-    // Try each backend option
-    for (const backendUrl of BACKEND_OPTIONS) {
-      if (!backendUrl) continue;
-      
-      console.log(`🏥 Testing backend: ${backendUrl}`);
-      const isHealthy = await checkBackendHealth(backendUrl);
-      
-      if (isHealthy) {
-        console.log(`✅ Backend available: ${backendUrl}`);
-        return backendUrl;
-      } else {
-        console.warn(`❌ Backend unavailable: ${backendUrl}`);
-      }
+  // For Vercel deployments, use LocalTunnel URL from runtime config
+  if (isVercel) {
+    console.log('🔗 Vercel deployment detected, using LocalTunnel URL from runtime config');
+    if (localtunnelUrl) {
+      return localtunnelUrl;
     }
-    
-    // If all backends fail, use Render as default (most reliable)
-    console.warn('⚠️ All backends unavailable, defaulting to Render');
-    return BACKEND_OPTIONS[0];
+    console.warn('⚠️ No LocalTunnel URL in runtime config, falling back to /api');
+    return '/api';
   }
 
-  // For local development, use environment URL or localhost
+  // For production, use LocalTunnel URL from runtime config
+  if (isProduction) {
+    if (localtunnelUrl) {
+      return localtunnelUrl;
+    }
+    console.warn('⚠️ No LocalTunnel URL in runtime config, falling back to /api');
+    return '/api';
+  }
+
+  // If we have an environment URL, use it (unless it's http on https page)
   if (envUrl) {
     // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
     if (isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn('⚠️ Rejecting http URL on https page, using relative /api');
+      console.warn('⚠️ Rejecting http URL on https page, using relative /api for LocalTunnel routing');
       return '/api';
     }
     return envUrl;
   }
   
-  // No environment URL set - use relative /api
-  console.log('🔗 No VITE_API_URL set, using /api');
+  // No environment URL set - use relative /api to trigger Vercel rewrites to LocalTunnel
+  console.log('🔗 No VITE_API_URL set, using /api for Vercel→LocalTunnel routing');
   return '/api';
 };
 

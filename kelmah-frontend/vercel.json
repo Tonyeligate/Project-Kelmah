@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://kelmah-api-gateway-5loa.onrender.com/api/$1"
+      "destination": "https://kelmah-api.loca.lt/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://kelmah-api-gateway-5loa.onrender.com/socket.io/$1"
+      "destination": "https://kelmah-api.loca.lt/socket.io/$1"
     },
     {
       "source": "/(.*)",
