@@ -40,7 +40,7 @@ router.get("/", (req, res, next) => {
   jobController.getJobs(req, res, next);
 });
 router.get("/search", jobController.advancedJobSearch);
-router.get("/dashboard", jobController.getDashboardJobs);
+router.get("/dashboard", verifyGatewayRequest, jobController.getDashboardJobs); // Protected dashboard route
 router.get("/categories", jobController.getJobCategories);
 router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
 router.get("/contracts/:id", jobController.getContractById);

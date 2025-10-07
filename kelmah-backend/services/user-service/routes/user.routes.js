@@ -27,10 +27,10 @@ const WorkerController = require('../controllers/worker.controller');
 router.get("/", getAllUsers);
 router.post("/", createLimiter('admin'), createUser);
 
-// Dashboard routes
-router.get("/dashboard/metrics", getDashboardMetrics);
-router.get("/dashboard/workers", getDashboardWorkers);
-router.get("/dashboard/analytics", getDashboardAnalytics);
+// Dashboard routes - Protected with gateway authentication
+router.get("/dashboard/metrics", verifyGatewayRequest, getDashboardMetrics);
+router.get("/dashboard/workers", verifyGatewayRequest, getDashboardWorkers);
+router.get("/dashboard/analytics", verifyGatewayRequest, getDashboardAnalytics);
 
 // Database cleanup endpoint (development/admin use)
 router.post("/database/cleanup", cleanupDatabase);
@@ -64,7 +64,7 @@ router.get('/workers', (req, res, next) => {
 }, WorkerController.getAllWorkers);
 
 // Worker-specific parameterized routes (MUST be after specific routes like /search)
-router.get("/workers/:id/availability", (req, res, next) => {
+router.get("/workers/:id/availability", verifyGatewayRequest, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
@@ -72,7 +72,7 @@ router.get("/workers/:id/availability", (req, res, next) => {
   next();
 }, WorkerController.getWorkerAvailability);
 
-router.get("/workers/:id/completeness", (req, res, next) => {
+router.get("/workers/:id/completeness", verifyGatewayRequest, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/:id/completeness route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
