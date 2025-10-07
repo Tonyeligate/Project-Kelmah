@@ -277,6 +277,61 @@ app.get('/api/health/live', (req, res) => {
   res.status(200).json({ alive: true, timestamp: new Date().toISOString() });
 });
 
+// ITERATION 5: Detailed MongoDB connection status endpoint for debugging
+app.get('/health/db', (req, res) => {
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const readyState = mongoose.connection?.readyState || 0;
+  
+  const status = {
+    service: 'User Service - MongoDB Connection Status',
+    timestamp: new Date().toISOString(),
+    mongodb: {
+      readyState: readyState,
+      readyStateText: states[readyState] || 'unknown',
+      host: mongoose.connection?.host || 'N/A',
+      name: mongoose.connection?.name || 'N/A',
+      models: Object.keys(mongoose.models || {}).length,
+      modelNames: Object.keys(mongoose.models || {}),
+    },
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      hasMongodbUri: !!process.env.MONGODB_URI,
+      mongodbUriPreview: process.env.MONGODB_URI ? 
+        process.env.MONGODB_URI.substring(0, 30) + '...' : 'NOT SET'
+    },
+    healthCheck: readyState === 1 ? 'HEALTHY' : 'UNHEALTHY'
+  };
+  
+  res.status(readyState === 1 ? 200 : 503).json(status);
+});
+
+app.get('/api/health/db', (req, res) => {
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const readyState = mongoose.connection?.readyState || 0;
+  
+  const status = {
+    service: 'User Service - MongoDB Connection Status',
+    timestamp: new Date().toISOString(),
+    mongodb: {
+      readyState: readyState,
+      readyStateText: states[readyState] || 'unknown',
+      host: mongoose.connection?.host || 'N/A',
+      name: mongoose.connection?.name || 'N/A',
+      models: Object.keys(mongoose.models || {}).length,
+      modelNames: Object.keys(mongoose.models || {}),
+    },
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      hasMongodbUri: !!process.env.MONGODB_URI,
+      mongodbUriPreview: process.env.MONGODB_URI ? 
+        process.env.MONGODB_URI.substring(0, 30) + '...' : 'NOT SET'
+    },
+    healthCheck: readyState === 1 ? 'HEALTHY' : 'UNHEALTHY'
+  };
+  
+  res.status(readyState === 1 ? 200 : 503).json(status);
+});
+
 // Root endpoint with API information and deployment verification (AFTER specific routes)
 app.get("/", (req, res) => {
   const actualService = 'user-service';

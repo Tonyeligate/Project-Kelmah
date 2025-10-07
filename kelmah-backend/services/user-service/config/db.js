@@ -105,13 +105,44 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     connectPromise = null;
-    console.error(`❌ Error connecting to MongoDB: ${error.message}`);
-    console.error('🔍 Connection string check - ensure MONGODB_URI is set correctly');
+    
+    // COMPREHENSIVE ERROR LOGGING for debugging on Render
+    console.error('=' * 80);
+    console.error('🚨 MONGODB CONNECTION FAILURE - DETAILED ERROR INFO');
+    console.error('='.repeat(80));
+    console.error(`📛 Error Message: ${error.message}`);
+    console.error(`� Error Name: ${error.name}`);
+    console.error(`📛 Error Code: ${error.code || 'N/A'}`);
+    
+    if (error.reason) {
+      console.error(`📛 Error Reason: ${JSON.stringify(error.reason, null, 2)}`);
+    }
+    
+    console.error('\n🔍 Environment Check:');
+    console.error(`  - NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+    console.error(`  - MONGODB_URI exists: ${!!process.env.MONGODB_URI}`);
+    if (process.env.MONGODB_URI) {
+      const uri = process.env.MONGODB_URI;
+      // Safely log connection string (hide password)
+      const sanitized = uri.replace(/:[^@]+@/, ':****@');
+      console.error(`  - Connection string (sanitized): ${sanitized}`);
+    }
+    
+    console.error('\n🔍 Connection Options:');
+    console.error(JSON.stringify(options, null, 2));
+    
+    console.error('\n🔍 Full Error Stack:');
+    console.error(error.stack);
+    
+    console.error('='.repeat(80));
+    console.error('END OF ERROR REPORT');
+    console.error('='.repeat(80));
     
     // In production, we should exit if database connection fails
     if (process.env.NODE_ENV === 'production') {
       console.error('🚨 Production environment requires database connection');
-      process.exit(1);
+      console.error('🚨 Service will exit in 5 seconds...');
+      setTimeout(() => process.exit(1), 5000);
     }
     
     throw error;
