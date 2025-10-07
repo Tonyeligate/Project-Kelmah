@@ -178,25 +178,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Direct worker routes for public access (MUST come before other routes)
+// Direct worker routes for public access - REMOVED, handled by router
+// All worker routes are now properly handled by the userRoutes router mounted at /api/users
 const WorkerController = require('./controllers/worker.controller');
-// Handle both /workers (from gateway path rewrite) and /api/workers (direct calls)
-app.get('/workers', (req, res) => {
-  console.log('✅ /workers route hit');
-  WorkerController.getAllWorkers(req, res);
-});
-app.get('/workers/search', (req, res) => {
-  console.log('✅ /workers/search route hit');
-  WorkerController.searchWorkers(req, res);
-});
-app.get('/api/workers', (req, res) => {
-  console.log('✅ /api/workers route hit');
-  WorkerController.getAllWorkers(req, res);
-});
-app.get('/api/workers/search', (req, res) => {
-  console.log('✅ /api/workers/search route hit');
-  WorkerController.searchWorkers(req, res);
-});
 
 // Removed temporary profile/activity/statistics stub endpoints
 
