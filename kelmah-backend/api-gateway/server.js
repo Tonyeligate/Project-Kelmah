@@ -690,23 +690,15 @@ app.use('/api/socket/metrics',
 // Notification routes (protected) → messaging-service (hosts notifications API)
 app.use('/api/notifications',
   authenticate,
-  (req, res, next) => {
-    if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
-      return res.status(503).json({ error: 'Messaging service unavailable' });
-    }
-    const proxy = createProxyMiddleware({
-      target: services.messaging,
-      changeOrigin: true,
-      pathRewrite: { '^/api/notifications': '/api/notifications' },
-      onProxyReq: (proxyReq, req) => {
-        if (req.user) {
-          proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
-          proxyReq.setHeader('x-auth-source', 'api-gateway');
-        }
+  createDynamicProxy('messaging', {
+    pathRewrite: { '^/api/notifications': '/api/notifications' },
+    onProxyReq: (proxyReq, req) => {
+      if (req.user) {
+        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        proxyReq.setHeader('x-auth-source', 'api-gateway');
       }
-    });
-    return proxy(req, res, next);
-  }
+    }
+  })
 );
 
 // Conversations routes (protected) → messaging-service
