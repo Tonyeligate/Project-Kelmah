@@ -173,13 +173,20 @@ exports.getDashboardMetrics = async (req, res, next) => {
 exports.getDashboardWorkers = async (req, res, next) => {
   try {
     // Use the MongoDB WorkerProfile from our models index
-    // Also ensure User model is registered before populate
-    const { WorkerProfile, User } = require('../models');
+    const { WorkerProfile } = require('../models');
     const mongoose = require('mongoose');
 
-    // Explicitly register User model if not already registered
-    if (!mongoose.models.User && User) {
-      console.log('Registering User model for populate');
+    // Get User model from mongoose registry (not from our models import)
+    // This ensures we're using the model that's actually registered with mongoose
+    const User = mongoose.models.User || mongoose.model('User');
+    
+    if (!User) {
+      console.error('User model not found in mongoose.models');
+      console.error('Available models:', Object.keys(mongoose.models));
+      return res.status(500).json({
+        error: 'Model configuration error',
+        message: 'User model not registered'
+      });
     }
 
     // Check MongoDB connection status
@@ -194,7 +201,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
     const workers = await WorkerProfile.find()
       .populate({
         path: 'userId',
-        model: 'User', // Use string reference to let Mongoose resolve the model
+        model: User, // Pass the actual model constructor from mongoose.models
         select: 'firstName lastName profilePicture',
         options: { strictPopulate: false } // Prevent errors on missing references
       })
