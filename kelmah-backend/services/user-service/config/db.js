@@ -24,17 +24,24 @@ const options = {
 const getConnectionString = () => {
   // Priority order for MongoDB URI
   if (process.env.MONGODB_URI) {
+    console.log('🔗 Using MONGODB_URI from environment');
+    console.log('🔗 Connection string preview:', process.env.MONGODB_URI.substring(0, 50) + '...');
     return process.env.MONGODB_URI;
   }
   if (process.env.USER_MONGO_URI) {
+    console.log('🔗 Using USER_MONGO_URI from environment');
     return process.env.USER_MONGO_URI;
   }
   if (process.env.MONGO_URI) {
+    console.log('🔗 Using MONGO_URI from environment');
     return process.env.MONGO_URI;
   }
   if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('mongodb')) {
+    console.log('🔗 Using DATABASE_URL from environment');
     return process.env.DATABASE_URL;
   }
+  
+  console.log('⚠️ No MongoDB URI environment variable found, using fallback construction');
   
   // Fallback to individual credentials (for local development)
   const dbHost = process.env.DB_HOST || 'localhost';

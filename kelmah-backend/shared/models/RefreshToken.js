@@ -31,7 +31,8 @@ const RefreshTokenSchema = new mongoose.Schema({
 }, { 
   timestamps: true, 
   collection: 'refreshtokens',
-  bufferCommands: false, // Disable buffering to prevent 10s timeout when DB not connected
+  bufferCommands: true,
+  bufferTimeoutMS: 30000, // Increased from default 10s // Disable buffering to prevent 10s timeout when DB not connected
   autoCreate: true
 });
 
