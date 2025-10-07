@@ -16,8 +16,23 @@ const { notFound } = require("./utils/errorTypes");
 // MongoDB connection 
 const { connectDB } = require("./config/db");
 
-// Import Mongoose models
-const { User } = require("./models");
+// Import Mongoose models - This triggers model registration
+const mongoose = require('mongoose');
+const { User, WorkerProfile } = require("./models");
+
+// Verify models are registered
+if (mongoose.models.User) {
+  console.log('✅ User model successfully registered in mongoose');
+} else {
+  console.error('❌ WARNING: User model not found in mongoose.models registry!');
+}
+if (mongoose.models.WorkerProfile) {
+  console.log('✅ WorkerProfile model successfully registered in mongoose');
+} else {
+  console.error('❌ WARNING: WorkerProfile model not found in mongoose.models registry!');
+}
+console.log('📋 Registered models:', Object.keys(mongoose.models).join(', '));
+
 // Note: Setting and Notification models need to be converted to Mongoose as well
 
 // Import routes
