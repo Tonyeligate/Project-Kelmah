@@ -32,7 +32,7 @@ const NotificationSchema = new Schema(
   },
   {
     timestamps: true,
-    bufferCommands: false, // Disable buffering - fail fast if connection not ready
+    // bufferCommands controlled globally by mongoose.set() in server startup
     autoCreate: true
   }
 );

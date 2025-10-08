@@ -16,8 +16,12 @@ const { notFound } = require("./utils/errorTypes");
 // MongoDB connection 
 const { connectDB } = require("./config/db");
 
-// Import Mongoose models - This triggers model registration
+// CRITICAL: Disable buffering BEFORE importing models
+// This ensures models fail fast if connection not ready
 const mongoose = require('mongoose');
+mongoose.set('bufferCommands', false); // Will be re-enabled after connection is verified
+
+// Import Mongoose models - This triggers model registration
 const { User, WorkerProfile } = require("./models");
 
 // Verify models are registered
@@ -443,10 +447,15 @@ if (require.main === module) {
         const testCount = await User.countDocuments({ isActive: true });
         logger.info(`✅ Mongoose model query test successful! Found ${testCount} active users.`);
         
-        // Give models a moment to fully initialize
-        logger.info("⏳ Waiting 2 seconds for models to fully initialize...");
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        logger.info("✅ Model initialization complete!");
+        // NOW that connection is ready, we can re-enable buffering for better UX
+        // This allows brief network interruptions without failing requests
+        logger.info("🔧 Re-enabling command buffering now that connection is stable...");
+        mongoose.set('bufferCommands', true);
+        
+        // Give models a moment to fully initialize with new settings
+        logger.info("⏳ Waiting 1 second for settings to propagate...");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        logger.info("✅ Configuration complete!");
         
       } catch (testError) {
         logger.error("❌ Mongoose model query test failed:", testError.message);

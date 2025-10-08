@@ -20,7 +20,7 @@ const options = {
   connectTimeoutMS: 30000, // Add explicit connect timeout
   family: 4, // Use IPv4, skip trying IPv6
   heartbeatFrequencyMS: 10000, // Check connection health every 10s
-  bufferCommands: false, // Disable buffering - fail fast if connection not ready
+  // bufferCommands controlled globally in server.js after connection is ready
 };
 
 // Get MongoDB connection string from environment variables
