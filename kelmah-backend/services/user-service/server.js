@@ -432,14 +432,26 @@ if (require.main === module) {
       
       logger.info(`✅ MongoDB connection fully ready (readyState: ${mongoose.connection.readyState})`);
       
-      // Verify we can actually query the database
+      // Verify we can actually query the database using Mongoose models
       try {
-        logger.info("🧪 Testing database connection with a simple query...");
-        const testCount = await mongoose.connection.db.collection('users').estimatedDocumentCount();
-        logger.info(`✅ Database query test successful! Found ${testCount} users in collection.`);
+        logger.info("🧪 Testing database with actual Mongoose model queries...");
+        
+        // Import the User model to test
+        const { User } = require('./models');
+        
+        // Test the exact same query that dashboard uses
+        const testCount = await User.countDocuments({ isActive: true });
+        logger.info(`✅ Mongoose model query test successful! Found ${testCount} active users.`);
+        
+        // Give models a moment to fully initialize
+        logger.info("⏳ Waiting 2 seconds for models to fully initialize...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        logger.info("✅ Model initialization complete!");
+        
       } catch (testError) {
-        logger.error("❌ Database query test failed:", testError.message);
-        throw new Error(`Database queries not working: ${testError.message}`);
+        logger.error("❌ Mongoose model query test failed:", testError.message);
+        logger.error("   This indicates models are not ready even though connection is established");
+        throw new Error(`Model queries not working: ${testError.message}`);
       }
 
       // Error logging middleware (must be last)
