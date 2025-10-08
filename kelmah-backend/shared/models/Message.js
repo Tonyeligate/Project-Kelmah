@@ -41,7 +41,6 @@ const MessageSchema = new Schema(
   {
     timestamps: true,
     bufferCommands: true,
-  bufferTimeoutMS: 30000, // Increased from default 10s // Disable buffering to prevent 10s timeout when DB not connected
     autoCreate: true
   }
 );
