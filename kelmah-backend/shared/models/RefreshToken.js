@@ -31,7 +31,7 @@ const RefreshTokenSchema = new mongoose.Schema({
 }, { 
   timestamps: true, 
   collection: 'refreshtokens',
-  bufferCommands: true,
+  bufferCommands: false, // Disable buffering - fail fast if connection not ready
   autoCreate: true
 });
 

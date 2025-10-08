@@ -47,7 +47,7 @@ const ConversationSchema = new Schema(
   },
   { 
     timestamps: true,
-    bufferCommands: true,
+    bufferCommands: false, // Disable buffering - fail fast if connection not ready
     autoCreate: true
   },
 );
