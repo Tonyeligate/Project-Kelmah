@@ -365,23 +365,26 @@ userSchema.statics.findByRole = function(role) {
 };
 
 // Create and export the User model
-// CRITICAL: Ensure model is properly registered in mongoose.models
-let UserModel;
-try {
-  // Check if model already exists (prevents "Cannot overwrite model" error)
-  UserModel = mongoose.models.User || mongoose.model('User', userSchema);
-  
-  // Verify registration
-  if (!mongoose.models.User) {
-    console.error('❌ CRITICAL: User model created but not registered in mongoose.models!');
-    // Force registration by creating it again
-    UserModel = mongoose.model('User', userSchema);
-  } else {
-    console.log('✅ User model registered successfully in shared/models/User.js');
-  }
-} catch (error) {
-  console.error('❌ Error creating User model:', error.message);
-  throw error;
-}
+// CRITICAL: Use global mongoose.model() to ensure proper registration
+// The issue is that mongoose.models.User check and mongoose.model() call
+// might be using different mongoose instances in different contexts
 
-module.exports = UserModel;
+// Try to get existing model first
+if (mongoose.models.User) {
+  console.log('✅ User model already exists in registry');
+  module.exports = mongoose.models.User;
+} else {
+  // Create the model - this MUST register it in mongoose.models
+  console.log('🔧 Creating new User model...');
+  const UserModel = mongoose.model('User', userSchema);
+  
+  // Verify it's actually registered
+  if (mongoose.models.User) {
+    console.log('✅ User model created and registered successfully');
+  } else {
+    console.error('❌ CRITICAL: mongoose.model() did not register User in mongoose.models!');
+    console.error('   This indicates a serious mongoose instance mismatch');
+  }
+  
+  module.exports = UserModel;
+}

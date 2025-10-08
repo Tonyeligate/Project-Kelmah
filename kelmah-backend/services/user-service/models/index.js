@@ -5,17 +5,27 @@
 
 const mongoose = require('mongoose');
 
-// Import from shared models
-const { User } = require('../../../shared/models');
+// Import from shared models - This returns the model but may not register it
+const { User: ImportedUser } = require('../../../shared/models');
 
-// CRITICAL FIX: Force User model registration if not already registered
-// This ensures the model is available in mongoose.models registry
-if (!mongoose.models.User && User) {
-  console.log('🔧 Forcing User model registration...');
-  // The User model should already be registered by the shared model file
-  // If not, this logs the issue for debugging
-  console.log('📊 User model type:', typeof User);
-  console.log('📊 User model name:', User.modelName || 'No modelName');
+// CRITICAL FIX: Ensure User model is in mongoose.models registry
+// The import works but the model isn't being registered properly
+let User;
+if (mongoose.models.User) {
+  console.log('✅ User model already in registry');
+  User = mongoose.models.User;
+} else if (ImportedUser && ImportedUser.modelName === 'User') {
+  console.log('🔧 Manually registering User model in mongoose.models...');
+  // The model exists but isn't in the registry - force registration
+  mongoose.models.User = ImportedUser;
+  mongoose.connection.models.User = ImportedUser;
+  User = ImportedUser;
+  console.log('✅ User model manually registered');
+} else {
+  console.error('❌ CRITICAL: Cannot find or register User model!');
+  console.error('   ImportedUser:', ImportedUser);
+  console.error('   modelName:', ImportedUser?.modelName);
+  User = ImportedUser; // Use it anyway and hope for the best
 }
 
 // Import service-specific models
