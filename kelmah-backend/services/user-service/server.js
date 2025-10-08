@@ -21,22 +21,12 @@ const { connectDB } = require("./config/db");
 // Instead, use default bufferCommands=true and ensure connection is ready before server starts
 const mongoose = require('mongoose');
 
-// Import Mongoose models - This triggers model registration
-// Models will use default bufferCommands=true which allows buffering until connection is ready
-const { User, WorkerProfile } = require("./models");
+// CRITICAL FIX: Import models AFTER this comment to avoid schema initialization issues
+// Models will be imported after MongoDB connection is established
+// This prevents "_hasEncryptedFields is not a function" error
+let User, WorkerProfile;
 
-// Verify models are registered
-if (mongoose.models.User) {
-  console.log('✅ User model successfully registered in mongoose');
-} else {
-  console.error('❌ WARNING: User model not found in mongoose.models registry!');
-}
-if (mongoose.models.WorkerProfile) {
-  console.log('✅ WorkerProfile model successfully registered in mongoose');
-} else {
-  console.error('❌ WARNING: WorkerProfile model not found in mongoose.models registry!');
-}
-console.log('📋 Registered models:', Object.keys(mongoose.models).join(', '));
+// Models will be loaded after MongoDB connection in the startup sequence
 
 // Note: Setting and Notification models need to be converted to Mongoose as well
 
@@ -437,12 +427,25 @@ if (require.main === module) {
       
       logger.info(`✅ MongoDB connection fully ready (readyState: ${mongoose.connection.readyState})`);
       
+      // CRITICAL: Import models AFTER MongoDB connection is ready
+      // This ensures schemas have all required methods like _hasEncryptedFields
+      logger.info("📦 Loading models after MongoDB connection...");
+      const models = require("./models");
+      User = models.User;
+      WorkerProfile = models.WorkerProfile;
+      
+      // Verify models are registered
+      if (mongoose.models.User) {
+        logger.info("✅ User model verified in mongoose.models registry");
+      } else {
+        logger.error("❌ WARNING: User model still not in registry after import!");
+      }
+      
+      logger.info(`📋 All registered models: ${Object.keys(mongoose.models).join(', ')}`);
+      
       // Verify we can actually query the database using Mongoose models
       try {
         logger.info("🧪 Testing database with actual Mongoose model queries...");
-        
-        // Import the User model to test
-        const { User } = require('./models');
         
         // Test the exact same query that dashboard uses
         const testCount = await User.countDocuments({ isActive: true });
