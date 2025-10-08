@@ -87,34 +87,43 @@ const PORT = process.env.PORT || process.env.MESSAGING_SERVICE_PORT || 5005;
 const connectDB = async () => {
   try {
     const mongoUri = process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/kelmah-messaging';
+    
+    console.log('🔗 Messaging Service connecting to MongoDB...');
+    console.log('🔗 Connection string preview:', mongoUri.substring(0, 50) + '...');
 
     const conn = await mongoose.connect(mongoUri, {
-      bufferCommands: false,
-      // Fix: Enhanced MongoDB connection settings to prevent buffering timeouts
-      serverSelectionTimeoutMS: 60000, // Increased to 60 seconds for Render cold starts
-      socketTimeoutMS: 120000, // Increased to 2 minutes
-      connectTimeoutMS: 60000, // 1 minute connection timeout
-      maxPoolSize: 15, // Increased pool size
-      minPoolSize: 3, // Higher minimum pool
-      maxIdleTimeMS: 60000, // Longer idle time
-      waitQueueTimeoutMS: 30000, // Increased wait time
+      bufferCommands: true, // FIXED: Enable buffering for connection establishment
+      bufferTimeoutMS: 30000, // Increase timeout to 30 seconds (from default 10s)
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
       retryWrites: true,
       w: 'majority',
-      // Fix: Additional settings to improve connection stability
-      heartbeatFrequencyMS: 10000, // More frequent heartbeat
-      maxStalenessSeconds: 90, // Allow slightly stale reads
-      readPreference: 'secondaryPreferred', // Distribute read load
+      family: 4, // Use IPv4, skip trying IPv6
+      dbName: 'kelmah_platform' // Ensure using correct database
     });
 
-    console.info('MongoDB connected', { host: conn.connection.host, name: conn.connection.name, state: conn.connection.readyState });
+    console.log(`✅ Messaging Service connected to MongoDB: ${conn.connection.host}`);
+    console.log(`📊 Database: ${conn.connection.name}`);
 
     return conn;
   } catch (error) {
-    console.error('MongoDB connection failed', { message: error.message, mongoUriSet: !!process.env.DATABASE_URL, nodeEnv: process.env.NODE_ENV, service: 'messaging-service' });
+    console.error('=' .repeat(80));
+    console.error('🚨 MESSAGING SERVICE - MONGODB CONNECTION FAILURE');
+    console.error('='.repeat(80));
+    console.error(`📛 Error Message: ${error.message}`);
+    console.error(`📛 Error Name: ${error.name}`);
+    console.error(`📛 Error Code: ${error.code || 'N/A'}`);
+    console.error(`📛 MongoDB URI Set: ${!!process.env.DATABASE_URL || !!process.env.MONGODB_URI}`);
+    console.error(`📛 Node Environment: ${process.env.NODE_ENV}`);
+    console.error('='.repeat(80));
+    console.error('Full error stack:', error.stack);
+    console.error('='.repeat(80));
 
-    // In production, exit on connection failure
+    // In production, delay exit to allow log capture
     if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
+      console.error('🚨 Production environment requires database connection - exiting in 5 seconds...');
+      setTimeout(() => process.exit(1), 5000);
     }
 
     throw error;

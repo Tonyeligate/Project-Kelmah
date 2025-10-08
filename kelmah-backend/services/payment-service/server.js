@@ -204,11 +204,17 @@ app.use((err, req, res, next) => {
 });
 
 // Start HTTP server first; connect to MongoDB with retry to avoid ECS crash loops
-const mongoUri = process.env.PAYMENT_MONGO_URI || process.env.MONGODB_URI;
+const mongoUri = process.env.PAYMENT_MONGO_URI || process.env.MONGODB_URI || process.env.DATABASE_URL;
 const mongoOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
+  bufferCommands: true, // Enable buffering for connection establishment
+  bufferTimeoutMS: 30000, // Increase timeout to 30 seconds
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  maxPoolSize: 10,
+  retryWrites: true,
+  w: 'majority',
+  family: 4, // Use IPv4, skip trying IPv6
+  dbName: 'kelmah_platform' // Ensure using correct database
 };
 
 const PORT = process.env.PORT || 3004;
@@ -220,8 +226,19 @@ async function connectDbWithRetry() {
   // Keep retrying DB connection with backoff to avoid container exits when DB is unavailable
   for (;;) {
     try {
+      if (!mongoUri) {
+        throw new Error('MONGODB_URI, PAYMENT_MONGO_URI, or DATABASE_URL environment variable is required');
+      }
+      
+      console.log('🔗 Payment Service connecting to MongoDB...');
+      console.log('🔗 Connection string preview:', mongoUri.substring(0, 50) + '...');
+      
       await mongoose.connect(mongoUri, mongoOptions);
-      logger.info('Connected to MongoDB');
+      
+      logger.info('✅ Payment Service connected to MongoDB', {
+        host: mongoose.connection.host,
+        database: mongoose.connection.name
+      });
 
       // Optional background reconciliation without external scheduler (requires DB)
       try {
@@ -249,6 +266,17 @@ async function connectDbWithRetry() {
     } catch (err) {
       attempt += 1;
       const delay = Math.min(baseDelayMs * attempt, 30000);
+      
+      console.error('='.repeat(80));
+      console.error(`🚨 PAYMENT SERVICE - MONGODB CONNECTION ATTEMPT ${attempt} FAILED`);
+      console.error('='.repeat(80));
+      console.error(`📛 Error Message: ${err.message}`);
+      console.error(`📛 Error Name: ${err.name}`);
+      console.error(`📛 Error Code: ${err.code || 'N/A'}`);
+      console.error(`📛 MongoDB URI Set: ${!!mongoUri}`);
+      console.error(`📛 Will retry in ${Math.floor(delay / 1000)}s...`);
+      console.error('='.repeat(80));
+      
       logger.error('MongoDB connection error:', err?.message || err);
       logger.info(`Retrying MongoDB connection in ${Math.floor(delay / 1000)}s (attempt ${attempt})`);
       await new Promise((resolve) => setTimeout(resolve, delay));

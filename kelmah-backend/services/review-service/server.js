@@ -113,12 +113,43 @@ async function connectDbWithRetry() {
   let attempt = 0;
   for (;;) {
     try {
-      await mongoose.connect(process.env.MONGODB_URI);
-      logger.info('Connected to MongoDB', { database: process.env.DB_NAME });
+      const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL;
+      if (!mongoUri) {
+        throw new Error('MONGODB_URI or DATABASE_URL environment variable is required');
+      }
+      
+      console.log('🔗 Review Service connecting to MongoDB...');
+      console.log('🔗 Connection string preview:', mongoUri.substring(0, 50) + '...');
+      
+      await mongoose.connect(mongoUri, {
+        bufferCommands: true, // Enable buffering for connection establishment
+        bufferTimeoutMS: 30000, // Increase timeout to 30 seconds
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10,
+        retryWrites: true,
+        w: 'majority',
+        family: 4, // Use IPv4, skip trying IPv6
+        dbName: 'kelmah_platform' // Ensure using correct database
+      });
+      
+      logger.info('✅ Review Service connected to MongoDB', { 
+        host: mongoose.connection.host,
+        database: mongoose.connection.name 
+      });
       break;
     } catch (error) {
       attempt += 1;
       const delay = Math.min(baseDelayMs * attempt, 30000);
+      
+      console.error('='.repeat(80));
+      console.error(`🚨 REVIEW SERVICE - MONGODB CONNECTION ATTEMPT ${attempt} FAILED`);
+      console.error('='.repeat(80));
+      console.error(`📛 Error Message: ${error.message}`);
+      console.error(`📛 Error Name: ${error.name}`);
+      console.error(`📛 Will retry in ${delay}ms...`);
+      console.error('='.repeat(80));
+      
       logger.warn(`MongoDB connection attempt ${attempt} failed, retrying in ${delay}ms:`, error.message);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
