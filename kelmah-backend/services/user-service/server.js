@@ -16,12 +16,13 @@ const { notFound } = require("./utils/errorTypes");
 // MongoDB connection 
 const { connectDB } = require("./config/db");
 
-// CRITICAL: Disable buffering BEFORE importing models
-// This ensures models fail fast if connection not ready
+// CRITICAL FIX: DO NOT set bufferCommands = false at module load time
+// Models created with bufferCommands=false will fail even after connection is ready
+// Instead, use default bufferCommands=true and ensure connection is ready before server starts
 const mongoose = require('mongoose');
-mongoose.set('bufferCommands', false); // Will be re-enabled after connection is verified
 
 // Import Mongoose models - This triggers model registration
+// Models will use default bufferCommands=true which allows buffering until connection is ready
 const { User, WorkerProfile } = require("./models");
 
 // Verify models are registered
@@ -447,11 +448,11 @@ if (require.main === module) {
         const testCount = await User.countDocuments({ isActive: true });
         logger.info(`✅ Mongoose model query test successful! Found ${testCount} active users.`);
         
-        // KEEP bufferCommands = false permanently
-        // This ensures fast failure if connection issues occur
-        // Our startup logic guarantees connection is ready before serving requests
+        // Set reasonable buffer timeout to prevent long hangs
+        // With proper connection readiness, buffering should be minimal
+        mongoose.set('bufferTimeoutMS', 5000); // 5 second timeout if buffering occurs
         logger.info("✅ Database connection verified and ready!");
-        logger.info("ℹ️  bufferCommands remains disabled for fail-fast behavior");
+        logger.info("ℹ️  Buffer timeout set to 5s for fast failure if connection issues");
         
       } catch (testError) {
         logger.error("❌ Mongoose model query test failed:", testError.message);
