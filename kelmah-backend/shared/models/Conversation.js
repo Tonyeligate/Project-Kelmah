@@ -81,6 +81,7 @@ ConversationSchema.methods.resetUnreadCount = function (userId) {
   return this.save();
 };
 
-const Conversation = mongoose.models.Conversation || mongoose.model("Conversation", ConversationSchema);
+// Use mongoose.connection.model() to ensure model uses the active connection
+const Conversation = mongoose.connection.models.Conversation || mongoose.connection.model("Conversation", ConversationSchema);
 
 module.exports = Conversation;

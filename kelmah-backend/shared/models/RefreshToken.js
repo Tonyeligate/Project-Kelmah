@@ -59,4 +59,5 @@ RefreshTokenSchema.statics.cleanupExpired = function() {
   });
 };
 
-module.exports = mongoose.models.RefreshToken || mongoose.model('RefreshToken', RefreshTokenSchema);
+// Use mongoose.connection.model() to ensure model uses the active connection
+module.exports = mongoose.connection.models.RefreshToken || mongoose.connection.model('RefreshToken', RefreshTokenSchema);

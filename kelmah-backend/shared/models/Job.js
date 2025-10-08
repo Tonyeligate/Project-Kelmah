@@ -345,6 +345,6 @@ JobSchema.index({ "locationDetails.region": 1, "requirements.primarySkills": 1 }
 JobSchema.index({ "performanceTier": 1, "bidding.bidStatus": 1 });
 JobSchema.index({ "expiresAt": 1, "status": 1 });
 
-// Export model, reusing existing definition if present to avoid overwrite
-const JobModel = mongoose.models.Job || mongoose.model("Job", JobSchema);
+// Use mongoose.connection.model() to ensure model uses the active connection
+const JobModel = mongoose.connection.models.Job || mongoose.connection.model("Job", JobSchema);
 module.exports = JobModel;

@@ -365,26 +365,22 @@ userSchema.statics.findByRole = function(role) {
 };
 
 // Create and export the User model
-// CRITICAL: Use global mongoose.model() to ensure proper registration
-// The issue is that mongoose.models.User check and mongoose.model() call
-// might be using different mongoose instances in different contexts
+// CRITICAL: Use mongoose.connection.model() to ensure it uses the active connection
+// mongoose.model() might create models on a different instance than the connected one
 
-// Try to get existing model first
-if (mongoose.models.User) {
-  console.log('✅ User model already exists in registry');
+// Try to get existing model first from the connection
+if (mongoose.connection.models && mongoose.connection.models.User) {
+  console.log('✅ User model already exists in connection registry');
+  module.exports = mongoose.connection.models.User;
+} else if (mongoose.models.User) {
+  console.log('✅ User model exists in global registry');
   module.exports = mongoose.models.User;
 } else {
-  // Create the model - this MUST register it in mongoose.models
-  console.log('🔧 Creating new User model...');
-  const UserModel = mongoose.model('User', userSchema);
+  // Create the model on the ACTIVE CONNECTION
+  console.log('🔧 Creating new User model on active connection...');
+  const UserModel = mongoose.connection.model('User', userSchema);
   
-  // Verify it's actually registered
-  if (mongoose.models.User) {
-    console.log('✅ User model created and registered successfully');
-  } else {
-    console.error('❌ CRITICAL: mongoose.model() did not register User in mongoose.models!');
-    console.error('   This indicates a serious mongoose instance mismatch');
-  }
+  console.log('✅ User model created on active connection');
   
   module.exports = UserModel;
 }

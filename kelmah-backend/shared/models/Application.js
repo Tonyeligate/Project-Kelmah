@@ -71,6 +71,7 @@ ApplicationSchema.methods.updateStatus = function (newStatus) {
   return this.save();
 };
 
-const Application = mongoose.models.Application || mongoose.model("Application", ApplicationSchema);
+// Use mongoose.connection.model() to ensure model uses the active connection
+const Application = mongoose.connection.models.Application || mongoose.connection.model("Application", ApplicationSchema);
 
 module.exports = Application;
