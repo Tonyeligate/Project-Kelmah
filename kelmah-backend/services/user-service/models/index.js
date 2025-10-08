@@ -11,27 +11,31 @@ const mongoose = require('mongoose');
 // Export a function that loads and returns models
 // This function should be called AFTER MongoDB connection is established
 module.exports = function loadModels() {
-  // Import from shared models - This returns the model but may not register it
-  const { User: ImportedUser } = require('../../../shared/models');
-
-  // CRITICAL FIX: Ensure User model is in mongoose.models registry
-  // The import works but the model isn't being registered properly
+  // CRITICAL FIX: Create User model directly on THIS connection, not from shared models
+  // Shared models use their own mongoose instance which isn't the connected one
   let User;
-  if (mongoose.models.User) {
-    console.log('✅ User model already in registry');
-    User = mongoose.models.User;
-  } else if (ImportedUser && ImportedUser.modelName === 'User') {
-    console.log('🔧 Manually registering User model in mongoose.models...');
-    // The model exists but isn't in the registry - force registration
-    mongoose.models.User = ImportedUser;
-    mongoose.connection.models.User = ImportedUser;
-    User = ImportedUser;
-    console.log('✅ User model manually registered');
+  
+  if (mongoose.connection.models.User) {
+    console.log('✅ User model already exists on this connection');
+    User = mongoose.connection.models.User;
   } else {
-    console.error('❌ CRITICAL: Cannot find or register User model!');
-    console.error('   ImportedUser:', ImportedUser);
-    console.error('   modelName:', ImportedUser?.modelName);
-    User = ImportedUser; // Use it anyway and hope for the best
+    console.log('🔧 Creating User model directly on THIS mongoose connection...');
+    // Import the schema definition (not the model!)
+    const userSchemaModule = require('../../../shared/models/User');
+    
+    // Get the schema from the imported model
+    const UserSchema = userSchemaModule.schema;
+    
+    if (UserSchema) {
+      // Create model on THIS connection
+      User = mongoose.connection.model('User', UserSchema);
+      console.log('✅ User model created on THIS connection with imported schema');
+    } else {
+      console.error('❌ Could not get User schema from shared model');
+      // Fallback to imported model (will probably still fail)
+      const { User: ImportedUser } = require('../../../shared/models');
+      User = ImportedUser;
+    }
   }
 
   // Import service-specific models
