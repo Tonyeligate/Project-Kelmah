@@ -427,6 +427,28 @@ if (require.main === module) {
       
       logger.info(`✅ MongoDB connection fully ready (readyState: ${mongoose.connection.readyState})`);
       
+      // CRITICAL: Wait for the connection to be fully operational
+      // readyState === 1 doesn't mean the connection can handle queries yet
+      logger.info("⏳ Waiting for connection to be fully operational...");
+      await new Promise(resolve => {
+        if (mongoose.connection.db) {
+          // Connection has database object, test it
+          mongoose.connection.db.admin().ping()
+            .then(() => {
+              logger.info("✅ MongoDB ping successful - connection operational");
+              resolve();
+            })
+            .catch(err => {
+              logger.warn(`⚠️ Ping failed, waiting 1s: ${err.message}`);
+              setTimeout(resolve, 1000);
+            });
+        } else {
+          // No db object yet, wait a bit
+          logger.info("⏳ No db object yet, waiting 500ms...");
+          setTimeout(resolve, 500);
+        }
+      });
+      
       // CRITICAL: Import models AFTER MongoDB connection is ready
       // This ensures schemas have all required methods like _hasEncryptedFields
       logger.info("📦 Loading models after MongoDB connection...");
@@ -445,23 +467,34 @@ if (require.main === module) {
       logger.info(`📋 All registered models: ${Object.keys(mongoose.models).join(', ')}`);
       
       // Verify we can actually query the database using Mongoose models
+      // Disable buffering timeout for this test - connection should be ready
+      const originalTimeout = mongoose.get('bufferTimeoutMS');
+      mongoose.set('bufferTimeoutMS', 20000); // Give more time for first query
+      
       try {
         logger.info("🧪 Testing database with actual Mongoose model queries...");
         
-        // Test the exact same query that dashboard uses
+        // Test with a simple query using the native driver first
+        const db = mongoose.connection.db;
+        const collections = await db.listCollections().toArray();
+        logger.info(`✅ Native driver test passed - ${collections.length} collections found`);
+        
+        // Now test Mongoose model query
         const testCount = await User.countDocuments({ isActive: true });
         logger.info(`✅ Mongoose model query test successful! Found ${testCount} active users.`);
         
-        // Set reasonable buffer timeout to prevent long hangs
-        // With proper connection readiness, buffering should be minimal
-        mongoose.set('bufferTimeoutMS', 5000); // 5 second timeout if buffering occurs
+        // Restore buffer timeout
+        mongoose.set('bufferTimeoutMS', originalTimeout || 10000);
         logger.info("✅ Database connection verified and ready!");
-        logger.info("ℹ️  Buffer timeout set to 5s for fast failure if connection issues");
         
       } catch (testError) {
-        logger.error("❌ Mongoose model query test failed:", testError.message);
-        logger.error("   This indicates models are not ready even though connection is established");
-        throw new Error(`Model queries not working: ${testError.message}`);
+        logger.error("❌ Database test failed:", testError.message);
+        logger.error("   Connection state:", {
+          readyState: mongoose.connection.readyState,
+          hasDb: !!mongoose.connection.db,
+          host: mongoose.connection.host
+        });
+        throw new Error(`Database not ready: ${testError.message}`);
       }
 
       // Error logging middleware (must be last)
