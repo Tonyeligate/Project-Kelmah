@@ -393,26 +393,54 @@ if (require.main === module) {
       
       // CRITICAL: Wait for connection to be fully ready before starting server
       const mongoose = require('mongoose');
+      
+      logger.info(`🔍 Initial MongoDB readyState: ${mongoose.connection.readyState}`);
+      
       if (mongoose.connection.readyState !== 1) {
         logger.info("⏳ Waiting for MongoDB connection to be fully ready...");
-        await new Promise((resolve) => {
+        
+        const connectionReady = await new Promise((resolve, reject) => {
+          const startTime = Date.now();
+          const maxWaitTime = 30000; // 30 seconds timeout
+          
           const checkReady = setInterval(() => {
-            if (mongoose.connection.readyState === 1) {
+            const currentState = mongoose.connection.readyState;
+            const elapsed = Date.now() - startTime;
+            
+            if (currentState === 1) {
               clearInterval(checkReady);
-              resolve();
+              logger.info(`✅ MongoDB connection ready after ${elapsed}ms`);
+              resolve(true);
+            } else if (elapsed >= maxWaitTime) {
+              clearInterval(checkReady);
+              logger.error(`❌ MongoDB connection readyState check timed out after ${maxWaitTime}ms`);
+              logger.error(`   Current readyState: ${currentState} (expected: 1)`);
+              reject(new Error(`MongoDB connection not ready after ${maxWaitTime}ms. ReadyState: ${currentState}`));
+            } else {
+              // Log every 5 seconds
+              if (elapsed % 5000 < 100) {
+                logger.info(`   Still waiting... readyState: ${currentState}, elapsed: ${elapsed}ms`);
+              }
             }
           }, 100);
-          
-          // Safety timeout after 10 seconds
-          setTimeout(() => {
-            clearInterval(checkReady);
-            logger.warn("⚠️ MongoDB connection readyState check timed out, proceeding anyway");
-            resolve();
-          }, 10000);
         });
+        
+        if (!connectionReady) {
+          throw new Error('MongoDB connection failed to reach ready state');
+        }
       }
       
       logger.info(`✅ MongoDB connection fully ready (readyState: ${mongoose.connection.readyState})`);
+      
+      // Verify we can actually query the database
+      try {
+        logger.info("🧪 Testing database connection with a simple query...");
+        const testCount = await mongoose.connection.db.collection('users').estimatedDocumentCount();
+        logger.info(`✅ Database query test successful! Found ${testCount} users in collection.`);
+      } catch (testError) {
+        logger.error("❌ Database query test failed:", testError.message);
+        throw new Error(`Database queries not working: ${testError.message}`);
+      }
 
       // Error logging middleware (must be last)
       app.use(createErrorLogger(logger));
@@ -422,11 +450,14 @@ if (require.main === module) {
         logger.info(`🚀 User Service running on port ${PORT}`);
         logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
         logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
+        logger.info(`🎯 Server is ready to accept requests!`);
       });
     })
     .catch((err) => {
       logger.error("❌ User Service MongoDB connection error:", err);
-      process.exit(1);
+      logger.error("🚨 Service cannot start without database connection");
+      logger.error("🚨 Exiting in 5 seconds...");
+      setTimeout(() => process.exit(1), 5000);
     });
 }
 

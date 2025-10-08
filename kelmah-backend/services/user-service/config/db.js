@@ -10,14 +10,17 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
-// MongoDB connection options
+// MongoDB connection options - optimized for production reliability
 const options = {
   retryWrites: true,
   w: 'majority',
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 30000, // Increased to 30s for better reliability
   socketTimeoutMS: 45000,
-  family: 4 // Use IPv4, skip trying IPv6
+  connectTimeoutMS: 30000, // Add explicit connect timeout
+  family: 4, // Use IPv4, skip trying IPv6
+  heartbeatFrequencyMS: 10000, // Check connection health every 10s
+  bufferCommands: false, // Disable buffering - fail fast if connection not ready
 };
 
 // Get MongoDB connection string from environment variables
