@@ -1,16 +1,10 @@
-/**
- * User Service Models Index - Uses Shared Models
- * Updated to use centralized shared models and MongoDB only
- * 
- * CRITICAL: This file exports a function that loads models on-demand
- * Models must NOT be imported at module load time to avoid schema initialization before connection
- */
-
 const mongoose = require('mongoose');
 
-// Export a function that loads and returns models
-// This function should be called AFTER MongoDB connection is established
-module.exports = function loadModels() {
+// Create empty object that will be populated after connection
+const models = {};
+
+// Function to initialize models after connection is ready
+function loadModels() {
   // CRITICAL FIX: Use the shared model but ensure it's on THIS connection
   let User;
   
@@ -36,7 +30,7 @@ module.exports = function loadModels() {
   }
 
   // Import service-specific models
-  const WorkerProfile = require('./WorkerProfileMongo'); // Use the MongoDB version
+  const WorkerProfile = require('./WorkerProfileMongo');
   const Portfolio = require('./Portfolio');
   const Certificate = require('./Certificate');
   const Skill = require('./Skill');
@@ -44,19 +38,21 @@ module.exports = function loadModels() {
   const WorkerSkill = require('./WorkerSkill');
   const Availability = require('./Availability');
   const Bookmark = require('./Bookmark');
-  // const Setting = require('./Setting'); // Removed - using in-memory storage for now
 
-  // Return models object
-  return {
-    User,
-    WorkerProfile,
-    Portfolio,
-    Certificate,
-    Skill,
-    SkillCategory,
-    WorkerSkill,
-    Availability,
-    Bookmark,
-    // Note: Notification model not used in user-service - handled by messaging-service
-  };
-};
+  // Populate the models object
+  models.User = User;
+  models.WorkerProfile = WorkerProfile;
+  models.Portfolio = Portfolio;
+  models.Certificate = Certificate;
+  models.Skill = Skill;
+  models.SkillCategory = SkillCategory;
+  models.WorkerSkill = WorkerSkill;
+  models.Availability = Availability;
+  models.Bookmark = Bookmark;
+
+  return models;
+}
+
+// Export the models object AND the load function
+module.exports = models;
+module.exports.loadModels = loadModels;
