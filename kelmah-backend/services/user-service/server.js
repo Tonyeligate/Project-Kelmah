@@ -430,7 +430,8 @@ if (require.main === module) {
       // CRITICAL: Import models AFTER MongoDB connection is ready
       // This ensures schemas have all required methods like _hasEncryptedFields
       logger.info("📦 Loading models after MongoDB connection...");
-      const models = require("./models");
+      const loadModels = require("./models");
+      const models = loadModels(); // Call the function to load models
       User = models.User;
       WorkerProfile = models.WorkerProfile;
       
