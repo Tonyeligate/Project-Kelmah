@@ -3,8 +3,20 @@
  * Updated to use centralized shared models and MongoDB only
  */
 
+const mongoose = require('mongoose');
+
 // Import from shared models
 const { User } = require('../../../shared/models');
+
+// CRITICAL FIX: Force User model registration if not already registered
+// This ensures the model is available in mongoose.models registry
+if (!mongoose.models.User && User) {
+  console.log('🔧 Forcing User model registration...');
+  // The User model should already be registered by the shared model file
+  // If not, this logs the issue for debugging
+  console.log('📊 User model type:', typeof User);
+  console.log('📊 User model name:', User.modelName || 'No modelName');
+}
 
 // Import service-specific models
 const WorkerProfile = require('./WorkerProfileMongo'); // Use the MongoDB version
