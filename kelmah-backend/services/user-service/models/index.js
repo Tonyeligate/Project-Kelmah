@@ -11,30 +11,27 @@ const mongoose = require('mongoose');
 // Export a function that loads and returns models
 // This function should be called AFTER MongoDB connection is established
 module.exports = function loadModels() {
-  // CRITICAL FIX: Create User model directly on THIS connection, not from shared models
-  // Shared models use their own mongoose instance which isn't the connected one
+  // CRITICAL FIX: Use the shared model but ensure it's on THIS connection
   let User;
   
   if (mongoose.connection.models.User) {
     console.log('✅ User model already exists on this connection');
     User = mongoose.connection.models.User;
   } else {
-    console.log('🔧 Creating User model directly on THIS mongoose connection...');
-    // Import the schema definition (not the model!)
-    const userSchemaModule = require('../../../shared/models/User');
+    console.log('🔧 Creating User model on THIS connection...');
+    // Import the User model from shared (it has the schema)
+    const { User: SharedUserModel } = require('../../../shared/models');
     
-    // Get the schema from the imported model
-    const UserSchema = userSchemaModule.schema;
-    
-    if (UserSchema) {
-      // Create model on THIS connection
-      User = mongoose.connection.model('User', UserSchema);
-      console.log('✅ User model created on THIS connection with imported schema');
+    if (SharedUserModel && SharedUserModel.schema) {
+      // Create a NEW model on THIS connection using the shared schema
+      User = mongoose.connection.model('User', SharedUserModel.schema);
+      console.log('✅ User model created on THIS connection using shared schema');
     } else {
       console.error('❌ Could not get User schema from shared model');
-      // Fallback to imported model (will probably still fail)
-      const { User: ImportedUser } = require('../../../shared/models');
-      User = ImportedUser;
+      console.error('SharedUserModel:', SharedUserModel);
+      console.error('Has schema?:', !!SharedUserModel?.schema);
+      // Last resort - use the shared model as-is
+      User = SharedUserModel;
     }
   }
 
