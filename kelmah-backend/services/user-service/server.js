@@ -447,15 +447,11 @@ if (require.main === module) {
         const testCount = await User.countDocuments({ isActive: true });
         logger.info(`✅ Mongoose model query test successful! Found ${testCount} active users.`);
         
-        // NOW that connection is ready, we can re-enable buffering for better UX
-        // This allows brief network interruptions without failing requests
-        logger.info("🔧 Re-enabling command buffering now that connection is stable...");
-        mongoose.set('bufferCommands', true);
-        
-        // Give models a moment to fully initialize with new settings
-        logger.info("⏳ Waiting 1 second for settings to propagate...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        logger.info("✅ Configuration complete!");
+        // KEEP bufferCommands = false permanently
+        // This ensures fast failure if connection issues occur
+        // Our startup logic guarantees connection is ready before serving requests
+        logger.info("✅ Database connection verified and ready!");
+        logger.info("ℹ️  bufferCommands remains disabled for fail-fast behavior");
         
       } catch (testError) {
         logger.error("❌ Mongoose model query test failed:", testError.message);
