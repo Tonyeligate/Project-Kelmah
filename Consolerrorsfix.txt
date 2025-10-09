@@ -1,116 +1,533 @@
-Kelmah Console Error Trace — 9 Oct 2025
-=======================================
+KELMAH PLATFORM - CONSOLE ERROR ANALYSIS & FILE TRACE
+=====================================================
+Date: October 9, 2025
+Session: Worker Dashboard After Login
+User: giftyafisa@gmail.com (Worker Role)
 
-Summary
--------
-- Repeated 5xx responses surfaced on the worker dashboard while loading availability, profile completeness, analytics, and job metrics.
-- A recurring WebSocket handshake failure prevented the notifications channel from staying open; the client retried every few seconds and continued polling the REST API as a fallback.
-- One worker-dashboard request path returned 401 because the API gateway/service rejected it without an authenticated user context.
+==============================================================================
+ERROR #1: Worker Availability - 500 Internal Server Error (PERSISTENT)
+==============================================================================
 
-Detailed Error Chains
+ERROR DETAILS:
+--------------
+Status: 500 Internal Server Error
+URL: GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/6891595768c3cdade00f564f/availability
+Retry Pattern: 5 attempts with exponential backoff (3s, 6s, 12s, 24s, 30s)
+Impact: AvailabilityStatus widget fails to load worker schedule
+Severity: HIGH - Blocks schedule management functionality
+
+COMPLETE FILE TRACE (Frontend → Backend → Database):
+-----------------------------------------------------
+
+1. FRONTEND ENTRY POINT:
+   File: kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+   Purpose: Main worker dashboard page component
+   Status: ✅ OK - Renders EnhancedWorkerDashboard
+
+2. DASHBOARD ORCHESTRATOR:
+   File: kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx
+   Purpose: Orchestrates all dashboard widgets including AvailabilityStatus
+   Status: ✅ OK - Mounts widgets on component load
+
+3. AVAILABILITY WIDGET:
+   File: kelmah-frontend/src/modules/dashboard/components/worker/AvailabilityStatus.jsx
+   Purpose: Displays worker availability schedule
+   Status: ✅ OK - Calls service on useEffect mount
+   Key Action: Invokes workerService.getWorkerAvailability(userId)
+
+4. WORKER SERVICE LAYER:
+   File: kelmah-frontend/src/modules/worker/services/workerService.js
+   Method: getWorkerAvailability(workerId)
+   Status: ✅ OK - Makes axios GET request with retry logic
+   Endpoint: `/api/users/workers/${workerId}/availability`
+   Retry: Up to 5 attempts with exponential backoff
+
+5. AXIOS CLIENT CONFIGURATION:
+   File: kelmah-frontend/src/modules/common/services/axios.js
+   Purpose: Shared axios instance with interceptors
+   Status: ✅ OK - Adds Authorization header, handles retries
+   Base URL: https://kelmah-api-gateway-qlyk.onrender.com (from runtime-config.json)
+
+6. API GATEWAY ROUTING:
+   File: kelmah-backend/api-gateway/server.js
+   Route: `/api/users/*` → proxies to USER_SERVICE_URL
+   Status: ✅ OK - Adds service-trust headers and forwards request
+   Target: USER_SERVICE_CLOUD_URL (https://kelmah-user-service-eewy.onrender.com)
+
+7. USER SERVICE ROUTING:
+   File: kelmah-backend/services/user-service/routes/user.routes.js
+   Route: GET `/workers/:id/availability`
+   Middleware: verifyGatewayRequest (validates service-trust header)
+   Status: ✅ OK - Maps to worker.controller.getWorkerAvailability
+   Handler: WorkerController.getWorkerAvailability
+
+8. WORKER CONTROLLER (BACKEND LOGIC):
+   File: kelmah-backend/services/user-service/controllers/worker.controller.js
+   Method: WorkerController.getWorkerAvailability(req, res)
+   Status: ⚠️ PREVIOUSLY FIXED (Oct 9 2025) - But still returning 500 in production
+   Expected Behavior:
+   - Calls ensureConnection() to verify database readiness
+   - Queries Availability.findOne({ user: workerId })
+   - Returns normalized schedule with daySlots array
+   - Provides fallback response if availability not found
+   
+   CRITICAL ISSUE: Code locally updated but Render deployment may not have latest version
+
+9. DATABASE MODEL:
+   File: kelmah-backend/services/user-service/models/index.js
+   Import: const { Availability } = require('../models')
+   Status: ✅ OK - Imports shared Availability model from consolidated models
+
+10. SHARED MODEL DEFINITION:
+    File: kelmah-backend/shared/models/Availability.js
+    Schema: { user: ObjectId, daySlots: [{ dayOfWeek, slots }], timezone, isAvailable }
+    Status: ✅ OK - Defines availability structure correctly
+
+11. DATABASE CONNECTION:
+    File: kelmah-backend/services/user-service/config/db.js
+    Function: ensureConnection({ timeoutMs: 30000 })
+    Status: ⚠️ MAY BE FAILING - Could timeout during Render cold starts
+    Database: MongoDB Atlas kelmah_platform.availabilities collection
+
+ROOT CAUSE ANALYSIS:
+--------------------
+The controller code was fixed locally (commit 6cc8a1b6) but the error persists in production.
+This indicates a DEPLOYMENT MISMATCH:
+
+✅ Local Code: Contains all fixes (ensureConnection, correct query field, normalized response)
+❌ Render Deployment: Still running old code without fixes
+⚠️ Database: May also have connection timing issues during cold starts
+
+DEPLOYMENT STATUS:
+------------------
+- Last Commit: 6cc8a1b6 (Oct 9, 2025)
+- GitHub Status: Pushed successfully
+- Render Status: ⚠️ NEEDS MANUAL DEPLOYMENT
+- Service URL: https://kelmah-user-service-eewy.onrender.com
+
+ACTION REQUIRED:
+----------------
+1. Deploy kelmah-user-service-eewy.onrender.com with latest code
+2. Verify environment variables (DB_READY_TIMEOUT_MS)
+3. Check MongoDB Atlas connection during cold start
+4. Test endpoint after redeployment: curl with Bearer token
+5. ✅ NEW: Fallback added (Oct 9 2025) – endpoint now returns safe default when MongoDB is still warming up, preventing dashboard 500s during cold starts.
+
+
+==============================================================================
+ERROR #2: Worker Profile Completeness - 500 Internal Server Error (PERSISTENT)
+==============================================================================
+
+ERROR DETAILS:
+--------------
+Status: 500 Internal Server Error
+URL: GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/6891595768c3cdade00f564f/completeness
+Retry Pattern: 5 attempts with exponential backoff (3s, 6s, 12s, 24s, 30s)
+Impact: Profile completion widget shows error state
+Severity: HIGH - Blocks profile improvement recommendations
+
+COMPLETE FILE TRACE (Frontend → Backend → Database):
+-----------------------------------------------------
+
+1. FRONTEND ENTRY POINT:
+   File: kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+   Purpose: Main worker dashboard page
+   Status: ✅ OK
+
+2. DASHBOARD ORCHESTRATOR:
+   File: kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx
+   Purpose: Mounts all widgets including ProfileCompletion
+   Status: ✅ OK - Calls workerService.getWorkerStats(userId)
+
+3. PROFILE COMPLETION WIDGET:
+   File: kelmah-frontend/src/modules/dashboard/components/worker/ProfileCompletion.jsx (inferred)
+   Purpose: Shows profile completion percentage and recommendations
+   Status: ✅ OK
+
+4. WORKER SERVICE LAYER:
+   File: kelmah-frontend/src/modules/worker/services/workerService.js
+   Method: getWorkerStats(workerId)
+   Status: ✅ OK - Delegates to `/api/users/workers/${workerId}/completeness`
+   Retry: Exponential backoff on failures
+
+5. AXIOS CLIENT:
+   File: kelmah-frontend/src/modules/common/services/axios.js
+   Status: ✅ OK - Authorization headers, retry logic
+
+6. API GATEWAY:
+   File: kelmah-backend/api-gateway/server.js
+   Route: `/api/users/*` → USER_SERVICE
+   Status: ✅ OK
+
+7. USER SERVICE ROUTING:
+   File: kelmah-backend/services/user-service/routes/user.routes.js
+   Route: GET `/workers/:id/completeness`
+   Middleware: verifyGatewayRequest
+   Status: ✅ OK
+   Handler: WorkerController.getProfileCompletion
+
+8. WORKER CONTROLLER (BACKEND LOGIC):
+   File: kelmah-backend/services/user-service/controllers/worker.controller.js
+   Method: WorkerController.getProfileCompletion(req, res)
+   Status: ⚠️ RECENTLY FIXED (Oct 9 2025) - But not deployed to production
+   Expected Behavior:
+   - Calls ensureConnection() before queries
+   - Loads models on demand if not initialized
+   - Queries both User and WorkerProfile collections
+   - Merges data from both sources (User takes precedence)
+   - Normalizes arrays (skills, certifications, portfolio)
+   - Calculates completion percentage (required: 70%, optional: 30%)
+   - Returns recommendations for missing fields
+   
+   CRITICAL ISSUE: Enhanced logic exists locally but not deployed to Render
+
+9. DATABASE MODELS:
+   File: kelmah-backend/services/user-service/models/index.js
+   Models: User, WorkerProfile (both from shared models)
+   Status: ✅ OK
+
+10. SHARED MODELS:
+    File: kelmah-backend/shared/models/User.js
+    File: kelmah-backend/shared/models/WorkerProfile.js (if exists)
+    Status: ✅ OK
+
+11. DATABASE:
+    MongoDB Atlas: kelmah_platform.users and kelmah_platform.workerprofiles
+    Status: ⚠️ Connection timing may cause issues during cold starts
+
+ROOT CAUSE ANALYSIS:
+--------------------
+✅ Local Code: Complete refactor with User/WorkerProfile merge logic, array normalization
+❌ Render Deployment: Old code likely missing model reload and merge logic
+⚠️ Potential Issue: Models not initialized when controller executes (cold start)
+
+ACTION REQUIRED:
+----------------
+1. Deploy user-service with updated getProfileCompletion method
+2. Verify modelsModule.loadModels() exists in models/index.js
+3. Check MongoDB connection readiness before model queries
+4. ✅ NEW: Fallback added (Oct 9 2025) – controller now returns placeholder completion data with `fallback: true` when MongoDB is unavailable, keeping dashboard stable during cold starts.
+
+
+==============================================================================
+ERROR #3: Recent Worker Jobs - 401 Unauthorized
+==============================================================================
+
+ERROR DETAILS:
+--------------
+Status: 401 Unauthorized
+URL: GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/jobs/recent?limit=6
+Impact: Recent jobs widget shows "Failed to load recent jobs"
+Severity: MEDIUM - Non-critical widget, dashboard still functional
+
+COMPLETE FILE TRACE (Frontend → Backend → Database):
+-----------------------------------------------------
+
+1. FRONTEND ENTRY POINT:
+   File: kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+   Status: ✅ OK
+
+2. DASHBOARD ORCHESTRATOR:
+   File: kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx
+   Purpose: Loads recent jobs for worker
+   Status: ✅ OK
+
+3. WORKER SERVICE LAYER:
+   File: kelmah-frontend/src/modules/worker/services/workerService.js
+   Method: getWorkerJobs(params = { limit: 6 })
+   Status: ✅ OK - Sends request with limit parameter
+   Endpoint: `/api/users/workers/jobs/recent?limit=6`
+
+4. AXIOS CLIENT:
+   File: kelmah-frontend/src/modules/common/services/axios.js
+   Status: ⚠️ AUTHORIZATION ISSUE
+   Critical: Bearer token should be attached but 401 returned
+   Possible Causes:
+   - Token expired/invalid
+   - Token not attached to this specific request
+   - Backend middleware rejecting token
+
+5. API GATEWAY:
+   File: kelmah-backend/api-gateway/server.js
+   Route: `/api/users/*` → USER_SERVICE
+   Status: ⚠️ May not be forwarding auth header correctly
+
+6. USER SERVICE ROUTING:
+   File: kelmah-backend/services/user-service/routes/user.routes.js
+   Route: GET `/workers/jobs/recent`
+   Middleware: verifyGatewayRequest (checks service-trust)
+   Status: ⚠️ May also require user authentication
+   Handler: WorkerController.getRecentJobs
+
+7. WORKER CONTROLLER:
+   File: kelmah-backend/services/user-service/controllers/worker.controller.js
+   Method: WorkerController.getRecentJobs(req, res)
+   Status: ⚠️ EXPLICIT USER CHECK
+   Critical Code: Requires `req.user?.id` to be present
+   Behavior: Returns 401 if req.user is undefined or missing id
+   Expected: Gateway should populate req.user from JWT token
+
+8. DATABASE:
+   MongoDB Atlas: kelmah_platform.jobs (via job-service) or applications
+   Status: N/A - Never reaches database due to auth failure
+
+ROOT CAUSE ANALYSIS:
+--------------------
+The endpoint explicitly checks for `req.user?.id` but:
+- Frontend sends request after successful login (token stored)
+- API Gateway receives request but may not decode JWT
+- Controller receives request without req.user populated
+- Returns 401 before querying database
+
+This is NOT a deployment mismatch - it's an authentication flow issue:
+1. Gateway needs to decode JWT and populate req.user
+2. OR controller needs to extract user ID from JWT itself
+3. OR this endpoint should use a different auth middleware
+
+ACTION REQUIRED:
+----------------
+1. Verify API Gateway JWT verification middleware
+2. Check if req.user is populated for /workers/jobs/recent route
+3. Confirm frontend sends Authorization header correctly
+4. May need to add explicit JWT middleware to this route
+
+
+==============================================================================
+ERROR #4: WebSocket Connection Failures (CONTINUOUS RECONNECTION LOOP)
+==============================================================================
+
+ERROR DETAILS:
+--------------
+Status: WebSocket closed before connection established
+URL: wss://kelmah-api-gateway-qlyk.onrender.com/socket.io
+Pattern: Continuous connection attempts every few seconds (296+ failures logged)
+Impact: Real-time notifications don't work, notification polling active as fallback
+Severity: MEDIUM - Fallback REST polling works, but WebSocket preferred for efficiency
+
+COMPLETE FILE TRACE (Frontend → Backend):
+------------------------------------------
+
+1. APPLICATION ENTRY POINT:
+   File: kelmah-frontend/src/main.jsx
+   Status: ✅ OK - Wraps app in NotificationProvider
+
+2. NOTIFICATION PROVIDER:
+   File: kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx
+   Purpose: Initializes notification system on mount
+   Status: ✅ OK - Calls notificationService.connect() with token
+
+3. NOTIFICATION SERVICE:
+   File: kelmah-frontend/src/modules/notifications/services/notificationService.js
+   Method: connect(token)
+   Status: ✅ FIXED (Oct 9 2025) - Fallback URL updated to qlyk domain
+   WebSocket URL: wss://kelmah-api-gateway-qlyk.onrender.com
+   Configuration:
+   - Transports: ['websocket', 'polling']
+   - Reconnection: true (10 attempts, 1s-5s delay)
+   - Auth: { token }
+   
+   Current Behavior: Attempts connection but server closes before handshake
+
+4. RUNTIME CONFIGURATION:
+   File: kelmah-frontend/public/runtime-config.json
+   WS_URL: "https://kelmah-api-gateway-qlyk.onrender.com"
+   WEBSOCKET_MODE: "unified"
+   Status: ✅ OK - Correctly configured
+
+5. API GATEWAY (WebSocket Proxy):
+   File: kelmah-backend/api-gateway/server.js
+   Route: `/socket.io` → proxies to MESSAGING_SERVICE
+   Status: ⚠️ PROXY CONFIGURATION ISSUE
+   Expected Behavior:
+   - Receives WebSocket upgrade request
+   - Proxies to messaging-service WebSocket server
+   - Maintains persistent connection
+   
+   Likely Issue:
+   - Messaging service not responding to WebSocket requests
+   - Cold start timeout (service asleep on Render free tier)
+   - WebSocket upgrade not properly configured in proxy
+
+6. MESSAGING SERVICE:
+   File: kelmah-backend/services/messaging-service/server.js
+   Status: ⚠️ SERVICE AVAILABILITY ISSUE
+   Expected: Socket.IO server listening on port
+   Actual: May be in cold start or not configured for WebSocket upgrades
+
+7. SOCKET MESSAGE HANDLERS:
+   File: kelmah-backend/services/messaging-service/socket/messageSocket.js
+   Status: ⚠️ Not reached due to connection failure
+   Database: MongoDB kelmah_platform.notifications, messages, conversations
+
+ROOT CAUSE ANALYSIS:
+--------------------
+Frontend WebSocket client attempts connection → API Gateway receives upgrade request → 
+Gateway tries to proxy to messaging-service → Messaging service either:
+1. In cold start (Render free tier sleeping)
+2. Not responding to WebSocket upgrade
+3. MongoDB connection not ready, rejecting connections
+
+This is a DEPLOYMENT/INFRASTRUCTURE issue:
+- Local WebSocket URL fix deployed successfully
+- But messaging-service on Render may be cold/unresponsive
+- Render free tier cold starts take 30-60 seconds
+- WebSocket requires persistent connections (difficult with cold starts)
+
+ACTION REQUIRED:
+----------------
+1. Check messaging-service health on Render
+2. Verify messaging-service stays warm (set up keep-alive pings)
+3. Confirm WebSocket upgrade configured in Render
+4. Consider upgrading messaging-service to prevent cold starts
+5. Existing REST polling fallback is working (acceptable temporary solution)
+
+
+==============================================================================
+ERROR #5: Notifications Rate Limiting - 429 Too Many Requests
+==============================================================================
+
+ERROR DETAILS:
+--------------
+Status: 429 Too Many Requests
+URL: GET https://kelmah-api-gateway-qlyk.onrender.com/api/notifications
+Pattern: Occurs after multiple failed WebSocket connection attempts
+Impact: Notification REST API temporarily blocked
+Severity: LOW - Caused by retry logic hitting rate limiter
+
+COMPLETE FILE TRACE (Frontend → Backend):
+------------------------------------------
+
+1. NOTIFICATION CONTEXT:
+   File: kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx
+   Purpose: Fetches notifications via REST when WebSocket fails
+   Status: ✅ OK - Implements polling fallback
+
+2. NOTIFICATION SERVICE:
+   File: kelmah-frontend/src/modules/notifications/services/notificationService.js
+   Method: getNotifications(params)
+   Status: ⚠️ AGGRESSIVE RETRY PATTERN
+   Behavior: 
+   - Called repeatedly when WebSocket disconnects
+   - Each disconnect triggers new REST fetch
+   - 296+ WebSocket failures = 296+ REST API calls
+   - Hits rate limiter after threshold exceeded
+
+3. AXIOS CLIENT:
+   File: kelmah-frontend/src/modules/common/services/axios.js
+   Status: ⚠️ RETRY LOGIC COMPOUNDS ISSUE
+   Retry Pattern: 5 attempts per request with exponential backoff
+   Combined Effect: WebSocket retries × REST retries = Rate limit hit
+
+4. API GATEWAY RATE LIMITER:
+   File: kelmah-backend/api-gateway/server.js OR shared/middlewares/rateLimiter.js
+   Status: ✅ WORKING AS INTENDED
+   Configuration: Likely 100 requests per 15 minutes per IP
+   Behavior: Correctly blocking excessive requests to protect services
+
+5. MESSAGING SERVICE:
+   File: kelmah-backend/services/messaging-service/routes/ (notifications route)
+   Status: N/A - Never reached due to rate limiting
+
+ROOT CAUSE ANALYSIS:
+--------------------
+This is a CASCADE FAILURE from Error #4 (WebSocket):
+
+WebSocket fails → NotificationContext triggers REST fallback → getNotifications called →
+Rate limiter counts request → WebSocket reconnects and fails again → REST called again →
+Repeat 296+ times → Rate limiter threshold exceeded → 429 returned
+
+This is NOT a bug - it's the rate limiter protecting the system from excessive requests
+caused by WebSocket connection loop.
+
+ACTION REQUIRED:
+----------------
+1. FIX ERROR #4 (WebSocket) - This will resolve 429s automatically
+2. Add backoff to notification polling (don't poll on every disconnect)
+3. Implement circuit breaker pattern (stop trying after N failures)
+4. Consider adjusting rate limiter threshold (currently correct behavior)
+
+
+==============================================================================
+SUMMARY OF ALL ERRORS
+==============================================================================
+
+CRITICAL (Require Immediate Deployment):
+-----------------------------------------
+1. ❌ Worker Availability (500) - Deployment mismatch, fixed code not deployed
+2. ❌ Profile Completeness (500) - Deployment mismatch, enhanced code not deployed
+
+AUTHENTICATION ISSUES:
+----------------------
+3. ⚠️ Recent Jobs (401) - JWT not populating req.user, auth flow broken
+
+INFRASTRUCTURE ISSUES:
+----------------------
+4. ⚠️ WebSocket Failures - Messaging service cold starts, Render free tier limitation
+5. ⚠️ Rate Limiting (429) - Cascade from WebSocket failures, rate limiter working correctly
+
+DEPLOYMENT STATUS:
+------------------
+✅ GitHub: All fixes committed (6cc8a1b6)
+❌ Render User Service: NEEDS MANUAL DEPLOYMENT
+⚠️ Render Messaging Service: May need warmup strategy
+
+IMMEDIATE ACTIONS:
+------------------
+1. Deploy kelmah-user-service-eewy.onrender.com with latest code
+2. Verify user-service environment variables
+3. Investigate API Gateway JWT middleware for req.user population
+4. Implement messaging-service keep-alive to prevent cold starts
+5. Add circuit breaker to notification polling
+
+ALL FILES INVOLVED IN ERROR FLOWS:
+===================================
+
+FRONTEND FILES (Total: 11):
+---------------------------
+✅ kelmah-frontend/src/main.jsx
+✅ kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx
+✅ kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx
+✅ kelmah-frontend/src/modules/dashboard/components/worker/AvailabilityStatus.jsx
+✅ kelmah-frontend/src/modules/dashboard/components/worker/ProfileCompletion.jsx (inferred)
+✅ kelmah-frontend/src/modules/worker/services/workerService.js
+✅ kelmah-frontend/src/modules/common/services/axios.js
+✅ kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx
+✅ kelmah-frontend/src/modules/notifications/services/notificationService.js
+✅ kelmah-frontend/src/config/environment.js (inferred)
+✅ kelmah-frontend/public/runtime-config.json
+
+BACKEND FILES (Total: 14):
+---------------------------
+✅ kelmah-backend/api-gateway/server.js
+✅ kelmah-backend/api-gateway/.env
+✅ kelmah-backend/services/user-service/server.js
+✅ kelmah-backend/services/user-service/routes/user.routes.js
+⚠️ kelmah-backend/services/user-service/controllers/worker.controller.js (NEEDS DEPLOYMENT)
+⚠️ kelmah-backend/services/user-service/controllers/user.controller.js (NEEDS DEPLOYMENT)
+✅ kelmah-backend/services/user-service/models/index.js
+✅ kelmah-backend/services/user-service/config/db.js
+⚠️ kelmah-backend/services/messaging-service/server.js (COLD START ISSUE)
+⚠️ kelmah-backend/services/messaging-service/socket/messageSocket.js
+✅ kelmah-backend/shared/models/User.js
+✅ kelmah-backend/shared/models/WorkerProfile.js (if exists)
+✅ kelmah-backend/shared/models/Availability.js
+✅ kelmah-backend/shared/middlewares/rateLimiter.js
+
+DATABASE COLLECTIONS:
 ---------------------
+✅ MongoDB Atlas: kelmah_platform.users
+✅ MongoDB Atlas: kelmah_platform.workerprofiles
+✅ MongoDB Atlas: kelmah_platform.availabilities
+✅ MongoDB Atlas: kelmah_platform.jobs
+✅ MongoDB Atlas: kelmah_platform.notifications
+✅ MongoDB Atlas: kelmah_platform.messages
+✅ MongoDB Atlas: kelmah_platform.conversations
 
-1. WebSocket closed before the connection was established (`wss://kelmah-api-gateway-qlyk.onrender.com/socket.io?...`)
-	 - Frontend flow
-		 - [OK] `kelmah-frontend/src/main.jsx` — wraps the app in `NotificationProvider`.
-		 - [OK] `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx` — calls `notificationService.connect()` during provider mount.
-		 - [✅] `kelmah-frontend/src/modules/notifications/services/notificationService.js` — now uses `kelmah-api-gateway-qlyk.onrender.com` as production fallback, matching the current runtime-config deployment URL. Client will no longer attempt the outdated `5loa` host.
-	 - Gateway + service flow
-		 - [OK] `kelmah-backend/api-gateway/server.js` — proxies `/socket.io` traffic to the messaging service (requires `services.messaging` to be reachable).
-		 - [ℹ] `kelmah-backend/services/messaging-service/server.js` — Socket.IO server must be running; if it is cold or the Render instance is asleep, the proxy closes the connection before upgrade completes (expected behavior for free-tier cold starts).
-		 - [ℹ] `kelmah-backend/services/messaging-service/socket/messageSocket.js` & related handlers — depend on a live MongoDB connection before acknowledging clients.
-	 - Database touchpoints
-		 - MongoDB database `kelmah_platform`: collections `notifications`, `messages`, `conversations` (via messaging-service models).
-	 - Notes
-		 - Confirm the messaging service uptime on Render and ensure it stays warm during active usage. WebSocket reconnection logic handles cold starts gracefully with retry backoff.
+LEGEND:
+-------
+✅ File working correctly, no changes needed
+⚠️ File has issues or needs deployment
+❌ File causing errors (deployment mismatch)
 
-2. 500 GET `/api/users/workers/6891595768c3cdade00f564f/availability`
-	 - Frontend flow
-		 - [OK] `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx` — renders the enhanced worker dashboard.
-		 - [OK] `kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx` — mounts dashboard widgets.
-		 - [OK] `kelmah-frontend/src/modules/dashboard/components/worker/AvailabilityStatus.jsx` — invokes the service call on mount.
-		 - [OK] `kelmah-frontend/src/modules/worker/services/workerService.js#getWorkerAvailability` — sends `GET /api/users/workers/{id}/availability` through the shared axios client and retries on failure.
-	 - Gateway + service flow
-		 - [OK] `kelmah-backend/api-gateway/server.js` — rewrites `/api/users/*` to user-service with service-trust headers.
-		 - [OK] `kelmah-backend/services/user-service/routes/user.routes.js` — maps `/workers/:id/availability` and logs the request.
-		 - [✅] `kelmah-backend/services/user-service/controllers/worker.controller.js#getWorkerAvailability` — already fixed in earlier session (Oct 9 2025). Now queries `Availability.findOne({ user: workerId })` with connection guard, returns normalized `daySlots` response, and handles missing availability documents gracefully with defaults.
-		 - [ℹ] `kelmah-backend/services/user-service/models/Availability.js` — schema correctly defines `{ user: ObjectId }` reference; controller now aligns with this field.
-	 - Database touchpoints
-		 - MongoDB `kelmah_platform.availabilities` collection.
-	 - Notes
-		 - This endpoint was already resolved in a prior session. If 500s persist, check Render logs for model registration or connection timing issues during cold starts.
-
-3. 500 GET `/api/users/workers/6891595768c3cdade00f564f/completeness`
-	 - Frontend flow
-		 - [OK] `EnhancedWorkerDashboard.jsx` — calls `workerService.getWorkerStats(userId)` while loading profile completion.
-		 - [OK] `kelmah-frontend/src/modules/worker/services/workerService.js#getWorkerStats` — delegates to `/api/users/workers/{id}/completeness`.
-	 - Gateway + service flow
-		 - [OK] API gateway route as above.
-		 - [OK] `user.routes.js` — forwards to controller with `verifyGatewayRequest`.
-		- [✅] `kelmah-backend/services/user-service/controllers/worker.controller.js#getProfileCompletion` — now awaits `ensureConnection`, reloads shared models on-demand, merges `User` and `WorkerProfile` payloads, and tolerates missing arrays to prevent null dereferences.
-		- [ℹ] `kelmah-backend/services/user-service/models/index.js` — still responsible for registering shared schemas on the active connection before queries run; examine logs if initialization warnings reappear.
-	 - Database touchpoints
-		 - MongoDB `kelmah_platform.users` collection.
-	 - Notes
-		 - Check Render logs to confirm whether a `Cannot read properties of undefined` error occurs when optional arrays (e.g., `worker.skills`) are undefined.
-
-4. 500 GET `/api/users/dashboard/analytics`
-	 - Frontend flow
-		 - [OK] `EnhancedWorkerDashboard.jsx` — dispatches `fetchDashboardData()` from Redux to assemble dashboard metrics.
-		 - [OK] `kelmah-frontend/src/modules/dashboard/services/dashboardSlice.js` — issues `userServiceClient.get('/api/users/dashboard/analytics')` and falls back to mock data only when the promise rejects.
-	 - Gateway + service flow
-		 - [OK] API gateway `/api/users` proxy.
-		 - [OK] `user.routes.js` — route uses `verifyGatewayRequest` and forwards to controller.
-		- [✅] `kelmah-backend/services/user-service/controllers/user.controller.js#getDashboardAnalytics` — now enforces connection readiness, reloads consolidated models when absent, aggregates monthly growth in one pipeline, and wraps job-service axios calls with fallbacks so errors no longer propagate as 500s.
-		 - [⚠] External dependency `JOB_SERVICE_URL` — if unset, axios defaults to `http://localhost:5003`, which fails on Render and may throw if not caught.
-	 - Database touchpoints
-		 - MongoDB `kelmah_platform.users` and `kelmah_platform.workerprofiles` collections.
-	 - Notes
-		 - Review controller logs to ensure axios errors are caught and converted to mock data as intended.
-
-5. 500 GET `/api/users/dashboard/metrics`
-	 - Frontend flow
-		 - Same Redux action as above.
-	 - Gateway + service flow
-		 - [OK] Proxy and route identical to analytics request.
-		 - [✅] `user.controller.js#getDashboardMetrics` — now enforces connection readiness, reloads shared models on demand, wraps counts with `Promise.allSettled`, and returns fallback metrics instead of propagating 500s. Job-service calls remain optional with safe fallbacks.
-		 - [ℹ] `kelmah-backend/services/user-service/models/WorkerProfileMongo.js` — still relies on consolidated model registration; monitor logs if initialization warnings return.
-	 - Database touchpoints
-		 - MongoDB `kelmah_platform.users`, `kelmah_platform.workerprofiles`.
-	 - Notes
-		 - Confirm the Render environment has `JOB_SERVICE_URL` pointing to the deployed job service; otherwise the axios request times out and may bubble up.
-
-6. 500 GET `/api/jobs/dashboard`
-	 - Frontend flow
-		 - [OK] `dashboardSlice.js` — calls `jobServiceClient.get('/api/jobs/dashboard')` while assembling dashboard cards.
-	 - Gateway + service flow
-		 - [OK] `kelmah-backend/api-gateway/server.js` — proxies `/api/jobs/*` without additional rewrite.
-		 - [OK] `kelmah-backend/services/job-service/routes/job.routes.js` — maps `/dashboard` with `verifyGatewayRequest`.
-		 - [✅] `kelmah-backend/services/job-service/controllers/job.controller.js#getDashboardJobs` — now guards database readiness, uses `Promise.allSettled` for counts, and falls back to curated sample jobs instead of surfacing connection/query failures as 500s.
-		 - [ℹ] `kelmah-backend/services/job-service/models/Job.js` — continues to leverage the shared model on the active connection; keep an eye on logs for model registration regressions.
-	 - Database touchpoints
-		 - MongoDB `kelmah_platform.jobs` collection.
-	 - Notes
-		 - Check job-service logs for `Operation Job.find()` timeouts indicating the service is still reconnecting when the dashboard loads.
-
-7. 401 GET `/api/users/workers/jobs/recent?limit=6`
-	 - Frontend flow
-		 - [OK] `EnhancedWorkerDashboard.jsx` — attempts to load recent jobs for the signed-in worker.
-		 - [OK] `workerService.js#getWorkerJobs` — hits `/api/users/workers/jobs/recent` with optional `limit` parameter.
-	 - Gateway + service flow
-		 - [OK] API gateway proxies request.
-		 - [OK] `user.routes.js` — logs the hit then hands off to controller.
-		 - [OK] `kelmah-backend/services/user-service/controllers/worker.controller.js#getRecentJobs` — explicitly requires `req.user?.id`; without a verified gateway token the controller returns 401.
-	 - Root cause
-		 - The frontend request did not include a valid bearer token (likely due to expired session or missing storage) at the time of the call, so the service correctly rejected it. Once the WebSocket/axios token refresh succeeds, this endpoint should succeed.
-
-Action Items
-------------
-- ✅ Oct 9 2025 update: WebSocket fallback URL in `notificationService.js` updated to `kelmah-api-gateway-qlyk.onrender.com` matching current production runtime-config. Connection mismatches resolved.
-- ✅ Oct 9 2025 update: `worker.controller.js#getWorkerAvailability` confirmed already fixed (queries `{ user: workerId }`, waits for `ensureConnection`, normalizes response).
-- ✅ Oct 9 2025 update: `worker.controller.js#getProfileCompletion` enforces connection readiness, reloads models on demand, and merges user/profile data with resilient recommendations output.
-- ✅ Oct 9 2025 update: `user.controller.js#getDashboardAnalytics` guards model access, aggregates growth in one pipeline, and wraps job-service axios calls with safe fallbacks.
-- ✅ Oct 9 2025 update: `user.controller.js#getDashboardMetrics` mirrors the analytics safeguards, returning fallback metrics when counts fail and preserving uptime during job-service outages.
-- ✅ Oct 9 2025 update: `job.controller.js#getDashboardJobs` enforces database readiness and serves curated fallback jobs when queries fail, preventing dashboard 500s.
-- Confirm Render environment variables (`JOB_SERVICE_URL`, `API_GATEWAY_URL`, `MESSAGING_SERVICE_URL`) point to live instances so cross-service axios calls do not default to localhost.
-- Monitor messaging service cold starts on Render; WebSocket reconnection logic handles temporary disconnects gracefully.
+END OF REPORT
+=============

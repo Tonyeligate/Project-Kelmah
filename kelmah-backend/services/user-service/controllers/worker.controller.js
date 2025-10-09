@@ -10,6 +10,88 @@ const { ensureConnection } = require('../config/db');
 const { validateInput, handleServiceError } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
 
+const REQUIRED_PROFILE_FIELDS = [
+  'firstName',
+  'lastName',
+  'email',
+  'profession',
+  'bio',
+  'location',
+  'hourlyRate',
+  'skills',
+];
+
+const OPTIONAL_PROFILE_FIELDS = [
+  'profilePicture',
+  'phone',
+  'website',
+  'portfolio',
+  'certifications',
+  'yearsOfExperience',
+];
+
+const buildProfileFallbackPayload = (reason = 'USER_SERVICE_DB_UNAVAILABLE') => ({
+  completionPercentage: 0,
+  requiredCompletion: 0,
+  optionalCompletion: 0,
+  missingRequired: [...REQUIRED_PROFILE_FIELDS],
+  missingOptional: [...OPTIONAL_PROFILE_FIELDS],
+  recommendations: [
+    'Complete your professional bio',
+    'Add your profile picture',
+    'List your certifications',
+    'Update your portfolio',
+  ],
+  source: {
+    user: false,
+    workerProfile: false,
+  },
+  fallback: true,
+  fallbackReason: reason,
+});
+
+const buildAvailabilityFallbackPayload = (workerId = null, reason = 'USER_SERVICE_DB_UNAVAILABLE') => ({
+  status: 'not_set',
+  isAvailable: true,
+  timezone: 'Africa/Accra',
+  daySlots: [],
+  schedule: [],
+  nextAvailable: null,
+  message: 'Availability temporarily unavailable',
+  pausedUntil: null,
+  lastUpdated: null,
+  fallback: true,
+  fallbackReason: reason,
+  user: workerId,
+});
+
+const isDbUnavailableError = (error) => {
+  if (!error) {
+    return false;
+  }
+
+  const name = String(error.name || '').toLowerCase();
+  const code = String(error.code || '').toLowerCase();
+  if (
+    name.includes('mongonetworkerror') ||
+    name.includes('mongooseerror') ||
+    name.includes('mongoerror') ||
+    name.includes('mongoosetimeouts') ||
+    code === 'etimedout' ||
+    code === 'ecancelled'
+  ) {
+    return true;
+  }
+
+  const message = String(error.message || '').toLowerCase();
+  return (
+    message.includes('timed out waiting for mongodb connection') ||
+    message.includes('mongodb connection failed to reach ready state') ||
+    message.includes('failed to connect to server') ||
+    message.includes('topology was destroyed')
+  );
+};
+
 class WorkerController {
   /**
    * Get all workers with filtering and pagination - FIXED to use MongoDB
@@ -454,18 +536,24 @@ class WorkerController {
    * Get profile completion percentage for a worker
    */
   static async getProfileCompletion(req, res) {
+    const workerId = req.params.id;
+    if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid worker ID required',
+      });
+    }
+
+    const sendFallback = (reason) =>
+      res.status(200).json({
+        success: true,
+        data: buildProfileFallbackPayload(reason),
+      });
+
     try {
       await ensureConnection({
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
-
-      const workerId = req.params.id;
-      if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Valid worker ID required',
-        });
-      }
 
       let MongoUser = User;
       let MongoWorkerProfile = WorkerProfile;
@@ -561,21 +649,11 @@ class WorkerController {
       };
 
       // Calculate completion percentage based on profile fields
-      const requiredFields = [
-        'firstName', 'lastName', 'email', 'profession',
-        'bio', 'location', 'hourlyRate', 'skills'
-      ];
-
-      const optionalFields = [
-        'profilePicture', 'phone', 'website', 'portfolio',
-        'certifications', 'yearsOfExperience'
-      ];
-
       let completedRequired = 0;
       let completedOptional = 0;
 
       // Check required fields
-      requiredFields.forEach(field => {
+      REQUIRED_PROFILE_FIELDS.forEach(field => {
         const value = getFieldValue(field);
         if (hasValue(value)) {
           completedRequired++;
@@ -583,21 +661,21 @@ class WorkerController {
       });
 
       // Check optional fields
-      optionalFields.forEach(field => {
+      OPTIONAL_PROFILE_FIELDS.forEach(field => {
         const value = getFieldValue(field);
         if (hasValue(value)) {
           completedOptional++;
         }
       });
 
-      const requiredPercentage = (completedRequired / requiredFields.length) * 70; // 70% weight
-      const optionalPercentage = (completedOptional / optionalFields.length) * 30; // 30% weight
+      const requiredPercentage = (completedRequired / REQUIRED_PROFILE_FIELDS.length) * 70; // 70% weight
+      const optionalPercentage = (completedOptional / OPTIONAL_PROFILE_FIELDS.length) * 30; // 30% weight
       const totalPercentage = Math.round(requiredPercentage + optionalPercentage);
 
       // Determine missing fields
-      const missingRequired = requiredFields.filter((field) => !hasValue(getFieldValue(field)));
+      const missingRequired = REQUIRED_PROFILE_FIELDS.filter((field) => !hasValue(getFieldValue(field)));
 
-      const missingOptional = optionalFields.filter((field) => !hasValue(getFieldValue(field)));
+      const missingOptional = OPTIONAL_PROFILE_FIELDS.filter((field) => !hasValue(getFieldValue(field)));
 
       const recommendations = [];
       if (missingRequired.includes('bio')) {
@@ -620,8 +698,8 @@ class WorkerController {
         success: true,
         data: {
           completionPercentage: totalPercentage,
-          requiredCompletion: Math.round((completedRequired / requiredFields.length) * 100),
-          optionalCompletion: Math.round((completedOptional / optionalFields.length) * 100),
+          requiredCompletion: Math.round((completedRequired / REQUIRED_PROFILE_FIELDS.length) * 100),
+          optionalCompletion: Math.round((completedOptional / OPTIONAL_PROFILE_FIELDS.length) * 100),
           missingRequired,
           missingOptional,
           recommendations,
@@ -634,6 +712,9 @@ class WorkerController {
 
     } catch (error) {
       console.error('Get profile completion error:', error);
+      if (isDbUnavailableError(error)) {
+        return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
+      }
       return handleServiceError(res, error, 'Failed to get profile completion');
     }
   }
@@ -724,17 +805,23 @@ class WorkerController {
    * Get worker availability by worker ID
    */
   static async getWorkerAvailability(req, res) {
+    const workerId = req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'Worker ID required' });
+    }
+
+    const sendFallback = (reason) =>
+      res.status(200).json({
+        success: true,
+        data: buildAvailabilityFallbackPayload(workerId, reason),
+      });
+
     try {
       await ensureConnection({
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
 
       const MongoUser = User;
-
-      const workerId = req.params.id;
-      if (!workerId) {
-        return res.status(400).json({ success: false, message: 'Worker ID required' });
-      }
 
       // Get worker user info
       const worker = await MongoUser.findById(workerId).lean();
@@ -816,6 +903,9 @@ class WorkerController {
       });
     } catch (error) {
       console.error('Error fetching worker availability:', error);
+      if (isDbUnavailableError(error)) {
+        return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
+      }
       return handleServiceError(res, error, 'Failed to get worker availability');
     }
   }
