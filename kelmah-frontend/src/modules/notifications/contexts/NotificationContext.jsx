@@ -99,17 +99,30 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     fetchNotifications();
+
     if (user) {
       try {
-        const token = null; // Token is already attached via axios interceptors for HTTP; socket auth handled internally if needed
-        notificationService.onNotification = (payload) => {
-          setNotifications((prev) => [{ ...payload, read: false }, ...prev]);
-        };
-        notificationService.connect(token);
-      } catch {}
+        const token = secureStorage.getAuthToken();
+
+        if (!token) {
+          console.log('⏸️ Notifications: Auth token missing, delaying socket connection');
+        } else {
+          notificationService.onNotification = (payload) => {
+            setNotifications((prev) => [{ ...payload, read: false }, ...prev]);
+          };
+          notificationService.connect(token);
+        }
+      } catch (socketError) {
+        console.error('Notifications: Failed to initialise socket connection', socketError);
+      }
     }
+
     return () => {
-      try { notificationService.disconnect(); } catch {}
+      try {
+        notificationService.disconnect();
+      } catch (disconnectError) {
+        console.warn('Notifications: Socket disconnect failed', disconnectError);
+      }
     };
   }, [fetchNotifications, user]);
 

@@ -550,6 +550,13 @@ class WorkerController {
         data: buildProfileFallbackPayload(reason),
       });
 
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('⚠️ MongoDB not ready for profile completeness request, returning fallback', {
+        readyState: mongoose.connection.readyState,
+      });
+      return sendFallback('USER_SERVICE_DB_NOT_READY');
+    }
+
     try {
       await ensureConnection({
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
@@ -815,6 +822,13 @@ class WorkerController {
         success: true,
         data: buildAvailabilityFallbackPayload(workerId, reason),
       });
+
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('⚠️ MongoDB not ready for availability request, returning fallback', {
+        readyState: mongoose.connection.readyState,
+      });
+      return sendFallback('USER_SERVICE_DB_NOT_READY');
+    }
 
     try {
       await ensureConnection({

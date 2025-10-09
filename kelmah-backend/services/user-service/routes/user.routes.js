@@ -37,7 +37,7 @@ router.post("/database/cleanup", cleanupDatabase);
 
 // 🔥 FIX: Recent jobs route MUST come BEFORE parameterized routes
 // to prevent "/workers/jobs" being matched as "/workers/:id" where id="jobs"
-router.get("/workers/jobs/recent", (req, res, next) => {
+router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/jobs/recent route hit:', {
     query: req.query,
     fullPath: req.originalUrl
