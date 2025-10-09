@@ -2,6 +2,7 @@
 const Bookmark = require('../models/Bookmark');
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
+const { ensureConnection } = require('../config/db');
 const WorkerProfile = db.WorkerProfile; // Now points to MongoDB model
 const { User } = require('../models'); // Import User model at top level
 
@@ -125,45 +126,93 @@ exports.createUser = async (req, res, next) => {
 /**
  * Get dashboard metrics (MongoDB)
  */
-exports.getDashboardMetrics = async (req, res, next) => {
-  try {
-    // Use shared models from index
+exports.getDashboardMetrics = async (req, res) => {
+  const defaultMetrics = {
+    totalUsers: 0,
+    totalWorkers: 0,
+    activeWorkers: 0,
+    totalJobs: 0,
+    completedJobs: 0,
+    revenue: 0,
+    growthRate: 0,
+    source: 'fallback',
+  };
 
-    // Get real metrics from database
-    const [totalUsers, totalWorkers, activeWorkers] = await Promise.all([
-      User.countDocuments({ isActive: true }),
-      WorkerProfile.countDocuments(),
-      WorkerProfile.countDocuments({ isAvailable: true })
+  try {
+    await ensureConnection({
+      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+    });
+
+    if (typeof db.loadModels === 'function') {
+      db.loadModels();
+    }
+
+    let MongoUser = db.User;
+    let MongoWorkerProfile = db.WorkerProfile;
+
+    if (!MongoUser || !MongoWorkerProfile) {
+      console.warn('Dashboard metrics: models not initialized, returning fallback data.');
+      return res.json({ ...defaultMetrics, reason: 'models-not-ready' });
+    }
+
+    const [totalUsersResult, totalWorkersResult, activeWorkersResult] = await Promise.allSettled([
+      MongoUser.countDocuments({ isActive: true }),
+      MongoWorkerProfile.countDocuments(),
+      MongoWorkerProfile.countDocuments({ isAvailable: true }),
     ]);
 
-    // Try to get job counts from job service
+    const totalUsers = totalUsersResult.status === 'fulfilled' ? totalUsersResult.value : 0;
+    const totalWorkers = totalWorkersResult.status === 'fulfilled' ? totalWorkersResult.value : 0;
+    const activeWorkers = activeWorkersResult.status === 'fulfilled' ? activeWorkersResult.value : 0;
+
+    if (totalUsersResult.status === 'rejected') {
+      console.warn('Dashboard metrics: failed to count users:', totalUsersResult.reason?.message);
+    }
+    if (totalWorkersResult.status === 'rejected') {
+      console.warn('Dashboard metrics: failed to count worker profiles:', totalWorkersResult.reason?.message);
+    }
+    if (activeWorkersResult.status === 'rejected') {
+      console.warn('Dashboard metrics: failed to count available workers:', activeWorkersResult.reason?.message);
+    }
+
     let jobMetrics = { totalJobs: 0, completedJobs: 0 };
+    let jobMetricsSource = 'fallback';
+
     try {
       const axios = require('axios');
-      const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
+      const jobServiceUrl = process.env.JOB_SERVICE_URL || process.env.API_GATEWAY_URL || 'http://localhost:5003';
       const response = await axios.get(`${jobServiceUrl}/api/jobs/dashboard/metrics`, {
         headers: { Authorization: req.headers.authorization },
-        timeout: 5000
+        timeout: 5000,
       });
-      jobMetrics = response.data;
+
+      if (response?.data && typeof response.data === 'object') {
+        jobMetrics = {
+          totalJobs: Number(response.data.totalJobs) || 0,
+          completedJobs: Number(response.data.completedJobs) || 0,
+        };
+        jobMetricsSource = 'job-service';
+      }
     } catch (error) {
-      console.warn('Could not fetch job metrics:', error.message);
+      console.warn('Dashboard metrics: could not fetch job metrics:', error.message);
     }
 
     const metrics = {
       totalUsers,
-      activeWorkers,
       totalWorkers,
-      totalJobs: jobMetrics.totalJobs || 0,
-      completedJobs: jobMetrics.completedJobs || 0,
-      revenue: 0, // TODO: Implement revenue tracking
-      growthRate: 0 // TODO: Implement growth calculation
+      activeWorkers,
+      totalJobs: jobMetrics.totalJobs,
+      completedJobs: jobMetrics.completedJobs,
+      revenue: 0,
+      growthRate: totalUsers > 0 ? Math.round((activeWorkers / totalUsers) * 100) : 0,
+      source: 'database',
+      jobMetricsSource,
     };
 
-    res.json(metrics);
+    return res.json(metrics);
   } catch (err) {
     console.error('Dashboard metrics error:', err);
-    next(err);
+    return res.json({ ...defaultMetrics, reason: err.message || 'unknown-error' });
   }
 };
 
@@ -250,56 +299,108 @@ exports.getDashboardWorkers = async (req, res, next) => {
 /**
  * Get dashboard analytics (MongoDB)
  */
-exports.getDashboardAnalytics = async (req, res, next) => {
+exports.getDashboardAnalytics = async (req, res) => {
   try {
-    // Use shared models from top import
-    const { WorkerProfile } = require('../models');
+    await ensureConnection({
+      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+    });
 
-    // Get user growth data (last 12 months)
-    const userGrowth = [];
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    let MongoUser = User;
+    let MongoWorkerProfile = WorkerProfile;
 
-      const count = await User.countDocuments({
-        createdAt: { $gte: startOfMonth, $lt: endOfMonth }
-      });
+    if (!MongoUser || !MongoWorkerProfile) {
+      if (typeof db.loadModels === 'function') {
+        db.loadModels();
+      }
+      MongoUser = db.User;
+      MongoWorkerProfile = db.WorkerProfile;
+    }
 
-      userGrowth.push({
-        month: date.toLocaleString('default', { month: 'short' }),
-        users: count
+    if (!MongoUser || !MongoWorkerProfile) {
+      return res.status(503).json({
+        success: false,
+        message: 'Models not initialized for analytics computation',
       });
     }
 
-    // Get worker stats
-    const [totalWorkers, availableWorkers] = await Promise.all([
-      WorkerProfile.countDocuments(),
-      WorkerProfile.countDocuments({ isAvailable: true })
+    const now = new Date();
+    const startWindow = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    let userGrowth = [];
+
+    try {
+      const growthAggregation = await MongoUser.aggregate([
+        { $match: { createdAt: { $gte: startWindow } } },
+        {
+          $group: {
+            _id: {
+              year: { $year: '$createdAt' },
+              month: { $month: '$createdAt' },
+            },
+            users: { $sum: 1 },
+          },
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } },
+      ]);
+
+      const growthMap = new Map();
+      growthAggregation.forEach((entry) => {
+        const key = `${entry._id.year}-${entry._id.month}`;
+        growthMap.set(key, entry.users);
+      });
+
+      userGrowth = Array.from({ length: 12 }).map((_, index) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
+        const mapKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        return {
+          month: date.toLocaleString('default', { month: 'short' }),
+          users: growthMap.get(mapKey) || 0,
+        };
+      });
+    } catch (aggregationError) {
+      console.warn('User growth aggregation failed, using fallback data:', aggregationError.message);
+      userGrowth = Array.from({ length: 12 }).map((_, index) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
+        return {
+          month: date.toLocaleString('default', { month: 'short' }),
+          users: 0,
+        };
+      });
+    }
+
+    const [totalWorkersResult, availableWorkersResult] = await Promise.allSettled([
+      MongoWorkerProfile.countDocuments(),
+      MongoWorkerProfile.countDocuments({ isAvailable: true }),
     ]);
 
-    // Get job stats from job service if available
+    if (totalWorkersResult.status === 'rejected') {
+      console.warn('Failed to count total workers:', totalWorkersResult.reason?.message);
+    }
+    if (availableWorkersResult.status === 'rejected') {
+      console.warn('Failed to count available workers:', availableWorkersResult.reason?.message);
+    }
+
+    const totalWorkers = totalWorkersResult.status === 'fulfilled' ? totalWorkersResult.value : 0;
+    const availableWorkers = availableWorkersResult.status === 'fulfilled' ? availableWorkersResult.value : 0;
+
     let jobStats = { posted: 0, completed: 0, inProgress: 0, cancelled: 0 };
     try {
       const axios = require('axios');
       const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
       const response = await axios.get(`${jobServiceUrl}/api/jobs/analytics/summary`, {
         headers: { Authorization: req.headers.authorization },
-        timeout: 5000
+        timeout: 5000,
       });
       jobStats = response.data;
     } catch (error) {
       console.warn('Could not fetch job stats:', error.message);
     }
 
-    // Get top categories (simplified)
     const topCategories = [
       { name: 'Plumbing', count: 15 },
       { name: 'Electrical', count: 12 },
       { name: 'Carpentry', count: 10 },
       { name: 'Construction', count: 8 },
-      { name: 'Painting', count: 6 }
+      { name: 'Painting', count: 6 },
     ];
 
     res.json({
@@ -309,12 +410,16 @@ exports.getDashboardAnalytics = async (req, res, next) => {
       workerStats: {
         total: totalWorkers,
         available: availableWorkers,
-        utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0
-      }
+        utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0,
+      },
     });
   } catch (err) {
     console.error('Dashboard analytics error:', err);
-    next(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate dashboard analytics',
+      error: err.message,
+    });
   }
 };
 

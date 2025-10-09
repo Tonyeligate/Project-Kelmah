@@ -18,7 +18,7 @@ class NotificationService {
     if (this.isConnected) return;
     try {
       // Get backend WebSocket URL from runtime config
-      let wsUrl = 'https://kelmah-api-gateway-5loa.onrender.com'; // Production fallback
+      let wsUrl = 'https://kelmah-api-gateway-qlyk.onrender.com'; // Updated production fallback to match current deployment
       try {
         const response = await fetch('/runtime-config.json');
         if (response.ok) {
@@ -27,7 +27,7 @@ class NotificationService {
           console.log('📡 Notifications WebSocket connecting to:', wsUrl);
         }
       } catch (configError) {
-        console.warn('⚠️ Notifications: Failed to load runtime config, using fallback');
+        console.warn('⚠️ Notifications: Failed to load runtime config, using fallback:', wsUrl);
       }
 
       const { io } = await import('socket.io-client');

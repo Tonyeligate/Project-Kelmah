@@ -20,6 +20,7 @@ const {
   errorResponse,
   paginatedResponse,
 } = require("../utils/response");
+const { ensureConnection } = require('../config/db');
 
 /**
  * Create a new job
@@ -671,28 +672,89 @@ const changeJobStatus = async (req, res, next) => {
  * @route GET /api/jobs/dashboard
  * @access Public
  */
-const getDashboardJobs = async (req, res, next) => {
+const getDashboardJobs = async (req, res) => {
+  const fallbackJobs = [
+    {
+      id: 'fallback-1',
+      title: 'Electrical Wiring Project',
+      description: 'Residential rewiring for three-bedroom house.',
+      budget: { amount: 3200, currency: 'GHS' },
+      location: { type: 'onsite', city: 'Accra', country: 'Ghana' },
+      urgency: 'medium',
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
+    },
+    {
+      id: 'fallback-2',
+      title: 'Plumbing Maintenance',
+      description: 'Monthly maintenance for small apartment complex.',
+      budget: { amount: 1800, currency: 'GHS' },
+      location: { type: 'onsite', city: 'Kumasi', country: 'Ghana' },
+      urgency: 'low',
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+    },
+  ];
+
   try {
-    // Get recent jobs for dashboard
-    const jobs = await Job.find({ status: "open", visibility: "public" })
+    await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
+  } catch (connectionError) {
+    console.warn('Dashboard jobs: database not ready, returning fallback data:', connectionError.message);
+    return successResponse(res, 200, 'Dashboard jobs fallback data', {
+      recentJobs: fallbackJobs,
+      totalOpenJobs: fallbackJobs.length,
+      totalJobsToday: 0,
+      source: 'fallback-db-unready',
+    });
+  }
+
+  let source = 'database';
+  let recentJobs = [];
+
+  try {
+    recentJobs = await Job.find({ status: 'open', visibility: 'public' })
       .sort({ createdAt: -1 })
       .limit(10)
-      .populate("hirer", "firstName lastName companyName")
-      .select("title description budget location urgency createdAt");
-
-    const dashboardData = {
-      recentJobs: jobs,
-      totalOpenJobs: await Job.countDocuments({ status: "open", visibility: "public" }),
-      totalJobsToday: await Job.countDocuments({
-        status: "open",
-        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
-      })
-    };
-
-    return successResponse(res, 200, "Dashboard jobs retrieved successfully", dashboardData);
-  } catch (error) {
-    next(error);
+      .populate('hirer', 'firstName lastName companyName')
+      .select('title description budget location urgency createdAt')
+      .lean({ defaults: true });
+  } catch (queryError) {
+    console.warn('Dashboard jobs: query failed, using fallback data:', queryError.message);
+    source = 'fallback-query-failed';
+    recentJobs = fallbackJobs;
   }
+
+  if (!Array.isArray(recentJobs) || recentJobs.length === 0) {
+    source = 'fallback-empty';
+    recentJobs = fallbackJobs;
+  } else {
+    recentJobs = recentJobs.map((job) => ({
+      ...job,
+      id: job._id ? String(job._id) : job.id,
+    }));
+  }
+
+  const [totalOpenResult, totalTodayResult] = await Promise.allSettled([
+    Job.countDocuments({ status: 'open', visibility: 'public' }),
+    Job.countDocuments({
+      status: 'open',
+      createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+    }),
+  ]);
+
+  if (totalOpenResult.status === 'rejected') {
+    console.warn('Dashboard jobs: failed to count open jobs:', totalOpenResult.reason?.message);
+  }
+  if (totalTodayResult.status === 'rejected') {
+    console.warn('Dashboard jobs: failed to count today jobs:', totalTodayResult.reason?.message);
+  }
+
+  const dashboardData = {
+    recentJobs,
+    totalOpenJobs: totalOpenResult.status === 'fulfilled' ? totalOpenResult.value : recentJobs.length,
+    totalJobsToday: totalTodayResult.status === 'fulfilled' ? totalTodayResult.value : 0,
+    source,
+  };
+
+  return successResponse(res, 200, 'Dashboard jobs retrieved successfully', dashboardData);
 };
 
 /**

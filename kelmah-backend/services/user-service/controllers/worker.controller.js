@@ -3,7 +3,9 @@
  * Handles all worker-related operations
  */
 
-const { WorkerProfile, WorkerSkill, Portfolio, Skill, User } = require('../models');
+const mongoose = require('mongoose');
+const modelsModule = require('../models');
+const { WorkerProfile, WorkerSkill, Portfolio, Skill, User, Availability } = modelsModule;
 const { ensureConnection } = require('../config/db');
 const { validateInput, handleServiceError } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
@@ -453,18 +455,110 @@ class WorkerController {
    */
   static async getProfileCompletion(req, res) {
     try {
+      await ensureConnection({
+        timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+      });
+
       const workerId = req.params.id;
+      if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid worker ID required',
+        });
+      }
 
-      // Get user from MongoDB (using shared model from top import)
-      const MongoUser = User;
-      const worker = await MongoUser.findById(workerId);
+      let MongoUser = User;
+      let MongoWorkerProfile = WorkerProfile;
 
-      if (!worker) {
+      if (!MongoUser || !MongoWorkerProfile) {
+        if (typeof modelsModule.loadModels === 'function') {
+          modelsModule.loadModels();
+        }
+        MongoUser = modelsModule.User;
+        MongoWorkerProfile = modelsModule.WorkerProfile;
+      }
+
+      if (!MongoUser) {
+        return res.status(503).json({
+          success: false,
+          message: 'User model not initialized',
+        });
+      }
+
+      const [worker, workerProfile] = await Promise.all([
+        MongoUser.findById(workerId).lean(),
+        MongoWorkerProfile ? MongoWorkerProfile.findOne({ userId: workerId }).lean() : null,
+      ]);
+
+      if (!worker && !workerProfile) {
         return res.status(404).json({
           success: false,
           message: 'Worker not found'
         });
       }
+
+      const normalizeArray = (value) => {
+        if (Array.isArray(value)) {
+          return value.filter((item) => item !== null && item !== undefined);
+        }
+        return [];
+      };
+
+      const combined = {
+        ...(worker || {}),
+        ...(workerProfile || {}),
+        // Explicit precedence rules for overlapping fields
+        bio: worker?.bio ?? workerProfile?.bio ?? '',
+        location: worker?.location ?? workerProfile?.location ?? '',
+        hourlyRate:
+          worker?.hourlyRate ??
+          workerProfile?.hourlyRate ??
+          workerProfile?.hourlyRateMin ??
+          workerProfile?.hourlyRateMax ?? null,
+        skills: normalizeArray(
+          (Array.isArray(worker?.skills) && worker?.skills.length > 0
+            ? worker.skills
+            : workerProfile?.skills) || [],
+        ),
+        profilePicture: worker?.profilePicture ?? workerProfile?.profilePicture ?? null,
+        certifications: normalizeArray(
+          (workerProfile?.certifications && workerProfile.certifications.length
+            ? workerProfile.certifications
+            : worker?.certifications) || [],
+        ),
+        portfolio: normalizeArray(
+          (workerProfile?.portfolioItems && workerProfile.portfolioItems.length
+            ? workerProfile.portfolioItems
+            : worker?.portfolio) || [],
+        ),
+        yearsOfExperience: worker?.yearsOfExperience ?? workerProfile?.yearsOfExperience ?? null,
+        profession: worker?.profession ?? workerProfile?.profession ?? '',
+        phone: worker?.phone ?? workerProfile?.phone ?? '',
+        website: worker?.website ?? workerProfile?.website ?? '',
+      };
+
+      const getFieldValue = (field) => {
+        switch (field) {
+          case 'portfolio':
+            return combined.portfolio;
+          case 'certifications':
+            return combined.certifications;
+          case 'skills':
+            return combined.skills;
+          default:
+            return combined[field];
+        }
+      };
+
+      const hasValue = (value) => {
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        if (value && typeof value === 'object') {
+          return Object.keys(value).length > 0;
+        }
+        return value !== undefined && value !== null && value !== '';
+      };
 
       // Calculate completion percentage based on profile fields
       const requiredFields = [
@@ -482,16 +576,16 @@ class WorkerController {
 
       // Check required fields
       requiredFields.forEach(field => {
-        if (worker[field] &&
-          (Array.isArray(worker[field]) ? worker[field].length > 0 : true)) {
+        const value = getFieldValue(field);
+        if (hasValue(value)) {
           completedRequired++;
         }
       });
 
       // Check optional fields
       optionalFields.forEach(field => {
-        if (worker[field] &&
-          (Array.isArray(worker[field]) ? worker[field].length > 0 : true)) {
+        const value = getFieldValue(field);
+        if (hasValue(value)) {
           completedOptional++;
         }
       });
@@ -501,13 +595,26 @@ class WorkerController {
       const totalPercentage = Math.round(requiredPercentage + optionalPercentage);
 
       // Determine missing fields
-      const missingRequired = requiredFields.filter(field =>
-        !worker[field] || (Array.isArray(worker[field]) && worker[field].length === 0)
-      );
+      const missingRequired = requiredFields.filter((field) => !hasValue(getFieldValue(field)));
 
-      const missingOptional = optionalFields.filter(field =>
-        !worker[field] || (Array.isArray(worker[field]) && worker[field].length === 0)
-      );
+      const missingOptional = optionalFields.filter((field) => !hasValue(getFieldValue(field)));
+
+      const recommendations = [];
+      if (missingRequired.includes('bio')) {
+        recommendations.push('Complete your professional bio');
+      }
+      if (missingRequired.includes('profilePicture')) {
+        recommendations.push('Add your profile picture');
+      }
+      if (missingOptional.includes('certifications')) {
+        recommendations.push('List your certifications');
+      }
+      if (missingOptional.includes('portfolio')) {
+        recommendations.push('Update your portfolio');
+      }
+      if (recommendations.length === 0 && totalPercentage < 100) {
+        recommendations.push('Review your profile details to reach 100% completion');
+      }
 
       res.json({
         success: true,
@@ -517,12 +624,11 @@ class WorkerController {
           optionalCompletion: Math.round((completedOptional / optionalFields.length) * 100),
           missingRequired,
           missingOptional,
-          recommendations: totalPercentage < 80 ? [
-            'Complete your professional bio',
-            'Add your profile picture',
-            'List your certifications',
-            'Update your portfolio'
-          ] : []
+          recommendations,
+          source: {
+            user: !!worker,
+            workerProfile: !!workerProfile,
+          },
         }
       });
 
@@ -619,8 +725,10 @@ class WorkerController {
    */
   static async getWorkerAvailability(req, res) {
     try {
-      const Availability = require('../models/Availability');
-      // Use shared model from top import
+      await ensureConnection({
+        timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+      });
+
       const MongoUser = User;
 
       const workerId = req.params.id;
@@ -634,47 +742,76 @@ class WorkerController {
         return res.status(404).json({ success: false, message: 'Worker not found' });
       }
 
-      const availability = await Availability.findOne({ userId: workerId }).lean();
+      const availability = await Availability.findOne({ user: workerId }).lean();
 
       if (!availability) {
         return res.json({
           success: true,
           data: {
             status: 'not_set',
-            schedule: {},
+            isAvailable: true,
+            timezone: 'Africa/Accra',
+            daySlots: [],
+            schedule: [],
             nextAvailable: null,
             message: 'Availability not configured'
           }
         });
       }
 
-      // Calculate next available time
-      const now = new Date();
-      let nextAvailable = null;
+      const dayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const normalizedSchedule = Array.isArray(availability.daySlots)
+        ? availability.daySlots.map((daySlot) => ({
+            day: dayMap[daySlot.dayOfWeek] ?? 'unknown',
+            available: Array.isArray(daySlot.slots) && daySlot.slots.length > 0,
+            slots: Array.isArray(daySlot.slots)
+              ? daySlot.slots.map((slot) => ({
+                  start: slot.start,
+                  end: slot.end,
+                }))
+              : [],
+          }))
+        : [];
 
-      if (availability.schedule && availability.schedule.length > 0) {
-        // Find next available slot in schedule
-        const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        const currentTime = now.getHours() * 100 + now.getMinutes();
+      const computeNextAvailable = () => {
+        if (!normalizedSchedule.length) {
+          return null;
+        }
 
-        for (const slot of availability.schedule) {
-          if (slot.day === currentDay && slot.available) {
-            const startTime = slot.startHour * 100 + (slot.startMinute || 0);
-            if (startTime > currentTime) {
-              nextAvailable = `${slot.startHour}:${(slot.startMinute || 0).toString().padStart(2, '0')}`;
-              break;
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        for (let offset = 0; offset < 7; offset += 1) {
+          const dayIndex = (now.getDay() + offset) % 7;
+          const dayName = dayMap[dayIndex];
+          const dayEntry = normalizedSchedule.find((entry) => entry.day === dayName && entry.slots.length > 0);
+          if (!dayEntry) {
+            continue;
+          }
+
+          for (const slot of dayEntry.slots) {
+            const [startHour = '0', startMinute = '0'] = slot.start.split(':');
+            const slotMinutes = Number(startHour) * 60 + Number(startMinute);
+            if (offset > 0 || slotMinutes >= currentMinutes) {
+              return `${dayName} ${slot.start}`;
             }
           }
         }
-      }
+
+        return null;
+      };
 
       res.json({
         success: true,
         data: {
           status: availability.isAvailable ? 'available' : 'unavailable',
-          schedule: availability.schedule || {},
-          nextAvailable,
-          lastUpdated: availability.updatedAt
+          isAvailable: Boolean(availability.isAvailable),
+          timezone: availability.timezone,
+          daySlots: availability.daySlots || [],
+          schedule: normalizedSchedule,
+          nextAvailable: computeNextAvailable(),
+          lastUpdated: availability.updatedAt,
+          pausedUntil: availability.pausedUntil || null,
         }
       });
     } catch (error) {
