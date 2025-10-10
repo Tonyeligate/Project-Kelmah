@@ -9,6 +9,7 @@ const { WorkerProfile, WorkerSkill, Portfolio, Skill, User, Availability } = mod
 const { ensureConnection } = require('../config/db');
 const { validateInput, handleServiceError } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
+const { verifyAccessToken, decodeUserFromClaims } = require('../../../shared/utils/jwt');
 
 const REQUIRED_PROFILE_FIELDS = [
   'firstName',
@@ -732,31 +733,42 @@ class WorkerController {
   static async getRecentJobs(req, res) {
     try {
       const { limit = 10 } = req.query;
-      const userId = req.user?.id;
+      const parseGatewayUser = () => {
+        if (req.user?.id) {
+          return req.user;
+        }
 
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
-      }
+        const gatewayHeader = req.headers['x-authenticated-user'];
+        if (gatewayHeader) {
+          try {
+            const parsed = JSON.parse(gatewayHeader);
+            if (parsed && parsed.id) {
+              return parsed;
+            }
+          } catch (error) {
+            console.warn('Failed to parse x-authenticated-user header:', error.message);
+          }
+        }
 
-      // Try to get real job data from job service
-      let jobs = [];
-      try {
-        const axios = require('axios');
-        const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
-        const response = await axios.get(`${jobServiceUrl}/api/jobs/worker/recent`, {
-          params: { workerId: userId, limit },
-          headers: { Authorization: req.headers.authorization },
-          timeout: 5000
-        });
-        jobs = response.data?.jobs || [];
-      } catch (error) {
-        console.warn('Could not fetch recent jobs from job service:', error.message);
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.slice(7);
+          try {
+            const decoded = verifyAccessToken(token);
+            const claims = decodeUserFromClaims(decoded);
+            if (claims?.id) {
+              return claims;
+            }
+          } catch (error) {
+            console.warn('Unable to decode authorization token for recent jobs:', error.message);
+          }
+        }
 
-        // Return mock data for testing
-        jobs = [
+        return null;
+      };
+
+      const buildRecentJobsFallback = (reason = 'RECENT_JOBS_FALLBACK') => {
+        const mockJobs = [
           {
             id: 'job_123',
             title: 'Kitchen Cabinet Installation',
@@ -792,6 +804,41 @@ class WorkerController {
             location: 'Airport Residential, Accra'
           }
         ];
+
+        return {
+          success: true,
+          data: {
+            jobs: mockJobs.slice(0, parseInt(limit)),
+            total: mockJobs.length,
+            fallback: true,
+            fallbackReason: reason
+          }
+        };
+      };
+
+      const userContext = parseGatewayUser();
+      const userId = userContext?.id;
+
+      if (!userId) {
+        console.warn('Recent jobs request missing authenticated user context; returning fallback data');
+        return res.status(200).json(buildRecentJobsFallback('MISSING_AUTH_CONTEXT'));
+      }
+
+      // Try to get real job data from job service
+      let jobs = [];
+      try {
+        const axios = require('axios');
+        const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
+        const response = await axios.get(`${jobServiceUrl}/api/jobs/worker/recent`, {
+          params: { workerId: userId, limit },
+          headers: { Authorization: req.headers.authorization },
+          timeout: 5000
+        });
+        jobs = response.data?.jobs || [];
+      } catch (error) {
+        console.warn('Could not fetch recent jobs from job service:', error.message);
+        const fallback = buildRecentJobsFallback('JOB_SERVICE_UNAVAILABLE');
+        return res.status(200).json(fallback);
       }
 
       res.json({
@@ -801,7 +848,6 @@ class WorkerController {
           total: jobs.length
         }
       });
-
     } catch (error) {
       console.error('Get recent jobs error:', error);
       return handleServiceError(res, error, 'Failed to get recent jobs');
@@ -823,6 +869,11 @@ class WorkerController {
         data: buildAvailabilityFallbackPayload(workerId, reason),
       });
 
+    if (!mongoose.Types.ObjectId.isValid(workerId)) {
+      console.warn('Invalid worker ID supplied for availability; returning fallback', { workerId });
+      return sendFallback('INVALID_WORKER_ID');
+    }
+
     if (mongoose.connection.readyState !== 1) {
       console.warn('⚠️ MongoDB not ready for availability request, returning fallback', {
         readyState: mongoose.connection.readyState,
@@ -835,7 +886,21 @@ class WorkerController {
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
 
-      const MongoUser = User;
+      let MongoUser = User;
+      let MongoAvailability = Availability;
+
+      if (!MongoUser || !MongoAvailability) {
+        if (typeof modelsModule.loadModels === 'function') {
+          modelsModule.loadModels();
+        }
+        MongoUser = modelsModule.User;
+        MongoAvailability = modelsModule.Availability;
+      }
+
+      if (!MongoUser || !MongoAvailability) {
+        console.warn('Availability request missing initialized models, returning fallback');
+        return sendFallback('MODELS_NOT_INITIALIZED');
+      }
 
       // Get worker user info
       const worker = await MongoUser.findById(workerId).lean();
@@ -843,7 +908,7 @@ class WorkerController {
         return res.status(404).json({ success: false, message: 'Worker not found' });
       }
 
-      const availability = await Availability.findOne({ user: workerId }).lean();
+      const availability = await MongoAvailability.findOne({ user: workerId }).lean();
 
       if (!availability) {
         return res.json({
@@ -919,6 +984,9 @@ class WorkerController {
       console.error('Error fetching worker availability:', error);
       if (isDbUnavailableError(error)) {
         return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
+      }
+      if (error?.name === 'CastError') {
+        return sendFallback('INVALID_WORKER_ID');
       }
       return handleServiceError(res, error, 'Failed to get worker availability');
     }

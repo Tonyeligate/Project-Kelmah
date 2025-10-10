@@ -6,6 +6,25 @@ import {
 
 const API_URL = '/api/users/workers';
 
+const unwrapPayload = (response) => response?.data?.data ?? response?.data ?? {};
+
+const buildMetadata = (payload = {}) => ({
+  fallback: Boolean(payload?.fallback),
+  fallbackReason: payload?.fallbackReason ?? null,
+  source: payload?.source ?? null,
+  receivedAt: new Date().toISOString(),
+});
+
+const attachMetadata = (data, payload = {}) => {
+  const metadata = buildMetadata(payload);
+  return {
+    ...data,
+    fallback: metadata.fallback,
+    fallbackReason: metadata.fallbackReason,
+    metadata,
+  };
+};
+
 /**
  * Service for making API calls related to workers
  */
@@ -280,17 +299,25 @@ const workerService = {
         typeof baseUrl === 'string' && baseUrl.endsWith('/api') ? '' : '/api';
       response = await client.get(`${prefix}/availability/${workerId}`);
     }
-    const payload = response?.data?.data ?? response?.data ?? {};
-    const status = payload.status;
+    const payload = unwrapPayload(response);
+    const status = payload?.status;
 
-    return {
-      ...payload,
+    const normalized = {
       status,
       isAvailable:
-        typeof payload.isAvailable === 'boolean'
+        typeof payload?.isAvailable === 'boolean'
           ? payload.isAvailable
           : status === 'available' || status === true,
+      timezone: payload?.timezone || 'Africa/Accra',
+      daySlots: Array.isArray(payload?.daySlots) ? payload.daySlots : [],
+      schedule: Array.isArray(payload?.schedule) ? payload.schedule : [],
+      nextAvailable: payload?.nextAvailable ?? null,
+      message: payload?.message || null,
+      pausedUntil: payload?.pausedUntil ?? null,
+      lastUpdated: payload?.lastUpdated ?? null,
     };
+
+    return attachMetadata(normalized, payload);
   },
 
   /**
@@ -326,17 +353,25 @@ const workerService = {
       );
     }
 
-    const payload = response?.data?.data ?? response?.data ?? {};
-    const status = payload.status;
+    const payload = unwrapPayload(response);
+    const status = payload?.status;
 
-    return {
-      ...payload,
+    const normalized = {
       status,
       isAvailable:
-        typeof payload.isAvailable === 'boolean'
+        typeof payload?.isAvailable === 'boolean'
           ? payload.isAvailable
           : status === 'available' || status === true,
+      timezone: payload?.timezone || 'Africa/Accra',
+      daySlots: Array.isArray(payload?.daySlots) ? payload.daySlots : [],
+      schedule: Array.isArray(payload?.schedule) ? payload.schedule : [],
+      nextAvailable: payload?.nextAvailable ?? null,
+      message: payload?.message || null,
+      pausedUntil: payload?.pausedUntil ?? null,
+      lastUpdated: payload?.lastUpdated ?? null,
     };
+
+    return attachMetadata(normalized, payload);
   },
 
   /**
@@ -352,19 +387,27 @@ const workerService = {
     const response = await userServiceClient.get(
       `${API_URL}/${workerId}/completeness`,
     );
-    const payload = response?.data?.data ?? response?.data ?? {};
-    const completion = payload.completionPercentage ?? payload.percentage ?? 0;
+    const payload = unwrapPayload(response);
+    const completion = payload?.completionPercentage ?? payload?.percentage ?? 0;
 
-    return {
-      ...payload,
+    const normalized = {
       completionPercentage: completion,
       percentage: completion,
-      requiredCompletion: payload.requiredCompletion ?? 0,
-      optionalCompletion: payload.optionalCompletion ?? 0,
-      missingRequired: payload.missingRequired ?? [],
-      missingOptional: payload.missingOptional ?? [],
-      recommendations: payload.recommendations ?? [],
+      requiredCompletion: payload?.requiredCompletion ?? 0,
+      optionalCompletion: payload?.optionalCompletion ?? 0,
+      missingRequired: Array.isArray(payload?.missingRequired)
+        ? payload.missingRequired
+        : [],
+      missingOptional: Array.isArray(payload?.missingOptional)
+        ? payload.missingOptional
+        : [],
+      recommendations: Array.isArray(payload?.recommendations)
+        ? payload.recommendations
+        : [],
+      source: payload?.source || {},
     };
+
+    return attachMetadata(normalized, payload);
   },
 
   /**
@@ -377,16 +420,19 @@ const workerService = {
       params: { limit },
     });
 
-    const payload = response?.data?.data ?? response?.data ?? {};
-    if (Array.isArray(payload)) {
-      return payload;
-    }
+    const payload = unwrapPayload(response);
+    const jobs = Array.isArray(payload?.jobs)
+      ? payload.jobs
+      : Array.isArray(payload)
+        ? payload
+        : [];
 
-    if (Array.isArray(payload.jobs)) {
-      return payload.jobs;
-    }
+    const normalized = {
+      jobs,
+      total: typeof payload?.total === 'number' ? payload.total : jobs.length,
+    };
 
-    return [];
+    return attachMetadata(normalized, payload);
   },
 
   /**

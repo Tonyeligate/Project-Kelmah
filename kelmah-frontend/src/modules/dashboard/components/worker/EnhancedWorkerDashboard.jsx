@@ -148,7 +148,12 @@ const EnhancedWorkerDashboard = () => {
 
   // State with proper initialization to prevent re-renders
   const [profileCompletion, setProfileCompletion] = useState(null);
-  const [recentJobs, setRecentJobs] = useState([]);
+  const [recentJobsState, setRecentJobsState] = useState({
+    jobs: [],
+    fallback: false,
+    fallbackReason: null,
+    metadata: null,
+  });
   const [refreshing, setRefreshing] = useState(false);
 
   // Stable user ID using normalized user data
@@ -194,17 +199,23 @@ const EnhancedWorkerDashboard = () => {
     let isMounted = true;
 
     const loadRecentJobs = async () => {
-      if (!userId || recentJobs.length > 0) return;
+      if (!userId || recentJobsState.jobs.length > 0) return;
 
       try {
-        const jobs = await workerService.getWorkerJobs({ limit: 6 });
+        const result = await workerService.getWorkerJobs({ limit: 6 });
         if (isMounted) {
-          setRecentJobs(Array.isArray(jobs) ? jobs : []);
+          setRecentJobsState({
+            jobs: Array.isArray(result?.jobs) ? result.jobs : [],
+            fallback: Boolean(result?.metadata?.fallback ?? result?.fallback),
+            fallbackReason:
+              result?.metadata?.fallbackReason || result?.fallbackReason || null,
+            metadata: result?.metadata || null,
+          });
         }
       } catch (error) {
         console.warn('Failed to load recent jobs:', error);
         if (isMounted) {
-          setRecentJobs([]);
+          setRecentJobsState({ jobs: [], fallback: false, fallbackReason: null, metadata: null });
         }
       }
     };
@@ -214,7 +225,7 @@ const EnhancedWorkerDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [userId, recentJobs.length]);
+  }, [userId, recentJobsState.jobs.length]);
 
   // Memoized statistics to prevent recalculation on every render
   const statistics = useMemo(() => {
@@ -279,7 +290,7 @@ const EnhancedWorkerDashboard = () => {
       await dispatch(fetchDashboardData());
       // Reset data to force reload
       setProfileCompletion(null);
-      setRecentJobs([]);
+  setRecentJobsState({ jobs: [], fallback: false, fallbackReason: null, metadata: null });
     } catch (error) {
       console.error('Refresh failed:', error);
     } finally {
@@ -478,9 +489,24 @@ const EnhancedWorkerDashboard = () => {
                             </Box>
                           ))}
                         </Stack>
-                      ) : Array.isArray(recentJobs) && recentJobs.length > 0 ? (
+                      ) : recentJobsState.jobs.length > 0 ? (
+                        <>
+                          {recentJobsState.fallback && (
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                              Showing sample jobs while we reconnect to the job service
+                              {recentJobsState.fallbackReason
+                                ? ` (${recentJobsState.fallbackReason.replace(/_/g, ' ').toLowerCase()})`
+                                : ''}
+                              .
+                              {recentJobsState.metadata?.receivedAt && (
+                                <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                                  Updated {new Date(recentJobsState.metadata.receivedAt).toLocaleTimeString()}.
+                                </Typography>
+                              )}
+                            </Alert>
+                          )}
                         <List dense>
-                          {recentJobs.slice(0, 3).map((job, index) => (
+                          {recentJobsState.jobs.slice(0, 3).map((job, index) => (
                             <ListItem
                               key={job.id || index}
                               sx={{
@@ -504,6 +530,7 @@ const EnhancedWorkerDashboard = () => {
                             </ListItem>
                           ))}
                         </List>
+                        </>
                       ) : (
                         <Box textAlign="center" py={4}>
                           <WorkIcon
