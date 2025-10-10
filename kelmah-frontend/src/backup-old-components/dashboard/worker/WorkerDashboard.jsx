@@ -74,7 +74,7 @@ const EnhancedWorkerDashboard = () => {
   const isMobile = false; // Disabled responsive behavior as per user requirement
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
-  
+
   // Check actual screen size for styling (not functionality)
   const isActualMobile = useMediaQuery('(max-width: 768px)');
 
@@ -84,7 +84,10 @@ const EnhancedWorkerDashboard = () => {
   const [showAllStats, setShowAllStats] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [completion, setCompletion] = useState(null);
-  const [availability, setAvailability] = useState({ status: 'available', isAvailable: true });
+  const [availability, setAvailability] = useState({
+    status: 'available',
+    isAvailable: true,
+  });
 
   // Load profile completeness - FIXED: Added dependency array
   useEffect(() => {
@@ -96,7 +99,7 @@ const EnhancedWorkerDashboard = () => {
         console.warn('Failed to load profile completion', e?.message);
       }
     };
-    
+
     // Only load if completion is null to prevent infinite calls
     if (completion === null) {
       load();
@@ -115,7 +118,7 @@ const EnhancedWorkerDashboard = () => {
         console.warn('Failed to load availability', e?.message);
       }
     };
-    
+
     // Only load if user exists and availability hasn't been loaded
     if (user && (!availability || availability.status === 'available')) {
       loadAvailability();
@@ -127,7 +130,7 @@ const EnhancedWorkerDashboard = () => {
     setRefreshing(true);
     try {
       // Simulate refresh delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       // In a real app, this would dispatch actions to refresh data
       console.log('Dashboard refreshed');
     } catch (error) {
@@ -138,62 +141,65 @@ const EnhancedWorkerDashboard = () => {
   }, []); // No dependencies needed
 
   // Dashboard statistics
-  const statistics = useMemo(() => [
-    {
-      id: 'total-jobs',
-      title: 'Total Jobs',
-      value: data?.metrics?.totalJobs || 0,
-      change: data?.metrics?.jobsChange || 0,
-      icon: <WorkIcon />,
-      color: '#2196F3',
-      priority: 1,
-    },
-    {
-      id: 'active-applications',
-      title: 'Active Applications',
-      value: data?.metrics?.activeApplications || 0,
-      change: data?.metrics?.applicationsChange || 0,
-      icon: <AssignmentIcon />,
-      color: '#4CAF50',
-      priority: 1,
-    },
-    {
-      id: 'total-earnings',
-      title: 'Total Earnings',
-      value: `GH₵ ${data?.metrics?.totalEarnings || 0}`,
-      change: data?.metrics?.earningsChange || 0,
-      icon: <EarningsIcon />,
-      color: '#FF9800',
-      priority: 2,
-    },
-    {
-      id: 'completion-rate',
-      title: 'Completion Rate',
-      value: `${data?.metrics?.completionRate || 0}%`,
-      change: data?.metrics?.completionChange || 0,
-      icon: <CompletionIcon />,
-      color: '#9C27B0',
-      priority: 2,
-    },
-    {
-      id: 'profile-views',
-      title: 'Profile Views',
-      value: data?.metrics?.profileViews || 0,
-      change: data?.metrics?.viewsChange || 0,
-      icon: <VisibilityIcon />,
-      color: '#F44336',
-      priority: 3,
-    },
-    {
-      id: 'rating',
-      title: 'Average Rating',
-      value: `${data?.metrics?.averageRating || 0}/5`,
-      change: data?.metrics?.ratingChange || 0,
-      icon: <StarIcon />,
-      color: '#FFD700',
-      priority: 3,
-    },
-  ], [data]);
+  const statistics = useMemo(
+    () => [
+      {
+        id: 'total-jobs',
+        title: 'Total Jobs',
+        value: data?.metrics?.totalJobs || 0,
+        change: data?.metrics?.jobsChange || 0,
+        icon: <WorkIcon />,
+        color: '#2196F3',
+        priority: 1,
+      },
+      {
+        id: 'active-applications',
+        title: 'Active Applications',
+        value: data?.metrics?.activeApplications || 0,
+        change: data?.metrics?.applicationsChange || 0,
+        icon: <AssignmentIcon />,
+        color: '#4CAF50',
+        priority: 1,
+      },
+      {
+        id: 'total-earnings',
+        title: 'Total Earnings',
+        value: `GH₵ ${data?.metrics?.totalEarnings || 0}`,
+        change: data?.metrics?.earningsChange || 0,
+        icon: <EarningsIcon />,
+        color: '#FF9800',
+        priority: 2,
+      },
+      {
+        id: 'completion-rate',
+        title: 'Completion Rate',
+        value: `${data?.metrics?.completionRate || 0}%`,
+        change: data?.metrics?.completionChange || 0,
+        icon: <CompletionIcon />,
+        color: '#9C27B0',
+        priority: 2,
+      },
+      {
+        id: 'profile-views',
+        title: 'Profile Views',
+        value: data?.metrics?.profileViews || 0,
+        change: data?.metrics?.viewsChange || 0,
+        icon: <VisibilityIcon />,
+        color: '#F44336',
+        priority: 3,
+      },
+      {
+        id: 'rating',
+        title: 'Average Rating',
+        value: `${data?.metrics?.averageRating || 0}/5`,
+        change: data?.metrics?.ratingChange || 0,
+        icon: <StarIcon />,
+        color: '#FFD700',
+        priority: 3,
+      },
+    ],
+    [data],
+  );
 
   // Enhanced quick actions
   const quickActions = useMemo(
@@ -541,7 +547,13 @@ const EnhancedWorkerDashboard = () => {
               mb: 0.5,
             }}
           >
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName || 'Worker'}! 👋
+            Good{' '}
+            {new Date().getHours() < 12
+              ? 'morning'
+              : new Date().getHours() < 18
+                ? 'afternoon'
+                : 'evening'}
+            , {user?.firstName || 'Worker'}! 👋
           </Typography>
           <Typography
             sx={{
@@ -554,10 +566,6 @@ const EnhancedWorkerDashboard = () => {
             Ready to find your next {user?.profession || 'vocational'} job?
           </Typography>
         </Box>
-
-
-
-
 
         {/* Quick Actions */}
         <Typography
@@ -589,25 +597,29 @@ const EnhancedWorkerDashboard = () => {
               {
                 title: 'Find Work',
                 description: 'Browse carpentry, plumbing & electrical jobs',
-                image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
+                image:
+                  'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
                 onClick: () => navigate('/worker/find-work'),
               },
               {
                 title: 'My Jobs',
                 description: 'Manage active projects and applications',
-                image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&h=200&fit=crop',
+                image:
+                  'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&h=200&fit=crop',
                 onClick: () => navigate('/worker/applications'),
               },
               {
                 title: 'Messages',
                 description: 'Chat with potential clients',
-                image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
+                image:
+                  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
                 onClick: () => navigate('/messages'),
               },
               {
                 title: 'My Skills',
                 description: 'Update certifications & portfolio',
-                image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=200&fit=crop',
+                image:
+                  'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=200&fit=crop',
                 onClick: () => navigate('/worker/profile'),
               },
             ].map((action, index) => (
@@ -637,7 +649,9 @@ const EnhancedWorkerDashboard = () => {
                   }}
                 />
                 <Box>
-                  <Typography sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}>
+                  <Typography
+                    sx={{ color: 'white', fontSize: '1rem', fontWeight: 500 }}
+                  >
                     {action.title}
                   </Typography>
                   <Typography sx={{ color: '#b2afa3', fontSize: '0.875rem' }}>
@@ -673,7 +687,8 @@ const EnhancedWorkerDashboard = () => {
             location: 'East Legon, Accra',
             pay: 'GH₵150/day',
             type: 'Full-time',
-            image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
+            image:
+              'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&h=200&fit=crop',
           },
           {
             title: 'Plumbing Technician',
@@ -681,7 +696,8 @@ const EnhancedWorkerDashboard = () => {
             location: 'Asokwa, Kumasi',
             pay: 'GH₵120/day',
             type: 'Contract',
-            image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
+            image:
+              'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop',
           },
           {
             title: 'Electrical Installer',
@@ -689,7 +705,8 @@ const EnhancedWorkerDashboard = () => {
             location: 'Industrial Area, Tema',
             pay: 'GH₵180/day',
             type: 'Full-time',
-            image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&h=200&fit=crop',
+            image:
+              'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&h=200&fit=crop',
           },
         ].map((job, index) => (
           <Box key={index} sx={{ p: 2 }}>
@@ -705,18 +722,43 @@ const EnhancedWorkerDashboard = () => {
                 boxShadow: '0 0 4px rgba(0,0,0,0.1)',
               }}
             >
-              <Box sx={{ display: 'flex', flex: '2 2 0px', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flex: '2 2 0px',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                >
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Typography sx={{ color: '#ffd700', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                    <Typography
+                      sx={{
+                        color: '#ffd700',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                      }}
+                    >
                       {job.type?.toUpperCase()}
                     </Typography>
-                    <Typography sx={{ color: '#4CAF50', fontSize: '0.875rem', fontWeight: 'bold' }}>
+                    <Typography
+                      sx={{
+                        color: '#4CAF50',
+                        fontSize: '0.875rem',
+                        fontWeight: 'bold',
+                      }}
+                    >
                       {job.pay}
                     </Typography>
                   </Box>
                   <Typography
-                    sx={{ color: 'white', fontSize: '1rem', fontWeight: 'bold' }}
+                    sx={{
+                      color: 'white',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                    }}
                   >
                     {job.title}
                   </Typography>
@@ -827,10 +869,16 @@ const EnhancedWorkerDashboard = () => {
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Chip
               size="small"
-              label={availability?.isAvailable ? 'Available' : (availability?.status || 'Busy')}
+              label={
+                availability?.isAvailable
+                  ? 'Available'
+                  : availability?.status || 'Busy'
+              }
               sx={{
                 color: availability?.isAvailable ? '#4CAF50' : '#FF9800',
-                borderColor: availability?.isAvailable ? 'rgba(76,175,80,0.4)' : 'rgba(255,152,0,0.4)'
+                borderColor: availability?.isAvailable
+                  ? 'rgba(76,175,80,0.4)'
+                  : 'rgba(255,152,0,0.4)',
               }}
               variant="outlined"
             />
@@ -838,8 +886,12 @@ const EnhancedWorkerDashboard = () => {
               size="small"
               label={`${completion?.percentage ?? 0}% Complete`}
               sx={{
-                color: (completion?.percentage ?? 0) >= 80 ? '#4CAF50' : '#FFD700',
-                borderColor: (completion?.percentage ?? 0) >= 80 ? 'rgba(76,175,80,0.4)' : 'rgba(255,215,0,0.3)'
+                color:
+                  (completion?.percentage ?? 0) >= 80 ? '#4CAF50' : '#FFD700',
+                borderColor:
+                  (completion?.percentage ?? 0) >= 80
+                    ? 'rgba(76,175,80,0.4)'
+                    : 'rgba(255,215,0,0.3)',
               }}
               variant="outlined"
             />
@@ -936,9 +988,15 @@ const EnhancedWorkerDashboard = () => {
           <Stack spacing={{ xs: 2, md: 3 }}>
             <AvailabilityStatus />
             <ProfileCompletion
-              completion={typeof completion?.completion === 'number' ? completion.completion : 0}
+              completion={
+                typeof completion?.completion === 'number'
+                  ? completion.completion
+                  : 0
+              }
               profileData={{}}
-              suggestions={completion?.suggestions || completion?.suggestedNextSteps || []}
+              suggestions={
+                completion?.suggestions || completion?.suggestedNextSteps || []
+              }
             />
             <UpcomingAppointments />
 

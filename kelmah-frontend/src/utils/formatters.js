@@ -2,6 +2,15 @@
  * Utility functions for formatting various data types
  */
 
+const logFormatterFallback = (label, error) => {
+  if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+    console.warn(
+      `[formatters] ${label} fallback:`,
+      error?.message ? error.message : error,
+    );
+  }
+};
+
 /**
  * Format currency with appropriate symbol and locale
  * @param {number} amount - Amount to format
@@ -22,6 +31,7 @@ export const formatCurrency = (amount, currency = 'GHS', locale = 'en-GH') => {
       maximumFractionDigits: 2,
     }).format(Number(amount));
   } catch (error) {
+    logFormatterFallback('formatCurrency', error);
     // Fallback for unsupported currency or locale
     const symbol = getCurrencySymbol(currency);
     return `${symbol}${Number(amount).toLocaleString('en-US', {
@@ -68,6 +78,7 @@ export const formatDate = (date, options = {}) => {
   try {
     return new Date(date).toLocaleDateString('en-GH', defaultOptions);
   } catch (error) {
+    logFormatterFallback('formatDate', error);
     return new Date(date).toLocaleDateString('en-US', defaultOptions);
   }
 };
@@ -93,6 +104,7 @@ export const formatDateTime = (datetime, options = {}) => {
   try {
     return new Date(datetime).toLocaleString('en-GH', defaultOptions);
   } catch (error) {
+    logFormatterFallback('formatDateTime', error);
     return new Date(datetime).toLocaleString('en-US', defaultOptions);
   }
 };
@@ -118,17 +130,29 @@ export const formatRelativeTime = (date) => {
   if (Math.abs(diffInSeconds) < 60) {
     return 'just now';
   } else if (Math.abs(diffInMinutes) < 60) {
-    return diffInMinutes > 0 ? `${diffInMinutes} minutes ago` : `in ${Math.abs(diffInMinutes)} minutes`;
+    return diffInMinutes > 0
+      ? `${diffInMinutes} minutes ago`
+      : `in ${Math.abs(diffInMinutes)} minutes`;
   } else if (Math.abs(diffInHours) < 24) {
-    return diffInHours > 0 ? `${diffInHours} hours ago` : `in ${Math.abs(diffInHours)} hours`;
+    return diffInHours > 0
+      ? `${diffInHours} hours ago`
+      : `in ${Math.abs(diffInHours)} hours`;
   } else if (Math.abs(diffInDays) < 7) {
-    return diffInDays > 0 ? `${diffInDays} days ago` : `in ${Math.abs(diffInDays)} days`;
+    return diffInDays > 0
+      ? `${diffInDays} days ago`
+      : `in ${Math.abs(diffInDays)} days`;
   } else if (Math.abs(diffInWeeks) < 4) {
-    return diffInWeeks > 0 ? `${diffInWeeks} weeks ago` : `in ${Math.abs(diffInWeeks)} weeks`;
+    return diffInWeeks > 0
+      ? `${diffInWeeks} weeks ago`
+      : `in ${Math.abs(diffInWeeks)} weeks`;
   } else if (Math.abs(diffInMonths) < 12) {
-    return diffInMonths > 0 ? `${diffInMonths} months ago` : `in ${Math.abs(diffInMonths)} months`;
+    return diffInMonths > 0
+      ? `${diffInMonths} months ago`
+      : `in ${Math.abs(diffInMonths)} months`;
   } else {
-    return diffInYears > 0 ? `${diffInYears} years ago` : `in ${Math.abs(diffInYears)} years`;
+    return diffInYears > 0
+      ? `${diffInYears} years ago`
+      : `in ${Math.abs(diffInYears)} years`;
   }
 };
 
@@ -229,9 +253,8 @@ export const formatRating = (rating, maxRating = 5) => {
   const hasHalfStar = rating % 1 >= 0.5;
   const emptyStars = maxRating - fullStars - (hasHalfStar ? 1 : 0);
 
-  const stars = '★'.repeat(fullStars) + 
-                (hasHalfStar ? '½' : '') + 
-                '☆'.repeat(emptyStars);
+  const stars =
+    '★'.repeat(fullStars) + (hasHalfStar ? '½' : '') + '☆'.repeat(emptyStars);
 
   return `${stars} (${Number(rating).toFixed(1)})`;
 };
@@ -249,8 +272,10 @@ export const formatAddress = (address) => {
   if (address.street) parts.push(address.street);
   if (address.area) parts.push(address.area);
   if (address.city) parts.push(address.city);
-  if (address.region && address.region !== address.city) parts.push(address.region);
-  if (address.country && address.country !== 'Ghana') parts.push(address.country);
+  if (address.region && address.region !== address.city)
+    parts.push(address.region);
+  if (address.country && address.country !== 'Ghana')
+    parts.push(address.country);
 
   return parts.join(', ');
 };
@@ -270,11 +295,11 @@ export const formatSkillLevel = (level) => {
   }
 
   const levelMap = {
-    'expert': 'Expert',
-    'advanced': 'Advanced',
-    'intermediate': 'Intermediate',
-    'beginner': 'Beginner',
-    'novice': 'Novice',
+    expert: 'Expert',
+    advanced: 'Advanced',
+    intermediate: 'Intermediate',
+    beginner: 'Beginner',
+    novice: 'Novice',
   };
 
   return levelMap[String(level).toLowerCase()] || level;
@@ -287,13 +312,13 @@ export const formatSkillLevel = (level) => {
  */
 export const formatJobStatus = (status) => {
   const statusMap = {
-    'draft': { label: 'Draft', color: 'default' },
-    'open': { label: 'Open', color: 'success' },
-    'in_progress': { label: 'In Progress', color: 'info' },
-    'review': { label: 'Under Review', color: 'warning' },
-    'completed': { label: 'Completed', color: 'success' },
-    'cancelled': { label: 'Cancelled', color: 'error' },
-    'paused': { label: 'Paused', color: 'warning' },
+    draft: { label: 'Draft', color: 'default' },
+    open: { label: 'Open', color: 'success' },
+    in_progress: { label: 'In Progress', color: 'info' },
+    review: { label: 'Under Review', color: 'warning' },
+    completed: { label: 'Completed', color: 'success' },
+    cancelled: { label: 'Cancelled', color: 'error' },
+    paused: { label: 'Paused', color: 'warning' },
   };
 
   return statusMap[status] || { label: status, color: 'default' };
@@ -306,12 +331,12 @@ export const formatJobStatus = (status) => {
  */
 export const formatApplicationStatus = (status) => {
   const statusMap = {
-    'submitted': { label: 'Submitted', color: 'info' },
-    'under_review': { label: 'Under Review', color: 'warning' },
-    'shortlisted': { label: 'Shortlisted', color: 'primary' },
-    'accepted': { label: 'Accepted', color: 'success' },
-    'rejected': { label: 'Rejected', color: 'error' },
-    'withdrawn': { label: 'Withdrawn', color: 'default' },
+    submitted: { label: 'Submitted', color: 'info' },
+    under_review: { label: 'Under Review', color: 'warning' },
+    shortlisted: { label: 'Shortlisted', color: 'primary' },
+    accepted: { label: 'Accepted', color: 'success' },
+    rejected: { label: 'Rejected', color: 'error' },
+    withdrawn: { label: 'Withdrawn', color: 'default' },
   };
 
   return statusMap[status] || { label: status, color: 'default' };
@@ -324,12 +349,12 @@ export const formatApplicationStatus = (status) => {
  */
 export const formatPaymentStatus = (status) => {
   const statusMap = {
-    'pending': { label: 'Pending', color: 'warning' },
-    'processing': { label: 'Processing', color: 'info' },
-    'completed': { label: 'Completed', color: 'success' },
-    'failed': { label: 'Failed', color: 'error' },
-    'cancelled': { label: 'Cancelled', color: 'default' },
-    'refunded': { label: 'Refunded', color: 'info' },
+    pending: { label: 'Pending', color: 'warning' },
+    processing: { label: 'Processing', color: 'info' },
+    completed: { label: 'Completed', color: 'success' },
+    failed: { label: 'Failed', color: 'error' },
+    cancelled: { label: 'Cancelled', color: 'default' },
+    refunded: { label: 'Refunded', color: 'info' },
   };
 
   return statusMap[status] || { label: status, color: 'default' };
@@ -370,7 +395,7 @@ export const formatCompactNumber = (number) => {
   }
 
   const absNumber = Math.abs(number);
-  
+
   if (absNumber >= 1000000) {
     return (number / 1000000).toFixed(1) + 'M';
   } else if (absNumber >= 1000) {
@@ -394,12 +419,15 @@ export const formatTimeRange = (startTime, endTime) => {
 
   // Validate that dates are valid
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    console.warn('Invalid date values in formatTimeRange:', { startTime, endTime });
+    console.warn('Invalid date values in formatTimeRange:', {
+      startTime,
+      endTime,
+    });
     return '';
   }
 
   const timeOptions = { hour: '2-digit', minute: '2-digit' };
-  
+
   try {
     return `${start.toLocaleTimeString('en-US', timeOptions)} - ${end.toLocaleTimeString('en-US', timeOptions)}`;
   } catch (error) {

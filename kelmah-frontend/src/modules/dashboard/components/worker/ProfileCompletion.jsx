@@ -41,22 +41,53 @@ const ProfileCompletion = ({
 }) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
-  
+
   // Profile completion items
   const profileItems = [
-    { id: 'basic', label: 'Basic Info', completed: !!profileData.name, weight: 20 },
-    { id: 'skills', label: 'Skills & Experience', completed: profileData.skills?.length > 0, weight: 25 },
-    { id: 'portfolio', label: 'Portfolio', completed: profileData.portfolio?.length > 0, weight: 20 },
-    { id: 'certifications', label: 'Certifications', completed: profileData.certifications?.length > 0, weight: 15 },
-    { id: 'availability', label: 'Availability', completed: !!profileData.availability, weight: 10 },
-    { id: 'contact', label: 'Contact Info', completed: !!profileData.phone, weight: 10 },
+    {
+      id: 'basic',
+      label: 'Basic Info',
+      completed: !!profileData.name,
+      weight: 20,
+    },
+    {
+      id: 'skills',
+      label: 'Skills & Experience',
+      completed: profileData.skills?.length > 0,
+      weight: 25,
+    },
+    {
+      id: 'portfolio',
+      label: 'Portfolio',
+      completed: profileData.portfolio?.length > 0,
+      weight: 20,
+    },
+    {
+      id: 'certifications',
+      label: 'Certifications',
+      completed: profileData.certifications?.length > 0,
+      weight: 15,
+    },
+    {
+      id: 'availability',
+      label: 'Availability',
+      completed: !!profileData.availability,
+      weight: 10,
+    },
+    {
+      id: 'contact',
+      label: 'Contact Info',
+      completed: !!profileData.phone,
+      weight: 10,
+    },
   ];
 
   const completedItems = profileItems.filter((item) => item.completed);
   const computedCompletion = profileItems.reduce((acc, item) => {
     return acc + (item.completed ? item.weight : 0);
   }, 0);
-  const actualCompletion = typeof completion === 'number' ? completion : computedCompletion;
+  const actualCompletion =
+    typeof completion === 'number' ? completion : computedCompletion;
 
   const getCompletionColor = (percentage) => {
     if (percentage >= 90) return '#4CAF50';
@@ -144,7 +175,7 @@ const ProfileCompletion = ({
                 }}
               >
                 {Math.round(actualCompletion)}%
-        </Typography>
+              </Typography>
               <Chip
                 label={`${completedItems.length}/${profileItems.length} Complete`}
                 size="small"
@@ -171,9 +202,9 @@ const ProfileCompletion = ({
                   },
                 }}
               />
-          </Box>
+            </Box>
 
-              <Typography
+            <Typography
               variant="body2"
               sx={{
                 color: 'rgba(255,255,255,0.7)',
@@ -271,7 +302,7 @@ const ProfileCompletion = ({
                           }}
                         >
                           {item.weight}%
-        </Typography>
+                        </Typography>
                       </ListItem>
                     </motion.div>
                   ))}
@@ -281,11 +312,11 @@ const ProfileCompletion = ({
           </AnimatePresence>
 
           {/* Action Button */}
-        <Button
-          component={RouterLink}
-          to="/worker/profile/edit"
+          <Button
+            component={RouterLink}
+            to="/worker/profile/edit"
             fullWidth
-          variant="contained"
+            variant="contained"
             onClick={onComplete}
             sx={{
               mt: 2,
@@ -306,7 +337,7 @@ const ProfileCompletion = ({
             }}
           >
             {actualCompletion >= 90 ? 'View Profile' : 'Complete Profile'}
-        </Button>
+          </Button>
 
           {/* Suggestions from backend */}
           {Array.isArray(suggestions) && suggestions.length > 0 && (
@@ -333,13 +364,22 @@ const ProfileCompletion = ({
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 {suggestions.slice(0, 6).map((s, idx) => (
-                  <Chip key={idx} label={s} size="small" sx={{ color: '#FFD700', borderColor: 'rgba(255,215,0,0.3)' }} variant="outlined" />
+                  <Chip
+                    key={idx}
+                    label={s}
+                    size="small"
+                    sx={{
+                      color: '#FFD700',
+                      borderColor: 'rgba(255,215,0,0.3)',
+                    }}
+                    variant="outlined"
+                  />
                 ))}
               </Stack>
             </Box>
           )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

@@ -12,7 +12,9 @@ const HirerToolsPage = () => {
     <Container sx={{ py: 4 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <JobCreationWizard onSubmit={(data) => console.log('Submit job', data)} />
+          <JobCreationWizard
+            onSubmit={(data) => console.log('Submit job', data)}
+          />
         </Grid>
         <Grid item xs={12} md={4}>
           <SkillsRequirementBuilder value={skills} onChange={setSkills} />
@@ -30,7 +32,3 @@ const HirerToolsPage = () => {
 };
 
 export default HirerToolsPage;
-
-
-
-

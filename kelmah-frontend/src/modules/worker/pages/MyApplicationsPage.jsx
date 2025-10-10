@@ -106,14 +106,16 @@ const MyApplicationsPage = () => {
   };
 
   // Filter applications based on current tab
-  const filteredApplications = Array.isArray(applications) ? applications.filter((app) => {
-    if (tabValue === 0) return true; // All applications
-    if (tabValue === 1) return app.status === 'pending';
-    if (tabValue === 2) return app.status === 'interview';
-    if (tabValue === 3) return app.status === 'offer';
-    if (tabValue === 4) return app.status === 'rejected';
-    return false;
-  }) : [];
+  const filteredApplications = Array.isArray(applications)
+    ? applications.filter((app) => {
+        if (tabValue === 0) return true; // All applications
+        if (tabValue === 1) return app.status === 'pending';
+        if (tabValue === 2) return app.status === 'interview';
+        if (tabValue === 3) return app.status === 'offer';
+        if (tabValue === 4) return app.status === 'rejected';
+        return false;
+      })
+    : [];
 
   // Status label and color mapping
   const getStatusInfo = (status) => {
@@ -216,21 +218,23 @@ const MyApplicationsPage = () => {
         {/* Status Tabs */}
         <Box sx={{ px: 2, pt: 2 }}>
           <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 2 }}>
-            {['All', 'Pending', 'Interview', 'Offer', 'Rejected'].map((status, index) => (
-              <Chip
-                key={status}
-                label={status}
-                onClick={() => setTabValue(index)}
-                sx={{
-                  backgroundColor: tabValue === index ? '#FFD700' : '#35332c',
-                  color: tabValue === index ? '#161513' : 'white',
-                  fontWeight: 500,
-                  fontSize: '0.75rem',
-                  minWidth: 'fit-content',
-                  whiteSpace: 'nowrap',
-                }}
-              />
-            ))}
+            {['All', 'Pending', 'Interview', 'Offer', 'Rejected'].map(
+              (status, index) => (
+                <Chip
+                  key={status}
+                  label={status}
+                  onClick={() => setTabValue(index)}
+                  sx={{
+                    backgroundColor: tabValue === index ? '#FFD700' : '#35332c',
+                    color: tabValue === index ? '#161513' : 'white',
+                    fontWeight: 500,
+                    fontSize: '0.75rem',
+                    minWidth: 'fit-content',
+                    whiteSpace: 'nowrap',
+                  }}
+                />
+              ),
+            )}
           </Box>
         </Box>
 
@@ -297,21 +301,31 @@ const MyApplicationsPage = () => {
             ].map((application) => {
               const getStatusColor = (status) => {
                 switch (status) {
-                  case 'pending': return '#ff9800';
-                  case 'interview': return '#2196f3';
-                  case 'offer': return '#4caf50';
-                  case 'rejected': return '#f44336';
-                  default: return '#9e9e9e';
+                  case 'pending':
+                    return '#ff9800';
+                  case 'interview':
+                    return '#2196f3';
+                  case 'offer':
+                    return '#4caf50';
+                  case 'rejected':
+                    return '#f44336';
+                  default:
+                    return '#9e9e9e';
                 }
               };
 
               const getStatusLabel = (status) => {
                 switch (status) {
-                  case 'pending': return 'Under Review';
-                  case 'interview': return 'Interview';
-                  case 'offer': return 'Job Offer';
-                  case 'rejected': return 'Rejected';
-                  default: return 'Unknown';
+                  case 'pending':
+                    return 'Under Review';
+                  case 'interview':
+                    return 'Interview';
+                  case 'offer':
+                    return 'Job Offer';
+                  case 'rejected':
+                    return 'Rejected';
+                  default:
+                    return 'Unknown';
                 }
               };
 
@@ -327,7 +341,14 @@ const MyApplicationsPage = () => {
                   }}
                 >
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1,
+                      }}
+                    >
                       <Box sx={{ flex: 1 }}>
                         <Typography
                           sx={{
@@ -355,7 +376,10 @@ const MyApplicationsPage = () => {
                             mb: 1,
                           }}
                         >
-                          📍 {application.location} • Applied {new Date(application.appliedDate).toLocaleDateString()}
+                          📍 {application.location} • Applied{' '}
+                          {new Date(
+                            application.appliedDate,
+                          ).toLocaleDateString()}
                         </Typography>
                       </Box>
                       <Chip

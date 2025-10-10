@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, TextField, Button, Typography, Alert, useMediaQuery, IconButton } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  useMediaQuery,
+  IconButton,
+} from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
@@ -42,7 +50,13 @@ const ForgotPasswordPage = () => {
       >
         {/* Header */}
         <Box sx={{ p: 2, pb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <IconButton
               onClick={() => navigate('/login')}
               sx={{ color: 'white', p: 0, mr: 2 }}
@@ -88,7 +102,8 @@ const ForgotPasswordPage = () => {
               lineHeight: 1.5,
             }}
           >
-            Enter the email address or phone number associated with your account, and we'll send you instructions to reset your password.
+            Enter the email address or phone number associated with your
+            account, and we'll send you instructions to reset your password.
           </Typography>
 
           {/* Status Alert */}

@@ -52,11 +52,11 @@ const ProviderLogo = styled(Box)(({ theme }) => ({
   marginRight: theme.spacing(2),
 }));
 
-const GhanaMobileMoneyPayment = ({ 
-  amount, 
-  onPaymentSuccess, 
+const GhanaMobileMoneyPayment = ({
+  amount,
+  onPaymentSuccess,
   onPaymentError,
-  loading = false 
+  loading = false,
 }) => {
   const theme = useTheme();
   const [selectedProvider, setSelectedProvider] = useState('mtn');
@@ -74,7 +74,7 @@ const GhanaMobileMoneyPayment = ({
       textColor: '#000',
       marketShare: '60%',
       prefixes: ['024', '054', '055', '059'],
-      description: 'Ghana\'s largest mobile money service'
+      description: "Ghana's largest mobile money service",
     },
     {
       id: 'vodafone',
@@ -83,7 +83,7 @@ const GhanaMobileMoneyPayment = ({
       textColor: '#FFF',
       marketShare: '25%',
       prefixes: ['020', '050'],
-      description: 'Fast and secure mobile payments'
+      description: 'Fast and secure mobile payments',
     },
     {
       id: 'airteltigo',
@@ -92,8 +92,8 @@ const GhanaMobileMoneyPayment = ({
       textColor: '#FFF',
       marketShare: '10%',
       prefixes: ['027', '057', '026', '056'],
-      description: 'Reliable mobile money service'
-    }
+      description: 'Reliable mobile money service',
+    },
   ];
 
   // Format amount for Ghana Cedis
@@ -107,7 +107,7 @@ const GhanaMobileMoneyPayment = ({
   // Validate Ghana phone number
   const validatePhoneNumber = (number) => {
     const cleaned = number.replace(/\D/g, '');
-    
+
     // Check if it's a valid Ghana number (10 digits starting with 0, or 12 digits starting with 233)
     if (cleaned.length === 10 && cleaned.startsWith('0')) {
       return { isValid: true, formatted: cleaned };
@@ -115,7 +115,7 @@ const GhanaMobileMoneyPayment = ({
     if (cleaned.length === 12 && cleaned.startsWith('233')) {
       return { isValid: true, formatted: '0' + cleaned.substring(3) };
     }
-    
+
     return { isValid: false, formatted: number };
   };
 
@@ -123,14 +123,14 @@ const GhanaMobileMoneyPayment = ({
   const isNumberValidForProvider = (number, providerId) => {
     const cleaned = number.replace(/\D/g, '');
     const prefix = cleaned.substring(0, 3);
-    const provider = providers.find(p => p.id === providerId);
+    const provider = providers.find((p) => p.id === providerId);
     return provider?.prefixes.includes(prefix);
   };
 
   // Handle form submission
   const handlePayment = async () => {
     setErrors({});
-    
+
     // Validate phone number
     const phoneValidation = validatePhoneNumber(phoneNumber);
     if (!phoneValidation.isValid) {
@@ -140,9 +140,9 @@ const GhanaMobileMoneyPayment = ({
 
     // Check if number matches provider
     if (!isNumberValidForProvider(phoneNumber, selectedProvider)) {
-      const provider = providers.find(p => p.id === selectedProvider);
-      setErrors({ 
-        phone: `This number doesn't match ${provider.name}. Expected prefixes: ${provider.prefixes.join(', ')}` 
+      const provider = providers.find((p) => p.id === selectedProvider);
+      setErrors({
+        phone: `This number doesn't match ${provider.name}. Expected prefixes: ${provider.prefixes.join(', ')}`,
       });
       return;
     }
@@ -157,12 +157,13 @@ const GhanaMobileMoneyPayment = ({
         phoneNumber: phoneValidation.formatted,
         amount: amount,
         currency: 'GHS',
-        description: 'Kelmah platform payment'
+        description: 'Kelmah platform payment',
       };
 
       // Process payment with Ghana Mobile Money service
-      const result = await paymentService.processMobileMoneyPayment(paymentData);
-      
+      const result =
+        await paymentService.processMobileMoneyPayment(paymentData);
+
       if (result.success) {
         setPaymentStep('success');
         setTimeout(() => {
@@ -172,17 +173,18 @@ const GhanaMobileMoneyPayment = ({
             amount: amount,
             phoneNumber: phoneValidation.formatted,
             status: result.data.status,
-            message: result.data.message
+            message: result.data.message,
           });
         }, 1000);
       } else {
         throw new Error(result.error || 'Payment processing failed');
       }
-
     } catch (error) {
       console.error('Mobile Money payment error:', error);
       setPaymentStep('error');
-      setErrors({ general: error.message || 'Payment failed. Please try again.' });
+      setErrors({
+        general: error.message || 'Payment failed. Please try again.',
+      });
       onPaymentError?.(error);
     } finally {
       setIsProcessing(false);
@@ -200,13 +202,17 @@ const GhanaMobileMoneyPayment = ({
               Processing Payment...
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Please check your phone for the payment prompt and confirm the transaction.
+              Please check your phone for the payment prompt and confirm the
+              transaction.
             </Typography>
             <Alert severity="info" sx={{ mt: 2, textAlign: 'left' }}>
               <strong>Next Steps:</strong>
-              <br />1. Check your phone for the payment request
-              <br />2. Enter your Mobile Money PIN
-              <br />3. Confirm the payment amount: {formatGHSAmount(amount)}
+              <br />
+              1. Check your phone for the payment request
+              <br />
+              2. Enter your Mobile Money PIN
+              <br />
+              3. Confirm the payment amount: {formatGHSAmount(amount)}
             </Alert>
           </Box>
         );
@@ -214,15 +220,17 @@ const GhanaMobileMoneyPayment = ({
       case 'success':
         return (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CheckCircleIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+            <CheckCircleIcon
+              sx={{ fontSize: 60, color: 'success.main', mb: 2 }}
+            />
             <Typography variant="h6" gutterBottom color="success.main">
               Payment Successful!
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Your Mobile Money payment has been processed successfully.
             </Typography>
-            <Chip 
-              label={`${formatGHSAmount(amount)} paid via ${providers.find(p => p.id === selectedProvider)?.name}`}
+            <Chip
+              label={`${formatGHSAmount(amount)} paid via ${providers.find((p) => p.id === selectedProvider)?.name}`}
               color="success"
               sx={{ mt: 2 }}
             />
@@ -235,8 +243,8 @@ const GhanaMobileMoneyPayment = ({
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.general || 'Payment failed. Please try again.'}
             </Alert>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               onClick={() => setPaymentStep('details')}
               sx={{ mt: 2 }}
             >
@@ -250,11 +258,15 @@ const GhanaMobileMoneyPayment = ({
           <>
             {/* Provider Selection */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ display: 'flex', alignItems: 'center' }}
+              >
                 <WalletIcon sx={{ mr: 1, color: '#FFD700' }} />
                 Select Mobile Money Provider
               </Typography>
-              
+
               <Grid container spacing={2}>
                 {providers.map((provider) => (
                   <Grid item xs={12} key={provider.id}>
@@ -264,10 +276,10 @@ const GhanaMobileMoneyPayment = ({
                       onClick={() => setSelectedProvider(provider.id)}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <ProviderLogo 
-                          sx={{ 
+                        <ProviderLogo
+                          sx={{
                             backgroundColor: provider.color,
-                            color: provider.textColor 
+                            color: provider.textColor,
                           }}
                         >
                           {provider.name.substring(0, 3)}
@@ -279,19 +291,28 @@ const GhanaMobileMoneyPayment = ({
                           <Typography variant="body2" color="text.secondary">
                             {provider.description}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                            <Chip 
-                              label={`${provider.marketShare} market share`} 
-                              size="small" 
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              mt: 0.5,
+                            }}
+                          >
+                            <Chip
+                              label={`${provider.marketShare} market share`}
+                              size="small"
                               variant="outlined"
                               sx={{ mr: 1 }}
                             />
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               Prefixes: {provider.prefixes.join(', ')}
                             </Typography>
                           </Box>
                         </Box>
-                        <Radio 
+                        <Radio
                           checked={selectedProvider === provider.id}
                           sx={{ color: '#FFD700' }}
                         />
@@ -306,11 +327,15 @@ const GhanaMobileMoneyPayment = ({
 
             {/* Phone Number Input */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ display: 'flex', alignItems: 'center' }}
+              >
                 <PhoneIcon sx={{ mr: 1, color: '#FFD700' }} />
                 Mobile Money Number
               </Typography>
-              
+
               <TextField
                 fullWidth
                 label="Phone Number"
@@ -318,12 +343,12 @@ const GhanaMobileMoneyPayment = ({
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 error={!!errors.phone}
-                helperText={errors.phone || 'Enter your mobile money registered number'}
+                helperText={
+                  errors.phone || 'Enter your mobile money registered number'
+                }
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start">
-                      +233
-                    </InputAdornment>
+                    <InputAdornment position="start">+233</InputAdornment>
                   ),
                 }}
                 sx={{ mb: 2 }}
@@ -333,8 +358,13 @@ const GhanaMobileMoneyPayment = ({
               {selectedProvider && (
                 <Alert severity="info" sx={{ mb: 2 }}>
                   <Typography variant="body2">
-                    <strong>{providers.find(p => p.id === selectedProvider)?.name}</strong> numbers start with: {' '}
-                    {providers.find(p => p.id === selectedProvider)?.prefixes.join(', ')}
+                    <strong>
+                      {providers.find((p) => p.id === selectedProvider)?.name}
+                    </strong>{' '}
+                    numbers start with:{' '}
+                    {providers
+                      .find((p) => p.id === selectedProvider)
+                      ?.prefixes.join(', ')}
                   </Typography>
                 </Alert>
               )}
@@ -348,22 +378,50 @@ const GhanaMobileMoneyPayment = ({
                 Payment Summary
               </Typography>
               <Paper sx={{ p: 2, backgroundColor: 'rgba(255, 215, 0, 0.05)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
+                >
                   <Typography>Amount:</Typography>
-                  <Typography fontWeight={600}>{formatGHSAmount(amount)}</Typography>
+                  <Typography fontWeight={600}>
+                    {formatGHSAmount(amount)}
+                  </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
+                >
                   <Typography>Provider:</Typography>
-                  <Typography>{providers.find(p => p.id === selectedProvider)?.name}</Typography>
+                  <Typography>
+                    {providers.find((p) => p.id === selectedProvider)?.name}
+                  </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
+                >
                   <Typography>Processing Fee:</Typography>
                   <Typography color="success.main">FREE</Typography>
                 </Box>
                 <Divider sx={{ my: 1 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="subtitle1" fontWeight={600}>Total:</Typography>
-                  <Typography variant="subtitle1" fontWeight={600} color="primary.main">
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Total:
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    color="primary.main"
+                  >
                     {formatGHSAmount(amount)}
                   </Typography>
                 </Box>
@@ -375,8 +433,10 @@ const GhanaMobileMoneyPayment = ({
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <SecurityIcon sx={{ mr: 1 }} />
                 <Typography variant="body2">
-                  Your payment is secured by {providers.find(p => p.id === selectedProvider)?.name}. 
-                  You will receive a prompt on your phone to confirm this transaction.
+                  Your payment is secured by{' '}
+                  {providers.find((p) => p.id === selectedProvider)?.name}. You
+                  will receive a prompt on your phone to confirm this
+                  transaction.
                 </Typography>
               </Box>
             </Alert>
@@ -400,7 +460,10 @@ const GhanaMobileMoneyPayment = ({
             >
               {isProcessing ? (
                 <>
-                  <CircularProgress size={20} sx={{ mr: 1, color: 'inherit' }} />
+                  <CircularProgress
+                    size={20}
+                    sx={{ mr: 1, color: 'inherit' }}
+                  />
                   Processing...
                 </>
               ) : (
@@ -413,20 +476,20 @@ const GhanaMobileMoneyPayment = ({
   };
 
   return (
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: 3, 
-        maxWidth: 500, 
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        maxWidth: 500,
         mx: 'auto',
         borderRadius: 2,
-        backgroundColor: 'background.paper'
+        backgroundColor: 'background.paper',
       }}
     >
       <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
         🇬🇭 Ghana Mobile Money Payment
       </Typography>
-      
+
       {renderPaymentContent()}
     </Paper>
   );

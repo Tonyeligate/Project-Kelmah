@@ -97,7 +97,7 @@ const PortfolioManager = () => {
     'Tiling',
     'Landscaping',
     'HVAC',
-    'Other'
+    'Other',
   ];
 
   // Load portfolio items
@@ -132,11 +132,18 @@ const PortfolioManager = () => {
       };
 
       if (isEditing && selectedItem) {
-        await portfolioService.updatePortfolioItem(selectedItem.id, portfolioData);
-        enqueueSnackbar('Portfolio item updated successfully', { variant: 'success' });
+        await portfolioService.updatePortfolioItem(
+          selectedItem.id,
+          portfolioData,
+        );
+        enqueueSnackbar('Portfolio item updated successfully', {
+          variant: 'success',
+        });
       } else {
         await portfolioService.createPortfolioItem(portfolioData);
-        enqueueSnackbar('Portfolio item added successfully', { variant: 'success' });
+        enqueueSnackbar('Portfolio item added successfully', {
+          variant: 'success',
+        });
       }
 
       handleCloseDialog();
@@ -148,13 +155,19 @@ const PortfolioManager = () => {
 
   // Handle delete
   const handleDelete = async (itemId) => {
-    if (window.confirm('Are you sure you want to delete this portfolio item?')) {
+    if (
+      window.confirm('Are you sure you want to delete this portfolio item?')
+    ) {
       try {
         await portfolioService.deletePortfolioItem(itemId);
-        enqueueSnackbar('Portfolio item deleted successfully', { variant: 'success' });
+        enqueueSnackbar('Portfolio item deleted successfully', {
+          variant: 'success',
+        });
         loadPortfolioItems();
       } catch (err) {
-        enqueueSnackbar('Failed to delete portfolio item', { variant: 'error' });
+        enqueueSnackbar('Failed to delete portfolio item', {
+          variant: 'error',
+        });
       }
     }
   };
@@ -208,15 +221,17 @@ const PortfolioManager = () => {
   // Handle image upload
   const handleImageUpload = async (files) => {
     try {
-      const uploadPromises = Array.from(files).map(file => fileUploadService.uploadFile(file, 'portfolio', 'user'));
+      const uploadPromises = Array.from(files).map((file) =>
+        fileUploadService.uploadFile(file, 'portfolio', 'user'),
+      );
       const uploadResults = await Promise.all(uploadPromises);
-      const imageUrls = uploadResults.map(result => result.url);
-      
-      setFormData(prev => ({
+      const imageUrls = uploadResults.map((result) => result.url);
+
+      setFormData((prev) => ({
         ...prev,
-        images: [...prev.images, ...imageUrls]
+        images: [...prev.images, ...imageUrls],
       }));
-      
+
       enqueueSnackbar('Images uploaded successfully', { variant: 'success' });
     } catch (err) {
       enqueueSnackbar('Failed to upload images', { variant: 'error' });
@@ -225,17 +240,17 @@ const PortfolioManager = () => {
 
   // Handle form input changes
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // Handle skills input
   const handleSkillsChange = (newSkills) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      skills: newSkills
+      skills: newSkills,
     }));
   };
 
@@ -269,7 +284,7 @@ const PortfolioManager = () => {
           }}
         />
       )}
-      
+
       <IconButton
         sx={{
           position: 'absolute',
@@ -314,7 +329,7 @@ const PortfolioManager = () => {
         <Typography variant="h6" component="h3" gutterBottom>
           {item.title}
         </Typography>
-        
+
         <Typography variant="body2" color="text.secondary" paragraph>
           {item.description?.length > 100
             ? `${item.description.substring(0, 100)}...`
@@ -326,7 +341,7 @@ const PortfolioManager = () => {
             <CategoryIcon fontSize="small" color="action" />
             <Typography variant="body2">{item.category}</Typography>
           </Box>
-          
+
           {item.budget && (
             <Box display="flex" alignItems="center" gap={1}>
               <BudgetIcon fontSize="small" color="action" />
@@ -335,14 +350,14 @@ const PortfolioManager = () => {
               </Typography>
             </Box>
           )}
-          
+
           {item.location && (
             <Box display="flex" alignItems="center" gap={1}>
               <LocationIcon fontSize="small" color="action" />
               <Typography variant="body2">{item.location}</Typography>
             </Box>
           )}
-          
+
           {item.completedAt && (
             <Box display="flex" alignItems="center" gap={1}>
               <DateIcon fontSize="small" color="action" />
@@ -356,14 +371,17 @@ const PortfolioManager = () => {
         {item.skills && (
           <Box mt={2}>
             <Stack direction="row" spacing={1} flexWrap="wrap">
-              {item.skills.split(',').slice(0, 3).map((skill, index) => (
-                <Chip
-                  key={index}
-                  label={skill.trim()}
-                  size="small"
-                  variant="outlined"
-                />
-              ))}
+              {item.skills
+                .split(',')
+                .slice(0, 3)
+                .map((skill, index) => (
+                  <Chip
+                    key={index}
+                    label={skill.trim()}
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
               {item.skills.split(',').length > 3 && (
                 <Chip
                   label={`+${item.skills.split(',').length - 3} more`}
@@ -403,7 +421,12 @@ const PortfolioManager = () => {
   return (
     <Box>
       {/* Header */}
-      <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={3}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Typography variant="h4" component="h1">
           Portfolio Manager
         </Typography>
@@ -456,29 +479,35 @@ const PortfolioManager = () => {
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItem onClick={() => {
-          handleOpenDialog(selectedItem);
-          setAnchorEl(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleOpenDialog(selectedItem);
+            setAnchorEl(null);
+          }}
+        >
           <EditIcon fontSize="small" sx={{ mr: 1 }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={() => {
-          // Handle view/share functionality
-          setAnchorEl(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            // Handle view/share functionality
+            setAnchorEl(null);
+          }}
+        >
           <ViewIcon fontSize="small" sx={{ mr: 1 }} />
           View Details
         </MenuItem>
-        <MenuItem onClick={() => {
-          // Handle share functionality
-          setAnchorEl(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            // Handle share functionality
+            setAnchorEl(null);
+          }}
+        >
           <ShareIcon fontSize="small" sx={{ mr: 1 }} />
           Share
         </MenuItem>
         <Divider />
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleDelete(selectedItem?.id);
             setAnchorEl(null);
@@ -512,7 +541,7 @@ const PortfolioManager = () => {
                 required
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -529,7 +558,7 @@ const PortfolioManager = () => {
                 ))}
               </TextField>
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -538,7 +567,7 @@ const PortfolioManager = () => {
                 onChange={(e) => handleInputChange('client', e.target.value)}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -546,11 +575,13 @@ const PortfolioManager = () => {
                 rows={4}
                 label="Project Description"
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('description', e.target.value)
+                }
                 required
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -560,7 +591,7 @@ const PortfolioManager = () => {
                 onChange={(e) => handleInputChange('budget', e.target.value)}
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -570,7 +601,7 @@ const PortfolioManager = () => {
                 onChange={(e) => handleInputChange('duration', e.target.value)}
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -579,28 +610,34 @@ const PortfolioManager = () => {
                 onChange={(e) => handleInputChange('location', e.target.value)}
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 type="date"
                 label="Completion Date"
                 value={formData.completedAt}
-                onChange={(e) => handleInputChange('completedAt', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('completedAt', e.target.value)
+                }
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Skills Used"
                 placeholder="Enter skills separated by commas"
                 value={formData.skills.join(', ')}
-                onChange={(e) => handleSkillsChange(e.target.value.split(',').map(s => s.trim()))}
+                onChange={(e) =>
+                  handleSkillsChange(
+                    e.target.value.split(',').map((s) => s.trim()),
+                  )
+                }
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <input
                 accept="image/*"
@@ -621,7 +658,7 @@ const PortfolioManager = () => {
                 </Button>
               </label>
             </Grid>
-            
+
             {formData.images.length > 0 && (
               <Grid item xs={12}>
                 <Typography variant="subtitle2" gutterBottom>

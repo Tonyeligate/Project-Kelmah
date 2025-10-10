@@ -124,7 +124,10 @@ const WorkerProfileEditPage = () => {
     const params = new URLSearchParams(location.search);
     const section = params.get('section');
     if (section === 'availability' && availabilityRef.current) {
-      availabilityRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      availabilityRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
     }
   }, [location.search]);
 
@@ -205,9 +208,12 @@ const WorkerProfileEditPage = () => {
         if (data) {
           setFormData((prev) => ({
             ...prev,
-            availabilityStatus: data.availabilityStatus || prev.availabilityStatus,
+            availabilityStatus:
+              data.availabilityStatus || prev.availabilityStatus,
             availableHours: data.availableHours || prev.availableHours,
-            pausedUntil: data.pausedUntil ? String(data.pausedUntil).slice(0, 10) : '',
+            pausedUntil: data.pausedUntil
+              ? String(data.pausedUntil).slice(0, 10)
+              : '',
           }));
         }
       } catch (e) {
@@ -394,7 +400,9 @@ const WorkerProfileEditPage = () => {
 
     try {
       const id = user?.id;
-      await dispatch(updateWorkerProfile({ workerId: id, profileData: profileFormData })).unwrap();
+      await dispatch(
+        updateWorkerProfile({ workerId: id, profileData: profileFormData }),
+      ).unwrap();
       setSnackbar({
         open: true,
         message: 'Profile updated successfully!',
@@ -464,9 +472,17 @@ const WorkerProfileEditPage = () => {
           },
         }),
       ).unwrap();
-      setSnackbar({ open: true, message: 'Availability updated!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: 'Availability updated!',
+        severity: 'success',
+      });
     } catch (err) {
-      setSnackbar({ open: true, message: String(err || 'Failed to update availability'), severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: String(err || 'Failed to update availability'),
+        severity: 'error',
+      });
     }
   };
 
@@ -515,8 +531,16 @@ const WorkerProfileEditPage = () => {
 
       <form onSubmit={handleSubmit}>
         {/* Availability */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }} ref={availabilityRef}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+        <Paper
+          elevation={3}
+          sx={{ p: 3, mb: 4, borderRadius: 2 }}
+          ref={availabilityRef}
+        >
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Availability
           </Typography>
           <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -542,7 +566,9 @@ const WorkerProfileEditPage = () => {
                 label="Paused Until"
                 type="date"
                 value={formData.pausedUntil}
-                onChange={(e) => setFormData((p) => ({ ...p, pausedUntil: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, pausedUntil: e.target.value }))
+                }
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -550,15 +576,33 @@ const WorkerProfileEditPage = () => {
 
           <Grid container spacing={2}>
             {days.map((day) => {
-              const d = formData.availableHours?.[day] || { start: '09:00', end: '17:00', available: false };
+              const d = formData.availableHours?.[day] || {
+                start: '09:00',
+                end: '17:00',
+                available: false,
+              };
               const label = day.charAt(0).toUpperCase() + day.slice(1);
               return (
                 <Grid item xs={12} md={6} key={day}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 2,
+                      }}
+                    >
                       <Typography variant="subtitle1">{label}</Typography>
                       <FormControlLabel
-                        control={<Switch checked={!!d.available} onChange={(e) => handleDayToggle(day, e.target.checked)} />}
+                        control={
+                          <Switch
+                            checked={!!d.available}
+                            onChange={(e) =>
+                              handleDayToggle(day, e.target.checked)
+                            }
+                          />
+                        }
                         label={d.available ? 'Available' : 'Off'}
                       />
                     </Box>
@@ -568,7 +612,9 @@ const WorkerProfileEditPage = () => {
                           label="Start"
                           type="time"
                           value={d.start}
-                          onChange={(e) => handleTimeChange(day, 'start', e.target.value)}
+                          onChange={(e) =>
+                            handleTimeChange(day, 'start', e.target.value)
+                          }
                           fullWidth
                           disabled={!d.available}
                           inputProps={{ step: 300 }}
@@ -579,7 +625,9 @@ const WorkerProfileEditPage = () => {
                           label="End"
                           type="time"
                           value={d.end}
-                          onChange={(e) => handleTimeChange(day, 'end', e.target.value)}
+                          onChange={(e) =>
+                            handleTimeChange(day, 'end', e.target.value)
+                          }
                           fullWidth
                           disabled={!d.available}
                           inputProps={{ step: 300 }}
@@ -594,7 +642,8 @@ const WorkerProfileEditPage = () => {
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Tip: Set unavailable days to Off and adjust time ranges for each workday.
+              Tip: Set unavailable days to Off and adjust time ranges for each
+              workday.
             </Typography>
             <Button
               variant="contained"
@@ -607,7 +656,11 @@ const WorkerProfileEditPage = () => {
         </Paper>
         {/* Profile Completeness */}
         <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.main }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: theme.palette.primary.main }}
+          >
             Profile Completeness
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -620,9 +673,10 @@ const WorkerProfileEditPage = () => {
           </Box>
           {suggestions?.length > 0 && (
             <Box sx={{ mt: 2 }}>
-              {Array.isArray(suggestions) && suggestions.map((s, i) => (
-                <Chip key={i} label={s} sx={{ mr: 1, mb: 1 }} />
-              ))}
+              {Array.isArray(suggestions) &&
+                suggestions.map((s, i) => (
+                  <Chip key={i} label={s} sx={{ mr: 1, mb: 1 }} />
+                ))}
             </Box>
           )}
         </Paper>
@@ -856,15 +910,16 @@ const WorkerProfileEditPage = () => {
             </Box>
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {Array.isArray(formData.skills) && formData.skills.map((skill, index) => (
-                <Chip
-                  key={index}
-                  label={skill}
-                  onDelete={() => handleRemoveSkill(skill)}
-                  color="primary"
-                  variant="outlined"
-                />
-              ))}
+              {Array.isArray(formData.skills) &&
+                formData.skills.map((skill, index) => (
+                  <Chip
+                    key={index}
+                    label={skill}
+                    onDelete={() => handleRemoveSkill(skill)}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
             </Box>
           </Box>
         </Paper>
@@ -936,35 +991,36 @@ const WorkerProfileEditPage = () => {
                 Added Education & Certifications
               </Typography>
 
-              {Array.isArray(formData.education) && formData.education.map((edu, index) => (
-                <Card key={index} variant="outlined" sx={{ mb: 1 }}>
-                  <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="subtitle1">
-                          {edu.degree}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {edu.institution} {edu.year && `(${edu.year})`}
-                        </Typography>
-                      </Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveEducation(index)}
-                        color="error"
+              {Array.isArray(formData.education) &&
+                formData.education.map((edu, index) => (
+                  <Card key={index} variant="outlined" sx={{ mb: 1 }}>
+                    <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
                       >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
+                        <Box>
+                          <Typography variant="subtitle1">
+                            {edu.degree}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {edu.institution} {edu.year && `(${edu.year})`}
+                          </Typography>
+                        </Box>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveEducation(index)}
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
             </Box>
           )}
         </Paper>
@@ -1035,35 +1091,36 @@ const WorkerProfileEditPage = () => {
                 Added Languages
               </Typography>
 
-              {Array.isArray(formData.languages) && formData.languages.map((lang, index) => (
-                <Card key={index} variant="outlined" sx={{ mb: 1 }}>
-                  <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="subtitle1">
-                          {lang.language}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {lang.proficiency}
-                        </Typography>
-                      </Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveLanguage(index)}
-                        color="error"
+              {Array.isArray(formData.languages) &&
+                formData.languages.map((lang, index) => (
+                  <Card key={index} variant="outlined" sx={{ mb: 1 }}>
+                    <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
                       >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-              ))}
+                        <Box>
+                          <Typography variant="subtitle1">
+                            {lang.language}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {lang.proficiency}
+                          </Typography>
+                        </Box>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveLanguage(index)}
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
             </Box>
           )}
         </Paper>
@@ -1092,110 +1149,113 @@ const WorkerProfileEditPage = () => {
           </Button>
 
           <Grid container spacing={3}>
-            {Array.isArray(formData.portfolio) && formData.portfolio.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" gutterBottom>
-                        Portfolio Item #{index + 1}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemovePortfolioItem(index)}
-                        color="error"
-                        sx={{ position: 'absolute', top: 8, right: 8 }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-
-                    <TextField
-                      fullWidth
-                      label="Title"
-                      value={item.title || ''}
-                      onChange={(e) =>
-                        handlePortfolioItemChange(
-                          index,
-                          'title',
-                          e.target.value,
-                        )
-                      }
-                      sx={{ mb: 2 }}
-                    />
-
-                    <TextField
-                      fullWidth
-                      label="Description"
-                      value={item.description || ''}
-                      onChange={(e) =>
-                        handlePortfolioItemChange(
-                          index,
-                          'description',
-                          e.target.value,
-                        )
-                      }
-                      multiline
-                      rows={2}
-                      sx={{ mb: 2 }}
-                    />
-
-                    <Box sx={{ textAlign: 'center' }}>
-                      {item.imagePreview || item.image ? (
-                        <Box
-                          component="img"
-                          src={item.imagePreview || item.image}
-                          alt={item.title}
-                          sx={{
-                            width: '100%',
-                            height: 150,
-                            objectFit: 'cover',
-                            mb: 2,
-                            borderRadius: 1,
-                          }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: 150,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            mb: 2,
-                            borderRadius: 1,
-                          }}
-                        >
-                          <Typography variant="body2" color="text.secondary">
-                            No image selected
-                          </Typography>
-                        </Box>
-                      )}
-
-                      <label htmlFor={`portfolio-image-${index}`}>
-                        <Input
-                          accept="image/*"
-                          id={`portfolio-image-${index}`}
-                          type="file"
-                          onChange={(e) => handlePortfolioImageChange(e, index)}
-                        />
-                        <Button
-                          component="span"
-                          variant="outlined"
+            {Array.isArray(formData.portfolio) &&
+              formData.portfolio.map((item, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                          Portfolio Item #{index + 1}
+                        </Typography>
+                        <IconButton
                           size="small"
-                          startIcon={<CameraIcon />}
+                          onClick={() => handleRemovePortfolioItem(index)}
+                          color="error"
+                          sx={{ position: 'absolute', top: 8, right: 8 }}
                         >
-                          {item.imagePreview || item.image
-                            ? 'Change Image'
-                            : 'Add Image'}
-                        </Button>
-                      </label>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+
+                      <TextField
+                        fullWidth
+                        label="Title"
+                        value={item.title || ''}
+                        onChange={(e) =>
+                          handlePortfolioItemChange(
+                            index,
+                            'title',
+                            e.target.value,
+                          )
+                        }
+                        sx={{ mb: 2 }}
+                      />
+
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        value={item.description || ''}
+                        onChange={(e) =>
+                          handlePortfolioItemChange(
+                            index,
+                            'description',
+                            e.target.value,
+                          )
+                        }
+                        multiline
+                        rows={2}
+                        sx={{ mb: 2 }}
+                      />
+
+                      <Box sx={{ textAlign: 'center' }}>
+                        {item.imagePreview || item.image ? (
+                          <Box
+                            component="img"
+                            src={item.imagePreview || item.image}
+                            alt={item.title}
+                            sx={{
+                              width: '100%',
+                              height: 150,
+                              objectFit: 'cover',
+                              mb: 2,
+                              borderRadius: 1,
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: '100%',
+                              height: 150,
+                              backgroundColor: 'rgba(0,0,0,0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mb: 2,
+                              borderRadius: 1,
+                            }}
+                          >
+                            <Typography variant="body2" color="text.secondary">
+                              No image selected
+                            </Typography>
+                          </Box>
+                        )}
+
+                        <label htmlFor={`portfolio-image-${index}`}>
+                          <Input
+                            accept="image/*"
+                            id={`portfolio-image-${index}`}
+                            type="file"
+                            onChange={(e) =>
+                              handlePortfolioImageChange(e, index)
+                            }
+                          />
+                          <Button
+                            component="span"
+                            variant="outlined"
+                            size="small"
+                            startIcon={<CameraIcon />}
+                          >
+                            {item.imagePreview || item.image
+                              ? 'Change Image'
+                              : 'Add Image'}
+                          </Button>
+                        </label>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
           </Grid>
         </Paper>
 

@@ -6,9 +6,7 @@ import React from 'react';
 // Mock MUI components to avoid style-related errors
 jest.mock('@mui/material', () => ({
   ...jest.requireActual('@mui/material'),
-  ThemeProvider: ({ children }) => <div>
-    {children}
-  </div>,
+  ThemeProvider: ({ children }) => <div>{children}</div>,
   createTheme: () => ({}),
   useTheme: () => ({}),
 }));
@@ -23,7 +21,7 @@ global.IntersectionObserver = jest.fn(() => ({
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -34,7 +32,6 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
-
 
 // General cleanup after each test
 afterEach(() => {

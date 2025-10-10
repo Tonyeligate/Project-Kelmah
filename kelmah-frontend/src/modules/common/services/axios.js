@@ -14,7 +14,10 @@ import {
   SERVICES,
 } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
-import { handleServiceError, getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
+import {
+  handleServiceError,
+  getServiceStatusMessage,
+} from '../../../utils/serviceHealthCheck';
 
 // Initialize axios instance with async base URL
 let axiosInstance = null;
@@ -38,29 +41,37 @@ const initializeAxios = async () => {
 
 // Create a proxy that initializes axios on first use
 const createAxiosProxy = () => {
-  return new Proxy({}, {
-    get(target, prop) {
-      // Handle async initialization for method calls
-      if (typeof prop === 'string' && ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'].includes(prop)) {
-        return async (...args) => {
-          const instance = axiosInstance || await initializeAxios();
-          return instance[prop](...args);
-        };
-      }
+  return new Proxy(
+    {},
+    {
+      get(target, prop) {
+        // Handle async initialization for method calls
+        if (
+          typeof prop === 'string' &&
+          ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'].includes(
+            prop,
+          )
+        ) {
+          return async (...args) => {
+            const instance = axiosInstance || (await initializeAxios());
+            return instance[prop](...args);
+          };
+        }
 
-      // Handle other properties and methods
-      if (axiosInstance && typeof axiosInstance[prop] === 'function') {
-        return (...args) => axiosInstance[prop](...args);
-      }
+        // Handle other properties and methods
+        if (axiosInstance && typeof axiosInstance[prop] === 'function') {
+          return (...args) => axiosInstance[prop](...args);
+        }
 
-      if (axiosInstance) {
-        return axiosInstance[prop];
-      }
+        if (axiosInstance) {
+          return axiosInstance[prop];
+        }
 
-      // For non-initialized instance, return a promise that resolves when ready
-      return initializeAxios().then(instance => instance[prop]);
-    }
-  });
+        // For non-initialized instance, return a promise that resolves when ready
+        return initializeAxios().then((instance) => instance[prop]);
+      },
+    },
+  );
 };
 
 // Export the proxy as the main axios instance
@@ -77,9 +88,11 @@ const normalizeUrlForGateway = (config) => {
     if (baseEndsWithApi && urlStartsWithApi) {
       // Remove the leading /api from the url to avoid /api/api duplication
       config.url = url.replace(/^\/api\/?/, '/');
-      console.log(`🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`);
+      console.log(
+        `🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`,
+      );
     }
-  } catch (_) { }
+  } catch (_) {}
   return config;
 };
 
@@ -95,7 +108,9 @@ const addMainInterceptors = async () => {
       try {
         const currentBaseURL = await getApiBaseUrl();
         if (currentBaseURL && currentBaseURL !== config.baseURL) {
-          console.log(`🔄 Updating baseURL: ${config.baseURL} → ${currentBaseURL}`);
+          console.log(
+            `🔄 Updating baseURL: ${config.baseURL} → ${currentBaseURL}`,
+          );
           config.baseURL = currentBaseURL;
         }
       } catch (error) {
@@ -104,7 +119,7 @@ const addMainInterceptors = async () => {
 
       // Normalize to avoid /api/api duplication
       config = normalizeUrlForGateway(config);
-      
+
       // Add auth token securely
       const token = secureStorage.getAuthToken();
       if (token) {
@@ -112,7 +127,8 @@ const addMainInterceptors = async () => {
       }
 
       // Add security headers
-      config.headers['X-Request-ID'] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      config.headers['X-Request-ID'] =
+        `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       config.headers['X-Client-Version'] = '1.0.0';
 
       // Add request timestamp for debugging
@@ -151,7 +167,9 @@ const addMainInterceptors = async () => {
 
       // Log response in development
       if (LOG_CONFIG.enableConsole) {
-        console.group(`✅ API Response: ${response?.status || 'unknown'} (${duration}ms)`);
+        console.group(
+          `✅ API Response: ${response?.status || 'unknown'} (${duration}ms)`,
+        );
         console.log('Response:', {
           status: response?.status,
           statusText: response?.statusText,
@@ -208,7 +226,8 @@ const addMainInterceptors = async () => {
             );
 
             const newToken =
-              refreshResponse?.data?.data?.token || refreshResponse?.data?.token;
+              refreshResponse?.data?.data?.token ||
+              refreshResponse?.data?.token;
 
             if (newToken) {
               console.log('✅ Token refresh successful');
@@ -225,7 +244,10 @@ const addMainInterceptors = async () => {
               throw new Error('No token in refresh response');
             }
           } catch (refreshError) {
-            console.error('❌ Token refresh failed:', refreshError?.message || refreshError);
+            console.error(
+              '❌ Token refresh failed:',
+              refreshError?.message || refreshError,
+            );
 
             // Clear auth data securely
             secureStorage.clear();
@@ -347,7 +369,8 @@ export const uploadFile = (url, file, onProgress = null) => {
 // Enhanced timeout configuration for different environments
 const getTimeoutConfig = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  const isLocal =
+    typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   // For Render services (production), use longer timeout to handle cold starts
   if (!isDevelopment && !isLocal) {
@@ -393,7 +416,9 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         config.url.includes('/api/payments/escrows')
       ) {
         if (LOG_CONFIG.enableConsole) {
-          console.warn('ℹ️ Escrow list not implemented on service - returning empty list');
+          console.warn(
+            'ℹ️ Escrow list not implemented on service - returning empty list',
+          );
         }
         // Synthesize a successful empty response
         return Promise.resolve({
@@ -435,31 +460,43 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
       const baseDelay = timeoutConfig.retryDelay;
       const exponentialDelay = baseDelay * Math.pow(2, config.__retryCount - 1);
       const jitter = Math.random() * 1000; // Add up to 1 second jitter
-      const delay = Math.min(exponentialDelay + jitter, timeoutConfig.maxRetryDelay);
+      const delay = Math.min(
+        exponentialDelay + jitter,
+        timeoutConfig.maxRetryDelay,
+      );
 
       // Get service status for better logging
       const statusMsg = getServiceStatusMessage(serviceUrl);
 
-      console.warn(`🔄 Retrying request (${config.__retryCount}/${maxRetries}) after ${delay}ms delay:`, {
-        url: config.url,
-        method: config.method,
-        error: error.message,
-        serviceStatus: statusMsg.status,
-        reason: statusMsg.message,
-      });
+      console.warn(
+        `🔄 Retrying request (${config.__retryCount}/${maxRetries}) after ${delay}ms delay:`,
+        {
+          url: config.url,
+          method: config.method,
+          error: error.message,
+          serviceStatus: statusMsg.status,
+          reason: statusMsg.message,
+        },
+      );
 
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
       return client.request(config);
-    }
+    },
   );
 };
 
 // Helper: prefer gateway base when VITE_API_URL is provided
 const getClientBaseUrl = async (serviceUrl) => {
   // If a global gateway URL is set, use it for all services
-  const hasGatewayEnv = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL;
-  const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
+  const hasGatewayEnv =
+    typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    import.meta.env.VITE_API_URL;
+  const isHttps =
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.protocol === 'https:';
 
   if (hasGatewayEnv) {
     const baseURL = await getApiBaseUrl();
@@ -500,7 +537,7 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
     },
     (error) => {
       return Promise.reject(error);
-    }
+    },
   );
 
   retryInterceptor(client);
@@ -508,16 +545,34 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
 };
 
 // Initialize service clients
-let authServiceClientInstance, userServiceClientInstance, jobServiceClientInstance, messagingServiceClientInstance, paymentServiceClientInstance, reviewsServiceClientInstance, schedulingClientInstance;
+let authServiceClientInstance,
+  userServiceClientInstance,
+  jobServiceClientInstance,
+  messagingServiceClientInstance,
+  paymentServiceClientInstance,
+  reviewsServiceClientInstance,
+  schedulingClientInstance;
 
 const initializeServiceClients = async () => {
   if (!authServiceClientInstance) {
-    authServiceClientInstance = await createServiceClient(SERVICES.AUTH_SERVICE);
-    userServiceClientInstance = await createServiceClient(SERVICES.USER_SERVICE);
-    jobServiceClientInstance = await createServiceClient(SERVICES.JOB_SERVICE, { 'ngrok-skip-browser-warning': 'true' });
-    messagingServiceClientInstance = await createServiceClient(SERVICES.MESSAGING_SERVICE);
-    paymentServiceClientInstance = await createServiceClient(SERVICES.PAYMENT_SERVICE);
-    reviewsServiceClientInstance = await createServiceClient(SERVICES.REVIEW_SERVICE);
+    authServiceClientInstance = await createServiceClient(
+      SERVICES.AUTH_SERVICE,
+    );
+    userServiceClientInstance = await createServiceClient(
+      SERVICES.USER_SERVICE,
+    );
+    jobServiceClientInstance = await createServiceClient(SERVICES.JOB_SERVICE, {
+      'ngrok-skip-browser-warning': 'true',
+    });
+    messagingServiceClientInstance = await createServiceClient(
+      SERVICES.MESSAGING_SERVICE,
+    );
+    paymentServiceClientInstance = await createServiceClient(
+      SERVICES.PAYMENT_SERVICE,
+    );
+    reviewsServiceClientInstance = await createServiceClient(
+      SERVICES.REVIEW_SERVICE,
+    );
     schedulingClientInstance = await createServiceClient(SERVICES.USER_SERVICE); // Using user service for scheduling
   }
   return {
@@ -527,66 +582,101 @@ const initializeServiceClients = async () => {
     messagingServiceClient: messagingServiceClientInstance,
     paymentServiceClient: paymentServiceClientInstance,
     reviewsServiceClient: reviewsServiceClientInstance,
-    schedulingClient: schedulingClientInstance
+    schedulingClient: schedulingClientInstance,
   };
 };
 
 // Export service clients with lazy initialization
-export const getAuthServiceClient = () => initializeServiceClients().then(clients => clients.authServiceClient);
-export const getUserServiceClient = () => initializeServiceClients().then(clients => clients.userServiceClient);
-export const getJobServiceClient = () => initializeServiceClients().then(clients => clients.jobServiceClient);
-export const getMessagingServiceClient = () => initializeServiceClients().then(clients => clients.messagingServiceClient);
-export const getPaymentServiceClient = () => initializeServiceClients().then(clients => clients.paymentServiceClient);
-export const getReviewsServiceClient = () => initializeServiceClients().then(clients => clients.reviewsServiceClient);
-export const getSchedulingClient = () => initializeServiceClients().then(clients => clients.schedulingClient);
+export const getAuthServiceClient = () =>
+  initializeServiceClients().then((clients) => clients.authServiceClient);
+export const getUserServiceClient = () =>
+  initializeServiceClients().then((clients) => clients.userServiceClient);
+export const getJobServiceClient = () =>
+  initializeServiceClients().then((clients) => clients.jobServiceClient);
+export const getMessagingServiceClient = () =>
+  initializeServiceClients().then((clients) => clients.messagingServiceClient);
+export const getPaymentServiceClient = () =>
+  initializeServiceClients().then((clients) => clients.paymentServiceClient);
+export const getReviewsServiceClient = () =>
+  initializeServiceClients().then((clients) => clients.reviewsServiceClient);
+export const getSchedulingClient = () =>
+  initializeServiceClients().then((clients) => clients.schedulingClient);
 
 // For backward compatibility, create proxy objects
-export const authServiceClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getAuthServiceClient().then(client => client[prop](...args));
-  }
-});
+export const authServiceClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getAuthServiceClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
-export const userServiceClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getUserServiceClient().then(client => client[prop](...args));
-  }
-});
+export const userServiceClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getUserServiceClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
-export const jobServiceClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getJobServiceClient().then(client => client[prop](...args));
-  }
-});
+export const jobServiceClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getJobServiceClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
-export const messagingServiceClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getMessagingServiceClient().then(client => client[prop](...args));
-  }
-});
+export const messagingServiceClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getMessagingServiceClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
-export const paymentServiceClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getPaymentServiceClient().then(client => client[prop](...args));
-  }
-});
+export const paymentServiceClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getPaymentServiceClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
-export const reviewsServiceClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getReviewsServiceClient().then(client => client[prop](...args));
-  }
-});
+export const reviewsServiceClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getReviewsServiceClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
-export const schedulingClient = new Proxy({}, {
-  get(target, prop) {
-    return (...args) => getSchedulingClient().then(client => client[prop](...args));
-  }
-});
+export const schedulingClient = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      return (...args) =>
+        getSchedulingClient().then((client) => client[prop](...args));
+    },
+  },
+);
 
 // Add auth interceptors to all service clients after initialization
 const addInterceptorsToClients = async () => {
   const clients = await initializeServiceClients();
-  Object.values(clients).forEach(client => {
+  Object.values(clients).forEach((client) => {
     // Request interceptor
     client.interceptors.request.use(
       (config) => {
@@ -669,10 +759,12 @@ const addGlobalInterceptors = async () => {
     (r) => r,
     (error) => {
       if (error?.response?.status === 401 && typeof window !== 'undefined') {
-        try { window.dispatchEvent(new CustomEvent('auth:tokenExpired')); } catch (_) { }
+        try {
+          window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+        } catch (_) {}
       }
       return Promise.reject(error);
-    }
+    },
   );
 };
 

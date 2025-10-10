@@ -1,6 +1,6 @@
 /**
  * Enhanced Mobile Login Component
- * 
+ *
  * A modern, user-friendly mobile login experience with:
  * - Improved visual design and spacing
  * - Better error handling and user feedback
@@ -57,7 +57,7 @@ const MobileLogin = () => {
     password: '',
     rememberMe: false,
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
@@ -66,14 +66,15 @@ const MobileLogin = () => {
 
   // Handle input changes
   const handleInputChange = (field) => (event) => {
-    const value = field === 'rememberMe' ? event.target.checked : event.target.value;
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    const value =
+      field === 'rememberMe' ? event.target.checked : event.target.value;
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Clear field error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
-    
+
     // Clear submit error
     if (submitError) {
       setSubmitError('');
@@ -103,7 +104,7 @@ const MobileLogin = () => {
   // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -112,20 +113,21 @@ const MobileLogin = () => {
     setSubmitError('');
 
     try {
-      await dispatch(loginAction({
-        email: formData.email.trim(),
-        password: formData.password,
-        rememberMe: formData.rememberMe,
-      })).unwrap();
+      await dispatch(
+        loginAction({
+          email: formData.email.trim(),
+          password: formData.password,
+          rememberMe: formData.rememberMe,
+        }),
+      ).unwrap();
 
       // Show success state briefly
       setShowSuccess(true);
-      
+
       // Navigate after a short delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 1000);
-
     } catch (error) {
       console.error('Login error:', error);
       setSubmitError(error.message || 'Login failed. Please try again.');
@@ -325,7 +327,12 @@ const MobileLogin = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <EmailIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '18px' }} />
+                        <EmailIcon
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            fontSize: '18px',
+                          }}
+                        />
                       </InputAdornment>
                     ),
                   }}
@@ -379,7 +386,12 @@ const MobileLogin = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LockIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '18px' }} />
+                        <LockIcon
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            fontSize: '18px',
+                          }}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -389,7 +401,11 @@ const MobileLogin = () => {
                           sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
                           size="small"
                         >
-                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          {showPassword ? (
+                            <VisibilityOff fontSize="small" />
+                          ) : (
+                            <Visibility fontSize="small" />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -454,7 +470,12 @@ const MobileLogin = () => {
                       />
                     }
                     label={
-                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
+                      <Typography
+                        sx={{
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '10px',
+                        }}
+                      >
                         Remember me
                       </Typography>
                     }
@@ -490,10 +511,12 @@ const MobileLogin = () => {
                     borderRadius: 2,
                     fontSize: '12px',
                     fontWeight: 600,
-                    background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    background:
+                      'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                     color: '#000',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                      background:
+                        'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                     },
                     '&:disabled': {
                       background: 'rgba(255, 215, 0, 0.3)',
@@ -512,7 +535,9 @@ const MobileLogin = () => {
 
             {/* Sign Up Link */}
             <Box sx={{ textAlign: 'center', mt: 0.5 }}>
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
+              <Typography
+                sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}
+              >
                 Don't have an account?{' '}
                 <Button
                   component={RouterLink}
@@ -542,12 +567,3 @@ const MobileLogin = () => {
 };
 
 export default MobileLogin;
-
-
-
-
-
-
-
-
-

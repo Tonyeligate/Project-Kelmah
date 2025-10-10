@@ -130,28 +130,38 @@ const WorkerSearch = () => {
         skills: filters.skills.join(','),
       });
 
-      console.log('WorkerSearch - making API call to:', `/api/users/workers/search?${queryParams}`);
+      console.log(
+        'WorkerSearch - making API call to:',
+        `/api/users/workers/search?${queryParams}`,
+      );
       const response = await userServiceClient.get(
         `/api/users/workers/search?${queryParams}`,
       );
 
       if (response.data) {
-        const workersData = response.data.data?.workers || response.data.workers || [];
+        const workersData =
+          response.data.data?.workers || response.data.workers || [];
         const pagination = response.data.data?.pagination || {};
         setWorkers(workersData);
         setTotalPages(pagination.pages || response.data.totalPages || 1);
-        try { localStorage.setItem('worker_search_cache', JSON.stringify(workersData)); } catch (_) {}
+        try {
+          localStorage.setItem(
+            'worker_search_cache',
+            JSON.stringify(workersData),
+          );
+        } catch (_) {}
       } else {
         throw new Error('No data received');
       }
 
       setError(null);
     } catch (err) {
-      console.warn(
-        'User service unavailable for worker search:',
-        err.message,
+      console.warn('User service unavailable for worker search:', err.message);
+      console.log(
+        'WorkerSearch - API call failed:',
+        err.response?.status,
+        err.response?.data,
       );
-      console.log('WorkerSearch - API call failed:', err.response?.status, err.response?.data);
       setError('Unable to fetch workers. Please try again later.');
       // Provide a safe fallback list for offline/unavailable service
       let fallback = [];
@@ -167,16 +177,19 @@ const WorkerSearch = () => {
         filteredWorkers = filteredWorkers.filter(
           (worker) =>
             worker.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (Array.isArray(worker.skills) && worker.skills.some((skill) =>
-              String(skill).toLowerCase().includes(searchQuery.toLowerCase()),
-            )) ||
+            (Array.isArray(worker.skills) &&
+              worker.skills.some((skill) =>
+                String(skill).toLowerCase().includes(searchQuery.toLowerCase()),
+              )) ||
             worker.title?.toLowerCase().includes(searchQuery.toLowerCase()),
         );
       }
 
       if (filters.skills.length > 0 && filteredWorkers.length) {
-        filteredWorkers = filteredWorkers.filter((worker) =>
-          Array.isArray(worker.skills) && filters.skills.some((skill) => worker.skills.includes(skill)),
+        filteredWorkers = filteredWorkers.filter(
+          (worker) =>
+            Array.isArray(worker.skills) &&
+            filters.skills.some((skill) => worker.skills.includes(skill)),
         );
       }
 
@@ -201,7 +214,8 @@ const WorkerSearch = () => {
       if (filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter(
           (worker) =>
-            (worker.hourlyRate || 0) >= 0 && (worker.hourlyRate || 0) <= filters.maxRate,
+            (worker.hourlyRate || 0) >= 0 &&
+            (worker.hourlyRate || 0) <= filters.maxRate,
         );
       }
 
@@ -215,7 +229,7 @@ const WorkerSearch = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: "GHS",
+      currency: 'GHS',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -249,8 +263,11 @@ const WorkerSearch = () => {
 
   const handleSaveWorker = async (workerId) => {
     try {
-      const res = await userServiceClient.post(`/api/users/workers/${workerId}/bookmark`);
-      const bookmarked = res?.data?.data?.bookmarked ?? !savedWorkers.includes(workerId);
+      const res = await userServiceClient.post(
+        `/api/users/workers/${workerId}/bookmark`,
+      );
+      const bookmarked =
+        res?.data?.data?.bookmarked ?? !savedWorkers.includes(workerId);
       setSavedWorkers((prev) => {
         const has = prev.includes(workerId);
         if (bookmarked && !has) return [...prev, workerId];
@@ -302,19 +319,21 @@ const WorkerSearch = () => {
   // Search Statistics with null safety
   const searchStats = {
     totalWorkers: Array.isArray(workers) ? workers.length : 0,
-    availableWorkers: Array.isArray(workers) 
+    availableWorkers: Array.isArray(workers)
       ? workers.filter((w) => w?.availability === 'available').length
       : 0,
     averageRating:
       Array.isArray(workers) && workers.length > 0
         ? (
-            workers.reduce((sum, w) => sum + (w?.rating || 0), 0) / workers.length
+            workers.reduce((sum, w) => sum + (w?.rating || 0), 0) /
+            workers.length
           ).toFixed(1)
         : 0,
     averageRate:
       Array.isArray(workers) && workers.length > 0
         ? Math.round(
-            workers.reduce((sum, w) => sum + (w?.hourlyRate || 0), 0) / workers.length,
+            workers.reduce((sum, w) => sum + (w?.hourlyRate || 0), 0) /
+              workers.length,
           )
         : 0,
   };
@@ -509,20 +528,26 @@ const WorkerSearch = () => {
                     Skills
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
-                    {(Array.isArray(skillOptions) ? skillOptions : []).map((skill) => (
-                      <Chip
-                        key={skill}
-                        label={skill}
-                        onClick={() => handleSkillToggle(skill)}
-                        color={
-                          filters.skills.includes(skill) ? 'primary' : 'default'
-                        }
-                        variant={
-                          filters.skills.includes(skill) ? 'filled' : 'outlined'
-                        }
-                        size="small"
-                      />
-                    ))}
+                    {(Array.isArray(skillOptions) ? skillOptions : []).map(
+                      (skill) => (
+                        <Chip
+                          key={skill}
+                          label={skill}
+                          onClick={() => handleSkillToggle(skill)}
+                          color={
+                            filters.skills.includes(skill)
+                              ? 'primary'
+                              : 'default'
+                          }
+                          variant={
+                            filters.skills.includes(skill)
+                              ? 'filled'
+                              : 'outlined'
+                          }
+                          size="small"
+                        />
+                      ),
+                    )}
                   </Box>
                 </Grid>
 
@@ -539,7 +564,10 @@ const WorkerSearch = () => {
                       displayEmpty
                     >
                       <MenuItem value="">All Locations</MenuItem>
-                      {(Array.isArray(locationOptions) ? locationOptions : []).map((location) => (
+                      {(Array.isArray(locationOptions)
+                        ? locationOptions
+                        : []
+                      ).map((location) => (
                         <MenuItem key={location} value={location}>
                           {location}
                         </MenuItem>
@@ -736,22 +764,26 @@ const WorkerSearch = () => {
                       Skills
                     </Typography>
                     <Box display="flex" gap={0.5} flexWrap="wrap" mb={2}>
-                      {Array.isArray(worker.skills) && worker.skills.slice(0, 3).map((skill, index) => (
-                        <Chip
-                          key={index}
-                          label={skill}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                      {Array.isArray(worker.skills) && worker.skills.length > 3 && (
-                        <Chip
-                          label={`+${worker.skills.length - 3} more`}
-                          size="small"
-                          variant="outlined"
-                          color="primary"
-                        />
-                      )}
+                      {Array.isArray(worker.skills) &&
+                        worker.skills
+                          .slice(0, 3)
+                          .map((skill, index) => (
+                            <Chip
+                              key={index}
+                              label={skill}
+                              size="small"
+                              variant="outlined"
+                            />
+                          ))}
+                      {Array.isArray(worker.skills) &&
+                        worker.skills.length > 3 && (
+                          <Chip
+                            label={`+${worker.skills.length - 3} more`}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                          />
+                        )}
                     </Box>
 
                     {/* Pricing and Experience */}
@@ -796,9 +828,18 @@ const WorkerSearch = () => {
                         sx={{ flex: 1 }}
                         onClick={async () => {
                           try {
-                            const convo = await messagingService.createDirectConversation(worker.id);
-                            const newId = convo?.id || convo?.data?.data?.conversation?.id || convo?.data?.conversation?.id || convo?.conversation?.id || convo?.data?.id;
-                            if (newId) navigate(`/messages?conversation=${newId}`);
+                            const convo =
+                              await messagingService.createDirectConversation(
+                                worker.id,
+                              );
+                            const newId =
+                              convo?.id ||
+                              convo?.data?.data?.conversation?.id ||
+                              convo?.data?.conversation?.id ||
+                              convo?.conversation?.id ||
+                              convo?.data?.id;
+                            if (newId)
+                              navigate(`/messages?conversation=${newId}`);
                           } catch (e) {
                             console.error('Failed to start conversation', e);
                           }
@@ -938,14 +979,15 @@ const WorkerSearch = () => {
                 Skills & Expertise
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap" mb={3}>
-                {Array.isArray(selectedWorker?.skills) && selectedWorker.skills.map((skill, index) => (
-                  <Chip
-                    key={index}
-                    label={skill}
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
+                {Array.isArray(selectedWorker?.skills) &&
+                  selectedWorker.skills.map((skill, index) => (
+                    <Chip
+                      key={index}
+                      label={skill}
+                      color="primary"
+                      variant="outlined"
+                    />
+                  ))}
               </Box>
 
               {/* Certifications */}
@@ -953,11 +995,12 @@ const WorkerSearch = () => {
                 Certifications
               </Typography>
               <Box mb={3}>
-                {Array.isArray(selectedWorker?.certifications) && selectedWorker.certifications.map((cert, index) => (
-                  <Typography key={index} variant="body2" gutterBottom>
-                    • {cert}
-                  </Typography>
-                ))}
+                {Array.isArray(selectedWorker?.certifications) &&
+                  selectedWorker.certifications.map((cert, index) => (
+                    <Typography key={index} variant="body2" gutterBottom>
+                      • {cert}
+                    </Typography>
+                  ))}
               </Box>
 
               {/* Languages */}
@@ -965,7 +1008,9 @@ const WorkerSearch = () => {
                 Languages
               </Typography>
               <Typography variant="body2" paragraph>
-                {Array.isArray(selectedWorker?.languages) ? selectedWorker.languages.join(', ') : ''}
+                {Array.isArray(selectedWorker?.languages)
+                  ? selectedWorker.languages.join(', ')
+                  : ''}
               </Typography>
 
               {/* Portfolio Preview */}
@@ -973,36 +1018,39 @@ const WorkerSearch = () => {
                 Portfolio
               </Typography>
               <Grid container spacing={2}>
-                {Array.isArray(selectedWorker?.portfolio) && selectedWorker.portfolio.map((item, index) => (
-                  <Grid item xs={4} key={index}>
-                    <Paper
-                      sx={{
-                        height: 120,
-                        backgroundImage: `url(${item.image})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        position: 'relative',
-                        borderRadius: 2,
-                      }}
-                    >
-                      <Box
+                {Array.isArray(selectedWorker?.portfolio) &&
+                  selectedWorker.portfolio.map((item, index) => (
+                    <Grid item xs={4} key={index}>
+                      <Paper
                         sx={{
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          background:
-                            'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                          color: 'white',
-                          p: 1,
-                          borderRadius: '0 0 8px 8px',
+                          height: 120,
+                          backgroundImage: `url(${item.image})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          position: 'relative',
+                          borderRadius: 2,
                         }}
                       >
-                        <Typography variant="caption">{item.title}</Typography>
-                      </Box>
-                    </Paper>
-                  </Grid>
-                ))}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            background:
+                              'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                            color: 'white',
+                            p: 1,
+                            borderRadius: '0 0 8px 8px',
+                          }}
+                        >
+                          <Typography variant="caption">
+                            {item.title}
+                          </Typography>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  ))}
               </Grid>
             </Box>
           )}

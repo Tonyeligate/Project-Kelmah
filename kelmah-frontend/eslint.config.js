@@ -38,4 +38,13 @@ export default [
       'prettier/prettier': 'error',
     },
   },
+  {
+    files: ['**/__tests__/**/*.{js,jsx}', '**/?(*.)+(spec|test).{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.jest,
+      },
+    },
+  },
 ];

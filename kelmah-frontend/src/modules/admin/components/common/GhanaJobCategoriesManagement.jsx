@@ -76,7 +76,7 @@ const GhanaJobCategoriesManagement = () => {
     skills: [],
     averageRate: 0,
     demandLevel: 'medium',
-    region: 'all'
+    region: 'all',
   });
 
   // Pre-defined Ghana job categories
@@ -93,10 +93,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 45,
       demandLevel: 'high',
       region: 'all',
-      skills: ['Wood Carving', 'Furniture Making', 'Cabinet Installation', 'Wood Finishing'],
+      skills: [
+        'Wood Carving',
+        'Furniture Making',
+        'Cabinet Installation',
+        'Wood Finishing',
+      ],
       requirements: ['Basic Tools', '2+ Years Experience'],
       growthRate: 23.5,
-      topRegions: ['Greater Accra', 'Ashanti', 'Western']
+      topRegions: ['Greater Accra', 'Ashanti', 'Western'],
     },
     {
       id: 2,
@@ -110,10 +115,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 55,
       demandLevel: 'high',
       region: 'all',
-      skills: ['Bricklaying', 'Concrete Work', 'Plastering', 'Tile Installation'],
+      skills: [
+        'Bricklaying',
+        'Concrete Work',
+        'Plastering',
+        'Tile Installation',
+      ],
       requirements: ['Physical Fitness', 'Construction Experience'],
       growthRate: 18.7,
-      topRegions: ['Greater Accra', 'Ashanti', 'Eastern']
+      topRegions: ['Greater Accra', 'Ashanti', 'Eastern'],
     },
     {
       id: 3,
@@ -127,10 +137,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 60,
       demandLevel: 'high',
       region: 'all',
-      skills: ['Pipe Installation', 'Water Heater Setup', 'Drainage Systems', 'Leak Repair'],
+      skills: [
+        'Pipe Installation',
+        'Water Heater Setup',
+        'Drainage Systems',
+        'Leak Repair',
+      ],
       requirements: ['Licensed Plumber', 'Tools & Equipment'],
       growthRate: 31.2,
-      topRegions: ['Greater Accra', 'Ashanti', 'Central']
+      topRegions: ['Greater Accra', 'Ashanti', 'Central'],
     },
     {
       id: 4,
@@ -144,10 +159,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 70,
       demandLevel: 'very_high',
       region: 'all',
-      skills: ['House Wiring', 'Appliance Repair', 'Solar Installation', 'Electrical Safety'],
+      skills: [
+        'House Wiring',
+        'Appliance Repair',
+        'Solar Installation',
+        'Electrical Safety',
+      ],
       requirements: ['Electrical License', 'Safety Certification'],
       growthRate: 42.3,
-      topRegions: ['Greater Accra', 'Ashanti', 'Northern']
+      topRegions: ['Greater Accra', 'Ashanti', 'Northern'],
     },
     {
       id: 5,
@@ -161,10 +181,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 35,
       demandLevel: 'medium',
       region: 'all',
-      skills: ['Kente Weaving', 'Garment Making', 'Alterations', 'Fashion Design'],
+      skills: [
+        'Kente Weaving',
+        'Garment Making',
+        'Alterations',
+        'Fashion Design',
+      ],
       requirements: ['Sewing Skills', 'Fashion Training'],
       growthRate: 15.8,
-      topRegions: ['Greater Accra', 'Ashanti', 'Volta']
+      topRegions: ['Greater Accra', 'Ashanti', 'Volta'],
     },
     {
       id: 6,
@@ -181,7 +206,7 @@ const GhanaJobCategoriesManagement = () => {
       skills: ['Engine Repair', 'Auto Diagnosis', 'Brake Systems', 'AC Repair'],
       requirements: ['Mechanical Training', 'Diagnostic Tools'],
       growthRate: 12.4,
-      topRegions: ['Greater Accra', 'Ashanti', 'Western']
+      topRegions: ['Greater Accra', 'Ashanti', 'Western'],
     },
     {
       id: 7,
@@ -198,7 +223,7 @@ const GhanaJobCategoriesManagement = () => {
       skills: ['Crop Farming', 'Livestock Care', 'Irrigation', 'Pest Control'],
       requirements: ['Agricultural Knowledge', 'Physical Stamina'],
       growthRate: 8.9,
-      topRegions: ['Northern', 'Upper East', 'Brong Ahafo']
+      topRegions: ['Northern', 'Upper East', 'Brong Ahafo'],
     },
     {
       id: 8,
@@ -212,10 +237,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 25,
       demandLevel: 'high',
       region: 'all',
-      skills: ['Security Training', 'Surveillance', 'Crowd Control', 'Emergency Response'],
+      skills: [
+        'Security Training',
+        'Surveillance',
+        'Crowd Control',
+        'Emergency Response',
+      ],
       requirements: ['Security License', 'Background Check'],
       growthRate: 19.6,
-      topRegions: ['Greater Accra', 'Ashanti', 'Western']
+      topRegions: ['Greater Accra', 'Ashanti', 'Western'],
     },
     {
       id: 9,
@@ -229,10 +259,15 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 20,
       demandLevel: 'very_high',
       region: 'all',
-      skills: ['Deep Cleaning', 'Carpet Cleaning', 'Window Cleaning', 'Sanitization'],
+      skills: [
+        'Deep Cleaning',
+        'Carpet Cleaning',
+        'Window Cleaning',
+        'Sanitization',
+      ],
       requirements: ['Cleaning Supplies', 'Reliability'],
       growthRate: 34.7,
-      topRegions: ['Greater Accra', 'Ashanti', 'Central']
+      topRegions: ['Greater Accra', 'Ashanti', 'Central'],
     },
     {
       id: 10,
@@ -246,11 +281,16 @@ const GhanaJobCategoriesManagement = () => {
       averageRate: 40,
       demandLevel: 'high',
       region: 'all',
-      skills: ['Local Cuisine', 'Event Catering', 'Food Safety', 'Menu Planning'],
+      skills: [
+        'Local Cuisine',
+        'Event Catering',
+        'Food Safety',
+        'Menu Planning',
+      ],
       requirements: ['Food Handler Permit', 'Cooking Experience'],
       growthRate: 25.3,
-      topRegions: ['Greater Accra', 'Ashanti', 'Central']
-    }
+      topRegions: ['Greater Accra', 'Ashanti', 'Central'],
+    },
   ];
 
   useEffect(() => {
@@ -278,7 +318,7 @@ const GhanaJobCategoriesManagement = () => {
         skills: [],
         averageRate: 0,
         demandLevel: 'medium',
-        region: 'all'
+        region: 'all',
       });
     }
     setOpenDialog(true);
@@ -297,27 +337,31 @@ const GhanaJobCategoriesManagement = () => {
         totalWorkers: Math.floor(Math.random() * 5000) + 500,
         activeJobs: Math.floor(Math.random() * 300) + 50,
         growthRate: Math.floor(Math.random() * 40) + 5,
-        topRegions: ['Greater Accra', 'Ashanti']
+        topRegions: ['Greater Accra', 'Ashanti'],
       };
       setCategories([...categories, newCategory]);
     } else if (dialogMode === 'edit') {
-      setCategories(categories.map(cat => 
-        cat.id === editingCategory.id ? { ...formData } : cat
-      ));
+      setCategories(
+        categories.map((cat) =>
+          cat.id === editingCategory.id ? { ...formData } : cat,
+        ),
+      );
     }
     handleCloseDialog();
   };
 
   const handleDeleteCategory = (categoryId) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter(cat => cat.id !== categoryId));
+      setCategories(categories.filter((cat) => cat.id !== categoryId));
     }
   };
 
   const handleToggleStatus = (categoryId) => {
-    setCategories(categories.map(cat =>
-      cat.id === categoryId ? { ...cat, isActive: !cat.isActive } : cat
-    ));
+    setCategories(
+      categories.map((cat) =>
+        cat.id === categoryId ? { ...cat, isActive: !cat.isActive } : cat,
+      ),
+    );
   };
 
   const getIconComponent = (iconName) => {
@@ -343,7 +387,7 @@ const GhanaJobCategoriesManagement = () => {
       low: 'error',
       medium: 'warning',
       high: 'info',
-      very_high: 'success'
+      very_high: 'success',
     };
     return colorMap[level] || 'default';
   };
@@ -353,7 +397,7 @@ const GhanaJobCategoriesManagement = () => {
       low: 'Low Demand',
       medium: 'Medium Demand',
       high: 'High Demand',
-      very_high: 'Very High Demand'
+      very_high: 'Very High Demand',
     };
     return textMap[level] || 'Unknown';
   };
@@ -365,7 +409,9 @@ const GhanaJobCategoriesManagement = () => {
           🇬🇭 Ghana Job Categories Management
         </Typography>
         <LinearProgress sx={{ mt: 2 }} />
-        <Typography sx={{ mt: 2 }}>Loading Ghana vocational categories...</Typography>
+        <Typography sx={{ mt: 2 }}>
+          Loading Ghana vocational categories...
+        </Typography>
       </Box>
     );
   }
@@ -373,8 +419,18 @@ const GhanaJobCategoriesManagement = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           🇬🇭 Ghana Job Categories Management
         </Typography>
         <Button
@@ -419,7 +475,9 @@ const GhanaJobCategoriesManagement = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6">
-                    {categories.reduce((sum, cat) => sum + cat.totalWorkers, 0).toLocaleString()}
+                    {categories
+                      .reduce((sum, cat) => sum + cat.totalWorkers, 0)
+                      .toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Total Workers
@@ -438,7 +496,9 @@ const GhanaJobCategoriesManagement = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6">
-                    {categories.reduce((sum, cat) => sum + cat.activeJobs, 0).toLocaleString()}
+                    {categories
+                      .reduce((sum, cat) => sum + cat.activeJobs, 0)
+                      .toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Active Jobs
@@ -457,7 +517,11 @@ const GhanaJobCategoriesManagement = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h6">
-                    {(categories.reduce((sum, cat) => sum + cat.growthRate, 0) / categories.length).toFixed(1)}%
+                    {(
+                      categories.reduce((sum, cat) => sum + cat.growthRate, 0) /
+                      categories.length
+                    ).toFixed(1)}
+                    %
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Avg Growth Rate
@@ -471,7 +535,7 @@ const GhanaJobCategoriesManagement = () => {
 
       {/* Categories Table */}
       <Card>
-        <CardHeader 
+        <CardHeader
           title="Job Categories"
           subheader="Manage vocational job categories for Ghana's skilled workers"
         />
@@ -494,8 +558,16 @@ const GhanaJobCategoriesManagement = () => {
                 {categories.map((category) => (
                   <TableRow key={category.id}>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: category.color, width: 40, height: 40 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                      >
+                        <Avatar
+                          sx={{
+                            bgcolor: category.color,
+                            width: 40,
+                            height: 40,
+                          }}
+                        >
                           {getIconComponent(category.icon)}
                         </Avatar>
                         <Box>
@@ -509,7 +581,9 @@ const GhanaJobCategoriesManagement = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         <Typography variant="body2" fontWeight={600}>
                           {category.totalWorkers.toLocaleString()}
                         </Typography>
@@ -522,19 +596,25 @@ const GhanaJobCategoriesManagement = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600} color="primary">
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        color="primary"
+                      >
                         GHS {category.averageRate}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip 
+                      <Chip
                         label={getDemandLevelText(category.demandLevel)}
                         color={getDemandLevelColor(category.demandLevel)}
                         size="small"
                       />
                     </TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                      >
                         <TrendingUpIcon fontSize="small" color="success" />
                         <Typography variant="body2" color="success.main">
                           +{category.growthRate}%
@@ -551,15 +631,15 @@ const GhanaJobCategoriesManagement = () => {
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         <Tooltip title="View Details">
-                          <IconButton 
-                            size="small" 
+                          <IconButton
+                            size="small"
                             onClick={() => handleOpenDialog('view', category)}
                           >
                             <ViewIcon />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Edit Category">
-                          <IconButton 
+                          <IconButton
                             size="small"
                             onClick={() => handleOpenDialog('edit', category)}
                           >
@@ -567,7 +647,7 @@ const GhanaJobCategoriesManagement = () => {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Delete Category">
-                          <IconButton 
+                          <IconButton
                             size="small"
                             onClick={() => handleDeleteCategory(category.id)}
                             color="error"
@@ -586,8 +666,8 @@ const GhanaJobCategoriesManagement = () => {
       </Card>
 
       {/* Category Dialog */}
-      <Dialog 
-        open={openDialog} 
+      <Dialog
+        open={openDialog}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
@@ -604,7 +684,9 @@ const GhanaJobCategoriesManagement = () => {
                 fullWidth
                 label="Category Name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 disabled={dialogMode === 'view'}
               />
             </Grid>
@@ -614,7 +696,9 @@ const GhanaJobCategoriesManagement = () => {
                 <Select
                   value={formData.icon}
                   label="Icon"
-                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, icon: e.target.value })
+                  }
                   disabled={dialogMode === 'view'}
                 >
                   <MenuItem value="build">🔨 Build</MenuItem>
@@ -637,7 +721,9 @@ const GhanaJobCategoriesManagement = () => {
                 multiline
                 rows={3}
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 disabled={dialogMode === 'view'}
               />
             </Grid>
@@ -647,7 +733,9 @@ const GhanaJobCategoriesManagement = () => {
                 <Select
                   value={formData.demandLevel}
                   label="Demand Level"
-                  onChange={(e) => setFormData({ ...formData, demandLevel: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, demandLevel: e.target.value })
+                  }
                   disabled={dialogMode === 'view'}
                 >
                   <MenuItem value="low">Low Demand</MenuItem>
@@ -663,7 +751,12 @@ const GhanaJobCategoriesManagement = () => {
                 label="Average Rate (GHS/hour)"
                 type="number"
                 value={formData.averageRate}
-                onChange={(e) => setFormData({ ...formData, averageRate: Number(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    averageRate: Number(e.target.value),
+                  })
+                }
                 disabled={dialogMode === 'view'}
               />
             </Grid>
@@ -672,19 +765,23 @@ const GhanaJobCategoriesManagement = () => {
                 control={
                   <Switch
                     checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isActive: e.target.checked })
+                    }
                     disabled={dialogMode === 'view'}
                   />
                 }
                 label="Active Category"
               />
             </Grid>
-            
+
             {dialogMode === 'view' && editingCategory && (
               <>
                 <Grid item xs={12}>
                   <Divider sx={{ my: 2 }} />
-                  <Typography variant="h6" gutterBottom>Category Statistics</Typography>
+                  <Typography variant="h6" gutterBottom>
+                    Category Statistics
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Card variant="outlined">
@@ -717,7 +814,9 @@ const GhanaJobCategoriesManagement = () => {
                   </Card>
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2" gutterBottom>Top Skills:</Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Top Skills:
+                  </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {editingCategory.skills?.map((skill, index) => (
                       <Chip key={index} label={skill} size="small" />
@@ -725,10 +824,17 @@ const GhanaJobCategoriesManagement = () => {
                   </Box>
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2" gutterBottom>Top Regions:</Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Top Regions:
+                  </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {editingCategory.topRegions?.map((region, index) => (
-                      <Chip key={index} label={region} size="small" color="primary" />
+                      <Chip
+                        key={index}
+                        label={region}
+                        size="small"
+                        color="primary"
+                      />
                     ))}
                   </Box>
                 </Grid>
@@ -741,8 +847,8 @@ const GhanaJobCategoriesManagement = () => {
             {dialogMode === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {dialogMode !== 'view' && (
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleSaveCategory}
               sx={{
                 background: 'linear-gradient(45deg, #FFD700, #DAA520)',

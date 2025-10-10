@@ -40,7 +40,8 @@ const computeApiBase = async () => {
   const envUrl = import.meta.env.VITE_API_URL;
   const isProduction = import.meta.env.PROD;
   const isBrowser = typeof window !== 'undefined';
-  const isHttpsPage = isBrowser && window.location && window.location.protocol === 'https:';
+  const isHttpsPage =
+    isBrowser && window.location && window.location.protocol === 'https:';
   const isVercel = isBrowser && window.location.hostname.includes('vercel.app');
 
   // Load runtime config for dynamic LocalTunnel URL (replaces ngrok)
@@ -49,11 +50,15 @@ const computeApiBase = async () => {
 
   // For Vercel deployments, use LocalTunnel URL from runtime config
   if (isVercel) {
-    console.log('🔗 Vercel deployment detected, using LocalTunnel URL from runtime config');
+    console.log(
+      '🔗 Vercel deployment detected, using LocalTunnel URL from runtime config',
+    );
     if (localtunnelUrl) {
       return localtunnelUrl;
     }
-    console.warn('⚠️ No LocalTunnel URL in runtime config, falling back to /api');
+    console.warn(
+      '⚠️ No LocalTunnel URL in runtime config, falling back to /api',
+    );
     return '/api';
   }
 
@@ -62,7 +67,9 @@ const computeApiBase = async () => {
     if (localtunnelUrl) {
       return localtunnelUrl;
     }
-    console.warn('⚠️ No LocalTunnel URL in runtime config, falling back to /api');
+    console.warn(
+      '⚠️ No LocalTunnel URL in runtime config, falling back to /api',
+    );
     return '/api';
   }
 
@@ -70,14 +77,18 @@ const computeApiBase = async () => {
   if (envUrl) {
     // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
     if (isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn('⚠️ Rejecting http URL on https page, using relative /api for LocalTunnel routing');
+      console.warn(
+        '⚠️ Rejecting http URL on https page, using relative /api for LocalTunnel routing',
+      );
       return '/api';
     }
     return envUrl;
   }
-  
+
   // No environment URL set - use relative /api to trigger Vercel rewrites to LocalTunnel
-  console.log('🔗 No VITE_API_URL set, using /api for Vercel→LocalTunnel routing');
+  console.log(
+    '🔗 No VITE_API_URL set, using /api for Vercel→LocalTunnel routing',
+  );
   return '/api';
 };
 
@@ -171,7 +182,11 @@ export const UI_CONFIG = {
 import { getWebSocketUrlSync } from './dynamicConfig';
 
 export const WS_CONFIG = {
-  url: import.meta.env.VITE_WS_URL || import.meta.env.VITE_MESSAGING_SERVICE_URL || getWebSocketUrlSync() || '/socket.io',
+  url:
+    import.meta.env.VITE_WS_URL ||
+    import.meta.env.VITE_MESSAGING_SERVICE_URL ||
+    getWebSocketUrlSync() ||
+    '/socket.io',
   reconnectionAttempts: parseInt(
     import.meta.env.VITE_WS_RECONNECTION_ATTEMPTS || '5',
   ),
@@ -267,10 +282,7 @@ export const API_ENDPOINTS = {
   // Messaging Service Endpoints
   MESSAGING: {
     BASE: buildEndpoint(SERVICES.MESSAGING_SERVICE, ''),
-    CONVERSATIONS: buildEndpoint(
-      SERVICES.MESSAGING_SERVICE,
-      '/conversations',
-    ),
+    CONVERSATIONS: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/conversations'),
     MESSAGES: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/messages'),
     SEND: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/messages'),
     UPLOAD: buildEndpoint(SERVICES.MESSAGING_SERVICE, '/attachments/upload'),
@@ -281,7 +293,10 @@ export const API_ENDPOINTS = {
     BASE: buildEndpoint(SERVICES.PAYMENT_SERVICE, ''),
     METHODS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/methods'),
     PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions'),
-    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions/history'),
+    HISTORY: buildEndpoint(
+      SERVICES.PAYMENT_SERVICE,
+      '/payments/transactions/history',
+    ),
     WALLET: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/wallet'),
     ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrows'),
   },

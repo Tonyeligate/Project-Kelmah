@@ -28,7 +28,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 /**
  * Unified JobCard Component
  * Consolidates common and listing JobCard functionality into single reusable component
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.job - Job data object
  * @param {Function} props.onViewDetails - Callback for view details action
@@ -39,16 +39,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
  * @param {boolean} props.features.showFullDescription - Show full vs truncated description
  * @param {string} props.variant - Visual variant ('default' | 'compact' | 'detailed')
  */
-const JobCard = ({ 
-  job, 
-  onViewDetails, 
+const JobCard = ({
+  job,
+  onViewDetails,
   features = {
     showSaveButton: true,
-    showNavigation: true, 
+    showNavigation: true,
     showHirerInfo: true,
-    showFullDescription: false
+    showFullDescription: false,
   },
-  variant = 'default'
+  variant = 'default',
 }) => {
   if (!job) return null;
 
@@ -60,8 +60,12 @@ const JobCard = ({
 
   // Redux state (only imported if save functionality enabled)
   const dispatch = features.showSaveButton ? useDispatch() : null;
-  const savedJobs = features.showSaveButton ? useSelector(state => state.jobs?.savedJobs || []) : [];
-  const savedLoading = features.showSaveButton ? useSelector(state => state.jobs?.savedLoading) : false;
+  const savedJobs = features.showSaveButton
+    ? useSelector((state) => state.jobs?.savedJobs || [])
+    : [];
+  const savedLoading = features.showSaveButton
+    ? useSelector((state) => state.jobs?.savedLoading)
+    : false;
 
   const {
     id,
@@ -81,22 +85,29 @@ const JobCard = ({
   } = job;
 
   // Check if job is saved
-  const isSaved = features.showSaveButton ? savedJobs.some(savedJob => 
-    savedJob.job === id || savedJob.jobId === id || savedJob.id === id
-  ) : false;
+  const isSaved = features.showSaveButton
+    ? savedJobs.some(
+        (savedJob) =>
+          savedJob.job === id || savedJob.jobId === id || savedJob.id === id,
+      )
+    : false;
 
   // Handle save/unsave job
   const handleSaveToggle = async (e) => {
     e.stopPropagation();
     if (!features.showSaveButton || !dispatch) return;
-    
+
     try {
       if (isSaved) {
         // Import dynamically to avoid loading Redux actions when not needed
-        const { unsaveJobFromServer } = await import('../../../jobs/services/jobSlice');
+        const { unsaveJobFromServer } = await import(
+          '../../../jobs/services/jobSlice'
+        );
         await dispatch(unsaveJobFromServer(id));
       } else {
-        const { saveJobToServer } = await import('../../../jobs/services/jobSlice');
+        const { saveJobToServer } = await import(
+          '../../../jobs/services/jobSlice'
+        );
         await dispatch(saveJobToServer(id));
       }
     } catch (error) {
@@ -128,7 +139,7 @@ const JobCard = ({
     const posted = new Date(date);
     const diff = now - posted;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) return 'Today';
     if (days === 1) return '1 day ago';
     return `${days} days ago`;
@@ -137,11 +148,12 @@ const JobCard = ({
   // Truncate description based on variant
   const getDescription = () => {
     if (!description) return '';
-    if (features.showFullDescription || variant === 'detailed') return description;
-    
+    if (features.showFullDescription || variant === 'detailed')
+      return description;
+
     const limit = variant === 'compact' ? 100 : 150;
-    return description.length > limit 
-      ? `${description.substring(0, limit)}...` 
+    return description.length > limit
+      ? `${description.substring(0, limit)}...`
       : description;
   };
 
@@ -153,16 +165,18 @@ const JobCard = ({
       boxShadow: 2,
       transition: 'all 0.3s ease',
       cursor: features.showNavigation ? 'pointer' : 'default',
-      '&:hover': features.showNavigation ? {
-        boxShadow: 4,
-        transform: 'translateY(-2px)',
-      } : {},
+      '&:hover': features.showNavigation
+        ? {
+            boxShadow: 4,
+            transform: 'translateY(-2px)',
+          }
+        : {},
     };
 
     if (variant === 'compact') {
       return { ...baseSx, mb: 1 };
     }
-    
+
     return baseSx;
   };
 
@@ -170,9 +184,16 @@ const JobCard = ({
     <Card sx={getCardSx()} onClick={handleCardClick}>
       <CardContent sx={{ pb: variant === 'compact' ? 1 : 2 }}>
         {/* Header with title and category */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Typography 
-            variant={variant === 'compact' ? 'subtitle1' : 'h6'} 
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 1,
+          }}
+        >
+          <Typography
+            variant={variant === 'compact' ? 'subtitle1' : 'h6'}
             component="div"
             sx={{ flexGrow: 1, mr: 1 }}
           >
@@ -209,7 +230,11 @@ const JobCard = ({
         )}
 
         {/* Budget and Location */}
-        <Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ mb: 2 }}>
+        <Stack
+          direction={isMobile ? 'column' : 'row'}
+          spacing={2}
+          sx={{ mb: 2 }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <AttachMoney fontSize="small" color="primary" />
             <Typography variant="body2" fontWeight="medium">
@@ -254,8 +279,8 @@ const JobCard = ({
           <>
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Avatar 
-                src={hirerAvatar} 
+              <Avatar
+                src={hirerAvatar}
                 alt={hirerName}
                 sx={{ width: 32, height: 32 }}
               >
@@ -279,32 +304,29 @@ const JobCard = ({
         )}
 
         {/* Footer with time and applications */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          mt: variant === 'compact' ? 1 : 2 
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mt: variant === 'compact' ? 1 : 2,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <AccessTime fontSize="small" color="action" />
             <Typography variant="caption" color="text.secondary">
               {formatTimeAgo(postedDate)}
             </Typography>
           </Box>
-          
+
           {applications > 0 && (
             <Typography variant="caption" color="text.secondary">
               {applications} application{applications !== 1 ? 's' : ''}
             </Typography>
           )}
-          
+
           {urgency === 'high' && (
-            <Chip
-              label="Urgent"
-              size="small"
-              color="error"
-              variant="filled"
-            />
+            <Chip label="Urgent" size="small" color="error" variant="filled" />
           )}
         </Box>
       </CardContent>

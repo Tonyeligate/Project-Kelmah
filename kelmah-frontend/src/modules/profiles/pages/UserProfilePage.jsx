@@ -63,12 +63,12 @@ function UserProfilePage() {
     try {
       const [list, rating] = await Promise.all([
         reviewsApi.getWorkerReviews(userId, { status: 'approved', limit: 10 }),
-        reviewsApi.getWorkerRating(userId)
+        reviewsApi.getWorkerRating(userId),
       ]);
       setReviews(list.reviews || []);
       setRatings({
         average_rating: rating?.averageRating || 0,
-        total_ratings: rating?.totalReviews || 0
+        total_ratings: rating?.totalReviews || 0,
       });
     } catch (error) {
       console.error('Error fetching reviews:', error);

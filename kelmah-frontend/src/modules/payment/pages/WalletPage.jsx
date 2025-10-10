@@ -20,7 +20,7 @@ import TransactionsList from '../components/TransactionsList';
 // Add currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: "GHS",
+  currency: 'GHS',
 });
 
 const WalletPage = () => {
@@ -33,11 +33,12 @@ const WalletPage = () => {
   // Pagination state (moved above applyFilters so setPage is defined before use)
   const [page, setPage] = useState(1);
   const perPage = 5;
-  const pageCount = Math.ceil((Array.isArray(transactions) ? transactions.length : 0) / perPage);
-  const pagedTransactions = Array.isArray(transactions) ? transactions.slice(
-    (page - 1) * perPage,
-    page * perPage,
-  ) : [];
+  const pageCount = Math.ceil(
+    (Array.isArray(transactions) ? transactions.length : 0) / perPage,
+  );
+  const pagedTransactions = Array.isArray(transactions)
+    ? transactions.slice((page - 1) * perPage, page * perPage)
+    : [];
   const applyFilters = () => {
     const params = {};
     if (startDate) params.startDate = startDate;

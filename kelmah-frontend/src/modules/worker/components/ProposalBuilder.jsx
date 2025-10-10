@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, TextField, Button, Stack } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  Stack,
+} from '@mui/material';
 
 const ProposalBuilder = ({ onSubmit }) => {
   const [title, setTitle] = useState('');
@@ -12,13 +19,35 @@ const ProposalBuilder = ({ onSubmit }) => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>Proposal Builder</Typography>
+      <Typography variant="h5" gutterBottom>
+        Proposal Builder
+      </Typography>
       <Paper sx={{ p: 2 }}>
         <Stack spacing={2}>
-          <TextField label="Proposal Title" fullWidth value={title} onChange={(e) => setTitle(e.target.value)} />
-          <TextField label="Cover Letter" fullWidth multiline minRows={6} value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} />
-          <TextField label="Proposed Rate (GHS)" type="number" fullWidth value={rate} onChange={(e) => setRate(e.target.value)} />
-          <Button variant="contained" onClick={handleSubmit}>Submit Proposal</Button>
+          <TextField
+            label="Proposal Title"
+            fullWidth
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <TextField
+            label="Cover Letter"
+            fullWidth
+            multiline
+            minRows={6}
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+          />
+          <TextField
+            label="Proposed Rate (GHS)"
+            type="number"
+            fullWidth
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
+          />
+          <Button variant="contained" onClick={handleSubmit}>
+            Submit Proposal
+          </Button>
         </Stack>
       </Paper>
     </Box>
@@ -26,7 +55,3 @@ const ProposalBuilder = ({ onSubmit }) => {
 };
 
 export default ProposalBuilder;
-
-
-
-

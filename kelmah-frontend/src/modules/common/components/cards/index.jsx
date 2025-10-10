@@ -10,54 +10,54 @@ export { default as UserCard } from './UserCard';
 import JobCard from './JobCard';
 
 export const CompactJobCard = (props) => (
-  <JobCard 
-    {...props} 
-    variant="compact" 
+  <JobCard
+    {...props}
+    variant="compact"
     features={{
       showSaveButton: false,
       showNavigation: true,
       showHirerInfo: false,
-      showFullDescription: false
-    }} 
+      showFullDescription: false,
+    }}
   />
 );
 
 export const DetailedJobCard = (props) => (
-  <JobCard 
-    {...props} 
+  <JobCard
+    {...props}
     variant="detailed"
     features={{
       showSaveButton: true,
       showNavigation: true,
       showHirerInfo: true,
-      showFullDescription: false
-    }} 
+      showFullDescription: false,
+    }}
   />
 );
 
 export const ListingJobCard = (props) => (
-  <JobCard 
-    {...props} 
+  <JobCard
+    {...props}
     variant="default"
     features={{
       showSaveButton: false,
       showNavigation: true,
       showHirerInfo: true,
-      showFullDescription: false
-    }} 
+      showFullDescription: false,
+    }}
   />
 );
 
 export const InteractiveJobCard = (props) => (
-  <JobCard 
-    {...props} 
+  <JobCard
+    {...props}
     variant="default"
     features={{
       showSaveButton: true,
       showNavigation: true,
       showHirerInfo: true,
-      showFullDescription: false
-    }} 
+      showFullDescription: false,
+    }}
   />
 );
 
@@ -75,7 +75,7 @@ export const CompactUserCard = (props) => (
       showRating: false,
       showStatus: true,
       showActions: false,
-      clickable: true
+      clickable: true,
     }}
   />
 );
@@ -91,7 +91,7 @@ export const DetailedUserCard = (props) => (
       showRating: true,
       showStatus: true,
       showActions: true,
-      clickable: true
+      clickable: true,
     }}
   />
 );
@@ -107,7 +107,7 @@ export const WorkerCard = (props) => (
       showRating: true,
       showStatus: true,
       showActions: false,
-      clickable: true
+      clickable: true,
     }}
   />
 );

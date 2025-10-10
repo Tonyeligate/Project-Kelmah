@@ -206,7 +206,7 @@ const HirerJobManagement = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: "GHS",
+      currency: 'GHS',
       minimumFractionDigits: 0,
     }).format(amount);
   };

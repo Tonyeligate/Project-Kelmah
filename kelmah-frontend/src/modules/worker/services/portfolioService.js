@@ -12,7 +12,10 @@ const portfolioService = {
    * @returns {Promise<Object>} - Response with portfolio items
    */
   getWorkerPortfolio: async (workerId, params = {}) => {
-    const response = await userServiceClient.get(`/api/profile/workers/${workerId}/portfolio`, { params });
+    const response = await userServiceClient.get(
+      `/api/profile/workers/${workerId}/portfolio`,
+      { params },
+    );
     return response.data?.data || response.data;
   },
 
@@ -22,7 +25,10 @@ const portfolioService = {
    * @returns {Promise<Object>} - Created portfolio item
    */
   createPortfolioItem: async (portfolioData) => {
-    const response = await userServiceClient.post(`/api/profile/portfolio`, portfolioData);
+    const response = await userServiceClient.post(
+      `/api/profile/portfolio`,
+      portfolioData,
+    );
     return response.data?.data || response.data;
   },
 
@@ -33,7 +39,10 @@ const portfolioService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   updatePortfolioItem: async (itemId, portfolioData) => {
-    const response = await userServiceClient.put(`/api/profile/portfolio/${itemId}`, portfolioData);
+    const response = await userServiceClient.put(
+      `/api/profile/portfolio/${itemId}`,
+      portfolioData,
+    );
     return response.data?.data || response.data;
   },
 
@@ -43,7 +52,9 @@ const portfolioService = {
    * @returns {Promise<Object>} - Deletion confirmation
    */
   deletePortfolioItem: async (itemId) => {
-    const response = await userServiceClient.delete(`/api/profile/portfolio/${itemId}`);
+    const response = await userServiceClient.delete(
+      `/api/profile/portfolio/${itemId}`,
+    );
     return response.data?.data || response.data;
   },
 
@@ -53,11 +64,14 @@ const portfolioService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadPortfolioImage: async (file) => {
-    const response = await userServiceClient.post('/api/profile/uploads/presign', {
-      folder: 'portfolio',
-      filename: file.name,
-      contentType: file.type,
-    });
+    const response = await userServiceClient.post(
+      '/api/profile/uploads/presign',
+      {
+        folder: 'portfolio',
+        filename: file.name,
+        contentType: file.type,
+      },
+    );
     return response.data?.data || response.data;
   },
 
@@ -67,7 +81,9 @@ const portfolioService = {
    * @returns {Promise<Object>} - Portfolio statistics
    */
   getPortfolioStats: async (workerId) => {
-    const response = await userServiceClient.get(`/api/profile/workers/${workerId}/portfolio/stats`);
+    const response = await userServiceClient.get(
+      `/api/profile/workers/${workerId}/portfolio/stats`,
+    );
     return response.data?.data || response.data;
   },
 
@@ -78,7 +94,10 @@ const portfolioService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   toggleFeatured: async (itemId, featured) => {
-    const response = await userServiceClient.patch(`/api/profile/portfolio/${itemId}`, { featured });
+    const response = await userServiceClient.patch(
+      `/api/profile/portfolio/${itemId}`,
+      { featured },
+    );
     return response.data?.data || response.data;
   },
 
@@ -88,7 +107,9 @@ const portfolioService = {
    * @returns {Promise<Object>} - Shareable link data
    */
   sharePortfolioItem: async (itemId) => {
-    const response = await userServiceClient.post(`/api/profile/portfolio/${itemId}/share`);
+    const response = await userServiceClient.post(
+      `/api/profile/portfolio/${itemId}/share`,
+    );
     return response.data?.data || response.data;
   },
 
@@ -99,9 +120,12 @@ const portfolioService = {
    * @returns {Promise<Object>} - Filtered portfolio items
    */
   searchPortfolio: async (workerId, filters = {}) => {
-    const response = await userServiceClient.get(`/api/profile/portfolio/search`, { params: { ...filters, workerId } });
+    const response = await userServiceClient.get(
+      `/api/profile/portfolio/search`,
+      { params: { ...filters, workerId } },
+    );
     return response.data?.data || response.data;
-  }
+  },
 };
 
 export default portfolioService;

@@ -50,13 +50,17 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import { formatCurrency, formatDate, formatRelativeTime } from '../../../utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatRelativeTime,
+} from '../../../utils/formatters';
 
-const SmartJobRecommendations = ({ 
-  maxRecommendations = 6, 
-  showHeader = true, 
+const SmartJobRecommendations = ({
+  maxRecommendations = 6,
+  showHeader = true,
   onJobSelect = null,
-  filterCriteria = {}
+  filterCriteria = {},
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -75,42 +79,47 @@ const SmartJobRecommendations = ({
   const [aiInsights, setAiInsights] = useState(null);
 
   // Load recommendations
-  const loadRecommendations = useCallback(async (refresh = false) => {
-    try {
-      if (refresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-      
-      // If no authenticated user, skip personalized recommendations gracefully
-      if (!user || !user.id) {
-        setRecommendations([]);
-        setAiInsights(null);
-        setError(null);
-        return;
-      }
-
-      const response = await searchService.getSmartJobRecommendations(
-        user.id,
-        {
-          limit: maxRecommendations,
-          ...filterCriteria,
+  const loadRecommendations = useCallback(
+    async (refresh = false) => {
+      try {
+        if (refresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
         }
-      );
-      
-      setRecommendations(response.data.jobs || []);
-      setAiInsights(response.data.insights || null);
-      setSavedJobs(new Set(response.data.savedJobIds || []));
-      setError(null);
-    } catch (err) {
-      setError('Failed to load job recommendations');
-      enqueueSnackbar('Failed to load smart recommendations', { variant: 'error' });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user?.id, maxRecommendations, filterCriteria, enqueueSnackbar]);
+
+        // If no authenticated user, skip personalized recommendations gracefully
+        if (!user || !user.id) {
+          setRecommendations([]);
+          setAiInsights(null);
+          setError(null);
+          return;
+        }
+
+        const response = await searchService.getSmartJobRecommendations(
+          user.id,
+          {
+            limit: maxRecommendations,
+            ...filterCriteria,
+          },
+        );
+
+        setRecommendations(response.data.jobs || []);
+        setAiInsights(response.data.insights || null);
+        setSavedJobs(new Set(response.data.savedJobIds || []));
+        setError(null);
+      } catch (err) {
+        setError('Failed to load job recommendations');
+        enqueueSnackbar('Failed to load smart recommendations', {
+          variant: 'error',
+        });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [user?.id, maxRecommendations, filterCriteria, enqueueSnackbar],
+  );
 
   useEffect(() => {
     // Load only when user is available; otherwise show empty state without errors
@@ -131,8 +140,10 @@ const SmartJobRecommendations = ({
     }
 
     try {
-      const isSaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
-      
+      const isSaved = savedJobs.some(
+        (saved) => saved.id === jobId || saved._id === jobId,
+      );
+
       if (isSaved) {
         await dispatch(unsaveJobFromServer(jobId));
         enqueueSnackbar('Job removed from saved list', { variant: 'success' });
@@ -158,7 +169,9 @@ const SmartJobRecommendations = ({
       // Navigate to job application page
       window.location.href = `/jobs/${jobId}/apply`;
     } catch (error) {
-      enqueueSnackbar('Failed to process job application', { variant: 'error' });
+      enqueueSnackbar('Failed to process job application', {
+        variant: 'error',
+      });
     }
   };
 
@@ -189,7 +202,7 @@ const SmartJobRecommendations = ({
     const indicators = {
       high: { color: 'error', label: 'Urgent', icon: '🔥' },
       medium: { color: 'warning', label: 'Soon', icon: '⏰' },
-      low: { color: 'info', label: 'Flexible', icon: '📅' }
+      low: { color: 'info', label: 'Flexible', icon: '📅' },
     };
     return indicators[urgency] || indicators.low;
   };
@@ -199,12 +212,12 @@ const SmartJobRecommendations = ({
     if (!aiInsights || !showHeader) return null;
 
     return (
-      <Paper 
-        sx={{ 
-          p: 2, 
-          mb: 3, 
+      <Paper
+        sx={{
+          p: 2,
+          mb: 3,
           background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         }}
       >
         <Box display="flex" alignItems="center" gap={2} mb={2}>
@@ -220,7 +233,7 @@ const SmartJobRecommendations = ({
           <Typography variant="h6" color="primary">
             AI Insights
           </Typography>
-          <Chip 
+          <Chip
             icon={<MagicIcon />}
             label="Powered by AI"
             size="small"
@@ -228,11 +241,11 @@ const SmartJobRecommendations = ({
             variant="outlined"
           />
         </Box>
-        
+
         <Typography variant="body2" paragraph>
           {aiInsights.summary}
         </Typography>
-        
+
         <Stack direction="row" spacing={1} flexWrap="wrap">
           {aiInsights.tags?.map((tag, index) => (
             <Chip
@@ -252,7 +265,9 @@ const SmartJobRecommendations = ({
   const renderJobCard = (job) => {
     const matchColor = getMatchScoreColor(job.matchScore);
     const urgency = getUrgencyIndicator(job.urgency);
-    const isSaved = savedJobs.some(saved => saved.id === job.id || saved._id === job.id);
+    const isSaved = savedJobs.some(
+      (saved) => saved.id === job.id || saved._id === job.id,
+    );
 
     return (
       <Card
@@ -267,8 +282,12 @@ const SmartJobRecommendations = ({
             transform: 'translateY(-4px)',
             boxShadow: theme.shadows[8],
           },
-          border: job.featured ? `2px solid ${theme.palette.primary.main}` : '1px solid',
-          borderColor: job.featured ? theme.palette.primary.main : theme.palette.divider,
+          border: job.featured
+            ? `2px solid ${theme.palette.primary.main}`
+            : '1px solid',
+          borderColor: job.featured
+            ? theme.palette.primary.main
+            : theme.palette.divider,
         }}
       >
         {/* Featured badge */}
@@ -330,19 +349,17 @@ const SmartJobRecommendations = ({
           <Stack spacing={1} mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
               <LocationIcon fontSize="small" color="action" />
-              <Typography variant="body2">
-                {job.location}
-              </Typography>
+              <Typography variant="body2">{job.location}</Typography>
             </Box>
 
             <Box display="flex" alignItems="center" gap={1}>
               <MoneyIcon fontSize="small" color="action" />
               <Typography variant="body2" fontWeight="medium">
-                {job?.budget ? (
-                  typeof job.budget === 'object' 
+                {job?.budget
+                  ? typeof job.budget === 'object'
                     ? `${formatCurrency(job.budget.min || 0)} - ${formatCurrency(job.budget.max || 0)}`
                     : formatCurrency(job.budget)
-                ) : 'Budget not specified'}
+                  : 'Budget not specified'}
               </Typography>
             </Box>
 
@@ -366,7 +383,12 @@ const SmartJobRecommendations = ({
           {/* Skills required */}
           {job.skillsRequired && job.skillsRequired.length > 0 && (
             <Box mb={2}>
-              <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                gutterBottom
+                display="block"
+              >
                 Skills Required:
               </Typography>
               <Stack direction="row" spacing={0.5} flexWrap="wrap">
@@ -393,12 +415,12 @@ const SmartJobRecommendations = ({
 
           {/* AI reasoning */}
           {job.aiReasoning && (
-            <Alert 
-              severity="info" 
+            <Alert
+              severity="info"
               icon={<AIIcon />}
-              sx={{ 
+              sx={{
                 mt: 2,
-                '& .MuiAlert-message': { fontSize: '0.75rem' }
+                '& .MuiAlert-message': { fontSize: '0.75rem' },
               }}
             >
               <Typography variant="caption">
@@ -409,22 +431,32 @@ const SmartJobRecommendations = ({
 
           {/* Match score breakdown */}
           <Box mt={2}>
-            <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              gutterBottom
+              display="block"
+            >
               Match Breakdown:
             </Typography>
             <Stack spacing={0.5}>
               {job.matchBreakdown?.map((item, index) => (
-                <Box key={index} display="flex" alignItems="center" justifyContent="space-between">
+                <Box
+                  key={index}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Typography variant="caption">{item.factor}</Typography>
                   <Box display="flex" alignItems="center" gap={1} width="60%">
                     <LinearProgress
                       variant="determinate"
                       value={item.score}
-                      sx={{ 
-                        flexGrow: 1, 
-                        height: 4, 
+                      sx={{
+                        flexGrow: 1,
+                        height: 4,
                         borderRadius: 2,
-                        backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       }}
                     />
                     <Typography variant="caption" sx={{ minWidth: 30 }}>
@@ -442,7 +474,7 @@ const SmartJobRecommendations = ({
         <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
           <Stack direction="row" spacing={1}>
             <Tooltip title={isSaved ? 'Remove from saved' : 'Save job'}>
-              <IconButton 
+              <IconButton
                 size="small"
                 onClick={() => handleToggleSave(job.id)}
                 color={isSaved ? 'primary' : 'default'}
@@ -450,12 +482,9 @@ const SmartJobRecommendations = ({
                 {isSaved ? <SaveIcon /> : <SaveBorderIcon />}
               </IconButton>
             </Tooltip>
-            
+
             <Tooltip title="View details">
-              <IconButton 
-                size="small"
-                onClick={() => handleViewJob(job.id)}
-              >
+              <IconButton size="small" onClick={() => handleViewJob(job.id)}>
                 <ViewIcon />
               </IconButton>
             </Tooltip>
@@ -504,7 +533,12 @@ const SmartJobRecommendations = ({
     return (
       <Box>
         {showHeader && (
-          <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+          <Box
+            mb={3}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Typography variant="h5" display="flex" alignItems="center" gap={1}>
               <BrainIcon color="primary" />
               Smart Job Recommendations
@@ -518,8 +552,8 @@ const SmartJobRecommendations = ({
 
   if (error) {
     return (
-      <Alert 
-        severity="error" 
+      <Alert
+        severity="error"
         action={
           <Button size="small" onClick={() => loadRecommendations()}>
             Retry
@@ -534,17 +568,24 @@ const SmartJobRecommendations = ({
   return (
     <Box>
       {showHeader && (
-        <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+        <Box
+          mb={3}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Typography variant="h5" display="flex" alignItems="center" gap={1}>
             <BrainIcon color="primary" />
             Smart Job Recommendations
             <Badge badgeContent={recommendations.length} color="primary" />
           </Typography>
-          
+
           <Button
             variant="outlined"
             size="small"
-            startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshIcon />}
+            startIcon={
+              refreshing ? <CircularProgress size={16} /> : <RefreshIcon />
+            }
             onClick={() => loadRecommendations(true)}
             disabled={refreshing}
           >
@@ -564,7 +605,8 @@ const SmartJobRecommendations = ({
             No Recommendations Available
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Complete your profile and set your preferences to get personalized job recommendations
+            Complete your profile and set your preferences to get personalized
+            job recommendations
           </Typography>
           <Button variant="contained" href="/worker/profile/edit">
             Complete Profile

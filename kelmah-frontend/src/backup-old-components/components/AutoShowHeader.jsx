@@ -1,6 +1,6 @@
 /**
  * Auto-Show Header Component
- * 
+ *
  * Provides automatic header visibility on dashboard pages when user moves mouse
  * to the top of the screen or uses touch gestures on mobile.
  */
@@ -14,14 +14,14 @@ import Header from '../modules/layout/components/Header';
 const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
   const theme = useTheme();
   const location = useLocation();
-  const { 
-    isVisible, 
-    isLocked, 
-    lockHeader, 
+  const {
+    isVisible,
+    isLocked,
+    lockHeader,
     unlockHeader,
     showHeader,
     hideHeader,
-    isMobile 
+    isMobile,
   } = useAutoShowHeader({ disabled });
 
   // 🎯 ENHANCED: Comprehensive dashboard page detection (matches Layout.jsx)
@@ -46,7 +46,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
         pathname: location.pathname,
         isDashboardPage,
         disabled,
-        shouldRender: isDashboardPage && !disabled
+        shouldRender: isDashboardPage && !disabled,
       });
     }
   }, [location.pathname, isDashboardPage, disabled]);
@@ -76,7 +76,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
           zIndex: 10000,
         }}
       >
-        <button 
+        <button
           onClick={() => {
             console.log('🔲 Manual test - current isVisible:', isVisible);
             if (isVisible) {
@@ -93,7 +93,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             borderRadius: '8px',
             cursor: 'pointer',
             fontSize: '12px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           {isVisible ? '🙈 HIDE' : '👀 SHOW'} HEADER
@@ -113,7 +113,7 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
           pointerEvents: 'none',
         }}
       />
-      
+
       {/* 🚀 PRODUCTION AUTO-SHOW HEADER */}
       <Fade in={isVisible} timeout={{ enter: 300, exit: 200 }}>
         <Box
@@ -125,21 +125,17 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             zIndex: 9999,
             transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
             transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: isVisible 
-              ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
-              : 'none',
+            boxShadow: isVisible ? '0 8px 32px rgba(0, 0, 0, 0.4)' : 'none',
             // Enhanced mobile visibility
             '@media (max-width: 768px)': {
-              boxShadow: isVisible 
-                ? '0 4px 20px rgba(0, 0, 0, 0.5)' 
-                : 'none',
+              boxShadow: isVisible ? '0 4px 20px rgba(0, 0, 0, 0.5)' : 'none',
             },
           }}
           onMouseEnter={handleHeaderMouseEnter}
           onMouseLeave={handleHeaderMouseLeave}
         >
-          <Header 
-            toggleTheme={toggleTheme} 
+          <Header
+            toggleTheme={toggleTheme}
             mode={mode}
             // Pass dashboard context to header
             isDashboardMode={true}
@@ -166,13 +162,15 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             px: 2,
             py: 0.5,
             borderRadius: 20,
-            backgroundColor: theme.palette.mode === 'dark'
-              ? 'rgba(255, 215, 0, 0.15)'
-              : 'rgba(0, 0, 0, 0.15)',
+            backgroundColor:
+              theme.palette.mode === 'dark'
+                ? 'rgba(255, 215, 0, 0.15)'
+                : 'rgba(0, 0, 0, 0.15)',
             backdropFilter: 'blur(10px)',
-            border: theme.palette.mode === 'dark'
-              ? '1px solid rgba(255, 215, 0, 0.3)'
-              : '1px solid rgba(0, 0, 0, 0.3)',
+            border:
+              theme.palette.mode === 'dark'
+                ? '1px solid rgba(255, 215, 0, 0.3)'
+                : '1px solid rgba(0, 0, 0, 0.3)',
           }}
         >
           <Box
@@ -180,9 +178,10 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
               width: 20,
               height: 3,
               borderRadius: 2,
-              backgroundColor: theme.palette.mode === 'dark'
-                ? 'rgba(255, 215, 0, 0.8)'
-                : 'rgba(0, 0, 0, 0.8)',
+              backgroundColor:
+                theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.8)'
+                  : 'rgba(0, 0, 0, 0.8)',
             }}
           />
           <Box
@@ -190,9 +189,10 @@ const AutoShowHeader = ({ toggleTheme, mode, disabled = false }) => {
             sx={{
               fontSize: '11px',
               fontWeight: 600,
-              color: theme.palette.mode === 'dark'
-                ? 'rgba(255, 215, 0, 0.9)'
-                : 'rgba(0, 0, 0, 0.9)',
+              color:
+                theme.palette.mode === 'dark'
+                  ? 'rgba(255, 215, 0, 0.9)'
+                  : 'rgba(0, 0, 0, 0.9)',
             }}
           >
             {isMobile ? 'Touch top for menu' : 'Move mouse to top'}

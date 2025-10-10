@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Paper, Grid, Card, CardContent, Button, Chip } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Chip,
+} from '@mui/material';
 import workerService from '../../../worker/services/workerService';
 
 function SavedJobs() {
@@ -12,7 +21,11 @@ function SavedJobs() {
       setLoading(true);
       try {
         const data = await workerService.getSavedJobs();
-        const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        const list = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+            ? data
+            : [];
         setJobs(list);
       } catch (e) {
         setError('Unable to load saved jobs');
@@ -39,13 +52,27 @@ function SavedJobs() {
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6">{job.title}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
                     {job.company?.name || job.companyName}
                   </Typography>
-                  {Array.isArray(job.skills) && job.skills.slice(0, 4).map((s) => (
-                    <Chip key={s} label={s} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
-                  ))}
-                  <Button href={`/jobs/${job.id}`} sx={{ mt: 1 }}>View</Button>
+                  {Array.isArray(job.skills) &&
+                    job.skills
+                      .slice(0, 4)
+                      .map((s) => (
+                        <Chip
+                          key={s}
+                          label={s}
+                          size="small"
+                          sx={{ mr: 0.5, mb: 0.5 }}
+                        />
+                      ))}
+                  <Button href={`/jobs/${job.id}`} sx={{ mt: 1 }}>
+                    View
+                  </Button>
                 </CardContent>
               </Card>
             </Grid>

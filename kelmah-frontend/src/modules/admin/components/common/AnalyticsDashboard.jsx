@@ -65,7 +65,7 @@ const AnalyticsDashboard = () => {
     completedJobs: 0,
     totalRevenue: 0,
     monthlyRevenue: 0,
-    systemHealth: 'good'
+    systemHealth: 'good',
   });
 
   const [recentActivity, setRecentActivity] = useState([]);
@@ -80,11 +80,11 @@ const AnalyticsDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch system stats
       const systemStats = await adminService.getSystemStats();
       setStats(systemStats);
-      
+
       // Mock data for other analytics (in a real app, these would be API calls)
       setRecentActivity([
         {
@@ -93,7 +93,7 @@ const AnalyticsDashboard = () => {
           message: 'New user registered: John Doe',
           timestamp: new Date(Date.now() - 2 * 60 * 1000),
           icon: PersonIcon,
-          color: 'success'
+          color: 'success',
         },
         {
           id: 2,
@@ -101,7 +101,7 @@ const AnalyticsDashboard = () => {
           message: 'New job posted: Web Developer',
           timestamp: new Date(Date.now() - 15 * 60 * 1000),
           icon: WorkIcon,
-          color: 'primary'
+          color: 'primary',
         },
         {
           id: 3,
@@ -109,8 +109,8 @@ const AnalyticsDashboard = () => {
           message: 'Payment processed: GH₵ 500.00',
           timestamp: new Date(Date.now() - 30 * 60 * 1000),
           icon: MoneyIcon,
-          color: 'success'
-        }
+          color: 'success',
+        },
       ]);
 
       setUserGrowth([
@@ -119,7 +119,7 @@ const AnalyticsDashboard = () => {
         { month: 'Mar', users: 180, growth: 24 },
         { month: 'Apr', users: 210, growth: 17 },
         { month: 'May', users: 240, growth: 14 },
-        { month: 'Jun', users: 280, growth: 17 }
+        { month: 'Jun', users: 280, growth: 17 },
       ]);
 
       setSystemAlerts([
@@ -127,16 +127,15 @@ const AnalyticsDashboard = () => {
           id: 1,
           type: 'info',
           message: 'System backup completed successfully',
-          timestamp: new Date(Date.now() - 60 * 60 * 1000)
+          timestamp: new Date(Date.now() - 60 * 60 * 1000),
         },
         {
           id: 2,
           type: 'warning',
           message: 'High memory usage detected on server',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000)
-        }
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        },
       ]);
-
     } catch (err) {
       console.error('Error fetching analytics:', err);
       setError('Failed to load analytics data');
@@ -154,7 +153,7 @@ const AnalyticsDashboard = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: 'GHS'
+      currency: 'GHS',
     }).format(amount);
   };
 
@@ -172,11 +171,16 @@ const AnalyticsDashboard = () => {
 
   const getHealthColor = (health) => {
     switch (health) {
-      case 'excellent': return 'success';
-      case 'good': return 'success';
-      case 'warning': return 'warning';
-      case 'critical': return 'error';
-      default: return 'default';
+      case 'excellent':
+        return 'success';
+      case 'good':
+        return 'success';
+      case 'warning':
+        return 'warning';
+      case 'critical':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
@@ -206,7 +210,14 @@ const AnalyticsDashboard = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '50vh',
+        }}
+      >
         <CircularProgress size={40} />
       </Box>
     );
@@ -215,7 +226,14 @@ const AnalyticsDashboard = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Typography variant="h4" gutterBottom>
           Admin Dashboard
         </Typography>
@@ -255,16 +273,29 @@ const AnalyticsDashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Total Users
                   </Typography>
                   <Typography variant="h4">
                     {formatNumber(stats.totalUsers)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <TrendingUpIcon color="success" sx={{ fontSize: 16, mr: 0.5 }} />
+                    <TrendingUpIcon
+                      color="success"
+                      sx={{ fontSize: 16, mr: 0.5 }}
+                    />
                     <Typography variant="body2" color="success.main">
                       +12% from last month
                     </Typography>
@@ -281,16 +312,29 @@ const AnalyticsDashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Active Jobs
                   </Typography>
                   <Typography variant="h4">
                     {formatNumber(stats.activeJobs || 156)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <TrendingUpIcon color="success" sx={{ fontSize: 16, mr: 0.5 }} />
+                    <TrendingUpIcon
+                      color="success"
+                      sx={{ fontSize: 16, mr: 0.5 }}
+                    />
                     <Typography variant="body2" color="success.main">
                       +8% from last week
                     </Typography>
@@ -307,16 +351,29 @@ const AnalyticsDashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Monthly Revenue
                   </Typography>
                   <Typography variant="h4">
                     {formatCurrency(stats.monthlyRevenue || 25000)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <TrendingUpIcon color="success" sx={{ fontSize: 16, mr: 0.5 }} />
+                    <TrendingUpIcon
+                      color="success"
+                      sx={{ fontSize: 16, mr: 0.5 }}
+                    />
                     <Typography variant="body2" color="success.main">
                       +15% from last month
                     </Typography>
@@ -333,14 +390,24 @@ const AnalyticsDashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-    <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Box>
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     System Health
                   </Typography>
                   <Typography variant="h4">
-                    <Chip 
-                      label={stats.systemHealth.toUpperCase()} 
+                    <Chip
+                      label={stats.systemHealth.toUpperCase()}
                       color={getHealthColor(stats.systemHealth)}
                       size="small"
                     />
@@ -365,21 +432,36 @@ const AnalyticsDashboard = () => {
         {/* User Growth Chart */}
         <Grid item xs={12} md={8}>
           <Card>
-            <CardHeader 
-              title="User Growth Trend" 
+            <CardHeader
+              title="User Growth Trend"
               subheader="Monthly user registrations"
             />
             <CardContent>
-              <Box sx={{ height: 300, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  height: 300,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
                 {userGrowth.map((item, index) => (
                   <Box key={item.month} sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
                       <Typography variant="body2">{item.month}</Typography>
-                      <Typography variant="body2" fontWeight="bold">{item.users} users</Typography>
+                      <Typography variant="body2" fontWeight="bold">
+                        {item.users} users
+                      </Typography>
                     </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={(item.users / 300) * 100} 
+                    <LinearProgress
+                      variant="determinate"
+                      value={(item.users / 300) * 100}
                       sx={{ height: 8, borderRadius: 4 }}
                     />
                   </Box>
@@ -398,7 +480,13 @@ const AnalyticsDashboard = () => {
                 {recentActivity.map((activity) => (
                   <ListItem key={activity.id} sx={{ px: 0 }}>
                     <ListItemIcon>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: `${activity.color}.main` }}>
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: `${activity.color}.main`,
+                        }}
+                      >
                         <activity.icon sx={{ fontSize: 16 }} />
                       </Avatar>
                     </ListItemIcon>
@@ -435,14 +523,36 @@ const AnalyticsDashboard = () => {
                   </TableHead>
                   <TableBody>
                     {[
-                      { name: 'Alice Johnson', jobs: 23, rating: 4.9, earnings: 3400 },
-                      { name: 'Bob Smith', jobs: 19, rating: 4.8, earnings: 2800 },
-                      { name: 'Carol Davis', jobs: 17, rating: 4.7, earnings: 2600 },
+                      {
+                        name: 'Alice Johnson',
+                        jobs: 23,
+                        rating: 4.9,
+                        earnings: 3400,
+                      },
+                      {
+                        name: 'Bob Smith',
+                        jobs: 19,
+                        rating: 4.8,
+                        earnings: 2800,
+                      },
+                      {
+                        name: 'Carol Davis',
+                        jobs: 17,
+                        rating: 4.7,
+                        earnings: 2600,
+                      },
                     ].map((worker, index) => (
                       <TableRow key={index}>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'primary.main' }}>
+                            <Avatar
+                              sx={{
+                                width: 24,
+                                height: 24,
+                                mr: 1,
+                                bgcolor: 'primary.main',
+                              }}
+                            >
                               {worker.name[0]}
                             </Avatar>
                             {worker.name}
@@ -450,7 +560,11 @@ const AnalyticsDashboard = () => {
                         </TableCell>
                         <TableCell>{worker.jobs}</TableCell>
                         <TableCell>
-                          <Chip label={worker.rating} color="success" size="small" />
+                          <Chip
+                            label={worker.rating}
+                            color="success"
+                            size="small"
+                          />
                         </TableCell>
                         <TableCell>{formatCurrency(worker.earnings)}</TableCell>
                       </TableRow>
@@ -490,7 +604,12 @@ const AnalyticsDashboard = () => {
                   ))}
                 </List>
               ) : (
-                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                  sx={{ py: 2 }}
+                >
                   No system alerts
                 </Typography>
               )}

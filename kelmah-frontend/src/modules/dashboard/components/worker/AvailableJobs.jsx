@@ -74,10 +74,10 @@ import {
 // Utility function to format budget/salary data
 const formatSalary = (salary) => {
   if (!salary) return 'Not specified';
-  
+
   // If salary is already a string, return it
   if (typeof salary === 'string') return salary;
-  
+
   // If salary is an object with budget information
   if (typeof salary === 'object' && salary !== null) {
     const { min, max, currency = 'GHS' } = salary;
@@ -89,7 +89,7 @@ const formatSalary = (salary) => {
       return `Up to ${currency} ${max}`;
     }
   }
-  
+
   return 'Not specified';
 };
 
@@ -203,16 +203,22 @@ const EnhancedAvailableJobs = () => {
         return;
       }
 
-      const mappedJobs =
-        response.jobs.map((job) => ({
-          ...job,
-          ...getJobIconData(job),
-          status: savedJobs.some(saved => saved.id === job.id || saved._id === job.id) ? 'saved' : 'idle',
-          distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
-          salary: job.salary || job?.budget || `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
-          applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
-          matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
-        }));
+      const mappedJobs = response.jobs.map((job) => ({
+        ...job,
+        ...getJobIconData(job),
+        status: savedJobs.some(
+          (saved) => saved.id === job.id || saved._id === job.id,
+        )
+          ? 'saved'
+          : 'idle',
+        distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
+        salary:
+          job.salary ||
+          job?.budget ||
+          `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
+        applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
+        matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
+      }));
 
       setJobs(mappedJobs);
       setError(null);
@@ -355,7 +361,9 @@ const EnhancedAvailableJobs = () => {
     }
 
     try {
-      const isCurrentlySaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
+      const isCurrentlySaved = savedJobs.some(
+        (saved) => saved.id === jobId || saved._id === jobId,
+      );
 
       if (isCurrentlySaved) {
         await dispatch(unsaveJobFromServer(jobId));
@@ -385,7 +393,9 @@ const EnhancedAvailableJobs = () => {
   const JobCard = ({ job, index }) => {
     const priorityChip = getPriorityChip(job);
     const isApplied = job.status === 'applied';
-    const isSaved = savedJobs.some(saved => saved.id === job.id || saved._id === job.id);
+    const isSaved = savedJobs.some(
+      (saved) => saved.id === job.id || saved._id === job.id,
+    );
 
     return (
       <motion.div
@@ -879,8 +889,8 @@ const EnhancedAvailableJobs = () => {
           sx={{ mb: 3 }}
         >
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            {applyFiltersAndSearch.length} job{applyFiltersAndSearch.length !== 1 ? 's' : ''}{' '}
-            found
+            {applyFiltersAndSearch.length} job
+            {applyFiltersAndSearch.length !== 1 ? 's' : ''} found
           </Typography>
 
           <TextField
@@ -936,24 +946,25 @@ const EnhancedAvailableJobs = () => {
         )}
 
         {/* Load More Button */}
-        {applyFiltersAndSearch.length > 0 && applyFiltersAndSearch.length < jobs.length && (
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Button
-              variant="outlined"
-              onClick={() => fetchJobs()}
-              sx={{
-                borderColor: 'rgba(255,215,0,0.3)',
-                color: '#FFD700',
-                '&:hover': {
-                  borderColor: '#FFD700',
-                  backgroundColor: alpha('#FFD700', 0.1),
-                },
-              }}
-            >
-              Load More Jobs
-            </Button>
-          </Box>
-        )}
+        {applyFiltersAndSearch.length > 0 &&
+          applyFiltersAndSearch.length < jobs.length && (
+            <Box sx={{ textAlign: 'center', mt: 4 }}>
+              <Button
+                variant="outlined"
+                onClick={() => fetchJobs()}
+                sx={{
+                  borderColor: 'rgba(255,215,0,0.3)',
+                  color: '#FFD700',
+                  '&:hover': {
+                    borderColor: '#FFD700',
+                    backgroundColor: alpha('#FFD700', 0.1),
+                  },
+                }}
+              >
+                Load More Jobs
+              </Button>
+            </Box>
+          )}
       </DashboardCard>
 
       {/* Filter Menu */}
@@ -996,14 +1007,24 @@ const EnhancedAvailableJobs = () => {
           }}
         >
           <ListItemIcon>
-            {selectedJobForMenu && savedJobs.some(saved => saved.id === selectedJobForMenu.id || saved._id === selectedJobForMenu.id) ? (
+            {selectedJobForMenu &&
+            savedJobs.some(
+              (saved) =>
+                saved.id === selectedJobForMenu.id ||
+                saved._id === selectedJobForMenu.id,
+            ) ? (
               <BookmarkIcon />
             ) : (
               <BookmarkBorderIcon />
             )}
           </ListItemIcon>
           <ListItemText>
-            {selectedJobForMenu && savedJobs.some(saved => saved.id === selectedJobForMenu.id || saved._id === selectedJobForMenu.id)
+            {selectedJobForMenu &&
+            savedJobs.some(
+              (saved) =>
+                saved.id === selectedJobForMenu.id ||
+                saved._id === selectedJobForMenu.id,
+            )
               ? 'Remove from Saved'
               : 'Save Job'}
           </ListItemText>
@@ -1172,7 +1193,11 @@ const EnhancedAvailableJobs = () => {
               <Button
                 onClick={() => handleSaveJob(selectedJob.id)}
                 startIcon={
-                  savedJobs.some(saved => saved.id === selectedJob.id || saved._id === selectedJob.id) ? (
+                  savedJobs.some(
+                    (saved) =>
+                      saved.id === selectedJob.id ||
+                      saved._id === selectedJob.id,
+                  ) ? (
                     <BookmarkIcon />
                   ) : (
                     <BookmarkBorderIcon />
@@ -1187,7 +1212,12 @@ const EnhancedAvailableJobs = () => {
                   },
                 }}
               >
-                {savedJobs.some(saved => saved.id === selectedJob.id || saved._id === selectedJob.id) ? 'Saved' : 'Save'}
+                {savedJobs.some(
+                  (saved) =>
+                    saved.id === selectedJob.id || saved._id === selectedJob.id,
+                )
+                  ? 'Saved'
+                  : 'Save'}
               </Button>
 
               {selectedJob.status !== 'applied' ? (

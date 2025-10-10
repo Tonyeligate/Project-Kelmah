@@ -1,6 +1,6 @@
 /**
  * Service Status Hook
- * 
+ *
  * Provides real-time service status monitoring with automatic retry
  * and user-friendly error handling.
  */
@@ -15,7 +15,7 @@ export const useServiceStatus = (serviceName, options = {}) => {
     maxRetries = 3,
     onError,
     onSuccess,
-    onRetry
+    onRetry,
   } = options;
 
   const [status, setStatus] = useState({
@@ -23,54 +23,56 @@ export const useServiceStatus = (serviceName, options = {}) => {
     loading: false,
     error: null,
     retryCount: 0,
-    lastChecked: null
+    lastChecked: null,
   });
 
   const [autoRetryEnabled, setAutoRetryEnabled] = useState(autoRetry);
 
   // Check service status
-  const checkStatus = useCallback(async (isAutoRetry = false) => {
-    setStatus(prev => ({ ...prev, loading: true, error: null }));
+  const checkStatus = useCallback(
+    async (isAutoRetry = false) => {
+      setStatus((prev) => ({ ...prev, loading: true, error: null }));
 
-    try {
-      const healthCheck = await serviceManager.healthCheck(serviceName);
-      
-      setStatus(prev => ({
-        ...prev,
-        isOnline: healthCheck.status === 'healthy',
-        loading: false,
-        error: null,
-        retryCount: 0,
-        lastChecked: Date.now()
-      }));
+      try {
+        const healthCheck = await serviceManager.healthCheck(serviceName);
 
-      if (onSuccess) onSuccess(healthCheck);
-      
-    } catch (error) {
-      const enhancedError = {
-        ...error,
-        serviceName,
-        isAutoRetry,
-        timestamp: Date.now()
-      };
+        setStatus((prev) => ({
+          ...prev,
+          isOnline: healthCheck.status === 'healthy',
+          loading: false,
+          error: null,
+          retryCount: 0,
+          lastChecked: Date.now(),
+        }));
 
-      setStatus(prev => ({
-        ...prev,
-        isOnline: false,
-        loading: false,
-        error: enhancedError,
-        retryCount: isAutoRetry ? prev.retryCount + 1 : 0,
-        lastChecked: Date.now()
-      }));
+        if (onSuccess) onSuccess(healthCheck);
+      } catch (error) {
+        const enhancedError = {
+          ...error,
+          serviceName,
+          isAutoRetry,
+          timestamp: Date.now(),
+        };
 
-      if (onError) onError(enhancedError);
+        setStatus((prev) => ({
+          ...prev,
+          isOnline: false,
+          loading: false,
+          error: enhancedError,
+          retryCount: isAutoRetry ? prev.retryCount + 1 : 0,
+          lastChecked: Date.now(),
+        }));
 
-      // Disable auto-retry after max attempts
-      if (isAutoRetry && status.retryCount >= maxRetries - 1) {
-        setAutoRetryEnabled(false);
+        if (onError) onError(enhancedError);
+
+        // Disable auto-retry after max attempts
+        if (isAutoRetry && status.retryCount >= maxRetries - 1) {
+          setAutoRetryEnabled(false);
+        }
       }
-    }
-  }, [serviceName, onError, onSuccess, status.retryCount, maxRetries]);
+    },
+    [serviceName, onError, onSuccess, status.retryCount, maxRetries],
+  );
 
   // Manual retry function
   const retry = useCallback(async () => {
@@ -88,7 +90,13 @@ export const useServiceStatus = (serviceName, options = {}) => {
     }, retryInterval);
 
     return () => clearTimeout(timer);
-  }, [checkStatus, autoRetryEnabled, status.isOnline, status.loading, retryInterval]);
+  }, [
+    checkStatus,
+    autoRetryEnabled,
+    status.isOnline,
+    status.loading,
+    retryInterval,
+  ]);
 
   // Initial status check
   useEffect(() => {
@@ -100,10 +108,10 @@ export const useServiceStatus = (serviceName, options = {}) => {
     const handleServiceUpdate = () => {
       const serviceStatus = serviceManager.getServiceStatus(serviceName);
       if (serviceStatus) {
-        setStatus(prev => ({
+        setStatus((prev) => ({
           ...prev,
           isOnline: serviceStatus.isOnline,
-          error: serviceStatus.lastError
+          error: serviceStatus.lastError,
         }));
       }
     };
@@ -118,7 +126,7 @@ export const useServiceStatus = (serviceName, options = {}) => {
     retry,
     checkStatus,
     autoRetryEnabled,
-    setAutoRetryEnabled
+    setAutoRetryEnabled,
   };
 };
 

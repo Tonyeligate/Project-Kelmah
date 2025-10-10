@@ -45,7 +45,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
 
   const loadPerformanceData = async () => {
     if (!userId) return;
-    
+
     setLoading(true);
     try {
       // TODO: Integrate into worker service
@@ -62,28 +62,45 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
 
   const getTierColor = (tier) => {
     switch (tier) {
-      case 'tier1': return theme.palette.success.main;
-      case 'tier2': return theme.palette.warning.main;
-      case 'tier3': return theme.palette.info.main;
-      default: return theme.palette.grey[500];
+      case 'tier1':
+        return theme.palette.success.main;
+      case 'tier2':
+        return theme.palette.warning.main;
+      case 'tier3':
+        return theme.palette.info.main;
+      default:
+        return theme.palette.grey[500];
     }
   };
 
   const getTierLabel = (tier) => {
     switch (tier) {
-      case 'tier1': return 'Premium Access';
-      case 'tier2': return 'Verified Access';
-      case 'tier3': return 'Standard Access';
-      default: return 'Standard';
+      case 'tier1':
+        return 'Premium Access';
+      case 'tier2':
+        return 'Verified Access';
+      case 'tier3':
+        return 'Standard Access';
+      default:
+        return 'Standard';
     }
   };
 
   const getTierBenefits = (tier) => {
     switch (tier) {
       case 'tier1':
-        return ['Immediate job access', 'Exclusive opportunities', 'Priority bidding', '8 bids/month'];
+        return [
+          'Immediate job access',
+          'Exclusive opportunities',
+          'Priority bidding',
+          '8 bids/month',
+        ];
       case 'tier2':
-        return ['Early job access (2hr delay)', 'Verified jobs', '6 bids/month'];
+        return [
+          'Early job access (2hr delay)',
+          'Verified jobs',
+          '6 bids/month',
+        ];
       case 'tier3':
         return ['Standard job access (24hr delay)', '5 bids/month'];
       default:
@@ -102,7 +119,9 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
   if (error || !performance) {
     return (
       <Card sx={{ p: 3 }}>
-        <Typography color="error">{error || 'No performance data available'}</Typography>
+        <Typography color="error">
+          {error || 'No performance data available'}
+        </Typography>
       </Card>
     );
   }
@@ -150,12 +169,23 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                   Tier Benefits:
                 </Typography>
                 <Stack spacing={1}>
-                  {getTierBenefits(performance.performanceTier).map((benefit, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CheckCircleIcon sx={{ fontSize: 16, mr: 1, color: theme.palette.success.main }} />
-                      <Typography variant="body2">{benefit}</Typography>
-                    </Box>
-                  ))}
+                  {getTierBenefits(performance.performanceTier).map(
+                    (benefit, index) => (
+                      <Box
+                        key={index}
+                        sx={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        <CheckCircleIcon
+                          sx={{
+                            fontSize: 16,
+                            mr: 1,
+                            color: theme.palette.success.main,
+                          }}
+                        />
+                        <Typography variant="body2">{benefit}</Typography>
+                      </Box>
+                    ),
+                  )}
                 </Stack>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -199,11 +229,19 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                 <Typography variant="h6" gutterBottom>
                   Performance Metrics
                 </Typography>
-                
+
                 <Stack spacing={2}>
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Job Completion Rate</Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body2">
+                        Job Completion Rate
+                      </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {performance.metrics.jobCompletionRate}%
                       </Typography>
@@ -216,8 +254,16 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                   </Box>
 
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Client Satisfaction</Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body2">
+                        Client Satisfaction
+                      </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {performance.metrics.clientSatisfaction}%
                       </Typography>
@@ -230,8 +276,16 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                   </Box>
 
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Profile Completeness</Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body2">
+                        Profile Completeness
+                      </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {performance.metrics.profileCompleteness}%
                       </Typography>
@@ -244,7 +298,13 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                   </Box>
 
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
                       <Typography variant="body2">On-Time Delivery</Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {performance.metrics.onTimeDeliveryRate}%
@@ -273,23 +333,32 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                 <Typography variant="h6" gutterBottom>
                   Skill Verification
                 </Typography>
-                
+
                 <Stack spacing={2}>
                   <Box>
                     <Typography variant="subtitle2" gutterBottom>
                       Primary Skills:
                     </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                      {performance.skillVerification.primarySkills.map((skill, index) => (
-                        <Chip
-                          key={index}
-                          label={skill.skill}
-                          size="small"
-                          color={skill.verified ? 'success' : 'default'}
-                          icon={skill.verified ? <CheckCircleIcon /> : undefined}
-                          variant={skill.verified ? 'filled' : 'outlined'}
-                        />
-                      ))}
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      {performance.skillVerification.primarySkills.map(
+                        (skill, index) => (
+                          <Chip
+                            key={index}
+                            label={skill.skill}
+                            size="small"
+                            color={skill.verified ? 'success' : 'default'}
+                            icon={
+                              skill.verified ? <CheckCircleIcon /> : undefined
+                            }
+                            variant={skill.verified ? 'filled' : 'outlined'}
+                          />
+                        ),
+                      )}
                     </Stack>
                   </Box>
 
@@ -299,17 +368,26 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                     <Typography variant="subtitle2" gutterBottom>
                       Secondary Skills:
                     </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                      {performance.skillVerification.secondarySkills.map((skill, index) => (
-                        <Chip
-                          key={index}
-                          label={skill.skill}
-                          size="small"
-                          color={skill.verified ? 'success' : 'default'}
-                          icon={skill.verified ? <CheckCircleIcon /> : undefined}
-                          variant={skill.verified ? 'filled' : 'outlined'}
-                        />
-                      ))}
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      {performance.skillVerification.secondarySkills.map(
+                        (skill, index) => (
+                          <Chip
+                            key={index}
+                            label={skill.skill}
+                            size="small"
+                            color={skill.verified ? 'success' : 'default'}
+                            icon={
+                              skill.verified ? <CheckCircleIcon /> : undefined
+                            }
+                            variant={skill.verified ? 'filled' : 'outlined'}
+                          />
+                        ),
+                      )}
                     </Stack>
                   </Box>
 
@@ -337,30 +415,40 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
               <Typography variant="h6" gutterBottom>
                 Location Preferences
               </Typography>
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <LocationOnIcon sx={{ fontSize: 16, mr: 1 }} />
                     <Typography variant="body2">
-                      Primary Region: {performance.locationPreferences.primaryRegion || 'Not set'}
+                      Primary Region:{' '}
+                      {performance.locationPreferences.primaryRegion ||
+                        'Not set'}
                     </Typography>
                   </Box>
-                  
+
                   <Typography variant="body2" color="text.secondary">
-                    Max Travel Distance: {performance.locationPreferences.maxTravelDistance}km
+                    Max Travel Distance:{' '}
+                    {performance.locationPreferences.maxTravelDistance}km
                   </Typography>
                 </Grid>
-                
+
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="text.secondary">
-                    Willing to Relocate: {performance.locationPreferences.willingToRelocate ? 'Yes' : 'No'}
+                    Willing to Relocate:{' '}
+                    {performance.locationPreferences.willingToRelocate
+                      ? 'Yes'
+                      : 'No'}
                   </Typography>
-                  
-                  {performance.locationPreferences.preferredCities?.length > 0 && (
+
+                  {performance.locationPreferences.preferredCities?.length >
+                    0 && (
                     <Box sx={{ mt: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Preferred Cities: {performance.locationPreferences.preferredCities.join(', ')}
+                        Preferred Cities:{' '}
+                        {performance.locationPreferences.preferredCities.join(
+                          ', ',
+                        )}
                       </Typography>
                     </Box>
                   )}
@@ -383,14 +471,14 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
               <Typography variant="h6" gutterBottom>
                 Bid Performance
               </Typography>
-              
+
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <TimelineIcon sx={{ fontSize: 16, mr: 1 }} />
                 <Typography variant="body2">
                   Success Rate: {performance.getBidSuccessRate()}%
                 </Typography>
               </Box>
-              
+
               <Typography variant="body2" color="text.secondary">
                 Total Bids: {performance.bidHistory.length}
               </Typography>

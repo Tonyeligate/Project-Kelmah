@@ -19,7 +19,7 @@ describe('useDebounce', () => {
   test('returns updated value after delay', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 500 } }
+      { initialProps: { value: 'initial', delay: 500 } },
     );
 
     // Change the value
@@ -40,7 +40,7 @@ describe('useDebounce', () => {
   test('cancels previous timeout when value changes', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'first', delay: 500 } }
+      { initialProps: { value: 'first', delay: 500 } },
     );
 
     // Change value before timeout
@@ -66,7 +66,7 @@ describe('useDebounce', () => {
   test('handles different delay values', () => {
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: 'initial', delay: 1000 } }
+      { initialProps: { value: 'initial', delay: 1000 } },
     );
 
     rerender({ value: 'updated', delay: 1000 });

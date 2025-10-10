@@ -18,7 +18,7 @@ const getAllowedConnectSrc = async () => {
   }
 
   // Add service-specific URLs from config
-  Object.values(SERVICES).forEach(serviceUrl => {
+  Object.values(SERVICES).forEach((serviceUrl) => {
     if (serviceUrl && serviceUrl !== '' && /^https?:\/\//.test(serviceUrl)) {
       urls.push(serviceUrl);
     }
@@ -49,8 +49,8 @@ export const SECURITY_CONFIG = {
       'auth_token',
       'refresh_token',
       'user_data',
-      'sensitive_settings'
-    ]
+      'sensitive_settings',
+    ],
   },
 
   // API Security
@@ -60,22 +60,19 @@ export const SECURITY_CONFIG = {
     RETRY_DELAY: 1000, // 1 second
     RATE_LIMIT: {
       REQUESTS_PER_MINUTE: 60,
-      BURST_LIMIT: 10
+      BURST_LIMIT: 10,
     },
-    REQUIRED_HEADERS: [
-      'X-Request-ID',
-      'X-Client-Version'
-    ]
+    REQUIRED_HEADERS: ['X-Request-ID', 'X-Client-Version'],
   },
 
   // Content Security Policy - Dynamic connect-src based on environment
   CSP: {
     'default-src': ["'self'"],
     'script-src': ["'self'", "'unsafe-inline'"],
-    'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-    'font-src': ["'self'", "https://fonts.gstatic.com"],
-    'img-src': ["'self'", "data:", "https:"],
-    'connect-src': getAllowedConnectSrc // Dynamic function instead of static array
+    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    'font-src': ["'self'", 'https://fonts.gstatic.com'],
+    'img-src': ["'self'", 'data:', 'https:'],
+    'connect-src': getAllowedConnectSrc, // Dynamic function instead of static array
   },
 
   // Session Management
@@ -84,7 +81,7 @@ export const SECURITY_CONFIG = {
     WARNING_TIME: 5 * 60 * 1000, // 5 minutes before timeout
     EXTEND_ON_ACTIVITY: true,
     SECURE_COOKIE: true,
-    SAME_SITE: 'strict'
+    SAME_SITE: 'strict',
   },
 
   // Input Validation
@@ -95,11 +92,11 @@ export const SECURITY_CONFIG = {
       'image/png',
       'image/gif',
       'application/pdf',
-      'text/plain'
+      'text/plain',
     ],
     MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
     SANITIZE_HTML: true,
-    ESCAPE_OUTPUT: true
+    ESCAPE_OUTPUT: true,
   },
 
   // Error Handling
@@ -112,8 +109,8 @@ export const SECURITY_CONFIG = {
       /token/i,
       /secret/i,
       /key/i,
-      /auth/i
-    ]
+      /auth/i,
+    ],
   },
 
   // Network Security
@@ -122,7 +119,7 @@ export const SECURITY_CONFIG = {
     HSTS_MAX_AGE: 31536000, // 1 year
     TRUST_PROXY: false,
     IP_WHITELIST: [], // Empty means allow all
-    BLOCK_SUSPICIOUS_IPS: true
+    BLOCK_SUSPICIOUS_IPS: true,
   },
 
   // Feature Flags
@@ -131,7 +128,7 @@ export const SECURITY_CONFIG = {
     ENABLE_BIOMETRICS: false, // Future feature
     ENABLE_SESSION_RECORDING: false,
     ENABLE_AUDIT_LOGGING: true,
-    ENABLE_RATE_LIMITING: true
+    ENABLE_RATE_LIMITING: true,
   },
 
   // Development/Debug settings
@@ -139,8 +136,8 @@ export const SECURITY_CONFIG = {
     ENABLE_CONSOLE_LOGS: process.env.NODE_ENV === 'development',
     SHOW_STACK_TRACES: process.env.NODE_ENV === 'development',
     ENABLE_PERFORMANCE_MONITORING: true,
-    LOG_API_REQUESTS: process.env.NODE_ENV === 'development'
-  }
+    LOG_API_REQUESTS: process.env.NODE_ENV === 'development',
+  },
 };
 
 /**
@@ -160,7 +157,9 @@ export const SecurityUtils = {
   generateSecureId: (length = 16) => {
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join(
+      '',
+    );
   },
 
   /**
@@ -168,7 +167,7 @@ export const SecurityUtils = {
    */
   sanitizeInput: (input) => {
     if (typeof input !== 'string') return input;
-    
+
     return input
       .replace(/[<>]/g, '') // Remove basic HTML tags
       .trim()
@@ -181,7 +180,7 @@ export const SecurityUtils = {
   containsSensitiveData: (data) => {
     const dataString = JSON.stringify(data).toLowerCase();
     return SECURITY_CONFIG.ERROR_HANDLING.SENSITIVE_DATA_PATTERNS.some(
-      pattern => pattern.test(dataString)
+      (pattern) => pattern.test(dataString),
     );
   },
 
@@ -190,18 +189,18 @@ export const SecurityUtils = {
    */
   validateFile: (file) => {
     const errors = [];
-    
+
     if (!SECURITY_CONFIG.VALIDATION.ALLOWED_FILE_TYPES.includes(file.type)) {
       errors.push('File type not allowed');
     }
-    
+
     if (file.size > SECURITY_CONFIG.VALIDATION.MAX_FILE_SIZE) {
       errors.push('File too large');
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   },
 
@@ -214,9 +213,9 @@ export const SecurityUtils = {
       'X-Client-Version': '1.0.0',
       'X-Requested-With': 'XMLHttpRequest',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache'
+      Pragma: 'no-cache',
     };
-  }
+  },
 };
 
 export default SECURITY_CONFIG;

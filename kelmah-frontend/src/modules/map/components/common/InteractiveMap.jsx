@@ -78,7 +78,13 @@ L.Icon.Default.mergeOptions({
 });
 
 // Professional 3D-style markers with advanced animations
-const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isVerified = false, isUrgent = false) => {
+const createAdvancedVocationalIcon = (
+  type,
+  category = '',
+  isOnline = false,
+  isVerified = false,
+  isUrgent = false,
+) => {
   const getIconColor = () => {
     if (type === 'job') return isUrgent ? '#FF5722' : '#FFD700';
     if (type === 'worker') return isOnline ? '#4CAF50' : '#1a1a1a';
@@ -89,9 +95,18 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
     if (type === 'job') return isUrgent ? '🚨' : '💼';
     if (type === 'worker') {
       const categoryIcons = {
-        Carpentry: '🔨', Masonry: '🧱', Plumbing: '🔧', Electrical: '⚡',
-        Painting: '🎨', Welding: '🔥', HVAC: '❄️', Security: '🛡️',
-        Cleaning: '🧽', Landscaping: '🌱', Roofing: '🏠', Tiling: '⬜'
+        Carpentry: '🔨',
+        Masonry: '🧱',
+        Plumbing: '🔧',
+        Electrical: '⚡',
+        Painting: '🎨',
+        Welding: '🔥',
+        HVAC: '❄️',
+        Security: '🛡️',
+        Cleaning: '🧽',
+        Landscaping: '🌱',
+        Roofing: '🏠',
+        Tiling: '⬜',
       };
       return categoryIcons[category] || '👷';
     }
@@ -101,7 +116,7 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
   const color = getIconColor();
   const symbol = getIconSymbol();
   const size = type === 'user' ? 36 : 32;
-  
+
   const iconHtml = `
     <div style="
       position: relative;
@@ -133,7 +148,9 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
         filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
         transform: scale(0.9);
       ">${symbol}</div>
-      ${isVerified ? `
+      ${
+        isVerified
+          ? `
         <div style="
           position: absolute; 
           top: -4px; 
@@ -150,8 +167,12 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
           color: white;
           box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
         ">✓</div>
-      ` : ''}
-      ${isOnline && type === 'worker' ? `
+      `
+          : ''
+      }
+      ${
+        isOnline && type === 'worker'
+          ? `
         <div style="
           position: absolute; 
           bottom: -2px; 
@@ -164,8 +185,12 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
           animation: onlinePulse 2s infinite;
           box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
         "></div>
-      ` : ''}
-      ${isUrgent ? `
+      `
+          : ''
+      }
+      ${
+        isUrgent
+          ? `
         <div style="
           position: absolute;
           top: -8px;
@@ -176,7 +201,9 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
           border-radius: 50%;
           animation: urgentRing 1.5s infinite;
         "></div>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
     <style>
       @keyframes userPulse {
@@ -203,26 +230,26 @@ const createAdvancedVocationalIcon = (type, category = '', isOnline = false, isV
       }
     </style>
   `;
-  
+
   return L.divIcon({
     html: iconHtml,
     className: 'advanced-vocational-marker',
     iconSize: [size + 8, size + 8],
     iconAnchor: [(size + 8) / 2, (size + 8) / 2],
-    popupAnchor: [0, -(size + 8) / 2]
+    popupAnchor: [0, -(size + 8) / 2],
   });
 };
 
 // Advanced map controller with professional features
-const AdvancedMapController = ({ 
-  onLocationUpdate, 
-  onZoomChange, 
-  centerOnUser, 
+const AdvancedMapController = ({
+  onLocationUpdate,
+  onZoomChange,
+  centerOnUser,
   setCenterOnUser,
   isLocating,
   setIsLocating,
   showHeatmap,
-  setShowHeatmap
+  setShowHeatmap,
 }) => {
   const map = useMap();
 
@@ -232,7 +259,7 @@ const AdvancedMapController = ({
       const zoom = map.getZoom();
       onLocationUpdate({
         latitude: center.lat,
-        longitude: center.lng
+        longitude: center.lng,
       });
       onZoomChange(zoom);
     };
@@ -253,15 +280,16 @@ const AdvancedMapController = ({
   useEffect(() => {
     if (centerOnUser) {
       setIsLocating(true);
-      mapService.getCurrentLocation()
-        .then(location => {
+      mapService
+        .getCurrentLocation()
+        .then((location) => {
           map.flyTo([location.latitude, location.longitude], 15, {
             duration: 3,
-            easeLinearity: 0.1
+            easeLinearity: 0.1,
           });
           setCenterOnUser(false);
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Location error:', error);
         })
         .finally(() => {
@@ -274,45 +302,58 @@ const AdvancedMapController = ({
 };
 
 // Stunning professional popup with rich information
-const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }) => {
+const SpectacularMarkerPopup = ({
+  marker,
+  onViewDetails,
+  onContact,
+  onNavigate,
+}) => {
   const theme = useTheme();
-  
+
   if (marker.type === 'job') {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.8, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <Card sx={{ 
-          minWidth: 320, 
-          maxWidth: 380,
-          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}08 100%)`,
-          border: `2px solid ${theme.palette.secondary.main}33`,
-          borderRadius: 3,
-          overflow: 'hidden',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: `linear-gradient(90deg, ${theme.palette.secondary.main} 0%, ${marker.urgent ? '#FF5722' : theme.palette.secondary.dark} 100%)`,
-          }
-        }}>
+        <Card
+          sx={{
+            minWidth: 320,
+            maxWidth: 380,
+            background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}08 100%)`,
+            border: `2px solid ${theme.palette.secondary.main}33`,
+            borderRadius: 3,
+            overflow: 'hidden',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: `linear-gradient(90deg, ${theme.palette.secondary.main} 0%, ${marker.urgent ? '#FF5722' : theme.palette.secondary.dark} 100%)`,
+            },
+          }}
+        >
           <CardContent sx={{ p: 0 }}>
             {/* Header Section */}
-            <Box sx={{ 
-              p: 2.5, 
-              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}05 100%)` 
-            }}>
+            <Box
+              sx={{
+                p: 2.5,
+                background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.secondary.main}05 100%)`,
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
                 <Avatar
                   sx={{
-                    bgcolor: marker.urgent ? '#FF572222' : theme.palette.secondary.main + '22',
-                    color: marker.urgent ? '#FF5722' : theme.palette.secondary.main,
+                    bgcolor: marker.urgent
+                      ? '#FF572222'
+                      : theme.palette.secondary.main + '22',
+                    color: marker.urgent
+                      ? '#FF5722'
+                      : theme.palette.secondary.main,
                     width: 56,
                     height: 56,
                     mr: 2,
@@ -321,28 +362,38 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                 >
                   {marker.urgent ? <FlashIcon /> : <JobIcon />}
                 </Avatar>
-                
+
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 'bold', 
-                    color: theme.palette.secondary.main,
-                    mb: 0.5,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    lineHeight: 1.2,
-                  }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 'bold',
+                      color: theme.palette.secondary.main,
+                      mb: 0.5,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {marker.title}
                   </Typography>
-                  
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Chip 
-                      label={marker.category} 
-                      size="small" 
-                      sx={{ 
-                        bgcolor: theme.palette.secondary.main, 
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Chip
+                      label={marker.category}
+                      size="small"
+                      sx={{
+                        bgcolor: theme.palette.secondary.main,
                         color: theme.palette.secondary.contrastText,
                         fontWeight: 'bold',
-                      }} 
+                      }}
                     />
                     {marker.verified && (
                       <Tooltip title="Verified Hirer">
@@ -354,39 +405,58 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 1, repeat: Infinity }}
                       >
-                        <Chip 
-                          label="URGENT" 
-                          size="small" 
-                          sx={{ 
-                            bgcolor: '#FF5722', 
+                        <Chip
+                          label="URGENT"
+                          size="small"
+                          sx={{
+                            bgcolor: '#FF5722',
                             color: 'white',
                             fontSize: '0.7rem',
                             fontWeight: 'bold',
-                            animation: 'pulse 1.5s infinite'
-                          }} 
+                            animation: 'pulse 1.5s infinite',
+                          }}
                         />
                       </motion.div>
                     )}
                   </Box>
                 </Box>
               </Box>
-              
-              <Typography variant="body2" sx={{ 
-                color: theme.palette.text.secondary,
-                lineHeight: 1.5,
-                mb: 2,
-              }}>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  lineHeight: 1.5,
+                  mb: 2,
+                }}
+              >
                 {marker.description?.substring(0, 150)}...
               </Typography>
             </Box>
 
             {/* Stats Section */}
-            <Box sx={{ px: 2.5, py: 2, bgcolor: theme.palette.background.default + '33' }}>
-              <Stack direction="row" spacing={3} divider={<Divider orientation="vertical" flexItem />}>
+            <Box
+              sx={{
+                px: 2.5,
+                py: 2,
+                bgcolor: theme.palette.background.default + '33',
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={3}
+                divider={<Divider orientation="vertical" flexItem />}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <MoneyIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+                  <MoneyIcon
+                    fontSize="small"
+                    sx={{ color: theme.palette.secondary.main }}
+                  />
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 'bold', lineHeight: 1 }}
+                    >
                       GHS {marker.budget?.toLocaleString()}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -394,12 +464,15 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                     </Typography>
                   </Box>
                 </Box>
-                
+
                 {marker.distance && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LocationIcon fontSize="small" color="action" />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 'medium', lineHeight: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 'medium', lineHeight: 1 }}
+                      >
                         {mapService.formatDistance(marker.distance)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -408,11 +481,14 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                     </Box>
                   </Box>
                 )}
-                
+
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <ScheduleIcon fontSize="small" color="action" />
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 'medium', lineHeight: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 'medium', lineHeight: 1 }}
+                    >
                       {new Date(marker.createdAt).toLocaleDateString()}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -426,32 +502,39 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
             {/* Skills Section */}
             {marker.skills && marker.skills.length > 0 && (
               <Box sx={{ px: 2.5, py: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold', color: theme.palette.text.primary }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1.5,
+                    fontWeight: 'bold',
+                    color: theme.palette.text.primary,
+                  }}
+                >
                   Required Skills
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {marker.skills.slice(0, 4).map((skill, index) => (
-                    <Chip 
+                    <Chip
                       key={index}
                       label={skill}
                       size="small"
                       variant="outlined"
-                      sx={{ 
+                      sx={{
                         borderColor: theme.palette.secondary.main + '66',
                         color: theme.palette.secondary.main,
                         fontSize: '0.75rem',
                         '&:hover': {
                           bgcolor: theme.palette.secondary.main + '11',
-                        }
+                        },
                       }}
                     />
                   ))}
                   {marker.skills.length > 4 && (
-                    <Chip 
+                    <Chip
                       label={`+${marker.skills.length - 4} more`}
                       size="small"
                       variant="outlined"
-                      sx={{ 
+                      sx={{
                         borderColor: theme.palette.secondary.main + '66',
                         color: theme.palette.secondary.main,
                         fontSize: '0.75rem',
@@ -461,16 +544,16 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                 </Box>
               </Box>
             )}
-            
+
             {/* Action Buttons */}
             <Box sx={{ p: 2.5, pt: 1 }}>
               <Stack direction="row" spacing={1}>
-                <Button 
-                  variant="contained" 
-                  size="small" 
+                <Button
+                  variant="contained"
+                  size="small"
                   onClick={() => onViewDetails(marker)}
                   startIcon={<VisibilityIcon />}
-                  sx={{ 
+                  sx={{
                     flex: 1,
                     background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
                     boxShadow: `0 4px 16px ${theme.palette.secondary.main}44`,
@@ -478,18 +561,18 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                 >
                   View Details
                 </Button>
-                <Button 
-                  variant="outlined" 
-                  size="small" 
+                <Button
+                  variant="outlined"
+                  size="small"
                   onClick={() => onContact(marker)}
                   startIcon={<WorkerIcon />}
-                  sx={{ 
+                  sx={{
                     flex: 1,
                     borderColor: theme.palette.secondary.main,
                     color: theme.palette.secondary.main,
                     '&:hover': {
                       bgcolor: theme.palette.secondary.main + '11',
-                    }
+                    },
                   }}
                 >
                   Apply Now
@@ -501,7 +584,7 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                     color: theme.palette.primary.main,
                     '&:hover': {
                       bgcolor: theme.palette.primary.main + '33',
-                    }
+                    },
                   }}
                 >
                   <NavigationIcon />
@@ -519,32 +602,36 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
     <motion.div
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <Card sx={{ 
-        minWidth: 320, 
-        maxWidth: 380,
-        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}08 100%)`,
-        border: `2px solid ${theme.palette.primary.main}33`,
-        borderRadius: 3,
-        overflow: 'hidden',
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${marker.online ? '#4CAF50' : theme.palette.primary.dark} 100%)`,
-        }
-      }}>
+      <Card
+        sx={{
+          minWidth: 320,
+          maxWidth: 380,
+          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}08 100%)`,
+          border: `2px solid ${theme.palette.primary.main}33`,
+          borderRadius: 3,
+          overflow: 'hidden',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${marker.online ? '#4CAF50' : theme.palette.primary.dark} 100%)`,
+          },
+        }}
+      >
         <CardContent sx={{ p: 0 }}>
           {/* Header Section */}
-          <Box sx={{ 
-            p: 2.5, 
-            background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}05 100%)` 
-          }}>
+          <Box
+            sx={{
+              p: 2.5,
+              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}05 100%)`,
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
               <Badge
                 overlap="circular"
@@ -555,21 +642,23 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      <Box sx={{ 
-                        width: 16, 
-                        height: 16, 
-                        borderRadius: '50%', 
-                        bgcolor: '#4CAF50',
-                        border: '2px solid white',
-                        boxShadow: '0 0 10px rgba(76, 175, 80, 0.6)'
-                      }} />
+                      <Box
+                        sx={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: '50%',
+                          bgcolor: '#4CAF50',
+                          border: '2px solid white',
+                          boxShadow: '0 0 10px rgba(76, 175, 80, 0.6)',
+                        }}
+                      />
                     </motion.div>
                   ) : null
                 }
               >
-                <Avatar 
+                <Avatar
                   src={marker.profileImage}
-                  sx={{ 
+                  sx={{
                     width: 56,
                     height: 56,
                     mr: 2,
@@ -580,34 +669,40 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                   <WorkerIcon />
                 </Avatar>
               </Badge>
-              
+
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 'bold', 
-                  color: theme.palette.primary.main,
-                  mb: 0.5,
-                  lineHeight: 1.2,
-                }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 'bold',
+                    color: theme.palette.primary.main,
+                    mb: 0.5,
+                    lineHeight: 1.2,
+                  }}
+                >
                   {marker.name}
                 </Typography>
-                
-                <Typography variant="body2" sx={{ 
-                  color: theme.palette.text.secondary,
-                  mb: 1,
-                  fontStyle: 'italic'
-                }}>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    mb: 1,
+                    fontStyle: 'italic',
+                  }}
+                >
                   {marker.title}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip 
-                    label={marker.category} 
-                    size="small" 
-                    sx={{ 
-                      bgcolor: theme.palette.primary.main + '22', 
+                  <Chip
+                    label={marker.category}
+                    size="small"
+                    sx={{
+                      bgcolor: theme.palette.primary.main + '22',
                       color: theme.palette.primary.main,
                       fontWeight: 'bold',
-                    }} 
+                    }}
                   />
                   {marker.verified && (
                     <Tooltip title="Verified Professional">
@@ -615,15 +710,15 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                     </Tooltip>
                   )}
                   {marker.online && (
-                    <Chip 
-                      label="ONLINE" 
-                      size="small" 
-                      sx={{ 
-                        bgcolor: '#4CAF5022', 
+                    <Chip
+                      label="ONLINE"
+                      size="small"
+                      sx={{
+                        bgcolor: '#4CAF5022',
                         color: '#4CAF50',
                         fontSize: '0.7rem',
                         fontWeight: 'bold',
-                      }} 
+                      }}
                     />
                   )}
                 </Box>
@@ -632,13 +727,26 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
           </Box>
 
           {/* Stats Section */}
-          <Box sx={{ px: 2.5, py: 2, bgcolor: theme.palette.background.default + '33' }}>
-            <Stack direction="row" spacing={2} divider={<Divider orientation="vertical" flexItem />}>
+          <Box
+            sx={{
+              px: 2.5,
+              py: 2,
+              bgcolor: theme.palette.background.default + '33',
+            }}
+          >
+            <Stack
+              direction="row"
+              spacing={2}
+              divider={<Divider orientation="vertical" flexItem />}
+            >
               {marker.rating > 0 && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <StarIcon fontSize="small" sx={{ color: '#FF9800' }} />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: 'bold', lineHeight: 1 }}
+                    >
                       {marker.rating.toFixed(1)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -647,12 +755,18 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                   </Box>
                 </Box>
               )}
-              
+
               {marker.hourlyRate && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <MoneyIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+                  <MoneyIcon
+                    fontSize="small"
+                    sx={{ color: theme.palette.secondary.main }}
+                  />
                   <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: 'bold', lineHeight: 1 }}
+                    >
                       GHS {marker.hourlyRate}/hr
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -661,12 +775,15 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                   </Box>
                 </Box>
               )}
-              
+
               {marker.distance && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <LocationIcon fontSize="small" color="action" />
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 'medium', lineHeight: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 'medium', lineHeight: 1 }}
+                    >
                       {mapService.formatDistance(marker.distance)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -681,11 +798,14 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
           {/* Bio Section */}
           {marker.bio && (
             <Box sx={{ px: 2.5, py: 2 }}>
-              <Typography variant="body2" sx={{ 
-                color: theme.palette.text.secondary,
-                lineHeight: 1.5,
-                fontStyle: 'italic',
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                }}
+              >
                 "{marker.bio.substring(0, 120)}..."
               </Typography>
             </Box>
@@ -694,32 +814,39 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
           {/* Skills Section */}
           {marker.skills && marker.skills.length > 0 && (
             <Box sx={{ px: 2.5, py: 2 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold', color: theme.palette.text.primary }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1.5,
+                  fontWeight: 'bold',
+                  color: theme.palette.text.primary,
+                }}
+              >
                 Specializations
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {marker.skills.slice(0, 4).map((skill, index) => (
-                  <Chip 
+                  <Chip
                     key={index}
                     label={skill}
                     size="small"
                     variant="outlined"
-                    sx={{ 
+                    sx={{
                       borderColor: theme.palette.primary.main + '66',
                       color: theme.palette.primary.main,
                       fontSize: '0.75rem',
                       '&:hover': {
                         bgcolor: theme.palette.primary.main + '11',
-                      }
+                      },
                     }}
                   />
                 ))}
                 {marker.skills.length > 4 && (
-                  <Chip 
+                  <Chip
                     label={`+${marker.skills.length - 4} more`}
                     size="small"
                     variant="outlined"
-                    sx={{ 
+                    sx={{
                       borderColor: theme.palette.primary.main + '66',
                       color: theme.palette.primary.main,
                       fontSize: '0.75rem',
@@ -729,16 +856,16 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
               </Box>
             </Box>
           )}
-          
+
           {/* Action Buttons */}
           <Box sx={{ p: 2.5, pt: 1 }}>
             <Stack direction="row" spacing={1}>
-              <Button 
-                variant="contained" 
-                size="small" 
+              <Button
+                variant="contained"
+                size="small"
                 onClick={() => onViewDetails(marker)}
                 startIcon={<VisibilityIcon />}
-                sx={{ 
+                sx={{
                   flex: 1,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                   boxShadow: `0 4px 16px ${theme.palette.primary.main}44`,
@@ -746,18 +873,18 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
               >
                 View Profile
               </Button>
-              <Button 
-                variant="outlined" 
-                size="small" 
+              <Button
+                variant="outlined"
+                size="small"
                 onClick={() => onContact(marker)}
                 startIcon={<JobIcon />}
-                sx={{ 
+                sx={{
                   flex: 1,
                   borderColor: theme.palette.secondary.main,
                   color: theme.palette.secondary.main,
                   '&:hover': {
                     bgcolor: theme.palette.secondary.main + '11',
-                  }
+                  },
                 }}
               >
                 Hire Now
@@ -769,7 +896,7 @@ const SpectacularMarkerPopup = ({ marker, onViewDetails, onContact, onNavigate }
                   color: theme.palette.secondary.main,
                   '&:hover': {
                     bgcolor: theme.palette.secondary.main + '33',
-                  }
+                  },
                 }}
               >
                 <NavigationIcon />
@@ -818,33 +945,34 @@ const InteractiveMap = ({
     osm: {
       url: EXTERNAL_SERVICES.OPENSTREETMAP.TILES,
       attribution: '© OpenStreetMap contributors',
-      name: 'Standard'
+      name: 'Standard',
     },
     dark: {
       url: EXTERNAL_SERVICES.CARTODB.DARK_ALL,
       attribution: '© CARTO',
-      name: 'Dark Mode'
+      name: 'Dark Mode',
     },
     satellite: {
       url: EXTERNAL_SERVICES.ARCGIS.WORLD_IMAGERY,
       attribution: '© Esri',
-      name: 'Satellite'
+      name: 'Satellite',
     },
     terrain: {
       url: EXTERNAL_SERVICES.OPENTOPOMAP.TILES,
       attribution: '© OpenTopoMap',
-      name: 'Terrain'
+      name: 'Terrain',
     },
   };
 
   // Get user location on mount
   useEffect(() => {
     if (showUserLocation) {
-      mapService.getCurrentLocation()
-        .then(location => {
+      mapService
+        .getCurrentLocation()
+        .then((location) => {
           setUserLocation(location);
         })
-        .catch(error => {
+        .catch((error) => {
           console.warn('Could not get user location:', error.message);
         });
     }
@@ -882,17 +1010,21 @@ const InteractiveMap = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
     >
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           position: 'relative',
           height,
           width: '100%',
           borderRadius: isFullscreen ? 0 : 2,
           overflow: 'hidden',
-          border: isFullscreen ? 'none' : `2px solid ${theme.palette.secondary.main}33`,
-          boxShadow: isFullscreen ? 'none' : `0 8px 32px rgba(255, 215, 0, 0.15)`,
+          border: isFullscreen
+            ? 'none'
+            : `2px solid ${theme.palette.secondary.main}33`,
+          boxShadow: isFullscreen
+            ? 'none'
+            : `0 8px 32px rgba(255, 215, 0, 0.15)`,
           ...(isFullscreen && {
             position: 'fixed',
             top: 0,
@@ -901,7 +1033,7 @@ const InteractiveMap = ({
             bottom: 0,
             zIndex: 9999,
             height: '100vh',
-          })
+          }),
         }}
         className={className}
       >
@@ -920,32 +1052,44 @@ const InteractiveMap = ({
           }}
         >
           <LayersControl position="topright">
-            <LayersControl.BaseLayer checked={tileLayer === 'osm'} name="Standard">
+            <LayersControl.BaseLayer
+              checked={tileLayer === 'osm'}
+              name="Standard"
+            >
               <TileLayer
                 url={tileLayers.osm.url}
                 attribution={tileLayers.osm.attribution}
               />
             </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer checked={tileLayer === 'dark'} name="Dark Mode">
+            <LayersControl.BaseLayer
+              checked={tileLayer === 'dark'}
+              name="Dark Mode"
+            >
               <TileLayer
                 url={tileLayers.dark.url}
                 attribution={tileLayers.dark.attribution}
               />
             </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer checked={tileLayer === 'satellite'} name="Satellite">
+            <LayersControl.BaseLayer
+              checked={tileLayer === 'satellite'}
+              name="Satellite"
+            >
               <TileLayer
                 url={tileLayers.satellite.url}
                 attribution={tileLayers.satellite.attribution}
               />
             </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer checked={tileLayer === 'terrain'} name="Terrain">
+            <LayersControl.BaseLayer
+              checked={tileLayer === 'terrain'}
+              name="Terrain"
+            >
               <TileLayer
                 url={tileLayers.terrain.url}
                 attribution={tileLayers.terrain.attribution}
               />
             </LayersControl.BaseLayer>
           </LayersControl>
-          
+
           <AdvancedMapController
             onLocationUpdate={setMapCenter}
             onZoomChange={setMapZoom}
@@ -960,12 +1104,12 @@ const InteractiveMap = ({
           {/* Enhanced user location marker */}
           {userLocation && showUserLocation && (
             <FeatureGroup>
-              <Marker 
+              <Marker
                 position={[userLocation.latitude, userLocation.longitude]}
                 icon={createAdvancedVocationalIcon('user')}
               >
                 <Popup>
-                  <SpectacularMarkerPopup 
+                  <SpectacularMarkerPopup
                     marker={{
                       title: 'Your Location',
                       type: 'user',
@@ -977,7 +1121,7 @@ const InteractiveMap = ({
                   />
                 </Popup>
               </Marker>
-              
+
               {/* Professional search radius circle */}
               {showSearchRadius && (
                 <Circle
@@ -1000,20 +1144,23 @@ const InteractiveMap = ({
           {markers.map((marker, index) => (
             <Marker
               key={marker.id || index}
-              position={[marker.coordinates.latitude, marker.coordinates.longitude]}
+              position={[
+                marker.coordinates.latitude,
+                marker.coordinates.longitude,
+              ]}
               icon={createAdvancedVocationalIcon(
-                marker.type, 
-                marker.category, 
-                marker.online, 
+                marker.type,
+                marker.category,
+                marker.online,
                 marker.verified,
-                marker.urgent
+                marker.urgent,
               )}
               eventHandlers={{
-                click: () => onMarkerClick(marker)
+                click: () => onMarkerClick(marker),
               }}
             >
               <Popup>
-                <SpectacularMarkerPopup 
+                <SpectacularMarkerPopup
                   marker={marker}
                   onViewDetails={onMarkerClick}
                   onContact={(marker) => console.log('Contact:', marker)}
@@ -1041,7 +1188,7 @@ const InteractiveMap = ({
                     size="medium"
                     onClick={handleLocationClick}
                     disabled={isLocating}
-                    sx={{ 
+                    sx={{
                       background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
                       color: theme.palette.secondary.contrastText,
                       boxShadow: `0 4px 20px ${theme.palette.secondary.main}44`,
@@ -1070,23 +1217,25 @@ const InteractiveMap = ({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <Paper sx={{ 
-                  bgcolor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.secondary.main}33`,
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  backdropFilter: 'blur(10px)',
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper}ee 0%, ${theme.palette.background.paper}cc 100%)`,
-                }}>
+                <Paper
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.secondary.main}33`,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    backdropFilter: 'blur(10px)',
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper}ee 0%, ${theme.palette.background.paper}cc 100%)`,
+                  }}
+                >
                   <Stack>
                     <Tooltip title="Zoom In">
-                      <IconButton 
-                        onClick={handleZoomIn} 
+                      <IconButton
+                        onClick={handleZoomIn}
                         size="medium"
-                        sx={{ 
+                        sx={{
                           color: theme.palette.secondary.main,
                           borderRadius: 0,
-                          '&:hover': { 
+                          '&:hover': {
                             bgcolor: theme.palette.secondary.main + '11',
                             transform: 'scale(1.1)',
                           },
@@ -1098,13 +1247,13 @@ const InteractiveMap = ({
                     </Tooltip>
                     <Divider />
                     <Tooltip title="Zoom Out">
-                      <IconButton 
-                        onClick={handleZoomOut} 
+                      <IconButton
+                        onClick={handleZoomOut}
                         size="medium"
-                        sx={{ 
+                        sx={{
                           color: theme.palette.secondary.main,
                           borderRadius: 0,
-                          '&:hover': { 
+                          '&:hover': {
                             bgcolor: theme.palette.secondary.main + '11',
                             transform: 'scale(1.1)',
                           },
@@ -1132,7 +1281,7 @@ const InteractiveMap = ({
                   <Fab
                     size="medium"
                     onClick={cycleTileLayer}
-                    sx={{ 
+                    sx={{
                       bgcolor: theme.palette.background.paper,
                       color: theme.palette.primary.main,
                       border: `2px solid ${theme.palette.primary.main}33`,
@@ -1143,9 +1292,13 @@ const InteractiveMap = ({
                       },
                     }}
                   >
-                    {tileLayer === 'satellite' ? <SatelliteIcon /> : 
-                     tileLayer === 'terrain' ? <TerrainIcon /> : 
-                     <MapIcon />}
+                    {tileLayer === 'satellite' ? (
+                      <SatelliteIcon />
+                    ) : tileLayer === 'terrain' ? (
+                      <TerrainIcon />
+                    ) : (
+                      <MapIcon />
+                    )}
                   </Fab>
                 </Tooltip>
               </motion.div>
@@ -1160,11 +1313,13 @@ const InteractiveMap = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                <Tooltip
+                  title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                >
                   <Fab
                     size="medium"
                     onClick={toggleFullscreen}
-                    sx={{ 
+                    sx={{
                       bgcolor: theme.palette.background.paper,
                       color: theme.palette.text.primary,
                       border: `2px solid ${theme.palette.divider}`,
@@ -1206,53 +1361,102 @@ const InteractiveMap = ({
                 boxShadow: `0 8px 32px rgba(255, 215, 0, 0.2)`,
               }}
             >
-              <Typography variant="subtitle2" sx={{ 
-                mb: 1.5, 
-                fontWeight: 'bold', 
-                color: theme.palette.secondary.main,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-              }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1.5,
+                  fontWeight: 'bold',
+                  color: theme.palette.secondary.main,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
                 <InfoIcon fontSize="small" />
                 Map Information
               </Typography>
-              
+
               <Stack spacing={1}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="caption" color="text.secondary">Zoom Level:</Typography>
-                  <Chip label={`${mapZoom}x`} size="small" color="secondary" variant="outlined" />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Zoom Level:
+                  </Typography>
+                  <Chip
+                    label={`${mapZoom}x`}
+                    size="small"
+                    color="secondary"
+                    variant="outlined"
+                  />
                 </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="caption" color="text.secondary">Map Style:</Typography>
-                  <Chip label={tileLayers[tileLayer]?.name} size="small" color="primary" variant="outlined" />
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Map Style:
+                  </Typography>
+                  <Chip
+                    label={tileLayers[tileLayer]?.name}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
                 </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="caption" color="text.secondary">Total Markers:</Typography>
-                  <Chip 
-                    label={markers.length} 
-                    size="small" 
-                    sx={{ 
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Total Markers:
+                  </Typography>
+                  <Chip
+                    label={markers.length}
+                    size="small"
+                    sx={{
                       bgcolor: '#4CAF5022',
                       color: '#4CAF50',
                       fontWeight: 'bold',
-                    }} 
+                    }}
                   />
                 </Box>
-                
+
                 {userLocation && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">Your Location:</Typography>
-                    <Typography variant="caption" sx={{ 
-                      fontFamily: 'monospace',
-                      bgcolor: theme.palette.action.hover,
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                    }}>
-                      {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Your Location:
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontFamily: 'monospace',
+                        bgcolor: theme.palette.action.hover,
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {userLocation.latitude.toFixed(4)},{' '}
+                      {userLocation.longitude.toFixed(4)}
                     </Typography>
                   </Box>
                 )}
@@ -1290,22 +1494,28 @@ const InteractiveMap = ({
               >
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 >
-                  <CircularProgress 
-                    sx={{ color: theme.palette.secondary.main, mb: 2 }} 
+                  <CircularProgress
+                    sx={{ color: theme.palette.secondary.main, mb: 2 }}
                     size={50}
                     thickness={3}
                   />
                 </motion.div>
-                <Typography variant="h6" sx={{ 
-                  color: theme.palette.secondary.main,
-                  fontWeight: 'bold',
-                  mb: 1,
-                }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: theme.palette.secondary.main,
+                    fontWeight: 'bold',
+                    mb: 1,
+                  }}
+                >
                   Finding Your Location
                 </Typography>
-                <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: theme.palette.text.secondary }}
+                >
                   Using high-accuracy GPS positioning...
                 </Typography>
               </Paper>

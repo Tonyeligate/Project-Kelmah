@@ -32,7 +32,9 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Updated performance data
    */
   async updateUserPerformance(userId, metrics) {
-    const response = await apiClient.patch(`/user-performance/${userId}`, { metrics });
+    const response = await apiClient.patch(`/user-performance/${userId}`, {
+      metrics,
+    });
     return response.data;
   }
 
@@ -45,11 +47,14 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Updated performance data
    */
   async verifySkill(userId, skill, isPrimary, verificationData) {
-    const response = await apiClient.patch(`/user-performance/${userId}/verify-skill`, {
-      skill,
-      isPrimary,
-      verificationData
-    });
+    const response = await apiClient.patch(
+      `/user-performance/${userId}/verify-skill`,
+      {
+        skill,
+        isPrimary,
+        verificationData,
+      },
+    );
     return response.data;
   }
 
@@ -63,7 +68,7 @@ class UserPerformanceApi {
   async updateUserTier(userId, tier, reason = '') {
     const response = await apiClient.patch(`/user-performance/${userId}/tier`, {
       tier,
-      reason
+      reason,
     });
     return response.data;
   }
@@ -75,7 +80,9 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Users in tier
    */
   async getUsersByTier(tier, params = {}) {
-    const response = await apiClient.get(`/user-performance/tier/${tier}`, { params });
+    const response = await apiClient.get(`/user-performance/tier/${tier}`, {
+      params,
+    });
     return response.data;
   }
 
@@ -87,7 +94,9 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Top performers
    */
   async getTopPerformers(params = {}) {
-    const response = await apiClient.get('/user-performance/top-performers', { params });
+    const response = await apiClient.get('/user-performance/top-performers', {
+      params,
+    });
     return response.data;
   }
 
@@ -98,7 +107,10 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Users in region
    */
   async getUsersByLocation(region, params = {}) {
-    const response = await apiClient.get(`/user-performance/location/${region}`, { params });
+    const response = await apiClient.get(
+      `/user-performance/location/${region}`,
+      { params },
+    );
     return response.data;
   }
 
@@ -109,7 +121,9 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Users with skill
    */
   async getUsersBySkill(skill, params = {}) {
-    const response = await apiClient.get(`/user-performance/skill/${skill}`, { params });
+    const response = await apiClient.get(`/user-performance/skill/${skill}`, {
+      params,
+    });
     return response.data;
   }
 
@@ -120,9 +134,12 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Updated performance data
    */
   async updateLocationPreferences(userId, locationPreferences) {
-    const response = await apiClient.patch(`/user-performance/${userId}/location-preferences`, {
-      locationPreferences
-    });
+    const response = await apiClient.patch(
+      `/user-performance/${userId}/location-preferences`,
+      {
+        locationPreferences,
+      },
+    );
     return response.data;
   }
 
@@ -140,7 +157,9 @@ class UserPerformanceApi {
    * @returns {Promise<Object>} Recalculation response
    */
   async recalculateAllTiers() {
-    const response = await apiClient.patch('/user-performance/recalculate-tiers');
+    const response = await apiClient.patch(
+      '/user-performance/recalculate-tiers',
+    );
     return response.data;
   }
 }

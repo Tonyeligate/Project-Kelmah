@@ -2,12 +2,12 @@
  * Microservices Configuration
  *
  * ✅ UPDATED: All requests route through API Gateway (/api) in both development and production
- * 
+ *
  * The API Gateway handles:
  * - Intelligent service discovery (localhost OR cloud URLs)
  * - Health checks and automatic fallback
  * - Request routing to appropriate microservices
- * 
+ *
  * No need for hardcoded service URLs in frontend!
  */
 
@@ -18,7 +18,7 @@ const isDevelopment = import.meta.env.MODE === 'development';
 // In production: /api → Vercel rewrite → LocalTunnel → localhost:5000 (API Gateway) → Render services
 const SERVICES = {
   AUTH_SERVICE: '/api/auth',
-  USER_SERVICE: '/api/users', 
+  USER_SERVICE: '/api/users',
   JOB_SERVICE: '/api/jobs',
   MESSAGING_SERVICE: '/api/messaging',
   PAYMENT_SERVICE: '/api/payments',
@@ -63,16 +63,20 @@ export const EXTERNAL_SERVICES = {
     NOMINATIM_SEARCH: 'https://nominatim.openstreetmap.org/search',
   },
   LEAFLET: {
-    MARKER_ICON_RETINA: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    MARKER_ICON: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    MARKER_SHADOW: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    MARKER_ICON_RETINA:
+      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    MARKER_ICON:
+      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    MARKER_SHADOW:
+      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   },
   GOOGLE_MAPS: {
     EMBED: 'https://maps.google.com/maps',
     SEARCH: 'https://www.google.com/maps/search/',
   },
   ARCGIS: {
-    WORLD_IMAGERY: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    WORLD_IMAGERY:
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   },
   CARTODB: {
     DARK_ALL: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',

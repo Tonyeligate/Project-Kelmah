@@ -17,16 +17,24 @@ const SwipeGestures = ({
   enableVertical = true,
   threshold = 50,
   className,
-  style
+  style,
 }) => {
   const theme = useTheme();
   const [isDragging, setIsDragging] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  
+
   // Visual feedback transforms
-  const opacity = useTransform(x, [-200, -50, 0, 50, 200], [0.3, 0.8, 1, 0.8, 0.3]);
-  const scale = useTransform(x, [-200, -50, 0, 50, 200], [0.95, 0.98, 1, 0.98, 0.95]);
+  const opacity = useTransform(
+    x,
+    [-200, -50, 0, 50, 200],
+    [0.3, 0.8, 1, 0.8, 0.3],
+  );
+  const scale = useTransform(
+    x,
+    [-200, -50, 0, 50, 200],
+    [0.95, 0.98, 1, 0.98, 0.95],
+  );
   const backgroundColor = useTransform(
     x,
     [-200, -50, 0, 50, 200],
@@ -35,8 +43,8 @@ const SwipeGestures = ({
       'rgba(244, 67, 54, 0.05)',
       'transparent',
       'rgba(76, 175, 80, 0.05)',
-      'rgba(76, 175, 80, 0.1)'
-    ]
+      'rgba(76, 175, 80, 0.1)',
+    ],
   );
 
   const handleDragStart = () => {
@@ -45,13 +53,15 @@ const SwipeGestures = ({
 
   const handleDragEnd = (event, info) => {
     setIsDragging(false);
-    
+
     const { offset, velocity } = info;
-    
+
     // Calculate if swipe meets threshold (distance or velocity)
-    const horizontalSwipe = Math.abs(offset.x) > threshold || Math.abs(velocity.x) > 500;
-    const verticalSwipe = Math.abs(offset.y) > threshold || Math.abs(velocity.y) > 500;
-    
+    const horizontalSwipe =
+      Math.abs(offset.x) > threshold || Math.abs(velocity.x) > 500;
+    const verticalSwipe =
+      Math.abs(offset.y) > threshold || Math.abs(velocity.y) > 500;
+
     if (enableHorizontal && horizontalSwipe) {
       if (offset.x > 0 && onSwipeRight) {
         onSwipeRight();
@@ -59,7 +69,7 @@ const SwipeGestures = ({
         onSwipeLeft();
       }
     }
-    
+
     if (enableVertical && verticalSwipe) {
       if (offset.y > 0 && onSwipeDown) {
         onSwipeDown();
@@ -67,7 +77,7 @@ const SwipeGestures = ({
         onSwipeUp();
       }
     }
-    
+
     // Reset position
     x.set(0);
     y.set(0);
@@ -88,7 +98,7 @@ const SwipeGestures = ({
       dragElastic={0.2}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      whileDrag={{ 
+      whileDrag={{
         cursor: 'grabbing',
         zIndex: 1000,
       }}
@@ -97,9 +107,9 @@ const SwipeGestures = ({
         y: isDragging ? y : 0,
       }}
       transition={{
-        type: "spring",
+        type: 'spring',
         damping: 30,
-        stiffness: 400
+        stiffness: 400,
       }}
     >
       {children}
@@ -108,15 +118,15 @@ const SwipeGestures = ({
 };
 
 // Higher-order component for swipeable cards
-export const SwipeableCard = ({ 
-  children, 
-  onSwipeLeft, 
-  onSwipeRight, 
+export const SwipeableCard = ({
+  children,
+  onSwipeLeft,
+  onSwipeRight,
   showSwipeHints = false,
-  ...props 
+  ...props
 }) => {
   const [showHint, setShowHint] = useState(showSwipeHints);
-  
+
   useEffect(() => {
     if (showSwipeHints) {
       const timer = setTimeout(() => setShowHint(false), 3000);
@@ -143,13 +153,13 @@ export const SwipeableCard = ({
             fontSize: '12px',
             fontWeight: 600,
             zIndex: 1000,
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
           }}
         >
           👈 Swipe to interact 👉
         </motion.div>
       )}
-      
+
       <SwipeGestures
         onSwipeLeft={onSwipeLeft}
         onSwipeRight={onSwipeRight}
@@ -162,14 +172,14 @@ export const SwipeableCard = ({
 };
 
 // Swipeable list component for job/worker cards
-export const SwipeableList = ({ 
-  items, 
-  renderItem, 
-  onSwipeLeft, 
+export const SwipeableList = ({
+  items,
+  renderItem,
+  onSwipeLeft,
   onSwipeRight,
   keyExtractor = (item, index) => index,
-  emptyMessage = "No items to display",
-  ...props 
+  emptyMessage = 'No items to display',
+  ...props
 }) => {
   if (!items || items.length === 0) {
     return (
@@ -178,7 +188,7 @@ export const SwipeableList = ({
           textAlign: 'center',
           py: 4,
           color: 'text.secondary',
-          fontSize: '14px'
+          fontSize: '14px',
         }}
       >
         {emptyMessage}
@@ -203,17 +213,17 @@ export const SwipeableList = ({
 };
 
 // Pull-to-refresh component
-export const PullToRefresh = ({ 
-  children, 
-  onRefresh, 
+export const PullToRefresh = ({
+  children,
+  onRefresh,
   refreshing = false,
   threshold = 80,
-  ...props 
+  ...props
 }) => {
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const y = useMotionValue(0);
-  
+
   const handleDragStart = () => {
     setIsPulling(true);
   };
@@ -226,11 +236,11 @@ export const PullToRefresh = ({
 
   const handleDragEnd = (event, info) => {
     setIsPulling(false);
-    
+
     if (info.offset.y > threshold && onRefresh && !refreshing) {
       onRefresh();
     }
-    
+
     setPullDistance(0);
     y.set(0);
   };
@@ -264,7 +274,7 @@ export const PullToRefresh = ({
         <motion.div
           style={{
             marginRight: 8,
-            transform: `rotate(${refreshIconRotation}deg)`
+            transform: `rotate(${refreshIconRotation}deg)`,
           }}
         >
           🔄
@@ -286,9 +296,9 @@ export const PullToRefresh = ({
           y: refreshing ? 40 : 0,
         }}
         transition={{
-          type: "spring",
+          type: 'spring',
           damping: 30,
-          stiffness: 400
+          stiffness: 400,
         }}
       >
         {/* Refreshing indicator */}
@@ -310,19 +320,19 @@ export const PullToRefresh = ({
               zIndex: 1000,
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '8px',
             }}
           >
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             >
               🔄
             </motion.div>
             Refreshing...
           </motion.div>
         )}
-        
+
         {children}
       </motion.div>
     </Box>
@@ -330,20 +340,20 @@ export const PullToRefresh = ({
 };
 
 // Quick action swipe component for Ghana-specific actions
-export const QuickActionSwipe = ({ 
-  children, 
-  leftAction, 
+export const QuickActionSwipe = ({
+  children,
+  leftAction,
   rightAction,
   leftColor = '#4CAF50',
   rightColor = '#F44336',
-  ...props 
+  ...props
 }) => {
   const [revealAction, setRevealAction] = useState(null);
   const x = useMotionValue(0);
-  
+
   const handleDrag = (event, info) => {
     const offset = info.offset.x;
-    
+
     if (offset > 50) {
       setRevealAction('right');
     } else if (offset < -50) {
@@ -355,13 +365,13 @@ export const QuickActionSwipe = ({
 
   const handleDragEnd = (event, info) => {
     const offset = info.offset.x;
-    
+
     if (offset > 100 && rightAction) {
       rightAction.onAction();
     } else if (offset < -100 && leftAction) {
       leftAction.onAction();
     }
-    
+
     setRevealAction(null);
     x.set(0);
   };
@@ -384,16 +394,14 @@ export const QuickActionSwipe = ({
             color: 'white',
             fontWeight: 600,
             opacity: revealAction === 'left' ? 1 : 0,
-            transition: 'opacity 0.2s ease'
+            transition: 'opacity 0.2s ease',
           }}
         >
           <Box sx={{ textAlign: 'center' }}>
             <div style={{ fontSize: '20px', marginBottom: '4px' }}>
               {leftAction.icon}
             </div>
-            <div style={{ fontSize: '10px' }}>
-              {leftAction.label}
-            </div>
+            <div style={{ fontSize: '10px' }}>{leftAction.label}</div>
           </Box>
         </Box>
       )}
@@ -414,16 +422,14 @@ export const QuickActionSwipe = ({
             color: 'white',
             fontWeight: 600,
             opacity: revealAction === 'right' ? 1 : 0,
-            transition: 'opacity 0.2s ease'
+            transition: 'opacity 0.2s ease',
           }}
         >
           <Box sx={{ textAlign: 'center' }}>
             <div style={{ fontSize: '20px', marginBottom: '4px' }}>
               {rightAction.icon}
             </div>
-            <div style={{ fontSize: '10px' }}>
-              {rightAction.label}
-            </div>
+            <div style={{ fontSize: '10px' }}>{rightAction.label}</div>
           </Box>
         </Box>
       )}
@@ -431,7 +437,10 @@ export const QuickActionSwipe = ({
       {/* Main content */}
       <motion.div
         drag="x"
-        dragConstraints={{ left: leftAction ? -120 : 0, right: rightAction ? 120 : 0 }}
+        dragConstraints={{
+          left: leftAction ? -120 : 0,
+          right: rightAction ? 120 : 0,
+        }}
         dragElastic={0.1}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}

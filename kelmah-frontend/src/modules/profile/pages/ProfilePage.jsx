@@ -43,7 +43,7 @@ import {
 const ProfilePage = () => {
   const theme = useTheme();
   const isActualMobile = useMediaQuery('(max-width: 768px)');
-  
+
   const {
     updateProfile,
     updateSkills,
@@ -127,13 +127,14 @@ const ProfilePage = () => {
       </Container>
     );
   }
-  
+
   // ✅ ADDED: Handle case when profile data is completely missing
   if (!loading && !profile) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="info" sx={{ mb: 3 }}>
-          Profile data is not available. Please check your connection or try refreshing the page.
+          Profile data is not available. Please check your connection or try
+          refreshing the page.
         </Alert>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h4" gutterBottom>
@@ -234,7 +235,8 @@ const ProfilePage = () => {
                   <>
                     <Typography variant="h4" gutterBottom>
                       {/* ✅ FIXED: Add null-safety check to prevent crashes */}
-                      {profile?.firstName || 'First'} {profile?.lastName || 'Name'}
+                      {profile?.firstName || 'First'}{' '}
+                      {profile?.lastName || 'Name'}
                     </Typography>
                     <Typography
                       variant="body1"

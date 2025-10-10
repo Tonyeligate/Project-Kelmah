@@ -6,17 +6,19 @@ import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
 
 // Error fallback component for route-level errors
 const RouteErrorFallback = ({ error, resetErrorBoundary }) => (
-  <div style={{
-    padding: 24,
-    backgroundColor: '#000000',
-    color: '#FFD700',
-    minHeight: '50vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
-  }}>
+  <div
+    style={{
+      padding: 24,
+      backgroundColor: '#000000',
+      color: '#FFD700',
+      minHeight: '50vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+    }}
+  >
     <h2>Something went wrong</h2>
     <p>{error.message}</p>
     <button
@@ -59,7 +61,7 @@ const WorkerRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
   const hasRole = (user, role) =>
     user?.role === role || user?.userType === role || user?.userRole === role;
-  
+
   // Memoized role checking to prevent infinite re-renders
   const isWorkerAllowed = useMemo(() => {
     console.log('Worker route protection check:', {
@@ -67,9 +69,9 @@ const WorkerRoutes = () => {
       hasUser: !!user,
       userRole: user?.role,
       loading,
-      userId: user?.id
+      userId: user?.id,
     });
-    
+
     // If loading, allow access to prevent redirect loops
     if (loading) {
       console.log('Worker route: Allowing access due to loading state');
@@ -83,7 +85,9 @@ const WorkerRoutes = () => {
     }
     // If authenticated but no user (race condition), allow access temporarily
     if (isAuthenticated && !user) {
-      console.log('Worker route: Allowing access due to race condition (authenticated but no user)');
+      console.log(
+        'Worker route: Allowing access due to race condition (authenticated but no user)',
+      );
       return true;
     }
     // Otherwise, not allowed

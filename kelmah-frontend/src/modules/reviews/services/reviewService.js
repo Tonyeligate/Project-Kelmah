@@ -14,7 +14,8 @@ class ReviewService {
       // Normalize backend response to { reviews, pagination }
       const raw = response.data;
       const reviews = raw?.data?.reviews || raw?.data || raw?.reviews || [];
-      const pagination = raw?.data?.pagination || raw?.pagination || { page, limit, total: reviews.length, pages: 1 };
+      const pagination = raw?.data?.pagination ||
+        raw?.pagination || { page, limit, total: reviews.length, pages: 1 };
       return { reviews, pagination };
     } catch (error) {
       console.error('Error fetching user reviews:', error);
@@ -25,9 +26,12 @@ class ReviewService {
   // Get reviews for a specific job
   async getJobReviews(jobId, page = 1, limit = 10) {
     try {
-      const response = await reviewServiceClient.get(`/api/reviews/job/${jobId}`, {
-        params: { page, limit },
-      });
+      const response = await reviewServiceClient.get(
+        `/api/reviews/job/${jobId}`,
+        {
+          params: { page, limit },
+        },
+      );
       const raw = response.data;
       const reviews = raw.data || [];
       const pagination = raw.meta?.pagination || {};
@@ -44,7 +48,10 @@ class ReviewService {
   // Create a new review
   async createReview(reviewData) {
     try {
-      const response = await reviewServiceClient.post('/api/reviews', reviewData);
+      const response = await reviewServiceClient.post(
+        '/api/reviews',
+        reviewData,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Error creating review:', error);

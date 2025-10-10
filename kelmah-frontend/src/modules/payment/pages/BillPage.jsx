@@ -32,7 +32,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 // Currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: "GHS",
+  currency: 'GHS',
 });
 
 const BillPage = () => {

@@ -15,7 +15,10 @@ const WorkerSearchPage = () => {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    console.log('WorkerSearchPage useEffect - isAuthenticated:', isAuthenticated);
+    console.log(
+      'WorkerSearchPage useEffect - isAuthenticated:',
+      isAuthenticated,
+    );
     if (!isAuthenticated) {
       console.log('WorkerSearchPage - redirecting to login');
       navigate('/login?redirect=/hirer/find-talent'); // ✅ FIXED: Use correct route
@@ -30,10 +33,10 @@ const WorkerSearchPage = () => {
           <title>Find Skilled Workers - Kelmah | Ghana's Top Talent Pool</title>
         </Helmet>
         <Container maxWidth="xl" sx={{ py: 4 }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              color: '#D4AF37', 
+          <Typography
+            variant="h2"
+            sx={{
+              color: '#D4AF37',
               textAlign: 'center',
               fontWeight: 'bold',
               background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
@@ -44,44 +47,45 @@ const WorkerSearchPage = () => {
           >
             Find Ghana's Top Skilled Workers
           </Typography>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              color: 'rgba(255,255,255,0.8)', 
+          <Typography
+            variant="h5"
+            sx={{
+              color: 'rgba(255,255,255,0.8)',
               textAlign: 'center',
-              mt: 2
+              mt: 2,
             }}
           >
             Connect with verified professionals across all skilled trades
           </Typography>
-          
+
           <Box sx={{ mt: 4, maxWidth: 600, mx: 'auto' }}>
-            <Alert 
-              severity="info" 
-              sx={{ 
+            <Alert
+              severity="info"
+              sx={{
                 mb: 3,
                 bgcolor: 'rgba(33, 150, 243, 0.1)',
                 border: '1px solid rgba(33, 150, 243, 0.3)',
                 '& .MuiAlert-message': {
-                  color: 'white'
-                }
+                  color: 'white',
+                },
               }}
             >
               <Typography variant="h6" gutterBottom>
                 🔐 Authentication Required
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                To search and connect with skilled workers, you need to be logged in. 
-                This helps us provide you with the best talent matching experience.
+                To search and connect with skilled workers, you need to be
+                logged in. This helps us provide you with the best talent
+                matching experience.
               </Typography>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 color="primary"
                 size="large"
                 onClick={() => navigate('/login?redirect=/hirer/find-talent')} // ✅ FIXED: Use correct route
-                sx={{ 
+                sx={{
                   bgcolor: '#D4AF37',
-                  '&:hover': { bgcolor: '#B8941F' }
+                  '&:hover': { bgcolor: '#B8941F' },
                 }}
               >
                 Login to Continue
@@ -100,10 +104,10 @@ const WorkerSearchPage = () => {
         <title>Find Skilled Workers - Kelmah | Ghana's Top Talent Pool</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography 
-          variant="h2" 
-          sx={{ 
-            color: '#D4AF37', 
+        <Typography
+          variant="h2"
+          sx={{
+            color: '#D4AF37',
             textAlign: 'center',
             fontWeight: 'bold',
             background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
@@ -114,12 +118,12 @@ const WorkerSearchPage = () => {
         >
           Find Ghana's Top Skilled Workers
         </Typography>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            color: 'rgba(255,255,255,0.8)', 
+        <Typography
+          variant="h5"
+          sx={{
+            color: 'rgba(255,255,255,0.8)',
             textAlign: 'center',
-            mt: 2
+            mt: 2,
           }}
         >
           Connect with verified professionals across all skilled trades

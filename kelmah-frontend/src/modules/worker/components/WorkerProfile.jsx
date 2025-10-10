@@ -142,7 +142,7 @@ const MetricCard = styled(Card)(({ theme }) => ({
   textAlign: 'center',
   padding: theme.spacing(2),
   transition: 'all 0.3s ease-in-out',
-        '&:hover': {
+  '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: theme.shadows[12],
   },
@@ -199,16 +199,26 @@ function WorkerProfile() {
     setError(null);
     try {
       const profileRes = await workerService.getWorkerById(workerId);
-      const worker = profileRes?.data?.data?.worker || profileRes?.data?.worker || profileRes?.data;
-      const normalizedProfile = worker ? {
-        ...worker,
-        user: worker.user,
-        // UI expects these keys
-        hourly_rate: worker.hourlyRate?.min ?? worker.hourlyRate ?? worker.hourlyRateMin ?? 0,
-        is_verified: worker.verification?.isVerified ?? worker.isVerified ?? false,
-        profile_picture: worker.profile?.picture ?? worker.profilePicture,
-        is_online: false,
-      } : null;
+      const worker =
+        profileRes?.data?.data?.worker ||
+        profileRes?.data?.worker ||
+        profileRes?.data;
+      const normalizedProfile = worker
+        ? {
+            ...worker,
+            user: worker.user,
+            // UI expects these keys
+            hourly_rate:
+              worker.hourlyRate?.min ??
+              worker.hourlyRate ??
+              worker.hourlyRateMin ??
+              0,
+            is_verified:
+              worker.verification?.isVerified ?? worker.isVerified ?? false,
+            profile_picture: worker.profile?.picture ?? worker.profilePicture,
+            is_online: false,
+          }
+        : null;
       setProfile(normalizedProfile);
 
       const [
@@ -233,7 +243,9 @@ function WorkerProfile() {
 
       const rawSkills = skillsRes?.data?.data || skillsRes?.data || [];
       const normalizedSkills = Array.isArray(rawSkills)
-        ? rawSkills.map((s) => ({ name: s.name || s.skillName || s?.skill?.name || '' }))
+        ? rawSkills.map((s) => ({
+            name: s.name || s.skillName || s?.skill?.name || '',
+          }))
         : [];
       setSkills(normalizedSkills);
 
@@ -313,10 +325,10 @@ function WorkerProfile() {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Skeleton
+          <Skeleton
             variant="circular"
             width={200}
-          height={200}
+            height={200}
             sx={{ mx: 'auto', mb: 2 }}
           />
           <Skeleton
@@ -325,7 +337,7 @@ function WorkerProfile() {
             height={40}
             sx={{ mx: 'auto', mb: 1 }}
           />
-        <Skeleton
+          <Skeleton
             variant="text"
             width={200}
             height={30}
@@ -335,15 +347,15 @@ function WorkerProfile() {
             sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}
           >
             {[...Array(3)].map((_, i) => (
-        <Skeleton
+              <Skeleton
                 key={i}
-          variant="rectangular"
+                variant="rectangular"
                 width={100}
                 height={32}
                 sx={{ borderRadius: 2 }}
               />
             ))}
-      </Box>
+          </Box>
         </Box>
         <Grid container spacing={3}>
           {[...Array(6)].map((_, i) => (
@@ -365,13 +377,13 @@ function WorkerProfile() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ borderRadius: 2 }}>
           {error}
-      </Alert>
+        </Alert>
       </Container>
     );
   }
 
   if (!profile) {
-  return (
+    return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="info" sx={{ borderRadius: 2 }}>
           Worker profile not found.
@@ -395,18 +407,18 @@ function WorkerProfile() {
             borderRadius: '16px 16px 0 0',
           }}
         >
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                display: 'flex',
-                gap: 1,
-              }}
-            >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              display: 'flex',
+              gap: 1,
+            }}
+          >
             <IconButton
               onClick={handleBookmarkToggle}
-                sx={{
+              sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { bgcolor: theme.palette.background.paper },
               }}
@@ -417,19 +429,19 @@ function WorkerProfile() {
                 <BookmarkBorderIcon />
               )}
             </IconButton>
-              <IconButton
+            <IconButton
               onClick={handleShare}
-                sx={{
+              sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { bgcolor: theme.palette.background.paper },
-                }}
-              >
+              }}
+            >
               <ShareIcon />
-              </IconButton>
+            </IconButton>
             {isOwner && (
               <IconButton
                 onClick={() => navigate('/worker/profile/edit')}
-          sx={{
+                sx={{
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   '&:hover': { bgcolor: theme.palette.background.paper },
                 }}
@@ -442,14 +454,14 @@ function WorkerProfile() {
 
         <CardContent sx={{ pt: 0, pb: 4 }}>
           <Box sx={{ textAlign: 'center', mt: -10 }}>
-          <Badge
-            overlap="circular"
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            badgeContent={
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              badgeContent={
                 profile.is_verified ? (
                   <Tooltip title="Verified Professional">
                     <VerifiedIcon
-                    sx={{
+                      sx={{
                         width: 40,
                         height: 40,
                         color: theme.palette.success.main,
@@ -459,17 +471,17 @@ function WorkerProfile() {
                       }}
                     />
                   </Tooltip>
-              ) : null
-            }
-          >
-            <ProfileAvatar
+                ) : null
+              }
+            >
+              <ProfileAvatar
                 src={profile.profile_picture}
                 alt={`${profile.user?.firstName} ${profile.user?.lastName}`}
-            >
+              >
                 {profile.user?.firstName?.charAt(0)}
                 {profile.user?.lastName?.charAt(0)}
-            </ProfileAvatar>
-          </Badge>
+              </ProfileAvatar>
+            </Badge>
 
             <Typography
               variant="h3"
@@ -505,18 +517,18 @@ function WorkerProfile() {
               sx={{ mb: 3 }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Rating
-                value={profile.average_rating || 0}
+                <Rating
+                  value={profile.average_rating || 0}
                   precision={0.1}
-                readOnly
+                  readOnly
                   size="large"
-              />
+                />
                 <Typography variant="h6" fontWeight={600}>
                   {profile.average_rating?.toFixed(1) || '0.0'}
                 </Typography>
-              <Typography variant="body1" color="text.secondary">
-                ({reviews.length} reviews)
-              </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  ({reviews.length} reviews)
+                </Typography>
               </Box>
             </Stack>
 
@@ -573,15 +585,19 @@ function WorkerProfile() {
   const renderMetrics = () => {
     const isActualMobile = useMediaQuery('(max-width: 768px)');
     const statsData = stats || {};
-    const totalAllTime = statsData.totalEarnings || earnings?.totals?.allTime || 0;
+    const totalAllTime =
+      statsData.totalEarnings || earnings?.totals?.allTime || 0;
     const last30 = earnings?.totals?.last30Days || 0;
     const last7 = earnings?.totals?.last7Days || 0;
-    const jobsCompleted = statsData.totalJobsCompleted || statsData.jobsCompleted || 0;
+    const jobsCompleted =
+      statsData.totalJobsCompleted || statsData.jobsCompleted || 0;
     const jobsCancelled = statsData.jobsCancelled || 0;
-    const completionRate = statsData.completionRate ?? (jobsCompleted + jobsCancelled > 0
-      ? Math.round((jobsCompleted / (jobsCompleted + jobsCancelled)) * 100)
-      : 0);
-    
+    const completionRate =
+      statsData.completionRate ??
+      (jobsCompleted + jobsCancelled > 0
+        ? Math.round((jobsCompleted / (jobsCompleted + jobsCancelled)) * 100)
+        : 0);
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -609,11 +625,14 @@ function WorkerProfile() {
                   sx={{
                     p: 2,
                     textAlign: 'center',
-                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
                     borderRadius: '12px',
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
+                  <Typography
+                    sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
+                  >
                     Earnings (30d)
                   </Typography>
                   <Typography
@@ -625,7 +644,13 @@ function WorkerProfile() {
                   >
                     ${last30}
                   </Typography>
-                  <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
+                  <Typography
+                    sx={{
+                      color: '#4CAF50',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                    }}
+                  >
                     7d: ${last7}
                   </Typography>
                 </Paper>
@@ -635,11 +660,14 @@ function WorkerProfile() {
                   sx={{
                     p: 2,
                     textAlign: 'center',
-                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
                     borderRadius: '12px',
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
+                  <Typography
+                    sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
+                  >
                     Upcoming Jobs
                   </Typography>
                   <Typography
@@ -651,7 +679,13 @@ function WorkerProfile() {
                   >
                     {stats.upcoming_jobs || '3'}
                   </Typography>
-                  <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
+                  <Typography
+                    sx={{
+                      color: '#4CAF50',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                    }}
+                  >
                     +1
                   </Typography>
                 </Paper>
@@ -661,11 +695,14 @@ function WorkerProfile() {
                   sx={{
                     p: 2,
                     textAlign: 'center',
-                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
                     borderRadius: '12px',
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}>
+                  <Typography
+                    sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
+                  >
                     Reviews
                   </Typography>
                   <Typography
@@ -677,7 +714,13 @@ function WorkerProfile() {
                   >
                     {stats.average_rating || '4.8'}
                   </Typography>
-                  <Typography sx={{ color: '#4CAF50', fontSize: '0.75rem', fontWeight: 500 }}>
+                  <Typography
+                    sx={{
+                      color: '#4CAF50',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                    }}
+                  >
                     +0.2
                   </Typography>
                 </Paper>
@@ -706,14 +749,21 @@ function WorkerProfile() {
                 <Paper
                   sx={{
                     p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? '#35332c' : '#f5f5f5',
                     borderRadius: '12px',
                   }}
                 >
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Box sx={{ textAlign: 'center' }}>
-                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+                        <Typography
+                          sx={{
+                            fontSize: '0.75rem',
+                            color: 'text.secondary',
+                            mb: 0.5,
+                          }}
+                        >
                           Wallet Balance
                         </Typography>
                         <Typography
@@ -729,7 +779,13 @@ function WorkerProfile() {
                     </Grid>
                     <Grid item xs={6}>
                       <Box sx={{ textAlign: 'center' }}>
-                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+                        <Typography
+                          sx={{
+                            fontSize: '0.75rem',
+                            color: 'text.secondary',
+                            mb: 0.5,
+                          }}
+                        >
                           In Escrow
                         </Typography>
                         <Typography
@@ -745,7 +801,13 @@ function WorkerProfile() {
                     </Grid>
                     <Grid item xs={6}>
                       <Box sx={{ textAlign: 'center' }}>
-                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+                        <Typography
+                          sx={{
+                            fontSize: '0.75rem',
+                            color: 'text.secondary',
+                            mb: 0.5,
+                          }}
+                        >
                           Pending Payments
                         </Typography>
                         <Typography
@@ -760,7 +822,13 @@ function WorkerProfile() {
                       </Box>
                     </Grid>
                     <Grid item xs={6}>
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
                         <Button
                           variant="contained"
                           size="small"
@@ -848,22 +916,47 @@ function WorkerProfile() {
           </Grid>
         </Grid>
 
-        {Array.isArray(earnings?.breakdown?.byMonth) && earnings.breakdown.byMonth.length > 0 && (
-          <GlassCard sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Earnings (last 12 months)</Typography>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 120 }}>
-                {earnings.breakdown.byMonth.map((m, idx) => {
-                  const max = Math.max(...earnings.breakdown.byMonth.map(x => x.amount || 0)) || 1;
-                  const h = Math.max(4, Math.round(((m.amount || 0) / max) * 100));
-                  return (
-                    <Box key={idx} sx={{ width: 10, height: h, backgroundColor: theme.palette.primary.main, borderRadius: 1 }} title={`M${m.month}: $${m.amount}`} />
-                  );
-                })}
-              </Box>
-            </CardContent>
-          </GlassCard>
-        )}
+        {Array.isArray(earnings?.breakdown?.byMonth) &&
+          earnings.breakdown.byMonth.length > 0 && (
+            <GlassCard sx={{ mb: 4 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Earnings (last 12 months)
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 1,
+                    alignItems: 'flex-end',
+                    height: 120,
+                  }}
+                >
+                  {earnings.breakdown.byMonth.map((m, idx) => {
+                    const max =
+                      Math.max(
+                        ...earnings.breakdown.byMonth.map((x) => x.amount || 0),
+                      ) || 1;
+                    const h = Math.max(
+                      4,
+                      Math.round(((m.amount || 0) / max) * 100),
+                    );
+                    return (
+                      <Box
+                        key={idx}
+                        sx={{
+                          width: 10,
+                          height: h,
+                          backgroundColor: theme.palette.primary.main,
+                          borderRadius: 1,
+                        }}
+                        title={`M${m.month}: $${m.amount}`}
+                      />
+                    );
+                  })}
+                </Box>
+              </CardContent>
+            </GlassCard>
+          )}
       </motion.div>
     );
   };
@@ -897,27 +990,27 @@ function WorkerProfile() {
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {profile.specializations?.map((spec, index) => (
-              <Chip
+                <Chip
                   key={index}
                   label={spec}
-                variant="outlined"
+                  variant="outlined"
                   color="primary"
-              />
+                />
               )) || [
-              <Chip
+                <Chip
                   key="general"
                   label="General Construction"
-                variant="outlined"
+                  variant="outlined"
                   color="primary"
                 />,
-              <Chip
+                <Chip
                   key="residential"
                   label="Residential Work"
-                variant="outlined"
+                  variant="outlined"
                   color="primary"
                 />,
               ]}
-          </Box>
+            </Box>
           </Grid>
 
           <Grid item xs={12} md={4}>
@@ -958,7 +1051,7 @@ function WorkerProfile() {
         </Typography>
 
         {portfolio.length > 0 ? (
-            <Grid container spacing={2}>
+          <Grid container spacing={2}>
             {portfolio.map((item, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card
@@ -992,9 +1085,9 @@ function WorkerProfile() {
                     </Typography>
                   </CardContent>
                 </Card>
-                </Grid>
-              ))}
-            </Grid>
+              </Grid>
+            ))}
+          </Grid>
         ) : (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <ViewIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
@@ -1004,8 +1097,8 @@ function WorkerProfile() {
             <Typography variant="body2" color="text.secondary">
               Check back later to see this worker's completed projects
             </Typography>
-        </Box>
-      )}
+          </Box>
+        )}
       </CardContent>
     </GlassCard>
   );
@@ -1023,7 +1116,7 @@ function WorkerProfile() {
           Client Reviews
         </Typography>
         <ReviewSystem workerId={workerId} showSubmissionForm />
-                    </CardContent>
+      </CardContent>
     </GlassCard>
   );
 
@@ -1046,35 +1139,48 @@ function WorkerProfile() {
               Current Status
             </Typography>
             <Chip
-              label={(availability?.availabilityStatus || 'available').toString().replace(/\b\w/g, (c) => c.toUpperCase())}
+              label={(availability?.availabilityStatus || 'available')
+                .toString()
+                .replace(/\b\w/g, (c) => c.toUpperCase())}
               color={
-                (availability?.availabilityStatus || 'available') === 'available' ? 'success' : 'warning'
+                (availability?.availabilityStatus || 'available') ===
+                'available'
+                  ? 'success'
+                  : 'warning'
               }
               size="large"
               sx={{ mb: 2 }}
             />
 
             <Typography variant="body1" gutterBottom>
-              <strong>Response Time:</strong>{' '}
-              {'Within 2 hours'}
+              <strong>Response Time:</strong> {'Within 2 hours'}
             </Typography>
             <Typography variant="body1">
               <strong>Next Available:</strong>{' '}
-              {availability?.pausedUntil ? new Date(availability.pausedUntil).toLocaleString() : 'Immediately'}
+              {availability?.pausedUntil
+                ? new Date(availability.pausedUntil).toLocaleString()
+                : 'Immediately'}
             </Typography>
             {!isOwner ? null : (
               <Box sx={{ mt: 2 }}>
-                <Button size="small" variant="outlined" onClick={() => {
-                  setEditingAvailability(true);
-                  setAvailabilityDraft({
-                    availabilityStatus: availability?.availabilityStatus || 'available',
-                    availableHours: availability?.availableHours || {},
-                    pausedUntil: availability?.pausedUntil || null,
-                  });
-                }}>Edit Availability</Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    setEditingAvailability(true);
+                    setAvailabilityDraft({
+                      availabilityStatus:
+                        availability?.availabilityStatus || 'available',
+                      availableHours: availability?.availableHours || {},
+                      pausedUntil: availability?.pausedUntil || null,
+                    });
+                  }}
+                >
+                  Edit Availability
+                </Button>
               </Box>
             )}
-                </Grid>
+          </Grid>
 
           <Grid item xs={12} md={6}>
             <Typography variant="h6" gutterBottom>
@@ -1083,11 +1189,21 @@ function WorkerProfile() {
             <List dense>
               {(() => {
                 const hours = availability?.availableHours || {};
-                const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+                const days = [
+                  'monday',
+                  'tuesday',
+                  'wednesday',
+                  'thursday',
+                  'friday',
+                  'saturday',
+                  'sunday',
+                ];
                 const lines = days.map((d) => {
                   const h = hours[d];
-                  if (!h) return `${d[0].toUpperCase()}${d.slice(1)}: Unspecified`;
-                  if (!h.available) return `${d[0].toUpperCase()}${d.slice(1)}: Unavailable`;
+                  if (!h)
+                    return `${d[0].toUpperCase()}${d.slice(1)}: Unspecified`;
+                  if (!h.available)
+                    return `${d[0].toUpperCase()}${d.slice(1)}: Unavailable`;
                   return `${d[0].toUpperCase()}${d.slice(1)}: ${h.start} - ${h.end}`;
                 });
                 return lines.map((text, idx) => (
@@ -1097,7 +1213,7 @@ function WorkerProfile() {
                 ));
               })()}
             </List>
-            </Grid>
+          </Grid>
         </Grid>
       </CardContent>
     </GlassCard>
@@ -1105,14 +1221,32 @@ function WorkerProfile() {
 
   const renderAvailabilityEditor = () => {
     if (!editingAvailability || !isOwner) return null;
-    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    const draft = availabilityDraft || { availabilityStatus: 'available', availableHours: {} };
+    const days = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
+    const draft = availabilityDraft || {
+      availabilityStatus: 'available',
+      availableHours: {},
+    };
     const setDay = (day, patch) => {
       setAvailabilityDraft((prev) => ({
         ...prev,
         availableHours: {
           ...(prev?.availableHours || {}),
-          [day]: { ...(prev?.availableHours?.[day] || { available: false, start: '08:00', end: '17:00' }), ...patch },
+          [day]: {
+            ...(prev?.availableHours?.[day] || {
+              available: false,
+              start: '08:00',
+              end: '17:00',
+            }),
+            ...patch,
+          },
         },
       }));
     };
@@ -1130,13 +1264,20 @@ function WorkerProfile() {
     return (
       <GlassCard sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>Edit Availability</Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Edit Availability
+          </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
             <TextField
               select
               label="Status"
               value={draft.availabilityStatus}
-              onChange={(e) => setAvailabilityDraft((p) => ({ ...p, availabilityStatus: e.target.value }))}
+              onChange={(e) =>
+                setAvailabilityDraft((p) => ({
+                  ...p,
+                  availabilityStatus: e.target.value,
+                }))
+              }
               SelectProps={{ native: true }}
             >
               <option value="available">Available</option>
@@ -1148,23 +1289,36 @@ function WorkerProfile() {
               label="Paused Until (ISO)"
               placeholder="YYYY-MM-DDTHH:mm:ssZ"
               value={draft.pausedUntil || ''}
-              onChange={(e) => setAvailabilityDraft((p) => ({ ...p, pausedUntil: e.target.value }))}
+              onChange={(e) =>
+                setAvailabilityDraft((p) => ({
+                  ...p,
+                  pausedUntil: e.target.value,
+                }))
+              }
               sx={{ minWidth: 320 }}
             />
           </Box>
           <Grid container spacing={2}>
             {days.map((day) => {
-              const d = draft.availableHours?.[day] || { available: false, start: '08:00', end: '17:00' };
+              const d = draft.availableHours?.[day] || {
+                available: false,
+                start: '08:00',
+                end: '17:00',
+              };
               return (
                 <Grid item xs={12} md={6} key={day}>
                   <Paper sx={{ p: 2 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 1 }}>{day[0].toUpperCase() + day.slice(1)}</Typography>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                      {day[0].toUpperCase() + day.slice(1)}
+                    </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Button
                         size="small"
                         variant={d.available ? 'contained' : 'outlined'}
                         onClick={() => setDay(day, { available: !d.available })}
-                      >{d.available ? 'Available' : 'Unavailable'}</Button>
+                      >
+                        {d.available ? 'Available' : 'Unavailable'}
+                      </Button>
                       <TextField
                         size="small"
                         label="Start"
@@ -1188,8 +1342,15 @@ function WorkerProfile() {
             })}
           </Grid>
           <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            <Button variant="contained" onClick={save}>Save</Button>
-            <Button variant="text" onClick={() => setEditingAvailability(false)}>Cancel</Button>
+            <Button variant="contained" onClick={save}>
+              Save
+            </Button>
+            <Button
+              variant="text"
+              onClick={() => setEditingAvailability(false)}
+            >
+              Cancel
+            </Button>
           </Box>
         </CardContent>
       </GlassCard>
@@ -1228,7 +1389,7 @@ function WorkerProfile() {
                       <Typography variant="caption" color="text.secondary">
                         Issued: {new Date(cert.issue_date).toLocaleDateString()}
                       </Typography>
-        </Box>
+                    </Box>
                     {cert.is_verified && <VerifiedIcon color="success" />}
                   </Box>
                 </Card>
@@ -1240,10 +1401,10 @@ function WorkerProfile() {
             <SchoolIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
               No certifications available
-                        </Typography>
-                          <Typography variant="body2" color="text.secondary">
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
               Professional may be working on obtaining certifications
-                          </Typography>
+            </Typography>
           </Box>
         )}
       </CardContent>
@@ -1275,7 +1436,7 @@ function WorkerProfile() {
           </Link>
           <Typography color="text.primary">
             {profile.user?.firstName} {profile.user?.lastName}
-                          </Typography>
+          </Typography>
         </Breadcrumbs>
 
         {renderProfileHeader()}
@@ -1359,7 +1520,7 @@ function WorkerProfile() {
                   {selectedPortfolioItem.technologies?.map((tech, index) => (
                     <Chip key={index} label={tech} size="small" />
                   ))}
-        </Box>
+                </Box>
               </DialogContent>
             </>
           )}

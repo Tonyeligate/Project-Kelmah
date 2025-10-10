@@ -66,10 +66,16 @@ const AvailabilityStatus = () => {
         console.error('Failed to fetch availability status', error);
         setFeedback({
           open: true,
-          message: 'Unable to load your availability. Showing last known state.',
+          message:
+            'Unable to load your availability. Showing last known state.',
           severity: 'warning',
         });
-        setMetadata(createMetadataState({ fallback: true, fallbackReason: 'fetch_error' }));
+        setMetadata(
+          createMetadataState({
+            fallback: true,
+            fallbackReason: 'fetch_error',
+          }),
+        );
       } finally {
         setIsLoading(false);
       }
@@ -100,7 +106,8 @@ const AvailabilityStatus = () => {
     if (hasFallback) {
       setFeedback({
         open: true,
-        message: 'Availability settings are warming up. Please try again shortly.',
+        message:
+          'Availability settings are warming up. Please try again shortly.',
         severity: 'info',
       });
       return;
@@ -174,7 +181,8 @@ const AvailabilityStatus = () => {
     >
       {hasFallback && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Availability data is warming up. We&apos;re showing your last known state.
+          Availability data is warming up. We&apos;re showing your last known
+          state.
           {metadata.reason && (
             <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
               Reason: {metadata.reason.replace(/_/g, ' ').toLowerCase()}
@@ -186,9 +194,13 @@ const AvailabilityStatus = () => {
 
       <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
         {isAvailable ? (
-          <NotificationsActiveIcon sx={{ fontSize: 40, color: 'success.main', mr: 2 }} />
+          <NotificationsActiveIcon
+            sx={{ fontSize: 40, color: 'success.main', mr: 2 }}
+          />
         ) : (
-          <NotificationsOffIcon sx={{ fontSize: 40, color: 'text.secondary', mr: 2 }} />
+          <NotificationsOffIcon
+            sx={{ fontSize: 40, color: 'text.secondary', mr: 2 }}
+          />
         )}
         <Typography variant="body1" color="text.secondary">
           {isAvailable
@@ -203,7 +215,11 @@ const AvailabilityStatus = () => {
         onClose={handleCloseFeedback}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseFeedback} severity={feedback.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseFeedback}
+          severity={feedback.severity}
+          sx={{ width: '100%' }}
+        >
           {feedback.message}
         </Alert>
       </Snackbar>

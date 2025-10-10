@@ -15,7 +15,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 const SecuritySettings = () => {
   // FIXED: Use standardized user normalization for consistent user data access
-  const { user: rawUser } = useSelector(state => state.auth);
+  const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
   const [form, setForm] = useState({
     currentPassword: '',

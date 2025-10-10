@@ -9,9 +9,11 @@ export const fetchHirerDashboardData = createAsyncThunk(
       const response = await hirerService.getDashboardData();
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch dashboard data');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch dashboard data',
+      );
     }
-  }
+  },
 );
 
 // Async thunk for fetching hirer metrics
@@ -22,9 +24,11 @@ export const fetchHirerMetrics = createAsyncThunk(
       const response = await hirerService.getStats(timeframe);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch metrics');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch metrics',
+      );
     }
-  }
+  },
 );
 
 // Async thunk for fetching active jobs
@@ -35,9 +39,11 @@ export const fetchActiveJobs = createAsyncThunk(
       const response = await hirerService.getRecentJobs();
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch active jobs');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch active jobs',
+      );
     }
-  }
+  },
 );
 
 // Async thunk for fetching recent applications
@@ -48,9 +54,11 @@ export const fetchRecentApplications = createAsyncThunk(
       const response = await hirerService.getApplications({ limit });
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch applications');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch applications',
+      );
     }
-  }
+  },
 );
 
 const initialState = {
@@ -85,7 +93,9 @@ const hirerDashboardSlice = createSlice({
       state.data.notifications.unshift(action.payload);
     },
     markNotificationRead: (state, action) => {
-      const notification = state.data.notifications.find(n => n.id === action.payload);
+      const notification = state.data.notifications.find(
+        (n) => n.id === action.payload,
+      );
       if (notification) {
         notification.read = true;
       }

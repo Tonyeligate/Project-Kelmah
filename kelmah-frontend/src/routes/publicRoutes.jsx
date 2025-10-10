@@ -17,9 +17,17 @@ const publicRoutes = [
   <Route key="/" path="/" element={<Home />} />,
   <Route key="/login" path="/login" element={<LoginPage />} />,
   <Route key="/register" path="/register" element={<RegisterPage />} />,
-  <Route key="/role-selection" path="/role-selection" element={<RoleSelectionPage />} />,
+  <Route
+    key="/role-selection"
+    path="/role-selection"
+    element={<RoleSelectionPage />}
+  />,
   <Route key="/jobs" path="/jobs" element={<JobsPage />} />,
-  <Route key="/jobs/:id/apply" path="/jobs/:id/apply" element={<JobApplicationForm />} />,
+  <Route
+    key="/jobs/:id/apply"
+    path="/jobs/:id/apply"
+    element={<JobApplicationForm />}
+  />,
   <Route key="/jobs/:id" path="/jobs/:id" element={<JobDetailsPage />} />,
   <Route
     key="/profiles/user/:userId"
@@ -27,11 +35,7 @@ const publicRoutes = [
     element={<UserProfilePage />}
   />,
   // ✅ ADDED: Public /find-talents route that shows workers
-  <Route
-    key="/find-talents"
-    path="/find-talents"
-    element={<SearchPage />}
-  />,
+  <Route key="/find-talents" path="/find-talents" element={<SearchPage />} />,
   <Route key="/premium" path="/premium" element={<PremiumPage />} />,
   <Route
     key="/search/location"

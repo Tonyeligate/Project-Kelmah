@@ -13,10 +13,10 @@ import { tokens } from './tokens';
  */
 export const getResponsiveValue = (values, breakpoint = 'md') => {
   if (typeof values !== 'object') return values;
-  
+
   const breakpointOrder = ['xs', 'sm', 'md', 'lg', 'xl'];
   const currentIndex = breakpointOrder.indexOf(breakpoint);
-  
+
   // Find the appropriate value by going down the breakpoint order
   for (let i = currentIndex; i >= 0; i--) {
     const bp = breakpointOrder[i];
@@ -24,7 +24,7 @@ export const getResponsiveValue = (values, breakpoint = 'md') => {
       return values[bp];
     }
   }
-  
+
   // Fallback to the first available value
   return Object.values(values)[0];
 };
@@ -36,8 +36,9 @@ export const getResponsiveValue = (values, breakpoint = 'md') => {
  */
 export const mediaQuery = {
   up: (breakpoint) => `@media (min-width: ${tokens.breakpoints[breakpoint]}px)`,
-  down: (breakpoint) => `@media (max-width: ${tokens.breakpoints[breakpoint] - 1}px)`,
-  between: (start, end) => 
+  down: (breakpoint) =>
+    `@media (max-width: ${tokens.breakpoints[breakpoint] - 1}px)`,
+  between: (start, end) =>
     `@media (min-width: ${tokens.breakpoints[start]}px) and (max-width: ${tokens.breakpoints[end] - 1}px)`,
 };
 
@@ -48,7 +49,7 @@ export const mediaQuery = {
  */
 export const spacing = (value) => {
   if (Array.isArray(value)) {
-    return value.map(v => tokens.spacing[v] || v).join(' ');
+    return value.map((v) => tokens.spacing[v] || v).join(' ');
   }
   return tokens.spacing[value] || value;
 };
@@ -62,14 +63,14 @@ export const spacing = (value) => {
 export const getColor = (color, opacity = 1) => {
   const colorPath = color.split('.');
   let colorValue = tokens.colors;
-  
+
   for (const segment of colorPath) {
     colorValue = colorValue[segment];
     if (!colorValue) break;
   }
-  
+
   if (!colorValue) return color; // Return original if not found
-  
+
   if (opacity < 1) {
     // Convert hex to rgba if opacity is specified
     const hex = colorValue.replace('#', '');
@@ -78,7 +79,7 @@ export const getColor = (color, opacity = 1) => {
     const b = parseInt(hex.substr(4, 2), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
-  
+
   return colorValue;
 };
 
@@ -140,7 +141,7 @@ export const responsiveFont = (sizes) => {
 export const cardStyles = ({
   variant = 'default',
   interactive = false,
-  padding = 4
+  padding = 4,
 } = {}) => {
   const base = {
     borderRadius: tokens.components.card.borderRadius,
@@ -176,7 +177,7 @@ export const cardStyles = ({
 export const buttonStyles = ({
   variant = 'contained',
   color = 'primary',
-  size = 'medium'
+  size = 'medium',
 } = {}) => {
   const base = {
     borderRadius: tokens.components.button.borderRadius,
@@ -187,9 +188,18 @@ export const buttonStyles = ({
   };
 
   const sizeStyles = {
-    small: { padding: spacing([1, 3]), fontSize: tokens.typography.fontSize.sm },
-    medium: { padding: spacing([2, 4]), fontSize: tokens.typography.fontSize.base },
-    large: { padding: spacing([3, 6]), fontSize: tokens.typography.fontSize.lg },
+    small: {
+      padding: spacing([1, 3]),
+      fontSize: tokens.typography.fontSize.sm,
+    },
+    medium: {
+      padding: spacing([2, 4]),
+      fontSize: tokens.typography.fontSize.base,
+    },
+    large: {
+      padding: spacing([3, 6]),
+      fontSize: tokens.typography.fontSize.lg,
+    },
   };
 
   const variantStyles = {

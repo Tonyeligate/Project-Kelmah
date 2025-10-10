@@ -34,7 +34,6 @@ import LocationBasedSearch from '../components/LocationBasedSearch';
 import SavedSearches from '../components/SavedSearches';
 import SEO from '../../common/components/common/SEO';
 
-
 // Styled components
 const PageWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 0, 4),
@@ -53,7 +52,7 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   // Get user authentication state
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const savedJobs = useSelector(selectSavedJobs) || [];
@@ -114,9 +113,9 @@ const SearchPage = () => {
     setSearchParams(params);
 
     // Perform initial search for all users to show workers
-      if (Object.keys(params).length === 0) {
+    if (Object.keys(params).length === 0) {
       // No URL params - show all workers by default
-        performSearch({ page: 1, limit: 12 });
+      performSearch({ page: 1, limit: 12 });
     } else if (params.page !== pagination.page) {
       // URL params exist - perform search with those params
       performSearch(params);
@@ -174,7 +173,7 @@ const SearchPage = () => {
       // Use consistent API endpoint for all users
       const apiEndpoint = '/api/workers';
       console.log('🔍 Using API endpoint:', apiEndpoint);
-      
+
       // Prepare API parameters
       const apiParams = {
         page: params.page || 1,
@@ -207,7 +206,12 @@ const SearchPage = () => {
       }
 
       // Make API request to appropriate endpoint
-      console.log('🔍 Making API request to:', apiEndpoint, 'with params:', apiParams);
+      console.log(
+        '🔍 Making API request to:',
+        apiEndpoint,
+        'with params:',
+        apiParams,
+      );
       const response = await axios.get(apiEndpoint, { params: apiParams });
       console.log('🔍 API response:', response.data);
 
@@ -216,10 +220,11 @@ const SearchPage = () => {
         const payload = response.data.data || response.data;
         const workers = Array.isArray(payload)
           ? payload
-          : (payload?.workers || payload?.results || []);
+          : payload?.workers || payload?.results || [];
         console.log('🔍 Extracted workers:', workers);
         setSearchResults(workers);
-        const paginationData = payload?.pagination || response.data.meta?.pagination || {};
+        const paginationData =
+          payload?.pagination || response.data.meta?.pagination || {};
         setPagination({
           page: paginationData.page || apiParams.page,
           limit: paginationData.limit || apiParams.limit,
@@ -233,8 +238,7 @@ const SearchPage = () => {
     } catch (error) {
       console.error('Error searching:', error);
       setError(
-        error.response?.data?.message ||
-          'An error occurred while searching',
+        error.response?.data?.message || 'An error occurred while searching',
       );
       setSearchResults([]);
     } finally {
@@ -369,14 +373,16 @@ const SearchPage = () => {
     }
 
     try {
-      const isCurrentlySaved = savedJobs.some(saved => saved.id === jobId || saved._id === jobId);
-      
+      const isCurrentlySaved = savedJobs.some(
+        (saved) => saved.id === jobId || saved._id === jobId,
+      );
+
       if (isCurrentlySaved) {
         await dispatch(unsaveJobFromServer(jobId));
       } else {
         await dispatch(saveJobToServer(jobId));
       }
-      
+
       // Refresh saved jobs list
       await dispatch(fetchSavedJobs());
     } catch (error) {
@@ -393,10 +399,14 @@ const SearchPage = () => {
         {
           headers: await (async () => {
             try {
-              const { secureStorage } = await import('../../../utils/secureStorage');
+              const { secureStorage } = await import(
+                '../../../utils/secureStorage'
+              );
               const token = secureStorage.getAuthToken();
               return token ? { Authorization: `Bearer ${token}` } : {};
-            } catch { return {}; }
+            } catch {
+              return {};
+            }
           })(),
         },
       );
@@ -432,7 +442,7 @@ const SearchPage = () => {
       <Container maxWidth="lg" sx={{ pt: 0 }}>
         {/* Search Form */}
         <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
-        
+
         {/* Quick Actions - Show only for authenticated hirers */}
         {isAuthenticated && isHirer && (
           <Box display="flex" gap={1} mb={2} flexWrap="wrap">
@@ -484,7 +494,7 @@ const SearchPage = () => {
             onClose={() => setShowSuggestions(false)}
           />
         )}
-        
+
         {/* Advanced Components - Only for authenticated hirers */}
         {isAuthenticated && isHirer && (
           <Grid container spacing={2}>
@@ -506,7 +516,7 @@ const SearchPage = () => {
                   />
                 </Box>
               )}
-              
+
               {/* Advanced Filters */}
               {showAdvancedFilters && (
                 <Box mb={2}>
@@ -517,7 +527,7 @@ const SearchPage = () => {
                   />
                 </Box>
               )}
-              
+
               {/* Location Search */}
               {showLocationSearch && (
                 <Box mb={2}>
@@ -529,10 +539,10 @@ const SearchPage = () => {
                           address: location.name,
                           coordinates: {
                             latitude: location.coordinates[0],
-                            longitude: location.coordinates[1]
-                          }
+                            longitude: location.coordinates[1],
+                          },
                         },
-                        distance: radius
+                        distance: radius,
                       });
                     }}
                     initialLocation={searchParams.location}
@@ -542,7 +552,7 @@ const SearchPage = () => {
                 </Box>
               )}
             </Grid>
-          
+
             {/* Right Column - Search Results */}
             {!showMap && (
               <Grid item xs={12} md={8}>
@@ -570,17 +580,27 @@ const SearchPage = () => {
             <Grid item xs={12}>
               {/* Public User Header */}
               <Box sx={{ mb: 3, textAlign: 'center' }}>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  gutterBottom
+                  sx={{ fontWeight: 'bold', color: 'primary.main' }}
+                >
                   🔍 Discover Skilled Workers in Ghana
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                  Browse available carpenters, plumbers, electricians, masons, and other skilled professionals
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Browse available carpenters, plumbers, electricians, masons,
+                  and other skilled professionals
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Sign up to contact workers and post your own jobs
                 </Typography>
               </Box>
-              
+
               <WorkerSearchResults
                 workers={searchResults}
                 loading={loading}

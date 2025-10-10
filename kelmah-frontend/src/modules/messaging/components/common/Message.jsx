@@ -22,10 +22,10 @@ import {
   ContentCopy as CopyIcon,
   Reply as ReplyIcon,
   DeleteOutline as DeleteIcon,
-    CheckCircleOutline as ReadIcon,
-    AccessTime as PendingIcon,
-    ErrorOutline as ErrorIcon,
-    Check as SentIcon,
+  CheckCircleOutline as ReadIcon,
+  AccessTime as PendingIcon,
+  ErrorOutline as ErrorIcon,
+  Check as SentIcon,
   LockOutlined as LockIcon,
   InsertDriveFile as FileIcon,
   Image as ImageIcon,
@@ -352,7 +352,10 @@ const Message = ({
               )}
               {message.status === 'failed' && (
                 <Tooltip title="Failed to send. Click to resend.">
-                  <IconButton size="small" onClick={() => onResend && onResend(message)}>
+                  <IconButton
+                    size="small"
+                    onClick={() => onResend && onResend(message)}
+                  >
                     <ErrorIcon color="error" sx={{ fontSize: '1rem' }} />
                   </IconButton>
                 </Tooltip>

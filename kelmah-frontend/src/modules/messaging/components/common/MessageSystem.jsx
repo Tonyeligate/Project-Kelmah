@@ -71,7 +71,9 @@ function MessageSystem() {
   const fetchMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/api/messages/conversation/${conversationId}`);
+      const response = await axiosInstance.get(
+        `/api/messages/conversation/${conversationId}`,
+      );
       setMessages(response.data);
       scrollToBottom();
     } catch (err) {

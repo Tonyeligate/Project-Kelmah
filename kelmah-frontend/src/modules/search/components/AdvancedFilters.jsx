@@ -44,11 +44,11 @@ import {
 } from '@mui/icons-material';
 import { formatCurrency } from '../../../utils/formatters';
 
-const AdvancedFilters = ({ 
-  onFiltersChange, 
-  initialFilters = {}, 
+const AdvancedFilters = ({
+  onFiltersChange,
+  initialFilters = {},
   showHeader = true,
-  compact = false 
+  compact = false,
 }) => {
   const theme = useTheme();
 
@@ -58,34 +58,34 @@ const AdvancedFilters = ({
     query: '',
     category: '',
     location: '',
-    
+
     // Budget filters
     budgetMin: 0,
     budgetMax: 10000,
     budgetType: 'total', // 'total', 'hourly', 'daily'
-    
+
     // Time filters
     duration: '',
     urgency: '',
     postedWithin: '',
     availability: '',
-    
+
     // Quality filters
     minRating: 0,
     verifiedOnly: false,
     featuredOnly: false,
-    
+
     // Advanced filters
     skills: [],
     experience: '',
     jobType: '', // 'one-time', 'recurring', 'contract'
     workLocation: '', // 'on-site', 'remote', 'hybrid'
-    
+
     // Sort options
     sortBy: 'relevance',
     sortOrder: 'desc',
-    
-    ...initialFilters
+
+    ...initialFilters,
   });
 
   const [expandedSections, setExpandedSections] = useState({
@@ -93,7 +93,7 @@ const AdvancedFilters = ({
     budget: false,
     time: false,
     quality: false,
-    advanced: false
+    advanced: false,
   });
 
   // Filter options
@@ -109,40 +109,94 @@ const AdvancedFilters = ({
     'HVAC',
     'Solar Installation',
     'General Maintenance',
-    'Other'
+    'Other',
   ];
 
   const ghanaLocations = [
     // Greater Accra Region
-    'Accra', 'Tema', 'Kasoa', 'Madina', 'Adenta', 'Ashaiman', 'Ga West',
-    'East Legon', 'Airport City', 'Spintex', 'Dansoman', 'Achimota',
-    
+    'Accra',
+    'Tema',
+    'Kasoa',
+    'Madina',
+    'Adenta',
+    'Ashaiman',
+    'Ga West',
+    'East Legon',
+    'Airport City',
+    'Spintex',
+    'Dansoman',
+    'Achimota',
+
     // Ashanti Region
-    'Kumasi', 'Obuasi', 'Ejisu', 'Mampong', 'Bekwai', 'Konongo',
-    
+    'Kumasi',
+    'Obuasi',
+    'Ejisu',
+    'Mampong',
+    'Bekwai',
+    'Konongo',
+
     // Western Region
-    'Sekondi-Takoradi', 'Tarkwa', 'Axim', 'Half Assini',
-    
+    'Sekondi-Takoradi',
+    'Tarkwa',
+    'Axim',
+    'Half Assini',
+
     // Central Region
-    'Cape Coast', 'Elmina', 'Winneba', 'Swedru',
-    
+    'Cape Coast',
+    'Elmina',
+    'Winneba',
+    'Swedru',
+
     // Northern Region
-    'Tamale', 'Yendi', 'Savelugu',
-    
+    'Tamale',
+    'Yendi',
+    'Savelugu',
+
     // Other Regions
-    'Ho', 'Koforidua', 'Sunyani', 'Wa', 'Bolgatanga'
+    'Ho',
+    'Koforidua',
+    'Sunyani',
+    'Wa',
+    'Bolgatanga',
   ];
 
   const skillsOptions = [
-    'Pipe Installation', 'Leak Repair', 'Drain Cleaning', 'Water Heater Installation',
-    'Electrical Wiring', 'Circuit Installation', 'Lighting', 'Safety Inspection',
-    'Cabinet Making', 'Furniture Assembly', 'Door Installation', 'Flooring',
-    'Bricklaying', 'Plastering', 'Concrete Work', 'Stone Work',
-    'Interior Painting', 'Exterior Painting', 'Wall Preparation', 'Spray Painting',
-    'Roof Repair', 'Gutter Installation', 'Insulation', 'Solar Panel Installation',
-    'Tile Installation', 'Grouting', 'Bathroom Renovation', 'Kitchen Renovation',
-    'Garden Design', 'Lawn Care', 'Tree Trimming', 'Irrigation Systems',
-    'Air Conditioning', 'Heating Systems', 'Ventilation', 'Maintenance'
+    'Pipe Installation',
+    'Leak Repair',
+    'Drain Cleaning',
+    'Water Heater Installation',
+    'Electrical Wiring',
+    'Circuit Installation',
+    'Lighting',
+    'Safety Inspection',
+    'Cabinet Making',
+    'Furniture Assembly',
+    'Door Installation',
+    'Flooring',
+    'Bricklaying',
+    'Plastering',
+    'Concrete Work',
+    'Stone Work',
+    'Interior Painting',
+    'Exterior Painting',
+    'Wall Preparation',
+    'Spray Painting',
+    'Roof Repair',
+    'Gutter Installation',
+    'Insulation',
+    'Solar Panel Installation',
+    'Tile Installation',
+    'Grouting',
+    'Bathroom Renovation',
+    'Kitchen Renovation',
+    'Garden Design',
+    'Lawn Care',
+    'Tree Trimming',
+    'Irrigation Systems',
+    'Air Conditioning',
+    'Heating Systems',
+    'Ventilation',
+    'Maintenance',
   ];
 
   const durationOptions = [
@@ -153,14 +207,14 @@ const AdvancedFilters = ({
     { value: '1-week', label: '1 Week' },
     { value: '2-weeks', label: '2 Weeks' },
     { value: '1-month', label: '1 Month' },
-    { value: '2-months', label: '2+ Months' }
+    { value: '2-months', label: '2+ Months' },
   ];
 
   const urgencyOptions = [
     { value: 'low', label: 'Flexible' },
     { value: 'medium', label: 'Within a week' },
     { value: 'high', label: 'Urgent (24-48h)' },
-    { value: 'emergency', label: 'Emergency (Same day)' }
+    { value: 'emergency', label: 'Emergency (Same day)' },
   ];
 
   const postedWithinOptions = [
@@ -169,7 +223,7 @@ const AdvancedFilters = ({
     { value: '3d', label: 'Last 3 Days' },
     { value: '1w', label: 'Last Week' },
     { value: '2w', label: 'Last 2 Weeks' },
-    { value: '1m', label: 'Last Month' }
+    { value: '1m', label: 'Last Month' },
   ];
 
   const sortOptions = [
@@ -179,14 +233,14 @@ const AdvancedFilters = ({
     { value: 'posted', label: 'Recently Posted' },
     { value: 'deadline', label: 'Nearest Deadline' },
     { value: 'rating', label: 'Highest Rated Clients' },
-    { value: 'popular', label: 'Most Popular' }
+    { value: 'popular', label: 'Most Popular' },
   ];
 
   // Handle filter changes
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    
+
     if (onFiltersChange) {
       onFiltersChange(newFilters);
     }
@@ -199,10 +253,10 @@ const AdvancedFilters = ({
 
   // Handle budget range change
   const handleBudgetChange = (event, newValue) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       budgetMin: newValue[0],
-      budgetMax: newValue[1]
+      budgetMax: newValue[1],
     }));
   };
 
@@ -210,10 +264,10 @@ const AdvancedFilters = ({
     const newFilters = {
       ...filters,
       budgetMin: newValue[0],
-      budgetMax: newValue[1]
+      budgetMax: newValue[1],
     };
     setFilters(newFilters);
-    
+
     if (onFiltersChange) {
       onFiltersChange(newFilters);
     }
@@ -240,11 +294,11 @@ const AdvancedFilters = ({
       jobType: '',
       workLocation: '',
       sortBy: 'relevance',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
     };
-    
+
     setFilters(clearedFilters);
-    
+
     if (onFiltersChange) {
       onFiltersChange(clearedFilters);
     }
@@ -252,9 +306,9 @@ const AdvancedFilters = ({
 
   // Handle section expansion
   const handleSectionToggle = (section) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -276,7 +330,7 @@ const AdvancedFilters = ({
     if (filters.jobType) count++;
     if (filters.workLocation) count++;
     if (filters.sortBy !== 'relevance') count++;
-    
+
     return count;
   };
 
@@ -287,7 +341,13 @@ const AdvancedFilters = ({
     if (compact) {
       return (
         <Box mb={2}>
-          <Typography variant="subtitle2" gutterBottom display="flex" alignItems="center" gap={1}>
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            display="flex"
+            alignItems="center"
+            gap={1}
+          >
             {icon}
             {title}
           </Typography>
@@ -297,7 +357,7 @@ const AdvancedFilters = ({
     }
 
     return (
-      <Accordion 
+      <Accordion
         expanded={expandedSections[sectionKey]}
         onChange={() => handleSectionToggle(sectionKey)}
         sx={{ mb: 1 }}
@@ -308,9 +368,7 @@ const AdvancedFilters = ({
             <Typography variant="subtitle1">{title}</Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails>
-          {content}
-        </AccordionDetails>
+        <AccordionDetails>{content}</AccordionDetails>
       </Accordion>
     );
   };
@@ -318,19 +376,24 @@ const AdvancedFilters = ({
   return (
     <Paper sx={{ p: compact ? 2 : 3 }}>
       {showHeader && (
-        <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+        <Box
+          mb={3}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Typography variant="h6" display="flex" alignItems="center" gap={1}>
             <FilterIcon />
             Advanced Filters
             {activeFiltersCount > 0 && (
-              <Chip 
-                label={`${activeFiltersCount} active`} 
-                size="small" 
-                color="primary" 
+              <Chip
+                label={`${activeFiltersCount} active`}
+                size="small"
+                color="primary"
               />
             )}
           </Typography>
-          
+
           {activeFiltersCount > 0 && (
             <Button
               size="small"
@@ -378,14 +441,20 @@ const AdvancedFilters = ({
             <Autocomplete
               options={ghanaLocations}
               value={filters.location}
-              onChange={(event, newValue) => handleFilterChange('location', newValue || '')}
+              onChange={(event, newValue) =>
+                handleFilterChange('location', newValue || '')
+              }
               renderInput={(params) => (
-                <TextField {...params} label="Location" placeholder="Select location" />
+                <TextField
+                  {...params}
+                  label="Location"
+                  placeholder="Select location"
+                />
               )}
             />
           </Grid>
         </Grid>,
-        'basic'
+        'basic',
       )}
 
       {/* Budget Filters */}
@@ -399,7 +468,9 @@ const AdvancedFilters = ({
                 <InputLabel>Budget Type</InputLabel>
                 <Select
                   value={filters.budgetType}
-                  onChange={(e) => handleFilterChange('budgetType', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange('budgetType', e.target.value)
+                  }
                   label="Budget Type"
                 >
                   <MenuItem value="total">Total Budget</MenuItem>
@@ -409,11 +480,12 @@ const AdvancedFilters = ({
               </FormControl>
             </Grid>
           </Grid>
-          
+
           <Typography variant="body2" gutterBottom>
-            Budget Range: {formatCurrency(filters.budgetMin)} - {formatCurrency(filters.budgetMax)}
+            Budget Range: {formatCurrency(filters.budgetMin)} -{' '}
+            {formatCurrency(filters.budgetMax)}
           </Typography>
-          
+
           <Slider
             value={[filters.budgetMin, filters.budgetMax]}
             onChange={handleBudgetChange}
@@ -428,11 +500,11 @@ const AdvancedFilters = ({
               { value: 2500, label: '₵2.5K' },
               { value: 5000, label: '₵5K' },
               { value: 7500, label: '₵7.5K' },
-              { value: 10000, label: '₵10K+' }
+              { value: 10000, label: '₵10K+' },
             ]}
           />
         </Box>,
-        'budget'
+        'budget',
       )}
 
       {/* Time & Availability Filters */}
@@ -479,7 +551,9 @@ const AdvancedFilters = ({
               <InputLabel>Posted Within</InputLabel>
               <Select
                 value={filters.postedWithin}
-                onChange={(e) => handleFilterChange('postedWithin', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange('postedWithin', e.target.value)
+                }
                 label="Posted Within"
               >
                 <MenuItem value="">Any Time</MenuItem>
@@ -492,7 +566,7 @@ const AdvancedFilters = ({
             </FormControl>
           </Grid>
         </Grid>,
-        'time'
+        'time',
       )}
 
       {/* Quality Filters */}
@@ -507,18 +581,22 @@ const AdvancedFilters = ({
               </Typography>
               <Rating
                 value={filters.minRating}
-                onChange={(event, newValue) => handleFilterChange('minRating', newValue || 0)}
+                onChange={(event, newValue) =>
+                  handleFilterChange('minRating', newValue || 0)
+                }
                 precision={0.5}
               />
             </Grid>
           </Grid>
-          
+
           <Box mt={2}>
             <FormControlLabel
               control={
                 <Switch
                   checked={filters.verifiedOnly}
-                  onChange={(e) => handleFilterChange('verifiedOnly', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange('verifiedOnly', e.target.checked)
+                  }
                 />
               }
               label={
@@ -529,13 +607,15 @@ const AdvancedFilters = ({
               }
             />
           </Box>
-          
+
           <Box>
             <FormControlLabel
               control={
                 <Switch
                   checked={filters.featuredOnly}
-                  onChange={(e) => handleFilterChange('featuredOnly', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange('featuredOnly', e.target.checked)
+                  }
                 />
               }
               label={
@@ -547,7 +627,7 @@ const AdvancedFilters = ({
             />
           </Box>
         </Box>,
-        'quality'
+        'quality',
       )}
 
       {/* Advanced Filters */}
@@ -563,7 +643,11 @@ const AdvancedFilters = ({
               onChange={handleSkillsChange}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
-                  <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                  <Chip
+                    variant="outlined"
+                    label={option}
+                    {...getTagProps({ index })}
+                  />
                 ))
               }
               renderInput={(params) => (
@@ -575,24 +659,30 @@ const AdvancedFilters = ({
               )}
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Experience Level</InputLabel>
               <Select
                 value={filters.experience}
-                onChange={(e) => handleFilterChange('experience', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange('experience', e.target.value)
+                }
                 label="Experience Level"
               >
                 <MenuItem value="">Any Experience</MenuItem>
                 <MenuItem value="entry">Entry Level (0-2 years)</MenuItem>
-                <MenuItem value="intermediate">Intermediate (2-5 years)</MenuItem>
-                <MenuItem value="experienced">Experienced (5-10 years)</MenuItem>
+                <MenuItem value="intermediate">
+                  Intermediate (2-5 years)
+                </MenuItem>
+                <MenuItem value="experienced">
+                  Experienced (5-10 years)
+                </MenuItem>
                 <MenuItem value="expert">Expert (10+ years)</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Job Type</InputLabel>
@@ -608,13 +698,15 @@ const AdvancedFilters = ({
               </Select>
             </FormControl>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Work Location</InputLabel>
               <Select
                 value={filters.workLocation}
-                onChange={(e) => handleFilterChange('workLocation', e.target.value)}
+                onChange={(e) =>
+                  handleFilterChange('workLocation', e.target.value)
+                }
                 label="Work Location"
               >
                 <MenuItem value="">Any Location</MenuItem>
@@ -625,12 +717,12 @@ const AdvancedFilters = ({
             </FormControl>
           </Grid>
         </Grid>,
-        'advanced'
+        'advanced',
       )}
 
       {/* Sort Options */}
       <Divider sx={{ my: 2 }} />
-      
+
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
@@ -648,7 +740,7 @@ const AdvancedFilters = ({
             </Select>
           </FormControl>
         </Grid>
-        
+
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <InputLabel>Order</InputLabel>
@@ -669,7 +761,8 @@ const AdvancedFilters = ({
         <Box mt={3}>
           <Alert severity="info" icon={<FilterIcon />}>
             <Typography variant="body2">
-              {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+              {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''}{' '}
+              active
             </Typography>
           </Alert>
         </Box>

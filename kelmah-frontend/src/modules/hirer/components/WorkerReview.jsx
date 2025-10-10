@@ -83,10 +83,7 @@ const WorkerReview = () => {
       setWorkers(response.data || []);
       setError(null);
     } catch (err) {
-      console.warn(
-        'User service unavailable for worker reviews:',
-        err.message,
-      );
+      console.warn('User service unavailable for worker reviews:', err.message);
       setWorkers([]);
       setError('Unable to fetch worker reviews. Please try again later.');
     } finally {
@@ -97,7 +94,7 @@ const WorkerReview = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: "GHS",
+      currency: 'GHS',
       minimumFractionDigits: 0,
     }).format(amount);
   };

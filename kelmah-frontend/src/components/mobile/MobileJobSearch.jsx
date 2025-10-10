@@ -57,7 +57,7 @@ import { SwipeableList, PullToRefresh } from './SwipeGestures';
 const MobileJobSearch = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
@@ -67,7 +67,7 @@ const MobileJobSearch = () => {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [distance, setDistance] = useState(10);
   const [sortBy, setSortBy] = useState('relevance');
-  
+
   // UI state
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [sortDrawerOpen, setSortDrawerOpen] = useState(false);
@@ -92,8 +92,16 @@ const MobileJobSearch = () => {
 
   // Ghana locations
   const popularLocations = [
-    'Accra', 'Kumasi', 'Tema', 'Tamale', 'Cape Coast',
-    'Sunyani', 'Koforidua', 'Ho', 'Wa', 'Bolgatanga'
+    'Accra',
+    'Kumasi',
+    'Tema',
+    'Tamale',
+    'Cape Coast',
+    'Sunyani',
+    'Koforidua',
+    'Ho',
+    'Wa',
+    'Bolgatanga',
   ];
 
   // Sort options
@@ -113,7 +121,7 @@ const MobileJobSearch = () => {
         (position) => {
           setUserLocation({
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
           });
           setShowLocationAlert(false);
         },
@@ -121,7 +129,7 @@ const MobileJobSearch = () => {
           console.error('Location error:', error);
           setShowLocationAlert(true);
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 10000, enableHighAccuracy: true },
       );
     } else {
       setShowLocationAlert(true);
@@ -129,93 +137,112 @@ const MobileJobSearch = () => {
   }, []);
 
   // Mock job data (Ghana context)
-  const mockJobs = useMemo(() => [
-    {
-      id: 1,
-      title: 'Emergency Plumbing Repair',
-      description: 'Urgent repair needed for blocked kitchen sink in East Legon',
-      category: 'plumbing',
-      price: 500,
-      location: 'East Legon, Accra',
-      distance: 2.3,
-      worker: {
-        name: 'Kwame Asante',
-        avatar: '/avatars/kwame.jpg',
-        rating: 4.8,
-        reviewCount: 127,
-        verified: true,
-        responseTime: '< 30 min'
+  const mockJobs = useMemo(
+    () => [
+      {
+        id: 1,
+        title: 'Emergency Plumbing Repair',
+        description:
+          'Urgent repair needed for blocked kitchen sink in East Legon',
+        category: 'plumbing',
+        price: 500,
+        location: 'East Legon, Accra',
+        distance: 2.3,
+        worker: {
+          name: 'Kwame Asante',
+          avatar: '/avatars/kwame.jpg',
+          rating: 4.8,
+          reviewCount: 127,
+          verified: true,
+          responseTime: '< 30 min',
+        },
+        urgent: true,
+        postedTime: '15 min ago',
+        skills: ['Pipe Repair', 'Emergency Service', 'Weekend Available'],
       },
-      urgent: true,
-      postedTime: '15 min ago',
-      skills: ['Pipe Repair', 'Emergency Service', 'Weekend Available']
-    },
-    {
-      id: 2,
-      title: 'House Painting - 3 Bedroom',
-      description: 'Interior and exterior painting for a 3-bedroom house in Tema',
-      category: 'painting',
-      price: 2800,
-      location: 'Tema, Greater Accra',
-      distance: 8.7,
-      worker: {
-        name: 'Akosua Mensah',
-        avatar: '/avatars/akosua.jpg',
-        rating: 4.9,
-        reviewCount: 89,
-        verified: true,
-        responseTime: '< 1 hour'
+      {
+        id: 2,
+        title: 'House Painting - 3 Bedroom',
+        description:
+          'Interior and exterior painting for a 3-bedroom house in Tema',
+        category: 'painting',
+        price: 2800,
+        location: 'Tema, Greater Accra',
+        distance: 8.7,
+        worker: {
+          name: 'Akosua Mensah',
+          avatar: '/avatars/akosua.jpg',
+          rating: 4.9,
+          reviewCount: 89,
+          verified: true,
+          responseTime: '< 1 hour',
+        },
+        urgent: false,
+        postedTime: '2 hours ago',
+        skills: [
+          'Interior Painting',
+          'Exterior Painting',
+          'Color Consultation',
+        ],
       },
-      urgent: false,
-      postedTime: '2 hours ago',
-      skills: ['Interior Painting', 'Exterior Painting', 'Color Consultation']
-    },
-    {
-      id: 3,
-      title: 'Custom Kitchen Cabinets',
-      description: 'Build and install modern kitchen cabinets in Airport City',
-      category: 'carpentry',
-      price: 4200,
-      location: 'Airport City, Accra',
-      distance: 5.1,
-      worker: {
-        name: 'Yaw Boateng',
-        avatar: '/avatars/yaw.jpg',
-        rating: 4.7,
-        reviewCount: 156,
-        verified: true,
-        responseTime: '< 2 hours'
+      {
+        id: 3,
+        title: 'Custom Kitchen Cabinets',
+        description:
+          'Build and install modern kitchen cabinets in Airport City',
+        category: 'carpentry',
+        price: 4200,
+        location: 'Airport City, Accra',
+        distance: 5.1,
+        worker: {
+          name: 'Yaw Boateng',
+          avatar: '/avatars/yaw.jpg',
+          rating: 4.7,
+          reviewCount: 156,
+          verified: true,
+          responseTime: '< 2 hours',
+        },
+        urgent: false,
+        postedTime: '5 hours ago',
+        skills: ['Cabinet Making', 'Installation', 'Modern Design'],
       },
-      urgent: false,
-      postedTime: '5 hours ago',
-      skills: ['Cabinet Making', 'Installation', 'Modern Design']
-    }
-  ], []);
+    ],
+    [],
+  );
 
   // Perform search
   const performSearch = useCallback(async () => {
     setLoading(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Filter and sort results based on criteria
-      let filteredResults = mockJobs.filter(job => {
-        const matchesQuery = !searchQuery || 
+      let filteredResults = mockJobs.filter((job) => {
+        const matchesQuery =
+          !searchQuery ||
           job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           job.description.toLowerCase().includes(searchQuery.toLowerCase());
-        
-        const matchesCategory = !selectedCategory || job.category === selectedCategory;
-        const matchesPrice = job.price >= priceRange[0] && job.price <= priceRange[1];
+
+        const matchesCategory =
+          !selectedCategory || job.category === selectedCategory;
+        const matchesPrice =
+          job.price >= priceRange[0] && job.price <= priceRange[1];
         const matchesUrgent = !urgentOnly || job.urgent;
         const matchesVerified = !verifiedOnly || job.worker.verified;
         const matchesDistance = !userLocation || job.distance <= distance;
-        
-        return matchesQuery && matchesCategory && matchesPrice && 
-               matchesUrgent && matchesVerified && matchesDistance;
+
+        return (
+          matchesQuery &&
+          matchesCategory &&
+          matchesPrice &&
+          matchesUrgent &&
+          matchesVerified &&
+          matchesDistance
+        );
       });
-      
+
       // Sort results
       switch (sortBy) {
         case 'distance':
@@ -231,19 +258,31 @@ const MobileJobSearch = () => {
           filteredResults.sort((a, b) => b.worker.rating - a.worker.rating);
           break;
         case 'newest':
-          filteredResults.sort((a, b) => new Date(b.postedTime) - new Date(a.postedTime));
+          filteredResults.sort(
+            (a, b) => new Date(b.postedTime) - new Date(a.postedTime),
+          );
           break;
         default: // relevance
           break;
       }
-      
+
       setResults(filteredResults);
     } catch (error) {
       console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, priceRange, urgentOnly, verifiedOnly, distance, sortBy, userLocation, mockJobs]);
+  }, [
+    searchQuery,
+    selectedCategory,
+    priceRange,
+    urgentOnly,
+    verifiedOnly,
+    distance,
+    sortBy,
+    userLocation,
+    mockJobs,
+  ]);
 
   // Handle refresh
   const handleRefresh = useCallback(async () => {
@@ -254,7 +293,7 @@ const MobileJobSearch = () => {
 
   // Toggle saved job
   const toggleSavedJob = useCallback((jobId) => {
-    setSavedJobs(prev => {
+    setSavedJobs((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(jobId)) {
         newSet.delete(jobId);
@@ -276,184 +315,219 @@ const MobileJobSearch = () => {
   }, [getUserLocation]);
 
   // Render job card
-  const renderJobCard = useCallback((job) => (
-    <Card
-      elevation={2}
-      sx={{
-        mb: 2,
-        borderRadius: 3,
-        overflow: 'hidden',
-        border: job.urgent ? '2px solid #FF5722' : 'none',
-        position: 'relative'
-      }}
-    >
-      {job.urgent && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)',
-            color: 'white',
-            px: 2,
-            py: 0.5,
-            borderRadius: '0 0 0 12px',
-            fontSize: '12px',
-            fontWeight: 700,
-            zIndex: 1
-          }}
-        >
-          URGENT
-        </Box>
-      )}
-      
-      <CardContent sx={{ p: 3 }}>
-        {/* Job Header */}
-        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-          <Avatar
-            src={job.worker.avatar}
+  const renderJobCard = useCallback(
+    (job) => (
+      <Card
+        elevation={2}
+        sx={{
+          mb: 2,
+          borderRadius: 3,
+          overflow: 'hidden',
+          border: job.urgent ? '2px solid #FF5722' : 'none',
+          position: 'relative',
+        }}
+      >
+        {job.urgent && (
+          <Box
             sx={{
-              width: 50,
-              height: 50,
-              border: job.worker.verified ? '2px solid #4CAF50' : 'none'
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)',
+              color: 'white',
+              px: 2,
+              py: 0.5,
+              borderRadius: '0 0 0 12px',
+              fontSize: '12px',
+              fontWeight: 700,
+              zIndex: 1,
             }}
           >
-            {job.worker.name.charAt(0)}
-          </Avatar>
-          
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#FFD700' }}>
-                {job.title}
-              </Typography>
-              {job.worker.verified && (
-                <VerifiedIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
-              )}
-            </Stack>
-            
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              by {job.worker.name}
-            </Typography>
-            
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <StarIcon sx={{ fontSize: 14, color: '#FFD700' }} />
-                <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                  {job.worker.rating}
+            URGENT
+          </Box>
+        )}
+
+        <CardContent sx={{ p: 3 }}>
+          {/* Job Header */}
+          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            <Avatar
+              src={job.worker.avatar}
+              sx={{
+                width: 50,
+                height: 50,
+                border: job.worker.verified ? '2px solid #4CAF50' : 'none',
+              }}
+            >
+              {job.worker.name.charAt(0)}
+            </Avatar>
+
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mb: 0.5 }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 700, color: '#FFD700' }}
+                >
+                  {job.title}
                 </Typography>
+                {job.worker.verified && (
+                  <VerifiedIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
+                )}
+              </Stack>
+
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                by {job.worker.name}
+              </Typography>
+
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <StarIcon sx={{ fontSize: 14, color: '#FFD700' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                    {job.worker.rating}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    ({job.worker.reviewCount})
+                  </Typography>
+                </Stack>
+
                 <Typography variant="caption" color="text.secondary">
-                  ({job.worker.reviewCount})
+                  •
+                </Typography>
+
+                <Typography
+                  variant="caption"
+                  color="success.main"
+                  sx={{ fontWeight: 600 }}
+                >
+                  {job.worker.responseTime}
                 </Typography>
               </Stack>
-              
-              <Typography variant="caption" color="text.secondary">
-                •
-              </Typography>
-              
-              <Typography variant="caption" color="success.main" sx={{ fontWeight: 600 }}>
-                {job.worker.responseTime}
-              </Typography>
-            </Stack>
-          </Box>
-          
-          <IconButton
-            size="small"
-            onClick={() => toggleSavedJob(job.id)}
-            sx={{ color: savedJobs.has(job.id) ? '#FFD700' : 'text.secondary' }}
-          >
-            {savedJobs.has(job.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-          </IconButton>
-        </Stack>
+            </Box>
 
-        {/* Job Details */}
-        <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.5 }}>
-          {job.description}
-        </Typography>
-
-        {/* Skills */}
-        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-          {job.skills.map((skill, index) => (
-            <Chip
-              key={index}
-              label={skill}
+            <IconButton
               size="small"
+              onClick={() => toggleSavedJob(job.id)}
               sx={{
-                backgroundColor: 'rgba(255,215,0,0.1)',
+                color: savedJobs.has(job.id) ? '#FFD700' : 'text.secondary',
+              }}
+            >
+              {savedJobs.has(job.id) ? (
+                <BookmarkIcon />
+              ) : (
+                <BookmarkBorderIcon />
+              )}
+            </IconButton>
+          </Stack>
+
+          {/* Job Details */}
+          <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.5 }}>
+            {job.description}
+          </Typography>
+
+          {/* Skills */}
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}
+          >
+            {job.skills.map((skill, index) => (
+              <Chip
+                key={index}
+                label={skill}
+                size="small"
+                sx={{
+                  backgroundColor: 'rgba(255,215,0,0.1)',
+                  color: '#FFD700',
+                  fontWeight: 600,
+                  fontSize: '11px',
+                }}
+              />
+            ))}
+          </Stack>
+
+          {/* Location and Price */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 2 }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <LocationIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="caption" color="text.secondary">
+                {job.location}
+              </Typography>
+              {userLocation && (
+                <Typography
+                  variant="caption"
+                  color="primary.main"
+                  sx={{ fontWeight: 600 }}
+                >
+                  • {job.distance}km away
+                </Typography>
+              )}
+            </Stack>
+
+            <Typography variant="h6" sx={{ color: '#4CAF50', fontWeight: 700 }}>
+              ₵{job.price.toLocaleString()}
+            </Typography>
+          </Stack>
+
+          {/* Actions */}
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<MessageIcon />}
+              sx={{
+                flex: 1,
+                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                color: '#000',
+                fontWeight: 700,
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                },
+              }}
+            >
+              Message
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PhoneIcon />}
+              sx={{
+                borderColor: '#FFD700',
                 color: '#FFD700',
                 fontWeight: 600,
-                fontSize: '11px'
+                '&:hover': {
+                  borderColor: '#FFC000',
+                  backgroundColor: 'rgba(255,215,0,0.05)',
+                },
               }}
-            />
-          ))}
-        </Stack>
-
-        {/* Location and Price */}
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <LocationIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="caption" color="text.secondary">
-              {job.location}
-            </Typography>
-            {userLocation && (
-              <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600 }}>
-                • {job.distance}km away
-              </Typography>
-            )}
+            >
+              Call
+            </Button>
           </Stack>
-          
-          <Typography variant="h6" sx={{ color: '#4CAF50', fontWeight: 700 }}>
-            ₵{job.price.toLocaleString()}
+
+          {/* Posted time */}
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', textAlign: 'center', mt: 1 }}
+          >
+            Posted {job.postedTime}
           </Typography>
-        </Stack>
-
-        {/* Actions */}
-        <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<MessageIcon />}
-            sx={{
-              flex: 1,
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-              color: '#000',
-              fontWeight: 700,
-              '&:hover': {
-                background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
-              }
-            }}
-          >
-            Message
-          </Button>
-          
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<PhoneIcon />}
-            sx={{
-              borderColor: '#FFD700',
-              color: '#FFD700',
-              fontWeight: 600,
-              '&:hover': {
-                borderColor: '#FFC000',
-                backgroundColor: 'rgba(255,215,0,0.05)'
-              }
-            }}
-          >
-            Call
-          </Button>
-        </Stack>
-
-        {/* Posted time */}
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: 'block', textAlign: 'center', mt: 1 }}
-        >
-          Posted {job.postedTime}
-        </Typography>
-      </CardContent>
-    </Card>
-  ), [savedJobs, toggleSavedJob, userLocation]);
+        </CardContent>
+      </Card>
+    ),
+    [savedJobs, toggleSavedJob, userLocation],
+  );
 
   return (
     <Box sx={{ pb: 10 }}>
@@ -484,9 +558,10 @@ const MobileJobSearch = () => {
         sx={{
           p: 2,
           mb: 2,
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.95) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.95) 100%)',
           backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,215,0,0.2)'
+          border: '1px solid rgba(255,215,0,0.2)',
         }}
       >
         <Stack spacing={2}>
@@ -506,15 +581,15 @@ const MobileJobSearch = () => {
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 borderRadius: 2,
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(255,215,0,0.3)'
+                  borderColor: 'rgba(255,215,0,0.3)',
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(255,215,0,0.5)'
+                  borderColor: 'rgba(255,215,0,0.5)',
                 },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFD700'
-                }
-              }
+                  borderColor: '#FFD700',
+                },
+              },
             }}
           />
 
@@ -524,22 +599,26 @@ const MobileJobSearch = () => {
               <Chip
                 key={category.id}
                 label={`${category.icon} ${category.label} (${category.count})`}
-                onClick={() => setSelectedCategory(
-                  selectedCategory === category.id ? '' : category.id
-                )}
+                onClick={() =>
+                  setSelectedCategory(
+                    selectedCategory === category.id ? '' : category.id,
+                  )
+                }
                 color={selectedCategory === category.id ? 'primary' : 'default'}
                 sx={{
                   minWidth: 'fit-content',
-                  backgroundColor: selectedCategory === category.id 
-                    ? '#FFD700' 
-                    : 'rgba(255,255,255,0.1)',
+                  backgroundColor:
+                    selectedCategory === category.id
+                      ? '#FFD700'
+                      : 'rgba(255,255,255,0.1)',
                   color: selectedCategory === category.id ? '#000' : '#fff',
                   fontWeight: 600,
                   '&:hover': {
-                    backgroundColor: selectedCategory === category.id 
-                      ? '#FFC000' 
-                      : 'rgba(255,255,255,0.2)'
-                  }
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? '#FFC000'
+                        : 'rgba(255,255,255,0.2)',
+                  },
                 }}
               />
             ))}
@@ -555,12 +634,12 @@ const MobileJobSearch = () => {
                 flex: 1,
                 borderColor: '#FFD700',
                 color: '#FFD700',
-                fontWeight: 600
+                fontWeight: 600,
               }}
             >
               Filters
             </Button>
-            
+
             <Button
               variant="outlined"
               startIcon={<SortIcon />}
@@ -569,7 +648,7 @@ const MobileJobSearch = () => {
                 flex: 1,
                 borderColor: '#FFD700',
                 color: '#FFD700',
-                fontWeight: 600
+                fontWeight: 600,
               }}
             >
               Sort
@@ -579,11 +658,16 @@ const MobileJobSearch = () => {
       </Paper>
 
       {/* Results Header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2, px: 1 }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 2, px: 1 }}
+      >
         <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
           {results.length} Jobs Found
         </Typography>
-        
+
         {loading && <LinearProgress sx={{ width: 100 }} />}
       </Stack>
 
@@ -608,12 +692,17 @@ const MobileJobSearch = () => {
           sx: {
             borderRadius: '24px 24px 0 0',
             maxHeight: '80vh',
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
-          }
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          },
         }}
       >
         <Box sx={{ p: 3 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 3 }}
+          >
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
               Filter Jobs
             </Typography>
@@ -638,11 +727,11 @@ const MobileJobSearch = () => {
                 sx={{
                   color: '#FFD700',
                   '& .MuiSlider-thumb': {
-                    backgroundColor: '#FFD700'
+                    backgroundColor: '#FFD700',
                   },
                   '& .MuiSlider-track': {
-                    backgroundColor: '#FFD700'
-                  }
+                    backgroundColor: '#FFD700',
+                  },
                 }}
               />
               <Stack direction="row" justifyContent="space-between">
@@ -654,7 +743,10 @@ const MobileJobSearch = () => {
             {/* Distance */}
             {userLocation && (
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 2, color: '#FFD700' }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ mb: 2, color: '#FFD700' }}
+                >
                   Distance (km)
                 </Typography>
                 <Slider
@@ -666,11 +758,11 @@ const MobileJobSearch = () => {
                   sx={{
                     color: '#FFD700',
                     '& .MuiSlider-thumb': {
-                      backgroundColor: '#FFD700'
+                      backgroundColor: '#FFD700',
                     },
                     '& .MuiSlider-track': {
-                      backgroundColor: '#FFD700'
-                    }
+                      backgroundColor: '#FFD700',
+                    },
                   }}
                 />
               </Box>
@@ -685,18 +777,19 @@ const MobileJobSearch = () => {
                     onChange={(e) => setUrgentOnly(e.target.checked)}
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#FFD700'
+                        color: '#FFD700',
                       },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#FFD700'
-                      }
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track':
+                        {
+                          backgroundColor: '#FFD700',
+                        },
                     }}
                   />
                 }
                 label="Urgent jobs only"
                 sx={{ color: 'white' }}
               />
-              
+
               <FormControlLabel
                 control={
                   <Switch
@@ -704,11 +797,12 @@ const MobileJobSearch = () => {
                     onChange={(e) => setVerifiedOnly(e.target.checked)}
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#FFD700'
+                        color: '#FFD700',
                       },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#FFD700'
-                      }
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track':
+                        {
+                          backgroundColor: '#FFD700',
+                        },
                     }}
                   />
                 }
@@ -729,7 +823,7 @@ const MobileJobSearch = () => {
                 background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                 color: '#000',
                 fontWeight: 700,
-                py: 1.5
+                py: 1.5,
               }}
             >
               Apply Filters
@@ -746,12 +840,17 @@ const MobileJobSearch = () => {
         PaperProps={{
           sx: {
             borderRadius: '24px 24px 0 0',
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
-          }
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          },
         }}
       >
         <Box sx={{ p: 3 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 3 }}
+          >
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
               Sort Jobs
             </Typography>
@@ -776,8 +875,8 @@ const MobileJobSearch = () => {
                   mb: 1,
                   '&.Mui-selected': {
                     backgroundColor: 'rgba(255,215,0,0.1)',
-                    color: '#FFD700'
-                  }
+                    color: '#FFD700',
+                  },
                 }}
               >
                 <ListItemIcon sx={{ color: 'inherit' }}>
@@ -803,7 +902,7 @@ const MobileJobSearch = () => {
           color: '#000',
           '&:hover': {
             background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
-          }
+          },
         }}
       >
         <SearchIcon />

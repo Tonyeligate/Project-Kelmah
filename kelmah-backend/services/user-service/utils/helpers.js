@@ -97,7 +97,45 @@ const isValidPhone = (phone) => {
 const handleServiceError = (res, error, defaultMessage = 'Service error occurred') => {
   console.error('Service error:', error);
 
-  // Database errors
+  // Mongoose/MongoDB ValidationError
+  if (error.name === 'ValidationError') {
+    const errors = Object.values(error.errors || {}).map(err => err.message);
+    return res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      errors
+    });
+  }
+
+  // Mongoose CastError (invalid ObjectId)
+  if (error.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid ID format',
+      field: error.path
+    });
+  }
+
+  // MongoDB duplicate key error
+  if (error.code === 11000) {
+    const field = Object.keys(error.keyPattern || {})[0];
+    return res.status(409).json({
+      success: false,
+      message: 'Resource already exists',
+      field
+    });
+  }
+
+  // MongoDB network/connection errors
+  if (error.name === 'MongoNetworkError' || error.name === 'MongooseServerSelectionError') {
+    return res.status(503).json({
+      success: false,
+      message: 'Database connection unavailable',
+      code: 'DB_UNAVAILABLE'
+    });
+  }
+
+  // Legacy Sequelize errors (for backward compatibility during migration)
   if (error.name === 'SequelizeValidationError') {
     return res.status(400).json({
       success: false,
@@ -121,7 +159,7 @@ const handleServiceError = (res, error, defaultMessage = 'Service error occurred
     });
   }
 
-  // Custom errors
+  // Custom errors with statusCode
   if (error.statusCode) {
     return res.status(error.statusCode).json({
       success: false,

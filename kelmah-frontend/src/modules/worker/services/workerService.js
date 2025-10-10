@@ -6,7 +6,8 @@ import {
 
 const API_URL = '/api/users/workers';
 
-const unwrapPayload = (response) => response?.data?.data ?? response?.data ?? {};
+const unwrapPayload = (response) =>
+  response?.data?.data ?? response?.data ?? {};
 
 const buildMetadata = (payload = {}) => ({
   fallback: Boolean(payload?.fallback),
@@ -388,7 +389,8 @@ const workerService = {
       `${API_URL}/${workerId}/completeness`,
     );
     const payload = unwrapPayload(response);
-    const completion = payload?.completionPercentage ?? payload?.percentage ?? 0;
+    const completion =
+      payload?.completionPercentage ?? payload?.percentage ?? 0;
 
     const normalized = {
       completionPercentage: completion,

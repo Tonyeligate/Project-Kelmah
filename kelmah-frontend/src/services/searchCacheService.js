@@ -15,58 +15,58 @@ class SearchCacheService {
     this.memoryCache = new Map();
     this.cacheHits = 0;
     this.cacheMisses = 0;
-    
+
     // Ghana-specific cache policies
     this.cachePolicies = {
       jobs: {
-        ttl: 30 * 60 * 1000,      // 30 minutes for jobs
+        ttl: 30 * 60 * 1000, // 30 minutes for jobs
         priority: 'high',
-        preload: true
+        preload: true,
       },
       workers: {
-        ttl: 60 * 60 * 1000,      // 1 hour for workers
+        ttl: 60 * 60 * 1000, // 1 hour for workers
         priority: 'high',
-        preload: true
+        preload: true,
       },
       locations: {
         ttl: 7 * 24 * 60 * 60 * 1000, // 1 week for locations
         priority: 'medium',
-        preload: true
+        preload: true,
       },
       categories: {
         ttl: 7 * 24 * 60 * 60 * 1000, // 1 week for categories
         priority: 'low',
-        preload: false
+        preload: false,
       },
       suggestions: {
-        ttl: 6 * 60 * 60 * 1000,  // 6 hours for suggestions
+        ttl: 6 * 60 * 60 * 1000, // 6 hours for suggestions
         priority: 'medium',
-        preload: false
-      }
+        preload: false,
+      },
     };
 
     // Network condition adjustments
     this.networkOptimizations = {
       '2g': {
         cacheAggressive: true,
-        ttlMultiplier: 2.0,     // Keep cache longer on slow networks
-        compressionLevel: 'high'
+        ttlMultiplier: 2.0, // Keep cache longer on slow networks
+        compressionLevel: 'high',
       },
       '3g': {
         cacheAggressive: true,
         ttlMultiplier: 1.5,
-        compressionLevel: 'medium'
+        compressionLevel: 'medium',
       },
       '4g': {
         cacheAggressive: false,
         ttlMultiplier: 1.0,
-        compressionLevel: 'low'
+        compressionLevel: 'low',
       },
-      'wifi': {
+      wifi: {
         cacheAggressive: false,
-        ttlMultiplier: 0.8,     // Refresh more often on fast connections
-        compressionLevel: 'none'
-      }
+        ttlMultiplier: 0.8, // Refresh more often on fast connections
+        compressionLevel: 'none',
+      },
     };
 
     this.init();
@@ -80,10 +80,10 @@ class SearchCacheService {
       await this.initIndexedDB();
       await this.cleanExpiredEntries();
       await this.preloadCriticalData();
-      
+
       // Listen for network changes
       this.setupNetworkListener();
-      
+
       console.log('🗄️ Search cache service initialized');
     } catch (error) {
       console.error('Cache service initialization failed:', error);
@@ -95,25 +95,29 @@ class SearchCacheService {
    */
   async initIndexedDB() {
     if (typeof indexedDB === 'undefined') {
-      console.warn('IndexedDB not available, search cache will use memory only');
+      console.warn(
+        'IndexedDB not available, search cache will use memory only',
+      );
       return Promise.resolve();
     }
-    
+
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         this.db = request.result;
         resolve();
       };
-      
+
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        
+
         // Create or upgrade the object store
         if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: 'cacheKey' });
+          const store = db.createObjectStore(this.storeName, {
+            keyPath: 'cacheKey',
+          });
           store.createIndex('timestamp', 'timestamp', { unique: false });
           store.createIndex('type', 'type', { unique: false });
           store.createIndex('expiresAt', 'expiresAt', { unique: false });
@@ -137,32 +141,34 @@ class SearchCacheService {
    */
   normalizeParams(params) {
     const normalized = { ...params };
-    
+
     // Normalize location
     if (normalized.location) {
       normalized.location = normalized.location.toLowerCase().trim();
     }
-    
+
     // Normalize search query
     if (normalized.query || normalized.search) {
-      const query = (normalized.query || normalized.search).toLowerCase().trim();
+      const query = (normalized.query || normalized.search)
+        .toLowerCase()
+        .trim();
       normalized.search = query;
       delete normalized.query;
     }
-    
+
     // Sort arrays for consistent keys
     if (normalized.skills && Array.isArray(normalized.skills)) {
       normalized.skills = normalized.skills.sort();
     }
-    
+
     if (normalized.categories && Array.isArray(normalized.categories)) {
       normalized.categories = normalized.categories.sort();
     }
-    
+
     // Remove pagination for broader cache hits
     delete normalized.page;
     delete normalized.offset;
-    
+
     return normalized;
   }
 
@@ -173,7 +179,7 @@ class SearchCacheService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(36);
@@ -185,7 +191,7 @@ class SearchCacheService {
   async getCached(type, params) {
     try {
       const cacheKey = this.generateCacheKey(type, params);
-      
+
       // Try memory cache first (fastest)
       const memoryResult = this.memoryCache.get(cacheKey);
       if (memoryResult && !this.isExpired(memoryResult)) {
@@ -193,7 +199,7 @@ class SearchCacheService {
         console.log(`💾 Memory cache hit: ${type}`);
         return memoryResult.data;
       }
-      
+
       // Try IndexedDB cache
       const dbResult = await this.getFromIndexedDB(cacheKey);
       if (dbResult && !this.isExpired(dbResult)) {
@@ -203,11 +209,10 @@ class SearchCacheService {
         console.log(`💽 DB cache hit: ${type}`);
         return dbResult.data;
       }
-      
+
       this.cacheMisses++;
       console.log(`❌ Cache miss: ${type}`);
       return null;
-      
     } catch (error) {
       console.error('Cache retrieval error:', error);
       return null;
@@ -222,12 +227,14 @@ class SearchCacheService {
       const cacheKey = this.generateCacheKey(type, params);
       const policy = this.cachePolicies[type] || {};
       const networkType = this.detectNetworkType();
-      const networkOpt = this.networkOptimizations[networkType] || this.networkOptimizations['4g'];
-      
+      const networkOpt =
+        this.networkOptimizations[networkType] ||
+        this.networkOptimizations['4g'];
+
       // Calculate TTL with network adjustments
       const baseTTL = customTTL || policy.ttl || this.defaultTTL;
       const adjustedTTL = baseTTL * networkOpt.ttlMultiplier;
-      
+
       const cacheEntry = {
         cacheKey,
         type,
@@ -237,20 +244,21 @@ class SearchCacheService {
         ttl: adjustedTTL,
         params: this.normalizeParams(params),
         networkType,
-        size: this.estimateSize(data)
+        size: this.estimateSize(data),
       };
-      
+
       // Store in memory cache
       this.memoryCache.set(cacheKey, cacheEntry);
-      
+
       // Store in IndexedDB for persistence
       await this.saveToIndexedDB(cacheEntry);
-      
+
       // Clean up if cache is getting too large
       await this.enforceStorageLimit();
-      
-      console.log(`💾 Cached ${type} results (${cacheEntry.size} bytes, TTL: ${Math.round(adjustedTTL/1000/60)} min)`);
-      
+
+      console.log(
+        `💾 Cached ${type} results (${cacheEntry.size} bytes, TTL: ${Math.round(adjustedTTL / 1000 / 60)} min)`,
+      );
     } catch (error) {
       console.error('Cache storage error:', error);
     }
@@ -265,11 +273,11 @@ class SearchCacheService {
         resolve(null);
         return;
       }
-      
+
       const transaction = this.db.transaction([this.storeName], 'readonly');
       const store = transaction.objectStore(this.storeName);
       const request = store.get(cacheKey);
-      
+
       request.onsuccess = () => {
         const result = request.result;
         if (result) {
@@ -277,7 +285,7 @@ class SearchCacheService {
         }
         resolve(result);
       };
-      
+
       request.onerror = () => reject(request.error);
     });
   }
@@ -291,11 +299,11 @@ class SearchCacheService {
         resolve();
         return;
       }
-      
+
       const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       const request = store.put(cacheEntry);
-      
+
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -319,18 +327,18 @@ class SearchCacheService {
           this.memoryCache.delete(key);
         }
       }
-      
+
       // Clean IndexedDB cache
       if (!this.db) return;
-      
+
       const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       const index = store.index('expiresAt');
       const range = IDBKeyRange.upperBound(Date.now());
-      
+
       const request = index.openCursor(range);
       let deletedCount = 0;
-      
+
       request.onsuccess = (event) => {
         const cursor = event.target.result;
         if (cursor) {
@@ -343,7 +351,6 @@ class SearchCacheService {
           }
         }
       };
-      
     } catch (error) {
       console.error('Cache cleanup error:', error);
     }
@@ -355,13 +362,15 @@ class SearchCacheService {
   async enforceStorageLimit() {
     try {
       const usage = await this.getCacheUsage();
-      
+
       if (usage.totalSize > this.maxCacheSize) {
-        console.log(`📦 Cache size limit exceeded (${usage.totalSize} bytes), cleaning...`);
-        
+        console.log(
+          `📦 Cache size limit exceeded (${usage.totalSize} bytes), cleaning...`,
+        );
+
         // Remove oldest low-priority entries first
         await this.evictLowPriorityEntries();
-        
+
         // If still over limit, remove oldest entries
         const newUsage = await this.getCacheUsage();
         if (newUsage.totalSize > this.maxCacheSize) {
@@ -382,22 +391,25 @@ class SearchCacheService {
         resolve({ totalSize: 0, entryCount: 0 });
         return;
       }
-      
+
       const transaction = this.db.transaction([this.storeName], 'readonly');
       const store = transaction.objectStore(this.storeName);
       const request = store.getAll();
-      
+
       request.onsuccess = () => {
         const entries = request.result;
-        const totalSize = entries.reduce((sum, entry) => sum + (entry.size || 0), 0);
-        
+        const totalSize = entries.reduce(
+          (sum, entry) => sum + (entry.size || 0),
+          0,
+        );
+
         resolve({
           totalSize,
           entryCount: entries.length,
-          entries
+          entries,
         });
       };
-      
+
       request.onerror = () => reject(request.error);
     });
   }
@@ -407,9 +419,10 @@ class SearchCacheService {
    */
   async evictLowPriorityEntries() {
     const usage = await this.getCacheUsage();
-    const lowPriorityTypes = Object.keys(this.cachePolicies)
-      .filter(type => this.cachePolicies[type].priority === 'low');
-    
+    const lowPriorityTypes = Object.keys(this.cachePolicies).filter(
+      (type) => this.cachePolicies[type].priority === 'low',
+    );
+
     for (const entry of usage.entries) {
       if (lowPriorityTypes.includes(entry.type)) {
         await this.removeFromCache(entry.cacheKey);
@@ -425,7 +438,7 @@ class SearchCacheService {
     const sortedEntries = usage.entries
       .sort((a, b) => a.timestamp - b.timestamp)
       .slice(0, Math.floor(usage.entryCount * 0.3)); // Remove oldest 30%
-    
+
     for (const entry of sortedEntries) {
       await this.removeFromCache(entry.cacheKey);
     }
@@ -437,18 +450,18 @@ class SearchCacheService {
   async removeFromCache(cacheKey) {
     // Remove from memory cache
     this.memoryCache.delete(cacheKey);
-    
+
     // Remove from IndexedDB
     return new Promise((resolve, reject) => {
       if (!this.db) {
         resolve();
         return;
       }
-      
+
       const transaction = this.db.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       const request = store.delete(cacheKey);
-      
+
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -459,8 +472,9 @@ class SearchCacheService {
    */
   async preloadCriticalData() {
     try {
-      console.log('🚀 Preloading critical search data disabled: no mock generation');
-      
+      console.log(
+        '🚀 Preloading critical search data disabled: no mock generation',
+      );
     } catch (error) {
       console.error('Preload error:', error);
     }
@@ -481,7 +495,7 @@ class SearchCacheService {
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = navigator.connection;
       const effectiveType = connection.effectiveType;
-      
+
       switch (effectiveType) {
         case 'slow-2g':
         case '2g':
@@ -494,7 +508,7 @@ class SearchCacheService {
           return 'wifi';
       }
     }
-    
+
     return '4g'; // Default assumption
   }
 
@@ -506,19 +520,19 @@ class SearchCacheService {
       navigator.connection.addEventListener('change', () => {
         const networkType = this.detectNetworkType();
         console.log(`📶 Network changed to: ${networkType}`);
-        
+
         // Adjust cache behavior based on network
         this.adjustCacheForNetwork(networkType);
       });
     }
-    
+
     // Listen for online/offline events
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => {
         console.log('🌐 Back online - warming cache...');
         this.warmCacheOnReconnect();
       });
-      
+
       window.addEventListener('offline', () => {
         console.log('📴 Offline - relying on cache...');
       });
@@ -530,11 +544,11 @@ class SearchCacheService {
    */
   adjustCacheForNetwork(networkType) {
     const optimization = this.networkOptimizations[networkType];
-    
+
     if (optimization.cacheAggressive) {
       // Extend TTL for all cached items
       for (const [key, entry] of this.memoryCache.entries()) {
-        entry.expiresAt = Date.now() + (entry.ttl * optimization.ttlMultiplier);
+        entry.expiresAt = Date.now() + entry.ttl * optimization.ttlMultiplier;
       }
     }
   }
@@ -544,9 +558,10 @@ class SearchCacheService {
    */
   async warmCacheOnReconnect() {
     // Refresh high-priority cached items
-    const highPriorityTypes = Object.keys(this.cachePolicies)
-      .filter(type => this.cachePolicies[type].priority === 'high');
-    
+    const highPriorityTypes = Object.keys(this.cachePolicies).filter(
+      (type) => this.cachePolicies[type].priority === 'high',
+    );
+
     // This would trigger background refresh of critical data
     console.log('♨️ Warming cache for:', highPriorityTypes);
   }
@@ -556,16 +571,16 @@ class SearchCacheService {
    */
   compressData(data, level) {
     if (level === 'none') return data;
-    
+
     try {
       const jsonString = JSON.stringify(data);
-      
+
       // Simple compression - in production, use a proper compression library
       if (level === 'high') {
         // Remove extra whitespace and compress
         return JSON.parse(jsonString);
       }
-      
+
       return data;
     } catch (error) {
       console.warn('Data compression failed:', error);
@@ -596,16 +611,20 @@ class SearchCacheService {
    * Get cache statistics for monitoring
    */
   getStats() {
-    const hitRate = this.cacheHits + this.cacheMisses > 0 
-      ? (this.cacheHits / (this.cacheHits + this.cacheMisses) * 100).toFixed(1)
-      : 0;
-    
+    const hitRate =
+      this.cacheHits + this.cacheMisses > 0
+        ? (
+            (this.cacheHits / (this.cacheHits + this.cacheMisses)) *
+            100
+          ).toFixed(1)
+        : 0;
+
     return {
       hitRate: `${hitRate}%`,
       hits: this.cacheHits,
       misses: this.cacheMisses,
       memoryEntries: this.memoryCache.size,
-      networkType: this.detectNetworkType()
+      networkType: this.detectNetworkType(),
     };
   }
 
@@ -616,14 +635,14 @@ class SearchCacheService {
     try {
       // Clear memory cache
       this.memoryCache.clear();
-      
+
       // Clear IndexedDB cache
       if (this.db) {
         const transaction = this.db.transaction([this.storeName], 'readwrite');
         const store = transaction.objectStore(this.storeName);
         await store.clear();
       }
-      
+
       console.log('🗑️ All cache data cleared');
     } catch (error) {
       console.error('Cache clear error:', error);
@@ -641,14 +660,14 @@ class SearchCacheService {
           this.memoryCache.delete(key);
         }
       }
-      
+
       // Remove from IndexedDB
       if (this.db) {
         const transaction = this.db.transaction([this.storeName], 'readwrite');
         const store = transaction.objectStore(this.storeName);
         const index = store.index('type');
         const range = IDBKeyRange.only(type);
-        
+
         const request = index.openCursor(range);
         request.onsuccess = (event) => {
           const cursor = event.target.result;
@@ -658,7 +677,7 @@ class SearchCacheService {
           }
         };
       }
-      
+
       console.log(`🗑️ Invalidated cache for type: ${type}`);
     } catch (error) {
       console.error('Cache invalidation error:', error);

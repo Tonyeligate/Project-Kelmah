@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 // Currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: "GHS",
+  currency: 'GHS',
 });
 
 const TransactionsList = ({ transactions = [], loading = false, limit }) => {

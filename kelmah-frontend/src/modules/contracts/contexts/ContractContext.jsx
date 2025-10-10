@@ -32,7 +32,9 @@ export const ContractProvider = ({ children }) => {
     try {
       const response = await contractService.getContracts();
       // Extract contracts array from response object
-      const fetchedContracts = Array.isArray(response) ? response : response?.contracts || [];
+      const fetchedContracts = Array.isArray(response)
+        ? response
+        : response?.contracts || [];
       setContracts(fetchedContracts);
     } catch (err) {
       console.error('Failed to fetch contracts:', err);
@@ -49,8 +51,6 @@ export const ContractProvider = ({ children }) => {
 
   const getContractById = useCallback(
     async (id) => {
-      
-
       setLoading(true);
       try {
         return await contractService.getContractById(id);

@@ -12,18 +12,12 @@ import {
   Button,
   IconButton,
 } from '@mui/material';
-import {
-  LocationOn,
-  Email,
-  Phone,
-  Star,
-  Verified,
-} from '@mui/icons-material';
+import { LocationOn, Email, Phone, Star, Verified } from '@mui/icons-material';
 
 /**
  * Generic UserCard Component
  * Reusable card for displaying user information across different contexts
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.user - User data object
  * @param {Function} props.onClick - Click handler for the card
@@ -40,9 +34,9 @@ const UserCard = ({
     showRating: true,
     showStatus: true,
     showActions: false,
-    clickable: true
+    clickable: true,
   },
-  variant = 'default'
+  variant = 'default',
 }) => {
   if (!user) return null;
 
@@ -61,7 +55,7 @@ const UserCard = ({
     role,
     skills = [],
     completedJobs,
-    specializations = []
+    specializations = [],
   } = user;
 
   const handleClick = () => {
@@ -81,31 +75,35 @@ const UserCard = ({
         <Avatar
           src={profileImage || avatar}
           alt={name}
-          sx={{ 
-            width: variant === 'compact' ? 40 : 56, 
+          sx={{
+            width: variant === 'compact' ? 40 : 56,
             height: variant === 'compact' ? 40 : 56,
-            mr: 1.5 
+            mr: 1.5,
           }}
         >
           {name?.charAt(0)}
         </Avatar>
-        
+
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-            <Typography 
-              variant={variant === 'compact' ? 'subtitle2' : 'h6'} 
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}
+          >
+            <Typography
+              variant={variant === 'compact' ? 'subtitle2' : 'h6'}
               component="div"
               noWrap
             >
               {name}
             </Typography>
-            {isVerified && (
-              <Verified fontSize="small" color="primary" />
-            )}
+            {isVerified && <Verified fontSize="small" color="primary" />}
           </Box>
-          
+
           {role && variant !== 'compact' && (
-            <Typography variant="caption" color="text.secondary" display="block">
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
+            >
               {role.charAt(0).toUpperCase() + role.slice(1)}
             </Typography>
           )}
@@ -144,7 +142,7 @@ const UserCard = ({
             </Typography>
           </Box>
         )}
-        
+
         {features.showEmail && email && variant === 'detailed' && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Email fontSize="small" color="action" />
@@ -153,7 +151,7 @@ const UserCard = ({
             </Typography>
           </Box>
         )}
-        
+
         {features.showPhone && phone && variant === 'detailed' && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Phone fontSize="small" color="action" />
@@ -211,8 +209,8 @@ const UserCard = ({
   // Wrap in clickable area if needed
   if (features.clickable) {
     return (
-      <Card 
-        sx={{ 
+      <Card
+        sx={{
           height: '100%',
           transition: 'transform 0.2s, box-shadow 0.2s',
           '&:hover': {
@@ -228,11 +226,7 @@ const UserCard = ({
     );
   }
 
-  return (
-    <Card sx={{ height: '100%' }}>
-      {cardContent}
-    </Card>
-  );
+  return <Card sx={{ height: '100%' }}>{cardContent}</Card>;
 };
 
 export default UserCard;

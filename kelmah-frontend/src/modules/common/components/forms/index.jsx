@@ -9,22 +9,13 @@ export { default as SearchForm } from './SearchForm';
 import SearchForm from './SearchForm';
 
 export const JobSearchForm = (props) => (
-  <SearchForm
-    {...props}
-    searchType="jobs"
-  />
+  <SearchForm {...props} searchType="jobs" />
 );
 
 export const WorkerSearchForm = (props) => (
-  <SearchForm
-    {...props}
-    searchType="workers"
-  />
+  <SearchForm {...props} searchType="workers" />
 );
 
 export const CompactSearchForm = (props) => (
-  <SearchForm
-    {...props}
-    variant="compact"
-  />
+  <SearchForm {...props} variant="compact" />
 );

@@ -44,7 +44,7 @@ const SearchForm = ({
   initialValues = {},
   config = {},
   showAdvancedFilters = true,
-  variant = 'default'
+  variant = 'default',
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialValues.query || '');
   const [location, setLocation] = useState(initialValues.location || '');
@@ -57,35 +57,78 @@ const SearchForm = ({
   const defaultConfigs = {
     jobs: {
       placeholder: 'Search for jobs...',
-      categories: ['plumbing', 'electrical', 'carpentry', 'painting', 'cleaning', 'security', 'gardening'],
+      categories: [
+        'plumbing',
+        'electrical',
+        'carpentry',
+        'painting',
+        'cleaning',
+        'security',
+        'gardening',
+      ],
       filterFields: [
         { name: 'budget_min', label: 'Min Budget', type: 'number' },
         { name: 'budget_max', label: 'Max Budget', type: 'number' },
-        { name: 'experience_level', label: 'Experience Level', type: 'select', 
-          options: ['Entry Level', 'Intermediate', 'Expert'] },
-        { name: 'urgency', label: 'Urgency', type: 'select', 
-          options: ['Low', 'Medium', 'High'] }
+        {
+          name: 'experience_level',
+          label: 'Experience Level',
+          type: 'select',
+          options: ['Entry Level', 'Intermediate', 'Expert'],
+        },
+        {
+          name: 'urgency',
+          label: 'Urgency',
+          type: 'select',
+          options: ['Low', 'Medium', 'High'],
+        },
       ],
-      availableTags: ['Urgent', 'Remote', 'Part-time', 'Full-time', 'Weekend']
+      availableTags: ['Urgent', 'Remote', 'Part-time', 'Full-time', 'Weekend'],
     },
     workers: {
       placeholder: 'Search for workers...',
-      categories: ['plumber', 'electrician', 'carpenter', 'painter', 'cleaner', 'security', 'gardener'],
-      filterFields: [
-        { name: 'rating_min', label: 'Min Rating', type: 'number', min: 1, max: 5 },
-        { name: 'experience_years', label: 'Years of Experience', type: 'number' },
-        { name: 'availability', label: 'Availability', type: 'select', 
-          options: ['Available Now', 'This Week', 'This Month'] },
-        { name: 'verified_only', label: 'Verified Only', type: 'checkbox' }
+      categories: [
+        'plumber',
+        'electrician',
+        'carpenter',
+        'painter',
+        'cleaner',
+        'security',
+        'gardener',
       ],
-      availableTags: ['Verified', 'Top Rated', 'Fast Response', 'Available Now']
+      filterFields: [
+        {
+          name: 'rating_min',
+          label: 'Min Rating',
+          type: 'number',
+          min: 1,
+          max: 5,
+        },
+        {
+          name: 'experience_years',
+          label: 'Years of Experience',
+          type: 'number',
+        },
+        {
+          name: 'availability',
+          label: 'Availability',
+          type: 'select',
+          options: ['Available Now', 'This Week', 'This Month'],
+        },
+        { name: 'verified_only', label: 'Verified Only', type: 'checkbox' },
+      ],
+      availableTags: [
+        'Verified',
+        'Top Rated',
+        'Fast Response',
+        'Available Now',
+      ],
     },
     general: {
       placeholder: 'Search...',
       categories: [],
       filterFields: [],
-      availableTags: []
-    }
+      availableTags: [],
+    },
   };
 
   const currentConfig = { ...defaultConfigs[searchType], ...config };
@@ -93,13 +136,13 @@ const SearchForm = ({
   // Handle search submission
   const handleSearch = (e) => {
     if (e) e.preventDefault();
-    
+
     const searchParams = {
       query: searchQuery,
       location,
       category,
       tags: selectedTags,
-      ...filters
+      ...filters,
     };
 
     onSearch?.(searchParams);
@@ -109,34 +152,34 @@ const SearchForm = ({
   const handleFilterChange = (fieldName, value) => {
     const newFilters = { ...filters, [fieldName]: value };
     setFilters(newFilters);
-    
+
     const allParams = {
       query: searchQuery,
       location,
       category,
       tags: selectedTags,
-      ...newFilters
+      ...newFilters,
     };
-    
+
     onFiltersChange?.(allParams);
   };
 
   // Handle tag selection
   const handleTagToggle = (tag) => {
     const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
+      ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
-    
+
     setSelectedTags(newTags);
-    
+
     const allParams = {
       query: searchQuery,
       location,
       category,
       tags: newTags,
-      ...filters
+      ...filters,
     };
-    
+
     onFiltersChange?.(allParams);
   };
 
@@ -147,7 +190,7 @@ const SearchForm = ({
     setCategory('');
     setFilters({});
     setSelectedTags([]);
-    
+
     onFiltersChange?.({
       query: '',
       location: '',
@@ -223,7 +266,11 @@ const SearchForm = ({
 
   if (variant === 'compact') {
     return (
-      <Box component="form" onSubmit={handleSearch} sx={{ display: 'flex', gap: 1 }}>
+      <Box
+        component="form"
+        onSubmit={handleSearch}
+        sx={{ display: 'flex', gap: 1 }}
+      >
         <TextField
           fullWidth
           placeholder={currentConfig.placeholder}
@@ -247,7 +294,11 @@ const SearchForm = ({
     <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
       <Box component="form" onSubmit={handleSearch}>
         {/* Main search fields */}
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          sx={{ mb: 2 }}
+        >
           <TextField
             fullWidth
             placeholder={currentConfig.placeholder}
@@ -295,11 +346,7 @@ const SearchForm = ({
             </FormControl>
           )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ minWidth: 120 }}
-          >
+          <Button type="submit" variant="contained" sx={{ minWidth: 120 }}>
             Search
           </Button>
         </Stack>
@@ -322,7 +369,13 @@ const SearchForm = ({
 
         {/* Advanced filters toggle */}
         {showAdvancedFilters && currentConfig.filterFields.length > 0 && (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Button
               startIcon={<TuneRounded />}
               onClick={() => setShowFilters(!showFilters)}
@@ -331,16 +384,17 @@ const SearchForm = ({
               Advanced Filters
             </Button>
 
-            {Object.keys(filters).some(key => filters[key]) || selectedTags.length > 0 && (
-              <Button
-                startIcon={<Clear />}
-                onClick={handleClearFilters}
-                variant="outlined"
-                size="small"
-              >
-                Clear All
-              </Button>
-            )}
+            {Object.keys(filters).some((key) => filters[key]) ||
+              (selectedTags.length > 0 && (
+                <Button
+                  startIcon={<Clear />}
+                  onClick={handleClearFilters}
+                  variant="outlined"
+                  size="small"
+                >
+                  Clear All
+                </Button>
+              ))}
           </Box>
         )}
 

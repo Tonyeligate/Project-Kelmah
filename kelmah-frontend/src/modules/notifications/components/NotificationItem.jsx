@@ -43,7 +43,8 @@ const NotificationItem = ({ notification, sx = {} }) => {
   if (!notification) return null;
 
   const id = notification.id || notification._id;
-  const title = notification.title || notification.content || notification.message;
+  const title =
+    notification.title || notification.content || notification.message;
   const message = notification.content || notification.message || '';
   const createdAt = notification.createdAt || notification.date || Date.now();
   const read = notification.read ?? notification.readStatus?.isRead ?? false;

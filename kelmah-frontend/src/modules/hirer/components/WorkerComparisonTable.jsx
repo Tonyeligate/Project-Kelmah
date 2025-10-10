@@ -1,10 +1,21 @@
 import React from 'react';
-import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+} from '@mui/material';
 
 const WorkerComparisonTable = ({ workers = [] }) => {
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>Worker Comparison</Typography>
+      <Typography variant="h6" gutterBottom>
+        Worker Comparison
+      </Typography>
       <Paper sx={{ p: 2 }}>
         <Table size="small">
           <TableHead>
@@ -28,7 +39,9 @@ const WorkerComparisonTable = ({ workers = [] }) => {
             ))}
             {workers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center">No workers selected</TableCell>
+                <TableCell colSpan={5} align="center">
+                  No workers selected
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -39,7 +52,3 @@ const WorkerComparisonTable = ({ workers = [] }) => {
 };
 
 export default WorkerComparisonTable;
-
-
-
-

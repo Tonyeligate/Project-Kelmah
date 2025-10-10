@@ -22,11 +22,15 @@ export const useWebSocket = () => {
         const response = await fetch('/runtime-config.json');
         if (response.ok) {
           const config = await response.json();
-          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+          wsUrl =
+            config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
           console.log('📡 WebSocket connecting to backend:', wsUrl);
         }
       } catch (configError) {
-        console.warn('⚠️ Failed to load runtime config, using fallback:', wsUrl);
+        console.warn(
+          '⚠️ Failed to load runtime config, using fallback:',
+          wsUrl,
+        );
       }
 
       const { io } = await import('socket.io-client');
@@ -62,14 +66,20 @@ export const useWebSocket = () => {
       };
 
       // Audit-related events compatibility
-      socket.on('audit_notification', (data) => emitMessage({ type: 'audit_notification', data }));
-      socket.on('audit_subscription_success', (data) => emitMessage({ type: 'audit_subscription_success', data }));
+      socket.on('audit_notification', (data) =>
+        emitMessage({ type: 'audit_notification', data }),
+      );
+      socket.on('audit_subscription_success', (data) =>
+        emitMessage({ type: 'audit_subscription_success', data }),
+      );
 
       // Generic message passthrough if server emits 'message'
       socket.on('message', (data) => emitMessage({ type: 'message', data }));
 
       // Notifications passthrough
-      socket.on('notification', (data) => emitMessage({ type: 'notification', data }));
+      socket.on('notification', (data) =>
+        emitMessage({ type: 'notification', data }),
+      );
 
       return socket;
     } catch (e) {
@@ -104,8 +114,10 @@ export const useWebSocket = () => {
       if (!ioSocket) return console.warn('Socket not connected');
       // Support string shorthand used by useAuditNotifications
       if (typeof message === 'string') {
-        if (message === 'subscribe_audit_notifications') ioSocket.emit('audit:subscribe');
-        else if (message === 'unsubscribe_audit_notifications') ioSocket.emit('audit:unsubscribe');
+        if (message === 'subscribe_audit_notifications')
+          ioSocket.emit('audit:subscribe');
+        else if (message === 'unsubscribe_audit_notifications')
+          ioSocket.emit('audit:unsubscribe');
         else ioSocket.emit('client:event', { message });
         return;
       }

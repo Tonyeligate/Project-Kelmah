@@ -103,7 +103,7 @@ function JobApplication() {
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
     proposedBudget: '',
-    currency: "GHS",
+    currency: 'GHS',
     estimatedDuration: '',
     attachments: [],
     milestoneProposal: [],
@@ -507,15 +507,11 @@ function JobApplication() {
                         <Schedule color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
                           <strong>Duration:</strong>{' '}
-                          {job?.duration ? (
-                            typeof job.duration === 'object' ? (
-                              `${job.duration.value || 0} ${job.duration.unit || 'days'}`
-                            ) : (
-                              `${job.duration} days`
-                            )
-                          ) : (
-                            'Not specified'
-                          )}
+                          {job?.duration
+                            ? typeof job.duration === 'object'
+                              ? `${job.duration.value || 0} ${job.duration.unit || 'days'}`
+                              : `${job.duration} days`
+                            : 'Not specified'}
                         </Typography>
                       </Box>
                     </Grid>

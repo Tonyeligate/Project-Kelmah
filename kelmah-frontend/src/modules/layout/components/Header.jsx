@@ -55,16 +55,19 @@ import { secureStorage } from '../../../utils/secureStorage';
 
 // Enhanced Styled Components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: theme.palette.mode === 'dark' 
-    ? `linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%)`
-    : `linear-gradient(135deg, rgba(255, 215, 0, 0.95) 0%, rgba(255, 193, 7, 0.95) 100%)`,
+  background:
+    theme.palette.mode === 'dark'
+      ? `linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%)`
+      : `linear-gradient(135deg, rgba(255, 215, 0, 0.95) 0%, rgba(255, 193, 7, 0.95) 100%)`,
   backdropFilter: 'blur(20px)',
-  borderBottom: theme.palette.mode === 'dark'
-    ? `2px solid rgba(255, 215, 0, 0.5)`
-    : `2px solid rgba(0, 0, 0, 0.3)`,
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 8px 32px rgba(0, 0, 0, 0.9)'
-    : '0 6px 25px rgba(0, 0, 0, 0.25)',
+  borderBottom:
+    theme.palette.mode === 'dark'
+      ? `2px solid rgba(255, 215, 0, 0.5)`
+      : `2px solid rgba(0, 0, 0, 0.3)`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? '0 8px 32px rgba(0, 0, 0, 0.9)'
+      : '0 6px 25px rgba(0, 0, 0, 0.25)',
   position: 'sticky',
   top: 0,
   zIndex: 1100,
@@ -86,9 +89,10 @@ const LogoIcon = styled(Box)(({ theme }) => ({
   width: 48,
   height: 48,
   borderRadius: '50%',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+  background:
+    theme.palette.mode === 'dark'
+      ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+      : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -97,9 +101,10 @@ const LogoIcon = styled(Box)(({ theme }) => ({
   fontWeight: 800,
   fontSize: '1.5rem',
   fontFamily: 'Montserrat, sans-serif',
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 4px 15px rgba(255, 215, 0, 0.4)`
-    : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+      : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
@@ -122,9 +127,10 @@ const LogoIcon = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: theme.palette.mode === 'dark'
-      ? `linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)`
-      : `linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%)`,
+    background:
+      theme.palette.mode === 'dark'
+        ? `linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)`
+        : `linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.3) 50%, transparent 70%)`,
     transform: 'translateX(-100%)',
     transition: 'transform 0.6s ease',
   },
@@ -137,15 +143,17 @@ const BrandText = styled(Typography)(({ theme }) => ({
   fontWeight: 800,
   fontFamily: 'Montserrat, sans-serif',
   fontSize: '1.75rem',
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-    : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+  background:
+    theme.palette.mode === 'dark'
+      ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+      : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  textShadow: theme.palette.mode === 'dark'
-    ? '0 2px 10px rgba(255, 215, 0, 0.3)'
-    : '0 2px 10px rgba(0, 0, 0, 0.2)',
+  textShadow:
+    theme.palette.mode === 'dark'
+      ? '0 2px 10px rgba(255, 215, 0, 0.3)'
+      : '0 2px 10px rgba(0, 0, 0, 0.2)',
   letterSpacing: '-0.02em',
   [theme.breakpoints.down('sm')]: {
     fontSize: '1.4rem',
@@ -159,9 +167,10 @@ const BrandText = styled(Typography)(({ theme }) => ({
 
 const TaglineText = styled(Typography)(({ theme }) => ({
   fontSize: '0.75rem',
-  color: theme.palette.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.7)' 
-    : 'rgba(0, 0, 0, 0.8)',
+  color:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.7)'
+      : 'rgba(0, 0, 0, 0.8)',
   fontWeight: 500,
   marginTop: '-2px',
   letterSpacing: '0.5px',
@@ -174,13 +183,15 @@ const TaglineText = styled(Typography)(({ theme }) => ({
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark'
-    ? 'rgba(255, 215, 0, 0.1)'
-    : 'rgba(0, 0, 0, 0.1)',
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 215, 0, 0.1)'
+      : 'rgba(0, 0, 0, 0.1)',
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-  border: theme.palette.mode === 'dark'
-    ? `1px solid rgba(255, 215, 0, 0.2)`
-    : `1px solid rgba(0, 0, 0, 0.2)`,
+  border:
+    theme.palette.mode === 'dark'
+      ? `1px solid rgba(255, 215, 0, 0.2)`
+      : `1px solid rgba(0, 0, 0, 0.2)`,
   margin: theme.spacing(0, 0.5),
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   [theme.breakpoints.down('sm')]: {
@@ -194,13 +205,15 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
     },
   },
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 215, 0, 0.2)'
-      : 'rgba(0, 0, 0, 0.15)',
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 215, 0, 0.2)'
+        : 'rgba(0, 0, 0, 0.15)',
     transform: 'translateY(-1px) scale(1.05)',
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 4px 15px rgba(255, 215, 0, 0.3)'
-      : '0 4px 15px rgba(0, 0, 0, 0.2)',
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 4px 15px rgba(255, 215, 0, 0.3)'
+        : '0 4px 15px rgba(0, 0, 0, 0.2)',
   },
   '&:active': {
     transform: 'translateY(0) scale(1)',
@@ -210,38 +223,45 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
 const UserAvatar = styled(Avatar)(({ theme }) => ({
   width: 40,
   height: 40,
-  backgroundColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+  backgroundColor:
+    theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
   color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
   fontWeight: 700,
   fontSize: '1rem',
-  border: theme.palette.mode === 'dark'
-    ? `2px solid rgba(255, 215, 0, 0.3)`
-    : `2px solid rgba(0, 0, 0, 0.3)`,
+  border:
+    theme.palette.mode === 'dark'
+      ? `2px solid rgba(255, 215, 0, 0.3)`
+      : `2px solid rgba(0, 0, 0, 0.3)`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
   [theme.breakpoints.down('sm')]: {
     width: 36,
     height: 36,
     fontSize: '0.9rem',
-    border: theme.palette.mode === 'dark'
-      ? `1.5px solid rgba(255, 215, 0, 0.3)`
-      : `1.5px solid rgba(0, 0, 0, 0.3)`,
+    border:
+      theme.palette.mode === 'dark'
+        ? `1.5px solid rgba(255, 215, 0, 0.3)`
+        : `1.5px solid rgba(0, 0, 0, 0.3)`,
   },
   '&:hover': {
     transform: 'scale(1.1)',
-    border: theme.palette.mode === 'dark'
-      ? `2px solid ${BRAND_COLORS.gold}`
-      : `2px solid ${BRAND_COLORS.black}`,
-    boxShadow: theme.palette.mode === 'dark'
-      ? `0 4px 15px rgba(255, 215, 0, 0.4)`
-      : `0 4px 15px rgba(0, 0, 0, 0.3)`,
+    border:
+      theme.palette.mode === 'dark'
+        ? `2px solid ${BRAND_COLORS.gold}`
+        : `2px solid ${BRAND_COLORS.black}`,
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? `0 4px 15px rgba(255, 215, 0, 0.4)`
+        : `0 4px 15px rgba(0, 0, 0, 0.3)`,
   },
 }));
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
-    backgroundColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+    backgroundColor:
+      theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    color:
+      theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
     fontWeight: 600,
     fontSize: '0.75rem',
     minWidth: '18px',
@@ -264,33 +284,44 @@ const AuthButton = styled(Button)(({ theme, variant }) => ({
     minWidth: 'auto',
   },
   ...(variant === 'outlined' && {
-    borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    borderColor:
+      theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+    color:
+      theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
     borderWidth: '2px',
     '&:hover': {
-      borderColor: theme.palette.mode === 'dark' ? BRAND_COLORS.goldLight : BRAND_COLORS.blackLight,
-      backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(255, 215, 0, 0.1)' 
-        : 'rgba(0, 0, 0, 0.08)',
+      borderColor:
+        theme.palette.mode === 'dark'
+          ? BRAND_COLORS.goldLight
+          : BRAND_COLORS.blackLight,
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 215, 0, 0.1)'
+          : 'rgba(0, 0, 0, 0.08)',
       transform: 'translateY(-1px)',
       borderWidth: '2px',
     },
   }),
   ...(variant === 'contained' && {
-    background: theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
-      : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
-    color: theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 4px 15px rgba(255, 215, 0, 0.3)'
-      : '0 4px 15px rgba(0, 0, 0, 0.3)',
+    background:
+      theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`
+        : `linear-gradient(135deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`,
+    color:
+      theme.palette.mode === 'dark' ? BRAND_COLORS.black : BRAND_COLORS.gold,
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 4px 15px rgba(255, 215, 0, 0.3)'
+        : '0 4px 15px rgba(0, 0, 0, 0.3)',
     '&:hover': {
-      background: theme.palette.mode === 'dark'
-        ? `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`
-        : `linear-gradient(135deg, ${BRAND_COLORS.blackLight} 0%, ${BRAND_COLORS.black} 100%)`,
-      boxShadow: theme.palette.mode === 'dark'
-        ? '0 6px 20px rgba(255, 215, 0, 0.4)'
-        : '0 6px 20px rgba(0, 0, 0, 0.4)',
+      background:
+        theme.palette.mode === 'dark'
+          ? `linear-gradient(135deg, ${BRAND_COLORS.goldLight} 0%, ${BRAND_COLORS.gold} 100%)`
+          : `linear-gradient(135deg, ${BRAND_COLORS.blackLight} 0%, ${BRAND_COLORS.black} 100%)`,
+      boxShadow:
+        theme.palette.mode === 'dark'
+          ? '0 6px 20px rgba(255, 215, 0, 0.4)'
+          : '0 6px 20px rgba(0, 0, 0, 0.4)',
       transform: 'translateY(-2px)',
     },
   }),
@@ -310,7 +341,12 @@ const StatusIndicator = styled(Box, {
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
 }));
 
-const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = false }) => {
+const Header = ({
+  toggleTheme,
+  mode,
+  isDashboardMode = false,
+  autoShowMode = false,
+}) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -318,7 +354,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const dispatch = useDispatch();
   const logout = () => dispatch(logoutUser());
   const authState = useAuthCheck();
-  
+
   // ✅ FIXED: Enable proper mobile responsiveness based on screen size
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -327,57 +363,84 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerAvailability, setHeaderAvailability] = useState(null);
   const [headerCompletion, setHeaderCompletion] = useState(null);
-  
+
   // 🎯 AUTO-HIDE HEADER STATE
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [mouseY, setMouseY] = useState(0);
 
   // 🎯 ENHANCED: Comprehensive page type detection
-  const isOnAuthPage = location.pathname.includes('/login') || 
-                      location.pathname.includes('/register') ||
-                      location.pathname.includes('/forgot-password') ||
-                      location.pathname.includes('/reset-password') ||
-                      location.pathname.includes('/verify-email');
-  
-  const isOnDashboardPage = location.pathname.includes('/dashboard') ||
-                           location.pathname.startsWith('/worker') ||
-                           location.pathname.startsWith('/hirer');
-  
-  const isOnHomePage = location.pathname === '/' || location.pathname === '/home';
-  
+  const isOnAuthPage =
+    location.pathname.includes('/login') ||
+    location.pathname.includes('/register') ||
+    location.pathname.includes('/forgot-password') ||
+    location.pathname.includes('/reset-password') ||
+    location.pathname.includes('/verify-email');
+
+  const isOnDashboardPage =
+    location.pathname.includes('/dashboard') ||
+    location.pathname.startsWith('/worker') ||
+    location.pathname.startsWith('/hirer');
+
+  const isOnHomePage =
+    location.pathname === '/' || location.pathname === '/home';
+
   // 🚨 CRITICAL FIX: Bulletproof authentication state logic
-  const { isAuthenticated, isInitialized, user, hasUser, canShowUserFeatures, shouldShowAuthButtons } = authState;
-  
+  const {
+    isAuthenticated,
+    isInitialized,
+    user,
+    hasUser,
+    canShowUserFeatures,
+    shouldShowAuthButtons,
+  } = authState;
+
   // 🎯 SMART DISPLAY LOGIC: Context-aware element visibility
   const showUserFeatures = React.useMemo(() => {
     // Never show user features on auth pages
     if (isOnAuthPage) return false;
-    
+
     // Only show if properly authenticated with user data
     if (!isInitialized || !isAuthenticated || !hasUser) return false;
-    
+
     // Show user features on dashboard pages and other authenticated areas
     return canShowUserFeatures;
-  }, [isOnAuthPage, isInitialized, isAuthenticated, hasUser, canShowUserFeatures]);
-  
+  }, [
+    isOnAuthPage,
+    isInitialized,
+    isAuthenticated,
+    hasUser,
+    canShowUserFeatures,
+  ]);
+
   const showAuthButtons = React.useMemo(() => {
     // Show auth buttons on auth pages for clear UX
     if (isOnAuthPage && isInitialized) return true;
-    
+
     // Show auth buttons on home page and public pages if not authenticated
-    if ((isOnHomePage || !isOnDashboardPage) && isInitialized && !isAuthenticated) return true;
-    
+    if (
+      (isOnHomePage || !isOnDashboardPage) &&
+      isInitialized &&
+      !isAuthenticated
+    )
+      return true;
+
     return false;
-  }, [isOnAuthPage, isOnHomePage, isOnDashboardPage, isInitialized, isAuthenticated]);
+  }, [
+    isOnAuthPage,
+    isOnHomePage,
+    isOnDashboardPage,
+    isInitialized,
+    isAuthenticated,
+  ]);
 
   // 🎯 AUTO-HIDE HEADER FUNCTIONALITY
   React.useEffect(() => {
     if (!autoShowMode || isMobile) return; // Only on desktop with autoShowMode
-    
+
     const handleMouseMove = (e) => {
       const currentY = e.clientY;
       setMouseY(currentY);
-      
+
       // Show header when mouse is near top (within 50px)
       if (currentY < 50) {
         setIsHeaderVisible(true);
@@ -421,7 +484,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
     };
     loadHeaderWorkerStatus();
   }, [showUserFeatures, user?.role, user?.id, user?._id, user?.userId]);
-  
+
   // 🔍 DEBUG: Authentication state logging (development only)
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -431,84 +494,102 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         isAuthenticated,
         hasUser,
         showUserFeatures,
-        showAuthButtons
+        showAuthButtons,
       });
     }
-  }, [location.pathname, isOnAuthPage, isAuthenticated, hasUser, showUserFeatures, showAuthButtons]);
-  
+  }, [
+    location.pathname,
+    isOnAuthPage,
+    isAuthenticated,
+    hasUser,
+    showUserFeatures,
+    showAuthButtons,
+  ]);
+
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {
     const path = location.pathname;
-    
-    if (path.includes('/dashboard')) return { 
-      name: 'Dashboard', 
-      icon: DashboardIcon, 
-      showBackButton: false 
-    };
-    if (path.includes('/jobs')) return { 
-      name: 'Jobs', 
-      icon: WorkIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/contracts')) return { 
-      name: 'Contracts', 
-      icon: BusinessIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/messages')) return { 
-      name: 'Messages', 
-      icon: MessageIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/notifications')) return { 
-      name: 'Notifications', 
-      icon: NotificationsIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/profile')) return { 
-      name: 'Profile', 
-      icon: PersonIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/wallet')) return { 
-      name: 'Wallet', 
-      icon: WalletIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/settings')) return { 
-      name: 'Settings', 
-      icon: SettingsIcon, 
-      showBackButton: true 
-    };
-    if (path.includes('/login')) return { 
-      name: 'Sign In', 
-      icon: PersonIcon, 
-      showBackButton: false 
-    };
-    if (path.includes('/register')) return { 
-      name: 'Get Started', 
-      icon: PersonIcon, 
-      showBackButton: false 
-    };
-    
-    return { 
-      name: 'Kelmah', 
-      icon: EngineeringIcon, 
-      showBackButton: false 
+
+    if (path.includes('/dashboard'))
+      return {
+        name: 'Dashboard',
+        icon: DashboardIcon,
+        showBackButton: false,
+      };
+    if (path.includes('/jobs'))
+      return {
+        name: 'Jobs',
+        icon: WorkIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/contracts'))
+      return {
+        name: 'Contracts',
+        icon: BusinessIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/messages'))
+      return {
+        name: 'Messages',
+        icon: MessageIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/notifications'))
+      return {
+        name: 'Notifications',
+        icon: NotificationsIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/profile'))
+      return {
+        name: 'Profile',
+        icon: PersonIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/wallet'))
+      return {
+        name: 'Wallet',
+        icon: WalletIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/settings'))
+      return {
+        name: 'Settings',
+        icon: SettingsIcon,
+        showBackButton: true,
+      };
+    if (path.includes('/login'))
+      return {
+        name: 'Sign In',
+        icon: PersonIcon,
+        showBackButton: false,
+      };
+    if (path.includes('/register'))
+      return {
+        name: 'Get Started',
+        icon: PersonIcon,
+        showBackButton: false,
+      };
+
+    return {
+      name: 'Kelmah',
+      icon: EngineeringIcon,
+      showBackButton: false,
     };
   };
-  
+
   const currentPage = getCurrentPageInfo();
-  
+
   // ✅ ENHANCED: Dynamic data based on user state and current page
-  const { unreadCount: notifUnreadCount, notifications: notifList = [] } = useNotifications();
-  const unreadNotifications = showUserFeatures ? (notifUnreadCount || 0) : 0;
+  const { unreadCount: notifUnreadCount, notifications: notifList = [] } =
+    useNotifications();
+  const unreadNotifications = showUserFeatures ? notifUnreadCount || 0 : 0;
   const unreadMessages = showUserFeatures ? 2 : 0;
   const isUserOnline = showUserFeatures ? true : false;
 
   const handleProfileMenuOpen = (event) => {
     if (showUserFeatures) {
-    setAnchorEl(event.currentTarget);
+      setAnchorEl(event.currentTarget);
     }
   };
 
@@ -518,7 +599,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
 
   const handleNotificationsOpen = (event) => {
     if (showUserFeatures) {
-    setNotificationsAnchor(event.currentTarget);
+      setNotificationsAnchor(event.currentTarget);
     }
   };
 
@@ -530,7 +611,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
     handleMenuClose();
     try {
       console.log('🔄 Starting logout process...');
-      
+
       // Clear all storage immediately for better UX
       try {
         secureStorage.clear();
@@ -542,23 +623,22 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
       } catch (storageError) {
         console.warn('⚠️ Storage cleanup warning:', storageError);
       }
-      
+
       // Dispatch logout action
-    await logout();
+      await logout();
       console.log('✅ Logout action dispatched');
-      
+
       // Force navigation to home
       console.log('🔄 Navigating to home...');
       navigate('/', { replace: true });
-      
+
       // Force page reload to ensure clean state
       setTimeout(() => {
         window.location.href = '/';
       }, 100);
-      
     } catch (error) {
       console.error('❌ Logout error:', error);
-      
+
       // Force clear everything and navigate
       try {
         secureStorage.clear();
@@ -567,11 +647,11 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
       } catch (clearError) {
         console.warn('⚠️ Force clear warning:', clearError);
       }
-      
+
       // Force navigation even if logout fails
       console.log('🔄 Force navigating to home despite logout error...');
       navigate('/', { replace: true });
-      
+
       // Force page reload
       setTimeout(() => {
         window.location.href = '/';
@@ -594,7 +674,11 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
     if (!user) return 'U';
     const firstName = user.firstName || '';
     const lastName = user.lastName || '';
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U';
+    return (
+      `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() ||
+      user.email?.charAt(0).toUpperCase() ||
+      'U'
+    );
   };
 
   const getUserRole = () => {
@@ -614,12 +698,14 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
           mt: 1.5,
           borderRadius: 3,
           minWidth: 280,
-          border: theme.palette.mode === 'dark'
-            ? `1px solid rgba(255, 215, 0, 0.3)`
-            : `1px solid rgba(0, 0, 0, 0.2)`,
-          backgroundColor: theme.palette.mode === 'dark' 
-            ? BRAND_COLORS.blackMedium 
-            : BRAND_COLORS.gold, // Pure gold instead of goldLight
+          border:
+            theme.palette.mode === 'dark'
+              ? `1px solid rgba(255, 215, 0, 0.3)`
+              : `1px solid rgba(0, 0, 0, 0.2)`,
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? BRAND_COLORS.blackMedium
+              : BRAND_COLORS.gold, // Pure gold instead of goldLight
           '&:before': {
             content: '""',
             display: 'block',
@@ -628,14 +714,16 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
             right: 14,
             width: 10,
             height: 10,
-            bgcolor: theme.palette.mode === 'dark' 
-              ? BRAND_COLORS.blackMedium 
-              : BRAND_COLORS.gold, // Pure gold instead of goldLight
+            bgcolor:
+              theme.palette.mode === 'dark'
+                ? BRAND_COLORS.blackMedium
+                : BRAND_COLORS.gold, // Pure gold instead of goldLight
             transform: 'translateY(-50%) rotate(45deg)',
             zIndex: 0,
-            border: theme.palette.mode === 'dark'
-              ? `1px solid rgba(255, 215, 0, 0.3)`
-              : `1px solid rgba(0, 0, 0, 0.2)`,
+            border:
+              theme.palette.mode === 'dark'
+                ? `1px solid rgba(255, 215, 0, 0.3)`
+                : `1px solid rgba(0, 0, 0, 0.2)`,
             borderBottom: 'none',
             borderRight: 'none',
           },
@@ -645,32 +733,42 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
       {/* User Info Header */}
-      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Stack direction="row" spacing={2} alignItems="center">
           <Box sx={{ position: 'relative' }}>
-            <UserAvatar>
-              {getUserInitials()}
-            </UserAvatar>
+            <UserAvatar>{getUserInitials()}</UserAvatar>
             <StatusIndicator online={isUserOnline} />
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="subtitle1" fontWeight={700} noWrap>
-              {user?.firstName && user?.lastName 
+              {user?.firstName && user?.lastName
                 ? `${user.firstName} ${user.lastName}`
                 : user?.name || user?.email || 'User'}
-        </Typography>
+            </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>
               {user?.email}
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
               <Chip
-                label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
+                label={
+                  getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)
+                }
                 size="small"
                 sx={{
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 215, 0, 0.15)' 
-                    : 'rgba(0, 0, 0, 0.1)',
-                  color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 215, 0, 0.15)'
+                      : 'rgba(0, 0, 0, 0.1)',
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? BRAND_COLORS.gold
+                      : BRAND_COLORS.black,
                   fontSize: '0.7rem',
                   fontWeight: 600,
                 }}
@@ -680,10 +778,14 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
                 size="small"
                 variant="outlined"
                 sx={{
-                  borderColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 215, 0, 0.3)' 
-                    : 'rgba(0, 0, 0, 0.3)',
-                  color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
+                  borderColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 215, 0, 0.3)'
+                      : 'rgba(0, 0, 0, 0.3)',
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? BRAND_COLORS.gold
+                      : BRAND_COLORS.black,
                   fontSize: '0.65rem',
                   fontWeight: 500,
                 }}
@@ -692,8 +794,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
                 label={isUserOnline ? 'Online' : 'Offline'}
                 size="small"
                 sx={{
-                  backgroundColor: isUserOnline 
-                    ? 'rgba(76, 175, 80, 0.1)' 
+                  backgroundColor: isUserOnline
+                    ? 'rgba(76, 175, 80, 0.1)'
                     : 'rgba(244, 67, 54, 0.1)',
                   color: isUserOnline ? '#4caf50' : '#f44336',
                   fontSize: '0.65rem',
@@ -710,40 +812,58 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         <ListItemIcon>
           <DashboardIcon color="primary" />
         </ListItemIcon>
-        <ListItemText 
-          primary="Dashboard" 
+        <ListItemText
+          primary="Dashboard"
           primaryTypographyProps={{ fontWeight: 500 }}
         />
       </MenuItem>
 
-      <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }} sx={{ py: 1.5 }}>
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          navigate('/profile');
+        }}
+        sx={{ py: 1.5 }}
+      >
         <ListItemIcon>
           <PersonIcon color="primary" />
         </ListItemIcon>
-        <ListItemText 
-          primary="Profile" 
+        <ListItemText
+          primary="Profile"
           primaryTypographyProps={{ fontWeight: 500 }}
         />
       </MenuItem>
 
       {user?.role === 'worker' && (
-        <MenuItem onClick={() => { handleMenuClose(); navigate('/worker/wallet'); }} sx={{ py: 1.5 }}>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose();
+            navigate('/worker/wallet');
+          }}
+          sx={{ py: 1.5 }}
+        >
           <ListItemIcon>
             <WalletIcon color="primary" />
           </ListItemIcon>
-          <ListItemText 
-            primary="Wallet" 
+          <ListItemText
+            primary="Wallet"
             primaryTypographyProps={{ fontWeight: 500 }}
           />
         </MenuItem>
       )}
 
-      <MenuItem onClick={() => { handleMenuClose(); navigate('/settings'); }} sx={{ py: 1.5 }}>
+      <MenuItem
+        onClick={() => {
+          handleMenuClose();
+          navigate('/settings');
+        }}
+        sx={{ py: 1.5 }}
+      >
         <ListItemIcon>
           <SettingsIcon color="primary" />
         </ListItemIcon>
-        <ListItemText 
-          primary="Settings" 
+        <ListItemText
+          primary="Settings"
           primaryTypographyProps={{ fontWeight: 500 }}
         />
       </MenuItem>
@@ -754,8 +874,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         <ListItemIcon>
           <LogoutIcon color="error" />
         </ListItemIcon>
-        <ListItemText 
-          primary="Sign Out" 
+        <ListItemText
+          primary="Sign Out"
           primaryTypographyProps={{ fontWeight: 500, color: 'error.main' }}
         />
       </MenuItem>
@@ -776,18 +896,26 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
           borderRadius: 3,
           minWidth: 320,
           maxHeight: 400,
-          border: theme.palette.mode === 'dark'
-            ? `1px solid rgba(255, 215, 0, 0.3)`
-            : `1px solid rgba(0, 0, 0, 0.2)`,
-          backgroundColor: theme.palette.mode === 'dark' 
-            ? BRAND_COLORS.blackMedium 
-            : BRAND_COLORS.gold, // Pure gold instead of goldLight
+          border:
+            theme.palette.mode === 'dark'
+              ? `1px solid rgba(255, 215, 0, 0.3)`
+              : `1px solid rgba(0, 0, 0, 0.2)`,
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? BRAND_COLORS.blackMedium
+              : BRAND_COLORS.gold, // Pure gold instead of goldLight
         },
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Typography variant="h6" fontWeight={700}>
           Notifications
         </Typography>
@@ -798,7 +926,14 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
 
       {/* Render latest notifications (up to 5) */}
       {(notifList || []).slice(0, 5).map((n) => (
-        <MenuItem key={n.id || n._id} onClick={() => { handleNotificationsClose(); navigate(n.actionUrl || '/notifications'); }} sx={{ py: 1.5 }}>
+        <MenuItem
+          key={n.id || n._id}
+          onClick={() => {
+            handleNotificationsClose();
+            navigate(n.actionUrl || '/notifications');
+          }}
+          sx={{ py: 1.5 }}
+        >
           <ListItemText
             primary={n.title || n.message || 'Notification'}
             secondary={new Date(n.createdAt || n.date).toLocaleString()}
@@ -820,7 +955,7 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
           } catch (_) {}
           handleNotificationsClose();
         }}
-        sx={{ 
+        sx={{
           py: 1.2,
           justifyContent: 'center',
           color: 'text.secondary',
@@ -835,8 +970,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
           handleNotificationsClose();
           navigate('/notifications');
         }}
-        sx={{ 
-          py: 1.5, 
+        sx={{
+          py: 1.5,
           justifyContent: 'center',
           color: 'primary.main',
           fontWeight: 600,
@@ -850,7 +985,9 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   if (authState.isLoading || !authState.isReady) {
     return (
       <StyledAppBar position="static" elevation={0}>
-        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}> {/* Reduced from 70/80 to 56/64 */}
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
+          {' '}
+          {/* Reduced from 70/80 to 56/64 */}
           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
             <BrandLogo component={RouterLink} to="/">
               <LogoIcon>K</LogoIcon>
@@ -872,52 +1009,59 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
   }
 
   return (
-    <StyledAppBar 
-      position={autoShowMode && !isMobile ? "fixed" : "static"} 
+    <StyledAppBar
+      position={autoShowMode && !isMobile ? 'fixed' : 'static'}
       elevation={0}
       sx={{
         // Auto-hide animation
-        transform: autoShowMode && !isMobile 
-          ? (isHeaderVisible ? 'translateY(0)' : 'translateY(-100%)')
-          : 'translateY(0)',
+        transform:
+          autoShowMode && !isMobile
+            ? isHeaderVisible
+              ? 'translateY(0)'
+              : 'translateY(-100%)'
+            : 'translateY(0)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         zIndex: theme.zIndex.appBar + 1,
         // Fixed positioning for auto-hide mode
-        ...(autoShowMode && !isMobile && {
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          width: '100%',
-        })
+        ...(autoShowMode &&
+          !isMobile && {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            width: '100%',
+          }),
       }}
     >
-      <Toolbar sx={{ 
-        minHeight: { xs: 40, sm: 44, md: 48 }, // Further reduced: 48/52/56 → 40/44/48
-        px: { xs: 1, sm: 2, md: 3 },
-        py: { xs: 0.125, sm: 0.25 }, // Further reduced padding
-        gap: { xs: 0.5, sm: 1 },
-        // SportyBet-style compact mobile header
-        '@media (max-width: 768px)': {
-          minHeight: '36px', // Further reduced from 44px
-          px: 1,
-          py: 0.125, // Further reduced padding
-        }
-      }}>
+      <Toolbar
+        sx={{
+          minHeight: { xs: 40, sm: 44, md: 48 }, // Further reduced: 48/52/56 → 40/44/48
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 0.125, sm: 0.25 }, // Further reduced padding
+          gap: { xs: 0.5, sm: 1 },
+          // SportyBet-style compact mobile header
+          '@media (max-width: 768px)': {
+            minHeight: '36px', // Further reduced from 44px
+            px: 1,
+            py: 0.125, // Further reduced padding
+          },
+        }}
+      >
         {/* Mobile Menu Button */}
         {isMobile && authState.isAuthenticated && (
           <ActionButton
             edge="start"
             aria-label="menu"
             onClick={() => setMobileMenuOpen(true)}
-            sx={{ 
+            sx={{
               mr: { xs: 0.5, sm: 1 },
               p: { xs: 1, sm: 1.5 },
               '&:hover': {
-                backgroundColor: theme.palette.mode === 'dark'
-                  ? 'rgba(255, 215, 0, 0.15)'
-                  : 'rgba(0, 0, 0, 0.15)',
-              }
+                backgroundColor:
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 215, 0, 0.15)'
+                    : 'rgba(0, 0, 0, 0.15)',
+              },
             }}
           >
             <MenuIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />
@@ -925,24 +1069,24 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         )}
 
         {/* ✅ ENHANCED: Smart Brand/Page Title Section */}
-        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}
+        >
           {/* Back Button (Mobile Only) */}
           {isMobile && currentPage.showBackButton && showUserFeatures && (
             <ActionButton
               onClick={() => navigate(-1)}
-              sx={{ 
+              sx={{
                 mr: 1,
                 '&:hover': {
-                  backgroundColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 215, 0, 0.15)'
-                    : 'rgba(0, 0, 0, 0.15)',
-                }
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 215, 0, 0.15)'
+                      : 'rgba(0, 0, 0, 0.15)',
+                },
               }}
             >
-              <motion.div
-                whileHover={{ x: -2 }}
-                whileTap={{ x: -4 }}
-              >
+              <motion.div whileHover={{ x: -2 }} whileTap={{ x: -4 }}>
                 ←
               </motion.div>
             </ActionButton>
@@ -957,54 +1101,75 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
             {isMobile && showUserFeatures ? (
               // ✅ Mobile: Show current page info with user context
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  backgroundColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 215, 0, 0.1)'
-                    : 'rgba(0, 0, 0, 0.1)',
-                  borderRadius: 2,
-                  px: 1.5,
-                  py: 0.5,
-                  mr: 1
-                }}>
-                  <currentPage.icon sx={{ 
-                    fontSize: '1.2rem', 
-                    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-                    mr: 0.5 
-                  }} />
-                  <Typography 
-                    variant="subtitle1" 
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 215, 0, 0.1)'
+                        : 'rgba(0, 0, 0, 0.1)',
+                    borderRadius: 2,
+                    px: 1.5,
+                    py: 0.5,
+                    mr: 1,
+                  }}
+                >
+                  <currentPage.icon
+                    sx={{
+                      fontSize: '1.2rem',
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? BRAND_COLORS.gold
+                          : BRAND_COLORS.black,
+                      mr: 0.5,
+                    }}
+                  />
+                  <Typography
+                    variant="subtitle1"
                     fontWeight={600}
-                    color={theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}
+                    color={
+                      theme.palette.mode === 'dark'
+                        ? BRAND_COLORS.gold
+                        : BRAND_COLORS.black
+                    }
                     noWrap
                   >
                     {currentPage.name}
                   </Typography>
                 </Box>
                 {user && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <Typography 
-                      variant="caption" 
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
                       color="text.secondary"
-                      sx={{ 
+                      sx={{
                         display: { xs: 'none', sm: 'block' },
                         maxWidth: 120,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        fontSize: '0.7rem'
+                        fontSize: '0.7rem',
                       }}
                     >
-                      {user.firstName || user.name?.split(' ')[0] || user.email?.split('@')[0] || 'User'}
+                      {user.firstName ||
+                        user.name?.split(' ')[0] ||
+                        user.email?.split('@')[0] ||
+                        'User'}
                     </Typography>
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       color="text.disabled"
-                      sx={{ 
+                      sx={{
                         display: { xs: 'none', sm: 'block' },
                         fontSize: '0.65rem',
-                        textTransform: 'capitalize'
+                        textTransform: 'capitalize',
                       }}
                     >
                       {user.role || user.userType || 'User'}
@@ -1015,25 +1180,37 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
             ) : isMobile && isOnAuthPage ? (
               // ✅ Mobile: Show auth page context
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  backgroundColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 215, 0, 0.1)'
-                    : 'rgba(0, 0, 0, 0.1)',
-                  borderRadius: 2,
-                  px: 1.5,
-                  py: 0.5,
-                }}>
-                  <currentPage.icon sx={{ 
-                    fontSize: '1.2rem', 
-                    color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-                    mr: 0.5 
-                  }} />
-                  <Typography 
-                    variant="subtitle1" 
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 215, 0, 0.1)'
+                        : 'rgba(0, 0, 0, 0.1)',
+                    borderRadius: 2,
+                    px: 1.5,
+                    py: 0.5,
+                  }}
+                >
+                  <currentPage.icon
+                    sx={{
+                      fontSize: '1.2rem',
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? BRAND_COLORS.gold
+                          : BRAND_COLORS.black,
+                      mr: 0.5,
+                    }}
+                  />
+                  <Typography
+                    variant="subtitle1"
                     fontWeight={600}
-                    color={theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black}
+                    color={
+                      theme.palette.mode === 'dark'
+                        ? BRAND_COLORS.gold
+                        : BRAND_COLORS.black
+                    }
                     noWrap
                   >
                     {currentPage.name}
@@ -1057,14 +1234,19 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
         {!isMobile && <DesktopNav />}
 
         {/* Action Buttons */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: { xs: 0.25, sm: 0.5, md: 1 },
-          ml: 'auto'
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0.25, sm: 0.5, md: 1 },
+            ml: 'auto',
+          }}
+        >
           {/* Theme Toggle */}
-          <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`} arrow>
+          <Tooltip
+            title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
+            arrow
+          >
             <ActionButton onClick={toggleTheme}>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -1073,8 +1255,8 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
                   animate={{ rotate: 0, opacity: 1 }}
                   exit={{ rotate: 180, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-            >
-          {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                >
+                  {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
                 </motion.div>
               </AnimatePresence>
             </ActionButton>
@@ -1093,30 +1275,40 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
                   {headerAvailability && (
                     <Chip
                       size="small"
-                      label={headerAvailability.isAvailable ? 'Available' : (headerAvailability.status || 'Busy')}
+                      label={
+                        headerAvailability.isAvailable
+                          ? 'Available'
+                          : headerAvailability.status || 'Busy'
+                      }
                       sx={{
                         backgroundColor: headerAvailability.isAvailable
                           ? 'rgba(76, 175, 80, 0.12)'
                           : 'rgba(255, 152, 0, 0.12)',
-                        color: headerAvailability.isAvailable ? '#4caf50' : '#ff9800',
-                        border: theme.palette.mode === 'dark'
-                          ? '1px solid rgba(255, 215, 0, 0.15)'
-                          : '1px solid rgba(0, 0, 0, 0.12)'
+                        color: headerAvailability.isAvailable
+                          ? '#4caf50'
+                          : '#ff9800',
+                        border:
+                          theme.palette.mode === 'dark'
+                            ? '1px solid rgba(255, 215, 0, 0.15)'
+                            : '1px solid rgba(0, 0, 0, 0.12)',
                       }}
-                      onClick={() => navigate('/worker/profile/edit?section=availability')}
+                      onClick={() =>
+                        navigate('/worker/profile/edit?section=availability')
+                      }
                       clickable
                     />
                   )}
-                  {typeof (headerCompletion?.completion) === 'number' && (
+                  {typeof headerCompletion?.completion === 'number' && (
                     <Chip
                       size="small"
                       label={`${Math.round(headerCompletion.completion)}%`}
                       sx={{
                         backgroundColor: 'rgba(255, 215, 0, 0.12)',
                         color: '#FFD700',
-                        border: theme.palette.mode === 'dark'
-                          ? '1px solid rgba(255, 215, 0, 0.15)'
-                          : '1px solid rgba(0, 0, 0, 0.12)'
+                        border:
+                          theme.palette.mode === 'dark'
+                            ? '1px solid rgba(255, 215, 0, 0.15)'
+                            : '1px solid rgba(0, 0, 0, 0.12)',
                       }}
                       onClick={() => navigate('/worker/profile/edit')}
                       clickable
@@ -1136,7 +1328,10 @@ const Header = ({ toggleTheme, mode, isDashboardMode = false, autoShowMode = fal
               {/* Notifications */}
               <Tooltip title="Notifications" arrow>
                 <ActionButton onClick={handleNotificationsOpen}>
-                  <StyledBadge badgeContent={unreadNotifications} color="primary">
+                  <StyledBadge
+                    badgeContent={unreadNotifications}
+                    color="primary"
+                  >
                     <NotificationsIcon />
                   </StyledBadge>
                 </ActionButton>

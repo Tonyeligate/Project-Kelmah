@@ -9,6 +9,6 @@ if (typeof window !== 'undefined' && window.React) {
 }
 
 // Debug module loading order
-console.log('🔧 Polyfills loaded'); 
+console.log('🔧 Polyfills loaded');
 
-export { useSyncExternalStore }; 
+export { useSyncExternalStore };

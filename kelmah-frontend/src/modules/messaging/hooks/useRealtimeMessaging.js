@@ -14,23 +14,30 @@ export const useRealtimeMessaging = (socket, isConnected, conversationId) => {
     }
   }, [socket, isConnected, conversationId]);
 
-  const shareFile = useCallback((fileData) => {
-    if (socket && isConnected && conversationId && fileData) {
-      socket.emit('file_shared', { conversationId, fileData });
-    }
-  }, [socket, isConnected, conversationId]);
+  const shareFile = useCallback(
+    (fileData) => {
+      if (socket && isConnected && conversationId && fileData) {
+        socket.emit('file_shared', { conversationId, fileData });
+      }
+    },
+    [socket, isConnected, conversationId],
+  );
 
-  const reportUploadProgress = useCallback((fileId, progress, fileName) => {
-    if (socket && isConnected && conversationId) {
-      socket.emit('file_upload_progress', { conversationId, fileId, progress, fileName });
-    }
-  }, [socket, isConnected, conversationId]);
+  const reportUploadProgress = useCallback(
+    (fileId, progress, fileName) => {
+      if (socket && isConnected && conversationId) {
+        socket.emit('file_upload_progress', {
+          conversationId,
+          fileId,
+          progress,
+          fileName,
+        });
+      }
+    },
+    [socket, isConnected, conversationId],
+  );
 
   return { startTyping, stopTyping, shareFile, reportUploadProgress };
 };
 
 export default useRealtimeMessaging;
-
-
-
-

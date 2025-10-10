@@ -16,7 +16,7 @@ const hirerAnalyticsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${hirerId}/analytics`,
-        { params: { timeRange } }
+        { params: { timeRange } },
       );
       return response.data;
     } catch (error) {
@@ -34,7 +34,7 @@ const hirerAnalyticsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${hirerId}/spending`,
-        { params: filters }
+        { params: filters },
       );
       return response.data;
     } catch (error) {
@@ -50,7 +50,7 @@ const hirerAnalyticsService = {
   getWorkerPerformance: async (hirerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/workers/performance`
+        `${API_URL}/${hirerId}/workers/performance`,
       );
       return response.data;
     } catch (error) {
@@ -66,7 +66,7 @@ const hirerAnalyticsService = {
   getJobSuccessMetrics: async (hirerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/jobs/success-metrics`
+        `${API_URL}/${hirerId}/jobs/success-metrics`,
       );
       return response.data;
     } catch (error) {
@@ -82,7 +82,7 @@ const hirerAnalyticsService = {
   getMarketInsights: async (hirerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/market-insights`
+        `${API_URL}/${hirerId}/market-insights`,
       );
       return response.data;
     } catch (error) {
@@ -100,10 +100,10 @@ const hirerAnalyticsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${hirerId}/analytics/export`,
-        { 
+        {
           params: { timeRange, format: 'pdf' },
-          responseType: 'blob'
-        }
+          responseType: 'blob',
+        },
       );
       return response.data;
     } catch (error) {
@@ -119,7 +119,7 @@ const hirerAnalyticsService = {
   getCostSavingsOpportunities: async (hirerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/cost-savings`
+        `${API_URL}/${hirerId}/cost-savings`,
       );
       return response.data;
     } catch (error) {
@@ -135,13 +135,13 @@ const hirerAnalyticsService = {
   getHiringEfficiencyMetrics: async (hirerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/efficiency`
+        `${API_URL}/${hirerId}/efficiency`,
       );
       return response.data;
     } catch (error) {
       throw error;
     }
-  }
+  },
 };
 
 /**
@@ -161,35 +161,47 @@ const generateMockHirerAnalytics = (timeRange) => {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       const amount = Math.floor(Math.random() * 500) + 200;
-      
+
       periods.push({
         period: date.getDate().toString(),
         amount,
-        jobs: Math.floor(Math.random() * 3) + 1
+        jobs: Math.floor(Math.random() * 3) + 1,
       });
-      
+
       totalSpending += amount;
       totalJobs += 1;
     }
   } else {
     // Monthly data for longer periods
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthsCount = timeRange === '3months' ? 3 : 
-                       timeRange === '6months' ? 6 : 12;
-    
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    const monthsCount =
+      timeRange === '3months' ? 3 : timeRange === '6months' ? 6 : 12;
+
     for (let i = monthsCount - 1; i >= 0; i--) {
       const date = new Date(now);
       date.setMonth(date.getMonth() - i);
       const amount = Math.floor(Math.random() * 8000) + 5000;
       const jobs = Math.floor(Math.random() * 8) + 3;
-      
+
       periods.push({
         period: monthNames[date.getMonth()],
         amount,
-        jobs
+        jobs,
       });
-      
+
       totalSpending += amount;
       totalJobs += jobs;
     }
@@ -204,50 +216,73 @@ const generateMockHirerAnalytics = (timeRange) => {
       workersHired: Math.floor(totalJobs * 0.8),
       workersChange: Math.random() * 20 - 5,
       successRate: 85 + Math.random() * 10,
-      successRateChange: Math.random() * 5 - 2
+      successRateChange: Math.random() * 5 - 2,
     },
     spendingData: periods,
     jobStatusData: [
       { name: 'Completed', count: Math.floor(totalJobs * 0.65) },
-      { name: 'In Progress', count: Math.floor(totalJobs * 0.20) },
-      { name: 'Posted', count: Math.floor(totalJobs * 0.10) },
-      { name: 'Cancelled', count: Math.floor(totalJobs * 0.05) }
+      { name: 'In Progress', count: Math.floor(totalJobs * 0.2) },
+      { name: 'Posted', count: Math.floor(totalJobs * 0.1) },
+      { name: 'Cancelled', count: Math.floor(totalJobs * 0.05) },
     ],
     categoryBreakdown: [
-      { category: 'Plumbing', spending: totalSpending * 0.35, jobs: Math.floor(totalJobs * 0.3) },
-      { category: 'Electrical', spending: totalSpending * 0.25, jobs: Math.floor(totalJobs * 0.25) },
-      { category: 'Carpentry', spending: totalSpending * 0.20, jobs: Math.floor(totalJobs * 0.2) },
-      { category: 'Painting', spending: totalSpending * 0.15, jobs: Math.floor(totalJobs * 0.15) },
-      { category: 'Other', spending: totalSpending * 0.05, jobs: Math.floor(totalJobs * 0.1) }
+      {
+        category: 'Plumbing',
+        spending: totalSpending * 0.35,
+        jobs: Math.floor(totalJobs * 0.3),
+      },
+      {
+        category: 'Electrical',
+        spending: totalSpending * 0.25,
+        jobs: Math.floor(totalJobs * 0.25),
+      },
+      {
+        category: 'Carpentry',
+        spending: totalSpending * 0.2,
+        jobs: Math.floor(totalJobs * 0.2),
+      },
+      {
+        category: 'Painting',
+        spending: totalSpending * 0.15,
+        jobs: Math.floor(totalJobs * 0.15),
+      },
+      {
+        category: 'Other',
+        spending: totalSpending * 0.05,
+        jobs: Math.floor(totalJobs * 0.1),
+      },
     ],
     topWorkers: generateMockTopWorkers(),
     performance: {
       completionRate: 85 + Math.random() * 10,
       onTimeRate: 80 + Math.random() * 15,
       workerSatisfaction: 85 + Math.random() * 10,
-      budgetAdherence: 75 + Math.random() * 20
+      budgetAdherence: 75 + Math.random() * 20,
     },
     recentActivity: generateMockRecentActivity(),
     insights: [
       {
         type: 'success',
         title: 'Great Job Completion Rate',
-        description: 'Your completion rate of 92% is above the platform average of 85%.',
-        action: 'View Details'
+        description:
+          'Your completion rate of 92% is above the platform average of 85%.',
+        action: 'View Details',
       },
       {
         type: 'warning',
         title: 'Budget Overruns',
-        description: 'Recent jobs exceeded budget by an average of 12%. Consider more detailed planning.',
-        action: 'Optimize Budget'
+        description:
+          'Recent jobs exceeded budget by an average of 12%. Consider more detailed planning.',
+        action: 'Optimize Budget',
       },
       {
         type: 'info',
         title: 'Expand Your Network',
-        description: 'You could save up to 15% by working with more diverse workers.',
-        action: 'Find Workers'
-      }
-    ]
+        description:
+          'You could save up to 15% by working with more diverse workers.',
+        action: 'Find Workers',
+      },
+    ],
   };
 };
 
@@ -261,7 +296,7 @@ const generateMockTopWorkers = () => {
     { name: 'Akosua Boamah', category: 'Electrical', location: 'Kumasi' },
     { name: 'Fiifi Mensah', category: 'Carpentry', location: 'Accra' },
     { name: 'Ama Serwaa', category: 'Painting', location: 'Tema' },
-    { name: 'Kofi Osei', category: 'Plumbing', location: 'Tamale' }
+    { name: 'Kofi Osei', category: 'Plumbing', location: 'Tamale' },
   ];
 
   return workers.map((worker, index) => ({
@@ -271,7 +306,7 @@ const generateMockTopWorkers = () => {
     location: worker.location,
     jobsCompleted: Math.floor(Math.random() * 15) + 5,
     rating: 4.2 + Math.random() * 0.7,
-    totalPaid: Math.floor(Math.random() * 8000) + 3000
+    totalPaid: Math.floor(Math.random() * 8000) + 3000,
   }));
 };
 
@@ -287,7 +322,7 @@ const generateMockRecentActivity = () => {
       title: 'Kitchen Plumbing Completed',
       description: 'Job completed by Kwame Asante',
       amount: 1500,
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
       id: 2,
@@ -295,14 +330,14 @@ const generateMockRecentActivity = () => {
       title: 'Payment Released',
       description: 'Payment released for electrical work',
       amount: 2200,
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
       id: 3,
       type: 'job_posted',
       title: 'New Job Posted',
       description: 'Bathroom renovation job posted',
-      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
       id: 4,
@@ -310,8 +345,8 @@ const generateMockRecentActivity = () => {
       title: 'Carpentry Work Finished',
       description: 'Custom furniture completed',
       amount: 3500,
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    }
+      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
   ];
 
   return activities;
@@ -322,13 +357,25 @@ const generateMockRecentActivity = () => {
  * @returns {Array} Mock spending trend
  */
 const generateMockSpendingTrend = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
-  return months.map(month => ({
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  return months.map((month) => ({
     month,
     spending: Math.floor(Math.random() * 8000) + 5000,
-    budget: Math.floor(Math.random() * 2000) + 8000
+    budget: Math.floor(Math.random() * 2000) + 8000,
   }));
 };
 

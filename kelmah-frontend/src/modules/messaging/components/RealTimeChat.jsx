@@ -66,30 +66,30 @@ import {
 } from '../../../store/slices/notificationSlice';
 import { formatRelativeTime, formatDate } from '../../../utils/formatters';
 
-const RealTimeChat = ({ 
-  conversationId, 
+const RealTimeChat = ({
+  conversationId,
   onClose = null,
   height = 600,
   showHeader = true,
-  showUserInfo = true 
+  showUserInfo = true,
 }) => {
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
   const dispatch = useDispatch();
-  
+
   // Refs
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
-  
+
   // Redux selectors
   const conversation = useSelector(selectConversationById(conversationId));
   const typingUsers = useSelector(selectTypingIndicators)[conversationId] || {};
   const onlineUsers = useSelector(selectOnlineUsers);
   const userStatuses = useSelector(selectUserStatuses);
-  
+
   // Local state
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -102,13 +102,15 @@ const RealTimeChat = ({
   // Hook to emit realtime events via socket service (if exposed) or replace with your socket instance
   const socket = websocketService.socket;
   const isConnected = !!socket && socket.connected;
-  const { startTyping, stopTyping, shareFile, reportUploadProgress } = useRealtimeMessaging(socket, isConnected, conversationId);
+  const { startTyping, stopTyping, shareFile, reportUploadProgress } =
+    useRealtimeMessaging(socket, isConnected, conversationId);
 
-  
   // Message states
   const [messages, setMessages] = useState(conversation?.messages || []);
-  const [participants, setParticipants] = useState(conversation?.participants || []);
-  
+  const [participants, setParticipants] = useState(
+    conversation?.participants || [],
+  );
+
   // Load conversation data
   useEffect(() => {
     if (!conversation && conversationId) {
@@ -119,70 +121,85 @@ const RealTimeChat = ({
       setLoading(false);
     }
   }, [conversationId, conversation]);
-  
+
   // Setup WebSocket listeners
   useEffect(() => {
     const handleNewMessage = (data) => {
       if (data.conversationId === conversationId) {
-        dispatch(addMessage({
-          conversationId: data.conversationId,
-          message: {
-            id: data.messageId,
-            content: data.content,
-            senderId: data.senderId,
-            senderName: data.senderName,
-            timestamp: data.timestamp,
-            status: 'delivered',
-            attachments: data.attachments || []
-          }
-        }));
+        dispatch(
+          addMessage({
+            conversationId: data.conversationId,
+            message: {
+              id: data.messageId,
+              content: data.content,
+              senderId: data.senderId,
+              senderName: data.senderName,
+              timestamp: data.timestamp,
+              status: 'delivered',
+              attachments: data.attachments || [],
+            },
+          }),
+        );
       }
     };
-    
+
     const handleTypingIndicator = (data) => {
       if (data.conversationId === conversationId) {
-        dispatch(setTypingIndicator({
-          conversationId: data.conversationId,
-          userId: data.userId,
-          userName: data.userName,
-          isTyping: data.isTyping
-        }));
+        dispatch(
+          setTypingIndicator({
+            conversationId: data.conversationId,
+            userId: data.userId,
+            userName: data.userName,
+            isTyping: data.isTyping,
+          }),
+        );
       }
     };
-    
+
     const handleMessageStatus = (data) => {
       if (data.conversationId === conversationId) {
-        dispatch(updateMessageStatus({
-          conversationId: data.conversationId,
-          messageId: data.messageId,
-          status: data.status
-        }));
+        dispatch(
+          updateMessageStatus({
+            conversationId: data.conversationId,
+            messageId: data.messageId,
+            status: data.status,
+          }),
+        );
       }
     };
-    
+
     websocketService.addEventListener('message:new', handleNewMessage);
-    websocketService.addEventListener('typing:indicator', handleTypingIndicator);
+    websocketService.addEventListener(
+      'typing:indicator',
+      handleTypingIndicator,
+    );
     websocketService.addEventListener('message:status', handleMessageStatus);
-    
+
     return () => {
       websocketService.removeEventListener('message:new', handleNewMessage);
-      websocketService.removeEventListener('typing:indicator', handleTypingIndicator);
-      websocketService.removeEventListener('message:status', handleMessageStatus);
+      websocketService.removeEventListener(
+        'typing:indicator',
+        handleTypingIndicator,
+      );
+      websocketService.removeEventListener(
+        'message:status',
+        handleMessageStatus,
+      );
     };
   }, [conversationId, dispatch]);
-  
+
   // Auto-scroll to bottom
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
+
   // Mark as read when conversation becomes active
   useEffect(() => {
     if (conversationId && conversation) {
       dispatch(markConversationAsRead(conversationId));
     }
   }, [conversationId, conversation, dispatch]);
-  
+
   const loadConversation = async () => {
     try {
       setLoading(true);
@@ -196,71 +213,73 @@ const RealTimeChat = ({
       setLoading(false);
     }
   };
-  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   // Handle message send
   const handleSendMessage = () => {
     if (!message.trim()) return;
-    
+
     const messageData = {
       id: Date.now(),
       content: message.trim(),
       senderId: user.id,
       senderName: user.name,
       timestamp: new Date().toISOString(),
-      status: 'sending'
+      status: 'sending',
     };
-    
+
     // Add to local state immediately for UI responsiveness
-    dispatch(addMessage({
-      conversationId,
-      message: messageData
-    }));
-    
+    dispatch(
+      addMessage({
+        conversationId,
+        message: messageData,
+      }),
+    );
+
     // Send via WebSocket
     websocketService.sendMessage(conversationId, message.trim());
-    
+
     // Clear input and stop typing indicator
     setMessage('');
     handleStopTyping();
     stopTyping();
   };
-  
+
   // Handle typing indicator
   const handleTyping = (value) => {
     setMessage(value);
-    
+
     if (!isTyping && value.trim()) {
       setIsTyping(true);
       websocketService.sendTypingIndicator(conversationId, true);
       startTyping();
     }
-    
+
     // Reset typing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
+
     typingTimeoutRef.current = setTimeout(() => {
       handleStopTyping();
     }, 2000);
   };
-  
+
   const handleStopTyping = () => {
     if (isTyping) {
       setIsTyping(false);
       websocketService.sendTypingIndicator(conversationId, false);
       stopTyping();
     }
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
   };
-  
+
   // Handle key press
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -268,7 +287,7 @@ const RealTimeChat = ({
       handleSendMessage();
     }
   };
-  
+
   // Get message status icon
   const getMessageStatusIcon = (status) => {
     switch (status) {
@@ -286,24 +305,24 @@ const RealTimeChat = ({
         return null;
     }
   };
-  
+
   // Get user online status
   const getUserStatus = (userId) => {
     if (onlineUsers.includes(userId)) {
       return 'online';
     }
-    
+
     const status = userStatuses[userId];
     return status?.status || 'offline';
   };
-  
+
   // Format typing indicator text
   const getTypingText = () => {
     const typingUserIds = Object.keys(typingUsers);
     if (typingUserIds.length === 0) return '';
-    
-    const names = typingUserIds.map(id => typingUsers[id].userName);
-    
+
+    const names = typingUserIds.map((id) => typingUsers[id].userName);
+
     if (names.length === 1) {
       return `${names[0]} is typing...`;
     } else if (names.length === 2) {
@@ -312,25 +331,29 @@ const RealTimeChat = ({
       return `${names[0]} and ${names.length - 1} others are typing...`;
     }
   };
-  
+
   // Handle file attachment
   const handleFileAttachment = (type) => {
     setAttachmentMenu(null);
-    
+
     if (type === 'file') {
       fileInputRef.current?.click();
     } else if (type === 'image') {
       fileInputRef.current?.click();
     }
   };
-  
+
   // Handle file selection
   const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
       try {
         for (const file of files) {
-          const result = await fileUploadService.uploadFile(file, `attachments/${conversationId}`, 'messaging');
+          const result = await fileUploadService.uploadFile(
+            file,
+            `attachments/${conversationId}`,
+            'messaging',
+          );
           reportUploadProgress('single', 100, file.name);
           const fileData = {
             fileId: `${Date.now()}`,
@@ -346,13 +369,14 @@ const RealTimeChat = ({
       }
     }
   };
-  
+
   // Render message item
   const renderMessage = (msg, index) => {
     const isOwnMessage = msg.senderId === user.id;
-    const showAvatar = index === 0 || messages[index - 1]?.senderId !== msg.senderId;
-    const participant = participants.find(p => p.id === msg.senderId);
-    
+    const showAvatar =
+      index === 0 || messages[index - 1]?.senderId !== msg.senderId;
+    const participant = participants.find((p) => p.id === msg.senderId);
+
     return (
       <ListItem
         key={msg.id}
@@ -371,42 +395,46 @@ const RealTimeChat = ({
               badgeContent={
                 <OnlineIcon
                   sx={{
-                    color: getUserStatus(msg.senderId) === 'online' ? 'success.main' : 'grey.400',
+                    color:
+                      getUserStatus(msg.senderId) === 'online'
+                        ? 'success.main'
+                        : 'grey.400',
                     fontSize: 12,
                   }}
                 />
               }
             >
-              <Avatar 
-                src={participant?.avatar} 
-                sx={{ width: 32, height: 32 }}
-              >
+              <Avatar src={participant?.avatar} sx={{ width: 32, height: 32 }}>
                 {participant?.name?.charAt(0) || msg.senderName?.charAt(0)}
               </Avatar>
             </Badge>
           </ListItemAvatar>
         )}
-        
+
         <Box
           sx={{
             maxWidth: '70%',
-            ml: isOwnMessage ? 0 : (showAvatar ? 1 : 6),
+            ml: isOwnMessage ? 0 : showAvatar ? 1 : 6,
             mr: isOwnMessage ? (showAvatar ? 1 : 6) : 0,
           }}
         >
           {showAvatar && !isOwnMessage && (
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.5, display: 'block' }}
+            >
               {participant?.name || msg.senderName}
             </Typography>
           )}
-          
+
           <Paper
             sx={{
               p: 1.5,
               backgroundColor: isOwnMessage ? 'primary.main' : 'grey.100',
               color: isOwnMessage ? 'primary.contrastText' : 'text.primary',
               borderRadius: 2,
-              borderTopLeftRadius: isOwnMessage ? 2 : (showAvatar ? 2 : 0.5),
+              borderTopLeftRadius: isOwnMessage ? 2 : showAvatar ? 2 : 0.5,
               borderTopRightRadius: isOwnMessage ? (showAvatar ? 2 : 0.5) : 2,
             }}
             onClick={(e) => {
@@ -417,7 +445,7 @@ const RealTimeChat = ({
             <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
               {msg.content}
             </Typography>
-            
+
             {msg.attachments && msg.attachments.length > 0 && (
               <Box sx={{ mt: 1 }}>
                 {msg.attachments.map((attachment, idx) => (
@@ -425,7 +453,13 @@ const RealTimeChat = ({
                     key={idx}
                     label={attachment.name}
                     size="small"
-                    icon={attachment.type.startsWith('image/') ? <ImageIcon /> : <FileIcon />}
+                    icon={
+                      attachment.type.startsWith('image/') ? (
+                        <ImageIcon />
+                      ) : (
+                        <FileIcon />
+                      )
+                    }
                     onClick={() => window.open(attachment.url, '_blank')}
                     sx={{ mr: 0.5, mb: 0.5 }}
                   />
@@ -433,14 +467,14 @@ const RealTimeChat = ({
               </Box>
             )}
           </Paper>
-          
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
               mt: 0.5,
-              gap: 0.5
+              gap: 0.5,
             }}
           >
             <Typography variant="caption" color="text.secondary">
@@ -452,12 +486,12 @@ const RealTimeChat = ({
       </ListItem>
     );
   };
-  
+
   // Render typing indicator
   const renderTypingIndicator = () => {
     const typingText = getTypingText();
     if (!typingText) return null;
-    
+
     return (
       <Fade in={true}>
         <ListItem sx={{ px: 2, py: 1 }}>
@@ -490,7 +524,11 @@ const RealTimeChat = ({
           </ListItemAvatar>
           <ListItemText
             primary={
-              <Typography variant="caption" color="text.secondary" fontStyle="italic">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontStyle="italic"
+              >
                 {typingText}
               </Typography>
             }
@@ -499,64 +537,83 @@ const RealTimeChat = ({
       </Fade>
     );
   };
-  
+
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height={height}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height={height}
+      >
         <CircularProgress />
       </Box>
     );
   }
-  
+
   if (!conversation && !loading) {
     return (
-      <Alert severity="error">
-        Conversation not found or failed to load.
-      </Alert>
+      <Alert severity="error">Conversation not found or failed to load.</Alert>
     );
   }
-  
+
   return (
     <Paper sx={{ height, display: 'flex', flexDirection: 'column' }}>
       {/* Chat Header */}
       {showHeader && (
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+          >
             <Box display="flex" alignItems="center" gap={2}>
-              {participants.filter(p => p.id !== user.id).map(participant => (
-                <Box key={participant.id} display="flex" alignItems="center" gap={1}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <OnlineIcon
-                        sx={{
-                          color: getUserStatus(participant.id) === 'online' ? 'success.main' : 'grey.400',
-                          fontSize: 14,
-                        }}
-                      />
-                    }
+              {participants
+                .filter((p) => p.id !== user.id)
+                .map((participant) => (
+                  <Box
+                    key={participant.id}
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
                   >
-                    <Avatar src={participant.avatar} sx={{ width: 40, height: 40 }}>
-                      {participant.name?.charAt(0)}
-                    </Avatar>
-                  </Badge>
-                  
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight="medium">
-                      {participant.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {getUserStatus(participant.id) === 'online' 
-                        ? 'Online' 
-                        : `Last seen ${formatRelativeTime(userStatuses[participant.id]?.lastSeen)}`
+                    <Badge
+                      overlap="circular"
+                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                      badgeContent={
+                        <OnlineIcon
+                          sx={{
+                            color:
+                              getUserStatus(participant.id) === 'online'
+                                ? 'success.main'
+                                : 'grey.400',
+                            fontSize: 14,
+                          }}
+                        />
                       }
-                    </Typography>
+                    >
+                      <Avatar
+                        src={participant.avatar}
+                        sx={{ width: 40, height: 40 }}
+                      >
+                        {participant.name?.charAt(0)}
+                      </Avatar>
+                    </Badge>
+
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight="medium">
+                        {participant.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {getUserStatus(participant.id) === 'online'
+                          ? 'Online'
+                          : `Last seen ${formatRelativeTime(userStatuses[participant.id]?.lastSeen)}`}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              ))}
+                ))}
             </Box>
-            
+
             <Box display="flex" gap={1}>
               <Tooltip title="Voice Call">
                 <IconButton size="small">
@@ -584,7 +641,7 @@ const RealTimeChat = ({
           </Box>
         </Box>
       )}
-      
+
       {/* Messages Area */}
       <Box sx={{ flexGrow: 1, overflow: 'auto', py: 1 }}>
         <List sx={{ py: 0 }}>
@@ -593,7 +650,7 @@ const RealTimeChat = ({
           <div ref={messagesEndRef} />
         </List>
       </Box>
-      
+
       {/* Message Input */}
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
         <Box display="flex" alignItems="flex-end" gap={1}>
@@ -603,7 +660,7 @@ const RealTimeChat = ({
           >
             <AttachIcon />
           </IconButton>
-          
+
           <TextField
             ref={messageInputRef}
             fullWidth
@@ -621,14 +678,14 @@ const RealTimeChat = ({
               },
             }}
           />
-          
+
           <IconButton
             size="small"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           >
             <EmojiIcon />
           </IconButton>
-          
+
           <IconButton
             color="primary"
             onClick={handleSendMessage}
@@ -638,7 +695,7 @@ const RealTimeChat = ({
           </IconButton>
         </Box>
       </Box>
-      
+
       {/* Attachment Menu */}
       <Menu
         anchorEl={attachmentMenu}
@@ -654,29 +711,21 @@ const RealTimeChat = ({
           Document
         </MenuItem>
       </Menu>
-      
+
       {/* Message Context Menu */}
       <Menu
         anchorEl={messageMenu}
         open={Boolean(messageMenu)}
         onClose={() => setMessageMenu(null)}
       >
-        <MenuItem onClick={() => setMessageMenu(null)}>
-          Reply
-        </MenuItem>
-        <MenuItem onClick={() => setMessageMenu(null)}>
-          Forward
-        </MenuItem>
-        <MenuItem onClick={() => setMessageMenu(null)}>
-          Copy
-        </MenuItem>
+        <MenuItem onClick={() => setMessageMenu(null)}>Reply</MenuItem>
+        <MenuItem onClick={() => setMessageMenu(null)}>Forward</MenuItem>
+        <MenuItem onClick={() => setMessageMenu(null)}>Copy</MenuItem>
         {selectedMessage?.senderId === user.id && (
-          <MenuItem onClick={() => setMessageMenu(null)}>
-            Delete
-          </MenuItem>
+          <MenuItem onClick={() => setMessageMenu(null)}>Delete</MenuItem>
         )}
       </Menu>
-      
+
       {/* Hidden file input */}
       <input
         ref={fileInputRef}

@@ -63,10 +63,10 @@ import { styled } from '@mui/material/styles';
 
 // Ghana-inspired color theme
 const GhanaTheme = {
-  red: '#DC143C',      // Ghana flag red
-  gold: '#FFD700',     // Ghana flag gold
-  green: '#2E7D32',    // Ghana flag green
-  trust: '#1976D2',    // Trust blue
+  red: '#DC143C', // Ghana flag red
+  gold: '#FFD700', // Ghana flag gold
+  green: '#2E7D32', // Ghana flag green
+  trust: '#1976D2', // Trust blue
 };
 
 // Styled components for mobile-first design
@@ -131,19 +131,53 @@ function getCategoryColor(category) {
 
 // Ghana regions for location filtering
 const ghanaRegions = [
-  'Greater Accra', 'Ashanti', 'Western', 'Central', 'Eastern', 
-  'Northern', 'Upper East', 'Upper West', 'Volta', 'Brong-Ahafo',
-  'Western North', 'Ahafo', 'Bono', 'Bono East', 'Oti', 'Savannah', 'North East'
+  'Greater Accra',
+  'Ashanti',
+  'Western',
+  'Central',
+  'Eastern',
+  'Northern',
+  'Upper East',
+  'Upper West',
+  'Volta',
+  'Brong-Ahafo',
+  'Western North',
+  'Ahafo',
+  'Bono',
+  'Bono East',
+  'Oti',
+  'Savannah',
+  'North East',
 ];
 
 // Professional categories common in Ghana
 const professionalCategories = [
-  { id: 'construction', name: 'Construction & Building', icon: <HomeIcon />, count: 1250 },
-  { id: 'technology', name: 'IT & Technology', icon: <ComputerIcon />, count: 890 },
+  {
+    id: 'construction',
+    name: 'Construction & Building',
+    icon: <HomeIcon />,
+    count: 1250,
+  },
+  {
+    id: 'technology',
+    name: 'IT & Technology',
+    icon: <ComputerIcon />,
+    count: 890,
+  },
   { id: 'design', name: 'Graphics & Design', icon: <BrushIcon />, count: 670 },
-  { id: 'business', name: 'Business Services', icon: <BusinessIcon />, count: 540 },
+  {
+    id: 'business',
+    name: 'Business Services',
+    icon: <BusinessIcon />,
+    count: 540,
+  },
   { id: 'domestic', name: 'Domestic Services', icon: <HomeIcon />, count: 980 },
-  { id: 'automotive', name: 'Automotive Services', icon: <ShippingIcon />, count: 420 },
+  {
+    id: 'automotive',
+    name: 'Automotive Services',
+    icon: <ShippingIcon />,
+    count: 420,
+  },
   { id: 'food', name: 'Food & Catering', icon: <RestaurantIcon />, count: 310 },
   { id: 'crafts', name: 'Arts & Crafts', icon: <BrushIcon />, count: 280 },
 ];
@@ -152,7 +186,7 @@ const KelmahMarketplace = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  
+
   // State management
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -164,66 +198,84 @@ const KelmahMarketplace = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Mock data for featured workers
-  const mockFeaturedWorkers = useMemo(() => [
-    {
-      id: 1,
-      name: 'Kwame Asante',
-      profession: 'Master Carpenter',
-      rating: 4.9,
-      reviewCount: 147,
-      location: 'Kumasi, Ashanti',
-      avatar: '/api/placeholder/60/60',
-      verified: true,
-      skills: ['Furniture Making', 'Home Renovation', 'Cabinet Installation'],
-      hourlyRate: 25,
-      availability: 'Available Now',
-      completedJobs: 89,
-      responseTime: '< 1 hour',
-      successRate: 98,
-      category: 'construction',
-      description: 'Experienced carpenter with 10+ years in custom furniture and home renovation.',
-      portfolio: ['/api/placeholder/150/150', '/api/placeholder/150/150', '/api/placeholder/150/150'],
-    },
-    {
-      id: 2,
-      name: 'Akosua Mensah',
-      profession: 'UI/UX Designer',
-      rating: 4.8,
-      reviewCount: 92,
-      location: 'Accra, Greater Accra',
-      avatar: '/api/placeholder/60/60',
-      verified: true,
-      skills: ['Mobile App Design', 'Web Design', 'Brand Identity'],
-      hourlyRate: 35,
-      availability: 'Available This Week',
-      completedJobs: 156,
-      responseTime: '< 30 min',
-      successRate: 96,
-      category: 'design',
-      description: 'Creative designer specializing in modern, user-centered digital experiences.',
-      portfolio: ['/api/placeholder/150/150', '/api/placeholder/150/150', '/api/placeholder/150/150'],
-    },
-    {
-      id: 3,
-      name: 'Yaw Oppong',
-      profession: 'Full-Stack Developer',
-      rating: 4.9,
-      reviewCount: 203,
-      location: 'Tema, Greater Accra',
-      avatar: '/api/placeholder/60/60',
-      verified: true,
-      skills: ['React', 'Node.js', 'Mobile Apps'],
-      hourlyRate: 45,
-      availability: 'Available Now',
-      completedJobs: 234,
-      responseTime: '< 15 min',
-      successRate: 99,
-      category: 'technology',
-      description: 'Senior developer with expertise in modern web and mobile technologies.',
-      portfolio: ['/api/placeholder/150/150', '/api/placeholder/150/150', '/api/placeholder/150/150'],
-    },
-    // Add more mock workers...
-  ], []);
+  const mockFeaturedWorkers = useMemo(
+    () => [
+      {
+        id: 1,
+        name: 'Kwame Asante',
+        profession: 'Master Carpenter',
+        rating: 4.9,
+        reviewCount: 147,
+        location: 'Kumasi, Ashanti',
+        avatar: '/api/placeholder/60/60',
+        verified: true,
+        skills: ['Furniture Making', 'Home Renovation', 'Cabinet Installation'],
+        hourlyRate: 25,
+        availability: 'Available Now',
+        completedJobs: 89,
+        responseTime: '< 1 hour',
+        successRate: 98,
+        category: 'construction',
+        description:
+          'Experienced carpenter with 10+ years in custom furniture and home renovation.',
+        portfolio: [
+          '/api/placeholder/150/150',
+          '/api/placeholder/150/150',
+          '/api/placeholder/150/150',
+        ],
+      },
+      {
+        id: 2,
+        name: 'Akosua Mensah',
+        profession: 'UI/UX Designer',
+        rating: 4.8,
+        reviewCount: 92,
+        location: 'Accra, Greater Accra',
+        avatar: '/api/placeholder/60/60',
+        verified: true,
+        skills: ['Mobile App Design', 'Web Design', 'Brand Identity'],
+        hourlyRate: 35,
+        availability: 'Available This Week',
+        completedJobs: 156,
+        responseTime: '< 30 min',
+        successRate: 96,
+        category: 'design',
+        description:
+          'Creative designer specializing in modern, user-centered digital experiences.',
+        portfolio: [
+          '/api/placeholder/150/150',
+          '/api/placeholder/150/150',
+          '/api/placeholder/150/150',
+        ],
+      },
+      {
+        id: 3,
+        name: 'Yaw Oppong',
+        profession: 'Full-Stack Developer',
+        rating: 4.9,
+        reviewCount: 203,
+        location: 'Tema, Greater Accra',
+        avatar: '/api/placeholder/60/60',
+        verified: true,
+        skills: ['React', 'Node.js', 'Mobile Apps'],
+        hourlyRate: 45,
+        availability: 'Available Now',
+        completedJobs: 234,
+        responseTime: '< 15 min',
+        successRate: 99,
+        category: 'technology',
+        description:
+          'Senior developer with expertise in modern web and mobile technologies.',
+        portfolio: [
+          '/api/placeholder/150/150',
+          '/api/placeholder/150/150',
+          '/api/placeholder/150/150',
+        ],
+      },
+      // Add more mock workers...
+    ],
+    [],
+  );
 
   // Load featured workers
   useEffect(() => {
@@ -231,30 +283,37 @@ const KelmahMarketplace = () => {
   }, [mockFeaturedWorkers]);
 
   // Handle search
-  const handleSearch = useCallback((query, category, location) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = mockFeaturedWorkers.filter(worker => {
-        const matchesQuery = !query || 
-          worker.name.toLowerCase().includes(query.toLowerCase()) ||
-          worker.profession.toLowerCase().includes(query.toLowerCase()) ||
-          worker.skills.some(skill => skill.toLowerCase().includes(query.toLowerCase()));
-        
-        const matchesCategory = !category || worker.category === category;
-        const matchesLocation = !location || worker.location.includes(location);
-        
-        return matchesQuery && matchesCategory && matchesLocation;
-      });
-      
-      setWorkers(filtered);
-      setLoading(false);
-    }, 800);
-  }, [mockFeaturedWorkers]);
+  const handleSearch = useCallback(
+    (query, category, location) => {
+      setLoading(true);
+      // Simulate API call
+      setTimeout(() => {
+        const filtered = mockFeaturedWorkers.filter((worker) => {
+          const matchesQuery =
+            !query ||
+            worker.name.toLowerCase().includes(query.toLowerCase()) ||
+            worker.profession.toLowerCase().includes(query.toLowerCase()) ||
+            worker.skills.some((skill) =>
+              skill.toLowerCase().includes(query.toLowerCase()),
+            );
+
+          const matchesCategory = !category || worker.category === category;
+          const matchesLocation =
+            !location || worker.location.includes(location);
+
+          return matchesQuery && matchesCategory && matchesLocation;
+        });
+
+        setWorkers(filtered);
+        setLoading(false);
+      }, 800);
+    },
+    [mockFeaturedWorkers],
+  );
 
   // Handle favorite toggle
   const toggleFavorite = useCallback((workerId) => {
-    setFavorites(prev => {
+    setFavorites((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(workerId)) {
         newFavorites.delete(workerId);
@@ -275,21 +334,28 @@ const KelmahMarketplace = () => {
     <MobileOptimizedCard>
       <CardContent sx={{ p: { xs: 2, md: 3 } }}>
         {/* Header */}
-        <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2}>
+        <Box
+          display="flex"
+          alignItems="flex-start"
+          justifyContent="space-between"
+          mb={2}
+        >
           <Box display="flex" alignItems="center" gap={2}>
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               badgeContent={
                 worker.verified ? (
-                  <VerifiedIcon sx={{ fontSize: 16, color: GhanaTheme.trust }} />
+                  <VerifiedIcon
+                    sx={{ fontSize: 16, color: GhanaTheme.trust }}
+                  />
                 ) : null
               }
             >
               <Avatar
                 src={worker.avatar}
-                sx={{ 
-                  width: { xs: 50, md: 60 }, 
+                sx={{
+                  width: { xs: 50, md: 60 },
                   height: { xs: 50, md: 60 },
                   border: `2px solid ${GhanaTheme.gold}`,
                 }}
@@ -305,7 +371,12 @@ const KelmahMarketplace = () => {
                 {worker.profession}
               </Typography>
               <Box display="flex" alignItems="center" gap={1}>
-                <Rating value={worker.rating} readOnly size="small" precision={0.1} />
+                <Rating
+                  value={worker.rating}
+                  readOnly
+                  size="small"
+                  precision={0.1}
+                />
                 <Typography variant="caption" color="text.secondary">
                   {worker.rating} ({worker.reviewCount} reviews)
                 </Typography>
@@ -314,9 +385,17 @@ const KelmahMarketplace = () => {
           </Box>
           <IconButton
             onClick={() => toggleFavorite(worker.id)}
-            sx={{ color: favorites.has(worker.id) ? GhanaTheme.red : 'text.secondary' }}
+            sx={{
+              color: favorites.has(worker.id)
+                ? GhanaTheme.red
+                : 'text.secondary',
+            }}
           >
-            {favorites.has(worker.id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            {favorites.has(worker.id) ? (
+              <FavoriteIcon />
+            ) : (
+              <FavoriteBorderIcon />
+            )}
           </IconButton>
         </Box>
 
@@ -352,7 +431,11 @@ const KelmahMarketplace = () => {
           </Grid>
           <Grid item xs={6}>
             <Box textAlign="center">
-              <Typography variant="h6" fontWeight={600} color={GhanaTheme.green}>
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                color={GhanaTheme.green}
+              >
                 {worker.completedJobs}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -363,7 +446,12 @@ const KelmahMarketplace = () => {
         </Grid>
 
         {/* Location and availability */}
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={3}
+        >
           <Box display="flex" alignItems="center" gap={0.5}>
             <LocationIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
@@ -436,10 +524,11 @@ const KelmahMarketplace = () => {
             right: 0,
             bottom: 0,
             opacity: 0.1,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.4"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.4"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
           }}
         />
-        
+
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={8}>
@@ -458,7 +547,11 @@ const KelmahMarketplace = () => {
                 </Typography>
                 <Typography
                   variant="h6"
-                  sx={{ mb: 4, opacity: 0.9, fontSize: { xs: '1rem', md: '1.25rem' } }}
+                  sx={{
+                    mb: 4,
+                    opacity: 0.9,
+                    fontSize: { xs: '1rem', md: '1.25rem' },
+                  }}
                 >
                   Connect with verified local talent for your next project
                 </Typography>
@@ -592,9 +685,7 @@ const KelmahMarketplace = () => {
                   }}
                   onClick={() => setSelectedCategory(category.id)}
                 >
-                  <Box sx={{ fontSize: 40, mb: 2 }}>
-                    {category.icon}
-                  </Box>
+                  <Box sx={{ fontSize: 40, mb: 2 }}>{category.icon}</Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
                     {category.name}
                   </Typography>
@@ -610,7 +701,12 @@ const KelmahMarketplace = () => {
 
       {/* Featured Workers */}
       <Container maxWidth="lg" sx={{ pb: 6 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={4}
+        >
           <Typography variant="h4" fontWeight={600}>
             {workers.length > 0 ? 'Search Results' : 'Featured Professionals'}
           </Typography>
@@ -666,12 +762,15 @@ const KelmahMarketplace = () => {
           </Typography>
           <Grid container spacing={4}>
             <Grid item xs={12} md={4} textAlign="center">
-              <VerifiedIcon sx={{ fontSize: 48, color: GhanaTheme.trust, mb: 2 }} />
+              <VerifiedIcon
+                sx={{ fontSize: 48, color: GhanaTheme.trust, mb: 2 }}
+              />
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Verified Professionals
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                All professionals undergo thorough verification including background checks and skill assessments.
+                All professionals undergo thorough verification including
+                background checks and skill assessments.
               </Typography>
             </Grid>
             <Grid item xs={12} md={4} textAlign="center">
@@ -680,7 +779,8 @@ const KelmahMarketplace = () => {
                 Secure Payments
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Protected payments through escrow system with support for Mobile Money and bank transfers.
+                Protected payments through escrow system with support for Mobile
+                Money and bank transfers.
               </Typography>
             </Grid>
             <Grid item xs={12} md={4} textAlign="center">
@@ -689,7 +789,8 @@ const KelmahMarketplace = () => {
                 Local Community
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Supporting Ghanaian talent and businesses with a platform designed for our local needs.
+                Supporting Ghanaian talent and businesses with a platform
+                designed for our local needs.
               </Typography>
             </Grid>
           </Grid>

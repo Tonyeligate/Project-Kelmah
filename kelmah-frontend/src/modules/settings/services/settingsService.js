@@ -6,11 +6,18 @@ class SettingsService {
     try {
       // User-service currently implements only notifications under /api/settings
       // Return a sensible default settings object instead of 404
-      const notifications = await this.getNotificationPreferences().catch(() => null);
+      const notifications = await this.getNotificationPreferences().catch(
+        () => null,
+      );
       return {
         theme: 'light',
         language: 'en',
-        notifications: notifications || { email: true, push: true, sms: false, inApp: true },
+        notifications: notifications || {
+          email: true,
+          push: true,
+          sms: false,
+          inApp: true,
+        },
         privacy: {
           profileVisibility: 'public',
           showEmail: false,
@@ -18,20 +25,23 @@ class SettingsService {
         },
       };
     } catch (error) {
-      console.warn('Settings service unavailable, using default settings:', error.message);
+      console.warn(
+        'Settings service unavailable, using default settings:',
+        error.message,
+      );
       return {
         theme: 'light',
         language: 'en',
         notifications: {
           email: true,
           push: true,
-          sms: false
+          sms: false,
         },
         privacy: {
           profileVisibility: 'public',
           showEmail: false,
-          showPhone: false
-        }
+          showPhone: false,
+        },
       };
     }
   }
@@ -40,7 +50,6 @@ class SettingsService {
     const response = await userServiceClient.get('/api/settings/notifications');
     return response.data.data;
   }
-
 
   // Update user settings
   async updateSettings(settings) {
@@ -59,19 +68,26 @@ class SettingsService {
 
   // Update privacy settings
   async updatePrivacySettings(settings) {
-    const response = await userServiceClient.put('/api/settings/privacy', settings);
+    const response = await userServiceClient.put(
+      '/api/settings/privacy',
+      settings,
+    );
     return response.data.data;
   }
 
   // Update language preference
   async updateLanguage(language) {
-    const response = await userServiceClient.put('/api/settings/language', { language });
+    const response = await userServiceClient.put('/api/settings/language', {
+      language,
+    });
     return response.data.data;
   }
 
   // Update theme preference
   async updateTheme(theme) {
-    const response = await userServiceClient.put('/api/settings/theme', { theme });
+    const response = await userServiceClient.put('/api/settings/theme', {
+      theme,
+    });
     return response.data.data;
   }
 
@@ -81,12 +97,15 @@ class SettingsService {
       const response = await userServiceClient.get('/api/settings/languages');
       return response.data.data;
     } catch (error) {
-      console.warn('Languages service unavailable, using default languages:', error.message);
+      console.warn(
+        'Languages service unavailable, using default languages:',
+        error.message,
+      );
       return [
         { code: 'en', name: 'English', flag: '🇺🇸' },
         { code: 'tw', name: 'Twi', flag: '🇬🇭' },
         { code: 'ga', name: 'Ga', flag: '🇬🇭' },
-        { code: 'fr', name: 'French', flag: '🇫🇷' }
+        { code: 'fr', name: 'French', flag: '🇫🇷' },
       ];
     }
   }
@@ -97,11 +116,18 @@ class SettingsService {
       const response = await userServiceClient.get('/api/settings/themes');
       return response.data.data;
     } catch (error) {
-      console.warn('Themes service unavailable, using default themes:', error.message);
+      console.warn(
+        'Themes service unavailable, using default themes:',
+        error.message,
+      );
       return [
-        { id: 'light', name: 'Light Mode', description: 'Clean and bright interface' },
+        {
+          id: 'light',
+          name: 'Light Mode',
+          description: 'Clean and bright interface',
+        },
         { id: 'dark', name: 'Dark Mode', description: 'Easy on the eyes' },
-        { id: 'auto', name: 'Auto', description: 'Follows system preference' }
+        { id: 'auto', name: 'Auto', description: 'Follows system preference' },
       ];
     }
   }

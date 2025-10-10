@@ -1,32 +1,33 @@
 /**
  * Resilient API Client
- * 
+ *
  * Enhanced API client with intelligent retry, circuit breaker,
  * service health awareness, and graceful degradation for production services.
  */
 
 import axios from 'axios';
-import { SERVICES, PERFORMANCE_CONFIG, LOG_CONFIG } from '../config/environment';
+import {
+  SERVICES,
+  PERFORMANCE_CONFIG,
+  LOG_CONFIG,
+} from '../config/environment';
 import { secureStorage } from './secureStorage';
-import { 
-  checkServiceHealth, 
-  isServiceRecentlyHealthy, 
+import {
+  checkServiceHealth,
+  isServiceRecentlyHealthy,
   getServiceStatusMessage,
-  handleServiceError 
+  handleServiceError,
 } from './serviceHealthCheck';
 
 // Circuit breaker states
 const CIRCUIT_STATES = {
-  CLOSED: 'CLOSED',     // Normal operation
-  OPEN: 'OPEN',         // Failing, block requests
-  HALF_OPEN: 'HALF_OPEN' // Testing if service recovered
+  CLOSED: 'CLOSED', // Normal operation
+  OPEN: 'OPEN', // Failing, block requests
+  HALF_OPEN: 'HALF_OPEN', // Testing if service recovered
 };
 
 // Circuit breaker tracking
 const circuitBreakers = new Map();
-
-// Request queue for failed requests
-const retryQueue = new Map();
 
 /**
  * Circuit Breaker Implementation
@@ -37,7 +38,7 @@ class CircuitBreaker {
     this.failureThreshold = options.failureThreshold || 5;
     this.recoveryTimeout = options.recoveryTimeout || 60000; // 1 minute
     this.monitoringPeriod = options.monitoringPeriod || 120000; // 2 minutes
-    
+
     this.state = CIRCUIT_STATES.CLOSED;
     this.failureCount = 0;
     this.lastFailureTime = null;
@@ -69,7 +70,9 @@ class CircuitBreaker {
     if (this.state === CIRCUIT_STATES.HALF_OPEN) {
       this.state = CIRCUIT_STATES.CLOSED;
       this.failureCount = 0;
-      console.log(`✅ Circuit breaker CLOSED for ${this.serviceUrl} - service recovered`);
+      console.log(
+        `✅ Circuit breaker CLOSED for ${this.serviceUrl} - service recovered`,
+      );
     }
   }
 
@@ -80,7 +83,9 @@ class CircuitBreaker {
     if (this.failureCount >= this.failureThreshold) {
       this.state = CIRCUIT_STATES.OPEN;
       this.nextAttemptTime = Date.now() + this.recoveryTimeout;
-      console.warn(`🚨 Circuit breaker OPEN for ${this.serviceUrl} - blocking requests for ${this.recoveryTimeout}ms`);
+      console.warn(
+        `🚨 Circuit breaker OPEN for ${this.serviceUrl} - blocking requests for ${this.recoveryTimeout}ms`,
+      );
     }
   }
 
@@ -109,7 +114,7 @@ const getCircuitBreaker = (serviceUrl) => {
  */
 const getRetryConfig = (error, serviceUrl) => {
   const health = getServiceStatusMessage(serviceUrl);
-  
+
   // Don't retry client errors (4xx) except 401, 408, 429
   if (error.response?.status >= 400 && error.response?.status < 500) {
     const retryableClientErrors = [401, 408, 429];
@@ -119,7 +124,11 @@ const getRetryConfig = (error, serviceUrl) => {
   }
 
   // Cold start detection - longer delays and more retries
-  if (health.status === 'cold' || error.code === 'ECONNABORTED' || !error.response) {
+  if (
+    health.status === 'cold' ||
+    error.code === 'ECONNABORTED' ||
+    !error.response
+  ) {
     return {
       shouldRetry: true,
       delay: 5000, // 5 seconds for cold starts
@@ -172,7 +181,9 @@ const createResilientClient = (baseURL, options = {}) => {
       // Check circuit breaker
       const circuitBreaker = getCircuitBreaker(baseURL);
       if (!circuitBreaker.canExecute()) {
-        const error = new Error(`Service temporarily unavailable (Circuit Breaker OPEN)`);
+        const error = new Error(
+          `Service temporarily unavailable (Circuit Breaker OPEN)`,
+        );
         error.code = 'CIRCUIT_BREAKER_OPEN';
         error.serviceUrl = baseURL;
         throw error;
@@ -180,23 +191,30 @@ const createResilientClient = (baseURL, options = {}) => {
 
       // Add auth token
       const token = secureStorage.getAuthToken();
-      if (token && !config.url?.includes('/login') && !config.url?.includes('/register')) {
+      if (
+        token &&
+        !config.url?.includes('/login') &&
+        !config.url?.includes('/register')
+      ) {
         config.headers.Authorization = `Bearer ${token}`;
       }
 
       // Add request metadata
-      config.metadata = { 
+      config.metadata = {
         startTime: Date.now(),
         retryCount: config.retryCount || 0,
         serviceUrl: baseURL,
       };
 
       if (LOG_CONFIG.enableConsole) {
-        console.log(`🔄 API Request [${config.metadata.retryCount ? `Retry ${config.metadata.retryCount}` : 'Initial'}]:`, {
-          method: config.method?.toUpperCase(),
-          url: config.url,
-          baseURL: config.baseURL,
-        });
+        console.log(
+          `🔄 API Request [${config.metadata.retryCount ? `Retry ${config.metadata.retryCount}` : 'Initial'}]:`,
+          {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+          },
+        );
       }
 
       return config;
@@ -204,7 +222,7 @@ const createResilientClient = (baseURL, options = {}) => {
     (error) => {
       console.error('❌ Request interceptor error:', error);
       return Promise.reject(error);
-    }
+    },
   );
 
   // Response interceptor with intelligent retry
@@ -212,7 +230,7 @@ const createResilientClient = (baseURL, options = {}) => {
     (response) => {
       const duration = Date.now() - response.config.metadata.startTime;
       const circuitBreaker = getCircuitBreaker(baseURL);
-      
+
       // Mark circuit breaker success
       circuitBreaker.onSuccess();
 
@@ -229,7 +247,7 @@ const createResilientClient = (baseURL, options = {}) => {
     async (error) => {
       const originalRequest = error.config;
       const circuitBreaker = getCircuitBreaker(baseURL);
-      
+
       if (!originalRequest || originalRequest._isRetrying) {
         return Promise.reject(error);
       }
@@ -243,20 +261,28 @@ const createResilientClient = (baseURL, options = {}) => {
       }
 
       // Check if we should retry
-      if (retryConfig.shouldRetry && currentRetryCount < retryConfig.maxRetries) {
+      if (
+        retryConfig.shouldRetry &&
+        currentRetryCount < retryConfig.maxRetries
+      ) {
         originalRequest._isRetrying = true;
         originalRequest.retryCount = currentRetryCount + 1;
 
-        const delay = retryConfig.delay * Math.pow(retryConfig.backoffMultiplier, currentRetryCount);
-        
-        console.warn(`🔄 Retrying request (${originalRequest.retryCount}/${retryConfig.maxRetries}) after ${delay}ms:`, {
-          url: originalRequest.url,
-          error: error.message,
-          status: error.response?.status,
-        });
+        const delay =
+          retryConfig.delay *
+          Math.pow(retryConfig.backoffMultiplier, currentRetryCount);
+
+        console.warn(
+          `🔄 Retrying request (${originalRequest.retryCount}/${retryConfig.maxRetries}) after ${delay}ms:`,
+          {
+            url: originalRequest.url,
+            error: error.message,
+            status: error.response?.status,
+          },
+        );
 
         // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
 
         // Remove retry flag before making request
         delete originalRequest._isRetrying;
@@ -266,7 +292,7 @@ const createResilientClient = (baseURL, options = {}) => {
 
       // All retries exhausted or non-retryable error
       const enhancedError = handleServiceError(error, baseURL);
-      
+
       if (LOG_CONFIG.enableConsole) {
         console.error(`❌ API Error (after ${currentRetryCount} retries):`, {
           url: originalRequest?.url,
@@ -277,7 +303,7 @@ const createResilientClient = (baseURL, options = {}) => {
       }
 
       return Promise.reject(enhancedError);
-    }
+    },
   );
 
   return client;
@@ -288,12 +314,15 @@ const createResilientClient = (baseURL, options = {}) => {
  */
 export const createServiceClients = () => {
   const clients = {};
-  
+
   Object.entries(SERVICES).forEach(([serviceName, serviceUrl]) => {
     const clientKey = serviceName.replace('_SERVICE', '').toLowerCase();
     clients[clientKey] = createResilientClient(serviceUrl, {
       // Service-specific timeouts
-      timeout: serviceName === 'MESSAGING_SERVICE' ? 60000 : PERFORMANCE_CONFIG.apiTimeout,
+      timeout:
+        serviceName === 'MESSAGING_SERVICE'
+          ? 60000
+          : PERFORMANCE_CONFIG.apiTimeout,
     });
   });
 
@@ -310,7 +339,7 @@ export const serviceClients = createServiceClients();
  */
 export const resilientApiCall = async (serviceName, endpoint, options = {}) => {
   const client = serviceClients[serviceName.toLowerCase()];
-  
+
   if (!client) {
     throw new Error(`Unknown service: ${serviceName}`);
   }
@@ -321,15 +350,19 @@ export const resilientApiCall = async (serviceName, endpoint, options = {}) => {
       method: 'GET',
       ...options,
     });
-    
+
     return response.data;
   } catch (error) {
     // If circuit breaker is open, try to provide cached data or fallback
     if (error.code === 'CIRCUIT_BREAKER_OPEN') {
-      console.warn(`🚨 Circuit breaker open for ${serviceName}, attempting fallback...`);
-      
+      console.warn(
+        `🚨 Circuit breaker open for ${serviceName}, attempting fallback...`,
+      );
+
       // Here you could implement cache retrieval or fallback data
-      throw new Error(`${serviceName} service is temporarily unavailable. Please try again in a few minutes.`);
+      throw new Error(
+        `${serviceName} service is temporarily unavailable. Please try again in a few minutes.`,
+      );
     }
 
     throw error;
@@ -341,7 +374,7 @@ export const resilientApiCall = async (serviceName, endpoint, options = {}) => {
  */
 export const ensureServiceHealth = async (serviceUrl, timeout = 5000) => {
   const isHealthy = isServiceRecentlyHealthy(serviceUrl);
-  
+
   if (isHealthy) {
     return true;
   }
@@ -357,12 +390,12 @@ export const batchApiCalls = async (requests) => {
   const results = await Promise.allSettled(
     requests.map(async ({ serviceName, endpoint, options }) => {
       const serviceUrl = SERVICES[`${serviceName.toUpperCase()}_SERVICE`];
-      
+
       // Check service health before making request
       await ensureServiceHealth(serviceUrl);
-      
+
       return resilientApiCall(serviceName, endpoint, options);
-    })
+    }),
   );
 
   return results.map((result, index) => ({
@@ -377,13 +410,17 @@ export const batchApiCalls = async (requests) => {
  * Debug utilities
  */
 export const debugCircuitBreakers = () => {
-  const status = Array.from(circuitBreakers.entries()).map(([url, breaker]) => ({
-    Service: url.split('//')[1]?.split('.')[0] || url,
-    State: breaker.state,
-    'Failure Count': breaker.failureCount,
-    'Can Execute': breaker.canExecute(),
-    'Next Attempt': breaker.nextAttemptTime ? new Date(breaker.nextAttemptTime).toLocaleTimeString() : 'N/A',
-  }));
+  const status = Array.from(circuitBreakers.entries()).map(
+    ([url, breaker]) => ({
+      Service: url.split('//')[1]?.split('.')[0] || url,
+      State: breaker.state,
+      'Failure Count': breaker.failureCount,
+      'Can Execute': breaker.canExecute(),
+      'Next Attempt': breaker.nextAttemptTime
+        ? new Date(breaker.nextAttemptTime).toLocaleTimeString()
+        : 'N/A',
+    }),
+  );
 
   console.table(status);
   return status;
@@ -406,12 +443,3 @@ export default {
   debugCircuitBreakers,
   createResilientClient,
 };
-
-
-
-
-
-
-
-
-

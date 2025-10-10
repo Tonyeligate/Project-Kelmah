@@ -82,8 +82,13 @@ const EnhancedMessagingPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   // State management - Get conversations from context
-  const { conversations, selectedConversation, selectConversation, typingUsers } = useMessages();
-  
+  const {
+    conversations,
+    selectedConversation,
+    selectConversation,
+    typingUsers,
+  } = useMessages();
+
   // Local state for UI
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -91,33 +96,37 @@ const EnhancedMessagingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState([]);
-  
+
   // Message composition state
   const [messageText, setMessageText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
-  
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
   // Menu and dialog state
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null); // Fix: Added missing menu anchor state
   const [newChatDialog, setNewChatDialog] = useState(false); // Fix: Added missing dialog state
-  
+
   // Refs
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  
+
   // Mock data for fallback
   const mockConversations = [];
   const mockMessages = {};
 
-  // Initialize messaging system  
+  // Initialize messaging system
   useEffect(() => {
     const initializeMessaging = async () => {
       setIsLoading(true);
       try {
         // Real messaging initialization will be handled by the context
         console.log('Messaging system initialized with real data');
-        
+
         // Calculate total unread count from context conversations
         const totalUnread = (conversations || []).reduce(
           (sum, conv) => sum + (conv.unreadCount || 0),
@@ -145,12 +154,16 @@ const EnhancedMessagingPage = () => {
 
       if (conversationId) {
         // Select if present in current list; otherwise just set URL
-        const existing = (conversations || []).find((c) => c.id === conversationId);
+        const existing = (conversations || []).find(
+          (c) => c.id === conversationId,
+        );
         if (existing) {
           selectConversation(existing);
           setMessages([]);
         } else {
-          navigate(`/messages?conversation=${conversationId}`, { replace: true });
+          navigate(`/messages?conversation=${conversationId}`, {
+            replace: true,
+          });
         }
         return;
       }
@@ -158,7 +171,9 @@ const EnhancedMessagingPage = () => {
       if (recipientId) {
         // Try to find an existing direct conversation with this recipient
         const existing = (conversations || []).find((c) =>
-          (c.participants || []).some((p) => String(p.id) === String(recipientId))
+          (c.participants || []).some(
+            (p) => String(p.id) === String(recipientId),
+          ),
         );
         if (existing) {
           selectConversation(existing);
@@ -168,8 +183,14 @@ const EnhancedMessagingPage = () => {
         }
         // Create new direct conversation
         try {
-          const convo = await messagingService.createDirectConversation(recipientId);
-          const newId = convo?.id || convo?.data?.data?.conversation?.id || convo?.data?.conversation?.id || convo?.conversation?.id || convo?.data?.id;
+          const convo =
+            await messagingService.createDirectConversation(recipientId);
+          const newId =
+            convo?.id ||
+            convo?.data?.data?.conversation?.id ||
+            convo?.data?.conversation?.id ||
+            convo?.conversation?.id ||
+            convo?.data?.id;
           if (newId) {
             navigate(`/messages?conversation=${newId}`, { replace: true });
           }
@@ -1411,7 +1432,9 @@ const EnhancedMessagingPage = () => {
                 }}
                 InputProps={{
                   startAdornment: (
-                    <SearchIcon sx={{ color: '#b2afa3', mr: 1, fontSize: 20 }} />
+                    <SearchIcon
+                      sx={{ color: '#b2afa3', mr: 1, fontSize: 20 }}
+                    />
                   ),
                 }}
               />
@@ -1456,7 +1479,8 @@ const EnhancedMessagingPage = () => {
                   id: 3,
                   name: 'PowerTech Ghana',
                   role: 'Hirer',
-                  lastMessage: 'Can you handle electrical wiring for our new office?',
+                  lastMessage:
+                    'Can you handle electrical wiring for our new office?',
                   time: '2 days ago',
                   unread: 1,
                   avatar: 'PT',
@@ -1507,7 +1531,14 @@ const EnhancedMessagingPage = () => {
                       )}
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 0.5,
+                        }}
+                      >
                         <Typography
                           sx={{
                             color: 'white',
@@ -1526,7 +1557,13 @@ const EnhancedMessagingPage = () => {
                           {conversation.time}
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
                         <Typography
                           sx={{
                             color: '#b2afa3',
@@ -1620,7 +1657,9 @@ const EnhancedMessagingPage = () => {
                       lineHeight: 1,
                     }}
                   >
-                    {selectedConversation.online ? 'Online' : 'Last seen recently'}
+                    {selectedConversation.online
+                      ? 'Online'
+                      : 'Last seen recently'}
                   </Typography>
                 </Box>
               </Box>
@@ -1637,18 +1676,41 @@ const EnhancedMessagingPage = () => {
             </Box>
 
             {/* Messages Area */}
-            <Box sx={{ flex: 1, p: 2, overflowY: 'auto', minHeight: 'calc(100vh - 160px)' }}>
+            <Box
+              sx={{
+                flex: 1,
+                p: 2,
+                overflowY: 'auto',
+                minHeight: 'calc(100vh - 160px)',
+              }}
+            >
               {/* Sample Messages */}
               {[
-                { id: 1, text: 'Hello! I saw your profile and I\'m interested in hiring you for a carpentry project.', sender: 'them', time: '10:25 AM' },
-                { id: 2, text: 'Hi! Thank you for reaching out. I\'d be happy to help. Could you tell me more about the project?', sender: 'me', time: '10:27 AM' },
-                { id: 3, text: 'We need custom kitchen cabinets installed. The project should take about a week. When can you start?', sender: 'them', time: '10:30 AM' },
+                {
+                  id: 1,
+                  text: "Hello! I saw your profile and I'm interested in hiring you for a carpentry project.",
+                  sender: 'them',
+                  time: '10:25 AM',
+                },
+                {
+                  id: 2,
+                  text: "Hi! Thank you for reaching out. I'd be happy to help. Could you tell me more about the project?",
+                  sender: 'me',
+                  time: '10:27 AM',
+                },
+                {
+                  id: 3,
+                  text: 'We need custom kitchen cabinets installed. The project should take about a week. When can you start?',
+                  sender: 'them',
+                  time: '10:30 AM',
+                },
               ].map((message) => (
                 <Box
                   key={message.id}
                   sx={{
                     display: 'flex',
-                    justifyContent: message.sender === 'me' ? 'flex-end' : 'flex-start',
+                    justifyContent:
+                      message.sender === 'me' ? 'flex-end' : 'flex-start',
                     mb: 1,
                   }}
                 >
@@ -1657,7 +1719,8 @@ const EnhancedMessagingPage = () => {
                       maxWidth: '75%',
                       p: 1.5,
                       borderRadius: '12px',
-                      backgroundColor: message.sender === 'me' ? '#FFD700' : '#35332c',
+                      backgroundColor:
+                        message.sender === 'me' ? '#FFD700' : '#35332c',
                       color: message.sender === 'me' ? '#161513' : 'white',
                     }}
                   >

@@ -78,4 +78,4 @@ KelmahThemeProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default KelmahThemeProvider; 
+export default KelmahThemeProvider;

@@ -226,7 +226,7 @@ const GeoLocationSearch = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Fix: Added missing isMobile definition
-  
+
   // Component state
   const [searchType, setSearchType] = useState(0); // 0 for jobs, 1 for workers
   const [location, setLocation] = useState('');
@@ -246,14 +246,34 @@ const GeoLocationSearch = () => {
 
   // Job/Worker categories
   const categories = [
-    'Construction', 'Plumbing', 'Electrical', 'Carpentry', 'Painting',
-    'Roofing', 'Landscaping', 'Cleaning', 'Moving', 'Repair Services',
-    'Technology', 'Design', 'Writing', 'Marketing', 'Consulting'
+    'Construction',
+    'Plumbing',
+    'Electrical',
+    'Carpentry',
+    'Painting',
+    'Roofing',
+    'Landscaping',
+    'Cleaning',
+    'Moving',
+    'Repair Services',
+    'Technology',
+    'Design',
+    'Writing',
+    'Marketing',
+    'Consulting',
   ];
 
   const skills = [
-    'React', 'JavaScript', 'Python', 'Construction', 'Plumbing',
-    'Electrical Work', 'Carpentry', 'Painting', 'Design', 'Writing'
+    'React',
+    'JavaScript',
+    'Python',
+    'Construction',
+    'Plumbing',
+    'Electrical Work',
+    'Carpentry',
+    'Painting',
+    'Design',
+    'Writing',
   ];
 
   // Get user's current location
@@ -273,7 +293,7 @@ const GeoLocationSearch = () => {
           console.error('Error getting location:', error);
           setLocationError(true);
           setLoading(false);
-        }
+        },
       );
     } else {
       setLocationError(true);
@@ -301,7 +321,7 @@ const GeoLocationSearch = () => {
       // Using real Ghana locations instead of mock
       const ghanaLocations = [
         'Accra, Greater Accra Region, Ghana',
-        'Kumasi, Ashanti Region, Ghana', 
+        'Kumasi, Ashanti Region, Ghana',
         'Tema, Greater Accra Region, Ghana',
         'Cape Coast, Central Region, Ghana',
         'Tamale, Northern Region, Ghana',
@@ -309,7 +329,7 @@ const GeoLocationSearch = () => {
         'Koforidua, Eastern Region, Ghana',
         'Ho, Volta Region, Ghana',
         'Sunyani, Bono Region, Ghana',
-        'Bolgatanga, Upper East Region, Ghana'
+        'Bolgatanga, Upper East Region, Ghana',
       ]
         .filter((loc) => loc.toLowerCase().includes(query.toLowerCase()))
         .map((loc) => ({ id: loc, description: loc }));
@@ -332,7 +352,7 @@ const GeoLocationSearch = () => {
     setLoading(true);
     setError(null);
     setSearched(true);
-    
+
     try {
       const searchParams = {
         location,
@@ -341,16 +361,20 @@ const GeoLocationSearch = () => {
         sortBy,
         distance,
         page,
-        limit: 10
+        limit: 10,
       };
 
       let response;
       if (searchType === 0) {
         // Search for jobs
-        response = await axiosInstance.get('/api/jobs/search', { params: searchParams });
+        response = await axiosInstance.get('/api/jobs/search', {
+          params: searchParams,
+        });
       } else {
         // Search for workers/professionals
-        response = await axiosInstance.get('/api/workers/search', { params: searchParams });
+        response = await axiosInstance.get('/api/workers/search', {
+          params: searchParams,
+        });
       }
 
       const results = response.data.data || response.data.results || [];
@@ -358,7 +382,7 @@ const GeoLocationSearch = () => {
       setPagination({
         currentPage: response.data.currentPage || page,
         totalPages: response.data.totalPages || 1,
-        totalItems: response.data.totalItems || results.length
+        totalItems: response.data.totalItems || results.length,
       });
     } catch (err) {
       console.error('Error searching:', err);
@@ -529,10 +553,14 @@ const GeoLocationSearch = () => {
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
-                label={searchType === 0 ? "Job Keywords" : "Skills"}
+                label={searchType === 0 ? 'Job Keywords' : 'Skills'}
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder={searchType === 0 ? "e.g. carpenter, plumber" : "e.g. React, JavaScript"}
+                placeholder={
+                  searchType === 0
+                    ? 'e.g. carpenter, plumber'
+                    : 'e.g. React, JavaScript'
+                }
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -561,7 +589,11 @@ const GeoLocationSearch = () => {
                   },
                 }}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Search'}
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  'Search'
+                )}
               </Button>
             </Grid>
           </Grid>
@@ -578,7 +610,9 @@ const GeoLocationSearch = () => {
                 >
                   <MenuItem value="">All Categories</MenuItem>
                   {categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -614,7 +648,7 @@ const GeoLocationSearch = () => {
                   marks={[
                     { value: 5, label: '5km' },
                     { value: 50, label: '50km' },
-                    { value: 100, label: '100km' }
+                    { value: 100, label: '100km' },
                   ]}
                   size="small"
                 />

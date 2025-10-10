@@ -40,7 +40,11 @@ import {
   AccountBalance as BankIcon,
   Visibility as ViewIcon,
 } from '@mui/icons-material';
-import { selectHirerJobs, selectHirerLoading, selectHirerPayments } from '../services/hirerSlice';
+import {
+  selectHirerJobs,
+  selectHirerLoading,
+  selectHirerPayments,
+} from '../services/hirerSlice';
 import paymentService from '../../payment/services/paymentService';
 
 // No mock data - using real API data only
@@ -71,7 +75,7 @@ const PaymentRelease = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: "GHS",
+      currency: 'GHS',
       minimumFractionDigits: 0,
     }).format(amount);
   };

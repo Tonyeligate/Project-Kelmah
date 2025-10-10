@@ -61,7 +61,7 @@ import { glowPulse } from '../../../styles/animations';
 // Add currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
   style: 'currency',
-  currency: "GHS",
+  currency: 'GHS',
 });
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
@@ -549,11 +549,12 @@ const PaymentCenterPage = () => {
   // Pagination state and derived page items
   const [page, setPage] = useState(1);
   const perPage = 5;
-  const pageCount = Math.ceil((Array.isArray(transactions) ? transactions.length : 0) / perPage);
-  const pagedTransactions = Array.isArray(transactions) ? transactions.slice(
-    (page - 1) * perPage,
-    page * perPage,
-  ) : [];
+  const pageCount = Math.ceil(
+    (Array.isArray(transactions) ? transactions.length : 0) / perPage,
+  );
+  const pagedTransactions = Array.isArray(transactions)
+    ? transactions.slice((page - 1) * perPage, page * perPage)
+    : [];
 
   // Bills filters & pagination
   const [billStartDate, setBillStartDate] = useState('');
@@ -686,7 +687,12 @@ const PaymentCenterPage = () => {
                 label="Escrows"
               />
               <Box sx={{ mt: 1 }}>
-                <Button component={RouterLink} to="/worker/payment/escrows" size="small" variant="outlined">
+                <Button
+                  component={RouterLink}
+                  to="/worker/payment/escrows"
+                  size="small"
+                  variant="outlined"
+                >
                   Open Escrow Manager
                 </Button>
               </Box>
@@ -942,9 +948,17 @@ const PaymentCenterPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <ArrowUpwardIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-          <Typography component="div" variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+        >
+          <ArrowUpwardIcon
+            sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+          />
+          <Typography
+            component="div"
+            variant="h6"
+            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+          >
             Add Money
           </Typography>
         </DialogTitle>
@@ -954,14 +968,14 @@ const PaymentCenterPage = () => {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <Tooltip title="Enter amount in Ghana Cedi">
-                  <TextField
+              <TextField
                 variant="filled"
                 label="Amount (GHS)"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
-                    InputProps={{ disableUnderline: true }}
+                InputProps={{ disableUnderline: true }}
                 InputLabelProps={{
                   sx: { color: theme.palette.secondary.main },
                 }}
@@ -1051,9 +1065,17 @@ const PaymentCenterPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <ArrowDownwardIcon sx={{ color: theme.palette.secondary.main, fontSize: 28 }} />
-          <Typography component="div" variant="h6" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+        >
+          <ArrowDownwardIcon
+            sx={{ color: theme.palette.secondary.main, fontSize: 28 }}
+          />
+          <Typography
+            component="div"
+            variant="h6"
+            sx={{ color: theme.palette.secondary.main, fontWeight: 'bold' }}
+          >
             Withdraw
           </Typography>
         </DialogTitle>

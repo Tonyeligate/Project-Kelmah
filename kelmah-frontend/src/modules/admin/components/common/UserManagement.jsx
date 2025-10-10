@@ -77,7 +77,7 @@ const UserManagement = () => {
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
-  
+
   // Pagination
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -103,28 +103,42 @@ const UserManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await adminService.getUsers(page, itemsPerPage, searchTerm);
-      
+
+      const response = await adminService.getUsers(
+        page,
+        itemsPerPage,
+        searchTerm,
+      );
+
       if (response.success) {
         let filteredUsers = response.data || [];
-        
+
         // Apply role filter
         if (filterRole !== 'all') {
-          filteredUsers = filteredUsers.filter(user => user.role === filterRole);
+          filteredUsers = filteredUsers.filter(
+            (user) => user.role === filterRole,
+          );
         }
-        
+
         // Apply status filter
         if (filterStatus === 'active') {
-          filteredUsers = filteredUsers.filter(user => user.isActive !== false);
+          filteredUsers = filteredUsers.filter(
+            (user) => user.isActive !== false,
+          );
         } else if (filterStatus === 'inactive') {
-          filteredUsers = filteredUsers.filter(user => user.isActive === false);
+          filteredUsers = filteredUsers.filter(
+            (user) => user.isActive === false,
+          );
         } else if (filterStatus === 'verified') {
-          filteredUsers = filteredUsers.filter(user => user.isEmailVerified === true);
+          filteredUsers = filteredUsers.filter(
+            (user) => user.isEmailVerified === true,
+          );
         } else if (filterStatus === 'unverified') {
-          filteredUsers = filteredUsers.filter(user => user.isEmailVerified === false);
+          filteredUsers = filteredUsers.filter(
+            (user) => user.isEmailVerified === false,
+          );
         }
-        
+
         setUsers(filteredUsers);
         setTotalPages(response.pagination?.totalPages || 1);
         setTotalUsers(response.pagination?.total || filteredUsers.length);
@@ -178,7 +192,11 @@ const UserManagement = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this user? This action cannot be undone.',
+      )
+    ) {
       try {
         await adminService.deleteUser(userId);
         fetchUsers();
@@ -193,13 +211,13 @@ const UserManagement = () => {
   const handleSaveUser = async () => {
     try {
       setLoading(true);
-      
+
       if (dialogMode === 'create') {
         await adminService.createUser(formData);
       } else if (dialogMode === 'edit') {
         await adminService.updateUser(currentUser.id, formData);
       }
-      
+
       setOpenDialog(false);
       fetchUsers();
     } catch (err) {
@@ -231,10 +249,10 @@ const UserManagement = () => {
   };
 
   const handleSelectUser = (userId) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -242,35 +260,43 @@ const UserManagement = () => {
     if (selectedUsers.length === users.length) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(users.map(user => user.id));
+      setSelectedUsers(users.map((user) => user.id));
     }
   };
 
   const handleBulkAction = async (action) => {
     if (selectedUsers.length === 0) return;
-    
+
     try {
       setLoading(true);
-      
+
       switch (action) {
         case 'activate':
           await adminService.bulkUpdateUsers(selectedUsers, { isActive: true });
           break;
         case 'deactivate':
-          await adminService.bulkUpdateUsers(selectedUsers, { isActive: false });
+          await adminService.bulkUpdateUsers(selectedUsers, {
+            isActive: false,
+          });
           break;
         case 'verify':
-          await adminService.bulkUpdateUsers(selectedUsers, { isEmailVerified: true });
+          await adminService.bulkUpdateUsers(selectedUsers, {
+            isEmailVerified: true,
+          });
           break;
         case 'delete':
-          if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`)) {
+          if (
+            window.confirm(
+              `Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`,
+            )
+          ) {
             await adminService.bulkDeleteUsers(selectedUsers);
           }
           break;
         default:
           break;
       }
-      
+
       setSelectedUsers([]);
       fetchUsers();
     } catch (err) {
@@ -283,10 +309,14 @@ const UserManagement = () => {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'admin': return 'error';
-      case 'hirer': return 'primary';
-      case 'worker': return 'success';
-      default: return 'default';
+      case 'admin':
+        return 'error';
+      case 'hirer':
+        return 'primary';
+      case 'worker':
+        return 'success';
+      default:
+        return 'default';
     }
   };
 
@@ -314,7 +344,7 @@ const UserManagement = () => {
       <Typography variant="h4" gutterBottom>
         User Management
       </Typography>
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
@@ -348,7 +378,7 @@ const UserManagement = () => {
                 >
                   Add User
                 </Button>
-                
+
                 <Button
                   variant="outlined"
                   startIcon={<FilterIcon />}
@@ -439,10 +469,15 @@ const UserManagement = () => {
 
       <Card>
         <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">
-              Users ({totalUsers})
-            </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6">Users ({totalUsers})</Typography>
             {selectedUsers.length > 0 && (
               <Typography variant="body2" color="primary">
                 {selectedUsers.length} selected
@@ -462,8 +497,14 @@ const UserManagement = () => {
                     <TableRow>
                       <TableCell padding="checkbox">
                         <Checkbox
-                          indeterminate={selectedUsers.length > 0 && selectedUsers.length < users.length}
-                          checked={users.length > 0 && selectedUsers.length === users.length}
+                          indeterminate={
+                            selectedUsers.length > 0 &&
+                            selectedUsers.length < users.length
+                          }
+                          checked={
+                            users.length > 0 &&
+                            selectedUsers.length === users.length
+                          }
                           onChange={handleSelectAll}
                         />
                       </TableCell>
@@ -488,35 +529,63 @@ const UserManagement = () => {
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                              {userData.firstName?.[0]}{userData.lastName?.[0]}
+                              {userData.firstName?.[0]}
+                              {userData.lastName?.[0]}
                             </Avatar>
                             <Box>
                               <Typography variant="subtitle2">
                                 {userData.firstName} {userData.lastName}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 ID: {userData.id?.slice(0, 8)}...
                               </Typography>
                             </Box>
                           </Box>
                         </TableCell>
                         <TableCell>
-    <Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                              <EmailIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                              <Typography variant="body2">{userData.email}</Typography>
+                          <Box>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                mb: 0.5,
+                              }}
+                            >
+                              <EmailIcon
+                                sx={{
+                                  fontSize: 16,
+                                  mr: 1,
+                                  color: 'text.secondary',
+                                }}
+                              />
+                              <Typography variant="body2">
+                                {userData.email}
+                              </Typography>
                             </Box>
                             {userData.phone && (
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <PhoneIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                                <Typography variant="body2">{userData.phone}</Typography>
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center' }}
+                              >
+                                <PhoneIcon
+                                  sx={{
+                                    fontSize: 16,
+                                    mr: 1,
+                                    color: 'text.secondary',
+                                  }}
+                                />
+                                <Typography variant="body2">
+                                  {userData.phone}
+                                </Typography>
                               </Box>
                             )}
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={userData.role} 
+                          <Chip
+                            label={userData.role}
                             color={getRoleColor(userData.role)}
                             size="small"
                           />
@@ -526,24 +595,46 @@ const UserManagement = () => {
                             control={
                               <Switch
                                 checked={userData.isActive !== false}
-                                onChange={() => handleToggleUserStatus(userData.id, userData.isActive)}
+                                onChange={() =>
+                                  handleToggleUserStatus(
+                                    userData.id,
+                                    userData.isActive,
+                                  )
+                                }
                                 size="small"
                               />
                             }
-                            label={userData.isActive !== false ? 'Active' : 'Inactive'}
+                            label={
+                              userData.isActive !== false
+                                ? 'Active'
+                                : 'Inactive'
+                            }
                           />
                         </TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <IconButton
                               size="small"
-                              onClick={() => handleToggleUserVerification(userData.id, userData.isEmailVerified)}
-                              color={userData.isEmailVerified ? 'success' : 'default'}
+                              onClick={() =>
+                                handleToggleUserVerification(
+                                  userData.id,
+                                  userData.isEmailVerified,
+                                )
+                              }
+                              color={
+                                userData.isEmailVerified ? 'success' : 'default'
+                              }
                             >
-                              {userData.isEmailVerified ? <VerifiedIcon /> : <UnverifiedIcon />}
+                              {userData.isEmailVerified ? (
+                                <VerifiedIcon />
+                              ) : (
+                                <UnverifiedIcon />
+                              )}
                             </IconButton>
                             <Typography variant="body2" sx={{ ml: 1 }}>
-                              {userData.isEmailVerified ? 'Verified' : 'Unverified'}
+                              {userData.isEmailVerified
+                                ? 'Verified'
+                                : 'Unverified'}
                             </Typography>
                           </Box>
                         </TableCell>
@@ -564,7 +655,7 @@ const UserManagement = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    
+
                     {users.length === 0 && !loading && (
                       <TableRow>
                         <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
@@ -599,32 +690,47 @@ const UserManagement = () => {
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItemComponent onClick={() => {
-          const user = users.find(u => u.id === selectedRowId);
-          handleViewUser(user);
-        }}>
-          <ListItemIcon><PersonIcon /></ListItemIcon>
+        <MenuItemComponent
+          onClick={() => {
+            const user = users.find((u) => u.id === selectedRowId);
+            handleViewUser(user);
+          }}
+        >
+          <ListItemIcon>
+            <PersonIcon />
+          </ListItemIcon>
           <ListItemText>View Details</ListItemText>
         </MenuItemComponent>
-        <MenuItemComponent onClick={() => {
-          const user = users.find(u => u.id === selectedRowId);
-          handleEditUser(user);
-        }}>
-          <ListItemIcon><EditIcon /></ListItemIcon>
+        <MenuItemComponent
+          onClick={() => {
+            const user = users.find((u) => u.id === selectedRowId);
+            handleEditUser(user);
+          }}
+        >
+          <ListItemIcon>
+            <EditIcon />
+          </ListItemIcon>
           <ListItemText>Edit User</ListItemText>
         </MenuItemComponent>
         <Divider />
-        <MenuItemComponent 
+        <MenuItemComponent
           onClick={() => handleDeleteUser(selectedRowId)}
           sx={{ color: 'error.main' }}
         >
-          <ListItemIcon><DeleteIcon color="error" /></ListItemIcon>
+          <ListItemIcon>
+            <DeleteIcon color="error" />
+          </ListItemIcon>
           <ListItemText>Delete User</ListItemText>
         </MenuItemComponent>
       </Menu>
 
       {/* User Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
           {dialogMode === 'create' && 'Create New User'}
           {dialogMode === 'edit' && 'Edit User'}
@@ -637,7 +743,9 @@ const UserManagement = () => {
                 fullWidth
                 label="First Name"
                 value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
                 disabled={dialogMode === 'view'}
                 required
               />
@@ -647,7 +755,9 @@ const UserManagement = () => {
                 fullWidth
                 label="Last Name"
                 value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
                 disabled={dialogMode === 'view'}
                 required
               />
@@ -658,7 +768,9 @@ const UserManagement = () => {
                 label="Email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 disabled={dialogMode === 'view'}
                 required
               />
@@ -668,7 +780,9 @@ const UserManagement = () => {
                 fullWidth
                 label="Phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 disabled={dialogMode === 'view'}
               />
             </Grid>
@@ -678,7 +792,9 @@ const UserManagement = () => {
                 <Select
                   value={formData.role}
                   label="Role"
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
                   disabled={dialogMode === 'view'}
                 >
                   <MenuItem value="worker">Worker</MenuItem>
@@ -693,7 +809,9 @@ const UserManagement = () => {
                   control={
                     <Switch
                       checked={formData.isActive}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, isActive: e.target.checked })
+                      }
                       disabled={dialogMode === 'view'}
                     />
                   }
@@ -703,7 +821,12 @@ const UserManagement = () => {
                   control={
                     <Switch
                       checked={formData.isEmailVerified}
-                      onChange={(e) => setFormData({ ...formData, isEmailVerified: e.target.checked })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          isEmailVerified: e.target.checked,
+                        })
+                      }
                       disabled={dialogMode === 'view'}
                     />
                   }
@@ -718,8 +841,18 @@ const UserManagement = () => {
             {dialogMode === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {dialogMode !== 'view' && (
-            <Button variant="contained" onClick={handleSaveUser} disabled={loading}>
-              {loading ? <CircularProgress size={20} /> : (dialogMode === 'create' ? 'Create' : 'Save')}
+            <Button
+              variant="contained"
+              onClick={handleSaveUser}
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={20} />
+              ) : dialogMode === 'create' ? (
+                'Create'
+              ) : (
+                'Save'
+              )}
             </Button>
           )}
         </DialogActions>

@@ -14,7 +14,9 @@ const workersApi = {
    */
   async getAvailabilityStatus(userId) {
     const id = userId;
-    const resp = await workersServiceClient.get(`/api/users/workers/${id}/availability`);
+    const resp = await workersServiceClient.get(
+      `/api/users/workers/${id}/availability`,
+    );
     const data = resp.data?.data || resp.data;
     const status = data?.availabilityStatus || 'available';
     return {
@@ -33,12 +35,18 @@ const workersApi = {
     const id = userId;
     const payload = { ...availabilityData };
     if (typeof availabilityData.isAvailable === 'boolean') {
-      payload.availabilityStatus = availabilityData.isAvailable ? 'available' : 'busy';
+      payload.availabilityStatus = availabilityData.isAvailable
+        ? 'available'
+        : 'busy';
       delete payload.isAvailable;
     }
-    const resp = await workersServiceClient.put(`/api/users/workers/${id}/availability`, payload);
+    const resp = await workersServiceClient.put(
+      `/api/users/workers/${id}/availability`,
+      payload,
+    );
     const data = resp.data?.data || resp.data;
-    const status = data?.availabilityStatus || payload.availabilityStatus || 'available';
+    const status =
+      data?.availabilityStatus || payload.availabilityStatus || 'available';
     return {
       isAvailable: status === 'available',
       status,
@@ -55,22 +63,30 @@ const workersApi = {
   },
 
   async getRecentJobs(limit = 10) {
-    const response = await workersServiceClient.get(`/api/workers/jobs/recent?limit=${limit}`);
+    const response = await workersServiceClient.get(
+      `/api/workers/jobs/recent?limit=${limit}`,
+    );
     return response.data?.data || response.data;
   },
 
   async getMetrics(timeframe = '30d') {
-    const response = await workersServiceClient.get(`/api/workers/metrics?timeframe=${timeframe}`);
+    const response = await workersServiceClient.get(
+      `/api/workers/metrics?timeframe=${timeframe}`,
+    );
     return response.data?.data || response.data;
   },
 
   async getApplications(status = 'all', limit = 20) {
-    const response = await workersServiceClient.get(`/api/workers/applications?status=${status}&limit=${limit}`);
+    const response = await workersServiceClient.get(
+      `/api/workers/applications?status=${status}&limit=${limit}`,
+    );
     return response.data?.data || response.data;
   },
 
   async getEarnings(timeframe = '30d') {
-    const response = await workersServiceClient.get(`/api/workers/earnings?timeframe=${timeframe}`);
+    const response = await workersServiceClient.get(
+      `/api/workers/earnings?timeframe=${timeframe}`,
+    );
     return response.data?.data || response.data;
   },
 
@@ -87,7 +103,10 @@ const workersApi = {
 
   async updateProfile(profileData) {
     try {
-      const response = await workersServiceClient.put('/api/workers/profile', profileData);
+      const response = await workersServiceClient.put(
+        '/api/workers/profile',
+        profileData,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -128,7 +147,8 @@ const workersApi = {
         location: 'Accra, Ghana',
         budget: 2500,
         status: 'Active',
-        description: 'Looking for a skilled web developer to build an e-commerce platform',
+        description:
+          'Looking for a skilled web developer to build an e-commerce platform',
         skills: ['React', 'Node.js', 'MongoDB'],
         postedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
       },
@@ -183,7 +203,8 @@ const workersApi = {
         status: 'accepted',
         appliedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
         proposedBudget: 1800,
-        coverLetter: 'I specialize in mobile app design with focus on user experience...',
+        coverLetter:
+          'I specialize in mobile app design with focus on user experience...',
       },
       {
         id: 3,
@@ -240,9 +261,16 @@ const workersApi = {
       responseRate: Math.floor(Math.random() * 20) + 80,
       completionRate: Math.floor(Math.random() * 10) + 90,
       averageRating: (Math.random() * 1.5 + 3.5).toFixed(1),
-      topSkills: ['Web Development', 'Mobile Apps', 'UI/UX Design', 'Content Writing'],
+      topSkills: [
+        'Web Development',
+        'Mobile Apps',
+        'UI/UX Design',
+        'Content Writing',
+      ],
       monthlyStats: Array.from({ length: 12 }, (_, i) => ({
-        month: new Date(2024, i, 1).toLocaleDateString('en-US', { month: 'short' }),
+        month: new Date(2024, i, 1).toLocaleDateString('en-US', {
+          month: 'short',
+        }),
         applications: Math.floor(Math.random() * 15) + 5,
         earnings: Math.floor(Math.random() * 1500) + 300,
       })),
@@ -253,7 +281,9 @@ const workersApi = {
    * Get worker dashboard statistics - Enhanced with realistic mock data
    */
   async getDashboardStats() {
-    const response = await workersServiceClient.get('/api/workers/dashboard/stats');
+    const response = await workersServiceClient.get(
+      '/api/workers/dashboard/stats',
+    );
     return response.data?.data || response.data;
   },
 
@@ -261,7 +291,9 @@ const workersApi = {
    * Get worker earnings data - Enhanced method
    */
   async getEarningsData(timeRange = '6months') {
-    const response = await workersServiceClient.get('/api/workers/earnings', { params: { timeRange } });
+    const response = await workersServiceClient.get('/api/workers/earnings', {
+      params: { timeRange },
+    });
     return response.data?.data || response.data;
   },
 
@@ -270,7 +302,9 @@ const workersApi = {
    */
   async getAppointments() {
     try {
-      const response = await workersServiceClient.get('/api/workers/appointments');
+      const response = await workersServiceClient.get(
+        '/api/workers/appointments',
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.warn('Appointments API unavailable');
@@ -296,7 +330,10 @@ const workersApi = {
    */
   async updateWorkerProfile(profileData) {
     try {
-      const response = await workersServiceClient.put('/api/workers/profile', profileData);
+      const response = await workersServiceClient.put(
+        '/api/workers/profile',
+        profileData,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Failed to update worker profile:', error);
@@ -325,7 +362,10 @@ const workersApi = {
    */
   async requestSkillVerification(skillId, verificationData) {
     try {
-      const response = await workersServiceClient.post(`/api/workers/skills/${skillId}/verify`, verificationData);
+      const response = await workersServiceClient.post(
+        `/api/workers/skills/${skillId}/verify`,
+        verificationData,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Failed to request skill verification:', error);
@@ -341,7 +381,9 @@ const workersApi = {
       const user = secureStorage.getUserData();
       const id = user?.id || user?._id || user?.userId;
       if (!id) throw new Error('Missing user id');
-      const resp = await workersServiceClient.get(`/api/workers/${id}/completeness`);
+      const resp = await workersServiceClient.get(
+        `/api/workers/${id}/completeness`,
+      );
       return resp.data?.data || resp.data;
     } catch (error) {
       console.warn('Profile completion API unavailable, using mock data');
@@ -350,7 +392,7 @@ const workersApi = {
         missingFields: ['portfolio', 'skills', 'experience'],
       };
     }
-  }
+  },
 };
 
 export default workersApi;

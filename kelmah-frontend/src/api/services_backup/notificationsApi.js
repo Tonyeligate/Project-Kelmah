@@ -29,8 +29,11 @@ class NotificationsApi {
     // Fallback: fetch list and find client-side
     try {
       const resp = await apiClient.get('/api/notifications');
-      const list = resp.data?.data || resp.data?.notifications || resp.data || [];
-      return Array.isArray(list) ? list.find((n) => n.id === notificationId || n._id === notificationId) : null;
+      const list =
+        resp.data?.data || resp.data?.notifications || resp.data || [];
+      return Array.isArray(list)
+        ? list.find((n) => n.id === notificationId || n._id === notificationId)
+        : null;
     } catch (err) {
       return null;
     }

@@ -56,7 +56,7 @@ import { normalizeUser } from '../../../utils/userUtils';
 
 const CertificateUploader = ({ onCertificatesChange }) => {
   // FIXED: Use standardized user normalization for consistent user data access
-  const { user: rawUser } = useSelector(state => state.auth);
+  const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -100,7 +100,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
     'HVAC',
     'General Construction',
     'Project Management',
-    'Other'
+    'Other',
   ];
 
   // Load certificates
@@ -126,42 +126,45 @@ const CertificateUploader = ({ onCertificatesChange }) => {
   }, [loadCertificates, user]);
 
   // File upload handling
-  const onDrop = useCallback(async (acceptedFiles) => {
-    if (acceptedFiles.length === 0) return;
+  const onDrop = useCallback(
+    async (acceptedFiles) => {
+      if (acceptedFiles.length === 0) return;
 
-    const file = acceptedFiles[0];
-    if (!selectedCertificate && !isDialogOpen) {
-      // If no certificate is selected, open dialog first
-      setIsDialogOpen(true);
-      setFormData(prev => ({ ...prev, file }));
-      return;
-    }
+      const file = acceptedFiles[0];
+      if (!selectedCertificate && !isDialogOpen) {
+        // If no certificate is selected, open dialog first
+        setIsDialogOpen(true);
+        setFormData((prev) => ({ ...prev, file }));
+        return;
+      }
 
-    try {
-      setUploadProgress({ [file.name]: 0 });
-      
-      const uploadResult = await certificateService.uploadCertificateFile(
-        file,
-        (progress) => {
-          setUploadProgress({ [file.name]: progress });
-        }
-      );
+      try {
+        setUploadProgress({ [file.name]: 0 });
 
-      setFormData(prev => ({
-        ...prev,
-        file,
-        fileUrl: uploadResult.data.url,
-        fileName: file.name,
-        fileSize: file.size,
-      }));
+        const uploadResult = await certificateService.uploadCertificateFile(
+          file,
+          (progress) => {
+            setUploadProgress({ [file.name]: progress });
+          },
+        );
 
-      setUploadProgress({});
-      enqueueSnackbar('File uploaded successfully', { variant: 'success' });
-    } catch (error) {
-      setUploadProgress({});
-      enqueueSnackbar('Failed to upload file', { variant: 'error' });
-    }
-  }, [selectedCertificate, isDialogOpen, enqueueSnackbar]);
+        setFormData((prev) => ({
+          ...prev,
+          file,
+          fileUrl: uploadResult.data.url,
+          fileName: file.name,
+          fileSize: file.size,
+        }));
+
+        setUploadProgress({});
+        enqueueSnackbar('File uploaded successfully', { variant: 'success' });
+      } catch (error) {
+        setUploadProgress({});
+        enqueueSnackbar('Failed to upload file', { variant: 'error' });
+      }
+    },
+    [selectedCertificate, isDialogOpen, enqueueSnackbar],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -169,7 +172,8 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       'application/pdf': ['.pdf'],
       'image/*': ['.png', '.jpg', '.jpeg'],
       'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        ['.docx'],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
     multiple: false,
@@ -186,11 +190,18 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       };
 
       if (isEditing && selectedCertificate) {
-        await certificateService.updateCertificate(selectedCertificate.id, certificateData);
-        enqueueSnackbar('Certificate updated successfully', { variant: 'success' });
+        await certificateService.updateCertificate(
+          selectedCertificate.id,
+          certificateData,
+        );
+        enqueueSnackbar('Certificate updated successfully', {
+          variant: 'success',
+        });
       } else {
         await certificateService.createCertificate(certificateData);
-        enqueueSnackbar('Certificate added successfully', { variant: 'success' });
+        enqueueSnackbar('Certificate added successfully', {
+          variant: 'success',
+        });
       }
 
       handleCloseDialog();
@@ -205,7 +216,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
     if (window.confirm('Are you sure you want to delete this certificate?')) {
       try {
         await certificateService.deleteCertificate(certificateId);
-        enqueueSnackbar('Certificate deleted successfully', { variant: 'success' });
+        enqueueSnackbar('Certificate deleted successfully', {
+          variant: 'success',
+        });
         loadCertificates();
       } catch (error) {
         enqueueSnackbar('Failed to delete certificate', { variant: 'error' });
@@ -292,7 +305,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
   // Render certificate card
   const renderCertificateCard = (certificate) => {
     const status = getStatusDisplay(certificate.status);
-    const TypeIcon = certificateTypes.find(t => t.value === certificate.type)?.icon || DocumentIcon;
+    const TypeIcon =
+      certificateTypes.find((t) => t.value === certificate.type)?.icon ||
+      DocumentIcon;
 
     return (
       <Card
@@ -309,7 +324,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         }}
       >
         <CardContent sx={{ flexGrow: 1 }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={2}
+          >
             <Box display="flex" alignItems="center" gap={1}>
               <TypeIcon color="primary" />
               <Typography variant="h6" component="h3">
@@ -337,7 +357,11 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           <Stack spacing={1}>
             {certificate.category && (
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="body2" fontWeight="medium" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  fontWeight="medium"
+                  color="text.secondary"
+                >
                   Category:
                 </Typography>
                 <Typography variant="body2">{certificate.category}</Typography>
@@ -346,25 +370,41 @@ const CertificateUploader = ({ onCertificatesChange }) => {
 
             {certificate.issueDate && (
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="body2" fontWeight="medium" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  fontWeight="medium"
+                  color="text.secondary"
+                >
                   Issued:
                 </Typography>
-                <Typography variant="body2">{formatDate(certificate.issueDate)}</Typography>
+                <Typography variant="body2">
+                  {formatDate(certificate.issueDate)}
+                </Typography>
               </Box>
             )}
 
             {certificate.expiryDate && (
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="body2" fontWeight="medium" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  fontWeight="medium"
+                  color="text.secondary"
+                >
                   Expires:
                 </Typography>
-                <Typography variant="body2">{formatDate(certificate.expiryDate)}</Typography>
+                <Typography variant="body2">
+                  {formatDate(certificate.expiryDate)}
+                </Typography>
               </Box>
             )}
 
             {certificate.credentialId && (
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="body2" fontWeight="medium" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  fontWeight="medium"
+                  color="text.secondary"
+                >
                   ID:
                 </Typography>
                 <Typography variant="body2" fontFamily="monospace">
@@ -377,14 +417,17 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           {certificate.skills && (
             <Box mt={2}>
               <Stack direction="row" spacing={1} flexWrap="wrap">
-                {certificate.skills?.split(',').slice(0, 3).map((skill, index) => (
-                  <Chip
-                    key={index}
-                    label={skill.trim()}
-                    size="small"
-                    variant="outlined"
-                  />
-                ))}
+                {certificate.skills
+                  ?.split(',')
+                  .slice(0, 3)
+                  .map((skill, index) => (
+                    <Chip
+                      key={index}
+                      label={skill.trim()}
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
                 {certificate.skills?.split(',').length > 3 && (
                   <Chip
                     label={`+${(certificate.skills?.split(',').length || 0) - 3} more`}
@@ -454,7 +497,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
   return (
     <Box>
       {/* Header */}
-      <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={3}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Typography variant="h5" component="h2">
           Certificates & Licenses
         </Typography>
@@ -475,7 +523,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           mb: 3,
           border: '2px dashed',
           borderColor: isDragActive ? 'primary.main' : 'divider',
-          backgroundColor: isDragActive ? alpha(theme.palette.primary.main, 0.1) : 'background.paper',
+          backgroundColor: isDragActive
+            ? alpha(theme.palette.primary.main, 0.1)
+            : 'background.paper',
           cursor: 'pointer',
           transition: 'all 0.2s ease',
           '&:hover': {
@@ -488,7 +538,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         <Box textAlign="center">
           <UploadIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
-            {isDragActive ? 'Drop the file here' : 'Drag & drop a certificate file here'}
+            {isDragActive
+              ? 'Drop the file here'
+              : 'Drag & drop a certificate file here'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             or click to select a file (PDF, DOC, DOCX, PNG, JPG - max 10MB)
@@ -528,12 +580,15 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         </Grid>
       ) : certificates.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <CertificateIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <CertificateIcon
+            sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+          />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No Certificates Added Yet
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Upload your certificates, licenses, and qualifications to build credibility
+            Upload your certificates, licenses, and qualifications to build
+            credibility
           </Typography>
           <Button
             variant="contained"
@@ -570,7 +625,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 fullWidth
                 label="Certificate Name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 required
               />
             </Grid>
@@ -580,7 +637,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 <InputLabel>Type</InputLabel>
                 <Select
                   value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, type: e.target.value }))
+                  }
                   label="Type"
                 >
                   {certificateTypes.map((type) => (
@@ -600,7 +659,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
                   label="Category"
                 >
                   {categories.map((category) => (
@@ -617,7 +681,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 fullWidth
                 label="Issuing Organization"
                 value={formData.issuingOrganization}
-                onChange={(e) => setFormData(prev => ({ ...prev, issuingOrganization: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    issuingOrganization: e.target.value,
+                  }))
+                }
                 required
               />
             </Grid>
@@ -628,7 +697,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 type="date"
                 label="Issue Date"
                 value={formData.issueDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, issueDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    issueDate: e.target.value,
+                  }))
+                }
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -639,7 +713,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 type="date"
                 label="Expiry Date"
                 value={formData.expiryDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, expiryDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    expiryDate: e.target.value,
+                  }))
+                }
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -649,7 +728,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 fullWidth
                 label="Credential ID"
                 value={formData.credentialId}
-                onChange={(e) => setFormData(prev => ({ ...prev, credentialId: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    credentialId: e.target.value,
+                  }))
+                }
                 placeholder="Certificate or license number"
               />
             </Grid>
@@ -661,7 +745,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 rows={3}
                 label="Description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Brief description of the certificate or what skills it represents"
               />
             </Grid>
@@ -671,10 +760,15 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 fullWidth
                 label="Related Skills"
                 value={formData.skills.join(', ')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  skills: e.target.value.split(',').map(s => s.trim()).filter(s => s) 
-                }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    skills: e.target.value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter((s) => s),
+                  }))
+                }
                 placeholder="Enter skills separated by commas"
               />
             </Grid>
@@ -682,7 +776,8 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             {formData.fileName && (
               <Grid item xs={12}>
                 <Alert severity="success">
-                  File uploaded: {formData.fileName} ({formatFileSize(formData.fileSize)})
+                  File uploaded: {formData.fileName} (
+                  {formatFileSize(formData.fileSize)})
                 </Alert>
               </Grid>
             )}
@@ -690,10 +785,12 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
-            disabled={!formData.name || !formData.type || !formData.issuingOrganization}
+            disabled={
+              !formData.name || !formData.type || !formData.issuingOrganization
+            }
           >
             {isEditing ? 'Update' : 'Add'} Certificate
           </Button>

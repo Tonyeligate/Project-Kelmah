@@ -189,7 +189,9 @@ const WorkerReviewsPage = () => {
                     },
                     rating: r.rating,
                     content: r.comment,
-                    date: formatDistanceToNow(new Date(r.createdAt), { addSuffix: true }),
+                    date: formatDistanceToNow(new Date(r.createdAt), {
+                      addSuffix: true,
+                    }),
                     jobTitle: `Job ${r.job}`,
                   }}
                 />

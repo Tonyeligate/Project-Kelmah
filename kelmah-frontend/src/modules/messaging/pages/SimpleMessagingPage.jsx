@@ -6,7 +6,7 @@ import SEO from '../../common/components/common/SEO';
 
 const SimpleMessagingPage = () => {
   const { conversationId } = useParams();
-  
+
   return (
     <>
       <SEO title="Messages | Kelmah" description="Real-time messaging" />

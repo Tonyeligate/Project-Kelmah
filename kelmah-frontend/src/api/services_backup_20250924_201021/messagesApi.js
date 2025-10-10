@@ -5,7 +5,11 @@ const messagesApi = {
   async getConversations() {
     try {
       const { data } = await messagingServiceClient.get('/api/conversations');
-      return Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      return Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+          ? data
+          : [];
     } catch (error) {
       console.warn('Failed to fetch conversations:', error);
       return [];
@@ -16,14 +20,23 @@ const messagesApi = {
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
       // ✅ FIXED: Use correct endpoint pattern to match backend routing
-      const { data } = await messagingServiceClient.get(`/api/messages/conversations/${conversationId}/messages?page=${page}&limit=${limit}`);
+      const { data } = await messagingServiceClient.get(
+        `/api/messages/conversations/${conversationId}/messages?page=${page}&limit=${limit}`,
+      );
       return {
         messages: Array.isArray(data?.data?.messages) ? data.data.messages : [],
-        pagination: data?.data?.pagination || { page: 1, total: 0, hasMore: false }
+        pagination: data?.data?.pagination || {
+          page: 1,
+          total: 0,
+          hasMore: false,
+        },
       };
     } catch (error) {
       console.warn('Failed to fetch messages:', error);
-      return { messages: [], pagination: { page: 1, total: 0, hasMore: false } };
+      return {
+        messages: [],
+        pagination: { page: 1, total: 0, hasMore: false },
+      };
     }
   },
 
@@ -33,9 +46,12 @@ const messagesApi = {
       // ✅ FIXED: Send to messages endpoint, not conversation-specific endpoint
       const payload = {
         conversationId,
-        ...messageData
+        ...messageData,
       };
-      const { data } = await messagingServiceClient.post('/api/messages', payload);
+      const { data } = await messagingServiceClient.post(
+        '/api/messages',
+        payload,
+      );
       return data?.data || data;
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -48,7 +64,7 @@ const messagesApi = {
     try {
       const { data } = await messagingServiceClient.post('/api/conversations', {
         participantId,
-        initialMessage
+        initialMessage,
       });
       return data?.data || data;
     } catch (error) {
@@ -61,7 +77,11 @@ const messagesApi = {
   async uploadAttachment(conversationId, formData, config = {}) {
     try {
       // ✅ FIXED: Use uploads endpoint for attachments
-      const { data } = await messagingServiceClient.post(`/api/uploads`, formData, config);
+      const { data } = await messagingServiceClient.post(
+        `/api/uploads`,
+        formData,
+        config,
+      );
       return data?.data || data;
     } catch (error) {
       console.error('Failed to upload attachment:', error);
@@ -72,7 +92,9 @@ const messagesApi = {
   // Mark conversation as read
   async markAsRead(conversationId) {
     try {
-      const { data } = await messagingServiceClient.put(`/api/conversations/${conversationId}/read`);
+      const { data } = await messagingServiceClient.put(
+        `/api/conversations/${conversationId}/read`,
+      );
       return data?.data || data;
     } catch (error) {
       console.warn('Failed to mark conversation as read:', error);
@@ -83,7 +105,9 @@ const messagesApi = {
   // Delete conversation
   async deleteConversation(conversationId) {
     try {
-      const { data } = await messagingServiceClient.delete(`/api/conversations/${conversationId}`);
+      const { data } = await messagingServiceClient.delete(
+        `/api/conversations/${conversationId}`,
+      );
       return data?.data || data;
     } catch (error) {
       console.error('Failed to delete conversation:', error);
@@ -94,17 +118,15 @@ const messagesApi = {
   // Archive conversation
   async archiveConversation(conversationId) {
     try {
-      const { data } = await messagingServiceClient.put(`/api/conversations/${conversationId}/archive`);
+      const { data } = await messagingServiceClient.put(
+        `/api/conversations/${conversationId}/archive`,
+      );
       return data?.data || data;
     } catch (error) {
       console.error('Failed to archive conversation:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default messagesApi;
-
-
-
-

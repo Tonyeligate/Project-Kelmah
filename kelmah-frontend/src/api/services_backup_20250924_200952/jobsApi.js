@@ -222,7 +222,9 @@ class JobsApi {
    * @returns {Promise<Object>} Personalized job recommendations
    */
   async getPersonalizedJobRecommendations(params = {}) {
-    const response = await apiClient.get('/jobs/recommendations/personalized', { params });
+    const response = await apiClient.get('/jobs/recommendations/personalized', {
+      params,
+    });
     return response.data;
   }
 
@@ -243,7 +245,9 @@ class JobsApi {
    * @returns {Promise<Object>} Response data
    */
   async extendJobDeadline(jobId, days = 7) {
-    const response = await apiClient.patch(`/jobs/${jobId}/extend-deadline`, { days });
+    const response = await apiClient.patch(`/jobs/${jobId}/extend-deadline`, {
+      days,
+    });
     return response.data;
   }
 

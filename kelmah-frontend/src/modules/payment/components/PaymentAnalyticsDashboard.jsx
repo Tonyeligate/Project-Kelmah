@@ -72,13 +72,17 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useSnackbar } from 'notistack';
-import { formatCurrency, formatDate, formatRelativeTime } from '../../../utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatRelativeTime,
+} from '../../../utils/formatters';
 import paymentService from '../services/paymentService';
 
-const PaymentAnalyticsDashboard = ({ 
+const PaymentAnalyticsDashboard = ({
   userType = 'worker', // 'worker', 'hirer', 'admin'
   timeRange = '30d',
-  showHeader = true 
+  showHeader = true,
 }) => {
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
@@ -94,7 +98,7 @@ const PaymentAnalyticsDashboard = ({
   const [filters, setFilters] = useState({
     status: 'all',
     method: 'all',
-    type: 'all'
+    type: 'all',
   });
 
   // Colors for charts
@@ -120,7 +124,7 @@ const PaymentAnalyticsDashboard = ({
         userId: user.id,
         userType,
         period: selectedPeriod,
-        ...filters
+        ...filters,
       });
       setAnalyticsData(response.data);
     } catch (error) {
@@ -138,7 +142,7 @@ const PaymentAnalyticsDashboard = ({
         period: selectedPeriod,
         page: page + 1,
         limit: rowsPerPage,
-        ...filters
+        ...filters,
       });
       setTransactions(response.data.transactions || []);
     } catch (error) {
@@ -187,18 +191,21 @@ const PaymentAnalyticsDashboard = ({
         userId: user.id,
         period: selectedPeriod,
         format,
-        ...filters
+        ...filters,
       });
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `payment_analytics_${selectedPeriod}.${format}`);
+      link.setAttribute(
+        'download',
+        `payment_analytics_${selectedPeriod}.${format}`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       enqueueSnackbar('Data exported successfully', { variant: 'success' });
     } catch (error) {
       enqueueSnackbar('Export failed', { variant: 'error' });
@@ -210,36 +217,36 @@ const PaymentAnalyticsDashboard = ({
     if (!analyticsData?.summary) return null;
 
     const { summary } = analyticsData;
-    
+
     const cards = [
       {
         title: 'Total Earnings',
         value: formatCurrency(summary.totalEarnings || 0),
         change: summary.earningsChange || 0,
         icon: <MoneyIcon />,
-        color: 'primary'
+        color: 'primary',
       },
       {
         title: 'Transactions',
         value: summary.totalTransactions || 0,
         change: summary.transactionsChange || 0,
         icon: <ReceiptIcon />,
-        color: 'secondary'
+        color: 'secondary',
       },
       {
         title: 'Success Rate',
         value: `${summary.successRate || 0}%`,
         change: summary.successRateChange || 0,
         icon: <CheckIcon />,
-        color: 'success'
+        color: 'success',
       },
       {
         title: 'Average Transaction',
         value: formatCurrency(summary.averageTransaction || 0),
         change: summary.averageChange || 0,
         icon: <AnalyticsIcon />,
-        color: 'info'
-      }
+        color: 'info',
+      },
     ];
 
     return (
@@ -248,25 +255,33 @@ const PaymentAnalyticsDashboard = ({
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="h4" fontWeight="bold" color={`${card.color}.main`}>
+                    <Typography
+                      variant="h4"
+                      fontWeight="bold"
+                      color={`${card.color}.main`}
+                    >
                       {card.value}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {card.title}
                     </Typography>
                   </Box>
-                  <Avatar 
-                    sx={{ 
+                  <Avatar
+                    sx={{
                       bgcolor: alpha(theme.palette[card.color].main, 0.1),
-                      color: `${card.color}.main`
+                      color: `${card.color}.main`,
                     }}
                   >
                     {card.icon}
                   </Avatar>
                 </Box>
-                
+
                 {card.change !== 0 && (
                   <Box display="flex" alignItems="center" mt={1}>
                     {card.change > 0 ? (
@@ -274,8 +289,8 @@ const PaymentAnalyticsDashboard = ({
                     ) : (
                       <TrendingDownIcon color="error" fontSize="small" />
                     )}
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       color={card.change > 0 ? 'success.main' : 'error.main'}
                       ml={0.5}
                     >
@@ -306,13 +321,13 @@ const PaymentAnalyticsDashboard = ({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis tickFormatter={formatCurrency} />
-              <RechartsTooltip 
+              <RechartsTooltip
                 formatter={(value) => [formatCurrency(value), 'Earnings']}
                 labelFormatter={(label) => `Date: ${label}`}
               />
-              <Area 
-                type="monotone" 
-                dataKey="earnings" 
+              <Area
+                type="monotone"
+                dataKey="earnings"
                 stroke={theme.palette.primary.main}
                 fill={alpha(theme.palette.primary.main, 0.1)}
               />
@@ -344,7 +359,10 @@ const PaymentAnalyticsDashboard = ({
                 nameKey="name"
               >
                 {analyticsData.paymentMethods.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={chartColors[index % chartColors.length]}
+                  />
                 ))}
               </Pie>
               <RechartsTooltip formatter={(value) => [`${value}%`, 'Usage']} />
@@ -385,10 +403,13 @@ const PaymentAnalyticsDashboard = ({
     return (
       <Card>
         <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">
-              Recent Transactions
-            </Typography>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h6">Recent Transactions</Typography>
             <Button
               size="small"
               startIcon={<DownloadIcon />}
@@ -397,7 +418,7 @@ const PaymentAnalyticsDashboard = ({
               Export
             </Button>
           </Box>
-          
+
           <TableContainer>
             <Table>
               <TableHead>
@@ -410,49 +431,51 @@ const PaymentAnalyticsDashboard = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {transactions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {formatDate(transaction.createdAt)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatRelativeTime(transaction.createdAt)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="medium">
-                        {formatCurrency(transaction.amount)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        {getPaymentMethodIcon(transaction.method)}
+                {transactions
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell>
                         <Typography variant="body2">
-                          {transaction.methodName || transaction.method}
+                          {formatDate(transaction.createdAt)}
                         </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={transaction.status}
-                        color={getStatusColor(transaction.status)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip title="View Details">
-                        <IconButton size="small">
-                          <ViewIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <Typography variant="caption" color="text.secondary">
+                          {formatRelativeTime(transaction.createdAt)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {formatCurrency(transaction.amount)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          {getPaymentMethodIcon(transaction.method)}
+                          <Typography variant="body2">
+                            {transaction.methodName || transaction.method}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={transaction.status}
+                          color={getStatusColor(transaction.status)}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip title="View Details">
+                          <IconButton size="small">
+                            <ViewIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
-          
+
           <TablePagination
             component="div"
             count={transactions.length}
@@ -476,18 +499,30 @@ const PaymentAnalyticsDashboard = ({
     return (
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            display="flex"
+            alignItems="center"
+            gap={1}
+          >
             <InfoIcon />
             Payment Insights
           </Typography>
-          
+
           <List>
             {analyticsData.insights.map((insight, index) => (
               <ListItem key={index}>
                 <ListItemIcon>
-                  {insight.type === 'positive' && <TrendingUpIcon color="success" />}
-                  {insight.type === 'negative' && <TrendingDownIcon color="error" />}
-                  {insight.type === 'warning' && <WarningIcon color="warning" />}
+                  {insight.type === 'positive' && (
+                    <TrendingUpIcon color="success" />
+                  )}
+                  {insight.type === 'negative' && (
+                    <TrendingDownIcon color="error" />
+                  )}
+                  {insight.type === 'warning' && (
+                    <WarningIcon color="warning" />
+                  )}
                   {insight.type === 'info' && <InfoIcon color="info" />}
                 </ListItemIcon>
                 <ListItemText
@@ -504,7 +539,12 @@ const PaymentAnalyticsDashboard = ({
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight={400}
+      >
         <CircularProgress />
       </Box>
     );
@@ -521,12 +561,17 @@ const PaymentAnalyticsDashboard = ({
   return (
     <Box>
       {showHeader && (
-        <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+        <Box
+          mb={3}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Typography variant="h5" display="flex" alignItems="center" gap={1}>
             <AnalyticsIcon color="primary" />
             Payment Analytics
           </Typography>
-          
+
           <Box display="flex" gap={2}>
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Period</InputLabel>
@@ -541,21 +586,17 @@ const PaymentAnalyticsDashboard = ({
                 <MenuItem value="1y">Last Year</MenuItem>
               </Select>
             </FormControl>
-            
-            <Button
-              variant="outlined"
-              startIcon={<FilterIcon />}
-              size="small"
-            >
+
+            <Button variant="outlined" startIcon={<FilterIcon />} size="small">
               Filters
             </Button>
           </Box>
         </Box>
       )}
-      
+
       {/* Summary Cards */}
       {renderSummaryCards()}
-      
+
       {/* Charts Grid */}
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={8}>
@@ -565,7 +606,7 @@ const PaymentAnalyticsDashboard = ({
           {renderPaymentMethodsChart()}
         </Grid>
       </Grid>
-      
+
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={6}>
           {renderTransactionTrends()}
@@ -574,7 +615,7 @@ const PaymentAnalyticsDashboard = ({
           {renderInsights()}
         </Grid>
       </Grid>
-      
+
       {/* Recent Transactions */}
       {renderRecentTransactions()}
     </Box>

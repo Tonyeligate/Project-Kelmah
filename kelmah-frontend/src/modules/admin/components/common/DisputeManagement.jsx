@@ -92,11 +92,7 @@ function TabPanel(props) {
       aria-labelledby={`dispute-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -130,8 +126,8 @@ const DisputeManagement = () => {
       quality: 0,
       communication: 0,
       scope: 0,
-      other: 0
-    }
+      other: 0,
+    },
   });
 
   const disputeStatuses = [
@@ -140,7 +136,7 @@ const DisputeManagement = () => {
     { value: 'mediation', label: 'In Mediation', color: 'primary' },
     { value: 'resolved', label: 'Resolved', color: 'success' },
     { value: 'escalated', label: 'Escalated', color: 'error' },
-    { value: 'closed', label: 'Closed', color: 'default' }
+    { value: 'closed', label: 'Closed', color: 'default' },
   ];
 
   const disputeCategories = [
@@ -148,14 +144,14 @@ const DisputeManagement = () => {
     { value: 'quality', label: 'Work Quality', icon: <WorkIcon /> },
     { value: 'communication', label: 'Communication', icon: <MessageIcon /> },
     { value: 'scope', label: 'Scope Disagreement', icon: <CaseIcon /> },
-    { value: 'other', label: 'Other', icon: <WarningIcon /> }
+    { value: 'other', label: 'Other', icon: <WarningIcon /> },
   ];
 
   const priorityLevels = [
     { value: 'low', label: 'Low', color: 'info' },
     { value: 'medium', label: 'Medium', color: 'warning' },
     { value: 'high', label: 'High', color: 'error' },
-    { value: 'critical', label: 'Critical', color: 'error' }
+    { value: 'critical', label: 'Critical', color: 'error' },
   ];
 
   useEffect(() => {
@@ -166,7 +162,7 @@ const DisputeManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Mock dispute data for demonstration
       const mockDisputes = [
         {
@@ -179,34 +175,65 @@ const DisputeManagement = () => {
           hirer: {
             id: 'H001',
             name: 'John Doe',
-            email: 'john@example.com'
+            email: 'john@example.com',
           },
           worker: {
             id: 'W001',
             name: 'Alice Johnson',
-            email: 'alice@example.com'
+            email: 'alice@example.com',
           },
           job: {
             id: 'J001',
             title: 'E-commerce Website Development',
-            amount: 1500.00
+            amount: 1500.0,
           },
-          description: 'Hirer claims work was not completed according to specifications and refuses to release escrow funds.',
+          description:
+            'Hirer claims work was not completed according to specifications and refuses to release escrow funds.',
           evidence: [
-            { type: 'file', name: 'project_requirements.pdf', uploadedBy: 'hirer' },
+            {
+              type: 'file',
+              name: 'project_requirements.pdf',
+              uploadedBy: 'hirer',
+            },
             { type: 'file', name: 'completed_work.zip', uploadedBy: 'worker' },
-            { type: 'message', content: 'Screenshots of delivered work', uploadedBy: 'worker' }
+            {
+              type: 'message',
+              content: 'Screenshots of delivered work',
+              uploadedBy: 'worker',
+            },
           ],
           timeline: [
-            { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), action: 'Dispute opened by hirer', actor: 'John Doe' },
-            { date: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000), action: 'Initial evidence submitted', actor: 'Alice Johnson' },
-            { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), action: 'Case assigned to admin', actor: 'Admin' },
-            { date: new Date(Date.now() - 0.5 * 24 * 60 * 60 * 1000), action: 'Investigation started', actor: 'Admin' }
+            {
+              date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              action: 'Dispute opened by hirer',
+              actor: 'John Doe',
+            },
+            {
+              date: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000),
+              action: 'Initial evidence submitted',
+              actor: 'Alice Johnson',
+            },
+            {
+              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+              action: 'Case assigned to admin',
+              actor: 'Admin',
+            },
+            {
+              date: new Date(Date.now() - 0.5 * 24 * 60 * 60 * 1000),
+              action: 'Investigation started',
+              actor: 'Admin',
+            },
           ],
-          escrowAmount: 1500.00,
-          adminNotes: 'Reviewing submitted evidence. Both parties have valid points.',
-          resolutionSteps: ['Review Evidence', 'Contact Parties', 'Mediation', 'Resolution'],
-          currentStep: 1
+          escrowAmount: 1500.0,
+          adminNotes:
+            'Reviewing submitted evidence. Both parties have valid points.',
+          resolutionSteps: [
+            'Review Evidence',
+            'Contact Parties',
+            'Mediation',
+            'Resolution',
+          ],
+          currentStep: 1,
         },
         {
           id: 'DSP002',
@@ -218,34 +245,61 @@ const DisputeManagement = () => {
           hirer: {
             id: 'H002',
             name: 'Jane Smith',
-            email: 'jane@example.com'
+            email: 'jane@example.com',
           },
           worker: {
             id: 'W002',
             name: 'Bob Wilson',
-            email: 'bob@example.com'
+            email: 'bob@example.com',
           },
           job: {
             id: 'J002',
             title: 'Company Logo Design',
-            amount: 300.00
+            amount: 300.0,
           },
-          description: 'Hirer is unsatisfied with logo design quality and wants revisions beyond agreed scope.',
+          description:
+            'Hirer is unsatisfied with logo design quality and wants revisions beyond agreed scope.',
           evidence: [
             { type: 'image', name: 'original_brief.png', uploadedBy: 'hirer' },
             { type: 'image', name: 'delivered_logo.png', uploadedBy: 'worker' },
-            { type: 'message', content: 'Communication thread', uploadedBy: 'system' }
+            {
+              type: 'message',
+              content: 'Communication thread',
+              uploadedBy: 'system',
+            },
           ],
           timeline: [
-            { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), action: 'Dispute opened by hirer', actor: 'Jane Smith' },
-            { date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), action: 'Worker response submitted', actor: 'Bob Wilson' },
-            { date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), action: 'Mediation initiated', actor: 'Admin' },
-            { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), action: 'Compromise proposal sent', actor: 'Admin' }
+            {
+              date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+              action: 'Dispute opened by hirer',
+              actor: 'Jane Smith',
+            },
+            {
+              date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+              action: 'Worker response submitted',
+              actor: 'Bob Wilson',
+            },
+            {
+              date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+              action: 'Mediation initiated',
+              actor: 'Admin',
+            },
+            {
+              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+              action: 'Compromise proposal sent',
+              actor: 'Admin',
+            },
           ],
-          escrowAmount: 300.00,
-          adminNotes: 'Proposed 50% payment + one additional revision. Awaiting responses.',
-          resolutionSteps: ['Review Evidence', 'Contact Parties', 'Mediation', 'Resolution'],
-          currentStep: 2
+          escrowAmount: 300.0,
+          adminNotes:
+            'Proposed 50% payment + one additional revision. Awaiting responses.',
+          resolutionSteps: [
+            'Review Evidence',
+            'Contact Parties',
+            'Mediation',
+            'Resolution',
+          ],
+          currentStep: 2,
         },
         {
           id: 'DSP003',
@@ -258,73 +312,92 @@ const DisputeManagement = () => {
           hirer: {
             id: 'H003',
             name: 'Mike Davis',
-            email: 'mike@example.com'
+            email: 'mike@example.com',
           },
           worker: {
             id: 'W003',
             name: 'Carol Brown',
-            email: 'carol@example.com'
+            email: 'carol@example.com',
           },
           job: {
             id: 'J003',
             title: 'Mobile App Development',
-            amount: 2500.00
+            amount: 2500.0,
           },
-          description: 'Worker became unresponsive during project. Communication breakdown.',
-          resolution: 'Worker provided valid explanation (medical emergency). Project timeline extended.',
+          description:
+            'Worker became unresponsive during project. Communication breakdown.',
+          resolution:
+            'Worker provided valid explanation (medical emergency). Project timeline extended.',
           resolutionType: 'mediated_agreement',
-          escrowAmount: 2500.00,
-          adminNotes: 'Resolved amicably. Both parties satisfied with extended timeline.',
-          resolutionSteps: ['Review Evidence', 'Contact Parties', 'Mediation', 'Resolution'],
-          currentStep: 3
-        }
+          escrowAmount: 2500.0,
+          adminNotes:
+            'Resolved amicably. Both parties satisfied with extended timeline.',
+          resolutionSteps: [
+            'Review Evidence',
+            'Contact Parties',
+            'Mediation',
+            'Resolution',
+          ],
+          currentStep: 3,
+        },
       ];
 
       // Filter based on active tab and filters
       let filteredDisputes = mockDisputes;
-      
-      if (activeTab === 0) { // All
+
+      if (activeTab === 0) {
+        // All
         filteredDisputes = mockDisputes;
-      } else if (activeTab === 1) { // Open
-        filteredDisputes = mockDisputes.filter(d => ['open', 'investigating', 'mediation'].includes(d.status));
-      } else if (activeTab === 2) { // Resolved
-        filteredDisputes = mockDisputes.filter(d => d.status === 'resolved');
+      } else if (activeTab === 1) {
+        // Open
+        filteredDisputes = mockDisputes.filter((d) =>
+          ['open', 'investigating', 'mediation'].includes(d.status),
+        );
+      } else if (activeTab === 2) {
+        // Resolved
+        filteredDisputes = mockDisputes.filter((d) => d.status === 'resolved');
       }
 
       if (searchTerm) {
         filteredDisputes = filteredDisputes.filter(
-          dispute => 
+          (dispute) =>
             dispute.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             dispute.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dispute.hirer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            dispute.worker.name.toLowerCase().includes(searchTerm.toLowerCase())
+            dispute.hirer.name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            dispute.worker.name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()),
         );
       }
 
       if (filterStatus !== 'all') {
         filteredDisputes = filteredDisputes.filter(
-          dispute => dispute.status === filterStatus
+          (dispute) => dispute.status === filterStatus,
         );
       }
 
       if (filterPriority !== 'all') {
         filteredDisputes = filteredDisputes.filter(
-          dispute => dispute.priority === filterPriority
+          (dispute) => dispute.priority === filterPriority,
         );
       }
 
       if (filterCategory !== 'all') {
         filteredDisputes = filteredDisputes.filter(
-          dispute => dispute.category === filterCategory
+          (dispute) => dispute.category === filterCategory,
         );
       }
 
       setDisputes(filteredDisputes);
 
       // Calculate analytics
-      const open = mockDisputes.filter(d => ['open', 'investigating', 'mediation'].includes(d.status));
-      const resolved = mockDisputes.filter(d => d.status === 'resolved');
-      const escalated = mockDisputes.filter(d => d.status === 'escalated');
+      const open = mockDisputes.filter((d) =>
+        ['open', 'investigating', 'mediation'].includes(d.status),
+      );
+      const resolved = mockDisputes.filter((d) => d.status === 'resolved');
+      const escalated = mockDisputes.filter((d) => d.status === 'escalated');
 
       setAnalytics({
         totalDisputes: mockDisputes.length,
@@ -332,16 +405,17 @@ const DisputeManagement = () => {
         resolvedDisputes: resolved.length,
         escalatedDisputes: escalated.length,
         avgResolutionTime: 4.2, // Mock average days
-        resolutionRate: (resolved.length / mockDisputes.length * 100),
+        resolutionRate: (resolved.length / mockDisputes.length) * 100,
         categories: {
-          payment: mockDisputes.filter(d => d.category === 'payment').length,
-          quality: mockDisputes.filter(d => d.category === 'quality').length,
-          communication: mockDisputes.filter(d => d.category === 'communication').length,
-          scope: mockDisputes.filter(d => d.category === 'scope').length,
-          other: mockDisputes.filter(d => d.category === 'other').length
-        }
+          payment: mockDisputes.filter((d) => d.category === 'payment').length,
+          quality: mockDisputes.filter((d) => d.category === 'quality').length,
+          communication: mockDisputes.filter(
+            (d) => d.category === 'communication',
+          ).length,
+          scope: mockDisputes.filter((d) => d.category === 'scope').length,
+          other: mockDisputes.filter((d) => d.category === 'other').length,
+        },
       });
-
     } catch (err) {
       console.error('Error fetching disputes:', err);
       setError('Failed to fetch dispute data');
@@ -359,9 +433,13 @@ const DisputeManagement = () => {
 
   const handleUpdateStatus = async (disputeId, newStatus) => {
     try {
-      setDisputes(prev => prev.map(dispute => 
-        dispute.id === disputeId ? { ...dispute, status: newStatus } : dispute
-      ));
+      setDisputes((prev) =>
+        prev.map((dispute) =>
+          dispute.id === disputeId
+            ? { ...dispute, status: newStatus }
+            : dispute,
+        ),
+      );
     } catch (err) {
       setError('Failed to update dispute status');
     }
@@ -369,7 +447,7 @@ const DisputeManagement = () => {
 
   const handleAddNote = async (note) => {
     if (!selectedDispute || !note.trim()) return;
-    
+
     try {
       const updatedDispute = {
         ...selectedDispute,
@@ -380,39 +458,41 @@ const DisputeManagement = () => {
             date: new Date(),
             action: 'Admin note added',
             actor: 'Admin',
-            note: note
-          }
-        ]
+            note: note,
+          },
+        ],
       };
-      
+
       setSelectedDispute(updatedDispute);
-      setDisputes(prev => prev.map(dispute => 
-        dispute.id === selectedDispute.id ? updatedDispute : dispute
-      ));
+      setDisputes((prev) =>
+        prev.map((dispute) =>
+          dispute.id === selectedDispute.id ? updatedDispute : dispute,
+        ),
+      );
     } catch (err) {
       setError('Failed to add admin note');
     }
   };
 
   const getStatusColor = (status) => {
-    const statusObj = disputeStatuses.find(s => s.value === status);
+    const statusObj = disputeStatuses.find((s) => s.value === status);
     return statusObj ? statusObj.color : 'default';
   };
 
   const getPriorityColor = (priority) => {
-    const priorityObj = priorityLevels.find(p => p.value === priority);
+    const priorityObj = priorityLevels.find((p) => p.value === priority);
     return priorityObj ? priorityObj.color : 'default';
   };
 
   const getCategoryIcon = (category) => {
-    const categoryObj = disputeCategories.find(c => c.value === category);
+    const categoryObj = disputeCategories.find((c) => c.value === category);
     return categoryObj ? categoryObj.icon : <CaseIcon />;
   };
 
   const formatCurrency = (amount, currency = 'GHS') => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: currency
+      currency: currency,
     }).format(amount);
   };
 
@@ -422,7 +502,9 @@ const DisputeManagement = () => {
   };
 
   const calculateDaysOpen = (createdAt) => {
-    const days = Math.floor((new Date() - new Date(createdAt)) / (1000 * 60 * 60 * 24));
+    const days = Math.floor(
+      (new Date() - new Date(createdAt)) / (1000 * 60 * 60 * 24),
+    );
     return days;
   };
 
@@ -439,15 +521,19 @@ const DisputeManagement = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Typography variant="h4" gutterBottom>
           Dispute Management
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ExportIcon />}
-          >
+          <Button variant="outlined" startIcon={<ExportIcon />}>
             Export
           </Button>
           <Button
@@ -460,7 +546,7 @@ const DisputeManagement = () => {
           </Button>
         </Box>
       </Box>
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
@@ -472,9 +558,19 @@ const DisputeManagement = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Total Disputes
                   </Typography>
                   <Typography variant="h4">
@@ -495,9 +591,19 @@ const DisputeManagement = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Open Cases
                   </Typography>
                   <Typography variant="h4" color="warning.main">
@@ -518,9 +624,19 @@ const DisputeManagement = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Resolution Rate
                   </Typography>
                   <Typography variant="h4" color="success.main">
@@ -541,9 +657,19 @@ const DisputeManagement = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Avg Resolution
                   </Typography>
                   <Typography variant="h4">
@@ -570,7 +696,14 @@ const DisputeManagement = () => {
             {disputeCategories.map((category) => (
               <Grid item xs={12} sm={6} md={2.4} key={category.value}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 1,
+                    }}
+                  >
                     {category.icon}
                     <Typography variant="h5" sx={{ ml: 1 }}>
                       {analytics.categories[category.value]}
@@ -595,14 +728,14 @@ const DisputeManagement = () => {
           textColor="primary"
         >
           <Tab label="All Disputes" />
-          <Tab 
+          <Tab
             label={
               <Badge badgeContent={analytics.openDisputes} color="warning">
                 Open Cases
               </Badge>
             }
           />
-          <Tab 
+          <Tab
             label={
               <Badge badgeContent={analytics.resolvedDisputes} color="success">
                 Resolved
@@ -753,14 +886,31 @@ const DisputeManagement = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           {getCategoryIcon(dispute.category)}
                           <Typography variant="body2" sx={{ ml: 1 }}>
-                            {disputeCategories.find(c => c.value === dispute.category)?.label}
+                            {
+                              disputeCategories.find(
+                                (c) => c.value === dispute.category,
+                              )?.label
+                            }
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
-    <Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                            <Avatar sx={{ width: 20, height: 20, mr: 1, bgcolor: 'primary.main' }}>
+                        <Box>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              mb: 0.5,
+                            }}
+                          >
+                            <Avatar
+                              sx={{
+                                width: 20,
+                                height: 20,
+                                mr: 1,
+                                bgcolor: 'primary.main',
+                              }}
+                            >
                               {dispute.hirer.name[0]}
                             </Avatar>
                             <Typography variant="caption">
@@ -768,7 +918,14 @@ const DisputeManagement = () => {
                             </Typography>
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Avatar sx={{ width: 20, height: 20, mr: 1, bgcolor: 'success.main' }}>
+                            <Avatar
+                              sx={{
+                                width: 20,
+                                height: 20,
+                                mr: 1,
+                                bgcolor: 'success.main',
+                              }}
+                            >
                               {dispute.worker.name[0]}
                             </Avatar>
                             <Typography variant="caption">
@@ -782,21 +939,29 @@ const DisputeManagement = () => {
                           {formatCurrency(dispute.job.amount)}
                         </Typography>
                         {dispute.escrowAmount && (
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                          >
                             Escrow: {formatCurrency(dispute.escrowAmount)}
                           </Typography>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={dispute.priority.toUpperCase()} 
+                        <Chip
+                          label={dispute.priority.toUpperCase()}
                           color={getPriorityColor(dispute.priority)}
                           size="small"
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={disputeStatuses.find(s => s.value === dispute.status)?.label} 
+                        <Chip
+                          label={
+                            disputeStatuses.find(
+                              (s) => s.value === dispute.status,
+                            )?.label
+                          }
                           color={getStatusColor(dispute.status)}
                           size="small"
                         />
@@ -807,15 +972,13 @@ const DisputeManagement = () => {
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton
-                          onClick={() => handleViewDispute(dispute)}
-                        >
+                        <IconButton onClick={() => handleViewDispute(dispute)}>
                           <ViewIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
-                  
+
                   {disputes.length === 0 && !loading && (
                     <TableRow>
                       <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
@@ -833,9 +996,20 @@ const DisputeManagement = () => {
       </Card>
 
       {/* Dispute Details Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="lg" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="lg"
+        fullWidth
+      >
         <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Typography variant="h6">
               Dispute Case: {selectedDispute?.id}
             </Typography>
@@ -850,11 +1024,15 @@ const DisputeManagement = () => {
               {/* Case Overview */}
               <Grid item xs={12}>
                 <Card>
-                  <CardHeader 
+                  <CardHeader
                     title="Case Overview"
                     action={
-                      <Chip 
-                        label={disputeStatuses.find(s => s.value === selectedDispute.status)?.label} 
+                      <Chip
+                        label={
+                          disputeStatuses.find(
+                            (s) => s.value === selectedDispute.status,
+                          )?.label
+                        }
                         color={getStatusColor(selectedDispute.status)}
                       />
                     }
@@ -868,11 +1046,18 @@ const DisputeManagement = () => {
                         <Typography variant="body1" gutterBottom>
                           {selectedDispute.title}
                         </Typography>
-                        
-                        <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom
+                          sx={{ mt: 2 }}
+                        >
                           Description:
                         </Typography>
-                        <Typography variant="body2" sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}
+                        >
                           {selectedDispute.description}
                         </Typography>
                       </Grid>
@@ -886,13 +1071,13 @@ const DisputeManagement = () => {
                         <Typography variant="h6" color="primary.main">
                           {formatCurrency(selectedDispute.job.amount)}
                         </Typography>
-                        
+
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="subtitle2" gutterBottom>
                             Priority:
                           </Typography>
-                          <Chip 
-                            label={selectedDispute.priority.toUpperCase()} 
+                          <Chip
+                            label={selectedDispute.priority.toUpperCase()}
                             color={getPriorityColor(selectedDispute.priority)}
                             size="small"
                           />
@@ -914,8 +1099,11 @@ const DisputeManagement = () => {
                           <StepLabel>{step}</StepLabel>
                           <StepContent>
                             <Typography variant="body2" color="text.secondary">
-                              {index === activeStep ? 'Currently in progress' : 
-                               index < activeStep ? 'Completed' : 'Pending'}
+                              {index === activeStep
+                                ? 'Currently in progress'
+                                : index < activeStep
+                                  ? 'Completed'
+                                  : 'Pending'}
                             </Typography>
                           </StepContent>
                         </Step>
@@ -965,7 +1153,9 @@ const DisputeManagement = () => {
                           </TimelineOppositeContent>
                           <TimelineSeparator>
                             <TimelineDot color="primary" />
-                            {index < selectedDispute.timeline.length - 1 && <TimelineConnector />}
+                            {index < selectedDispute.timeline.length - 1 && (
+                              <TimelineConnector />
+                            )}
                           </TimelineSeparator>
                           <TimelineContent>
                             <Typography variant="subtitle2">
@@ -975,7 +1165,10 @@ const DisputeManagement = () => {
                               by {event.actor}
                             </Typography>
                             {event.note && (
-                              <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ mt: 1, fontStyle: 'italic' }}
+                              >
                                 Note: {event.note}
                               </Typography>
                             )}
@@ -1015,13 +1208,11 @@ const DisputeManagement = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>
-            Close
-          </Button>
+          <Button onClick={() => setOpenDialog(false)}>Close</Button>
           {selectedDispute && selectedDispute.status !== 'resolved' && (
             <>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 color="success"
                 onClick={() => {
                   handleUpdateStatus(selectedDispute.id, 'resolved');
@@ -1030,8 +1221,8 @@ const DisputeManagement = () => {
               >
                 Mark Resolved
               </Button>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 color="warning"
                 onClick={() => {
                   handleUpdateStatus(selectedDispute.id, 'escalated');

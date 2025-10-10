@@ -37,9 +37,13 @@ class ProfileService {
     try {
       const formData = new FormData();
       formData.append('profilePicture', file);
-      const response = await userServiceClient.post('/profile/picture', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await userServiceClient.post(
+        '/profile/picture',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        },
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error uploading profile picture:', error);
@@ -50,7 +54,9 @@ class ProfileService {
   // Update user skills
   async updateSkills(skills) {
     try {
-      const response = await userServiceClient.put('/profile/skills', { skills });
+      const response = await userServiceClient.put('/profile/skills', {
+        skills,
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error updating skills:', error);
@@ -61,7 +67,9 @@ class ProfileService {
   // Update user education
   async updateEducation(education) {
     try {
-      const response = await userServiceClient.put('/profile/education', { education });
+      const response = await userServiceClient.put('/profile/education', {
+        education,
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error updating education:', error);
@@ -99,7 +107,10 @@ class ProfileService {
   async getStatistics() {
     try {
       const response = await userServiceClient.get('/profile/statistics');
-      return response.data?.data || response.data || { jobsCompleted: 0, successRate: 0 };
+      return (
+        response.data?.data ||
+        response.data || { jobsCompleted: 0, successRate: 0 }
+      );
     } catch (error) {
       console.warn('Statistics service unavailable:', { error: error.message });
       return { jobsCompleted: 0, successRate: 0 };

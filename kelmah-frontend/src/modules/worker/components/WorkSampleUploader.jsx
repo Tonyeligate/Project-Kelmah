@@ -21,19 +21,30 @@ const WorkSampleUploader = ({ onUpload }) => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>Work Sample Uploader</Typography>
+      <Typography variant="h5" gutterBottom>
+        Work Sample Uploader
+      </Typography>
       <Paper sx={{ p: 2 }}>
-        <input type="file" multiple accept="image/*,video/*" hidden ref={fileInputRef} onChange={handleChange} />
-        <Button variant="contained" onClick={handleSelect}>Upload Samples</Button>
+        <input
+          type="file"
+          multiple
+          accept="image/*,video/*"
+          hidden
+          ref={fileInputRef}
+          onChange={handleChange}
+        />
+        <Button variant="contained" onClick={handleSelect}>
+          Upload Samples
+        </Button>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Supported: images and short videos. Max 20MB per file.
         </Typography>
-        <Alert severity="info" sx={{ mt: 1 }}>Uploads require authentication. Ensure you are logged in.</Alert>
+        <Alert severity="info" sx={{ mt: 1 }}>
+          Uploads require authentication. Ensure you are logged in.
+        </Alert>
       </Paper>
     </Box>
   );
 };
 
 export default WorkSampleUploader;
-
-

@@ -35,7 +35,7 @@ const WorkerDashboardPage = () => {
     return '';
   };
 
-  // 🚨 CRITICAL FIX: Never bypass Layout component! 
+  // 🚨 CRITICAL FIX: Never bypass Layout component!
   // Layout component provides AutoShowHeader for logout access
   // Removed mobile bypass - all users need header access for logout
 
@@ -95,7 +95,7 @@ const WorkerDashboardPage = () => {
           </Typography>
         </Box>
       </Box>
-                  <EnhancedWorkerDashboard user={displayUser} />
+      <EnhancedWorkerDashboard user={displayUser} />
     </>
   );
 };

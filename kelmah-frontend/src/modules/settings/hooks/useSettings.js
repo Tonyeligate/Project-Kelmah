@@ -39,7 +39,8 @@ export const useSettings = () => {
     async (newSettings) => {
       try {
         dispatch(setLoading(true));
-        const updatedSettings = await settingsService.updateSettings(newSettings);
+        const updatedSettings =
+          await settingsService.updateSettings(newSettings);
         dispatch(setSettings(updatedSettings));
         return updatedSettings;
       } catch (error) {

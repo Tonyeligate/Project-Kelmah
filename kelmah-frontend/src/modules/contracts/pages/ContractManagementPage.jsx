@@ -109,7 +109,9 @@ const ContractManagementPage = () => {
             },
           }}
         >
-          <Tab label={`All (${Array.isArray(contracts) ? contracts.length : 0})`} />
+          <Tab
+            label={`All (${Array.isArray(contracts) ? contracts.length : 0})`}
+          />
           <Tab
             label={`Active (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'active').length : 0})`}
           />

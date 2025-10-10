@@ -71,11 +71,7 @@ function TabPanel(props) {
       aria-labelledby={`settings-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -91,7 +87,7 @@ const SystemSettings = () => {
   // General Settings State
   const [generalSettings, setGeneralSettings] = useState({
     platformName: 'Kelmah',
-    platformDescription: 'Ghana\'s Premier Freelancing Platform',
+    platformDescription: "Ghana's Premier Freelancing Platform",
     maintenanceMode: false,
     registrationEnabled: true,
     emailVerificationRequired: true,
@@ -116,12 +112,12 @@ const SystemSettings = () => {
       mobileMoney: true,
       bankTransfer: true,
       creditCard: true,
-      cash: false
+      cash: false,
     },
     mobileMoneyProviders: {
       mtn: true,
       vodafone: true,
-      airtelTigo: true
+      airtelTigo: true,
     },
     stripeEnabled: true,
     paystackEnabled: true,
@@ -137,8 +133,8 @@ const SystemSettings = () => {
       jobPosted: true,
       applicationReceived: true,
       paymentReceived: true,
-      disputeOpened: true
-    }
+      disputeOpened: true,
+    },
   });
 
   // Security Settings State
@@ -161,20 +157,20 @@ const SystemSettings = () => {
     backupLocation: 'cloud',
     lastBackupDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
     backupSize: '2.4 GB',
-    nextBackupDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    nextBackupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
 
   const handleGeneralSettingChange = (field, value) => {
-    setGeneralSettings(prev => ({
+    setGeneralSettings((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handlePaymentSettingChange = (field, value) => {
-    setPaymentSettings(prev => ({
+    setPaymentSettings((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -182,10 +178,10 @@ const SystemSettings = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Mock API call - in real app, this would save to backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setSuccess(`${category} settings saved successfully!`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -198,16 +194,16 @@ const SystemSettings = () => {
   const handleBackupNow = async () => {
     try {
       setLoading(true);
-      
+
       // Mock backup process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setBackupSettings(prev => ({
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setBackupSettings((prev) => ({
         ...prev,
         lastBackupDate: new Date(),
-        nextBackupDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        nextBackupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
       }));
-      
+
       setSuccess('Backup completed successfully!');
       setOpenBackupDialog(false);
     } catch (err) {
@@ -218,7 +214,11 @@ const SystemSettings = () => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString() + ' ' + new Date(date).toLocaleTimeString();
+    return (
+      new Date(date).toLocaleDateString() +
+      ' ' +
+      new Date(date).toLocaleTimeString()
+    );
   };
 
   if (!user || user.role !== 'admin') {
@@ -234,28 +234,36 @@ const SystemSettings = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Typography variant="h4" gutterBottom>
           System Settings
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-          >
+          <Button variant="outlined" startIcon={<RefreshIcon />}>
             Reset
           </Button>
         </Box>
       </Box>
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
-      
+
       {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+        <Alert
+          severity="success"
+          sx={{ mb: 2 }}
+          onClose={() => setSuccess(null)}
+        >
           {success}
         </Alert>
       )}
@@ -291,7 +299,12 @@ const SystemSettings = () => {
                       fullWidth
                       label="Platform Name"
                       value={generalSettings.platformName}
-                      onChange={(e) => handleGeneralSettingChange('platformName', e.target.value)}
+                      onChange={(e) =>
+                        handleGeneralSettingChange(
+                          'platformName',
+                          e.target.value,
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -300,7 +313,9 @@ const SystemSettings = () => {
                       <Select
                         value={generalSettings.currency}
                         label="Currency"
-                        onChange={(e) => handleGeneralSettingChange('currency', e.target.value)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange('currency', e.target.value)
+                        }
                       >
                         <MenuItem value="GHS">Ghana Cedi (GHS)</MenuItem>
                         <MenuItem value="USD">US Dollar (USD)</MenuItem>
@@ -315,7 +330,12 @@ const SystemSettings = () => {
                       rows={3}
                       label="Platform Description"
                       value={generalSettings.platformDescription}
-                      onChange={(e) => handleGeneralSettingChange('platformDescription', e.target.value)}
+                      onChange={(e) =>
+                        handleGeneralSettingChange(
+                          'platformDescription',
+                          e.target.value,
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -324,7 +344,12 @@ const SystemSettings = () => {
                       label="Support Email"
                       type="email"
                       value={generalSettings.supportEmail}
-                      onChange={(e) => handleGeneralSettingChange('supportEmail', e.target.value)}
+                      onChange={(e) =>
+                        handleGeneralSettingChange(
+                          'supportEmail',
+                          e.target.value,
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -332,7 +357,12 @@ const SystemSettings = () => {
                       fullWidth
                       label="Support Phone"
                       value={generalSettings.supportPhone}
-                      onChange={(e) => handleGeneralSettingChange('supportPhone', e.target.value)}
+                      onChange={(e) =>
+                        handleGeneralSettingChange(
+                          'supportPhone',
+                          e.target.value,
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -341,11 +371,17 @@ const SystemSettings = () => {
                       <Select
                         value={generalSettings.timezone}
                         label="Timezone"
-                        onChange={(e) => handleGeneralSettingChange('timezone', e.target.value)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange('timezone', e.target.value)
+                        }
                       >
-                        <MenuItem value="Africa/Accra">Africa/Accra (GMT)</MenuItem>
+                        <MenuItem value="Africa/Accra">
+                          Africa/Accra (GMT)
+                        </MenuItem>
                         <MenuItem value="UTC">UTC</MenuItem>
-                        <MenuItem value="America/New_York">America/New_York</MenuItem>
+                        <MenuItem value="America/New_York">
+                          America/New_York
+                        </MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -355,7 +391,12 @@ const SystemSettings = () => {
                       label="Max File Upload Size (MB)"
                       type="number"
                       value={generalSettings.maxFileUploadSize}
-                      onChange={(e) => handleGeneralSettingChange('maxFileUploadSize', parseInt(e.target.value))}
+                      onChange={(e) =>
+                        handleGeneralSettingChange(
+                          'maxFileUploadSize',
+                          parseInt(e.target.value),
+                        )
+                      }
                     />
                   </Grid>
                 </Grid>
@@ -369,66 +410,122 @@ const SystemSettings = () => {
               <CardContent>
                 <List>
                   <ListItem>
-                    <ListItemText primary="Maintenance Mode" secondary="Temporarily disable platform" />
+                    <ListItemText
+                      primary="Maintenance Mode"
+                      secondary="Temporarily disable platform"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.maintenanceMode}
-                        onChange={(e) => handleGeneralSettingChange('maintenanceMode', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'maintenanceMode',
+                            e.target.checked,
+                          )
+                        }
                         color="warning"
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="User Registration" secondary="Allow new user signups" />
+                    <ListItemText
+                      primary="User Registration"
+                      secondary="Allow new user signups"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.registrationEnabled}
-                        onChange={(e) => handleGeneralSettingChange('registrationEnabled', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'registrationEnabled',
+                            e.target.checked,
+                          )
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Email Verification" secondary="Require email verification" />
+                    <ListItemText
+                      primary="Email Verification"
+                      secondary="Require email verification"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.emailVerificationRequired}
-                        onChange={(e) => handleGeneralSettingChange('emailVerificationRequired', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'emailVerificationRequired',
+                            e.target.checked,
+                          )
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Job Approval" secondary="Require admin approval for jobs" />
+                    <ListItemText
+                      primary="Job Approval"
+                      secondary="Require admin approval for jobs"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.jobPostingRequiresApproval}
-                        onChange={(e) => handleGeneralSettingChange('jobPostingRequiresApproval', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'jobPostingRequiresApproval',
+                            e.target.checked,
+                          )
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Reviews System" secondary="Enable user reviews" />
+                    <ListItemText
+                      primary="Reviews System"
+                      secondary="Enable user reviews"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.enableReviews}
-                        onChange={(e) => handleGeneralSettingChange('enableReviews', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'enableReviews',
+                            e.target.checked,
+                          )
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Messaging" secondary="Enable user messaging" />
+                    <ListItemText
+                      primary="Messaging"
+                      secondary="Enable user messaging"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.enableMessaging}
-                        onChange={(e) => handleGeneralSettingChange('enableMessaging', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'enableMessaging',
+                            e.target.checked,
+                          )
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Escrow System" secondary="Enable payment escrow" />
+                    <ListItemText
+                      primary="Escrow System"
+                      secondary="Enable payment escrow"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={generalSettings.enableEscrow}
-                        onChange={(e) => handleGeneralSettingChange('enableEscrow', e.target.checked)}
+                        onChange={(e) =>
+                          handleGeneralSettingChange(
+                            'enableEscrow',
+                            e.target.checked,
+                          )
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
@@ -461,10 +558,17 @@ const SystemSettings = () => {
               <CardContent>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    <Typography gutterBottom>Platform Fee Percentage</Typography>
+                    <Typography gutterBottom>
+                      Platform Fee Percentage
+                    </Typography>
                     <Slider
                       value={paymentSettings.platformFeePercentage}
-                      onChange={(e, newValue) => handlePaymentSettingChange('platformFeePercentage', newValue)}
+                      onChange={(e, newValue) =>
+                        handlePaymentSettingChange(
+                          'platformFeePercentage',
+                          newValue,
+                        )
+                      }
                       valueLabelDisplay="auto"
                       step={0.5}
                       marks
@@ -479,7 +583,12 @@ const SystemSettings = () => {
                       label="Minimum Withdrawal (GHS)"
                       type="number"
                       value={paymentSettings.minimumWithdrawal}
-                      onChange={(e) => handlePaymentSettingChange('minimumWithdrawal', parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handlePaymentSettingChange(
+                          'minimumWithdrawal',
+                          parseFloat(e.target.value),
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -488,7 +597,12 @@ const SystemSettings = () => {
                       label="Withdrawal Fee (GHS)"
                       type="number"
                       value={paymentSettings.withdrawalFee}
-                      onChange={(e) => handlePaymentSettingChange('withdrawalFee', parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handlePaymentSettingChange(
+                          'withdrawalFee',
+                          parseFloat(e.target.value),
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -497,7 +611,12 @@ const SystemSettings = () => {
                       label="Escrow Release Delay (days)"
                       type="number"
                       value={paymentSettings.escrowReleaseDelay}
-                      onChange={(e) => handlePaymentSettingChange('escrowReleaseDelay', parseInt(e.target.value))}
+                      onChange={(e) =>
+                        handlePaymentSettingChange(
+                          'escrowReleaseDelay',
+                          parseInt(e.target.value),
+                        )
+                      }
                       helperText="Number of days to hold funds in escrow after job completion"
                     />
                   </Grid>
@@ -515,10 +634,12 @@ const SystemSettings = () => {
                     control={
                       <Checkbox
                         checked={paymentSettings.paymentMethods.mobileMoney}
-                        onChange={(e) => handlePaymentSettingChange('paymentMethods', {
-                          ...paymentSettings.paymentMethods,
-                          mobileMoney: e.target.checked
-                        })}
+                        onChange={(e) =>
+                          handlePaymentSettingChange('paymentMethods', {
+                            ...paymentSettings.paymentMethods,
+                            mobileMoney: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="Mobile Money"
@@ -527,10 +648,12 @@ const SystemSettings = () => {
                     control={
                       <Checkbox
                         checked={paymentSettings.paymentMethods.bankTransfer}
-                        onChange={(e) => handlePaymentSettingChange('paymentMethods', {
-                          ...paymentSettings.paymentMethods,
-                          bankTransfer: e.target.checked
-                        })}
+                        onChange={(e) =>
+                          handlePaymentSettingChange('paymentMethods', {
+                            ...paymentSettings.paymentMethods,
+                            bankTransfer: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="Bank Transfer"
@@ -539,10 +662,12 @@ const SystemSettings = () => {
                     control={
                       <Checkbox
                         checked={paymentSettings.paymentMethods.creditCard}
-                        onChange={(e) => handlePaymentSettingChange('paymentMethods', {
-                          ...paymentSettings.paymentMethods,
-                          creditCard: e.target.checked
-                        })}
+                        onChange={(e) =>
+                          handlePaymentSettingChange('paymentMethods', {
+                            ...paymentSettings.paymentMethods,
+                            creditCard: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="Credit Card"
@@ -551,10 +676,12 @@ const SystemSettings = () => {
                     control={
                       <Checkbox
                         checked={paymentSettings.paymentMethods.cash}
-                        onChange={(e) => handlePaymentSettingChange('paymentMethods', {
-                          ...paymentSettings.paymentMethods,
-                          cash: e.target.checked
-                        })}
+                        onChange={(e) =>
+                          handlePaymentSettingChange('paymentMethods', {
+                            ...paymentSettings.paymentMethods,
+                            cash: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="Cash Payments"
@@ -571,10 +698,12 @@ const SystemSettings = () => {
                     control={
                       <Checkbox
                         checked={paymentSettings.mobileMoneyProviders.mtn}
-                        onChange={(e) => handlePaymentSettingChange('mobileMoneyProviders', {
-                          ...paymentSettings.mobileMoneyProviders,
-                          mtn: e.target.checked
-                        })}
+                        onChange={(e) =>
+                          handlePaymentSettingChange('mobileMoneyProviders', {
+                            ...paymentSettings.mobileMoneyProviders,
+                            mtn: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="MTN Mobile Money"
@@ -583,10 +712,12 @@ const SystemSettings = () => {
                     control={
                       <Checkbox
                         checked={paymentSettings.mobileMoneyProviders.vodafone}
-                        onChange={(e) => handlePaymentSettingChange('mobileMoneyProviders', {
-                          ...paymentSettings.mobileMoneyProviders,
-                          vodafone: e.target.checked
-                        })}
+                        onChange={(e) =>
+                          handlePaymentSettingChange('mobileMoneyProviders', {
+                            ...paymentSettings.mobileMoneyProviders,
+                            vodafone: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="Vodafone Cash"
@@ -594,11 +725,15 @@ const SystemSettings = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={paymentSettings.mobileMoneyProviders.airtelTigo}
-                        onChange={(e) => handlePaymentSettingChange('mobileMoneyProviders', {
-                          ...paymentSettings.mobileMoneyProviders,
-                          airtelTigo: e.target.checked
-                        })}
+                        checked={
+                          paymentSettings.mobileMoneyProviders.airtelTigo
+                        }
+                        onChange={(e) =>
+                          handlePaymentSettingChange('mobileMoneyProviders', {
+                            ...paymentSettings.mobileMoneyProviders,
+                            airtelTigo: e.target.checked,
+                          })
+                        }
                       />
                     }
                     label="AirtelTigo Money"
@@ -611,18 +746,25 @@ const SystemSettings = () => {
           <Grid item xs={12}>
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="h6">Payment Gateway Configuration</Typography>
+                <Typography variant="h6">
+                  Payment Gateway Configuration
+                </Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <Card variant="outlined">
-                      <CardHeader 
+                      <CardHeader
                         title="Stripe Configuration"
                         action={
                           <Switch
                             checked={paymentSettings.stripeEnabled}
-                            onChange={(e) => handlePaymentSettingChange('stripeEnabled', e.target.checked)}
+                            onChange={(e) =>
+                              handlePaymentSettingChange(
+                                'stripeEnabled',
+                                e.target.checked,
+                              )
+                            }
                           />
                         }
                       />
@@ -636,12 +778,17 @@ const SystemSettings = () => {
 
                   <Grid item xs={12} md={6}>
                     <Card variant="outlined">
-                      <CardHeader 
+                      <CardHeader
                         title="Paystack Configuration"
                         action={
                           <Switch
                             checked={paymentSettings.paystackEnabled}
-                            onChange={(e) => handlePaymentSettingChange('paystackEnabled', e.target.checked)}
+                            onChange={(e) =>
+                              handlePaymentSettingChange(
+                                'paystackEnabled',
+                                e.target.checked,
+                              )
+                            }
                           />
                         }
                       />
@@ -684,11 +831,19 @@ const SystemSettings = () => {
                     <ListItemIcon>
                       <EmailIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Email Notifications" secondary="Send notifications via email" />
+                    <ListItemText
+                      primary="Email Notifications"
+                      secondary="Send notifications via email"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={notificationSettings.emailNotifications}
-                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, emailNotifications: e.target.checked }))}
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            emailNotifications: e.target.checked,
+                          }))
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
@@ -696,11 +851,19 @@ const SystemSettings = () => {
                     <ListItemIcon>
                       <SmsIcon />
                     </ListItemIcon>
-                    <ListItemText primary="SMS Notifications" secondary="Send notifications via SMS" />
+                    <ListItemText
+                      primary="SMS Notifications"
+                      secondary="Send notifications via SMS"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={notificationSettings.smsNotifications}
-                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, smsNotifications: e.target.checked }))}
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            smsNotifications: e.target.checked,
+                          }))
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
@@ -708,11 +871,19 @@ const SystemSettings = () => {
                     <ListItemIcon>
                       <PhoneIcon />
                     </ListItemIcon>
-                    <ListItemText primary="Push Notifications" secondary="Send push notifications to mobile app" />
+                    <ListItemText
+                      primary="Push Notifications"
+                      secondary="Send push notifications to mobile app"
+                    />
                     <ListItemSecondaryAction>
                       <Switch
                         checked={notificationSettings.pushNotifications}
-                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, pushNotifications: e.target.checked }))}
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            pushNotifications: e.target.checked,
+                          }))
+                        }
                       />
                     </ListItemSecondaryAction>
                   </ListItem>
@@ -729,14 +900,19 @@ const SystemSettings = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={notificationSettings.notificationTemplates.welcomeEmail}
-                        onChange={(e) => setNotificationSettings(prev => ({
-                          ...prev,
-                          notificationTemplates: {
-                            ...prev.notificationTemplates,
-                            welcomeEmail: e.target.checked
-                          }
-                        }))}
+                        checked={
+                          notificationSettings.notificationTemplates
+                            .welcomeEmail
+                        }
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            notificationTemplates: {
+                              ...prev.notificationTemplates,
+                              welcomeEmail: e.target.checked,
+                            },
+                          }))
+                        }
                       />
                     }
                     label="Welcome Email"
@@ -744,14 +920,18 @@ const SystemSettings = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={notificationSettings.notificationTemplates.jobPosted}
-                        onChange={(e) => setNotificationSettings(prev => ({
-                          ...prev,
-                          notificationTemplates: {
-                            ...prev.notificationTemplates,
-                            jobPosted: e.target.checked
-                          }
-                        }))}
+                        checked={
+                          notificationSettings.notificationTemplates.jobPosted
+                        }
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            notificationTemplates: {
+                              ...prev.notificationTemplates,
+                              jobPosted: e.target.checked,
+                            },
+                          }))
+                        }
                       />
                     }
                     label="Job Posted Notification"
@@ -759,14 +939,19 @@ const SystemSettings = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={notificationSettings.notificationTemplates.applicationReceived}
-                        onChange={(e) => setNotificationSettings(prev => ({
-                          ...prev,
-                          notificationTemplates: {
-                            ...prev.notificationTemplates,
-                            applicationReceived: e.target.checked
-                          }
-                        }))}
+                        checked={
+                          notificationSettings.notificationTemplates
+                            .applicationReceived
+                        }
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            notificationTemplates: {
+                              ...prev.notificationTemplates,
+                              applicationReceived: e.target.checked,
+                            },
+                          }))
+                        }
                       />
                     }
                     label="Application Received"
@@ -774,14 +959,19 @@ const SystemSettings = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={notificationSettings.notificationTemplates.paymentReceived}
-                        onChange={(e) => setNotificationSettings(prev => ({
-                          ...prev,
-                          notificationTemplates: {
-                            ...prev.notificationTemplates,
-                            paymentReceived: e.target.checked
-                          }
-                        }))}
+                        checked={
+                          notificationSettings.notificationTemplates
+                            .paymentReceived
+                        }
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            notificationTemplates: {
+                              ...prev.notificationTemplates,
+                              paymentReceived: e.target.checked,
+                            },
+                          }))
+                        }
                       />
                     }
                     label="Payment Received"
@@ -789,14 +979,19 @@ const SystemSettings = () => {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={notificationSettings.notificationTemplates.disputeOpened}
-                        onChange={(e) => setNotificationSettings(prev => ({
-                          ...prev,
-                          notificationTemplates: {
-                            ...prev.notificationTemplates,
-                            disputeOpened: e.target.checked
-                          }
-                        }))}
+                        checked={
+                          notificationSettings.notificationTemplates
+                            .disputeOpened
+                        }
+                        onChange={(e) =>
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            notificationTemplates: {
+                              ...prev.notificationTemplates,
+                              disputeOpened: e.target.checked,
+                            },
+                          }))
+                        }
                       />
                     }
                     label="Dispute Opened"
@@ -835,7 +1030,12 @@ const SystemSettings = () => {
                       label="Minimum Password Length"
                       type="number"
                       value={securitySettings.passwordMinLength}
-                      onChange={(e) => setSecuritySettings(prev => ({ ...prev, passwordMinLength: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setSecuritySettings((prev) => ({
+                          ...prev,
+                          passwordMinLength: parseInt(e.target.value),
+                        }))
+                      }
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -844,7 +1044,12 @@ const SystemSettings = () => {
                         control={
                           <Checkbox
                             checked={securitySettings.requireSpecialCharacters}
-                            onChange={(e) => setSecuritySettings(prev => ({ ...prev, requireSpecialCharacters: e.target.checked }))}
+                            onChange={(e) =>
+                              setSecuritySettings((prev) => ({
+                                ...prev,
+                                requireSpecialCharacters: e.target.checked,
+                              }))
+                            }
                           />
                         }
                         label="Require Special Characters"
@@ -853,7 +1058,12 @@ const SystemSettings = () => {
                         control={
                           <Checkbox
                             checked={securitySettings.requireNumbers}
-                            onChange={(e) => setSecuritySettings(prev => ({ ...prev, requireNumbers: e.target.checked }))}
+                            onChange={(e) =>
+                              setSecuritySettings((prev) => ({
+                                ...prev,
+                                requireNumbers: e.target.checked,
+                              }))
+                            }
                           />
                         }
                         label="Require Numbers"
@@ -862,7 +1072,12 @@ const SystemSettings = () => {
                         control={
                           <Checkbox
                             checked={securitySettings.requireUppercase}
-                            onChange={(e) => setSecuritySettings(prev => ({ ...prev, requireUppercase: e.target.checked }))}
+                            onChange={(e) =>
+                              setSecuritySettings((prev) => ({
+                                ...prev,
+                                requireUppercase: e.target.checked,
+                              }))
+                            }
                           />
                         }
                         label="Require Uppercase Letters"
@@ -884,7 +1099,12 @@ const SystemSettings = () => {
                       control={
                         <Switch
                           checked={securitySettings.enableTwoFactor}
-                          onChange={(e) => setSecuritySettings(prev => ({ ...prev, enableTwoFactor: e.target.checked }))}
+                          onChange={(e) =>
+                            setSecuritySettings((prev) => ({
+                              ...prev,
+                              enableTwoFactor: e.target.checked,
+                            }))
+                          }
                         />
                       }
                       label="Enable Two-Factor Authentication"
@@ -896,7 +1116,12 @@ const SystemSettings = () => {
                       label="Session Timeout (minutes)"
                       type="number"
                       value={securitySettings.sessionTimeout}
-                      onChange={(e) => setSecuritySettings(prev => ({ ...prev, sessionTimeout: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setSecuritySettings((prev) => ({
+                          ...prev,
+                          sessionTimeout: parseInt(e.target.value),
+                        }))
+                      }
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -905,7 +1130,12 @@ const SystemSettings = () => {
                       label="Max Login Attempts"
                       type="number"
                       value={securitySettings.maxLoginAttempts}
-                      onChange={(e) => setSecuritySettings(prev => ({ ...prev, maxLoginAttempts: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setSecuritySettings((prev) => ({
+                          ...prev,
+                          maxLoginAttempts: parseInt(e.target.value),
+                        }))
+                      }
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -914,7 +1144,12 @@ const SystemSettings = () => {
                       label="Lockout Duration (minutes)"
                       type="number"
                       value={securitySettings.lockoutDuration}
-                      onChange={(e) => setSecuritySettings(prev => ({ ...prev, lockoutDuration: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setSecuritySettings((prev) => ({
+                          ...prev,
+                          lockoutDuration: parseInt(e.target.value),
+                        }))
+                      }
                     />
                   </Grid>
                 </Grid>
@@ -950,7 +1185,12 @@ const SystemSettings = () => {
                       control={
                         <Switch
                           checked={backupSettings.autoBackupEnabled}
-                          onChange={(e) => setBackupSettings(prev => ({ ...prev, autoBackupEnabled: e.target.checked }))}
+                          onChange={(e) =>
+                            setBackupSettings((prev) => ({
+                              ...prev,
+                              autoBackupEnabled: e.target.checked,
+                            }))
+                          }
                         />
                       }
                       label="Enable Automatic Backups"
@@ -962,7 +1202,12 @@ const SystemSettings = () => {
                       <Select
                         value={backupSettings.backupFrequency}
                         label="Backup Frequency"
-                        onChange={(e) => setBackupSettings(prev => ({ ...prev, backupFrequency: e.target.value }))}
+                        onChange={(e) =>
+                          setBackupSettings((prev) => ({
+                            ...prev,
+                            backupFrequency: e.target.value,
+                          }))
+                        }
                       >
                         <MenuItem value="hourly">Hourly</MenuItem>
                         <MenuItem value="daily">Daily</MenuItem>
@@ -977,7 +1222,12 @@ const SystemSettings = () => {
                       label="Retention Period (days)"
                       type="number"
                       value={backupSettings.backupRetentionDays}
-                      onChange={(e) => setBackupSettings(prev => ({ ...prev, backupRetentionDays: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setBackupSettings((prev) => ({
+                          ...prev,
+                          backupRetentionDays: parseInt(e.target.value),
+                        }))
+                      }
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -985,12 +1235,29 @@ const SystemSettings = () => {
                       <FormLabel>Backup Location</FormLabel>
                       <RadioGroup
                         value={backupSettings.backupLocation}
-                        onChange={(e) => setBackupSettings(prev => ({ ...prev, backupLocation: e.target.value }))}
+                        onChange={(e) =>
+                          setBackupSettings((prev) => ({
+                            ...prev,
+                            backupLocation: e.target.value,
+                          }))
+                        }
                         row
                       >
-                        <FormControlLabel value="local" control={<Radio />} label="Local Storage" />
-                        <FormControlLabel value="cloud" control={<Radio />} label="Cloud Storage" />
-                        <FormControlLabel value="both" control={<Radio />} label="Both" />
+                        <FormControlLabel
+                          value="local"
+                          control={<Radio />}
+                          label="Local Storage"
+                        />
+                        <FormControlLabel
+                          value="cloud"
+                          control={<Radio />}
+                          label="Cloud Storage"
+                        />
+                        <FormControlLabel
+                          value="both"
+                          control={<Radio />}
+                          label="Both"
+                        />
                       </RadioGroup>
                     </FormControl>
                   </Grid>
@@ -1008,7 +1275,7 @@ const SystemSettings = () => {
                     <ListItemIcon>
                       <CheckIcon color="success" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary="Last Backup"
                       secondary={formatDate(backupSettings.lastBackupDate)}
                     />
@@ -1017,7 +1284,7 @@ const SystemSettings = () => {
                     <ListItemIcon>
                       <StorageIcon />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary="Backup Size"
                       secondary={backupSettings.backupSize}
                     />
@@ -1026,14 +1293,21 @@ const SystemSettings = () => {
                     <ListItemIcon>
                       <InfoIcon />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary="Next Backup"
                       secondary={formatDate(backupSettings.nextBackupDate)}
                     />
                   </ListItem>
                 </List>
-                
-                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
+                >
                   <Button
                     variant="contained"
                     startIcon={<BackupIcon />}
@@ -1042,10 +1316,7 @@ const SystemSettings = () => {
                   >
                     Backup Now
                   </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CloudIcon />}
-                  >
+                  <Button variant="outlined" startIcon={<CloudIcon />}>
                     Restore Backup
                   </Button>
                 </Box>
@@ -1069,7 +1340,10 @@ const SystemSettings = () => {
       </TabPanel>
 
       {/* Backup Dialog */}
-      <Dialog open={openBackupDialog} onClose={() => setOpenBackupDialog(false)}>
+      <Dialog
+        open={openBackupDialog}
+        onClose={() => setOpenBackupDialog(false)}
+      >
         <DialogTitle>Create System Backup</DialogTitle>
         <DialogContent>
           <Typography variant="body1" gutterBottom>
@@ -1102,8 +1376,8 @@ const SystemSettings = () => {
           <Button onClick={() => setOpenBackupDialog(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleBackupNow}
             disabled={loading}
           >

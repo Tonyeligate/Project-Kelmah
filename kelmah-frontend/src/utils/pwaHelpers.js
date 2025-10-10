@@ -10,17 +10,22 @@ export const registerServiceWorker = async () => {
     try {
       const headCheck = await fetch('/sw.js', { method: 'HEAD' });
       if (!headCheck.ok) {
-        console.warn('ServiceWorker script not found at /sw.js, skipping registration');
+        console.warn(
+          'ServiceWorker script not found at /sw.js, skipping registration',
+        );
         return null;
       }
-    } catch (_) {
-      console.warn('ServiceWorker script HEAD check failed, skipping registration');
+    } catch (error) {
+      console.warn(
+        'ServiceWorker script HEAD check failed, skipping registration',
+        error,
+      );
       return null;
     }
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
-        updateViaCache: 'none' // Always check for updates
+        updateViaCache: 'none', // Always check for updates
       });
 
       console.log('ServiceWorker registered successfully:', registration.scope);
@@ -28,10 +33,13 @@ export const registerServiceWorker = async () => {
       // Handle service worker updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        
+
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
               // New version available - show update notification
               showUpdateNotification();
             }
@@ -51,6 +59,18 @@ export const registerServiceWorker = async () => {
     }
   }
   return null;
+};
+
+const isBrowserEnvironment = () => typeof window !== 'undefined';
+
+// Dismiss update notification (local helper)
+const dismissUpdateNotification = () => {
+  if (!isBrowserEnvironment()) return;
+
+  const notification = document.getElementById('pwa-update-notification');
+  if (notification) {
+    notification.remove();
+  }
 };
 
 // Show update notification to user
@@ -100,17 +120,17 @@ const showUpdateNotification = () => {
       ">Later</button>
     </div>
   `;
-  
+
   document.body.appendChild(notification);
-  
+
   // Auto-dismiss after 10 seconds
   setTimeout(() => {
-    dismissUpdate();
+    dismissUpdateNotification();
   }, 10000);
 };
 
 // Update PWA
-window.updatePWA = () => {
+const updatePWA = () => {
   if (navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
   }
@@ -118,18 +138,15 @@ window.updatePWA = () => {
 };
 
 // Dismiss update notification
-window.dismissUpdate = () => {
-  const notification = document.getElementById('pwa-update-notification');
-  if (notification) {
-    notification.remove();
-  }
-};
+const dismissUpdate = dismissUpdateNotification;
 
 // Check if app is installed
 export const isAppInstalled = () => {
-  return window.matchMedia('(display-mode: standalone)').matches ||
-         window.navigator.standalone === true ||
-         document.referrer.includes('android-app://');
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||
+    document.referrer.includes('android-app://')
+  );
 };
 
 // Install prompt handling
@@ -140,7 +157,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   console.log('PWA install prompt triggered');
   e.preventDefault();
   deferredPrompt = e;
-  
+
   // Show custom install banner for Ghana users
   showInstallBanner();
 });
@@ -148,7 +165,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Show custom install banner
 const showInstallBanner = () => {
   if (isAppInstalled()) return;
-  
+
   const banner = document.createElement('div');
   banner.id = 'pwa-install-banner';
   banner.innerHTML = `
@@ -197,9 +214,9 @@ const showInstallBanner = () => {
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(banner);
-  
+
   // Auto-dismiss after 15 seconds
   setTimeout(() => {
     dismissInstallBanner();
@@ -207,33 +224,33 @@ const showInstallBanner = () => {
 };
 
 // Install PWA
-window.installPWA = async () => {
+const installPWA = async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     console.log('PWA install outcome:', outcome);
-    
+
     if (outcome === 'accepted') {
       // Track installation success
       trackPWAInstall('accepted');
     } else {
       trackPWAInstall('dismissed');
     }
-    
+
     deferredPrompt = null;
   }
-  
+
   dismissInstallBanner();
 };
 
 // Dismiss install banner
-window.dismissInstallBanner = () => {
+const dismissInstallBanner = () => {
   const banner = document.getElementById('pwa-install-banner');
   if (banner) {
     banner.remove();
   }
-  
+
   // Remember user dismissed banner (don't show again for 7 days)
   localStorage.setItem('pwa_banner_dismissed', Date.now().toString());
 };
@@ -241,17 +258,17 @@ window.dismissInstallBanner = () => {
 // Check if we should show install banner
 export const shouldShowInstallBanner = () => {
   if (isAppInstalled()) return false;
-  
+
   const dismissed = localStorage.getItem('pwa_banner_dismissed');
   if (dismissed) {
     const dismissedTime = parseInt(dismissed);
     const weekInMs = 7 * 24 * 60 * 60 * 1000;
-    
+
     if (Date.now() - dismissedTime < weekInMs) {
       return false;
     }
   }
-  
+
   return true;
 };
 
@@ -259,14 +276,14 @@ export const shouldShowInstallBanner = () => {
 const trackPWAInstall = (outcome) => {
   try {
     // Send to analytics
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'pwa_install', {
+    if (isBrowserEnvironment() && typeof window.gtag === 'function') {
+      window.gtag('event', 'pwa_install', {
         outcome: outcome,
         user_agent: navigator.userAgent,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
-    
+
     // Log for debugging
     console.log('PWA install tracked:', outcome);
   } catch (error) {
@@ -278,23 +295,23 @@ const trackPWAInstall = (outcome) => {
 export const detectNetworkQuality = () => {
   if ('connection' in navigator) {
     const connection = navigator.connection;
-    
+
     return {
       effectiveType: connection.effectiveType,
       downlink: connection.downlink,
       rtt: connection.rtt,
       saveData: connection.saveData,
-      type: connection.type
+      type: connection.type,
     };
   }
-  
+
   return null;
 };
 
 // Optimize for Ghana's network conditions
 export const optimizeForGhanaNetworks = () => {
   const networkInfo = detectNetworkQuality();
-  
+
   if (networkInfo) {
     // Apply optimizations based on network quality
     switch (networkInfo.effectiveType) {
@@ -304,20 +321,20 @@ export const optimizeForGhanaNetworks = () => {
         document.documentElement.classList.add('network-2g');
         console.log('2G network detected - enabling ultra-lite mode');
         break;
-        
+
       case '3g':
         // Balanced mode for 3G
         document.documentElement.classList.add('network-3g');
         console.log('3G network detected - enabling balanced mode');
         break;
-        
+
       case '4g':
         // Full experience for 4G
         document.documentElement.classList.add('network-4g');
         console.log('4G network detected - enabling full experience');
         break;
     }
-    
+
     // Save data mode
     if (networkInfo.saveData) {
       document.documentElement.classList.add('save-data');
@@ -328,7 +345,10 @@ export const optimizeForGhanaNetworks = () => {
 
 // Background sync registration
 export const registerBackgroundSync = async (tag) => {
-  if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+  if (
+    'serviceWorker' in navigator &&
+    'sync' in window.ServiceWorkerRegistration.prototype
+  ) {
     try {
       const registration = await navigator.serviceWorker.ready;
       await registration.sync.register(tag);
@@ -348,39 +368,37 @@ export const setupPushNotifications = async () => {
     try {
       // Request permission
       const permission = await Notification.requestPermission();
-      
+
       if (permission === 'granted') {
         const registration = await navigator.serviceWorker.ready;
-        
+
         // Subscribe to push notifications
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(
-            'BPKgG7qQ8HHgIJL1MHj9rW3sFu0JVhLvKwJ1w1HGpOjOJ6T5XlNE4C2Kj3mPqR4tLqE3N9D7qM8jL5rQ2hK6gL1Y9' // Replace with your VAPID public key
-          )
+            'BPKgG7qQ8HHgIJL1MHj9rW3sFu0JVhLvKwJ1w1HGpOjOJ6T5XlNE4C2Kj3mPqR4tLqE3N9D7qM8jL5rQ2hK6gL1Y9', // Replace with your VAPID public key
+          ),
         });
-        
+
         console.log('Push notification subscription:', subscription);
-        
+
         // Send subscription to server
         await sendSubscriptionToServer(subscription);
-        
+
         return subscription;
       }
     } catch (error) {
       console.error('Push notification setup failed:', error);
     }
   }
-  
+
   return null;
 };
 
 // Helper function to convert VAPID key
 const urlBase64ToUint8Array = (base64String) => {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
 
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
@@ -398,19 +416,26 @@ const sendSubscriptionToServer = async (subscription) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
       },
-      body: JSON.stringify(subscription)
+      body: JSON.stringify(subscription),
     });
     if (!response.ok) {
       // Fail softly; push endpoints may not be active yet
-      console.warn('Push subscribe endpoint not available:', response.status, await response.text().catch(() => ''));
+      console.warn(
+        'Push subscribe endpoint not available:',
+        response.status,
+        await response.text().catch(() => ''),
+      );
       return { success: false };
     }
     console.log('Subscription sent to server successfully');
     return { success: true };
   } catch (error) {
-    console.warn('Push subscription send failed (non-blocking):', error?.message || error);
+    console.warn(
+      'Push subscription send failed (non-blocking):',
+      error?.message || error,
+    );
     return { success: false };
   }
 };
@@ -421,14 +446,14 @@ export const handleAppLifecycle = () => {
   window.addEventListener('appinstalled', () => {
     console.log('PWA was installed');
     trackPWAInstall('installed');
-    
+
     // Hide any install prompts
     dismissInstallBanner();
-    
+
     // Show welcome message
     showWelcomeMessage();
   });
-  
+
   // Visibility change (app backgrounded/foregrounded)
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -477,9 +502,9 @@ const showWelcomeMessage = () => {
       ">Get Started</button>
     </div>
   `;
-  
+
   document.body.appendChild(welcome);
-  
+
   // Auto-remove after 5 seconds
   setTimeout(() => {
     if (welcome.parentElement) {
@@ -505,23 +530,31 @@ const checkForUpdates = async () => {
 // Initialize PWA features
 export const initializePWA = async () => {
   console.log('Initializing PWA features for Ghana 🇬🇭');
-  
+
   // Register service worker
   await registerServiceWorker();
-  
+
   // Optimize for Ghana networks
   optimizeForGhanaNetworks();
-  
+
   // Handle app lifecycle
   handleAppLifecycle();
-  
+
   // Setup push notifications (optional)
   if (shouldShowInstallBanner()) {
     // Will show install banner if appropriate
   }
-  
+
   // Register background sync
   await registerBackgroundSync('kelmah-background-sync');
-  
+
   console.log('PWA initialization complete');
 };
+
+// Expose selected helpers on window for inline handlers when running in browser
+if (isBrowserEnvironment()) {
+  window.updatePWA = updatePWA;
+  window.dismissUpdate = dismissUpdate;
+  window.installPWA = installPWA;
+  window.dismissInstallBanner = dismissInstallBanner;
+}

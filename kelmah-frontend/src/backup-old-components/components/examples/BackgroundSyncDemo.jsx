@@ -51,14 +51,14 @@ const BackgroundSyncDemo = () => {
     queueContractSignature,
     queueEmergencyRequest,
     forceSyncAll,
-    getSyncStats
+    getSyncStats,
   } = useBackgroundSync();
 
   const [demoData, setDemoData] = useState({
     jobTitle: 'Plumber needed in East Legon',
     messageText: 'Hello, I am interested in your plumbing services',
     paymentAmount: '500',
-    contractId: 'contract_123'
+    contractId: 'contract_123',
   });
 
   const [feedback, setFeedback] = useState('');
@@ -69,13 +69,16 @@ const BackgroundSyncDemo = () => {
       const actionId = await queueJobApplication({
         jobId: 'job_demo_123',
         userId: 'demo_user',
-        coverLetter: 'I am an experienced plumber in Ghana with 5 years of experience.',
+        coverLetter:
+          'I am an experienced plumber in Ghana with 5 years of experience.',
         location: 'East Legon, Accra',
         availableDate: new Date().toISOString(),
-        expectedRate: 45
+        expectedRate: 45,
       });
-      
-      setFeedback(`✅ Job application queued for background sync! ID: ${actionId}`);
+
+      setFeedback(
+        `✅ Job application queued for background sync! ID: ${actionId}`,
+      );
     } catch (error) {
       setFeedback(`❌ Failed to queue job application: ${error.message}`);
     }
@@ -89,9 +92,9 @@ const BackgroundSyncDemo = () => {
         receiverId: 'demo_worker',
         message: demoData.messageText,
         timestamp: new Date().toISOString(),
-        urgent: false
+        urgent: false,
       });
-      
+
       setFeedback(`✅ Message queued for background sync! ID: ${actionId}`);
     } catch (error) {
       setFeedback(`❌ Failed to queue message: ${error.message}`);
@@ -110,10 +113,10 @@ const BackgroundSyncDemo = () => {
         description: 'Payment for plumbing services',
         ghanaSpecific: {
           mobileNumber: '024-123-4567',
-          region: 'Greater Accra'
-        }
+          region: 'Greater Accra',
+        },
       });
-      
+
       setFeedback(`✅ Payment queued for background sync! ID: ${actionId}`);
     } catch (error) {
       setFeedback(`❌ Failed to queue payment: ${error.message}`);
@@ -129,10 +132,12 @@ const BackgroundSyncDemo = () => {
         timestamp: new Date().toISOString(),
         location: 'East Legon, Accra',
         ipAddress: '192.168.1.1',
-        ghanaLegalCompliance: true
+        ghanaLegalCompliance: true,
       });
-      
-      setFeedback(`✅ Contract signature queued for background sync! ID: ${actionId}`);
+
+      setFeedback(
+        `✅ Contract signature queued for background sync! ID: ${actionId}`,
+      );
     } catch (error) {
       setFeedback(`❌ Failed to queue contract signature: ${error.message}`);
     }
@@ -150,11 +155,13 @@ const BackgroundSyncDemo = () => {
         timestamp: new Date().toISOString(),
         ghanaLocation: {
           region: 'Greater Accra',
-          nearestLandmark: 'A&C Mall'
-        }
+          nearestLandmark: 'A&C Mall',
+        },
       });
-      
-      setFeedback(`✅ Emergency request queued for background sync! ID: ${actionId}`);
+
+      setFeedback(
+        `✅ Emergency request queued for background sync! ID: ${actionId}`,
+      );
     } catch (error) {
       setFeedback(`❌ Failed to queue emergency request: ${error.message}`);
     }
@@ -171,21 +178,31 @@ const BackgroundSyncDemo = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return '#FF9800';
-      case 'syncing': return '#2196F3';
-      case 'completed': return '#4CAF50';
-      case 'failed': return '#F44336';
-      default: return '#757575';
+      case 'pending':
+        return '#FF9800';
+      case 'syncing':
+        return '#2196F3';
+      case 'completed':
+        return '#4CAF50';
+      case 'failed':
+        return '#F44336';
+      default:
+        return '#757575';
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending': return <PendingIcon />;
-      case 'syncing': return <SyncIcon />;
-      case 'completed': return <SuccessIcon />;
-      case 'failed': return <ErrorIcon />;
-      default: return <PendingIcon />;
+      case 'pending':
+        return <PendingIcon />;
+      case 'syncing':
+        return <SyncIcon />;
+      case 'completed':
+        return <SuccessIcon />;
+      case 'failed':
+        return <ErrorIcon />;
+      default:
+        return <PendingIcon />;
     }
   };
 
@@ -197,8 +214,9 @@ const BackgroundSyncDemo = () => {
         sx={{
           p: 3,
           mb: 3,
-          background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
-          border: '1px solid rgba(255,215,0,0.2)'
+          background:
+            'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+          border: '1px solid rgba(255,215,0,0.2)',
         }}
       >
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
@@ -216,32 +234,32 @@ const BackgroundSyncDemo = () => {
         {/* Connection Status */}
         <Stack direction="row" alignItems="center" spacing={2}>
           {isOnline ? (
-            <Chip 
-              icon={<OnlineIcon />} 
-              label="Online" 
-              color="success" 
+            <Chip
+              icon={<OnlineIcon />}
+              label="Online"
+              color="success"
               variant="filled"
             />
           ) : (
-            <Chip 
-              icon={<OfflineIcon />} 
-              label="Offline" 
-              color="error" 
+            <Chip
+              icon={<OfflineIcon />}
+              label="Offline"
+              color="error"
               variant="filled"
             />
           )}
-          
-          <Chip 
-            label={`Queue: ${queueSize} actions`} 
-            color="info" 
+
+          <Chip
+            label={`Queue: ${queueSize} actions`}
+            color="info"
             variant="outlined"
           />
-          
+
           {isSyncing && (
-            <Chip 
-              icon={<SyncIcon />} 
-              label="Syncing..." 
-              color="primary" 
+            <Chip
+              icon={<SyncIcon />}
+              label="Syncing..."
+              color="primary"
               variant="filled"
             />
           )}
@@ -253,30 +271,40 @@ const BackgroundSyncDemo = () => {
         {/* Job Application Demo */}
         <Card elevation={2}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
               <JobIcon sx={{ color: '#4CAF50' }} />
               <Typography variant="h6">Job Application</Typography>
             </Stack>
-            
+
             <TextField
               fullWidth
               label="Job Title"
               value={demoData.jobTitle}
-              onChange={(e) => setDemoData(prev => ({ ...prev, jobTitle: e.target.value }))}
+              onChange={(e) =>
+                setDemoData((prev) => ({ ...prev, jobTitle: e.target.value }))
+              }
               sx={{ mb: 2 }}
             />
-            
+
             <Typography variant="body2" color="text.secondary">
-              Simulate applying for a plumbing job in Ghana. This will be queued for background sync with high priority.
+              Simulate applying for a plumbing job in Ghana. This will be queued
+              for background sync with high priority.
             </Typography>
           </CardContent>
-          
+
           <CardActions>
             <Button
               variant="contained"
               startIcon={<JobIcon />}
               onClick={handleJobApplication}
-              sx={{ background: 'linear-gradient(135deg, #4CAF50 0%, #45A049 100%)' }}
+              sx={{
+                background: 'linear-gradient(135deg, #4CAF50 0%, #45A049 100%)',
+              }}
             >
               Apply for Job
             </Button>
@@ -286,32 +314,45 @@ const BackgroundSyncDemo = () => {
         {/* Message Demo */}
         <Card elevation={2}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
               <MessageIcon sx={{ color: '#2196F3' }} />
               <Typography variant="h6">Send Message</Typography>
             </Stack>
-            
+
             <TextField
               fullWidth
               multiline
               rows={2}
               label="Message"
               value={demoData.messageText}
-              onChange={(e) => setDemoData(prev => ({ ...prev, messageText: e.target.value }))}
+              onChange={(e) =>
+                setDemoData((prev) => ({
+                  ...prev,
+                  messageText: e.target.value,
+                }))
+              }
               sx={{ mb: 2 }}
             />
-            
+
             <Typography variant="body2" color="text.secondary">
-              Send a message to a worker. Will be queued with medium priority for background sync.
+              Send a message to a worker. Will be queued with medium priority
+              for background sync.
             </Typography>
           </CardContent>
-          
+
           <CardActions>
             <Button
               variant="contained"
               startIcon={<MessageIcon />}
               onClick={handleSendMessage}
-              sx={{ background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)' }}
+              sx={{
+                background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+              }}
             >
               Send Message
             </Button>
@@ -321,34 +362,47 @@ const BackgroundSyncDemo = () => {
         {/* Payment Demo */}
         <Card elevation={2}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
               <PaymentIcon sx={{ color: '#FF9800' }} />
               <Typography variant="h6">Ghana Mobile Money Payment</Typography>
             </Stack>
-            
+
             <TextField
               fullWidth
               type="number"
               label="Amount (GHS)"
               value={demoData.paymentAmount}
-              onChange={(e) => setDemoData(prev => ({ ...prev, paymentAmount: e.target.value }))}
+              onChange={(e) =>
+                setDemoData((prev) => ({
+                  ...prev,
+                  paymentAmount: e.target.value,
+                }))
+              }
               InputProps={{
-                startAdornment: <Typography sx={{ mr: 1 }}>₵</Typography>
+                startAdornment: <Typography sx={{ mr: 1 }}>₵</Typography>,
               }}
               sx={{ mb: 2 }}
             />
-            
+
             <Typography variant="body2" color="text.secondary">
-              Process a Mobile Money payment. High priority action that will retry on Ghana's network.
+              Process a Mobile Money payment. High priority action that will
+              retry on Ghana's network.
             </Typography>
           </CardContent>
-          
+
           <CardActions>
             <Button
               variant="contained"
               startIcon={<PaymentIcon />}
               onClick={handlePayment}
-              sx={{ background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)' }}
+              sx={{
+                background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+              }}
             >
               Pay with Mobile Money
             </Button>
@@ -358,30 +412,40 @@ const BackgroundSyncDemo = () => {
         {/* Contract Signature Demo */}
         <Card elevation={2}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
               <ContractIcon sx={{ color: '#9C27B0' }} />
               <Typography variant="h6">Digital Contract Signature</Typography>
             </Stack>
-            
+
             <TextField
               fullWidth
               label="Contract ID"
               value={demoData.contractId}
-              onChange={(e) => setDemoData(prev => ({ ...prev, contractId: e.target.value }))}
+              onChange={(e) =>
+                setDemoData((prev) => ({ ...prev, contractId: e.target.value }))
+              }
               sx={{ mb: 2 }}
             />
-            
+
             <Typography variant="body2" color="text.secondary">
-              Sign a contract digitally with Ghana legal compliance. High priority for legal validity.
+              Sign a contract digitally with Ghana legal compliance. High
+              priority for legal validity.
             </Typography>
           </CardContent>
-          
+
           <CardActions>
             <Button
               variant="contained"
               startIcon={<ContractIcon />}
               onClick={handleContractSign}
-              sx={{ background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)' }}
+              sx={{
+                background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+              }}
             >
               Sign Contract
             </Button>
@@ -391,26 +455,35 @@ const BackgroundSyncDemo = () => {
         {/* Emergency Request Demo */}
         <Card elevation={2}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
               <EmergencyIcon sx={{ color: '#F44336' }} />
               <Typography variant="h6">Emergency Request</Typography>
             </Stack>
-            
+
             <Alert severity="warning" sx={{ mb: 2 }}>
-              Emergency requests have the highest priority and shortest timeout for immediate response.
+              Emergency requests have the highest priority and shortest timeout
+              for immediate response.
             </Alert>
-            
+
             <Typography variant="body2" color="text.secondary">
-              Submit an emergency plumbing request. This will be processed immediately when network is available.
+              Submit an emergency plumbing request. This will be processed
+              immediately when network is available.
             </Typography>
           </CardContent>
-          
+
           <CardActions>
             <Button
               variant="contained"
               startIcon={<EmergencyIcon />}
               onClick={handleEmergencyRequest}
-              sx={{ background: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)' }}
+              sx={{
+                background: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+              }}
             >
               Submit Emergency
             </Button>
@@ -420,16 +493,22 @@ const BackgroundSyncDemo = () => {
         {/* Force Sync */}
         <Card elevation={2}>
           <CardContent>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ mb: 2 }}
+            >
               <SyncIcon sx={{ color: '#607D8B' }} />
               <Typography variant="h6">Manual Sync</Typography>
             </Stack>
-            
+
             <Typography variant="body2" color="text.secondary">
-              Force sync all pending actions immediately. Useful for testing or when you need immediate sync.
+              Force sync all pending actions immediately. Useful for testing or
+              when you need immediate sync.
             </Typography>
           </CardContent>
-          
+
           <CardActions>
             <Button
               variant="outlined"
@@ -451,7 +530,7 @@ const BackgroundSyncDemo = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Alert 
+          <Alert
             severity={feedback.includes('✅') ? 'success' : 'error'}
             sx={{ mt: 3 }}
             onClose={() => setFeedback('')}
@@ -466,40 +545,48 @@ const BackgroundSyncDemo = () => {
         <Typography variant="h6" sx={{ mb: 2 }}>
           Background Sync Status
         </Typography>
-        
+
         <Stack spacing={1}>
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2">Network Status:</Typography>
-            <Typography variant="body2" color={isOnline ? 'success.main' : 'error.main'}>
+            <Typography
+              variant="body2"
+              color={isOnline ? 'success.main' : 'error.main'}
+            >
               {isOnline ? 'Online' : 'Offline'}
             </Typography>
           </Stack>
-          
+
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2">Queue Size:</Typography>
             <Typography variant="body2">{queueSize} actions</Typography>
           </Stack>
-          
+
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2">Pending:</Typography>
             <Typography variant="body2">{syncStatus.pending}</Typography>
           </Stack>
-          
+
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2">Currently Syncing:</Typography>
             <Typography variant="body2">{syncStatus.syncing}</Typography>
           </Stack>
-          
+
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2">Failed:</Typography>
-            <Typography variant="body2" color={syncStatus.failed > 0 ? 'error.main' : 'inherit'}>
+            <Typography
+              variant="body2"
+              color={syncStatus.failed > 0 ? 'error.main' : 'inherit'}
+            >
               {syncStatus.failed}
             </Typography>
           </Stack>
-          
+
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2">Network Type:</Typography>
-            <Typography variant="body2">{syncStatus.networkType || 'Unknown'}</Typography>
+            <Typography variant="body2">
+              {syncStatus.networkType || 'Unknown'}
+            </Typography>
           </Stack>
         </Stack>
 

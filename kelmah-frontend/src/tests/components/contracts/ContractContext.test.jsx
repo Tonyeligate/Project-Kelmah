@@ -1,7 +1,10 @@
 /* eslint-env jest */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ContractProvider, useContracts } from '../../../modules/contracts/contexts/ContractContext';
+import {
+  ContractProvider,
+  useContracts,
+} from '../../../modules/contracts/contexts/ContractContext';
 
 // Mock Redux useSelector
 jest.mock('react-redux', () => ({
@@ -15,18 +18,12 @@ global.jest = require('jest-mock');
 // Mock child components that use the context
 const MockConsumer = () => {
   const { contracts, loading, error } = useContracts();
-  if (loading) return <div>
-    Loading...
-  </div>;
-  if (error) return <div>
-    {error}
-  </div>;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
   return (
     <div>
       {contracts.map((c) => (
-        <div key={c.id}>
-          {c.title}
-        </div>
+        <div key={c.id}>{c.title}</div>
       ))}
     </div>
   );
@@ -49,7 +46,7 @@ describe('ContractContext', () => {
     render(
       <ContractProvider contractService={mockContractService}>
         <MockConsumer />
-      </ContractProvider>
+      </ContractProvider>,
     );
 
     // Check that contracts are displayed
@@ -68,7 +65,7 @@ describe('ContractContext', () => {
         <ContractProvider contractService={mockContractService}>
           <MockConsumer />
         </ContractProvider>
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -83,7 +80,7 @@ describe('ContractContext', () => {
         <ContractProvider contractService={mockContractService}>
           <MockConsumer />
         </ContractProvider>
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {

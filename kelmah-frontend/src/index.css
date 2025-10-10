@@ -74,7 +74,12 @@ body {
 }
 
 /* Typography Reset */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
   font-weight: 600;
   line-height: 1.2;
@@ -95,7 +100,9 @@ button {
 }
 
 /* Form elements */
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: inherit;
   font-size: inherit;
   border: none;
@@ -147,22 +154,22 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FFD700;
+  background: #ffd700;
   border-radius: 4px;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FFE55C;
+  background: #ffe55c;
 }
 
 /* Dark mode scrollbar */
 html[data-theme='dark'] ::-webkit-scrollbar-thumb {
-  background: #FFD700;
+  background: #ffd700;
 }
 
 html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
-  background: #FFE55C;
+  background: #ffe55c;
 }
 
 /* Light mode scrollbar */
@@ -196,7 +203,8 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -232,14 +240,14 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 
 /* Focus management for accessibility */
 .focus-visible {
-  outline: 2px solid #FFD700;
+  outline: 2px solid #ffd700;
   outline-offset: 2px;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   ::-webkit-scrollbar-thumb {
-    background: #FFD700 !important;
+    background: #ffd700 !important;
   }
 }
 
@@ -257,12 +265,14 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 
 /* Full Width Responsive Design - Zoom Level Adaptability */
 @media (min-width: 1px) {
-  html, body, #root {
+  html,
+  body,
+  #root {
     width: 100% !important;
     max-width: 100vw !important;
     box-sizing: border-box !important;
   }
-  
+
   /* Ensure all containers adapt to zoom levels */
   .MuiContainer-root {
     max-width: 100% !important;
@@ -270,7 +280,7 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
     padding-left: clamp(8px, 2vw, 48px) !important;
     padding-right: clamp(8px, 2vw, 48px) !important;
   }
-  
+
   /* Professional layout with proper spacing on all devices */
   .page-container {
     width: 100%;
@@ -292,7 +302,8 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 
 /* SportyBet-inspired Mobile Optimizations */
 @media (max-width: 768px) {
-  html, body {
+  html,
+  body {
     /* Improve mobile scrolling performance like SportyBet */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
@@ -300,18 +311,18 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
   }
-  
+
   /* Prevent horizontal scroll on mobile */
   * {
     max-width: 100vw !important;
     overflow-x: hidden;
   }
-  
+
   /* Mobile viewport fixes */
   html {
     height: -webkit-fill-available;
   }
-  
+
   body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
@@ -319,40 +330,48 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
     font-size: 14px;
     line-height: 1.4;
   }
-  
+
   #root {
     min-height: 100vh;
     min-height: -webkit-fill-available;
   }
-  
+
   /* Better mobile touch scrolling */
   .mobile-scroll {
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
     overflow-x: hidden;
   }
-  
+
   /* SportyBet-style touch targets */
-  button, .MuiButton-root {
+  button,
+  .MuiButton-root {
     min-height: 44px !important;
     min-width: 44px !important;
     touch-action: manipulation;
   }
-  
+
   /* Better mobile interaction */
   .MuiIconButton-root {
     padding: 12px !important;
   }
-  
+
   /* Improved mobile typography */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     line-height: 1.2 !important;
   }
 }
 
 /* Tablet improvements */
 @media (min-width: 769px) and (max-width: 1024px) {
-  html, body, #root {
+  html,
+  body,
+  #root {
     overflow-y: auto;
     overflow-x: hidden;
   }
@@ -365,20 +384,25 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
     color: black !important;
     box-shadow: none !important;
   }
-  
+
   body {
     font-size: 12pt;
     line-height: 1.4;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     page-break-after: avoid;
   }
-  
+
   img {
     max-width: 100% !important;
   }
-  
+
   @page {
     margin: 0.5in;
   }
@@ -391,11 +415,11 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 
 /* Custom selection colors */
 ::selection {
-  background: #FFD700;
+  background: #ffd700;
   color: #000000;
 }
 
 ::-moz-selection {
-  background: #FFD700;
+  background: #ffd700;
   color: #000000;
 }

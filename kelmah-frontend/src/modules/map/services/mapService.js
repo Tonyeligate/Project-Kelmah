@@ -306,7 +306,9 @@ class MapService {
   getAuthHeaders() {
     try {
       // lazy access to avoid static require in ESM
-      const token = JSON.parse(localStorage.getItem('kelmah_secure_data') || 'null');
+      const token = JSON.parse(
+        localStorage.getItem('kelmah_secure_data') || 'null',
+      );
       // secureStorage is already used widely; keeping lightweight fallback here
       if (token) {
         // cannot decrypt here; rely on axios interceptors for auth in most cases

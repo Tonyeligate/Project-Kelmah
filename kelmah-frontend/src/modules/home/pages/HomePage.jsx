@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Container, 
+  Container,
   Typography,
   Button,
-  Grid, 
+  Grid,
   CircularProgress,
   Card,
   CardMedia,
@@ -22,7 +22,11 @@ import GestureControl from '../../common/components/controls/GestureControl';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { checkApiHealth } from '../../common/utils/apiUtils';
-import { useResponsive, useResponsiveTypography, useResponsiveLayout } from '../../../hooks/useResponsive';
+import {
+  useResponsive,
+  useResponsiveTypography,
+  useResponsiveLayout,
+} from '../../../hooks/useResponsive';
 import backgroundImg from '../../../assets/images/background.jpg';
 import plumbingImg from '../../../assets/images/plumbing.jpg.jpeg';
 import electricalImg from '../../../assets/images/electrical.jpg';
@@ -149,7 +153,7 @@ const ServiceCard = styled(Card)(({ theme }) => ({
   // Mobile-optimized hover effects
   '@media (max-width: 600px)': {
     borderRadius: theme.spacing(1.5),
-  '&:hover': {
+    '&:hover': {
       transform: 'translateY(-4px)',
       boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
       border: '2px solid rgba(255, 215, 0, 0.4)',
@@ -181,7 +185,11 @@ const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
 const ServiceCardContent = styled(CardContent)(({ theme }) => ({
   background:
     'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(44,44,44,0.6) 100%)',
-  padding: { xs: theme.spacing(2), sm: theme.spacing(2.5), md: theme.spacing(3) },
+  padding: {
+    xs: theme.spacing(2),
+    sm: theme.spacing(2.5),
+    md: theme.spacing(3),
+  },
   // Mobile-specific optimizations
   '@media (max-width: 600px)': {
     padding: theme.spacing(1.5),
@@ -335,20 +343,22 @@ const HomePage = () => {
             <HeroBackgroundImage
               sx={{ backgroundImage: `url(${services[bgIndex].image})` }}
             />
-            <Box sx={{ 
-              position: 'relative', 
-              zIndex: 1, 
-              width: '100%',
-              maxWidth: '100vw',
-              px: { xs: 2, sm: 3, md: 4, lg: 6 },
-              py: { xs: 2, sm: 3, md: 4 },
-              boxSizing: 'border-box',
-              // Mobile-optimized spacing
-              '@media (max-width: 600px)': {
-                px: 1.5,
-                py: 2,
-              },
-            }}>
+            <Box
+              sx={{
+                position: 'relative',
+                zIndex: 1,
+                width: '100%',
+                maxWidth: '100vw',
+                px: { xs: 2, sm: 3, md: 4, lg: 6 },
+                py: { xs: 2, sm: 3, md: 4 },
+                boxSizing: 'border-box',
+                // Mobile-optimized spacing
+                '@media (max-width: 600px)': {
+                  px: 1.5,
+                  py: 2,
+                },
+              }}
+            >
               <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                 <Grid item xs={12} md={8}>
                   <motion.div
@@ -369,25 +379,26 @@ const HomePage = () => {
                             mb: 2,
                             fontWeight: 600,
                           }}
-                      >
-                        Welcome back, {user.firstName || user.username}!
-                      </Typography>
-            </motion.div>
+                        >
+                          Welcome back, {user.firstName || user.username}!
+                        </Typography>
+                      </motion.div>
                     )}
                     <Typography
                       variant={isMobile ? 'h3' : 'h1'}
                       sx={{
-                        fontSize: { 
-                          xs: '2rem', 
-                          sm: '2.5rem', 
-                          md: '3.5rem', 
+                        fontSize: {
+                          xs: '2rem',
+                          sm: '2.5rem',
+                          md: '3.5rem',
                           lg: '4.5rem',
-                          xl: '5rem' 
+                          xl: '5rem',
                         },
                         fontWeight: 800,
                         color: '#FFFFFF',
                         mb: { xs: 1.5, sm: 2, md: 3 },
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.9), 1px 1px 2px rgba(0,0,0,0.8)',
+                        textShadow:
+                          '2px 2px 4px rgba(0,0,0,0.9), 1px 1px 2px rgba(0,0,0,0.8)',
                         lineHeight: { xs: 1.1, sm: 1.2, md: 1.1 },
                         textAlign: { xs: 'center', md: 'left' },
                         // Mobile-specific optimizations
@@ -424,15 +435,16 @@ const HomePage = () => {
                         fontWeight: 500,
                         maxWidth: { xs: '100%', md: '85%' },
                         lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
-                        fontSize: { 
-                          xs: '1rem', 
-                          sm: '1.1rem', 
+                        fontSize: {
+                          xs: '1rem',
+                          sm: '1.1rem',
                           md: '1.3rem',
-                          lg: '1.4rem' 
+                          lg: '1.4rem',
                         },
                         textAlign: { xs: 'center', md: 'left' },
                         px: { xs: 0.5, sm: 0 },
-                        textShadow: '1px 1px 3px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
+                        textShadow:
+                          '1px 1px 3px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
                         // Mobile-specific optimizations
                         '@media (max-width: 600px)': {
                           fontSize: '0.95rem',
@@ -445,43 +457,51 @@ const HomePage = () => {
                       plumbing and electrical work to carpentry and construction
                       - find the right professional for every job.
                     </Typography>
-                <motion.div
+                    <motion.div
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
-                        gap: { xs: 1.5, sm: 2, md: 3 },
-                        mt: { xs: 2, sm: 3, md: 4 },
-                        alignItems: { xs: 'center', md: 'flex-start' },
-                        justifyContent: { xs: 'center', md: 'flex-start' },
-                        width: '100%',
-                        // Mobile-optimized button layout
-                        '@media (max-width: 600px)': {
-                          gap: 1,
-                          mt: 1.5,
-                        },
-                      }}
-                    >
-                      {!user ? (
-                        <>
-                          <StyledButton
-                            variant="contained"
-                            size={isMobile ? 'medium' : 'large'}
-                            sx={{
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: { xs: 'column', md: 'row' },
+                          gap: { xs: 1.5, sm: 2, md: 3 },
+                          mt: { xs: 2, sm: 3, md: 4 },
+                          alignItems: { xs: 'center', md: 'flex-start' },
+                          justifyContent: { xs: 'center', md: 'flex-start' },
+                          width: '100%',
+                          // Mobile-optimized button layout
+                          '@media (max-width: 600px)': {
+                            gap: 1,
+                            mt: 1.5,
+                          },
+                        }}
+                      >
+                        {!user ? (
+                          <>
+                            <StyledButton
+                              variant="contained"
+                              size={isMobile ? 'medium' : 'large'}
+                              sx={{
                                 background:
                                   'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                 color: '#000',
                                 fontWeight: 800,
-                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                                fontSize: {
+                                  xs: '1rem',
+                                  sm: '1.1rem',
+                                  md: '1.2rem',
+                                },
                                 px: { xs: 3, sm: 4, md: 5 },
                                 py: { xs: 1.5, sm: 1.8, md: 2 },
                                 boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
                                 border: '2px solid rgba(255, 215, 0, 0.8)',
-                                minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                                minHeight: {
+                                  xs: '48px',
+                                  sm: '52px',
+                                  md: '56px',
+                                },
                                 width: { xs: '100%', sm: 'auto' },
                                 maxWidth: { xs: '300px', sm: 'none' },
                                 // Mobile-specific optimizations
@@ -492,34 +512,43 @@ const HomePage = () => {
                                   minHeight: '44px',
                                   maxWidth: '280px',
                                 },
-                              '&:hover': {
+                                '&:hover': {
                                   background:
                                     'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                                  boxShadow: '0 6px 20px rgba(255, 215, 0, 0.6)',
+                                  boxShadow:
+                                    '0 6px 20px rgba(255, 215, 0, 0.6)',
                                   transform: 'translateY(-1px)',
-                              },
-                            }}
-                            fullWidth={isMobile}
-                            onClick={() => navigate('/register')}
-                          >
+                                },
+                              }}
+                              fullWidth={isMobile}
+                              onClick={() => navigate('/register')}
+                            >
                               {isMobile ? 'Join Kelmah' : 'Join the Network'}
-                          </StyledButton>
-                          <StyledButton
-                            variant="outlined"
-                            size={isMobile ? 'medium' : 'large'}
-                            sx={{
-                              borderColor: '#FFD700',
-                              color: '#FFD700',
+                            </StyledButton>
+                            <StyledButton
+                              variant="outlined"
+                              size={isMobile ? 'medium' : 'large'}
+                              sx={{
+                                borderColor: '#FFD700',
+                                color: '#FFD700',
                                 borderWidth: { xs: 2, sm: 2.5, md: 3 },
                                 fontWeight: 700,
-                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                                fontSize: {
+                                  xs: '1rem',
+                                  sm: '1.1rem',
+                                  md: '1.2rem',
+                                },
                                 px: { xs: 3, sm: 4, md: 5 },
                                 py: { xs: 1.5, sm: 1.8, md: 2 },
                                 textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
                                 boxShadow: '0 4px 15px rgba(255,215,0,0.4)',
                                 background: 'rgba(255, 215, 0, 0.1)',
                                 backdropFilter: 'blur(10px)',
-                                minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                                minHeight: {
+                                  xs: '48px',
+                                  sm: '52px',
+                                  md: '56px',
+                                },
                                 width: { xs: '100%', sm: 'auto' },
                                 maxWidth: { xs: '300px', sm: 'none' },
                                 // Mobile-specific optimizations
@@ -531,64 +560,73 @@ const HomePage = () => {
                                   maxWidth: '280px',
                                   borderWidth: 2,
                                 },
-                              '&:hover': {
-                                borderColor: '#FFC000',
-                                color: '#000',
-                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                                '&:hover': {
+                                  borderColor: '#FFC000',
+                                  color: '#000',
+                                  background:
+                                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                                   borderWidth: { xs: 2, sm: 2.5, md: 3 },
                                   textShadow: 'none',
                                   boxShadow: '0 6px 20px rgba(255,215,0,0.6)',
                                   transform: 'translateY(-1px)',
+                                },
+                              }}
+                              fullWidth={isMobile}
+                              onClick={() => navigate('/search')}
+                            >
+                              Find Workers
+                            </StyledButton>
+                          </>
+                        ) : user.role === 'worker' ? (
+                          <StyledButton
+                            variant="contained"
+                            size={isMobile ? 'medium' : 'large'}
+                            sx={{
+                              background:
+                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                              color: '#000',
+                              fontWeight: 800,
+                              fontSize: {
+                                xs: '1rem',
+                                sm: '1.1rem',
+                                md: '1.2rem',
+                              },
+                              px: { xs: 3, sm: 4, md: 5 },
+                              py: { xs: 1.5, sm: 1.8, md: 2 },
+                              minHeight: { xs: '48px', sm: '52px', md: '56px' },
+                              width: { xs: '100%', sm: 'auto' },
+                              maxWidth: { xs: '300px', sm: 'none' },
+                              '@media (max-width: 600px)': {
+                                px: 2.5,
+                                py: 1.2,
+                                fontSize: '0.95rem',
+                                minHeight: '44px',
+                                maxWidth: '280px',
+                              },
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                               },
                             }}
                             fullWidth={isMobile}
-                            onClick={() => navigate('/search')}
+                            onClick={() => navigate('/jobs')}
                           >
-                              Find Workers
-                          </StyledButton>
-                        </>
-                      ) : user.role === 'worker' ? (
-                        <StyledButton
-                          variant="contained"
-                          size={isMobile ? 'medium' : 'large'}
-                          sx={{
-                              background:
-                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                              color: '#000',
-                              fontWeight: 800,
-                              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-                              px: { xs: 3, sm: 4, md: 5 },
-                              py: { xs: 1.5, sm: 1.8, md: 2 },
-                              minHeight: { xs: '48px', sm: '52px', md: '56px' },
-                              width: { xs: '100%', sm: 'auto' },
-                              maxWidth: { xs: '300px', sm: 'none' },
-                              '@media (max-width: 600px)': {
-                                px: 2.5,
-                                py: 1.2,
-                                fontSize: '0.95rem',
-                                minHeight: '44px',
-                                maxWidth: '280px',
-                              },
-                            '&:hover': {
-                                background:
-                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                            },
-                          }}
-                          fullWidth={isMobile}
-                          onClick={() => navigate('/jobs')}
-                        >
                             {isMobile ? 'Browse Jobs' : 'Browse Available Jobs'}
-                        </StyledButton>
-                      ) : (
-                        <StyledButton
-                          variant="contained"
-                          size={isMobile ? 'medium' : 'large'}
-                          sx={{
+                          </StyledButton>
+                        ) : (
+                          <StyledButton
+                            variant="contained"
+                            size={isMobile ? 'medium' : 'large'}
+                            sx={{
                               background:
                                 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                               color: '#000',
                               fontWeight: 800,
-                              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                              fontSize: {
+                                xs: '1rem',
+                                sm: '1.1rem',
+                                md: '1.2rem',
+                              },
                               px: { xs: 3, sm: 4, md: 5 },
                               py: { xs: 1.5, sm: 1.8, md: 2 },
                               minHeight: { xs: '48px', sm: '52px', md: '56px' },
@@ -601,37 +639,39 @@ const HomePage = () => {
                                 minHeight: '44px',
                                 maxWidth: '280px',
                               },
-                            '&:hover': {
+                              '&:hover': {
                                 background:
                                   'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                            },
-                          }}
-                          fullWidth={isMobile}
-                          onClick={() => navigate('/hirer/jobs/post')}
-                        >
-                          {isMobile ? 'Post Job' : 'Post a Job'}
-                        </StyledButton>
-                      )}
-                    </Box>
+                              },
+                            }}
+                            fullWidth={isMobile}
+                            onClick={() => navigate('/hirer/jobs/post')}
+                          >
+                            {isMobile ? 'Post Job' : 'Post a Job'}
+                          </StyledButton>
+                        )}
+                      </Box>
                     </motion.div>
-                </motion.div>
-          </Grid>
+                  </motion.div>
+                </Grid>
                 <Grid item xs={12} md={4}>
                   <motion.div
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 1, delay: 0.4 }}
                   >
-                    <Box sx={{ 
-                      mt: { xs: 2, sm: 3, md: 8 },
-                      display: { xs: 'none', sm: 'block' } // Hide on mobile, show on larger screens
-                    }}>
-            {features.map((feature, index) => (
-                <motion.div
+                    <Box
+                      sx={{
+                        mt: { xs: 2, sm: 3, md: 8 },
+                        display: { xs: 'none', sm: 'block' }, // Hide on mobile, show on larger screens
+                      }}
+                    >
+                      {features.map((feature, index) => (
+                        <motion.div
                           key={feature.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                          initial={{ opacity: 0, y: 30 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
                           transition={{ duration: 0.6, delay: index * 0.2 }}
                         >
                           <FeatureBox>
@@ -650,15 +690,15 @@ const HomePage = () => {
                                 sx={{ fontSize: '0.95rem' }}
                               >
                                 {feature.description}
-                            </Typography>
+                              </Typography>
                             </Box>
                           </FeatureBox>
-                </motion.div>
-            ))}
+                        </motion.div>
+                      ))}
                     </Box>
                   </motion.div>
                 </Grid>
-          </Grid>
+              </Grid>
             </Box>
 
             {/* Enhanced scroll indicator */}
@@ -717,28 +757,30 @@ const HomePage = () => {
               overflow: 'visible', // Allow content to flow naturally
             }}
           >
-            <Box sx={{ 
-            width: '100%',
-            maxWidth: '100vw',
-            px: { xs: 1.5, sm: 3, md: 4, lg: 6 },
-            boxSizing: 'border-box',
-            // Mobile-specific optimizations
-            '@media (max-width: 600px)': {
-              px: 1,
-            },
-          }}>
-                <motion.div
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: '100vw',
+                px: { xs: 1.5, sm: 3, md: 4, lg: 6 },
+                boxSizing: 'border-box',
+                // Mobile-specific optimizations
+                '@media (max-width: 600px)': {
+                  px: 1,
+                },
+              }}
+            >
+              <motion.div
                 initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
               >
-              <Typography
-                variant={isMobile ? 'h4' : 'h2'}
-                sx={{
-                  textAlign: 'center',
+                <Typography
+                  variant={isMobile ? 'h4' : 'h2'}
+                  sx={{
+                    textAlign: 'center',
                     mb: { xs: 2, sm: 3 },
-                  color: theme.palette.secondary.main,
+                    color: theme.palette.secondary.main,
                     fontWeight: 800,
                     fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.5rem' },
                   }}
@@ -756,12 +798,12 @@ const HomePage = () => {
                     fontWeight: 400,
                     fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
                     lineHeight: { xs: 1.4, sm: 1.5 },
-                    px: { xs: 2, sm: 0 }
+                    px: { xs: 2, sm: 0 },
                   }}
                 >
                   Professional skilled workers ready to tackle your projects
                   with expertise and dedication
-              </Typography>
+                </Typography>
               </motion.div>
 
               <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
@@ -773,64 +815,76 @@ const HomePage = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: index * 0.15 }}
                     >
-                      <ServiceCard onClick={() => goToCategorySearch(service.title)}>
+                      <ServiceCard
+                        onClick={() => goToCategorySearch(service.title)}
+                      >
                         <Box sx={{ position: 'relative' }}>
-                        <ServiceCardMedia
-                          image={service.image}
-                          title={service.title}
-                        />
+                          <ServiceCardMedia
+                            image={service.image}
+                            title={service.title}
+                          />
                           <TradeIcon className="service-icon">
                             {service.icon}
                           </TradeIcon>
                         </Box>
                         <ServiceCardContent>
-                      <Typography 
+                          <Typography
                             gutterBottom
-                        variant={isMobile ? 'h6' : 'h5'} 
+                            variant={isMobile ? 'h6' : 'h5'}
                             component="div"
                             color="white"
-                            sx={{ 
-                              fontWeight: 700, 
+                            sx={{
+                              fontWeight: 700,
                               mb: { xs: 1, sm: 1.5, md: 2 },
-                              fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.25rem' }
+                              fontSize: {
+                                xs: '1.1rem',
+                                sm: '1.2rem',
+                                md: '1.25rem',
+                              },
                             }}
-                      >
-                        {service.title}
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
+                          >
+                            {service.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
                             color="rgba(255,255,255,0.85)"
-                            sx={{ 
-                              mb: { xs: 1.5, sm: 2 }, 
+                            sx={{
+                              mb: { xs: 1.5, sm: 2 },
                               lineHeight: { xs: 1.4, sm: 1.5 },
-                              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '0.875rem' }
+                              fontSize: {
+                                xs: '0.85rem',
+                                sm: '0.9rem',
+                                md: '0.875rem',
+                              },
                             }}
-                      >
-                        {service.description}
-                      </Typography>
+                          >
+                            {service.description}
+                          </Typography>
                           <Box
                             sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
                           >
-                        {service.skills.map((skill) => (
+                            {service.skills.map((skill) => (
                               <Chip
-                            key={skill} 
-                            label={skill} 
-                            size="small"
+                                key={skill}
+                                label={skill}
+                                size="small"
                                 sx={{
                                   backgroundColor: 'rgba(255,215,0,0.2)',
                                   color: '#FFD700',
                                   fontSize: '0.75rem',
                                   fontWeight: 600,
                                 }}
-                          />
-                        ))}
+                              />
+                            ))}
                           </Box>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            gap: { xs: 0.5, sm: 1 }, 
-                            mt: { xs: 1.5, sm: 2 },
-                            flexDirection: { xs: 'column', sm: 'row' }
-                          }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              gap: { xs: 0.5, sm: 1 },
+                              mt: { xs: 1.5, sm: 2 },
+                              flexDirection: { xs: 'column', sm: 'row' },
+                            }}
+                          >
                             <StyledButton
                               variant="contained"
                               size={isMobile ? 'small' : 'small'}
@@ -839,7 +893,7 @@ const HomePage = () => {
                                 py: { xs: 0.5, sm: 0.8 },
                                 px: { xs: 1.5, sm: 2 },
                                 minHeight: { xs: '32px', sm: '36px' },
-                                width: { xs: '100%', sm: 'auto' }
+                                width: { xs: '100%', sm: 'auto' },
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -857,7 +911,7 @@ const HomePage = () => {
                                 px: { xs: 1.5, sm: 2 },
                                 minHeight: { xs: '32px', sm: '36px' },
                                 width: { xs: '100%', sm: 'auto' },
-                                borderWidth: { xs: 1, sm: 2 }
+                                borderWidth: { xs: 1, sm: 2 },
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -874,12 +928,12 @@ const HomePage = () => {
                             </StyledButton>
                           </Box>
                         </ServiceCardContent>
-                  </ServiceCard>
-                </motion.div>
+                      </ServiceCard>
+                    </motion.div>
                   </Grid>
-            ))}
-          </Grid>
-          
+                ))}
+              </Grid>
+
               {/* Call-to-action section */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -887,22 +941,24 @@ const HomePage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  mt: { xs: 6, sm: 8, md: 12 },
-                  px: { xs: 2, sm: 0 }
-                }}>
-            <Typography 
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    mt: { xs: 6, sm: 8, md: 12 },
+                    px: { xs: 2, sm: 0 },
+                  }}
+                >
+                  <Typography
                     variant={isMobile ? 'h5' : 'h4'}
-              sx={{
+                    sx={{
                       color: 'white',
                       mb: { xs: 2, sm: 3 },
                       fontWeight: 700,
-                      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
-              }}
-            >
-              Ready to Get Started?
-            </Typography>
+                      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                    }}
+                  >
+                    Ready to Get Started?
+                  </Typography>
                   <Typography
                     variant={isMobile ? 'body1' : 'h6'}
                     sx={{
@@ -911,12 +967,12 @@ const HomePage = () => {
                       maxWidth: { xs: '100%', sm: 500 },
                       mx: 'auto',
                       fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
-                      lineHeight: { xs: 1.4, sm: 1.5 }
+                      lineHeight: { xs: 1.4, sm: 1.5 },
                     }}
                   >
                     Join thousands of skilled workers and satisfied customers on
                     Ghana's leading trade platform
-            </Typography>
+                  </Typography>
                   <Box
                     sx={{
                       display: 'flex',
@@ -924,7 +980,7 @@ const HomePage = () => {
                       justifyContent: 'center',
                       flexWrap: 'wrap',
                       flexDirection: { xs: 'column', sm: 'row' },
-                      alignItems: 'center'
+                      alignItems: 'center',
                     }}
                   >
                     <StyledButton
@@ -980,7 +1036,7 @@ const HomePage = () => {
               </motion.div>
             </Box>
           </Section>
-      </Box>
+        </Box>
       </GestureControl>
     </>
   );

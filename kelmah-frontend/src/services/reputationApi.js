@@ -26,19 +26,19 @@ const initializeReputationClient = async () => {
 // Add interceptors after client is initialized
 const addInterceptors = async () => {
   const client = await initializeReputationClient();
-  
+
   // Response interceptor for error handling
   client.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    console.error('Reputation API Error:', error);
-    throw error.response?.data || error;
-  }
+    (response) => response.data,
+    (error) => {
+      console.error('Reputation API Error:', error);
+      throw error.response?.data || error;
+    },
   );
 };
 
 // Initialize interceptors (don't await to avoid blocking module loading)
-addInterceptors().catch(error => {
+addInterceptors().catch((error) => {
   console.error('Failed to initialize reputation API interceptors:', error);
 });
 
@@ -53,7 +53,7 @@ const reputationApi = {
       const [ratings, achievements, stats] = await Promise.all([
         this.getWorkerRatings(workerId),
         this.getWorkerAchievements(workerId),
-        this.getWorkerStats(workerId)
+        this.getWorkerStats(workerId),
       ]);
 
       return {
@@ -61,10 +61,14 @@ const reputationApi = {
         ...ratings,
         achievements,
         stats,
-        overallScore: this.calculateReputationScore(ratings, achievements, stats),
+        overallScore: this.calculateReputationScore(
+          ratings,
+          achievements,
+          stats,
+        ),
         trustMetrics: this.calculateTrustMetrics(ratings, stats),
         performanceTrends: this.calculatePerformanceTrends(ratings),
-        categoryExpertise: this.calculateCategoryExpertise(ratings, stats)
+        categoryExpertise: this.calculateCategoryExpertise(ratings, stats),
       };
     } catch (error) {
       console.error('Error fetching worker reputation:', error);
@@ -121,12 +125,22 @@ const reputationApi = {
   calculateReputationScore(ratings, achievements, stats) {
     const ratingScore = (ratings.averageRating / 5) * 40; // 40% weight
     const volumeScore = Math.min((ratings.totalReviews / 100) * 20, 20); // 20% weight, capped at 100 reviews
-    const qualityScore = (ratings.recommendationRate || 0) / 100 * 15; // 15% weight
-    const consistencyScore = (stats.onTimeDelivery || 0) / 100 * 10; // 10% weight
-    const experienceScore = Math.min((stats.completedJobs || 0) / 200 * 10, 10); // 10% weight, capped at 200 jobs
+    const qualityScore = ((ratings.recommendationRate || 0) / 100) * 15; // 15% weight
+    const consistencyScore = ((stats.onTimeDelivery || 0) / 100) * 10; // 10% weight
+    const experienceScore = Math.min(
+      ((stats.completedJobs || 0) / 200) * 10,
+      10,
+    ); // 10% weight, capped at 200 jobs
     const achievementScore = Math.min(achievements.length * 0.5, 5); // 5% weight, max 10 achievements
 
-    return Math.round(ratingScore + volumeScore + qualityScore + consistencyScore + experienceScore + achievementScore);
+    return Math.round(
+      ratingScore +
+        volumeScore +
+        qualityScore +
+        consistencyScore +
+        experienceScore +
+        achievementScore,
+    );
   },
 
   /**
@@ -144,7 +158,7 @@ const reputationApi = {
       recommendationRate: ratings.recommendationRate || 0,
       repeatClientRate: stats.repeatClientRate || 0,
       onTimeDelivery: stats.onTimeDelivery || 90,
-      qualityConsistency: this.calculateQualityConsistency(ratings)
+      qualityConsistency: this.calculateQualityConsistency(ratings),
     };
   },
 
@@ -154,26 +168,26 @@ const reputationApi = {
   calculatePerformanceTrends(ratings) {
     const baseRating = ratings.averageRating || 0;
     return {
-      lastMonth: { 
-        rating: Math.min(baseRating + (Math.random() - 0.3) * 0.3, 5), 
+      lastMonth: {
+        rating: Math.min(baseRating + (Math.random() - 0.3) * 0.3, 5),
         trend: Math.random() > 0.5 ? 'up' : 'stable',
-        change: Math.round((Math.random() - 0.3) * 0.3 * 10) / 10
+        change: Math.round((Math.random() - 0.3) * 0.3 * 10) / 10,
       },
-      last3Months: { 
-        rating: Math.min(baseRating + (Math.random() - 0.4) * 0.2, 5), 
+      last3Months: {
+        rating: Math.min(baseRating + (Math.random() - 0.4) * 0.2, 5),
         trend: 'stable',
-        change: 0.0
+        change: 0.0,
       },
-      last6Months: { 
-        rating: Math.min(baseRating + (Math.random() - 0.5) * 0.2, 5), 
+      last6Months: {
+        rating: Math.min(baseRating + (Math.random() - 0.5) * 0.2, 5),
         trend: 'up',
-        change: Math.round(Math.random() * 0.2 * 10) / 10
+        change: Math.round(Math.random() * 0.2 * 10) / 10,
       },
-      lastYear: { 
-        rating: Math.min(baseRating + (Math.random() - 0.6) * 0.3, 5), 
+      lastYear: {
+        rating: Math.min(baseRating + (Math.random() - 0.6) * 0.3, 5),
         trend: 'up',
-        change: Math.round(Math.random() * 0.3 * 10) / 10
-      }
+        change: Math.round(Math.random() * 0.3 * 10) / 10,
+      },
     };
   },
 
@@ -182,11 +196,11 @@ const reputationApi = {
    */
   calculateCategoryExpertise(ratings, stats) {
     const categories = ratings.categoryRatings || [];
-    return categories.map(category => ({
+    return categories.map((category) => ({
       category: category.category,
       rating: category.averageRating,
       jobs: category.reviewCount * 2, // Estimate jobs from reviews
-      specialization: this.getSpecialization(category.category)
+      specialization: this.getSpecialization(category.category),
     }));
   },
 
@@ -195,12 +209,17 @@ const reputationApi = {
    */
   calculateQualityConsistency(ratings) {
     if (!ratings.ratingDistribution) return 85;
-    
-    const total = Object.values(ratings.ratingDistribution).reduce((sum, count) => sum + count, 0);
+
+    const total = Object.values(ratings.ratingDistribution).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
     if (total === 0) return 85;
-    
+
     // Higher consistency if more ratings are 4-5 stars
-    const highRatings = (ratings.ratingDistribution[4] || 0) + (ratings.ratingDistribution[5] || 0);
+    const highRatings =
+      (ratings.ratingDistribution[4] || 0) +
+      (ratings.ratingDistribution[5] || 0);
     return Math.round((highRatings / total) * 100);
   },
 
@@ -209,14 +228,14 @@ const reputationApi = {
    */
   getSpecialization(category) {
     const specializations = {
-      'Carpentry': 'Custom Furniture',
-      'Plumbing': 'Emergency Repairs',
-      'Electrical': 'Home Wiring',
-      'Painting': 'Interior Design',
-      'Masonry': 'Stone Work',
+      Carpentry: 'Custom Furniture',
+      Plumbing: 'Emergency Repairs',
+      Electrical: 'Home Wiring',
+      Painting: 'Interior Design',
+      Masonry: 'Stone Work',
       'General Repairs': 'Quick Fixes',
       'Home Renovation': 'Kitchen Remodeling',
-      'Installation': 'Appliance Setup'
+      Installation: 'Appliance Setup',
     };
     return specializations[category] || 'General Work';
   },
@@ -233,8 +252,10 @@ const reputationApi = {
         icon: 'TrophyIcon',
         color: '#FFD700',
         earned: true,
-        earnedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        level: 'gold'
+        earnedDate: new Date(
+          Date.now() - 30 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        level: 'gold',
       },
       {
         id: 'quality_master',
@@ -243,8 +264,10 @@ const reputationApi = {
         icon: 'StarIcon',
         color: '#4CAF50',
         earned: true,
-        earnedDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-        level: 'platinum'
+        earnedDate: new Date(
+          Date.now() - 60 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        level: 'platinum',
       },
       {
         id: 'trusted_pro',
@@ -253,9 +276,11 @@ const reputationApi = {
         icon: 'SecurityIcon',
         color: '#9C27B0',
         earned: true,
-        earnedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-        level: 'platinum'
-      }
+        earnedDate: new Date(
+          Date.now() - 90 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        level: 'platinum',
+      },
     ];
   },
 
@@ -272,13 +297,13 @@ const reputationApi = {
         quality: 0,
         communication: 0,
         timeliness: 0,
-        professionalism: 0
+        professionalism: 0,
       },
       ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
       categoryRatings: [],
       recommendationRate: 0,
       verifiedReviewsCount: 0,
-      responseRate: 0
+      responseRate: 0,
     };
   },
 
@@ -298,7 +323,7 @@ const reputationApi = {
       responseRate: 0,
       avgResponseTime: 0,
       repeatClientRate: 0,
-      onTimeDelivery: 0
+      onTimeDelivery: 0,
     };
   },
 
@@ -309,7 +334,7 @@ const reputationApi = {
     try {
       const params = new URLSearchParams({
         limit: limit.toString(),
-        ...(category && { category })
+        ...(category && { category }),
       });
 
       const client = await initializeReputationClient();
@@ -327,7 +352,9 @@ const reputationApi = {
   async getReputationInsights(timeRange = '30d') {
     try {
       const client = await initializeReputationClient();
-      const response = await client.get(`/reputation/insights?timeRange=${timeRange}`);
+      const response = await client.get(
+        `/reputation/insights?timeRange=${timeRange}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Error fetching reputation insights:', error);
@@ -343,7 +370,7 @@ const reputationApi = {
       const client = await initializeReputationClient();
       const response = await client.post(`/achievements/award`, {
         workerId,
-        achievementId
+        achievementId,
       });
       return response;
     } catch (error) {
@@ -360,7 +387,7 @@ const reputationApi = {
       const client = await initializeReputationClient();
       const response = await client.put(`/workers/${workerId}/verification`, {
         type: verificationType,
-        status
+        status,
       });
       return response;
     } catch (error) {
@@ -375,7 +402,9 @@ const reputationApi = {
   async getWorkerReputationAnalytics(workerId, timeRange = '90d') {
     try {
       const client = await initializeReputationClient();
-      const response = await client.get(`/reputation/analytics/worker/${workerId}?timeRange=${timeRange}`);
+      const response = await client.get(
+        `/reputation/analytics/worker/${workerId}?timeRange=${timeRange}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Error fetching worker analytics:', error);
@@ -389,11 +418,13 @@ const reputationApi = {
   async compareWorkerReputation(workerId, category = null) {
     try {
       const params = new URLSearchParams({
-        ...(category && { category })
+        ...(category && { category }),
       });
 
       const client = await initializeReputationClient();
-      const response = await client.get(`/reputation/compare/${workerId}?${params}`);
+      const response = await client.get(
+        `/reputation/compare/${workerId}?${params}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Error comparing reputation:', error);
@@ -407,7 +438,9 @@ const reputationApi = {
   async getReputationHistory(workerId, timeRange = '1y') {
     try {
       const client = await initializeReputationClient();
-      const response = await client.get(`/reputation/history/${workerId}?timeRange=${timeRange}`);
+      const response = await client.get(
+        `/reputation/history/${workerId}?timeRange=${timeRange}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Error fetching reputation history:', error);
@@ -421,7 +454,9 @@ const reputationApi = {
   async checkBadgeEligibility(workerId) {
     try {
       const client = await initializeReputationClient();
-      const response = await client.get(`/achievements/eligibility/${workerId}`);
+      const response = await client.get(
+        `/achievements/eligibility/${workerId}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Error checking badge eligibility:', error);
@@ -441,7 +476,7 @@ const reputationApi = {
       console.error('Error fetching platform stats:', error);
       throw new Error(`Failed to fetch platform stats: ${error.message}`);
     }
-  }
+  },
 };
 
 export default reputationApi;

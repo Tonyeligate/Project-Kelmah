@@ -137,12 +137,16 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
   const renderHighlighted = (text, q) => {
     if (!text || !q) return <>{text}</>;
     try {
-      const parts = text.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+      const parts = text.split(
+        new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+      );
       return (
         <>
           {parts.map((part, i) =>
             part.toLowerCase() === q.toLowerCase() ? (
-              <span key={i} className="highlight">{part}</span>
+              <span key={i} className="highlight">
+                {part}
+              </span>
             ) : (
               <React.Fragment key={i}>{part}</React.Fragment>
             ),

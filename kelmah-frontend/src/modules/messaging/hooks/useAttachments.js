@@ -42,9 +42,19 @@ const useAttachments = (conversationId) => {
         if (!conversationId) {
           throw new Error('Conversation ID is required for file upload');
         }
-        const result = await fileUploadService.uploadFile(file, `attachments/${conversationId}`, 'messaging');
+        const result = await fileUploadService.uploadFile(
+          file,
+          `attachments/${conversationId}`,
+          'messaging',
+        );
         setUploadProgress(100);
-        return { id: result.url, url: result.url, filename: file.name, contentType: file.type, size: file.size };
+        return {
+          id: result.url,
+          url: result.url,
+          filename: file.name,
+          contentType: file.type,
+          size: file.size,
+        };
       } catch (error) {
         console.error('Error uploading file:', error);
         throw error;

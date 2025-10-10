@@ -36,11 +36,16 @@ class DashboardService {
       if (response.ok) {
         const config = await response.json();
         // Use websocketUrl, ngrokUrl, or API_URL from runtime config
-        wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+        wsUrl =
+          config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
         console.log('📡 Dashboard WebSocket connecting to:', wsUrl);
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load runtime config for WebSocket, using fallback:', wsUrl, error);
+      console.warn(
+        '⚠️ Failed to load runtime config for WebSocket, using fallback:',
+        wsUrl,
+        error,
+      );
     }
 
     // Connect to backend WebSocket server
@@ -221,7 +226,9 @@ class DashboardService {
   // Get notifications summary
   async getNotificationsSummary() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/notifications-summary');
+      const response = await axiosInstance.get(
+        '/api/dashboard/notifications-summary',
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error fetching notifications summary:', error);
@@ -254,7 +261,9 @@ class DashboardService {
   // Get personalized recommendations
   async getRecommendations() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/recommendations');
+      const response = await axiosInstance.get(
+        '/api/dashboard/recommendations',
+      );
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching recommendations:', error);

@@ -165,7 +165,9 @@ const JobPostingPage = () => {
           : Number(formData.budget.fixed || 0),
       currency: 'GHS',
       duration: (() => {
-        const match = String(formData.duration || '').match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
+        const match = String(formData.duration || '').match(
+          /(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i,
+        );
         if (match) {
           let unit = match[2].toLowerCase();
           if (unit.endsWith('s')) unit = unit.slice(0, -1);

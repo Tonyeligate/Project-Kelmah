@@ -10,11 +10,11 @@ import { tokens, themeUtils } from '../theme';
 /**
  * Stack component for vertical layouts
  */
-export const VStack = ({ 
-  spacing = 4, 
-  align = 'stretch', 
-  children, 
-  ...props 
+export const VStack = ({
+  spacing = 4,
+  align = 'stretch',
+  children,
+  ...props
 }) => (
   <Box
     display="flex"
@@ -30,13 +30,13 @@ export const VStack = ({
 /**
  * Stack component for horizontal layouts
  */
-export const HStack = ({ 
-  spacing = 4, 
-  align = 'center', 
+export const HStack = ({
+  spacing = 4,
+  align = 'center',
   justify = 'flex-start',
   wrap = false,
-  children, 
-  ...props 
+  children,
+  ...props
 }) => (
   <Box
     display="flex"
@@ -54,7 +54,7 @@ export const HStack = ({
 /**
  * Container component with consistent max-width and padding
  */
-export const Container = ({ 
+export const Container = ({
   size = 'lg',
   padding = 4,
   centered = true,
@@ -63,7 +63,7 @@ export const Container = ({
 }) => {
   const maxWidths = {
     sm: '640px',
-    md: '768px', 
+    md: '768px',
     lg: '1024px',
     xl: '1280px',
     '2xl': '1536px',
@@ -85,7 +85,7 @@ export const Container = ({
 /**
  * Card wrapper with consistent styling
  */
-export const Card = ({ 
+export const Card = ({
   variant = 'default',
   interactive = false,
   padding = 4,
@@ -95,7 +95,7 @@ export const Card = ({
   <Box
     sx={{
       ...themeUtils.cardStyles({ variant, interactive, padding }),
-      ...props.sx
+      ...props.sx,
     }}
     {...props}
   >
@@ -106,18 +106,18 @@ export const Card = ({
 /**
  * Divider with consistent styling
  */
-export const Divider = ({ 
+export const Divider = ({
   orientation = 'horizontal',
   spacing = 4,
   ...props
 }) => {
   const isVertical = orientation === 'vertical';
-  
+
   return (
     <Box
       sx={{
         backgroundColor: tokens.semantic.border.default,
-        ...(isVertical 
+        ...(isVertical
           ? {
               width: '1px',
               mx: themeUtils.spacing(spacing),
@@ -125,8 +125,7 @@ export const Divider = ({
           : {
               height: '1px',
               my: themeUtils.spacing(spacing),
-            }
-        ),
+            }),
       }}
       {...props}
     />
@@ -153,7 +152,7 @@ export const Grid = ({
         lg: `repeat(${columns.lg || columns.md || columns.sm || columns.xs || 1}, 1fr)`,
         xl: `repeat(${columns.xl || columns.lg || columns.md || columns.sm || columns.xs || 1}, 1fr)`,
       },
-      ...props.sx
+      ...props.sx,
     }}
     {...props}
   >
@@ -171,15 +170,42 @@ export const Text = ({
   ...props
 }) => {
   const variantStyles = {
-    h1: { fontSize: tokens.typography.fontSize['4xl'], fontWeight: tokens.typography.fontWeight.bold },
-    h2: { fontSize: tokens.typography.fontSize['3xl'], fontWeight: tokens.typography.fontWeight.bold },
-    h3: { fontSize: tokens.typography.fontSize['2xl'], fontWeight: tokens.typography.fontWeight.semiBold },
-    h4: { fontSize: tokens.typography.fontSize.xl, fontWeight: tokens.typography.fontWeight.semiBold },
-    h5: { fontSize: tokens.typography.fontSize.lg, fontWeight: tokens.typography.fontWeight.medium },
-    h6: { fontSize: tokens.typography.fontSize.base, fontWeight: tokens.typography.fontWeight.medium },
-    body1: { fontSize: tokens.typography.fontSize.base, fontWeight: tokens.typography.fontWeight.regular },
-    body2: { fontSize: tokens.typography.fontSize.sm, fontWeight: tokens.typography.fontWeight.regular },
-    caption: { fontSize: tokens.typography.fontSize.xs, fontWeight: tokens.typography.fontWeight.regular },
+    h1: {
+      fontSize: tokens.typography.fontSize['4xl'],
+      fontWeight: tokens.typography.fontWeight.bold,
+    },
+    h2: {
+      fontSize: tokens.typography.fontSize['3xl'],
+      fontWeight: tokens.typography.fontWeight.bold,
+    },
+    h3: {
+      fontSize: tokens.typography.fontSize['2xl'],
+      fontWeight: tokens.typography.fontWeight.semiBold,
+    },
+    h4: {
+      fontSize: tokens.typography.fontSize.xl,
+      fontWeight: tokens.typography.fontWeight.semiBold,
+    },
+    h5: {
+      fontSize: tokens.typography.fontSize.lg,
+      fontWeight: tokens.typography.fontWeight.medium,
+    },
+    h6: {
+      fontSize: tokens.typography.fontSize.base,
+      fontWeight: tokens.typography.fontWeight.medium,
+    },
+    body1: {
+      fontSize: tokens.typography.fontSize.base,
+      fontWeight: tokens.typography.fontWeight.regular,
+    },
+    body2: {
+      fontSize: tokens.typography.fontSize.sm,
+      fontWeight: tokens.typography.fontWeight.regular,
+    },
+    caption: {
+      fontSize: tokens.typography.fontSize.xs,
+      fontWeight: tokens.typography.fontWeight.regular,
+    },
   };
 
   return (
@@ -187,9 +213,11 @@ export const Text = ({
       component="span"
       sx={{
         ...variantStyles[variant],
-        color: color.startsWith('text.') ? tokens.semantic[color] : themeUtils.getColor(color),
+        color: color.startsWith('text.')
+          ? tokens.semantic[color]
+          : themeUtils.getColor(color),
         fontFamily: tokens.typography.fontFamily.primary,
-        ...props.sx
+        ...props.sx,
       }}
       {...props}
     >

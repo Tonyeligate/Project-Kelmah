@@ -117,7 +117,12 @@ const WorkerSearchResults = ({
         <Grid item xs={12} sm={6} md={4} key={index}>
           <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Skeleton variant="circular" width={56} height={56} sx={{ mr: 2 }} />
+              <Skeleton
+                variant="circular"
+                width={56}
+                height={56}
+                sx={{ mr: 2 }}
+              />
               <Box sx={{ flex: 1 }}>
                 <Skeleton variant="text" width="60%" height={24} />
                 <Skeleton variant="text" width="40%" height={20} />
@@ -164,8 +169,8 @@ const WorkerSearchResults = ({
     <Grid container spacing={3}>
       {workers.map((worker) => (
         <Grid item xs={12} sm={6} md={4} key={worker.id || worker.userId}>
-          <WorkerCard 
-            worker={worker} 
+          <WorkerCard
+            worker={worker}
             onSave={onSaveWorker ? () => onSaveWorker(worker) : undefined}
           />
         </Grid>
@@ -207,9 +212,11 @@ const WorkerSearchResults = ({
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        {pagination.total ? `${pagination.total} workers found` : 'Searching...'}
+        {pagination.total
+          ? `${pagination.total} workers found`
+          : 'Searching...'}
       </Typography>
-      
+
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Sort by</InputLabel>
@@ -225,7 +232,7 @@ const WorkerSearchResults = ({
             <MenuItem value="newest">Newest</MenuItem>
           </Select>
         </FormControl>
-        
+
         {onToggleView && (
           <Button
             variant="outlined"

@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { authServiceClient, userServiceClient, jobServiceClient, paymentServiceClient } from '../../common/services/axios';
+import {
+  authServiceClient,
+  userServiceClient,
+  jobServiceClient,
+  paymentServiceClient,
+} from '../../common/services/axios';
 
 // Clients are centralized in modules/common/services/axios.js with auth interceptors
 
@@ -12,10 +17,13 @@ export const fetchHirerProfile = createAsyncThunk(
       const response = await userServiceClient.get('/api/users/me/credentials');
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('User service unavailable for hirer profile:', error.message);
+      console.warn(
+        'User service unavailable for hirer profile:',
+        error.message,
+      );
       return getRealUserData();
     }
-  }
+  },
 );
 
 export const fetchHirerJobs = createAsyncThunk(
@@ -25,15 +33,19 @@ export const fetchHirerJobs = createAsyncThunk(
       const response = await jobServiceClient.get('/api/jobs/my-jobs', {
         params: { status, role: 'hirer' },
       });
-      const jobs = response.data?.data || response.data?.jobs || response.data || [];
+      const jobs =
+        response.data?.data || response.data?.jobs || response.data || [];
       // ✅ FIXED: Ensure jobs is always an array
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
-      console.warn(`Job service unavailable for hirer jobs (${status}):`, error.message);
+      console.warn(
+        `Job service unavailable for hirer jobs (${status}):`,
+        error.message,
+      );
       // ✅ FIXED: Always return empty array on error
       return { status, jobs: [] };
     }
-  }
+  },
 );
 
 export const createHirerJob = createAsyncThunk(
@@ -46,20 +58,26 @@ export const createHirerJob = createAsyncThunk(
       console.warn('Job service unavailable for job creation:', error.message);
       throw error;
     }
-  }
+  },
 );
 
 export const updateHirerProfile = createAsyncThunk(
   'hirer/updateProfile',
   async (profileData) => {
     try {
-      const response = await userServiceClient.put('/api/users/me/profile', profileData);
+      const response = await userServiceClient.put(
+        '/api/users/me/profile',
+        profileData,
+      );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('User service unavailable for profile update:', error.message);
+      console.warn(
+        'User service unavailable for profile update:',
+        error.message,
+      );
       throw error;
     }
-  }
+  },
 );
 
 // Get real user data from localStorage
@@ -102,7 +120,7 @@ const createHirerProfile = () => {
         communicationMethod: 'email',
         jobNotifications: true,
         marketingEmails: false,
-        currency: "GHS",
+        currency: 'GHS',
       },
       businessDetails: realUser.businessDetails || {
         registrationNumber: '',
@@ -121,9 +139,12 @@ export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.patch(`/api/jobs/${jobId}/status`, {
-        status,
-      });
+      const response = await jobServiceClient.patch(
+        `/api/jobs/${jobId}/status`,
+        {
+          status,
+        },
+      );
       return response.data;
     } catch (error) {
       console.warn(
@@ -188,19 +209,34 @@ export const fetchPaymentSummary = createAsyncThunk(
     try {
       // Compose summary from wallet, escrows, and transactions
       const [walletResp, escrowsResp, txResp] = await Promise.all([
-        paymentServiceClient.get('/api/payments/wallet').catch(() => ({ data: null })),
-        paymentServiceClient.get('/api/payments/escrows').catch(() => ({ data: [] })),
-        paymentServiceClient.get('/api/payments/transactions/history').catch(() => ({ data: [] })),
+        paymentServiceClient
+          .get('/api/payments/wallet')
+          .catch(() => ({ data: null })),
+        paymentServiceClient
+          .get('/api/payments/escrows')
+          .catch(() => ({ data: [] })),
+        paymentServiceClient
+          .get('/api/payments/transactions/history')
+          .catch(() => ({ data: [] })),
       ]);
 
       const wallet = walletResp?.data || {};
-      const escrows = Array.isArray(escrowsResp?.data) ? escrowsResp.data : (escrowsResp?.data?.escrows || []);
-      const history = Array.isArray(txResp?.data?.data) ? txResp.data.data : (Array.isArray(txResp?.data) ? txResp.data : []);
+      const escrows = Array.isArray(escrowsResp?.data)
+        ? escrowsResp.data
+        : escrowsResp?.data?.escrows || [];
+      const history = Array.isArray(txResp?.data?.data)
+        ? txResp.data.data
+        : Array.isArray(txResp?.data)
+          ? txResp.data
+          : [];
 
       // Compute escrow balance
       const escrowBalance = Array.isArray(wallet?.accounts)
-        ? (wallet.accounts.find(a => a.type === 'escrow')?.balance || 0)
-        : escrows.reduce((sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0), 0);
+        ? wallet.accounts.find((a) => a.type === 'escrow')?.balance || 0
+        : escrows.reduce(
+            (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
+            0,
+          );
 
       // Build pending payments from escrows' pending milestones
       const pending = [];
@@ -217,7 +253,10 @@ export const fetchPaymentSummary = createAsyncThunk(
               amount: m.amount || 0,
               milestone: m.description || m.name || 'Milestone',
               dueDate: m.dueDate || null,
-              status: m.status === 'ready_for_release' ? 'ready_for_release' : 'pending_approval',
+              status:
+                m.status === 'ready_for_release'
+                  ? 'ready_for_release'
+                  : 'pending_approval',
             });
           }
         });
@@ -225,19 +264,34 @@ export const fetchPaymentSummary = createAsyncThunk(
 
       // Compute totals
       const totalPaid = history
-        .filter((t) => (t.type === 'payout' || t.type === 'payment') && (t.status === 'completed' || t.status === 'success'))
+        .filter(
+          (t) =>
+            (t.type === 'payout' || t.type === 'payment') &&
+            (t.status === 'completed' || t.status === 'success'),
+        )
         .reduce((sum, t) => sum + (t.amount || 0), 0);
 
       // Average payment time (basic heuristic)
       const payoutDurations = history
-        .filter((t) => (t.type === 'payout' || t.type === 'payment') && t.createdAt && (t.completedAt || t.updatedAt))
-        .map((t) => new Date(t.completedAt || t.updatedAt).getTime() - new Date(t.createdAt).getTime())
+        .filter(
+          (t) =>
+            (t.type === 'payout' || t.type === 'payment') &&
+            t.createdAt &&
+            (t.completedAt || t.updatedAt),
+        )
+        .map(
+          (t) =>
+            new Date(t.completedAt || t.updatedAt).getTime() -
+            new Date(t.createdAt).getTime(),
+        )
         .filter((d) => Number.isFinite(d) && d > 0);
       const avgMs = payoutDurations.length
-        ? Math.round(payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length)
+        ? Math.round(
+            payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
+          )
         : null;
       const averagePaymentTime = avgMs
-        ? `${Math.max(1, Math.round(avgMs / (1000 * 60))) } min`
+        ? `${Math.max(1, Math.round(avgMs / (1000 * 60)))} min`
         : 'N/A';
 
       return {
@@ -261,7 +315,7 @@ export const fetchPaymentSummary = createAsyncThunk(
 const initialState = {
   profile: null,
   jobs: {
-    active: [],        // ✅ FIXED: Changed from 'active' to active
+    active: [], // ✅ FIXED: Changed from 'active' to active
     'in-progress': [],
     completed: [],
     cancelled: [],

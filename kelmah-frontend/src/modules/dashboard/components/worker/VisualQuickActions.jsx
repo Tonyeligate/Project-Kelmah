@@ -101,15 +101,10 @@ const VisualQuickActions = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography
-        variant="h5"
-        fontWeight={600}
-        gutterBottom
-        sx={{ mb: 3 }}
-      >
+      <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 3 }}>
         ⚡ Quick Actions
       </Typography>
-      
+
       <Grid container spacing={2}>
         {quickActions.map((action) => (
           <Grid item xs={6} sm={4} md={3} key={action.id}>
@@ -141,7 +136,7 @@ const VisualQuickActions = () => {
                 >
                   {action.emoji}
                 </Avatar>
-                
+
                 <Typography
                   variant="h6"
                   fontWeight={600}
@@ -152,7 +147,7 @@ const VisualQuickActions = () => {
                 >
                   {action.title}
                 </Typography>
-                
+
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -162,7 +157,7 @@ const VisualQuickActions = () => {
                 >
                   {action.subtitle}
                 </Typography>
-                
+
                 <Box
                   sx={{
                     mt: 2,

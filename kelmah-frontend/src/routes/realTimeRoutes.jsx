@@ -5,14 +5,26 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // Real-time Components
-const RealTimeChat = React.lazy(() => import('../modules/messaging/components/RealTimeChat'));
-const NotificationCenter = React.lazy(() => import('../components/common/NotificationCenter'));
-const RealTimeJobAlerts = React.lazy(() => import('../modules/jobs/components/RealTimeJobAlerts'));
+const RealTimeChat = React.lazy(
+  () => import('../modules/messaging/components/RealTimeChat'),
+);
+const NotificationCenter = React.lazy(
+  () => import('../components/common/NotificationCenter'),
+);
+const RealTimeJobAlerts = React.lazy(
+  () => import('../modules/jobs/components/RealTimeJobAlerts'),
+);
 
 // Pages that use real-time features
-const MessagingPage = React.lazy(() => import('../modules/messaging/pages/MessagingPage'));
-const NotificationsPage = React.lazy(() => import('../pages/NotificationsPage'));
-const JobAlertsPage = React.lazy(() => import('../modules/jobs/pages/JobAlertsPage'));
+const MessagingPage = React.lazy(
+  () => import('../modules/messaging/pages/MessagingPage'),
+);
+const NotificationsPage = React.lazy(
+  () => import('../pages/NotificationsPage'),
+);
+const JobAlertsPage = React.lazy(
+  () => import('../modules/jobs/pages/JobAlertsPage'),
+);
 
 /**
  * Real-time feature routes configuration
@@ -33,15 +45,21 @@ const RealTimeRoutes = () => {
       <Route path="/messages" element={<MessagingPage />} />
       <Route path="/messages/:conversationId" element={<MessagingPage />} />
       <Route path="/chat/:conversationId" element={<RealTimeChat />} />
-      
+
       {/* Notification Routes */}
       <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/notifications/center" element={<NotificationCenter showTabs={true} showHeader={true} />} />
-      
+      <Route
+        path="/notifications/center"
+        element={<NotificationCenter showTabs={true} showHeader={true} />}
+      />
+
       {/* Job Alert Routes */}
       <Route path="/job-alerts" element={<JobAlertsPage />} />
-      <Route path="/alerts/jobs" element={<RealTimeJobAlerts showHeader={true} />} />
-      
+      <Route
+        path="/alerts/jobs"
+        element={<RealTimeJobAlerts showHeader={true} />}
+      />
+
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/messages" replace />} />
     </Routes>

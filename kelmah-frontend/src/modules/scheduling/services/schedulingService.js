@@ -29,7 +29,10 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(`Scheduling service unavailable for job ${jobId}:`, error.message);
+      console.warn(
+        `Scheduling service unavailable for job ${jobId}:`,
+        error.message,
+      );
       return [];
     }
   }
@@ -50,7 +53,10 @@ class SchedulingService {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(`Scheduling service unavailable for user ${userId}:`, error.message);
+      console.warn(
+        `Scheduling service unavailable for user ${userId}:`,
+        error.message,
+      );
       return [];
     }
   }

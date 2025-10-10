@@ -48,14 +48,21 @@ const GhanaSMSVerification = ({
   purpose = 'payment',
   amount = null,
   autoStart = false,
-  onCancel = null
+  onCancel = null,
 }) => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const inputRefs = useRef([]);
 
   // State management
-  const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
+  const [verificationCode, setVerificationCode] = useState([
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [verificationId, setVerificationId] = useState('');
@@ -79,7 +86,7 @@ const GhanaSMSVerification = ({
     '026': { name: 'AirtelTigo', color: '#ED1C24', smsCode: '*100#' },
     '027': { name: 'AirtelTigo', color: '#ED1C24', smsCode: '*100#' },
     '056': { name: 'AirtelTigo', color: '#ED1C24', smsCode: '*100#' },
-    '057': { name: 'AirtelTigo', color: '#ED1C24', smsCode: '*100#' }
+    '057': { name: 'AirtelTigo', color: '#ED1C24', smsCode: '*100#' },
   };
 
   // Auto-start verification if requested
@@ -94,7 +101,7 @@ const GhanaSMSVerification = ({
     let interval;
     if (step === 'sent' && timeRemaining > 0) {
       interval = setInterval(() => {
-        setTimeRemaining(prev => {
+        setTimeRemaining((prev) => {
           if (prev <= 1) {
             setResendAvailable(true);
             return 0;
@@ -110,7 +117,9 @@ const GhanaSMSVerification = ({
   const getNetworkInfo = (phone) => {
     const cleanPhone = phone.replace(/\D/g, '');
     const prefix = cleanPhone.substring(0, 3);
-    return ghanaNetworks[prefix] || { name: 'Unknown', color: '#666', smsCode: '' };
+    return (
+      ghanaNetworks[prefix] || { name: 'Unknown', color: '#666', smsCode: '' }
+    );
   };
 
   // Send SMS verification
@@ -118,29 +127,33 @@ const GhanaSMSVerification = ({
     try {
       setIsSending(true);
       setStep('initial');
-      
+
       const response = await paymentService.sendSMSVerification({
         phoneNumber: `233${phoneNumber.substring(1)}`,
         purpose,
-        amount
+        amount,
       });
-      
+
       if (response.data.success) {
         setVerificationId(response.data.verificationId);
         setStep('sent');
         setTimeRemaining(300);
         setResendAvailable(false);
-        
+
         const networkInfo = getNetworkInfo(phoneNumber);
         enqueueSnackbar(
           `Verification code sent to ${formatPhoneNumber(phoneNumber)} via ${networkInfo.name}`,
-          { variant: 'success', autoHideDuration: 6000 }
+          { variant: 'success', autoHideDuration: 6000 },
         );
       } else {
-        throw new Error(response.data.message || 'Failed to send verification code');
+        throw new Error(
+          response.data.message || 'Failed to send verification code',
+        );
       }
     } catch (error) {
-      enqueueSnackbar(error.message || 'Failed to send SMS verification', { variant: 'error' });
+      enqueueSnackbar(error.message || 'Failed to send SMS verification', {
+        variant: 'error',
+      });
       setStep('failed');
       if (onVerificationError) {
         onVerificationError(error);
@@ -154,18 +167,21 @@ const GhanaSMSVerification = ({
   const handleCodeInputChange = (index, value) => {
     // Only allow digits
     if (!/^\d*$/.test(value)) return;
-    
+
     const newCode = [...verificationCode];
     newCode[index] = value.slice(-1); // Only take the last character
     setVerificationCode(newCode);
-    
+
     // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
-    
+
     // Auto-verify when all digits are entered
-    if (newCode.every(digit => digit !== '') && newCode.join('').length === 6) {
+    if (
+      newCode.every((digit) => digit !== '') &&
+      newCode.join('').length === 6
+    ) {
       handleVerifyCode(newCode.join(''));
     }
   };
@@ -180,52 +196,58 @@ const GhanaSMSVerification = ({
   // Verify SMS code
   const handleVerifyCode = async (code = null) => {
     const codeToVerify = code || verificationCode.join('');
-    
+
     if (codeToVerify.length !== 6) {
-      enqueueSnackbar('Please enter a complete 6-digit code', { variant: 'error' });
+      enqueueSnackbar('Please enter a complete 6-digit code', {
+        variant: 'error',
+      });
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setStep('verifying');
-      
+
       const response = await paymentService.verifySMSCode({
         verificationId,
         code: codeToVerify,
-        phoneNumber: `233${phoneNumber.substring(1)}`
+        phoneNumber: `233${phoneNumber.substring(1)}`,
       });
-      
+
       if (response.data.success) {
         setStep('success');
-        enqueueSnackbar('Phone number verified successfully!', { variant: 'success' });
-        
+        enqueueSnackbar('Phone number verified successfully!', {
+          variant: 'success',
+        });
+
         if (onVerificationSuccess) {
           onVerificationSuccess({
             verificationId,
             phoneNumber,
-            verifiedAt: new Date().toISOString()
+            verifiedAt: new Date().toISOString(),
           });
         }
       } else {
         throw new Error(response.data.message || 'Invalid verification code');
       }
     } catch (error) {
-      setAttempts(prev => prev + 1);
-      
+      setAttempts((prev) => prev + 1);
+
       if (attempts + 1 >= maxAttempts) {
         setStep('failed');
-        enqueueSnackbar('Too many failed attempts. Please try again later.', { variant: 'error' });
+        enqueueSnackbar('Too many failed attempts. Please try again later.', {
+          variant: 'error',
+        });
       } else {
         enqueueSnackbar(
           `Invalid code. ${maxAttempts - attempts - 1} attempts remaining.`,
-          { variant: 'error' }
+          { variant: 'error' },
         );
         // Clear the code inputs
         setVerificationCode(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
       }
-      
+
       if (onVerificationError) {
         onVerificationError(error);
       }
@@ -251,7 +273,7 @@ const GhanaSMSVerification = ({
   // Render initial state
   const renderInitialState = () => {
     const networkInfo = getNetworkInfo(phoneNumber);
-    
+
     return (
       <Card>
         <CardContent>
@@ -264,10 +286,11 @@ const GhanaSMSVerification = ({
               We need to verify your phone number for security
             </Typography>
           </Box>
-          
+
           <Alert severity="info" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              <strong>Phone Number:</strong> {formatPhoneNumber(phoneNumber)} ({networkInfo.name})
+              <strong>Phone Number:</strong> {formatPhoneNumber(phoneNumber)} (
+              {networkInfo.name})
             </Typography>
             {amount && (
               <Typography variant="body2">
@@ -275,7 +298,7 @@ const GhanaSMSVerification = ({
               </Typography>
             )}
           </Alert>
-          
+
           <Box display="flex" gap={2} justifyContent="center">
             {onCancel && (
               <Button variant="outlined" onClick={onCancel}>
@@ -286,7 +309,9 @@ const GhanaSMSVerification = ({
               variant="contained"
               onClick={handleSendVerification}
               disabled={isSending}
-              startIcon={isSending ? <CircularProgress size={20} /> : <SendIcon />}
+              startIcon={
+                isSending ? <CircularProgress size={20} /> : <SendIcon />
+              }
             >
               {isSending ? 'Sending...' : 'Send Verification Code'}
             </Button>
@@ -300,7 +325,7 @@ const GhanaSMSVerification = ({
   const renderCodeInputState = () => {
     const networkInfo = getNetworkInfo(phoneNumber);
     const progressPercent = ((300 - timeRemaining) / 300) * 100;
-    
+
     return (
       <Card>
         <CardContent>
@@ -313,13 +338,13 @@ const GhanaSMSVerification = ({
               We sent a 6-digit code to {formatPhoneNumber(phoneNumber)}
             </Typography>
           </Box>
-          
+
           {/* Code Input Fields */}
           <Grid container spacing={1} justifyContent="center" mb={3}>
             {verificationCode.map((digit, index) => (
               <Grid item key={index}>
                 <TextField
-                  inputRef={el => inputRefs.current[index] = el}
+                  inputRef={(el) => (inputRefs.current[index] = el)}
                   value={digit}
                   onChange={(e) => handleCodeInputChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
@@ -331,8 +356,8 @@ const GhanaSMSVerification = ({
                       fontWeight: 'bold',
                       width: '3rem',
                       height: '3rem',
-                      padding: 0
-                    }
+                      padding: 0,
+                    },
                   }}
                   sx={{
                     width: '4rem',
@@ -341,19 +366,25 @@ const GhanaSMSVerification = ({
                       '&.Mui-focused': {
                         '& fieldset': {
                           borderColor: 'primary.main',
-                          borderWidth: 2
-                        }
-                      }
-                    }
+                          borderWidth: 2,
+                        },
+                      },
+                    },
                   }}
                 />
               </Grid>
             ))}
           </Grid>
-          
+
           {/* Timer and Progress */}
           <Box mb={3}>
-            <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={1}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              gap={1}
+              mb={1}
+            >
               <TimerIcon color="action" />
               <Typography variant="body2">
                 Time remaining: {formatTimeRemaining(timeRemaining)}
@@ -365,31 +396,37 @@ const GhanaSMSVerification = ({
               sx={{
                 height: 6,
                 borderRadius: 3,
-                backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
               }}
             />
           </Box>
-          
+
           {/* Action Buttons */}
           <Box display="flex" gap={2} justifyContent="center" mb={3}>
             <Button
               variant="outlined"
               onClick={handleResendCode}
               disabled={!resendAvailable || isSending}
-              startIcon={isSending ? <CircularProgress size={20} /> : <RefreshIcon />}
+              startIcon={
+                isSending ? <CircularProgress size={20} /> : <RefreshIcon />
+              }
             >
-              {resendAvailable ? 'Resend Code' : `Resend in ${formatTimeRemaining(timeRemaining)}`}
+              {resendAvailable
+                ? 'Resend Code'
+                : `Resend in ${formatTimeRemaining(timeRemaining)}`}
             </Button>
             <Button
               variant="contained"
               onClick={() => handleVerifyCode()}
               disabled={isLoading || verificationCode.join('').length !== 6}
-              startIcon={isLoading ? <CircularProgress size={20} /> : <CheckIcon />}
+              startIcon={
+                isLoading ? <CircularProgress size={20} /> : <CheckIcon />
+              }
             >
               {isLoading ? 'Verifying...' : 'Verify Code'}
             </Button>
           </Box>
-          
+
           {/* Help Section */}
           <Alert severity="info">
             <Typography variant="body2">
@@ -425,7 +462,7 @@ const GhanaSMSVerification = ({
               </ListItem>
             </List>
           </Alert>
-          
+
           {attempts > 0 && (
             <Alert severity="warning" sx={{ mt: 2 }}>
               <Typography variant="body2">
@@ -467,7 +504,7 @@ const GhanaSMSVerification = ({
           <Typography variant="body2" color="text.secondary">
             Your phone number has been verified successfully
           </Typography>
-          
+
           <Alert severity="success" sx={{ mt: 2 }}>
             <Typography variant="body2">
               <strong>Verified:</strong> {formatPhoneNumber(phoneNumber)}
@@ -490,7 +527,7 @@ const GhanaSMSVerification = ({
           <Typography variant="body2" color="text.secondary" paragraph>
             Unable to verify your phone number. Please try again.
           </Typography>
-          
+
           <Button
             variant="contained"
             onClick={() => {
@@ -509,44 +546,57 @@ const GhanaSMSVerification = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        display="flex"
+        alignItems="center"
+        gap={1}
+      >
         <ShieldIcon color="primary" />
         SMS Verification
       </Typography>
-      
+
       {step === 'initial' && renderInitialState()}
       {step === 'sent' && renderCodeInputState()}
       {step === 'verifying' && renderVerifyingState()}
       {step === 'success' && renderSuccessState()}
       {step === 'failed' && renderFailedState()}
-      
+
       {/* Help Dialog */}
-      <Dialog open={showHelp} onClose={() => setShowHelp(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={showHelp}
+        onClose={() => setShowHelp(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>SMS Verification Help</DialogTitle>
         <DialogContent>
           <Typography variant="h6" gutterBottom>
             Ghana Network Codes
           </Typography>
           <List>
-            {Object.entries(ghanaNetworks).reduce((acc, [prefix, info]) => {
-              const existing = acc.find(item => item.name === info.name);
-              if (!existing) {
-                acc.push(info);
-              }
-              return acc;
-            }, []).map((network, index) => (
-              <ListItem key={index}>
-                <ListItemIcon>
-                  <PhoneIcon sx={{ color: network.color }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={network.name}
-                  secondary={`Check balance: ${network.smsCode}`}
-                />
-              </ListItem>
-            ))}
+            {Object.entries(ghanaNetworks)
+              .reduce((acc, [prefix, info]) => {
+                const existing = acc.find((item) => item.name === info.name);
+                if (!existing) {
+                  acc.push(info);
+                }
+                return acc;
+              }, [])
+              .map((network, index) => (
+                <ListItem key={index}>
+                  <ListItemIcon>
+                    <PhoneIcon sx={{ color: network.color }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={network.name}
+                    secondary={`Check balance: ${network.smsCode}`}
+                  />
+                </ListItem>
+              ))}
           </List>
-          
+
           <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
             Troubleshooting
           </Typography>

@@ -62,7 +62,10 @@ const NotificationItem = ({ notification }) => (
     })}
     secondaryAction={
       <Typography variant="caption" color="text.secondary" sx={{ pr: 1 }}>
-        {formatDistanceToNow(new Date(notification.createdAt || notification.date), { addSuffix: true })}
+        {formatDistanceToNow(
+          new Date(notification.createdAt || notification.date),
+          { addSuffix: true },
+        )}
       </Typography>
     }
   >
@@ -131,22 +134,40 @@ const NotificationsPage = () => {
 
   const handleFilterChange = (event, newValue) => {
     setFilter(newValue);
-    refresh({ page: 1, limit: pagination.limit, type: newValue === 'all' ? undefined : newValue, unreadOnly });
+    refresh({
+      page: 1,
+      limit: pagination.limit,
+      type: newValue === 'all' ? undefined : newValue,
+      unreadOnly,
+    });
   };
 
   const handleToggleUnread = (event) => {
     const next = event.target.checked;
     setUnreadOnly(next);
-    refresh({ page: 1, limit: pagination.limit, unreadOnly: next, type: filter === 'all' ? undefined : filter });
+    refresh({
+      page: 1,
+      limit: pagination.limit,
+      unreadOnly: next,
+      type: filter === 'all' ? undefined : filter,
+    });
   };
 
   const handlePageChange = (_e, page) => {
-    refresh({ page, limit: pagination.limit, unreadOnly, type: filter === 'all' ? undefined : filter });
+    refresh({
+      page,
+      limit: pagination.limit,
+      unreadOnly,
+      type: filter === 'all' ? undefined : filter,
+    });
   };
 
   const filteredNotifications = notifications
     .filter((n) => filter === 'all' || n.type === filter)
-    .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date),
+    );
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -195,11 +216,24 @@ const NotificationsPage = () => {
       </Box>
 
       {/* Summary line for notification counts */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <Typography variant="body2" color="text.secondary">
-          Showing {filteredNotifications.length} of {notifications.length} notifications
+          Showing {filteredNotifications.length} of {notifications.length}{' '}
+          notifications
         </Typography>
-        <FormControlLabel control={<Switch checked={unreadOnly} onChange={handleToggleUnread} />} label="Unread only" />
+        <FormControlLabel
+          control={
+            <Switch checked={unreadOnly} onChange={handleToggleUnread} />
+          }
+          label="Unread only"
+        />
       </Box>
 
       <Paper
@@ -252,7 +286,12 @@ const NotificationsPage = () => {
               />
             ))}
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-              <Pagination count={pagination.pages || 1} page={pagination.page || 1} onChange={handlePageChange} color="primary" />
+              <Pagination
+                count={pagination.pages || 1}
+                page={pagination.page || 1}
+                onChange={handlePageChange}
+                color="primary"
+              />
             </Box>
           </List>
         ) : (

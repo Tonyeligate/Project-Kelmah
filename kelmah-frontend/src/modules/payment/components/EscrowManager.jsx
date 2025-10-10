@@ -1,11 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Typography, Button, Stack, TextField, Divider, Select, MenuItem, Alert } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Stack,
+  TextField,
+  Divider,
+  Select,
+  MenuItem,
+  Alert,
+} from '@mui/material';
 import paymentService from '../../payment/services/paymentService';
 
 const EscrowManager = () => {
   const [escrows, setEscrows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ amount: '', contractId: '', jobId: '', workerId: '', provider: 'paystack', email: '' });
+  const [form, setForm] = useState({
+    amount: '',
+    contractId: '',
+    jobId: '',
+    workerId: '',
+    provider: 'paystack',
+    email: '',
+  });
   const [message, setMessage] = useState(null);
 
   const loadEscrows = async () => {
@@ -20,13 +38,15 @@ const EscrowManager = () => {
     }
   };
 
-  useEffect(() => { loadEscrows(); }, []);
+  useEffect(() => {
+    loadEscrows();
+  }, []);
 
   const fundEscrow = async () => {
     try {
       setMessage(null);
       // Generate escrow reference on client for E2E mapping
-      const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+      const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
       const payload = {
         amount: Number(form.amount),
         currency: 'GHS',
@@ -34,11 +54,15 @@ const EscrowManager = () => {
         jobId: form.jobId,
         workerId: form.workerId,
         provider: form.provider,
-        reference: escrowReference
+        reference: escrowReference,
       };
-      const { success, message: msg } = await paymentService.fundEscrow(payload);
+      const { success, message: msg } =
+        await paymentService.fundEscrow(payload);
       if (!success) throw new Error(msg || 'Fund failed');
-      setMessage({ type: 'success', text: `Escrow funded (ref ${escrowReference})` });
+      setMessage({
+        type: 'success',
+        text: `Escrow funded (ref ${escrowReference})`,
+      });
       await loadEscrows();
     } catch (e) {
       setMessage({ type: 'error', text: e.message });
@@ -50,27 +74,37 @@ const EscrowManager = () => {
     try {
       setMessage(null);
       if (!form.amount) throw new Error('Enter amount');
-      const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+      const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
       if (form.provider === 'stripe') {
         const resp = await paymentService.createStripePaymentIntent({
           amount: Math.round(Number(form.amount) * 100),
           currency: 'GHS',
           provider: 'stripe',
-          metadata: { escrowReference }
+          metadata: { escrowReference },
         });
-        if (!resp?.success && !resp?.clientSecret) throw new Error(resp?.message || 'Payment init failed');
-        setMessage({ type: 'success', text: `Stripe initialized (escrowRef ${escrowReference})` });
+        if (!resp?.success && !resp?.clientSecret)
+          throw new Error(resp?.message || 'Payment init failed');
+        setMessage({
+          type: 'success',
+          text: `Stripe initialized (escrowRef ${escrowReference})`,
+        });
       } else if (form.provider === 'paystack') {
         const resp = await paymentService.processPaystackPayment({
           email: form.email || 'test@example.com',
           amount: Number(form.amount),
           currency: 'GHS',
           metadata: { escrowReference },
-          escrowReference
+          escrowReference,
         });
-        if (!resp?.success) throw new Error(resp?.error?.message || resp?.message || 'Payment init failed');
-        setMessage({ type: 'success', text: `Paystack initialized (ref ${resp?.data?.reference || escrowReference})` });
+        if (!resp?.success)
+          throw new Error(
+            resp?.error?.message || resp?.message || 'Payment init failed',
+          );
+        setMessage({
+          type: 'success',
+          text: `Paystack initialized (ref ${resp?.data?.reference || escrowReference})`,
+        });
       } else {
         throw new Error('Select Stripe or Paystack for this test');
       }
@@ -105,16 +139,41 @@ const EscrowManager = () => {
 
   return (
     <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>Escrow Manager</Typography>
+      <Typography variant="h5" sx={{ mb: 2 }}>
+        Escrow Manager
+      </Typography>
       {message && (
-        <Alert severity={message.type} sx={{ mb: 2 }}>{message.text}</Alert>
+        <Alert severity={message.type} sx={{ mb: 2 }}>
+          {message.text}
+        </Alert>
       )}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
-        <TextField label="Amount (GHS)" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
-        <TextField label="Contract ID" value={form.contractId} onChange={e => setForm(f => ({ ...f, contractId: e.target.value }))} />
-        <TextField label="Job ID" value={form.jobId} onChange={e => setForm(f => ({ ...f, jobId: e.target.value }))} />
-        <TextField label="Worker ID" value={form.workerId} onChange={e => setForm(f => ({ ...f, workerId: e.target.value }))} />
-        <Select value={form.provider} onChange={e => setForm(f => ({ ...f, provider: e.target.value }))}>
+        <TextField
+          label="Amount (GHS)"
+          value={form.amount}
+          onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+        />
+        <TextField
+          label="Contract ID"
+          value={form.contractId}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, contractId: e.target.value }))
+          }
+        />
+        <TextField
+          label="Job ID"
+          value={form.jobId}
+          onChange={(e) => setForm((f) => ({ ...f, jobId: e.target.value }))}
+        />
+        <TextField
+          label="Worker ID"
+          value={form.workerId}
+          onChange={(e) => setForm((f) => ({ ...f, workerId: e.target.value }))}
+        />
+        <Select
+          value={form.provider}
+          onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+        >
           <MenuItem value="paystack">Paystack</MenuItem>
           <MenuItem value="stripe">Stripe</MenuItem>
           <MenuItem value="mtn">MTN MoMo</MenuItem>
@@ -122,29 +181,64 @@ const EscrowManager = () => {
           <MenuItem value="airteltigo">AirtelTigo Money</MenuItem>
         </Select>
         {form.provider === 'paystack' && (
-          <TextField label="Email (Paystack)" value={form.email || ''} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+          <TextField
+            label="Email (Paystack)"
+            value={form.email || ''}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          />
         )}
-        <Button variant="contained" onClick={fundEscrow}>Fund Escrow</Button>
-        <Button variant="outlined" onClick={initPayment}>Init Payment</Button>
+        <Button variant="contained" onClick={fundEscrow}>
+          Fund Escrow
+        </Button>
+        <Button variant="outlined" onClick={initPayment}>
+          Init Payment
+        </Button>
       </Stack>
       <Divider sx={{ my: 2 }} />
-      <Typography variant="h6" sx={{ mb: 1 }}>My Escrows</Typography>
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        My Escrows
+      </Typography>
       {loading ? (
         <Typography>Loading...</Typography>
       ) : (
         <Stack spacing={1}>
-          {escrows.map(e => (
-            <Box key={e._id} sx={{ p: 2, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 1 }}>
-              <Typography variant="subtitle1">{e.reference} — {e.status}</Typography>
-              <Typography variant="body2">Amount: {e.amount} {e.currency} • Provider: {e.provider}</Typography>
+          {escrows.map((e) => (
+            <Box
+              key={e._id}
+              sx={{
+                p: 2,
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant="subtitle1">
+                {e.reference} — {e.status}
+              </Typography>
+              <Typography variant="body2">
+                Amount: {e.amount} {e.currency} • Provider: {e.provider}
+              </Typography>
               <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                <Button size="small" onClick={() => releaseEscrow(e._id)} disabled={e.status !== 'active'}>Release</Button>
-                <Button size="small" onClick={() => refundEscrow(e._id)} disabled={!(e.status === 'active' || e.status === 'disputed')}>Refund</Button>
+                <Button
+                  size="small"
+                  onClick={() => releaseEscrow(e._id)}
+                  disabled={e.status !== 'active'}
+                >
+                  Release
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => refundEscrow(e._id)}
+                  disabled={!(e.status === 'active' || e.status === 'disputed')}
+                >
+                  Refund
+                </Button>
               </Stack>
             </Box>
           ))}
           {escrows.length === 0 && (
-            <Typography key="empty" variant="body2">No escrows found.</Typography>
+            <Typography key="empty" variant="body2">
+              No escrows found.
+            </Typography>
           )}
         </Stack>
       )}
@@ -153,5 +247,3 @@ const EscrowManager = () => {
 };
 
 export default EscrowManager;
-
-

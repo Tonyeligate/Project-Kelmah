@@ -1,6 +1,6 @@
 /**
  * Enhanced Mobile Registration Component
- * 
+ *
  * A streamlined, single-page mobile registration experience with:
  * - Progressive form sections
  * - Smart field validation
@@ -121,19 +121,21 @@ const MobileRegister = () => {
   // Handle input changes
   const handleInputChange = (field) => (event) => {
     let value = event.target.value;
-    
+
     if (field === 'acceptTerms') {
       value = event.target.checked;
     } else if (field === 'phone') {
       // Format phone number
-      value = value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+      value = value
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
     }
 
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear field error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
 
     // Clear submit error
@@ -150,13 +152,13 @@ const MobileRegister = () => {
   // Handle role selection
   const handleRoleChange = (event) => {
     const role = event.target.value;
-    setFormData(prev => ({ ...prev, role }));
-    setErrors(prev => ({ ...prev, role: '' }));
+    setFormData((prev) => ({ ...prev, role }));
+    setErrors((prev) => ({ ...prev, role: '' }));
   };
 
   // Handle trades selection
   const handleTradesChange = (event, newValue) => {
-    setFormData(prev => ({ ...prev, trades: newValue }));
+    setFormData((prev) => ({ ...prev, trades: newValue }));
   };
 
   // Validate form
@@ -164,7 +166,8 @@ const MobileRegister = () => {
     const newErrors = {};
 
     // Basic info validation
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.firstName.trim())
+      newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
 
     if (!formData.email.trim()) {
@@ -236,7 +239,9 @@ const MobileRegister = () => {
         phone: formData.phone.replace(/\s/g, ''),
         password: formData.password,
         role: formData.role,
-        ...(formData.role === 'hirer' && { companyName: formData.companyName.trim() }),
+        ...(formData.role === 'hirer' && {
+          companyName: formData.companyName.trim(),
+        }),
         ...(formData.role === 'worker' && { trades: formData.trades }),
         acceptTerms: formData.acceptTerms,
       };
@@ -251,11 +256,11 @@ const MobileRegister = () => {
         navigate('/login', {
           state: {
             registered: true,
-            message: 'Registration successful! Please check your email to verify your account.',
+            message:
+              'Registration successful! Please check your email to verify your account.',
           },
         });
       }, 2000);
-
     } catch (error) {
       console.error('Registration error:', error);
       setSubmitError(error.message || 'Registration failed. Please try again.');
@@ -449,7 +454,6 @@ const MobileRegister = () => {
             {/* Registration Form */}
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={1}>
-
                 {/* Personal Information */}
                 <Box>
                   <Stack spacing={1}>
@@ -468,15 +472,35 @@ const MobileRegister = () => {
                           '& .MuiOutlinedInput-root': {
                             backgroundColor: 'rgba(255, 255, 255, 0.05)',
                             borderRadius: 2,
-                            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                            '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
-                            '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                            '& fieldset': {
+                              borderColor: 'rgba(255, 255, 255, 0.2)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(255, 215, 0, 0.5)',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#FFD700',
+                            },
                           },
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
-                          '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-                          '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
-                          '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
-                          '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                          '& .MuiInputLabel-root': {
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: '#FFD700',
+                          },
+                          '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                            color: '#FFD700',
+                          },
+                          '& .MuiOutlinedInput-input': {
+                            color: 'white',
+                            fontSize: '12px',
+                          },
+                          '& .MuiOutlinedInput-input::placeholder': {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            opacity: 1,
+                          },
                         }}
                       />
 
@@ -493,15 +517,35 @@ const MobileRegister = () => {
                           '& .MuiOutlinedInput-root': {
                             backgroundColor: 'rgba(255, 255, 255, 0.05)',
                             borderRadius: 2,
-                            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                            '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
-                            '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                            '& fieldset': {
+                              borderColor: 'rgba(255, 255, 255, 0.2)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(255, 215, 0, 0.5)',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#FFD700',
+                            },
                           },
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
-                          '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-                          '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
-                          '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
-                          '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                          '& .MuiInputLabel-root': {
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                          },
+                          '& .MuiInputLabel-root.Mui-focused': {
+                            color: '#FFD700',
+                          },
+                          '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                            color: '#FFD700',
+                          },
+                          '& .MuiOutlinedInput-input': {
+                            color: 'white',
+                            fontSize: '12px',
+                          },
+                          '& .MuiOutlinedInput-input::placeholder': {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            opacity: 1,
+                          },
                         }}
                       />
                     </Box>
@@ -521,15 +565,33 @@ const MobileRegister = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: 'rgba(255, 255, 255, 0.05)',
                           borderRadius: 2,
-                          '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                          '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
+                          '& fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(255, 215, 0, 0.5)',
+                          },
                           '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                         },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
-                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
-                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
-                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
+                          fontSize: '12px',
+                        },
+                        '& .MuiOutlinedInput-input::placeholder': {
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          opacity: 1,
+                        },
                       }}
                     />
 
@@ -540,68 +602,110 @@ const MobileRegister = () => {
                       value={formData.phone}
                       onChange={handleInputChange('phone')}
                       error={Boolean(errors.phone)}
-                      helperText={errors.phone || 'Ghana phone number (e.g., 0XX XXX XXXX)'}
+                      helperText={
+                        errors.phone ||
+                        'Ghana phone number (e.g., 0XX XXX XXXX)'
+                      }
                       size="small"
                       placeholder="Enter phone number"
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: 'rgba(255, 255, 255, 0.05)',
                           borderRadius: 2,
-                          '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                          '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
+                          '& fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(255, 215, 0, 0.5)',
+                          },
                           '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                         },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
-                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
-                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
-                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
+                          fontSize: '12px',
+                        },
+                        '& .MuiOutlinedInput-input::placeholder': {
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          opacity: 1,
+                        },
                       }}
                     />
                   </Stack>
                 </Box>
 
-
                 {/* Password Fields */}
                 <Box>
                   <Stack spacing={1}>
                     {/* Password Field */}
-                      <TextField
-                        fullWidth
-                        type={showPassword ? 'text' : 'password'}
-                        label="Password"
-                        value={formData.password}
-                        onChange={handleInputChange('password')}
-                        error={Boolean(errors.password)}
-                        helperText={errors.password}
+                    <TextField
+                      fullWidth
+                      type={showPassword ? 'text' : 'password'}
+                      label="Password"
+                      value={formData.password}
+                      onChange={handleInputChange('password')}
+                      error={Boolean(errors.password)}
+                      helperText={errors.password}
                       size="small"
                       placeholder="Enter password"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={() => setShowPassword(!showPassword)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
                               sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
                               size="small"
-                              >
-                              {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            borderRadius: 2,
-                            '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                            '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
-                            '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                            >
+                              {showPassword ? (
+                                <VisibilityOff fontSize="small" />
+                              ) : (
+                                <Visibility fontSize="small" />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
                           },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
-                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
-                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
-                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(255, 215, 0, 0.5)',
+                          },
+                          '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
+                          fontSize: '12px',
+                        },
+                        '& .MuiOutlinedInput-input::placeholder': {
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          opacity: 1,
+                        },
                       }}
                     />
 
@@ -620,11 +724,17 @@ const MobileRegister = () => {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              onClick={() =>
+                                setShowConfirmPassword(!showConfirmPassword)
+                              }
                               sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
                               size="small"
                             >
-                              {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                              {showConfirmPassword ? (
+                                <VisibilityOff fontSize="small" />
+                              ) : (
+                                <Visibility fontSize="small" />
+                              )}
                             </IconButton>
                           </InputAdornment>
                         ),
@@ -633,15 +743,33 @@ const MobileRegister = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: 'rgba(255, 255, 255, 0.05)',
                           borderRadius: 2,
-                          '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                          '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.5)' },
+                          '& fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(255, 215, 0, 0.5)',
+                          },
                           '&.Mui-focused fieldset': { borderColor: '#FFD700' },
                         },
-                        '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.9)', fontSize: '12px', fontWeight: 500 },
-                        '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': { color: '#FFD700' },
-                        '& .MuiOutlinedInput-input': { color: 'white', fontSize: '12px' },
-                        '& .MuiOutlinedInput-input::placeholder': { color: 'rgba(255, 255, 255, 0.6)', opacity: 1 },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
+                          color: '#FFD700',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
+                          fontSize: '12px',
+                        },
+                        '& .MuiOutlinedInput-input::placeholder': {
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          opacity: 1,
+                        },
                       }}
                     />
                   </Stack>
@@ -661,7 +789,12 @@ const MobileRegister = () => {
                     />
                   }
                   label={
-                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
+                    <Typography
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '10px',
+                      }}
+                    >
                       I agree to the{' '}
                       <Button
                         component={RouterLink}
@@ -675,8 +808,8 @@ const MobileRegister = () => {
                         }}
                       >
                         Terms
-                      </Button>
-                      {' '}and{' '}
+                      </Button>{' '}
+                      and{' '}
                       <Button
                         component={RouterLink}
                         to="/privacy"
@@ -695,7 +828,9 @@ const MobileRegister = () => {
                 />
 
                 {errors.acceptTerms && (
-                  <Typography sx={{ color: '#f44336', fontSize: '10px', mt: -1 }}>
+                  <Typography
+                    sx={{ color: '#f44336', fontSize: '10px', mt: -1 }}
+                  >
                     {errors.acceptTerms}
                   </Typography>
                 )}
@@ -711,11 +846,13 @@ const MobileRegister = () => {
                     borderRadius: 2,
                     fontSize: '12px',
                     fontWeight: 600,
-                    background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    background:
+                      'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                     color: '#000',
                     mt: 0.5,
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                      background:
+                        'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                     },
                     '&:disabled': {
                       background: 'rgba(255, 215, 0, 0.3)',
@@ -734,7 +871,9 @@ const MobileRegister = () => {
 
             {/* Sign In Link */}
             <Box sx={{ textAlign: 'center', mt: 1 }}>
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}>
+              <Typography
+                sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}
+              >
                 Already have an account?{' '}
                 <Button
                   component={RouterLink}

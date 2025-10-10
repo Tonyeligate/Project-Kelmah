@@ -85,13 +85,19 @@ class NotificationService {
             wsUrl;
         }
       } catch (configError) {
-        console.warn('⚠️ Notifications: Failed to load runtime config, using fallback URL:', wsUrl, configError);
+        console.warn(
+          '⚠️ Notifications: Failed to load runtime config, using fallback URL:',
+          wsUrl,
+          configError,
+        );
       }
 
       wsUrl = preferSecureScheme(normalizeUrl(wsUrl));
 
       if (!wsUrl) {
-        console.error('Notifications: No valid WebSocket URL resolved; skipping socket connection');
+        console.error(
+          'Notifications: No valid WebSocket URL resolved; skipping socket connection',
+        );
         return;
       }
 
@@ -106,10 +112,14 @@ class NotificationService {
         reconnectionAttempts: 10,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
-        path: '/socket.io'
+        path: '/socket.io',
       });
-      this.socket.on('connect', () => { this.isConnected = true; });
-      this.socket.on('disconnect', () => { this.isConnected = false; });
+      this.socket.on('connect', () => {
+        this.isConnected = true;
+      });
+      this.socket.on('disconnect', () => {
+        this.isConnected = false;
+      });
       this.socket.on('notification', (payload) => {
         // Bubble up via callback if set
         this.onNotification && this.onNotification(payload);
@@ -134,48 +144,72 @@ class NotificationService {
       // Normalize to { notifications, pagination }
       const data = response.data;
       if (Array.isArray(data)) {
-        return { notifications: data, pagination: { page: 1, limit: data.length, total: data.length, pages: 1 } };
+        return {
+          notifications: data,
+          pagination: {
+            page: 1,
+            limit: data.length,
+            total: data.length,
+            pages: 1,
+          },
+        };
       }
       if (data?.data && Array.isArray(data.data)) {
         return { notifications: data.data, pagination: data.pagination };
       }
       if (data?.data?.notifications) {
-        return { notifications: data.data.notifications, pagination: data.data.pagination || data.pagination };
+        return {
+          notifications: data.data.notifications,
+          pagination: data.data.pagination || data.pagination,
+        };
       }
       if (data?.notifications) {
-        return { notifications: data.notifications, pagination: data.pagination };
+        return {
+          notifications: data.notifications,
+          pagination: data.pagination,
+        };
       }
       return data;
     } catch (error) {
       const statusMsg = getServiceStatusMessage();
-      
+
       // Enhanced error logging with service health context
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message || 
-                          'Unknown error occurred';
-      
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Unknown error occurred';
+
       console.error('Failed to fetch notifications:', {
         error: errorMessage,
         serviceStatus: statusMsg.status,
         userMessage: statusMsg.message,
         action: statusMsg.action,
       });
-      
+
       // Enhanced fallback messaging based on service status
       if (statusMsg.status === 'cold') {
-        console.log('🔥 Messaging Service is cold starting - this is normal and will take 30-60 seconds...');
+        console.log(
+          '🔥 Messaging Service is cold starting - this is normal and will take 30-60 seconds...',
+        );
       } else {
-        console.log('🔔 Using empty notifications fallback during service timeout');
+        console.log(
+          '🔔 Using empty notifications fallback during service timeout',
+        );
       }
-  return { notifications: [], pagination: { page: 1, limit: 20, total: 0, pages: 0 } };
+      return {
+        notifications: [],
+        pagination: { page: 1, limit: 20, total: 0, pages: 0 },
+      };
     }
   }
 
   // Mark notification as read
   async markAsRead(notificationId) {
     try {
-      const response = await this.client.patch(`/api/notifications/${notificationId}/read`);
+      const response = await this.client.patch(
+        `/api/notifications/${notificationId}/read`,
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
@@ -219,7 +253,9 @@ class NotificationService {
   // Delete a specific notification
   async deleteNotification(notificationId) {
     try {
-      const response = await this.client.delete(`/api/notifications/${notificationId}`);
+      const response = await this.client.delete(
+        `/api/notifications/${notificationId}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to delete notification:', error);
@@ -241,7 +277,10 @@ class NotificationService {
   // Update notification preferences
   async updatePreferences(preferences) {
     try {
-      const response = await this.client.put('/api/notifications/preferences', preferences);
+      const response = await this.client.put(
+        '/api/notifications/preferences',
+        preferences,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Failed to update notification preferences:', error);

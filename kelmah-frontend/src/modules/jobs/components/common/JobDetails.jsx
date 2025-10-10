@@ -123,15 +123,22 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <Person color="action" />
                 <Typography color="text.secondary">
-                  Posted by {job.hirer_name || job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown'}
+                  Posted by{' '}
+                  {job.hirer_name || job.hirer?.firstName
+                    ? `${job.hirer.firstName} ${job.hirer.lastName}`
+                    : 'Unknown'}
                 </Typography>
               </Box>
 
-              {(job.location?.address || job.location?.city || job.location) && (
+              {(job.location?.address ||
+                job.location?.city ||
+                job.location) && (
                 <Box display="flex" alignItems="center" gap={1}>
                   <LocationOn color="action" />
                   <Typography color="text.secondary">
-                    {job.location?.address || job.location?.city || job.location}
+                    {job.location?.address ||
+                      job.location?.city ||
+                      job.location}
                   </Typography>
                 </Box>
               )}
@@ -139,30 +146,30 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <AttachMoney color="action" />
                 <Typography color="text.secondary">
-                  {job?.budget ? (
-                    typeof job.budget === 'object' ? (
-                      `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0}`
-                    ) : (
-                      `${job.currency || 'GHS'} ${job.budget.toLocaleString()}`
-                    )
-                  ) : (
-                    'N/A'
-                  )}
+                  {job?.budget
+                    ? typeof job.budget === 'object'
+                      ? `${job.budget.currency || 'GHS'} ${job.budget.min || 0} - ${job.budget.max || 0}`
+                      : `${job.currency || 'GHS'} ${job.budget.toLocaleString()}`
+                    : 'N/A'}
                 </Typography>
               </Box>
 
               <Box display="flex" alignItems="center" gap={1}>
                 <Work color="action" />
-                <Typography color="text.secondary">{job.profession || job.category || 'N/A'}</Typography>
+                <Typography color="text.secondary">
+                  {job.profession || job.category || 'N/A'}
+                </Typography>
               </Box>
 
               <Box display="flex" alignItems="center" gap={1}>
                 <Schedule color="action" />
                 <Typography color="text.secondary">
                   Posted{' '}
-                  {job.created_at ? formatDistanceToNow(new Date(job.created_at), {
-                    addSuffix: true,
-                  }) : 'Unknown'}
+                  {job.created_at
+                    ? formatDistanceToNow(new Date(job.created_at), {
+                        addSuffix: true,
+                      })
+                    : 'Unknown'}
                 </Typography>
               </Box>
             </Box>
@@ -185,7 +192,10 @@ function JobDetails() {
                 Required Skills
               </Typography>
               <Box display="flex" gap={1} flexWrap="wrap">
-                {(job.skills_required ? job.skills_required.split(',') : job.skills || []).map((skill, index) => (
+                {(job.skills_required
+                  ? job.skills_required.split(',')
+                  : job.skills || []
+                ).map((skill, index) => (
                   <Chip
                     key={index}
                     label={typeof skill === 'string' ? skill.trim() : skill}

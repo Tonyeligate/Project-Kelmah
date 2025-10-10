@@ -151,15 +151,10 @@ const VocationalJobCategories = ({ onCategorySelect }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography
-        variant="h5"
-        fontWeight={600}
-        gutterBottom
-        sx={{ mb: 3 }}
-      >
+      <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 3 }}>
         🔨 Find Jobs by Trade
       </Typography>
-      
+
       <Grid container spacing={2}>
         {jobCategories.map((category) => (
           <Grid item xs={6} sm={4} md={3} lg={2} key={category.id}>
@@ -206,7 +201,7 @@ const VocationalJobCategories = ({ onCategorySelect }) => {
                       {category.icon}
                     </Box>
                   </Badge>
-                  
+
                   <Typography
                     variant="subtitle1"
                     fontWeight={600}
@@ -217,7 +212,7 @@ const VocationalJobCategories = ({ onCategorySelect }) => {
                   >
                     {category.title}
                   </Typography>
-                  
+
                   <Typography
                     variant="caption"
                     color="text.secondary"
@@ -230,7 +225,7 @@ const VocationalJobCategories = ({ onCategorySelect }) => {
                   >
                     {category.localName}
                   </Typography>
-                  
+
                   <Typography
                     variant="caption"
                     color="text.secondary"

@@ -32,7 +32,10 @@ function JobListing({ job, onApply, onViewDetails }) {
 
   const handleApply = async () => {
     try {
-      const response = await axiosInstance.post(`/jobs/${job.id}/apply`, application);
+      const response = await axiosInstance.post(
+        `/jobs/${job.id}/apply`,
+        application,
+      );
       setSuccess('Application submitted successfully!');
       setShowApplyDialog(false);
       if (onApply) onApply(response.data);

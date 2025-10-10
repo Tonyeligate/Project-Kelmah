@@ -40,7 +40,8 @@ const getAPIBaseUrl = async () => {
 // Construct API and WebSocket URLs using centralized config
 const getEnvConfig = async () => {
   const apiBaseUrl = await getAPIBaseUrl();
-  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isHttps =
+    typeof window !== 'undefined' && window.location.protocol === 'https:';
 
   return {
     // API configuration

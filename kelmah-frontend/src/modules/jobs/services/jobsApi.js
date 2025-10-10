@@ -20,7 +20,9 @@ const transformJobListItem = (job) => {
     skills: job.skills || [],
     // Map API date fields to frontend expected fields
     postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
-    deadline: job.endDate ? new Date(job.endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    deadline: job.endDate
+      ? new Date(job.endDate)
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     startDate: job.startDate ? new Date(job.startDate) : new Date(),
     // Additional fields for display
     hirer: job.hirer || { name: job.hirer_name || 'Unknown Company' },
@@ -39,16 +41,16 @@ const jobsApi = {
    */
   async getJobs(params = {}) {
     try {
-  console.log('🔍 Calling job service API with params:', params);
+      console.log('🔍 Calling job service API with params:', params);
       const response = await jobServiceClient.get('/api/jobs', { params });
       console.log('📊 Raw API response:', response.data);
-      
+
       // Handle different response formats from the backend
       let jobs = [];
       let totalPages = 1;
       let totalJobs = 0;
       let currentPage = 1;
-      
+
       if (response.data) {
         // Check if response has pagination structure
         if (response.data.data && Array.isArray(response.data.data)) {
@@ -59,7 +61,8 @@ const jobsApi = {
         } else if (response.data.items && Array.isArray(response.data.items)) {
           // Handle the actual API response format: {success: true, items: [...], page: 1, total: 12}
           jobs = response.data.items;
-          totalPages = Math.ceil(response.data.total / response.data.limit) || 1;
+          totalPages =
+            Math.ceil(response.data.total / response.data.limit) || 1;
           totalJobs = response.data.total || jobs.length;
           currentPage = response.data.page || 1;
         } else if (Array.isArray(response.data)) {
@@ -71,9 +74,9 @@ const jobsApi = {
           currentPage = response.data.currentPage || 1;
         }
       }
-      
+
       console.log('✅ Extracted jobs:', jobs.length);
-      
+
       return {
         data: jobs.map(transformJobListItem),
         jobs: jobs.map(transformJobListItem),
@@ -87,7 +90,7 @@ const jobsApi = {
         message: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
-        data: error.response?.data
+        data: error.response?.data,
       });
       // No mock data fallback; return empty results to reflect real state
       return {
@@ -114,7 +117,11 @@ const jobsApi = {
   async getSavedJobs(params = {}) {
     const response = await jobServiceClient.get('/api/jobs/saved', { params });
     const payload = response.data?.data || response.data;
-    const jobs = Array.isArray(payload?.jobs) ? payload.jobs : (Array.isArray(payload) ? payload : []);
+    const jobs = Array.isArray(payload?.jobs)
+      ? payload.jobs
+      : Array.isArray(payload)
+        ? payload
+        : [];
     return { jobs: jobs.map(transformJobListItem), totalPages: 1 };
   },
   async saveJob(jobId) {
@@ -133,11 +140,7 @@ const jobsApi = {
     try {
       const response = await jobServiceClient.get('/api/jobs/contracts');
       // Prefer nested data shape, fallback to flat
-      return (
-        response.data?.data?.contracts ||
-        response.data?.contracts ||
-        []
-      );
+      return response.data?.data?.contracts || response.data?.contracts || [];
     } catch (error) {
       console.warn('Job service unavailable for contracts:', error.message);
       return [];
@@ -151,11 +154,17 @@ const jobsApi = {
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
       console.log('🔍 Single job API response:', response.data);
-      
+
       // Handle the response format: {success: true, items: [...], page: 1, total: 12}
-      if (response.data && response.data.items && Array.isArray(response.data.items)) {
+      if (
+        response.data &&
+        response.data.items &&
+        Array.isArray(response.data.items)
+      ) {
         // Find the specific job by ID
-        const job = response.data.items.find(item => item.id === jobId || item._id === jobId);
+        const job = response.data.items.find(
+          (item) => item.id === jobId || item._id === jobId,
+        );
         if (job) {
           console.log('✅ Found job by ID:', job.title);
           // Return non-destructively normalized job
@@ -164,32 +173,48 @@ const jobsApi = {
             // Provide compatibility fields used by UI
             created_at: job.created_at || job.createdAt || job.postedDate,
             hirer_name: job.hirer_name || job.hirer?.name,
-            postedDate: job.postedDate || (job.createdAt ? new Date(job.createdAt) : undefined),
-            deadline: job.deadline || (job.endDate ? new Date(job.endDate) : undefined),
+            postedDate:
+              job.postedDate ||
+              (job.createdAt ? new Date(job.createdAt) : undefined),
+            deadline:
+              job.deadline || (job.endDate ? new Date(job.endDate) : undefined),
             skills: Array.isArray(job.skills)
               ? job.skills
-              : (typeof job.skills_required === 'string'
-                ? job.skills_required.split(',').map(s => s.trim()).filter(Boolean)
-                : []),
+              : typeof job.skills_required === 'string'
+                ? job.skills_required
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                : [],
           };
           return normalized;
         }
       }
-      
+
       // Fallback to old format (return merged normalized fields without removing originals)
       const raw = response.data.data || response.data;
-      const normalized = raw && typeof raw === 'object' ? {
-        ...raw,
-        created_at: raw.created_at || raw.createdAt || raw.postedDate,
-        hirer_name: raw.hirer_name || raw.hirer?.name,
-        postedDate: raw.postedDate || (raw.createdAt ? new Date(raw.createdAt) : undefined),
-        deadline: raw.deadline || (raw.endDate ? new Date(raw.endDate) : undefined),
-        skills: Array.isArray(raw.skills)
-          ? raw.skills
-          : (typeof raw.skills_required === 'string'
-            ? raw.skills_required.split(',').map(s => s.trim()).filter(Boolean)
-            : []),
-      } : raw;
+      const normalized =
+        raw && typeof raw === 'object'
+          ? {
+              ...raw,
+              created_at: raw.created_at || raw.createdAt || raw.postedDate,
+              hirer_name: raw.hirer_name || raw.hirer?.name,
+              postedDate:
+                raw.postedDate ||
+                (raw.createdAt ? new Date(raw.createdAt) : undefined),
+              deadline:
+                raw.deadline ||
+                (raw.endDate ? new Date(raw.endDate) : undefined),
+              skills: Array.isArray(raw.skills)
+                ? raw.skills
+                : typeof raw.skills_required === 'string'
+                  ? raw.skills_required
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                  : [],
+            }
+          : raw;
       return normalized;
     } catch (error) {
       console.warn(`Job service unavailable for job ${jobId}:`, error.message);
@@ -229,10 +254,16 @@ const jobsApi = {
    */
   async applyToJob(jobId, applicationData) {
     try {
-      const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+      const response = await jobServiceClient.post(
+        `/api/jobs/${jobId}/apply`,
+        applicationData,
+      );
       return response.data;
     } catch (error) {
-      console.warn(`Job service unavailable for job application ${jobId}:`, error.message);
+      console.warn(
+        `Job service unavailable for job application ${jobId}:`,
+        error.message,
+      );
       throw error;
     }
   },
@@ -245,7 +276,10 @@ const jobsApi = {
       const response = await jobServiceClient.get('/api/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('Job service unavailable for job categories:', error.message);
+      console.warn(
+        'Job service unavailable for job categories:',
+        error.message,
+      );
       return [];
     }
   },
@@ -255,9 +289,12 @@ const jobsApi = {
    */
   async getPersonalizedJobRecommendations(params = {}) {
     try {
-      const response = await jobServiceClient.get('/api/jobs/recommendations/personalized', {
-        params,
-      });
+      const response = await jobServiceClient.get(
+        '/api/jobs/recommendations/personalized',
+        {
+          params,
+        },
+      );
       const payload = response.data?.data || response.data;
       if (Array.isArray(payload?.recommendations)) {
         return payload.recommendations.map(transformJobListItem);
@@ -268,10 +305,13 @@ const jobsApi = {
       const items = Array.isArray(payload?.items) ? payload.items : [];
       return items.map(transformJobListItem);
     } catch (error) {
-      console.warn('Job service unavailable for personalized recommendations:', error.message);
+      console.warn(
+        'Job service unavailable for personalized recommendations:',
+        error.message,
+      );
       return [];
     }
-  }
+  },
 };
 
 export default jobsApi;

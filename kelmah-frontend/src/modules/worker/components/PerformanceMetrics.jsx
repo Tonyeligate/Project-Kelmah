@@ -3,15 +3,25 @@ import { Box, Typography, Paper, LinearProgress, Stack } from '@mui/material';
 
 const Metric = ({ label, value }) => (
   <Box>
-    <Typography variant="body2" color="text.secondary">{label}</Typography>
-    <LinearProgress variant="determinate" value={Math.max(0, Math.min(100, value))} sx={{ height: 8, borderRadius: 1 }} />
+    <Typography variant="body2" color="text.secondary">
+      {label}
+    </Typography>
+    <LinearProgress
+      variant="determinate"
+      value={Math.max(0, Math.min(100, value))}
+      sx={{ height: 8, borderRadius: 1 }}
+    />
   </Box>
 );
 
-const PerformanceMetrics = ({ metrics = { onTime: 80, quality: 85, satisfaction: 90 } }) => {
+const PerformanceMetrics = ({
+  metrics = { onTime: 80, quality: 85, satisfaction: 90 },
+}) => {
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>Performance Metrics</Typography>
+      <Typography variant="h5" gutterBottom>
+        Performance Metrics
+      </Typography>
       <Paper sx={{ p: 2 }}>
         <Stack spacing={2}>
           <Metric label="On-time Completion" value={metrics.onTime} />
@@ -24,7 +34,3 @@ const PerformanceMetrics = ({ metrics = { onTime: 80, quality: 85, satisfaction:
 };
 
 export default PerformanceMetrics;
-
-
-
-

@@ -133,25 +133,25 @@ const mockMapData = {
 };
 
 // Interactive Map Component
-const InteractiveMap = ({ 
-  data, 
-  viewType, 
-  onMarkerClick, 
-  center, 
+const InteractiveMap = ({
+  data,
+  viewType,
+  onMarkerClick,
+  center,
   zoom = 12,
-  loading = false 
+  loading = false,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   return (
     <Box
-        sx={{
+      sx={{
         position: 'relative',
         height: '100%',
         width: '100%',
         borderRadius: 2,
-          overflow: 'hidden',
+        overflow: 'hidden',
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
         border: `1px solid ${theme.palette.divider}`,
       }}
@@ -205,7 +205,9 @@ const InteractiveMap = ({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <LocationOnIcon sx={{ fontSize: 64, mb: 2, color: theme.palette.secondary.main }} />
+            <LocationOnIcon
+              sx={{ fontSize: 64, mb: 2, color: theme.palette.secondary.main }}
+            />
             <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold' }}>
               Kelmah Professional Map
             </Typography>
@@ -224,18 +226,26 @@ const InteractiveMap = ({
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 style={{
                   position: 'absolute',
-                  left: `${20 + (index * 15) % 60}%`,
-                  top: `${30 + (index * 20) % 40}%`,
+                  left: `${20 + ((index * 15) % 60)}%`,
+                  top: `${30 + ((index * 20) % 40)}%`,
                 }}
               >
-                <Tooltip title={`${item.title || item.name} - ${item.location.address}`}>
+                <Tooltip
+                  title={`${item.title || item.name} - ${item.location.address}`}
+                >
                   <IconButton
                     onClick={() => onMarkerClick(item)}
-              sx={{
-                      background: viewType === 'jobs' ? theme.palette.primary.main : theme.palette.secondary.main,
+                    sx={{
+                      background:
+                        viewType === 'jobs'
+                          ? theme.palette.primary.main
+                          : theme.palette.secondary.main,
                       color: 'white',
                       '&:hover': {
-                        background: viewType === 'jobs' ? theme.palette.primary.dark : theme.palette.secondary.dark,
+                        background:
+                          viewType === 'jobs'
+                            ? theme.palette.primary.dark
+                            : theme.palette.secondary.dark,
                         transform: 'scale(1.1)',
                       },
                       transition: 'all 0.2s ease',
@@ -249,7 +259,16 @@ const InteractiveMap = ({
           </Box>
 
           {/* Map Controls */}
-          <Box sx={{ position: 'absolute', bottom: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              right: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+            }}
+          >
             <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
               <ZoomInIcon />
             </IconButton>
@@ -266,7 +285,7 @@ const InteractiveMap = ({
       {/* Loading Overlay */}
       {loading && (
         <Backdrop
-                sx={{
+          sx={{
             position: 'absolute',
             zIndex: 3,
             color: theme.palette.secondary.main,
@@ -276,15 +295,15 @@ const InteractiveMap = ({
         >
           <CircularProgress color="inherit" />
         </Backdrop>
-            )}
-          </Box>
+      )}
+    </Box>
   );
 };
 
 // Live Analytics Component
 const LiveAnalytics = ({ analytics, onClose }) => {
   const theme = useTheme();
-  
+
   return (
     <Paper
       sx={{
@@ -301,7 +320,13 @@ const LiveAnalytics = ({ analytics, onClose }) => {
       }}
     >
       <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             Live Analytics
           </Typography>
@@ -315,23 +340,30 @@ const LiveAnalytics = ({ analytics, onClose }) => {
         <Grid container spacing={2}>
           {Object.entries(analytics).map(([key, data]) => (
             <Grid item xs={6} key={key}>
-    <motion.div
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <Card
-        sx={{
+                  sx={{
                     background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${data.color}11 100%)`,
                     border: `1px solid ${data.color}33`,
-          borderRadius: 2,
+                    borderRadius: 2,
                     p: 2,
                     textAlign: 'center',
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 1,
+                    }}
+                  >
                     <Box
-          sx={{
+                      sx={{
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
@@ -342,28 +374,46 @@ const LiveAnalytics = ({ analytics, onClose }) => {
                         mr: 1,
                       }}
                     >
-                      {key === 'responseTime' && <SpeedIcon sx={{ color: 'white', fontSize: 20 }} />}
-                      {key === 'successRate' && <TimelineIcon sx={{ color: 'white', fontSize: 20 }} />}
-                      {key === 'avgRating' && <StarIcon sx={{ color: 'white', fontSize: 20 }} />}
-                      {key === 'onlineNow' && <PeopleIcon sx={{ color: 'white', fontSize: 20 }} />}
+                      {key === 'responseTime' && (
+                        <SpeedIcon sx={{ color: 'white', fontSize: 20 }} />
+                      )}
+                      {key === 'successRate' && (
+                        <TimelineIcon sx={{ color: 'white', fontSize: 20 }} />
+                      )}
+                      {key === 'avgRating' && (
+                        <StarIcon sx={{ color: 'white', fontSize: 20 }} />
+                      )}
+                      {key === 'onlineNow' && (
+                        <PeopleIcon sx={{ color: 'white', fontSize: 20 }} />
+                      )}
                     </Box>
                   </Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                     {data.value}
-          </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     {data.trend > 0 ? (
-                      <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 16, mr: 0.5 }} />
+                      <TrendingUpIcon
+                        sx={{ color: '#4CAF50', fontSize: 16, mr: 0.5 }}
+                      />
                     ) : (
-                      <TrendingDownIcon sx={{ color: '#F44336', fontSize: 16, mr: 0.5 }} />
+                      <TrendingDownIcon
+                        sx={{ color: '#F44336', fontSize: 16, mr: 0.5 }}
+                      />
                     )}
                     <Typography
                       variant="caption"
                       sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}
                     >
                       {Math.abs(data.trend)}%
-          </Typography>
-        </Box>
+                    </Typography>
+                  </Box>
                 </Card>
               </motion.div>
             </Grid>
@@ -384,12 +434,19 @@ const LiveAnalytics = ({ analytics, onClose }) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 1,
+                }}
+              >
                 <Typography variant="body2">{category.name}</Typography>
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                   {category.percentage}%
                 </Typography>
-      </Box>
+              </Box>
               <LinearProgress
                 variant="determinate"
                 value={category.percentage}
@@ -402,7 +459,7 @@ const LiveAnalytics = ({ analytics, onClose }) => {
                   },
                 }}
               />
-    </motion.div>
+            </motion.div>
           ))}
         </Box>
       </Box>
@@ -411,21 +468,21 @@ const LiveAnalytics = ({ analytics, onClose }) => {
 };
 
 // Search and Filter Panel
-const SearchFilterPanel = ({ 
-  searchQuery, 
-  setSearchQuery, 
-  filters, 
-  setFilters, 
+const SearchFilterPanel = ({
+  searchQuery,
+  setSearchQuery,
+  filters,
+  setFilters,
   onSearch,
   onClearFilters,
   viewType,
   setViewType,
   status,
-  resultsCount
+  resultsCount,
 }) => {
   const theme = useTheme();
   const [expandedFilters, setExpandedFilters] = useState(false);
-  
+
   return (
     <Paper
       sx={{
@@ -444,8 +501,8 @@ const SearchFilterPanel = ({
       <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
           Search & Filters
-      </Typography>
-        
+        </Typography>
+
         {/* Search Bar */}
         <TextField
           fullWidth
@@ -482,23 +539,39 @@ const SearchFilterPanel = ({
                   textAlign: 'center',
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: data.color }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 'bold', color: data.color }}
+                >
                   {data.count}
                 </Typography>
-                <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ textTransform: 'capitalize' }}
+                >
                   {key}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.5 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mt: 0.5,
+                  }}
+                >
                   {data.trend > 0 ? (
                     <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 12 }} />
                   ) : (
                     <TrendingDownIcon sx={{ color: '#F44336', fontSize: 12 }} />
                   )}
-                  <Typography variant="caption" sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}
+                  >
                     {Math.abs(data.trend)}%
                   </Typography>
-      </Box>
-    </Card>
+                </Box>
+              </Card>
             </Grid>
           ))}
         </Grid>
@@ -531,9 +604,7 @@ const SearchFilterPanel = ({
               mr: 1,
             }}
           />
-          <Typography variant="body2">
-            Live Results {resultsCount}
-          </Typography>
+          <Typography variant="body2">Live Results {resultsCount}</Typography>
         </Box>
 
         {/* Advanced Filters Button */}
@@ -554,12 +625,16 @@ const SearchFilterPanel = ({
               <InputLabel>Category</InputLabel>
               <Select
                 value={filters.category || ''}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, category: e.target.value })
+                }
                 label="Category"
               >
                 <MenuItem value="">All Categories</MenuItem>
                 {mockMapData.categories.map((cat) => (
-                  <MenuItem key={cat.name} value={cat.name}>{cat.name}</MenuItem>
+                  <MenuItem key={cat.name} value={cat.name}>
+                    {cat.name}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -568,7 +643,9 @@ const SearchFilterPanel = ({
               <InputLabel>Distance</InputLabel>
               <Select
                 value={filters.distance || 50}
-                onChange={(e) => setFilters({ ...filters, distance: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, distance: e.target.value })
+                }
                 label="Distance"
               >
                 <MenuItem value={10}>Within 10km</MenuItem>
@@ -582,7 +659,9 @@ const SearchFilterPanel = ({
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={filters.sortBy || 'relevance'}
-                onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, sortBy: e.target.value })
+                }
                 label="Sort By"
               >
                 <MenuItem value="relevance">Relevance</MenuItem>
@@ -602,11 +681,7 @@ const SearchFilterPanel = ({
               >
                 Clear
               </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={onSearch}
-              >
+              <Button fullWidth variant="contained" onClick={onSearch}>
                 Apply
               </Button>
             </Box>
@@ -680,7 +755,7 @@ const ProfessionalMapPage = () => {
   const [loading, setLoading] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 5.5600, lng: -0.2057 });
+  const [mapCenter, setMapCenter] = useState({ lat: 5.56, lng: -0.2057 });
   const [mapZoom, setMapZoom] = useState(12);
 
   // Computed values
@@ -721,7 +796,7 @@ const ProfessionalMapPage = () => {
 
   return (
     <Box
-        sx={{ 
+      sx={{
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
         position: 'relative',
@@ -729,7 +804,7 @@ const ProfessionalMapPage = () => {
     >
       {/* Header */}
       <Box
-                sx={{ 
+        sx={{
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           color: 'white',
           p: 2,
@@ -739,35 +814,44 @@ const ProfessionalMapPage = () => {
         }}
       >
         <Container maxWidth="xl">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ bgcolor: theme.palette.secondary.main, mr: 2 }}>
-                  K
-                </Avatar>
-                <Box>
+                K
+              </Avatar>
+              <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                    Kelmah Professional Map
-                  </Typography>
+                  Kelmah Professional Map
+                </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Live tracking • {resultsCount} results found
-                  </Typography>
-                </Box>
+                </Typography>
               </Box>
+            </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {/* Key Metrics */}
               <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Chip
+                <Chip
                   label={`${mockMapData.jobs.length} Jobs`}
                   icon={<JobIcon />}
                   sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
                 />
-                  <Chip
+                <Chip
                   label={`${mockMapData.workers.length} Workers`}
                   icon={<WorkerIcon />}
-                    sx={{ 
-                    background: viewType === 'workers' ? theme.palette.secondary.main : 'rgba(255,255,255,0.1)',
-                    color: 'white'
+                  sx={{
+                    background:
+                      viewType === 'workers'
+                        ? theme.palette.secondary.main
+                        : 'rgba(255,255,255,0.1)',
+                    color: 'white',
                   }}
                 />
                 <Chip
@@ -775,24 +859,40 @@ const ProfessionalMapPage = () => {
                   icon={<CheckCircleIcon />}
                   sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
                 />
-            </Box>
+              </Box>
 
               {/* View Type Toggle */}
-            <ToggleButtonGroup
+              <ToggleButtonGroup
                 value={viewType}
-              exclusive
-                onChange={(e, newValue) => newValue && handleViewTypeChange(newValue)}
-              size="small"
+                exclusive
+                onChange={(e, newValue) =>
+                  newValue && handleViewTypeChange(newValue)
+                }
+                size="small"
               >
-                <ToggleButton value="jobs" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                <ToggleButton
+                  value="jobs"
+                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+                >
                   Jobs
-                  <Badge badgeContent={mockMapData.jobs.length} color="secondary" sx={{ ml: 1 }} />
-              </ToggleButton>
-                <ToggleButton value="workers" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                  <Badge
+                    badgeContent={mockMapData.jobs.length}
+                    color="secondary"
+                    sx={{ ml: 1 }}
+                  />
+                </ToggleButton>
+                <ToggleButton
+                  value="workers"
+                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+                >
                   Workers
-                  <Badge badgeContent={mockMapData.workers.length} color="secondary" sx={{ ml: 1 }} />
-              </ToggleButton>
-            </ToggleButtonGroup>
+                  <Badge
+                    badgeContent={mockMapData.workers.length}
+                    color="secondary"
+                    sx={{ ml: 1 }}
+                  />
+                </ToggleButton>
+              </ToggleButtonGroup>
 
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -802,15 +902,21 @@ const ProfessionalMapPage = () => {
                 <IconButton sx={{ color: 'white' }}>
                   <FullscreenIcon />
                 </IconButton>
+              </Box>
             </Box>
-          </Box>
           </Box>
         </Container>
       </Box>
 
       {/* Main Content */}
       <Container maxWidth="xl" sx={{ py: 2 }}>
-        <Box sx={{ position: 'relative', height: 'calc(100vh - 200px)', minHeight: 600 }}>
+        <Box
+          sx={{
+            position: 'relative',
+            height: 'calc(100vh - 200px)',
+            minHeight: 600,
+          }}
+        >
           {/* Interactive Map */}
           <InteractiveMap
             data={currentData}
@@ -818,7 +924,7 @@ const ProfessionalMapPage = () => {
             onMarkerClick={handleMarkerClick}
             center={mapCenter}
             zoom={mapZoom}
-                  loading={loading}
+            loading={loading}
           />
 
           {/* Search and Filter Panel */}
@@ -844,19 +950,19 @@ const ProfessionalMapPage = () => {
           )}
 
           {/* Floating Action Button */}
-              <Fab
-                color="secondary"
+          <Fab
+            color="secondary"
             aria-label="add"
-                sx={{
-                  position: 'absolute',
+            sx={{
+              position: 'absolute',
               bottom: 16,
               right: 16,
               zIndex: 10,
             }}
           >
             <AddIcon />
-              </Fab>
-                    </Box>
+          </Fab>
+        </Box>
       </Container>
 
       {/* Selected Item Dialog */}
@@ -867,30 +973,37 @@ const ProfessionalMapPage = () => {
         fullWidth
       >
         <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Typography variant="h6">
               {selectedItem?.title || selectedItem?.name}
-                  </Typography>
+            </Typography>
             <IconButton onClick={() => setSelectedItem(null)}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </DialogTitle>
         <DialogContent>
           {selectedItem && (
-                              <Box>
+            <Box>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                {selectedItem.description || `${selectedItem.category} professional`}
-                                </Typography>
+                {selectedItem.description ||
+                  `${selectedItem.category} professional`}
+              </Typography>
               <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 {selectedItem.skills?.map((skill) => (
                   <Chip key={skill} label={skill} size="small" />
                 ))}
-                              </Box>
+              </Box>
               <Typography variant="body2" color="text.secondary">
                 Location: {selectedItem.location.address}
-                              </Typography>
-                            </Box>
+              </Typography>
+            </Box>
           )}
         </DialogContent>
         <DialogActions>
@@ -900,11 +1013,7 @@ const ProfessionalMapPage = () => {
       </Dialog>
 
       {/* Notifications */}
-      <Snackbar
-        open={false}
-        autoHideDuration={6000}
-        onClose={() => {}}
-      >
+      <Snackbar open={false} autoHideDuration={6000} onClose={() => {}}>
         <Alert severity="info" sx={{ width: '100%' }}>
           Map data updated successfully
         </Alert>

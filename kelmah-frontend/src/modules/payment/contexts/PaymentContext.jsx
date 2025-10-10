@@ -40,7 +40,8 @@ export const PaymentProvider = ({ children }) => {
         paymentService.getBills(),
       ]);
 
-      const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] = results;
+      const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] =
+        results;
 
       // Wallet (404 -> zero balance)
       if (walletRes.status === 'fulfilled') {
@@ -96,7 +97,7 @@ export const PaymentProvider = ({ children }) => {
         await paymentService.createTransaction({
           amount,
           type: 'deposit',
-          currency: "GHS",
+          currency: 'GHS',
           paymentMethodId,
         });
         showToast(`$${amount.toFixed(2)} deposited successfully.`, 'success');
@@ -124,7 +125,7 @@ export const PaymentProvider = ({ children }) => {
         await paymentService.createTransaction({
           amount,
           type: 'withdrawal',
-          currency: "GHS",
+          currency: 'GHS',
           paymentMethodId,
         });
         showToast('Withdrawal request submitted.', 'info');
@@ -147,7 +148,9 @@ export const PaymentProvider = ({ children }) => {
       try {
         const data = await paymentService.getTransactionHistory(params);
         // Extract transactions array from response object, ensure it's always an array
-        const transactionsData = Array.isArray(data) ? data : data?.transactions || [];
+        const transactionsData = Array.isArray(data)
+          ? data
+          : data?.transactions || [];
         setTransactions(transactionsData);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);

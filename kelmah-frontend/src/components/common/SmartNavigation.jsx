@@ -36,7 +36,10 @@ const SmartNavigation = () => {
   // Show suggestions after a delay on job-related pages
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (location.pathname.includes('/jobs') || location.pathname.includes('/search')) {
+      if (
+        location.pathname.includes('/jobs') ||
+        location.pathname.includes('/search')
+      ) {
         setShowSuggestions(true);
       }
     }, 3000);
@@ -72,20 +75,18 @@ const SmartNavigation = () => {
           path: '/worker/applications',
           description: 'Track your applications',
           color: '#2196F3',
-        }
+        },
       );
     }
 
     if (currentPath === '/search' || currentPath.includes('/search')) {
-      suggestions.push(
-        {
-          label: 'Browse All Jobs',
-          icon: <WorkIcon />,
-          path: '/jobs',
-          description: 'View all available jobs',
-          color: '#FF9800',
-        }
-      );
+      suggestions.push({
+        label: 'Browse All Jobs',
+        icon: <WorkIcon />,
+        path: '/jobs',
+        description: 'View all available jobs',
+        color: '#FF9800',
+      });
     }
 
     // Role-specific suggestions
@@ -104,7 +105,7 @@ const SmartNavigation = () => {
           path: '/worker/skills',
           description: 'Improve your skills',
           color: '#E91E63',
-        }
+        },
       );
     }
 
@@ -123,7 +124,7 @@ const SmartNavigation = () => {
           path: '/hirer/find-talent', // ✅ FIXED: Use correct authenticated route
           description: 'Search for skilled workers',
           color: '#00BCD4',
-        }
+        },
       );
     }
 
@@ -173,7 +174,7 @@ const SmartNavigation = () => {
         >
           Quick Navigation
         </Typography>
-        
+
         <Stack spacing={1.5}>
           {suggestions.map((suggestion, index) => (
             <motion.div

@@ -103,11 +103,11 @@ const typography = {
 // Spacing system (8px base unit)
 const spacing = {
   xs: 0.5, // 4px
-  sm: 1,   // 8px
-  md: 2,   // 16px
-  lg: 3,   // 24px
-  xl: 4,   // 32px
-  xxl: 6,  // 48px
+  sm: 1, // 8px
+  md: 2, // 16px
+  lg: 3, // 24px
+  xl: 4, // 32px
+  xxl: 6, // 48px
 };
 
 // Breakpoints optimized for Ghana's device landscape

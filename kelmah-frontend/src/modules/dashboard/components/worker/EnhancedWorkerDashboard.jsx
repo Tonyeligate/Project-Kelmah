@@ -208,14 +208,21 @@ const EnhancedWorkerDashboard = () => {
             jobs: Array.isArray(result?.jobs) ? result.jobs : [],
             fallback: Boolean(result?.metadata?.fallback ?? result?.fallback),
             fallbackReason:
-              result?.metadata?.fallbackReason || result?.fallbackReason || null,
+              result?.metadata?.fallbackReason ||
+              result?.fallbackReason ||
+              null,
             metadata: result?.metadata || null,
           });
         }
       } catch (error) {
         console.warn('Failed to load recent jobs:', error);
         if (isMounted) {
-          setRecentJobsState({ jobs: [], fallback: false, fallbackReason: null, metadata: null });
+          setRecentJobsState({
+            jobs: [],
+            fallback: false,
+            fallbackReason: null,
+            metadata: null,
+          });
         }
       }
     };
@@ -290,7 +297,12 @@ const EnhancedWorkerDashboard = () => {
       await dispatch(fetchDashboardData());
       // Reset data to force reload
       setProfileCompletion(null);
-  setRecentJobsState({ jobs: [], fallback: false, fallbackReason: null, metadata: null });
+      setRecentJobsState({
+        jobs: [],
+        fallback: false,
+        fallbackReason: null,
+        metadata: null,
+      });
     } catch (error) {
       console.error('Refresh failed:', error);
     } finally {
@@ -493,43 +505,56 @@ const EnhancedWorkerDashboard = () => {
                         <>
                           {recentJobsState.fallback && (
                             <Alert severity="info" sx={{ mb: 2 }}>
-                              Showing sample jobs while we reconnect to the job service
+                              Showing sample jobs while we reconnect to the job
+                              service
                               {recentJobsState.fallbackReason
                                 ? ` (${recentJobsState.fallbackReason.replace(/_/g, ' ').toLowerCase()})`
                                 : ''}
                               .
                               {recentJobsState.metadata?.receivedAt && (
-                                <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                                  Updated {new Date(recentJobsState.metadata.receivedAt).toLocaleTimeString()}.
+                                <Typography
+                                  variant="caption"
+                                  display="block"
+                                  sx={{ mt: 0.5 }}
+                                >
+                                  Updated{' '}
+                                  {new Date(
+                                    recentJobsState.metadata.receivedAt,
+                                  ).toLocaleTimeString()}
+                                  .
                                 </Typography>
                               )}
                             </Alert>
                           )}
-                        <List dense>
-                          {recentJobsState.jobs.slice(0, 3).map((job, index) => (
-                            <ListItem
-                              key={job.id || index}
-                              sx={{
-                                borderRadius: 2,
-                                mb: 1,
-                                bgcolor: alpha(GHANA_COLORS.green, 0.05),
-                                '&:hover': {
-                                  bgcolor: alpha(GHANA_COLORS.green, 0.1),
-                                },
-                              }}
-                            >
-                              <ListItemAvatar>
-                                <Avatar sx={{ bgcolor: GHANA_COLORS.green }}>
-                                  <WorkIcon />
-                                </Avatar>
-                              </ListItemAvatar>
-                              <ListItemText
-                                primary={job.title || 'Job Opportunity'}
-                                secondary={`${job.location || 'Ghana'} • GH₵${job?.budget || '0'}`}
-                              />
-                            </ListItem>
-                          ))}
-                        </List>
+                          <List dense>
+                            {recentJobsState.jobs
+                              .slice(0, 3)
+                              .map((job, index) => (
+                                <ListItem
+                                  key={job.id || index}
+                                  sx={{
+                                    borderRadius: 2,
+                                    mb: 1,
+                                    bgcolor: alpha(GHANA_COLORS.green, 0.05),
+                                    '&:hover': {
+                                      bgcolor: alpha(GHANA_COLORS.green, 0.1),
+                                    },
+                                  }}
+                                >
+                                  <ListItemAvatar>
+                                    <Avatar
+                                      sx={{ bgcolor: GHANA_COLORS.green }}
+                                    >
+                                      <WorkIcon />
+                                    </Avatar>
+                                  </ListItemAvatar>
+                                  <ListItemText
+                                    primary={job.title || 'Job Opportunity'}
+                                    secondary={`${job.location || 'Ghana'} • GH₵${job?.budget || '0'}`}
+                                  />
+                                </ListItem>
+                              ))}
+                          </List>
                         </>
                       ) : (
                         <Box textAlign="center" py={4}>

@@ -303,26 +303,28 @@ const SchedulingPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Extract dates with appointments for calendar badges
-  const appointmentDays = Array.isArray(appointments) ? appointments
-    .map((a) => {
-      if (!a) return null; // Skip null/undefined appointments
-      const appointmentDate = a.startTime || a.date;
-      if (!appointmentDate) return null;
+  const appointmentDays = Array.isArray(appointments)
+    ? appointments
+        .map((a) => {
+          if (!a) return null; // Skip null/undefined appointments
+          const appointmentDate = a.startTime || a.date;
+          if (!appointmentDate) return null;
 
-      try {
-        const dateObj = new Date(appointmentDate);
-        // Check if date is valid
-        if (isNaN(dateObj.getTime())) {
-          console.warn('Invalid appointment date:', appointmentDate);
-          return null;
-        }
-        return format(dateObj, 'yyyy-MM-dd');
-      } catch (error) {
-        console.warn('Invalid appointment date:', appointmentDate, error);
-        return null;
-      }
-    })
-    .filter((date) => date !== null) : [];
+          try {
+            const dateObj = new Date(appointmentDate);
+            // Check if date is valid
+            if (isNaN(dateObj.getTime())) {
+              console.warn('Invalid appointment date:', appointmentDate);
+              return null;
+            }
+            return format(dateObj, 'yyyy-MM-dd');
+          } catch (error) {
+            console.warn('Invalid appointment date:', appointmentDate, error);
+            return null;
+          }
+        })
+        .filter((date) => date !== null)
+    : [];
 
   // Load appointments helper
   const loadAppointments = async () => {
@@ -370,19 +372,47 @@ const SchedulingPage = () => {
           workers = await workerService.searchWorkers({ limit: 20 });
         }
       } catch (apiError) {
-        console.warn('workerService.searchWorkers not available, using mock data:', apiError.message);
+        console.warn(
+          'workerService.searchWorkers not available, using mock data:',
+          apiError.message,
+        );
       }
-      
+
       // Use mock data only if explicitly enabled in development
       if (Array.isArray(workers) && workers.length > 0) {
         setUsers(workers);
       } else if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
         const mockUsers = [
-          { id: 1, name: 'John Carpenter', email: 'john@example.com', skills: ['Carpentry', 'Furniture'] },
-          { id: 2, name: 'Sarah Plumber', email: 'sarah@example.com', skills: ['Plumbing', 'Repairs'] },
-          { id: 3, name: 'Mike Electrician', email: 'mike@example.com', skills: ['Electrical', 'Wiring'] },
-          { id: 4, name: 'Anna Mason', email: 'anna@example.com', skills: ['Masonry', 'Concrete'] },
-          { id: 5, name: 'David Painter', email: 'david@example.com', skills: ['Painting', 'Decoration'] }
+          {
+            id: 1,
+            name: 'John Carpenter',
+            email: 'john@example.com',
+            skills: ['Carpentry', 'Furniture'],
+          },
+          {
+            id: 2,
+            name: 'Sarah Plumber',
+            email: 'sarah@example.com',
+            skills: ['Plumbing', 'Repairs'],
+          },
+          {
+            id: 3,
+            name: 'Mike Electrician',
+            email: 'mike@example.com',
+            skills: ['Electrical', 'Wiring'],
+          },
+          {
+            id: 4,
+            name: 'Anna Mason',
+            email: 'anna@example.com',
+            skills: ['Masonry', 'Concrete'],
+          },
+          {
+            id: 5,
+            name: 'David Painter',
+            email: 'david@example.com',
+            skills: ['Painting', 'Decoration'],
+          },
         ];
         setUsers(mockUsers);
       } else {
@@ -524,63 +554,87 @@ const SchedulingPage = () => {
   };
 
   // Filter appointments based on status and search query
-  const filteredAppointments = Array.isArray(appointments) ? appointments.filter((app) => {
-    if (!app) return false; // Skip null/undefined appointments
-    const matchesStatus = filterStatus === 'all' || app.status === filterStatus;
-    const matchesSearch =
-      !searchQuery ||
-      (app.jobTitle && app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (app.hirer && app.hirer.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesStatus && matchesSearch;
-  }) : [];
+  const filteredAppointments = Array.isArray(appointments)
+    ? appointments.filter((app) => {
+        if (!app) return false; // Skip null/undefined appointments
+        const matchesStatus =
+          filterStatus === 'all' || app.status === filterStatus;
+        const matchesSearch =
+          !searchQuery ||
+          (app.jobTitle &&
+            app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (app.hirer &&
+            app.hirer.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesStatus && matchesSearch;
+      })
+    : [];
 
   // Filter for selected day's appointments
-  const dailyAppointments = Array.isArray(filteredAppointments) ? filteredAppointments.filter((a) => {
-    if (!a || !a.date) return false; // Skip null/undefined appointments or dates
-    try {
-      const appointmentDate = new Date(a.date);
-      if (isNaN(appointmentDate.getTime())) return false;
-      return isSameDay(appointmentDate, selectedDate);
-    } catch (error) {
-      console.warn('Invalid appointment date in dailyAppointments filter:', a.date);
-      return false;
-    }
-  }) : [];
+  const dailyAppointments = Array.isArray(filteredAppointments)
+    ? filteredAppointments.filter((a) => {
+        if (!a || !a.date) return false; // Skip null/undefined appointments or dates
+        try {
+          const appointmentDate = new Date(a.date);
+          if (isNaN(appointmentDate.getTime())) return false;
+          return isSameDay(appointmentDate, selectedDate);
+        } catch (error) {
+          console.warn(
+            'Invalid appointment date in dailyAppointments filter:',
+            a.date,
+          );
+          return false;
+        }
+      })
+    : [];
 
   // Group appointments by date string for agenda view
-  const appointmentsByDate = Array.isArray(filteredAppointments) ? filteredAppointments.reduce((acc, app) => {
-    if (!app) return acc; // Skip null/undefined appointments
-    try {
-      const appointmentDate = new Date(app.date);
-      if (isNaN(appointmentDate.getTime())) {
-        console.warn('Invalid appointment date in reduce:', app.date);
-        return acc;
-      }
-      const dateKey = format(appointmentDate, 'yyyy-MM-dd');
-      acc[dateKey] = acc[dateKey] || [];
-      acc[dateKey].push(app);
-      return acc;
-    } catch (error) {
-      console.warn('Error processing appointment date in reduce:', app.date, error);
-      return acc;
-    }
-  }, {}) : {};
+  const appointmentsByDate = Array.isArray(filteredAppointments)
+    ? filteredAppointments.reduce((acc, app) => {
+        if (!app) return acc; // Skip null/undefined appointments
+        try {
+          const appointmentDate = new Date(app.date);
+          if (isNaN(appointmentDate.getTime())) {
+            console.warn('Invalid appointment date in reduce:', app.date);
+            return acc;
+          }
+          const dateKey = format(appointmentDate, 'yyyy-MM-dd');
+          acc[dateKey] = acc[dateKey] || [];
+          acc[dateKey].push(app);
+          return acc;
+        } catch (error) {
+          console.warn(
+            'Error processing appointment date in reduce:',
+            app.date,
+            error,
+          );
+          return acc;
+        }
+      }, {})
+    : {};
 
   // Get upcoming appointments (next 7 days)
-  const upcomingAppointments = Array.isArray(filteredAppointments) ? filteredAppointments
-    .filter((a) => {
-      if (!a || !a.date) return false; // Skip null/undefined appointments or dates
-      try {
-        const appointmentDate = new Date(a.date);
-        if (isNaN(appointmentDate.getTime())) return false;
-        return isAfter(appointmentDate, new Date()) &&
-               isBefore(appointmentDate, addDays(new Date(), 7));
-      } catch (error) {
-        console.warn('Error processing upcoming appointment date:', a.date, error);
-        return false;
-      }
-    })
-    .sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
+  const upcomingAppointments = Array.isArray(filteredAppointments)
+    ? filteredAppointments
+        .filter((a) => {
+          if (!a || !a.date) return false; // Skip null/undefined appointments or dates
+          try {
+            const appointmentDate = new Date(a.date);
+            if (isNaN(appointmentDate.getTime())) return false;
+            return (
+              isAfter(appointmentDate, new Date()) &&
+              isBefore(appointmentDate, addDays(new Date(), 7))
+            );
+          } catch (error) {
+            console.warn(
+              'Error processing upcoming appointment date:',
+              a.date,
+              error,
+            );
+            return false;
+          }
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+    : [];
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>

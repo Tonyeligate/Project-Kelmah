@@ -34,7 +34,7 @@ export const checkApiHealth = async (showLoading = true) => {
       const isLast = attempt === maxAttempts;
       console.log(
         `API health check attempt ${attempt}/${maxAttempts} failed:`,
-        error?.message || 'unknown error'
+        error?.message || 'unknown error',
       );
       if (isLast) {
         return false;

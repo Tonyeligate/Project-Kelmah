@@ -15,10 +15,13 @@ export function useRealTimeAnalytics() {
         const response = await fetch('/runtime-config.json');
         if (response.ok) {
           const config = await response.json();
-          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+          wsUrl =
+            config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
         }
       } catch (configError) {
-        console.warn('⚠️ Analytics: Failed to load runtime config, using fallback');
+        console.warn(
+          '⚠️ Analytics: Failed to load runtime config, using fallback',
+        );
       }
 
       const { io } = await import('socket.io-client');
@@ -57,7 +60,9 @@ export function useRealTimeAnalytics() {
       socket.on('error', (err) => {
         setError('Real-time analytics error');
         console.error('Socket analytics error:', err);
-        enqueueSnackbar('Analytics connection error. Retrying...', { variant: 'error' });
+        enqueueSnackbar('Analytics connection error. Retrying...', {
+          variant: 'error',
+        });
       });
 
       return () => {

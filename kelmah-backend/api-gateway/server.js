@@ -88,12 +88,16 @@ const logger = winston.createLogger({
 
 // Global service registry - will be populated by intelligent discovery
 let services = {};
+let socketIoProxyInstance = null;
 
 // Initialize services on startup
 const initializeServices = async () => {
   try {
     console.log('🔧 API Gateway starting service discovery...');
     services = await initializeServiceRegistry();
+
+    // Reset cached Socket.IO proxy whenever service discovery refreshes targets
+    socketIoProxyInstance = null;
 
     // Expose service URLs to route modules
     app.set('serviceUrls', getServiceUrlsForApp(services));
@@ -111,6 +115,7 @@ const initializeServices = async () => {
       messaging: 'http://localhost:5005',
       review: 'http://localhost:5006'
     };
+    socketIoProxyInstance = null;
     app.set('serviceUrls', getServiceUrlsForApp(services));
     console.log('⚠️ Using fallback localhost URLs');
     return false;
@@ -380,9 +385,6 @@ app.use(
     }).unknown(true),
   }),
   createDynamicProxy('user', {
-    // ✅ FIX: Don't strip /api/users - keep the full path for user-service
-    // Express app.use() already strips the mount path, so we need to add it back
-    pathRewrite: { '^/': '/api/users/' },
     onProxyReq: (proxyReq, req) => {
       console.log('📤 [API Gateway] Proxying to user service:', {
         method: proxyReq.method,
@@ -660,48 +662,54 @@ app.use('/api/messaging/health', (req, res, next) => {
 // Socket.IO WebSocket proxy to messaging-service
 // IMPORTANT: Always mount on '/socket.io' path to avoid intercepting unrelated routes
 // Dynamic proxy creation with health checking and fallback
-const createSocketIoProxy = () => {
-  if (services.messaging && typeof services.messaging === 'string' && services.messaging.length > 0) {
-    try {
-      console.log(`🔌 Creating Socket.IO proxy to: ${services.messaging}`);
-      return createProxyMiddleware({
-        target: services.messaging,  // This should be http://localhost:5005
-        changeOrigin: true,
-        ws: true,
-        timeout: 30000,
-        proxyTimeout: 30000,
-        logLevel: 'debug',
-        // Enhanced error handling
-        onError: (err, req, res) => {
-          console.error('🚨 Socket.IO proxy error:', err.message);
-          if (res && !res.headersSent) {
-            res.status(503).json({
-              error: 'WebSocket service temporarily unavailable',
-              code: 'WEBSOCKET_PROXY_ERROR',
-              retry: true
-            });
-          }
-        },
-        onProxyReqWs: (proxyReq, req, socket) => {
-          console.log('🔄 WebSocket proxying to messaging service:', req.url);
-        },
-        onProxyReq: (proxyReq, req, res) => {
-          console.log('📡 Socket.IO HTTP request:', req.method, req.url);
+const getSocketIoProxy = () => {
+  if (socketIoProxyInstance) {
+    return socketIoProxyInstance;
+  }
+
+  const target = services.messaging;
+  if (!target || typeof target !== 'string' || target.length === 0) {
+    console.error('❌ Missing messaging service URL for Socket.IO proxy:', target);
+    return null;
+  }
+
+  try {
+    console.log(`🔌 Initializing Socket.IO proxy to: ${target}`);
+    socketIoProxyInstance = createProxyMiddleware({
+      target,
+      changeOrigin: true,
+      ws: true,
+      timeout: 30000,
+      proxyTimeout: 30000,
+      logLevel: 'debug',
+      onError: (err, req, res) => {
+        console.error('🚨 Socket.IO proxy error:', err.message);
+        if (res && !res.headersSent) {
+          res.status(503).json({
+            error: 'WebSocket service temporarily unavailable',
+            code: 'WEBSOCKET_PROXY_ERROR',
+            retry: true
+          });
         }
-      });
-    } catch (error) {
-      console.error('❌ Failed to create Socket.IO proxy:', error.message);
-      return null;
-    }
-  } else {
-    console.error('❌ Missing messaging service URL for Socket.IO proxy:', services.messaging);
+      },
+      onProxyReqWs: (proxyReq, req, socket) => {
+        console.log('🔄 WebSocket proxying to messaging service:', req.url);
+      },
+      onProxyReq: (proxyReq, req, res) => {
+        console.log('📡 Socket.IO HTTP request:', req.method, req.url);
+      }
+    });
+    return socketIoProxyInstance;
+  } catch (error) {
+    console.error('❌ Failed to initialize Socket.IO proxy:', error.message);
+    socketIoProxyInstance = null;
     return null;
   }
 };
 
 // Create dynamic Socket.IO proxy handler
 const socketIoProxyHandler = (req, res, next) => {
-  const proxy = createSocketIoProxy();
+  const proxy = getSocketIoProxy();
   if (proxy) {
     return proxy(req, res, next);
   } else {
@@ -1037,7 +1045,7 @@ const startServer = async () => {
         const url = req?.url || '';
         if (url.startsWith('/socket.io')) {
           console.log('🔄 WebSocket upgrade request:', url);
-          const proxy = createSocketIoProxy();
+          const proxy = getSocketIoProxy();
           if (proxy && typeof proxy.upgrade === 'function') {
             return proxy.upgrade(req, socket, head);
           } else {

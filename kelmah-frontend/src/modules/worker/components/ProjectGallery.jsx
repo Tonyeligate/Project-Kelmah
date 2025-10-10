@@ -25,12 +25,12 @@ import {
   NavigateBefore as PrevIcon,
 } from '@mui/icons-material';
 
-const ProjectGallery = ({ 
-  images = [], 
-  projectTitle = '', 
-  open = false, 
-  onClose = () => {}, 
-  initialIndex = 0 
+const ProjectGallery = ({
+  images = [],
+  projectTitle = '',
+  open = false,
+  onClose = () => {},
+  initialIndex = 0,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -52,7 +52,7 @@ const ProjectGallery = ({
   React.useEffect(() => {
     const handleKeyPress = (event) => {
       if (!open) return;
-      
+
       switch (event.key) {
         case 'ArrowRight':
           handleNext();
@@ -88,7 +88,8 @@ const ProjectGallery = ({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = filename || `${projectTitle}_image_${currentIndex + 1}.jpg`;
+      link.download =
+        filename || `${projectTitle}_image_${currentIndex + 1}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -167,11 +168,16 @@ const ProjectGallery = ({
             {currentIndex + 1} of {images.length}
           </Typography>
         </Box>
-        
+
         <Stack direction="row" spacing={1}>
           <IconButton
             color="inherit"
-            onClick={() => handleDownload(images[currentIndex], `${projectTitle}_${currentIndex + 1}`)}
+            onClick={() =>
+              handleDownload(
+                images[currentIndex],
+                `${projectTitle}_${currentIndex + 1}`,
+              )
+            }
             sx={{ color: 'white' }}
           >
             <DownloadIcon />
@@ -183,11 +189,7 @@ const ProjectGallery = ({
           >
             <ShareIcon />
           </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={onClose}
-            sx={{ color: 'white' }}
-          >
+          <IconButton color="inherit" onClick={onClose} sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
         </Stack>
@@ -313,7 +315,10 @@ const ProjectGallery = ({
                     cursor: 'pointer',
                     borderRadius: 1,
                     overflow: 'hidden',
-                    border: index === currentIndex ? '2px solid white' : '2px solid transparent',
+                    border:
+                      index === currentIndex
+                        ? '2px solid white'
+                        : '2px solid transparent',
                     opacity: index === currentIndex ? 1 : 0.7,
                     transition: 'all 0.2s ease',
                     '&:hover': {
@@ -363,7 +368,10 @@ const ProjectGallery = ({
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  backgroundColor: index === currentIndex ? 'white' : 'rgba(255, 255, 255, 0.4)',
+                  backgroundColor:
+                    index === currentIndex
+                      ? 'white'
+                      : 'rgba(255, 255, 255, 0.4)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}

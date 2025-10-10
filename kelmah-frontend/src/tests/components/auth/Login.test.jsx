@@ -22,11 +22,7 @@ jest.mock('react-router-dom', () => ({
 jest.mock(
   '../../../modules/auth/components/AuthLayout',
   () =>
-    ({ children }) => (
-      <div>
-        AuthLayout {children}
-      </div>
-    ),
+    ({ children }) => <div>AuthLayout {children}</div>,
 );
 jest.mock(
   '../../../modules/auth/components/AuthCard',
@@ -67,9 +63,7 @@ describe('Login Component', () => {
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /login/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
   test('shows validation errors for empty fields', async () => {
@@ -131,7 +125,7 @@ describe('Login Component', () => {
       expect(actions).toContainEqual(
         expect.objectContaining({
           type: 'auth/login/pending',
-        })
+        }),
       );
     });
   });
@@ -159,7 +153,7 @@ describe('Login Component', () => {
       expect(actions).toContainEqual(
         expect.objectContaining({
           type: 'auth/login/rejected',
-        })
+        }),
       );
     });
   });
@@ -170,9 +164,7 @@ describe('Login Component', () => {
         <MemoryRouter initialEntries={['/login']}>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<div>
-              Dashboard
-            </div>} />
+            <Route path="/dashboard" element={<div>Dashboard</div>} />
           </Routes>
         </MemoryRouter>
       </Provider>,
@@ -218,9 +210,3 @@ describe('Login Component', () => {
     expect(mockedNavigate).toHaveBeenCalledWith('/register');
   });
 });
-
-
-
-
-
-

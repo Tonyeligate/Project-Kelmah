@@ -147,7 +147,10 @@ class AuthApi {
    * @returns {Promise<Object>} Resend response
    */
   async resendVerificationEmail(data) {
-    const response = await apiClient.post('/api/auth/resend-verification-email', data);
+    const response = await apiClient.post(
+      '/api/auth/resend-verification-email',
+      data,
+    );
     return response.data;
   }
 }

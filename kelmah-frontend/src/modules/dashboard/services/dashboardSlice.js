@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { userServiceClient, jobServiceClient } from '../../common/services/axios';
+import {
+  userServiceClient,
+  jobServiceClient,
+} from '../../common/services/axios';
 
 // Use centralized clients with auth/retries
 
@@ -54,8 +57,8 @@ export const fetchDashboardData = createAsyncThunk(
       // Check if we already have recent data to prevent unnecessary calls
       const { dashboard } = getState();
       const lastUpdated = dashboard?.lastUpdated;
-      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-      
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+
       if (lastUpdated && new Date(lastUpdated).getTime() > fiveMinutesAgo) {
         return dashboard.data; // Return cached data if recent
       }
@@ -74,83 +77,100 @@ export const fetchDashboardData = createAsyncThunk(
       ]);
 
       // Extract successful responses or use enhanced mock data
-      const metrics = metricsResponse.status === 'fulfilled'
-        ? metricsResponse.value.data
-        : {
-            ...initialState.data.metrics,
-            totalJobs: Math.floor(Math.random() * 50) + 10,
-            activeJobs: Math.floor(Math.random() * 15) + 3,
-            completedJobs: Math.floor(Math.random() * 35) + 5,
-            totalEarnings: Math.floor(Math.random() * 5000) + 1000,
-            profileViews: Math.floor(Math.random() * 200) + 50,
-            weeklyViews: Math.floor(Math.random() * 50) + 10,
-            jobsChange: Math.floor(Math.random() * 20) - 5,
-            applicationsChange: Math.floor(Math.random() * 30) - 10,
-            earningsChange: Math.floor(Math.random() * 25) + 5,
-            viewsChange: Math.floor(Math.random() * 15) + 2,
-          };
+      const metrics =
+        metricsResponse.status === 'fulfilled'
+          ? metricsResponse.value.data
+          : {
+              ...initialState.data.metrics,
+              totalJobs: Math.floor(Math.random() * 50) + 10,
+              activeJobs: Math.floor(Math.random() * 15) + 3,
+              completedJobs: Math.floor(Math.random() * 35) + 5,
+              totalEarnings: Math.floor(Math.random() * 5000) + 1000,
+              profileViews: Math.floor(Math.random() * 200) + 50,
+              weeklyViews: Math.floor(Math.random() * 50) + 10,
+              jobsChange: Math.floor(Math.random() * 20) - 5,
+              applicationsChange: Math.floor(Math.random() * 30) - 10,
+              earningsChange: Math.floor(Math.random() * 25) + 5,
+              viewsChange: Math.floor(Math.random() * 15) + 2,
+            };
 
-      const recentJobs = jobsResponse.status === 'fulfilled'
-        ? (Array.isArray(jobsResponse.value.data) ? jobsResponse.value.data : 
-           Array.isArray(jobsResponse.value.data?.jobs) ? jobsResponse.value.data.jobs : [])
-        : [
-            {
-              id: 1,
-              title: 'Web Development Project',
-              location: 'Accra, Ghana',
-              budget: 2500,
-              status: 'Active',
-            },
-            {
-              id: 2,
-              title: 'Mobile App Design',
-              location: 'Kumasi, Ghana',
-              budget: 1800,
-              status: 'Pending',
-            },
-            {
-              id: 3,
-              title: 'Content Writing',
-              location: 'Takoradi, Ghana',
-              budget: 800,
-              status: 'Active',
-            },
-          ];
+      const recentJobs =
+        jobsResponse.status === 'fulfilled'
+          ? Array.isArray(jobsResponse.value.data)
+            ? jobsResponse.value.data
+            : Array.isArray(jobsResponse.value.data?.jobs)
+              ? jobsResponse.value.data.jobs
+              : []
+          : [
+              {
+                id: 1,
+                title: 'Web Development Project',
+                location: 'Accra, Ghana',
+                budget: 2500,
+                status: 'Active',
+              },
+              {
+                id: 2,
+                title: 'Mobile App Design',
+                location: 'Kumasi, Ghana',
+                budget: 1800,
+                status: 'Pending',
+              },
+              {
+                id: 3,
+                title: 'Content Writing',
+                location: 'Takoradi, Ghana',
+                budget: 800,
+                status: 'Active',
+              },
+            ];
 
-      const activeWorkers = workersResponse.status === 'fulfilled'
-        ? (Array.isArray(workersResponse.value.data) ? workersResponse.value.data : 
-           Array.isArray(workersResponse.value.data?.workers) ? workersResponse.value.data.workers : [])
-        : initialState.data.activeWorkers;
+      const activeWorkers =
+        workersResponse.status === 'fulfilled'
+          ? Array.isArray(workersResponse.value.data)
+            ? workersResponse.value.data
+            : Array.isArray(workersResponse.value.data?.workers)
+              ? workersResponse.value.data.workers
+              : []
+          : initialState.data.activeWorkers;
 
-      const analytics = analyticsResponse.status === 'fulfilled'
-        ? {
-            ...analyticsResponse.value.data,
-            topSkills: Array.isArray(analyticsResponse.value.data?.topSkills) 
-              ? analyticsResponse.value.data.topSkills 
-              : ['Web Development', 'Mobile Apps', 'Design', 'Writing']
-          }
-        : {
-            ...initialState.data.analytics,
-            jobsThisMonth: Math.floor(Math.random() * 20) + 5,
-            applicationsThisMonth: Math.floor(Math.random() * 80) + 20,
-            earningsThisMonth: Math.floor(Math.random() * 3000) + 500,
-            averageResponseTime: '2 hours',
-            completionRate: 95,
-            clientSatisfaction: 4.8,
-            monthlyGrowth: {
-              jobs: Math.floor(Math.random() * 15) + 5,
-              earnings: Math.floor(Math.random() * 25) + 10,
-              applications: Math.floor(Math.random() * 20) + 8,
-            },
-            topSkills: ['Web Development', 'Mobile Apps', 'Design', 'Writing'],
-          };
+      const analytics =
+        analyticsResponse.status === 'fulfilled'
+          ? {
+              ...analyticsResponse.value.data,
+              topSkills: Array.isArray(analyticsResponse.value.data?.topSkills)
+                ? analyticsResponse.value.data.topSkills
+                : ['Web Development', 'Mobile Apps', 'Design', 'Writing'],
+            }
+          : {
+              ...initialState.data.analytics,
+              jobsThisMonth: Math.floor(Math.random() * 20) + 5,
+              applicationsThisMonth: Math.floor(Math.random() * 80) + 20,
+              earningsThisMonth: Math.floor(Math.random() * 3000) + 500,
+              averageResponseTime: '2 hours',
+              completionRate: 95,
+              clientSatisfaction: 4.8,
+              monthlyGrowth: {
+                jobs: Math.floor(Math.random() * 15) + 5,
+                earnings: Math.floor(Math.random() * 25) + 10,
+                applications: Math.floor(Math.random() * 20) + 8,
+              },
+              topSkills: [
+                'Web Development',
+                'Mobile Apps',
+                'Design',
+                'Writing',
+              ],
+            };
 
       // Log which services are using mock data
       if (metricsResponse.status === 'rejected') {
         console.warn('User service unavailable for metrics, using mock data');
       }
       if (jobsResponse.status === 'rejected') {
-        console.warn('Job service unavailable for dashboard jobs, using mock data');
+        console.warn(
+          'Job service unavailable for dashboard jobs, using mock data',
+        );
       }
       if (workersResponse.status === 'rejected') {
         console.warn('User service unavailable for workers data');
@@ -166,8 +186,11 @@ export const fetchDashboardData = createAsyncThunk(
         analytics,
       };
     } catch (error) {
-      console.warn('All dashboard services unavailable, using mock data:', error.message);
-      
+      console.warn(
+        'All dashboard services unavailable, using mock data:',
+        error.message,
+      );
+
       // Return comprehensive mock data as fallback
       return {
         metrics: {
@@ -288,9 +311,9 @@ const dashboardSlice = createSlice({
   },
 });
 
-export const { 
-  setSelectedJob, 
-  setSelectedWorker, 
+export const {
+  setSelectedJob,
+  setSelectedWorker,
   clearDashboardError,
   setRefreshing,
   updateMetrics,

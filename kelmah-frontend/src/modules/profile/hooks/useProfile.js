@@ -147,20 +147,17 @@ export const useProfile = () => {
     }
   }, []);
 
-  const loadActivity = useCallback(
-    async (filters = {}) => {
-      try {
-        const activities = await profileService.getActivity(filters);
-        setActivity(activities);
-        return activities;
-      } catch (error) {
-        console.warn('Activity loading error (with fallback):', error.message);
-        // Don't re-throw since profileService now provides fallback data
-        return [];
-      }
-    },
-    [],
-  );
+  const loadActivity = useCallback(async (filters = {}) => {
+    try {
+      const activities = await profileService.getActivity(filters);
+      setActivity(activities);
+      return activities;
+    } catch (error) {
+      console.warn('Activity loading error (with fallback):', error.message);
+      // Don't re-throw since profileService now provides fallback data
+      return [];
+    }
+  }, []);
 
   // Load profile when authenticated
   useEffect(() => {
@@ -170,15 +167,24 @@ export const useProfile = () => {
         try {
           // Load all profile data concurrently
           await Promise.allSettled([
-            loadProfile().catch(error => {
-              console.warn('Profile loading failed (gracefully handled):', error.message);
+            loadProfile().catch((error) => {
+              console.warn(
+                'Profile loading failed (gracefully handled):',
+                error.message,
+              );
             }),
-            loadStatistics().catch(error => {
-              console.warn('Statistics loading failed (gracefully handled):', error.message);
+            loadStatistics().catch((error) => {
+              console.warn(
+                'Statistics loading failed (gracefully handled):',
+                error.message,
+              );
             }),
-            loadActivity().catch(error => {
-              console.warn('Activity loading failed (gracefully handled):', error.message);
-            })
+            loadActivity().catch((error) => {
+              console.warn(
+                'Activity loading failed (gracefully handled):',
+                error.message,
+              );
+            }),
           ]);
           console.log('🎯 Profile initialization completed with fallback data');
         } catch (error) {
@@ -186,7 +192,7 @@ export const useProfile = () => {
           // Error is already handled by individual catch blocks
         }
       };
-      
+
       initializeProfile();
     }
   }, [isAuthenticated, loadProfile, loadStatistics, loadActivity]);

@@ -29,18 +29,20 @@ const ReviewModeration = () => {
 
   // Tab configuration with new modular components
   const tabs = [
-    { 
-      label: 'Moderation Queue', 
-      icon: QueueIcon, 
+    {
+      label: 'Moderation Queue',
+      icon: QueueIcon,
       component: ReviewModerationQueue,
-      description: 'Review and moderate pending submissions, handle flagged content, and manage bulk operations'
+      description:
+        'Review and moderate pending submissions, handle flagged content, and manage bulk operations',
     },
-    { 
-      label: 'Analytics Dashboard', 
-      icon: AnalyticsIcon, 
+    {
+      label: 'Analytics Dashboard',
+      icon: AnalyticsIcon,
       component: ReviewAnalyticsDashboard,
-      description: 'Comprehensive review insights, trends, and performance metrics'
-    }
+      description:
+        'Comprehensive review insights, trends, and performance metrics',
+    },
   ];
 
   const handleTabChange = (event, newValue) => {
@@ -50,23 +52,32 @@ const ReviewModeration = () => {
   // Access control
   if (!user || user.role !== 'admin') {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: 400,
-        background: 'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
-        borderRadius: 2,
-        border: '1px solid rgba(255,255,255,0.1)'
-      }}>
-        <Card sx={{ 
-          p: 4, 
-          textAlign: 'center',
-          background: 'linear-gradient(135deg, rgba(244,67,54,0.1) 0%, rgba(244,67,54,0.05) 100%)',
-          border: '1px solid rgba(244,67,54,0.2)'
-        }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: 400,
+          background:
+            'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
+          borderRadius: 2,
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}
+      >
+        <Card
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            background:
+              'linear-gradient(135deg, rgba(244,67,54,0.1) 0%, rgba(244,67,54,0.05) 100%)',
+            border: '1px solid rgba(244,67,54,0.2)',
+          }}
+        >
           <SecurityIcon sx={{ fontSize: 64, color: '#F44336', mb: 2 }} />
-          <Typography variant="h5" sx={{ color: '#F44336', fontWeight: 700, mb: 1 }}>
+          <Typography
+            variant="h5"
+            sx={{ color: '#F44336', fontWeight: 700, mb: 1 }}
+          >
             Access Denied
           </Typography>
           <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -84,7 +95,10 @@ const ReviewModeration = () => {
       {/* Header */}
       <Stack spacing={3} sx={{ mb: 4 }}>
         <Box>
-          <Typography variant="h4" sx={{ color: '#FFD700', fontWeight: 700, mb: 1 }}>
+          <Typography
+            variant="h4"
+            sx={{ color: '#FFD700', fontWeight: 700, mb: 1 }}
+          >
             Review Moderation Center
           </Typography>
           <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -93,29 +107,32 @@ const ReviewModeration = () => {
         </Box>
 
         {/* Tab Navigation */}
-        <Card sx={{ 
-          background: 'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
-          border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <Tabs 
-            value={activeTab} 
+        <Card
+          sx={{
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <Tabs
+            value={activeTab}
             onChange={handleTabChange}
             sx={{
-              '& .MuiTab-root': { 
+              '& .MuiTab-root': {
                 color: 'rgba(255,255,255,0.7)',
                 minHeight: 72,
                 textTransform: 'none',
                 fontSize: '1rem',
-                fontWeight: 600
+                fontWeight: 600,
               },
               '& .Mui-selected': { color: '#FFD700 !important' },
-              '& .MuiTabs-indicator': { 
+              '& .MuiTabs-indicator': {
                 backgroundColor: '#FFD700',
-                height: 3
+                height: 3,
               },
               '& .MuiTabs-flexContainer': {
-                justifyContent: 'center'
-              }
+                justifyContent: 'center',
+              },
             }}
             variant="fullWidth"
           >
@@ -128,10 +145,19 @@ const ReviewModeration = () => {
                     <Stack alignItems="center" spacing={1}>
                       <IconComponent sx={{ fontSize: 24 }} />
                       <Box>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 700 }}
+                        >
                           {tab.label}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.2 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'rgba(255,255,255,0.5)',
+                            lineHeight: 1.2,
+                          }}
+                        >
                           {tab.description}
                         </Typography>
                       </Box>
@@ -145,9 +171,7 @@ const ReviewModeration = () => {
       </Stack>
 
       {/* Tab Content */}
-      <Box sx={{ mt: 3 }}>
-        {ActiveComponent && <ActiveComponent />}
-      </Box>
+      <Box sx={{ mt: 3 }}>{ActiveComponent && <ActiveComponent />}</Box>
     </Box>
   );
 };

@@ -102,7 +102,7 @@ function JobApplication() {
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
     proposedBudget: '',
-    currency: "GHS",
+    currency: 'GHS',
     estimatedDuration: '',
     attachments: [],
     milestoneProposal: [],
@@ -130,7 +130,11 @@ function JobApplication() {
         // Set defaults from job
         setApplicationData((prev) => ({
           ...prev,
-          proposedBudget: response?.budget?.amount || response?.budget?.min || response?.budget || '',
+          proposedBudget:
+            response?.budget?.amount ||
+            response?.budget?.min ||
+            response?.budget ||
+            '',
           currency: response?.currency || 'GHS',
         }));
 
@@ -496,13 +500,13 @@ function JobApplication() {
                       >
                         <Paid color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
-                          <strong>Budget:</strong> {job?.budget ? (
-                            typeof job.budget === 'object' ? (
-                              `${job?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
-                            ) : (
-                              `${job?.currency || 'GHS'} ${job.budget}`
-                            )
-                          ) : 'Not specified'} {job?.currency}
+                          <strong>Budget:</strong>{' '}
+                          {job?.budget
+                            ? typeof job.budget === 'object'
+                              ? `${job?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
+                              : `${job?.currency || 'GHS'} ${job.budget}`
+                            : 'Not specified'}{' '}
+                          {job?.currency}
                         </Typography>
                       </Box>
 
@@ -512,15 +516,11 @@ function JobApplication() {
                         <Schedule color="primary" sx={{ mr: 1 }} />
                         <Typography variant="body2">
                           <strong>Duration:</strong>{' '}
-                          {job?.duration ? (
-                            typeof job.duration === 'object' ? (
-                              `${job.duration.value || 0} ${job.duration.unit || 'days'}`
-                            ) : (
-                              `${job.duration} days`
-                            )
-                          ) : (
-                            'Not specified'
-                          )}
+                          {job?.duration
+                            ? typeof job.duration === 'object'
+                              ? `${job.duration.value || 0} ${job.duration.unit || 'days'}`
+                              : `${job.duration} days`
+                            : 'Not specified'}
                         </Typography>
                       </Box>
                     </Grid>

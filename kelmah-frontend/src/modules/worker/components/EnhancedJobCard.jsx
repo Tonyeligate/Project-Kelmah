@@ -54,17 +54,17 @@ import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 // Note: bidApi and userPerformanceApi functionality should be integrated into appropriate module services
 
-const EnhancedJobCard = ({ 
-  job, 
-  onApply, 
-  onSave, 
-  onShare, 
+const EnhancedJobCard = ({
+  job,
+  onApply,
+  onSave,
+  onShare,
   showBiddingInfo = true,
-  showPerformanceTier = true 
+  showPerformanceTier = true,
 }) => {
   const theme = useTheme();
   // FIXED: Use standardized user normalization for consistent user data access
-  const { user: rawUser } = useSelector(state => state.auth);
+  const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const [bidData, setBidData] = useState({
@@ -74,8 +74,8 @@ const EnhancedJobCard = ({
     availability: {
       startDate: new Date(),
       hoursPerWeek: 40,
-      flexible: false
-    }
+      flexible: false,
+    },
   });
   const [bidLoading, setBidLoading] = useState(false);
   const [userPerformance, setUserPerformance] = useState(null);
@@ -88,7 +88,6 @@ const EnhancedJobCard = ({
       // userPerformanceApi.getUserPerformance(user.id)
       //   .then(response => setUserPerformance(response.data))
       //   .catch(error => console.warn('Failed to load user performance:', error));
-      
       // bidApi.getWorkerBidStats(user.id)
       //   .then(response => setBidStats(response.data))
       //   .catch(error => console.warn('Failed to load bid stats:', error));
@@ -97,7 +96,7 @@ const EnhancedJobCard = ({
 
   const handleBidSubmit = async () => {
     if (!user?.id) return;
-    
+
     setBidLoading(true);
     try {
       // TODO: Integrate bid functionality into worker service
@@ -105,7 +104,7 @@ const EnhancedJobCard = ({
       //   jobId: job.id,
       //   ...bidData
       // });
-      
+
       setBidDialogOpen(false);
       // Show success message
       if (onApply) onApply(job);
@@ -118,19 +117,27 @@ const EnhancedJobCard = ({
 
   const getPerformanceTierColor = (tier) => {
     switch (tier) {
-      case 'tier1': return theme.palette.success.main;
-      case 'tier2': return theme.palette.warning.main;
-      case 'tier3': return theme.palette.info.main;
-      default: return theme.palette.grey[500];
+      case 'tier1':
+        return theme.palette.success.main;
+      case 'tier2':
+        return theme.palette.warning.main;
+      case 'tier3':
+        return theme.palette.info.main;
+      default:
+        return theme.palette.grey[500];
     }
   };
 
   const getPerformanceTierLabel = (tier) => {
     switch (tier) {
-      case 'tier1': return 'Premium Access';
-      case 'tier2': return 'Verified Access';
-      case 'tier3': return 'Standard Access';
-      default: return 'Standard';
+      case 'tier1':
+        return 'Premium Access';
+      case 'tier2':
+        return 'Verified Access';
+      case 'tier3':
+        return 'Standard Access';
+      default:
+        return 'Standard';
     }
   };
 
@@ -141,23 +148,31 @@ const EnhancedJobCard = ({
 
   const getBidStatusColor = () => {
     if (!job?.bidding) return theme.palette.grey[500];
-    
+
     switch (job?.bidding?.bidStatus) {
-      case 'open': return theme.palette.success.main;
-      case 'full': return theme.palette.warning.main;
-      case 'closed': return theme.palette.error.main;
-      default: return theme.palette.grey[500];
+      case 'open':
+        return theme.palette.success.main;
+      case 'full':
+        return theme.palette.warning.main;
+      case 'closed':
+        return theme.palette.error.main;
+      default:
+        return theme.palette.grey[500];
     }
   };
 
   const getBidStatusText = () => {
     if (!job?.bidding) return 'No Bidding';
-    
+
     switch (job?.bidding?.bidStatus) {
-      case 'open': return `${job?.bidding?.currentBidders || 0}/${job?.bidding?.maxBidders || 0} Bidders`;
-      case 'full': return 'Bidding Full';
-      case 'closed': return 'Bidding Closed';
-      default: return 'No Bidding';
+      case 'open':
+        return `${job?.bidding?.currentBidders || 0}/${job?.bidding?.maxBidders || 0} Bidders`;
+      case 'full':
+        return 'Bidding Full';
+      case 'closed':
+        return 'Bidding Closed';
+      default:
+        return 'No Bidding';
     }
   };
 
@@ -207,11 +222,11 @@ const EnhancedJobCard = ({
                 }}
               />
             )}
-            
+
             <Typography variant="h6" fontWeight={600} sx={{ pr: 8 }}>
               {job?.title || 'Job Title'}
             </Typography>
-            
+
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
               <Avatar
                 src={job.company?.logo}
@@ -246,13 +261,21 @@ const EnhancedJobCard = ({
             {showBiddingInfo && job?.bidding && (
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <GavelIcon sx={{ fontSize: 16, mr: 1, color: getBidStatusColor() }} />
+                  <GavelIcon
+                    sx={{ fontSize: 16, mr: 1, color: getBidStatusColor() }}
+                  />
                   <Typography variant="body2" fontWeight={600}>
                     Bidding: {getBidStatusText()}
                   </Typography>
                 </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     Min: GH₵{job.bidding.minBidAmount}
                   </Typography>
@@ -260,10 +283,12 @@ const EnhancedJobCard = ({
                     Max: GH₵{job.bidding.maxBidAmount}
                   </Typography>
                 </Box>
-                
+
                 <LinearProgress
                   variant="determinate"
-                  value={(job.bidding.currentBidders / job.bidding.maxBidders) * 100}
+                  value={
+                    (job.bidding.currentBidders / job.bidding.maxBidders) * 100
+                  }
                   sx={{
                     height: 6,
                     borderRadius: 3,
@@ -278,17 +303,15 @@ const EnhancedJobCard = ({
 
             {/* Budget */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AttachMoneyIcon sx={{ fontSize: 16, mr: 1, color: theme.palette.success.main }} />
+              <AttachMoneyIcon
+                sx={{ fontSize: 16, mr: 1, color: theme.palette.success.main }}
+              />
               <Typography variant="body2" fontWeight={600}>
-                {job?.budget ? (
-                  typeof job.budget === 'object' ? (
-                    `GH₵${job.budget.min || 0} - ${job.budget.max || 0} ${job.budget.type || 'fixed'}`
-                  ) : (
-                    `GH₵${job.budget}`
-                  )
-                ) : (
-                  'Salary not specified'
-                )}
+                {job?.budget
+                  ? typeof job.budget === 'object'
+                    ? `GH₵${job.budget.min || 0} - ${job.budget.max || 0} ${job.budget.type || 'fixed'}`
+                    : `GH₵${job.budget}`
+                  : 'Salary not specified'}
               </Typography>
             </Box>
 
@@ -335,16 +358,31 @@ const EnhancedJobCard = ({
 
             {/* Posted Date */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <ScheduleIcon sx={{ fontSize: 14, mr: 1, color: theme.palette.text.secondary }} />
+              <ScheduleIcon
+                sx={{
+                  fontSize: 14,
+                  mr: 1,
+                  color: theme.palette.text.secondary,
+                }}
+              />
               <Typography variant="caption" color="text.secondary">
-                Posted {formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}
+                Posted{' '}
+                {formatDistanceToNow(new Date(job.postedDate), {
+                  addSuffix: true,
+                })}
               </Typography>
             </Box>
 
             {/* Apply By */}
             {job.applyBy && (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AccessTimeIcon sx={{ fontSize: 14, mr: 1, color: theme.palette.warning.main }} />
+                <AccessTimeIcon
+                  sx={{
+                    fontSize: 14,
+                    mr: 1,
+                    color: theme.palette.warning.main,
+                  }}
+                />
                 <Typography variant="caption" color="text.secondary">
                   Apply by {format(new Date(job.applyBy), 'MMM dd')}
                 </Typography>
@@ -401,56 +439,62 @@ const EnhancedJobCard = ({
             Submit Bid for {job.title}
           </Box>
         </DialogTitle>
-        
+
         <DialogContent>
           {bidStats && (
             <Alert severity="info" sx={{ mb: 2 }}>
               You have {bidStats.remainingBids} bids remaining this month
             </Alert>
           )}
-          
+
           <TextField
             fullWidth
             label="Bid Amount (GHS)"
             type="number"
             value={bidData.bidAmount}
-            onChange={(e) => setBidData({
-              ...bidData,
-              bidAmount: parseFloat(e.target.value) || 0
-            })}
+            onChange={(e) =>
+              setBidData({
+                ...bidData,
+                bidAmount: parseFloat(e.target.value) || 0,
+              })
+            }
             inputProps={{
               min: job?.bidding?.minBidAmount || 0,
-              max: job?.bidding?.maxBidAmount || 10000
+              max: job?.bidding?.maxBidAmount || 10000,
             }}
             helperText={`Min: GH₵${job?.bidding?.minBidAmount || 0}, Max: GH₵${job?.bidding?.maxBidAmount || 10000}`}
             sx={{ mb: 2 }}
           />
-          
+
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
               label="Duration"
               type="number"
               value={bidData.estimatedDuration.value}
-              onChange={(e) => setBidData({
-                ...bidData,
-                estimatedDuration: {
-                  ...bidData.estimatedDuration,
-                  value: parseInt(e.target.value) || 1
-                }
-              })}
+              onChange={(e) =>
+                setBidData({
+                  ...bidData,
+                  estimatedDuration: {
+                    ...bidData.estimatedDuration,
+                    value: parseInt(e.target.value) || 1,
+                  },
+                })
+              }
               sx={{ flex: 1 }}
             />
             <FormControl sx={{ flex: 1 }}>
               <InputLabel>Unit</InputLabel>
               <Select
                 value={bidData.estimatedDuration.unit}
-                onChange={(e) => setBidData({
-                  ...bidData,
-                  estimatedDuration: {
-                    ...bidData.estimatedDuration,
-                    unit: e.target.value
-                  }
-                })}
+                onChange={(e) =>
+                  setBidData({
+                    ...bidData,
+                    estimatedDuration: {
+                      ...bidData.estimatedDuration,
+                      unit: e.target.value,
+                    },
+                  })
+                }
               >
                 <MenuItem value="hour">Hours</MenuItem>
                 <MenuItem value="day">Days</MenuItem>
@@ -459,41 +503,43 @@ const EnhancedJobCard = ({
               </Select>
             </FormControl>
           </Box>
-          
+
           <TextField
             fullWidth
             label="Cover Letter"
             multiline
             rows={4}
             value={bidData.coverLetter}
-            onChange={(e) => setBidData({
-              ...bidData,
-              coverLetter: e.target.value
-            })}
+            onChange={(e) =>
+              setBidData({
+                ...bidData,
+                coverLetter: e.target.value,
+              })
+            }
             placeholder="Explain why you're the best fit for this job..."
             sx={{ mb: 2 }}
           />
-          
+
           <TextField
             fullWidth
             label="Hours per Week"
             type="number"
             value={bidData.availability.hoursPerWeek}
-            onChange={(e) => setBidData({
-              ...bidData,
-              availability: {
-                ...bidData.availability,
-                hoursPerWeek: parseInt(e.target.value) || 40
-              }
-            })}
+            onChange={(e) =>
+              setBidData({
+                ...bidData,
+                availability: {
+                  ...bidData.availability,
+                  hoursPerWeek: parseInt(e.target.value) || 40,
+                },
+              })
+            }
             inputProps={{ min: 1, max: 168 }}
           />
         </DialogContent>
-        
+
         <DialogActions>
-          <Button onClick={() => setBidDialogOpen(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setBidDialogOpen(false)}>Cancel</Button>
           <Button
             onClick={handleBidSubmit}
             variant="contained"

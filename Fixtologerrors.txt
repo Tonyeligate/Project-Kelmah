@@ -1,85 +1,49 @@
-Kelmah Console Error Trace Audit — October 9, 2025
-===================================================
+# Kelmah Console Error Inventory — 10 Oct 2025
 
-1. Worker Availability Widget 500 (GET /api/users/workers/:workerId/availability)
--------------------------------------------------------------------------------
-- **Console signature:** `GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/6891595768c3cdade00f564f/availability 500 (Internal Server Error)`
-- **Frontend flow:**
-	- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
-	- `kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx`
-	- `kelmah-frontend/src/modules/dashboard/components/worker/AvailabilityStatus.jsx`
-	- `kelmah-frontend/src/modules/worker/services/workerService.js` → `getWorkerAvailability`
-	- `kelmah-frontend/src/modules/common/services/axios.js` (request interceptors, auth headers)
-- **API Gateway layer:**
-	- `kelmah-backend/api-gateway/middlewares/auth.js` (JWT extraction)
-	- `kelmah-backend/api-gateway/routes/user.routes.js` (authenticated proxy for `/workers/:workerId/availability`)
-- **User service backend:**
-	- `kelmah-backend/services/user-service/routes/user.routes.js` (applies `verifyGatewayRequest`, logs route access)
-	- `kelmah-backend/services/user-service/controllers/worker.controller.js` → `getWorkerAvailability`
-	- `kelmah-backend/services/user-service/config/db.js` (`ensureConnection` readiness guard)
-	- `kelmah-backend/services/user-service/models/index.js` (`loadModels` hydrates service-scoped models)
-	- `kelmah-backend/services/user-service/models/Availability.js` (Mongoose schema)
-	- `kelmah-backend/shared/models/index.js` and `User.js` (shared user schema referenced by availability)
-- **Database view:** MongoDB `availabilities` collection in `kelmah_platform`
-- **Notes:** Controller now returns fallback payloads when MongoDB isn’t ready; monitor for residual 500s during cold starts.
+## 1. WebSocket handshake closes before upgrade
+- **Log evidence**
+	- `WebSocket connection to 'wss://kelmah-api-gateway-qlyk.onrender.com/socket.io/?EIO=4&transport=websocket' failed: WebSocket is closed before the connection is established.`
+- **Code flow (frontend → backend → database)**
+	- `kelmah-frontend/src/main.jsx` — wraps the UI with `NotificationProvider`, so dashboards bootstrap notifications immediately after login.
+	- `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx` — retrieves the JWT from secure storage and calls `notificationService.connect`.
+	- `kelmah-frontend/src/modules/notifications/services/notificationService.js` — resolves `/runtime-config.json`, logs the LocalTunnel host, and opens the Socket.IO client.
+	- `kelmah-backend/api-gateway/server.js` — dynamic Socket.IO proxy mounted on `/socket.io` forwards the upgrade to messaging service.
+	- `kelmah-backend/services/messaging-service/server.js` — hosts the Socket.IO server and validates tokens before establishing the channel.
+	- `kelmah-backend/services/messaging-service/models/Notification.js` — Mongo persistence for notifications once the socket is available (not reached while the handshake fails).
+- **Status note**: The frontend now resolves the unified LocalTunnel URL correctly, but the socket still closes before the upgrade completes, indicating the Render-hosted messaging service or proxy is still cold. No regression from the latest frontend fixes; the failure persists until the messaging service finishes booting.
 
-2. Worker Profile Completion 500 (GET /api/users/workers/:workerId/completeness)
--------------------------------------------------------------------------------
-- **Console signature:** `GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/6891595768c3cdade00f564f/completeness 500 (Internal Server Error)`
-- **Frontend flow:**
-	- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
-	- `kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx` (profile completion loader)
-	- `kelmah-frontend/src/modules/dashboard/components/worker/ProfileCompletion.jsx`
-	- `kelmah-frontend/src/modules/worker/services/workerService.js` → `getWorkerStats`
-	- `kelmah-frontend/src/modules/common/services/axios.js`
-- **API Gateway layer:**
-	- `kelmah-backend/api-gateway/middlewares/auth.js`
-	- `kelmah-backend/api-gateway/routes/user.routes.js` (proxy for `/workers/:workerId/completeness`)
-- **User service backend:**
-	- `kelmah-backend/services/user-service/routes/user.routes.js` (invokes `verifyGatewayRequest`)
-	- `kelmah-backend/services/user-service/controllers/worker.controller.js` → `getProfileCompletion`
-	- `kelmah-backend/services/user-service/config/db.js` (`ensureConnection` readiness checks)
-	- `kelmah-backend/services/user-service/models/index.js`
-	- `kelmah-backend/services/user-service/models/WorkerProfileMongo.js`
-	- `kelmah-backend/shared/models/User.js`
-- **Database view:** MongoDB `users` and `workerprofiles` collections in `kelmah_platform`
-- **Notes:** Controller merges `User` and `WorkerProfile` documents and serves fallback data when Mongo warm-up delays persist.
+## 2. GET /api/users/workers/:id/availability returns 500
+- **Log evidence**
+	- `index-Z42n37m6.js:8  GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/6891595768c3cdade00f564f/availability 500 (Internal Server Error)`
+- **Code flow (frontend → backend → database)**
+	- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx` — renders the worker dashboard shell.
+	- `kelmah-frontend/src/modules/dashboard/components/worker/AvailabilityStatus.jsx` — fetches availability on mount and surfaces warm-up messaging.
+	- `kelmah-frontend/src/modules/worker/services/workerService.js` — `getWorkerAvailability` wraps the `/api/users/workers/:id/availability` call and attaches fallback metadata.
+	- `kelmah-backend/api-gateway/routes/user.routes.js` — proxies `/api/users/workers/:workerId/availability` to the user service with gateway auth.
+	- `kelmah-backend/services/user-service/routes/user.routes.js` — `router.get("/workers/:id/availability", verifyGatewayRequest, WorkerController.getWorkerAvailability)`.
+	- `kelmah-backend/services/user-service/controllers/worker.controller.js` — `getWorkerAvailability` hydrates shared models, guards Mongo readiness, and returns fallback payloads when cold.
+	- `kelmah-backend/services/user-service/models/Availability.js` — Mongo schema backing the `availabilities` collection.
+- **Status note**: Local code now returns structured fallback payloads and the dashboard disables toggles while fallback metadata is active, but the production user-service still replies with HTTP 500—likely an out-of-date deployment or Mongo readiness timeout.
 
-3. Worker Recent Jobs 401 (GET /api/users/workers/jobs/recent?limit=6)
----------------------------------------------------------------------
-- **Console signature:** `GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/jobs/recent?limit=6 401 (Unauthorized)`
-- **Frontend flow:**
-	- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
-	- `kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx` (recent jobs loader)
-	- `kelmah-frontend/src/modules/worker/services/workerService.js` → `getWorkerJobs`
-	- `kelmah-frontend/src/modules/common/services/axios.js`
-- **API Gateway layer:**
-	- `kelmah-backend/api-gateway/middlewares/auth.js`
-	- `kelmah-backend/api-gateway/routes/user.routes.js` (authenticated proxy for `/workers/jobs/recent`)
-- **User service backend:**
-	- `kelmah-backend/services/user-service/routes/user.routes.js` (now includes `verifyGatewayRequest` for this route)
-	- `kelmah-backend/services/user-service/controllers/worker.controller.js` → `getRecentJobs`
-	- `kelmah-backend/services/user-service/config/db.js`
-- **Job service dependency:**
-	- `kelmah-backend/services/job-service/routes/job.routes.js` (protected worker-facing endpoints)
-	- `kelmah-backend/services/job-service/controllers/job.controller.js` (expected `/worker/recent` handler — currently missing, forcing fallback data)
-- **Database view:** MongoDB `jobs` collection via job-service (`kelmah_platform`)
-- **Notes:** 401 occurs when gateway-auth headers are absent or `req.user` is unset; controller falls back to mock jobs if job-service call fails.
+## 3. GET /api/users/workers/:id/completeness returns 500
+- **Log evidence**
+	- `index-Z42n37m6.js:8  GET https://kelmah-api-gateway-qlyk.onrender.com/api/users/workers/6891595768c3cdade00f564f/completeness 500 (Internal Server Error)`
+- **Code flow (frontend → backend → database)**
+	- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx` — renders worker experience and kicks off profile fetches.
+	- `kelmah-frontend/src/modules/dashboard/components/worker/EnhancedWorkerDashboard.jsx` — `useEffect` invokes `workerService.getWorkerStats` for profile completion metrics.
+	- `kelmah-frontend/src/modules/worker/services/workerService.js` — `getWorkerStats` requests `/api/users/workers/:id/completeness` and normalizes the response.
+	- `kelmah-backend/api-gateway/routes/user.routes.js` — forwards `/workers/:workerId/completeness` calls to the user service.
+	- `kelmah-backend/services/user-service/routes/user.routes.js` — `router.get("/workers/:id/completeness", verifyGatewayRequest, WorkerController.getProfileCompletion)`.
+	- `kelmah-backend/services/user-service/controllers/worker.controller.js` — `getProfileCompletion` merges `User` and `WorkerProfile` docs, with fallback payloads when Mongo or models lag.
+	- `kelmah-backend/services/user-service/models/WorkerProfileMongo.js` & shared `models/index.js` — supply the Mongo schemas used by the controller.
+- **Status note**: The controller’s fallback logic now shields cold starts locally, but the Render instance still surfaces 500 responses, implying the hot deployment hasn’t picked up the fix or the database remains unavailable long enough to hit the exception path.
 
-4. Notifications WebSocket Handshake Failure
----------------------------------------------
-- **Console signature:** `WebSocket connection to '<URL>' failed: WebSocket is closed before the connection is established.`
-- **Frontend flow:**
-	- `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
-	- `kelmah-frontend/src/modules/notifications/services/notificationService.js` (socket.io client setup)
-	- `kelmah-frontend/src/utils/secureStorage.js` (JWT retrieval for handshake)
-- **API Gateway layer:**
-	- `kelmah-backend/api-gateway/server.js` (`/socket.io` proxy with health/error handling)
-	- `kelmah-backend/api-gateway/middlewares/auth.js` (propagates auth headers to messaging service)
-- **Messaging service backend:**
-	- `kelmah-backend/services/messaging-service/server.js` (Socket.IO server, CORS, auth middleware)
-	- `kelmah-backend/services/messaging-service/middlewares/auth.middleware.js` (token verification)
-	- `kelmah-backend/services/messaging-service/socket/messageSocket.js` (connection handling, event wiring)
-	- `kelmah-backend/services/messaging-service/routes/notification.routes.js` (REST fallbacks used by polling)
-- **Database view:** MongoDB `notifications`, `messages`, and `conversations` collections in `kelmah_platform`
-- **Notes:** Ensure runtime WebSocket URL aligns with current LocalTunnel/Render endpoint and that secure storage returns a non-null token before connecting.
+## 4. Review service health checks return 404
+- **Log evidence**
+	- `2025-10-10T01:16:10.694Z info: HTTP Response {"method":"GET","service":"review-service","statusCode":404,"url":"/api/health"}`
+- **Code flow (frontend → backend → service)**
+	- `kelmah-frontend/src/utils/serviceHealthCheck.js` — dashboard warm-up triggers `/health/aggregate` immediately after boot.
+	- `kelmah-backend/api-gateway/routes/index.js` & `server.js` — health aggregator loops through registered services, including the review service `/api/health` probe.
+	- `kelmah-backend/services/review-service/server.js` — exposes `/` and `/api/reviews/*` but lacks an `/api/health` endpoint, so the aggregated check receives 404 responses.
+	- `kelmah-backend/services/review-service/models/*` — backing Mongo collections (unused until a health endpoint is implemented).
+- **Status note**: The missing health route is unchanged since the previous audit; implementing a simple `/api/health` handler in `review-service` will silence the 404s.

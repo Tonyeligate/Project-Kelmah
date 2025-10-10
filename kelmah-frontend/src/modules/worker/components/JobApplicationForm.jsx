@@ -96,9 +96,9 @@ const JobApplicationForm = () => {
   }, [jobId, location.pathname]);
 
   const handleInputChange = (field) => (event) => {
-    setApplicationData(prev => ({
+    setApplicationData((prev) => ({
       ...prev,
-      [field]: event.target.value
+      [field]: event.target.value,
     }));
   };
 
@@ -129,7 +129,10 @@ const JobApplicationForm = () => {
       };
 
       // Submit application via API
-      const response = await axios.post(`/api/jobs/${jobId}/apply`, submissionData);
+      const response = await axios.post(
+        `/api/jobs/${jobId}/apply`,
+        submissionData,
+      );
 
       if (response.data && response.data.success) {
         console.log('📝 Application submitted successfully:', response.data);
@@ -140,17 +143,23 @@ const JobApplicationForm = () => {
           navigate('/worker/applications', {
             state: {
               message: 'Application submitted successfully!',
-              applicationId: response.data.data?.applicationId || `APP-${Date.now()}`
-            }
+              applicationId:
+                response.data.data?.applicationId || `APP-${Date.now()}`,
+            },
           });
         }, 2000);
       } else {
-        throw new Error(response.data?.message || 'Failed to submit application');
+        throw new Error(
+          response.data?.message || 'Failed to submit application',
+        );
       }
-
     } catch (err) {
       console.error('Error submitting application:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to submit application');
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Failed to submit application',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -193,7 +202,9 @@ const JobApplicationForm = () => {
               Your application has been sent to {job.company.name}
             </Typography>
             <Typography variant="body1" sx={{ mt: 2 }}>
-              You will receive a confirmation email shortly. The employer will review your application and contact you if you're selected for an interview.
+              You will receive a confirmation email shortly. The employer will
+              review your application and contact you if you're selected for an
+              interview.
             </Typography>
           </Box>
           <CircularProgress size={40} />
@@ -235,7 +246,7 @@ const JobApplicationForm = () => {
                 <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
                   {job.title}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Avatar sx={{ width: 40, height: 40, mr: 2 }}>
                     {job.company.name.charAt(0)}
@@ -252,19 +263,26 @@ const JobApplicationForm = () => {
 
                 <Stack spacing={2}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <MoneyIcon sx={{ mr: 1, color: theme.palette.success.main }} />
+                    <MoneyIcon
+                      sx={{ mr: 1, color: theme.palette.success.main }}
+                    />
                     <Typography>
-                      GH₵{job.budget?.min || 'N/A'} - {job.budget?.max || 'N/A'} {job.budget?.type || ''}
+                      GH₵{job.budget?.min || 'N/A'} - {job.budget?.max || 'N/A'}{' '}
+                      {job.budget?.type || ''}
                     </Typography>
                   </Box>
-                  
+
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <WorkIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
+                    <WorkIcon
+                      sx={{ mr: 1, color: theme.palette.primary.main }}
+                    />
                     <Typography>{job.type}</Typography>
                   </Box>
-                  
+
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <LocationIcon sx={{ mr: 1, color: theme.palette.secondary.main }} />
+                    <LocationIcon
+                      sx={{ mr: 1, color: theme.palette.secondary.main }}
+                    />
                     <Typography>{job.location}</Typography>
                   </Box>
                 </Stack>
@@ -289,7 +307,8 @@ const JobApplicationForm = () => {
                 <Divider sx={{ my: 2 }} />
 
                 <Typography variant="body2" color="text.secondary">
-                  <strong>Apply by:</strong> {format(new Date(job.applyBy), 'MMM dd, yyyy')}
+                  <strong>Apply by:</strong>{' '}
+                  {format(new Date(job.applyBy), 'MMM dd, yyyy')}
                 </Typography>
               </CardContent>
             </Card>
@@ -423,7 +442,13 @@ const JobApplicationForm = () => {
 
                   {/* Submit Button */}
                   <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
                       <Button
                         variant="outlined"
                         onClick={() => navigate('/jobs')}
@@ -435,7 +460,13 @@ const JobApplicationForm = () => {
                         type="submit"
                         variant="contained"
                         size="large"
-                        startIcon={submitting ? <CircularProgress size={20} /> : <SendIcon />}
+                        startIcon={
+                          submitting ? (
+                            <CircularProgress size={20} />
+                          ) : (
+                            <SendIcon />
+                          )
+                        }
                         disabled={submitting}
                         sx={{
                           background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,

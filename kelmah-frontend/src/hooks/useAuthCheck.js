@@ -30,18 +30,21 @@ export const useAuthCheck = () => {
   }, [user]);
 
   // Auth state summary
-  const authState = useMemo(() => ({
-    isAuthenticated: isUserAuthenticated,
-    isInitialized,
-    isLoading: loading,
-    hasUser: !!userData,
-    user: userData,
-    
-    // Convenience flags
-    canShowUserFeatures: isInitialized && isUserAuthenticated && userData,
-    shouldShowAuthButtons: isInitialized && !isUserAuthenticated,
-    isReady: isInitialized && !loading
-  }), [isUserAuthenticated, isInitialized, loading, userData]);
+  const authState = useMemo(
+    () => ({
+      isAuthenticated: isUserAuthenticated,
+      isInitialized,
+      isLoading: loading,
+      hasUser: !!userData,
+      user: userData,
+
+      // Convenience flags
+      canShowUserFeatures: isInitialized && isUserAuthenticated && userData,
+      shouldShowAuthButtons: isInitialized && !isUserAuthenticated,
+      isReady: isInitialized && !loading,
+    }),
+    [isUserAuthenticated, isInitialized, loading, userData],
+  );
 
   return authState;
 };

@@ -3,7 +3,10 @@
  * Handles all review and rating related API calls
  */
 
-import { userServiceClient, reviewsServiceClient } from '../modules/common/services/axios';
+import {
+  userServiceClient,
+  reviewsServiceClient,
+} from '../modules/common/services/axios';
 import { getApiBaseUrl } from '../config/environment';
 
 const REVIEWS_BASE = '/api/reviews';
@@ -30,7 +33,7 @@ const reviewsApi = {
         jobCategory: reviewData.jobCategory,
         jobValue: reviewData.jobValue,
         projectDuration: reviewData.projectDuration,
-        wouldRecommend: reviewData.wouldRecommend
+        wouldRecommend: reviewData.wouldRecommend,
       });
       // Backend wraps payload as { success, message, data }
       return response.data || response;
@@ -52,10 +55,12 @@ const reviewsApi = {
         ...(params.category && { category: params.category }),
         ...(params.minRating && { minRating: params.minRating }),
         ...(params.sortBy && { sortBy: params.sortBy }),
-        ...(params.order && { order: params.order })
+        ...(params.order && { order: params.order }),
       });
 
-      const response = await userServiceClient.get(`${REVIEWS_BASE}/worker/${workerId}?${queryParams}`);
+      const response = await userServiceClient.get(
+        `${REVIEWS_BASE}/worker/${workerId}?${queryParams}`,
+      );
       const payload = response.data || response;
       if (payload?.data?.reviews) {
         return payload.data;
@@ -63,7 +68,15 @@ const reviewsApi = {
       if (payload?.reviews) {
         return { reviews: payload.reviews, pagination: payload.pagination };
       }
-      return { reviews: [], pagination: { page: params.page || 1, limit: params.limit || 10, total: 0, pages: 1 } };
+      return {
+        reviews: [],
+        pagination: {
+          page: params.page || 1,
+          limit: params.limit || 10,
+          total: 0,
+          pages: 1,
+        },
+      };
     } catch (error) {
       console.error('Error fetching worker reviews:', error);
       throw new Error(`Failed to fetch reviews: ${error.message}`);
@@ -75,7 +88,9 @@ const reviewsApi = {
    */
   async getWorkerRating(workerId) {
     try {
-      const response = await userServiceClient.get(`/api/ratings/worker/${workerId}`);
+      const response = await userServiceClient.get(
+        `/api/ratings/worker/${workerId}`,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Error fetching worker rating:', error);
@@ -90,7 +105,7 @@ const reviewsApi = {
             quality: 0,
             communication: 0,
             timeliness: 0,
-            professionalism: 0
+            professionalism: 0,
           },
           ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
           categoryRatings: [],
@@ -98,7 +113,7 @@ const reviewsApi = {
           verifiedReviewsCount: 0,
           responseRate: 0,
           recentRating: 0,
-          trendDirection: 'stable'
+          trendDirection: 'stable',
         };
       }
       throw new Error(`Failed to fetch worker rating: ${error.message}`);
@@ -110,7 +125,9 @@ const reviewsApi = {
    */
   async getReview(reviewId) {
     try {
-      const response = await userServiceClient.get(`${REVIEWS_BASE}/${reviewId}`);
+      const response = await userServiceClient.get(
+        `${REVIEWS_BASE}/${reviewId}`,
+      );
       return response.data || response;
     } catch (error) {
       console.error('Error fetching review:', error);
@@ -123,9 +140,12 @@ const reviewsApi = {
    */
   async addWorkerResponse(reviewId, comment) {
     try {
-      const response = await userServiceClient.put(`${REVIEWS_BASE}/${reviewId}/response`, {
-        comment: comment.trim()
-      });
+      const response = await userServiceClient.put(
+        `${REVIEWS_BASE}/${reviewId}/response`,
+        {
+          comment: comment.trim(),
+        },
+      );
       return response.data || response;
     } catch (error) {
       console.error('Error adding worker response:', error);
@@ -138,7 +158,9 @@ const reviewsApi = {
    */
   async voteHelpful(reviewId) {
     try {
-      const response = await userServiceClient.post(`${REVIEWS_BASE}/${reviewId}/helpful`);
+      const response = await userServiceClient.post(
+        `${REVIEWS_BASE}/${reviewId}/helpful`,
+      );
       return response.data || response;
     } catch (error) {
       console.error('Error voting review helpful:', error);
@@ -151,9 +173,12 @@ const reviewsApi = {
    */
   async reportReview(reviewId, reason) {
     try {
-      const response = await userServiceClient.post(`${REVIEWS_BASE}/${reviewId}/report`, {
-        reason
-      });
+      const response = await userServiceClient.post(
+        `${REVIEWS_BASE}/${reviewId}/report`,
+        {
+          reason,
+        },
+      );
       return response.data || response;
     } catch (error) {
       console.error('Error reporting review:', error);
@@ -180,10 +205,13 @@ const reviewsApi = {
   async moderateReview(reviewId, status, moderationNote = '') {
     try {
       // Use admin endpoint via API Gateway
-      const response = await userServiceClient.post(`/api/admin/reviews/${reviewId}/moderate`, {
-        status,
-        note: moderationNote
-      });
+      const response = await userServiceClient.post(
+        `/api/admin/reviews/${reviewId}/moderate`,
+        {
+          status,
+          note: moderationNote,
+        },
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Error moderating review:', error);
@@ -201,17 +229,17 @@ const reviewsApi = {
         limit: params.limit || 20,
         ...(params.status && { status: params.status }),
         ...(params.category && { category: params.category }),
-        ...(params.minRating && { minRating: params.minRating })
+        ...(params.minRating && { minRating: params.minRating }),
       });
-      const response = await userServiceClient.get(`/api/admin/reviews/queue?${queryParams}`);
+      const response = await userServiceClient.get(
+        `/api/admin/reviews/queue?${queryParams}`,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Error fetching moderation queue:', error);
       throw new Error(`Failed to fetch moderation queue: ${error.message}`);
     }
   },
-
-  
 
   /**
    * Get top-rated workers by category
@@ -220,7 +248,7 @@ const reviewsApi = {
     try {
       const baseURL = await getApiBaseUrl();
       const response = await axios.get(`${baseURL}/api/ratings/top-workers`, {
-        params: { category, limit }
+        params: { category, limit },
       });
       return response.data.data;
     } catch (error) {
@@ -234,7 +262,9 @@ const reviewsApi = {
    */
   async getReviewTrends(timeRange = '30d') {
     try {
-      const response = await userServiceClient.get(`${REVIEWS_BASE}/trends?timeRange=${timeRange}`);
+      const response = await userServiceClient.get(
+        `${REVIEWS_BASE}/trends?timeRange=${timeRange}`,
+      );
       return response.data || response;
     } catch (error) {
       console.error('Error fetching review trends:', error);
@@ -254,10 +284,12 @@ const reviewsApi = {
         ...(filters.workerId && { workerId: filters.workerId }),
         ...(filters.category && { category: filters.category }),
         ...(filters.minRating && { minRating: filters.minRating }),
-        ...(filters.verified && { verified: filters.verified })
+        ...(filters.verified && { verified: filters.verified }),
       });
 
-      const response = await userServiceClient.get(`${REVIEWS_BASE}/search?${params}`);
+      const response = await userServiceClient.get(
+        `${REVIEWS_BASE}/search?${params}`,
+      );
       return response.data || response;
     } catch (error) {
       console.error('Error searching reviews:', error);
@@ -272,7 +304,11 @@ const reviewsApi = {
     try {
       const [rating, recentReviews] = await Promise.all([
         this.getWorkerRating(workerId),
-        this.getWorkerReviews(workerId, { limit: 5, sortBy: 'createdAt', order: 'desc' })
+        this.getWorkerReviews(workerId, {
+          limit: 5,
+          sortBy: 'createdAt',
+          order: 'desc',
+        }),
       ]);
 
       return {
@@ -283,8 +319,8 @@ const reviewsApi = {
           averageRating: rating.averageRating,
           recommendationRate: rating.recommendationRate,
           responseRate: rating.responseRate,
-          trendDirection: rating.trendDirection
-        }
+          trendDirection: rating.trendDirection,
+        },
       };
     } catch (error) {
       console.error('Error fetching worker review stats:', error);
@@ -297,9 +333,12 @@ const reviewsApi = {
    */
   async canReviewWorker(workerId, jobId = null) {
     try {
-      const response = await userServiceClient.get(`${REVIEWS_BASE}/can-review`, {
-        params: { workerId, jobId }
-      });
+      const response = await userServiceClient.get(
+        `${REVIEWS_BASE}/can-review`,
+        {
+          params: { workerId, jobId },
+        },
+      );
       const payload = response.data || response;
       return payload?.data || payload;
     } catch (error) {
@@ -315,24 +354,46 @@ const reviewsApi = {
     return {
       positive: {
         title: 'Excellent work quality',
-        pros: ['Professional attitude', 'High quality work', 'Great communication'],
+        pros: [
+          'Professional attitude',
+          'High quality work',
+          'Great communication',
+        ],
         cons: [],
-        ratings: { overall: 5, quality: 5, communication: 5, timeliness: 5, professionalism: 5 }
+        ratings: {
+          overall: 5,
+          quality: 5,
+          communication: 5,
+          timeliness: 5,
+          professionalism: 5,
+        },
       },
       neutral: {
         title: 'Good work with room for improvement',
         pros: ['Completed the job', 'Fair pricing'],
         cons: ['Could improve communication'],
-        ratings: { overall: 3, quality: 3, communication: 3, timeliness: 3, professionalism: 3 }
+        ratings: {
+          overall: 3,
+          quality: 3,
+          communication: 3,
+          timeliness: 3,
+          professionalism: 3,
+        },
       },
       negative: {
         title: 'Did not meet expectations',
         pros: [],
         cons: ['Poor communication', 'Delayed completion', 'Quality issues'],
-        ratings: { overall: 2, quality: 2, communication: 2, timeliness: 2, professionalism: 2 }
-      }
+        ratings: {
+          overall: 2,
+          quality: 2,
+          communication: 2,
+          timeliness: 2,
+          professionalism: 2,
+        },
+      },
     };
-  }
+  },
 };
 
 export default reviewsApi;

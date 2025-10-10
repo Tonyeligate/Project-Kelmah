@@ -76,7 +76,11 @@ import {
   RadialBar,
 } from 'recharts';
 import { useSnackbar } from 'notistack';
-import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatPercentage,
+} from '../../../utils/formatters';
 
 const HirerAnalyticsPage = () => {
   const { user } = useAuth();
@@ -109,13 +113,22 @@ const HirerAnalyticsPage = () => {
     info: theme.palette.info.main,
   };
 
-  const pieColors = [COLORS.primary, COLORS.secondary, COLORS.success, COLORS.warning, COLORS.info];
+  const pieColors = [
+    COLORS.primary,
+    COLORS.secondary,
+    COLORS.success,
+    COLORS.warning,
+    COLORS.info,
+  ];
 
   // Load analytics data
   const loadAnalyticsData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await hirerAnalyticsService.getHirerAnalytics(user.id, timeRange);
+      const response = await hirerAnalyticsService.getHirerAnalytics(
+        user.id,
+        timeRange,
+      );
       setAnalyticsData(response.data);
       setError(null);
     } catch (err) {
@@ -135,7 +148,10 @@ const HirerAnalyticsPage = () => {
   // Handle export data
   const handleExportData = async () => {
     try {
-      const blob = await hirerAnalyticsService.exportAnalyticsData(user.id, timeRange);
+      const blob = await hirerAnalyticsService.exportAnalyticsData(
+        user.id,
+        timeRange,
+      );
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -144,9 +160,13 @@ const HirerAnalyticsPage = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      enqueueSnackbar('Analytics report exported successfully', { variant: 'success' });
+      enqueueSnackbar('Analytics report exported successfully', {
+        variant: 'success',
+      });
     } catch (error) {
-      enqueueSnackbar('Failed to export analytics report', { variant: 'error' });
+      enqueueSnackbar('Failed to export analytics report', {
+        variant: 'error',
+      });
     }
   };
 
@@ -193,9 +213,17 @@ const HirerAnalyticsPage = () => {
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       {card.title}
                     </Typography>
                     <Typography variant="h4" component="div">
@@ -210,7 +238,9 @@ const HirerAnalyticsPage = () => {
                         )}
                         <Typography
                           variant="body2"
-                          color={card.change >= 0 ? 'success.main' : 'error.main'}
+                          color={
+                            card.change >= 0 ? 'success.main' : 'error.main'
+                          }
                           sx={{ ml: 0.5 }}
                         >
                           {formatPercentage(Math.abs(card.change))}
@@ -220,7 +250,10 @@ const HirerAnalyticsPage = () => {
                   </Box>
                   <Avatar
                     sx={{
-                      backgroundColor: alpha(theme.palette[card.color].main, 0.1),
+                      backgroundColor: alpha(
+                        theme.palette[card.color].main,
+                        0.1,
+                      ),
                       color: theme.palette[card.color].main,
                       width: 56,
                       height: 56,
@@ -251,7 +284,9 @@ const HirerAnalyticsPage = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="period" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
-            <Tooltip formatter={(value) => [formatCurrency(value), 'Spending']} />
+            <Tooltip
+              formatter={(value) => [formatCurrency(value), 'Spending']}
+            />
             <Area
               type="monotone"
               dataKey="amount"
@@ -283,13 +318,18 @@ const HirerAnalyticsPage = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} (${formatPercentage(percent * 100)})`}
+                  label={({ name, percent }) =>
+                    `${name} (${formatPercentage(percent * 100)})`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="count"
                 >
                   {analyticsData.jobStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={pieColors[index % pieColors.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -317,7 +357,7 @@ const HirerAnalyticsPage = () => {
                   sx={{ height: 8, borderRadius: 4 }}
                 />
               </Box>
-              
+
               <Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography variant="body2">On-Time Completion</Typography>
@@ -337,7 +377,9 @@ const HirerAnalyticsPage = () => {
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography variant="body2">Worker Satisfaction</Typography>
                   <Typography variant="body2" fontWeight="medium">
-                    {formatPercentage(analyticsData.performance.workerSatisfaction)}
+                    {formatPercentage(
+                      analyticsData.performance.workerSatisfaction,
+                    )}
                   </Typography>
                 </Box>
                 <LinearProgress
@@ -352,7 +394,9 @@ const HirerAnalyticsPage = () => {
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography variant="body2">Budget Adherence</Typography>
                   <Typography variant="body2" fontWeight="medium">
-                    {formatPercentage(analyticsData.performance.budgetAdherence)}
+                    {formatPercentage(
+                      analyticsData.performance.budgetAdherence,
+                    )}
                   </Typography>
                 </Box>
                 <LinearProgress
@@ -383,8 +427,14 @@ const HirerAnalyticsPage = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="category" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={formatCurrency} />
-            <Tooltip formatter={(value) => [formatCurrency(value), 'Spending']} />
-            <Bar dataKey="spending" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
+            <Tooltip
+              formatter={(value) => [formatCurrency(value), 'Spending']}
+            />
+            <Bar
+              dataKey="spending"
+              fill={COLORS.primary}
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </Paper>
@@ -443,7 +493,12 @@ const HirerAnalyticsPage = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={0.5}
+                    >
                       <RatingIcon fontSize="small" color="warning" />
                       <Typography variant="body2">
                         {worker.rating.toFixed(1)}
@@ -490,10 +545,18 @@ const HirerAnalyticsPage = () => {
             <React.Fragment key={activity.id}>
               <ListItem>
                 <ListItemIcon>
-                  {activity.type === 'job_completed' && <SuccessIcon color="success" />}
-                  {activity.type === 'job_cancelled' && <CancelIcon color="error" />}
-                  {activity.type === 'job_posted' && <JobsIcon color="primary" />}
-                  {activity.type === 'payment_made' && <SpendingIcon color="info" />}
+                  {activity.type === 'job_completed' && (
+                    <SuccessIcon color="success" />
+                  )}
+                  {activity.type === 'job_cancelled' && (
+                    <CancelIcon color="error" />
+                  )}
+                  {activity.type === 'job_posted' && (
+                    <JobsIcon color="primary" />
+                  )}
+                  {activity.type === 'payment_made' && (
+                    <SpendingIcon color="info" />
+                  )}
                 </ListItemIcon>
                 <ListItemText
                   primary={activity.title}
@@ -534,9 +597,13 @@ const HirerAnalyticsPage = () => {
               sx={{
                 height: '100%',
                 borderLeft: `4px solid ${
-                  insight.type === 'success' ? COLORS.success :
-                  insight.type === 'warning' ? COLORS.warning :
-                  insight.type === 'info' ? COLORS.info : COLORS.error
+                  insight.type === 'success'
+                    ? COLORS.success
+                    : insight.type === 'warning'
+                      ? COLORS.warning
+                      : insight.type === 'info'
+                        ? COLORS.info
+                        : COLORS.error
                 }`,
               }}
             >
@@ -566,7 +633,12 @@ const HirerAnalyticsPage = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight={400}
+      >
         <CircularProgress />
       </Box>
     );
@@ -583,7 +655,12 @@ const HirerAnalyticsPage = () => {
   return (
     <Box>
       {/* Header */}
-      <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={3}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Typography variant="h4" component="h1">
           Hiring Analytics
         </Typography>

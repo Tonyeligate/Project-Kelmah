@@ -8,7 +8,9 @@ export const fetchWorkerProfile = createAsyncThunk(
     try {
       // Use user-service worker endpoint
       const response = await api.get(`/api/users/workers/${workerId}`);
-      return response.data?.data?.worker || response.data?.data || response.data;
+      return (
+        response.data?.data?.worker || response.data?.data || response.data
+      );
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker profile',
@@ -21,7 +23,10 @@ export const updateWorkerProfile = createAsyncThunk(
   'worker/updateProfile',
   async ({ workerId, profileData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/api/users/workers/${workerId}`, profileData);
+      const response = await api.put(
+        `/api/users/workers/${workerId}`,
+        profileData,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
@@ -64,9 +69,15 @@ export const fetchWorkerJobs = createAsyncThunk(
   'worker/fetchJobs',
   async (status = 'active', { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/jobs/assigned', { params: { status } });
+      const response = await api.get('/api/jobs/assigned', {
+        params: { status },
+      });
       const payload = response.data?.data || response.data;
-      const jobs = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+      const jobs = Array.isArray(payload?.results)
+        ? payload.results
+        : Array.isArray(payload)
+          ? payload
+          : [];
       return { status, jobs };
     } catch (error) {
       return rejectWithValue(
@@ -80,7 +91,9 @@ export const fetchWorkerApplications = createAsyncThunk(
   'worker/fetchApplications',
   async (status = 'pending', { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/jobs/applications/me', { params: { status } });
+      const response = await api.get('/api/jobs/applications/me', {
+        params: { status },
+      });
       const apps = response.data?.data || response.data || [];
       return { status, applications: Array.isArray(apps) ? apps : [] };
     } catch (error) {
@@ -112,7 +125,9 @@ export const fetchWorkerEarnings = createAsyncThunk(
   'worker/fetchEarnings',
   async ({ workerId, period = 'month' }, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/users/workers/${workerId}/earnings?period=${period}`);
+      const response = await api.get(
+        `/api/users/workers/${workerId}/earnings?period=${period}`,
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(

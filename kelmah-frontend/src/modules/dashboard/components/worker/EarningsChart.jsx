@@ -80,27 +80,42 @@ const EnhancedEarningsChart = () => {
       totalJobs: 0,
       growthRate: 0,
       projectedMonthly: 0,
-    }
+    },
   });
 
   // Mock data for demonstration (in real app, this would come from API)
   const generateEarningsData = () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const currentMonth = new Date().getMonth();
-    
-    const monthlyData = months.slice(Math.max(0, currentMonth - 5), currentMonth + 1).map((month, index) => {
-      const baseAmount = 2000 + Math.random() * 3000;
-      const jobs = Math.floor(Math.random() * 15) + 5;
-      return {
-        name: month,
-        earnings: Math.round(baseAmount),
-        jobs: jobs,
-        expenses: Math.round(baseAmount * 0.2),
-        netEarnings: Math.round(baseAmount * 0.8),
-        hoursWorked: jobs * 8,
-        avgPerJob: Math.round(baseAmount / jobs),
-      };
-    });
+
+    const monthlyData = months
+      .slice(Math.max(0, currentMonth - 5), currentMonth + 1)
+      .map((month, index) => {
+        const baseAmount = 2000 + Math.random() * 3000;
+        const jobs = Math.floor(Math.random() * 15) + 5;
+        return {
+          name: month,
+          earnings: Math.round(baseAmount),
+          jobs: jobs,
+          expenses: Math.round(baseAmount * 0.2),
+          netEarnings: Math.round(baseAmount * 0.8),
+          hoursWorked: jobs * 8,
+          avgPerJob: Math.round(baseAmount / jobs),
+        };
+      });
 
     const weeklyData = Array.from({ length: 12 }, (_, index) => {
       const weekNum = index + 1;
@@ -122,12 +137,19 @@ const EnhancedEarningsChart = () => {
       { name: 'Repairs', value: 1200, jobs: 7, color: '#607D8B' },
     ];
 
-    const totalEarnings = monthlyData.reduce((sum, month) => sum + month.earnings, 0);
+    const totalEarnings = monthlyData.reduce(
+      (sum, month) => sum + month.earnings,
+      0,
+    );
     const totalJobs = monthlyData.reduce((sum, month) => sum + month.jobs, 0);
     const monthlyAverage = totalEarnings / monthlyData.length;
-    const growthRate = monthlyData.length > 1 
-      ? ((monthlyData[monthlyData.length - 1].earnings - monthlyData[0].earnings) / monthlyData[0].earnings) * 100
-      : 0;
+    const growthRate =
+      monthlyData.length > 1
+        ? ((monthlyData[monthlyData.length - 1].earnings -
+            monthlyData[0].earnings) /
+            monthlyData[0].earnings) *
+          100
+        : 0;
 
     return {
       monthly: monthlyData,
@@ -139,7 +161,7 @@ const EnhancedEarningsChart = () => {
         totalJobs,
         growthRate: Math.round(growthRate * 10) / 10,
         projectedMonthly: Math.round(monthlyAverage * 1.1),
-      }
+      },
     };
   };
 
@@ -148,9 +170,9 @@ const EnhancedEarningsChart = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         const data = generateEarningsData();
         setEarningsData(data);
       } catch (err) {
@@ -167,7 +189,7 @@ const EnhancedEarningsChart = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const data = generateEarningsData();
       setEarningsData(data);
     } catch (err) {
@@ -180,7 +202,7 @@ const EnhancedEarningsChart = () => {
   // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
-  return (
+      return (
         <Box
           sx={{
             backgroundColor: 'rgba(0,0,0,0.9)',
@@ -197,7 +219,7 @@ const EnhancedEarningsChart = () => {
           {payload.map((entry, index) => (
             <Typography key={index} variant="body2" sx={{ color: entry.color }}>
               {entry.name}: GH₵{entry.value?.toLocaleString()}
-        </Typography>
+            </Typography>
           ))}
         </Box>
       );
@@ -230,14 +252,17 @@ const EnhancedEarningsChart = () => {
   const renderChart = () => {
     const commonProps = {
       data: chartData,
-      margin: { top: 20, right: 30, left: 20, bottom: 5 }
+      margin: { top: 20, right: 30, left: 20, bottom: 5 },
     };
 
     switch (chartType) {
       case 'bar':
         return (
           <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.1)"
+            />
             <XAxis dataKey="name" tick={{ fill: '#fff', fontSize: 12 }} />
             <YAxis tick={{ fill: '#fff', fontSize: 12 }} />
             <ChartTooltip content={<CustomTooltip />} />
@@ -250,11 +275,14 @@ const EnhancedEarningsChart = () => {
           <AreaChart {...commonProps}>
             <defs>
               <linearGradient id="earningsGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#FFD700" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#FFD700" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="#FFD700" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#FFD700" stopOpacity={0.1} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.1)"
+            />
             <XAxis dataKey="name" tick={{ fill: '#fff', fontSize: 12 }} />
             <YAxis tick={{ fill: '#fff', fontSize: 12 }} />
             <ChartTooltip content={<CustomTooltip />} />
@@ -271,13 +299,16 @@ const EnhancedEarningsChart = () => {
       default: // line
         return (
           <LineChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.1)"
+            />
             <XAxis dataKey="name" tick={{ fill: '#fff', fontSize: 12 }} />
             <YAxis tick={{ fill: '#fff', fontSize: 12 }} />
             <ChartTooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="earnings"
+            <Line
+              type="monotone"
+              dataKey="earnings"
               stroke="#FFD700"
               strokeWidth={3}
               dot={{ fill: '#FFD700', strokeWidth: 2, r: 6 }}
@@ -302,7 +333,7 @@ const EnhancedEarningsChart = () => {
         title={
           <Stack direction="row" alignItems="center" spacing={2}>
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
-              Earnings Overview 
+              Earnings Overview
             </Typography>
             <EarningsIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
           </Stack>
@@ -312,11 +343,19 @@ const EnhancedEarningsChart = () => {
           <Grid container spacing={2} sx={{ mb: 3 }}>
             {[...Array(4)].map((_, index) => (
               <Grid item xs={6} md={3} key={index}>
-                <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
+                <Skeleton
+                  variant="rectangular"
+                  height={80}
+                  sx={{ borderRadius: 2 }}
+                />
               </Grid>
             ))}
           </Grid>
-          <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
+          <Skeleton
+            variant="rectangular"
+            height={300}
+            sx={{ borderRadius: 2 }}
+          />
         </Box>
       </DashboardCard>
     );
@@ -329,7 +368,11 @@ const EnhancedEarningsChart = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button variant="outlined" onClick={handleRefresh} startIcon={<RefreshIcon />}>
+          <Button
+            variant="outlined"
+            onClick={handleRefresh}
+            startIcon={<RefreshIcon />}
+          >
             Try Again
           </Button>
         </Box>
@@ -394,18 +437,29 @@ const EnhancedEarningsChart = () => {
           >
             <Card
               sx={{
-                background: 'linear-gradient(135deg, rgba(76,175,80,0.1) 0%, rgba(76,175,80,0.05) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(76,175,80,0.1) 0%, rgba(76,175,80,0.05) 100%)',
                 border: '1px solid rgba(76,175,80,0.2)',
                 borderRadius: 2,
               }}
             >
               <CardContent sx={{ p: 2 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
                       Total Earnings
                     </Typography>
-                    <Typography variant="h6" sx={{ color: '#4CAF50', fontWeight: 700 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: '#4CAF50', fontWeight: 700 }}
+                    >
                       {formatCurrency(earningsData.summary.totalEarnings)}
                     </Typography>
                   </Box>
@@ -424,18 +478,29 @@ const EnhancedEarningsChart = () => {
           >
             <Card
               sx={{
-                background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
                 border: '1px solid rgba(255,215,0,0.2)',
                 borderRadius: 2,
               }}
             >
               <CardContent sx={{ p: 2 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
                       Monthly Avg
                     </Typography>
-                    <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: '#FFD700', fontWeight: 700 }}
+                    >
                       {formatCurrency(earningsData.summary.monthlyAverage)}
                     </Typography>
                   </Box>
@@ -454,18 +519,29 @@ const EnhancedEarningsChart = () => {
           >
             <Card
               sx={{
-                background: 'linear-gradient(135deg, rgba(33,150,243,0.1) 0%, rgba(33,150,243,0.05) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(33,150,243,0.1) 0%, rgba(33,150,243,0.05) 100%)',
                 border: '1px solid rgba(33,150,243,0.2)',
                 borderRadius: 2,
               }}
             >
               <CardContent sx={{ p: 2 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
                       Total Jobs
                     </Typography>
-                    <Typography variant="h6" sx={{ color: '#2196F3', fontWeight: 700 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: '#2196F3', fontWeight: 700 }}
+                    >
                       {earningsData.summary.totalJobs}
                     </Typography>
                   </Box>
@@ -485,12 +561,12 @@ const EnhancedEarningsChart = () => {
             <Card
               sx={{
                 background: `linear-gradient(135deg, ${
-                  earningsData.summary.growthRate >= 0 
+                  earningsData.summary.growthRate >= 0
                     ? 'rgba(76,175,80,0.1) 0%, rgba(76,175,80,0.05) 100%'
                     : 'rgba(244,67,54,0.1) 0%, rgba(244,67,54,0.05) 100%'
                 })`,
                 border: `1px solid ${
-                  earningsData.summary.growthRate >= 0 
+                  earningsData.summary.growthRate >= 0
                     ? 'rgba(76,175,80,0.2)'
                     : 'rgba(244,67,54,0.2)'
                 }`,
@@ -498,19 +574,30 @@ const EnhancedEarningsChart = () => {
               }}
             >
               <CardContent sx={{ p: 2 }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
                       Growth Rate
                     </Typography>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        color: earningsData.summary.growthRate >= 0 ? '#4CAF50' : '#F44336', 
-                        fontWeight: 700 
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color:
+                          earningsData.summary.growthRate >= 0
+                            ? '#4CAF50'
+                            : '#F44336',
+                        fontWeight: 700,
                       }}
                     >
-                      {earningsData.summary.growthRate >= 0 ? '+' : ''}{earningsData.summary.growthRate}%
+                      {earningsData.summary.growthRate >= 0 ? '+' : ''}
+                      {earningsData.summary.growthRate}%
                     </Typography>
                   </Box>
                   {earningsData.summary.growthRate >= 0 ? (
@@ -534,7 +621,10 @@ const EnhancedEarningsChart = () => {
             clickable
             onClick={() => setTimeRange(range)}
             sx={{
-              backgroundColor: timeRange === range ? alpha('#FFD700', 0.2) : 'rgba(255,255,255,0.05)',
+              backgroundColor:
+                timeRange === range
+                  ? alpha('#FFD700', 0.2)
+                  : 'rgba(255,255,255,0.05)',
               color: timeRange === range ? '#FFD700' : 'rgba(255,255,255,0.7)',
               border: `1px solid ${timeRange === range ? 'rgba(255,215,0,0.5)' : 'rgba(255,255,255,0.1)'}`,
               '&:hover': {
@@ -554,7 +644,8 @@ const EnhancedEarningsChart = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
             borderRadius: 3,
             mb: 3,
@@ -564,10 +655,10 @@ const EnhancedEarningsChart = () => {
             <Box sx={{ height: 350 }}>
               <ResponsiveContainer width="100%" height="100%">
                 {renderChart()}
-          </ResponsiveContainer>
-        </Box>
-      </CardContent>
-    </Card>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Earnings by Category */}
@@ -578,14 +669,18 @@ const EnhancedEarningsChart = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(40,40,40,0.9) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
             borderRadius: 3,
           }}
         >
           <CardHeader
             title={
-              <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 600 }}>
+              <Typography
+                variant="h6"
+                sx={{ color: '#FFD700', fontWeight: 600 }}
+              >
                 Earnings by Category
               </Typography>
             }
@@ -609,11 +704,18 @@ const EnhancedEarningsChart = () => {
                         }}
                       />
                       <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: '#fff', fontWeight: 600 }}
+                        >
                           {category.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                          {formatCurrency(category.value)} • {category.jobs} jobs
+                        <Typography
+                          variant="caption"
+                          sx={{ color: 'rgba(255,255,255,0.7)' }}
+                        >
+                          {formatCurrency(category.value)} • {category.jobs}{' '}
+                          jobs
                         </Typography>
                       </Box>
                     </Stack>
@@ -631,13 +733,28 @@ const EnhancedEarningsChart = () => {
         open={Boolean(menuAnchor)}
         onClose={() => setMenuAnchor(null)}
       >
-        <MenuItem onClick={() => { setChartType('line'); setMenuAnchor(null); }}>
+        <MenuItem
+          onClick={() => {
+            setChartType('line');
+            setMenuAnchor(null);
+          }}
+        >
           <ChartIcon sx={{ mr: 1 }} /> Line Chart
         </MenuItem>
-        <MenuItem onClick={() => { setChartType('bar'); setMenuAnchor(null); }}>
+        <MenuItem
+          onClick={() => {
+            setChartType('bar');
+            setMenuAnchor(null);
+          }}
+        >
           <BarChartIcon sx={{ mr: 1 }} /> Bar Chart
         </MenuItem>
-        <MenuItem onClick={() => { setChartType('area'); setMenuAnchor(null); }}>
+        <MenuItem
+          onClick={() => {
+            setChartType('area');
+            setMenuAnchor(null);
+          }}
+        >
           <DonutIcon sx={{ mr: 1 }} /> Area Chart
         </MenuItem>
         <MenuItem onClick={() => setMenuAnchor(null)}>

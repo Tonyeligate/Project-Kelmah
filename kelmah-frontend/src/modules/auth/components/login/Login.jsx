@@ -69,7 +69,9 @@ const Login = () => {
   const navigate = useNavigate();
   // Use Redux auth system instead of AuthContext
   const dispatch = useDispatch();
-  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
+  const { loading: authLoading, error: authError } = useSelector(
+    (state) => state.auth,
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,17 +109,20 @@ const Login = () => {
     setSubmitting(true);
 
     try {
-            const result = await dispatch(loginAction({ 
-        email: email.trim(), 
-        password,
-        rememberMe 
-      })).unwrap();
-      
+      const result = await dispatch(
+        loginAction({
+          email: email.trim(),
+          password,
+          rememberMe,
+        }),
+      ).unwrap();
+
       console.log('Login successful, redirecting to dashboard');
       navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err.message || 'Login failed. Please check your credentials.';
+      const errorMessage =
+        err.message || 'Login failed. Please check your credentials.';
       setLoginError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -145,12 +150,12 @@ const Login = () => {
       }}
     >
       <Box
-        sx={{ 
-          height: '100%', 
+        sx={{
+          height: '100%',
           width: '100%',
           maxWidth: { xs: '100%', sm: '480px' },
           mx: 'auto',
-          display: 'flex', 
+          display: 'flex',
           alignItems: { xs: 'flex-start', sm: 'center' },
           px: { xs: 0, sm: 2 },
           py: { xs: 0, sm: 0 },
@@ -245,21 +250,21 @@ const Login = () => {
                 style={{ textAlign: 'center' }}
               >
                 <Stack spacing={0.5} alignItems="center">
-        <Typography
+                  <Typography
                     variant="h4"
-          component="h1"
-          sx={{
-            color: '#FFD700',
-            fontWeight: 800,
+                    component="h1"
+                    sx={{
+                      color: '#FFD700',
+                      fontWeight: 800,
                       fontSize: { xs: '1.4rem', sm: '1.6rem' },
                       letterSpacing: 0.3,
                       textShadow: '0 2px 10px rgba(255,215,0,0.3)',
                       lineHeight: 1.1,
-          }}
-        >
-          Welcome Back
-        </Typography>
-        <Typography
+                    }}
+                  >
+                    Welcome Back
+                  </Typography>
+                  <Typography
                     variant="body2"
                     sx={{
                       color: 'rgba(255,255,255,0.8)',
@@ -306,8 +311,8 @@ const Login = () => {
                     }}
                   >
                     Secure & Protected Login
-        </Typography>
-      </Box>
+                  </Typography>
+                </Box>
               </Fade>
             )}
 
@@ -329,7 +334,7 @@ const Login = () => {
                   }}
                 >
                   {apiError || loginError || authError}
-        </Alert>
+                </Alert>
               </motion.div>
             )}
 
@@ -342,20 +347,20 @@ const Login = () => {
               <Box component="form" onSubmit={handleSubmit} noValidate>
                 <Stack spacing={{ xs: 1.8, sm: 2.2 }}>
                   {/* Email Field */}
-        <TextField
+                  <TextField
                     label="Email"
-          variant="outlined"
-          fullWidth
-                              required
+                    variant="outlined"
+                    fullWidth
+                    required
                     size={isMobile ? 'medium' : 'small'}
                     type="email"
                     placeholder="Enter your email address"
                     autoComplete="email"
-          error={Boolean(errors.email)}
-          helperText={errors.email}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          InputProps={{
+                    error={Boolean(errors.email)}
+                    helperText={errors.email}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
                           <EmailOutlined
@@ -407,7 +412,7 @@ const Login = () => {
                           color: '#FFD700',
                         },
                       },
-          }}
+                    }}
                     FormHelperTextProps={{
                       sx: {
                         fontSize: { xs: '0.8rem', sm: '0.75rem' },
@@ -419,20 +424,20 @@ const Login = () => {
                   />
 
                   {/* Password Field */}
-                          <TextField
+                  <TextField
                     label="Password"
-          variant="outlined"
-          fullWidth
-                              required
+                    variant="outlined"
+                    fullWidth
+                    required
                     size={isMobile ? 'medium' : 'small'}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     autoComplete="current-password"
-          error={Boolean(errors.password)}
-          helperText={errors.password}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          InputProps={{
+                    error={Boolean(errors.password)}
+                    helperText={errors.password}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
                           <LockOutlined
@@ -443,11 +448,11 @@ const Login = () => {
                           />
                         </InputAdornment>
                       ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  edge="end"
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
                             size="small"
                             sx={{
                               color: '#FFD700',
@@ -460,10 +465,10 @@ const Login = () => {
                             ) : (
                               <Visibility fontSize="small" />
                             )}
-                </IconButton>
-              </InputAdornment>
-            ),
-            sx: {
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                      sx: {
                         fontSize: { xs: '0.9rem', sm: '1rem' },
                         fontWeight: 500,
                         color: '#FFFFFF',
@@ -504,7 +509,7 @@ const Login = () => {
                           color: '#FFD700',
                         },
                       },
-          }}
+                    }}
                     FormHelperTextProps={{
                       sx: {
                         fontSize: { xs: '0.8rem', sm: '0.75rem' },
@@ -516,30 +521,30 @@ const Login = () => {
                   />
 
                   {/* Compact Remember Me & Forgot Password */}
-                <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'space-between',
-            alignItems: { xs: 'stretch', sm: 'center' },
-            py: { xs: 1, sm: 0.5 },
-            gap: { xs: 1.5, sm: 0 },
-          }}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      justifyContent: 'space-between',
+                      alignItems: { xs: 'stretch', sm: 'center' },
+                      py: { xs: 1, sm: 0.5 },
+                      gap: { xs: 1.5, sm: 0 },
+                    }}
+                  >
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
                           size="small"
                           sx={{
                             color: 'rgba(255,215,0,0.7)',
                             '&.Mui-checked': { color: '#FFD700' },
                             p: 0.5,
                           }}
-              />
-            }
-            label={
+                        />
+                      }
+                      label={
                         <Typography
                           sx={{
                             color: 'rgba(255,255,255,0.9)',
@@ -547,58 +552,58 @@ const Login = () => {
                             fontSize: { xs: '0.8rem', sm: '0.85rem' },
                           }}
                         >
-                Remember me
+                          Remember me
                         </Typography>
-            }
-                      sx={{ 
+                      }
+                      sx={{
                         m: 0,
                         width: { xs: '100%', sm: 'auto' },
                         justifyContent: { xs: 'center', sm: 'flex-start' },
                       }}
-          />
-          <Link
-            component={RouterLink}
-            to="/forgot-password"
-            variant="body2"
-                        sx={{
-              color: '#FFD700',
-              fontWeight: 600,
-              textDecoration: 'none',
-              fontSize: { xs: '0.9rem', sm: '0.85rem' },
-              textAlign: { xs: 'center', sm: 'right' },
-              py: { xs: 1, sm: 0 },
-              '&:hover': {
-                color: '#FFC000',
-                textDecoration: 'underline',
-              },
-            }}
-          >
-            Forgot password?
-          </Link>
-        </Box>
+                    />
+                    <Link
+                      component={RouterLink}
+                      to="/forgot-password"
+                      variant="body2"
+                      sx={{
+                        color: '#FFD700',
+                        fontWeight: 600,
+                        textDecoration: 'none',
+                        fontSize: { xs: '0.9rem', sm: '0.85rem' },
+                        textAlign: { xs: 'center', sm: 'right' },
+                        py: { xs: 1, sm: 0 },
+                        '&:hover': {
+                          color: '#FFC000',
+                          textDecoration: 'underline',
+                        },
+                      }}
+                    >
+                      Forgot password?
+                    </Link>
+                  </Box>
 
                   {/* Compact Submit Button */}
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                   >
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
                       disabled={submitting || authLoading}
-          sx={{
+                      sx={{
                         fontWeight: 700,
                         fontSize: { xs: '1rem', sm: '1.1rem' },
-                                    py: { xs: 1.8, sm: 1.5 },
-            minHeight: { xs: '56px', sm: '48px' },
+                        py: { xs: 1.8, sm: 1.5 },
+                        minHeight: { xs: '56px', sm: '48px' },
                         background:
                           'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         color: '#000',
                         boxShadow: '0 4px 16px rgba(255,215,0,0.2)',
                         borderRadius: 1.5,
                         textTransform: 'none',
-            '&:hover': {
+                        '&:hover': {
                           background:
                             'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
                           boxShadow: '0 6px 20px rgba(255,215,0,0.3)',
@@ -609,7 +614,7 @@ const Login = () => {
                         },
                       }}
                     >
-                      {(submitting || authLoading) ? (
+                      {submitting || authLoading ? (
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <CircularProgress size={16} sx={{ color: '#000' }} />
                           <Typography
@@ -621,7 +626,7 @@ const Login = () => {
                       ) : (
                         'Sign In to Kelmah'
                       )}
-        </Button>
+                    </Button>
                   </motion.div>
                 </Stack>
               </Box>
@@ -639,7 +644,7 @@ const Login = () => {
                 sx={{ mt: { xs: 2.5, sm: 3 } }}
               >
                 {/* Sign Up Link */}
-        <Typography
+                <Typography
                   variant="body2"
                   sx={{
                     color: 'rgba(255,255,255,0.9)',
@@ -649,24 +654,24 @@ const Login = () => {
                   }}
                 >
                   New to Kelmah?{' '}
-          <Link
-            component={RouterLink}
-            to="/register"
+                  <Link
+                    component={RouterLink}
+                    to="/register"
                     variant="body2"
-            sx={{
-              color: '#FFD700',
-              fontWeight: 700,
+                    sx={{
+                      color: '#FFD700',
+                      fontWeight: 700,
                       textDecoration: 'none',
                       fontSize: 'inherit',
-              '&:hover': {
-                color: '#FFC000',
-                textDecoration: 'underline',
-              },
-            }}
-          >
+                      '&:hover': {
+                        color: '#FFC000',
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
                     Create account
-          </Link>
-        </Typography>
+                  </Link>
+                </Typography>
 
                 {/* Compact Social Login */}
                 <Divider
@@ -688,103 +693,107 @@ const Login = () => {
                     }}
                   >
                     OR CONTINUE WITH
-          </Typography>
-        </Divider>
+                  </Typography>
+                </Divider>
 
                 {/* Enhanced Mobile-Optimized Social Buttons */}
-                <Grid container spacing={{ xs: 2, sm: 1.5 }} sx={{ width: '100%' }}>
+                <Grid
+                  container
+                  spacing={{ xs: 2, sm: 1.5 }}
+                  sx={{ width: '100%' }}
+                >
                   <Grid item xs={6}>
                     <motion.div
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
-            <Button
-              fullWidth
-              variant="outlined"
+                      <Button
+                        fullWidth
+                        variant="outlined"
                         startIcon={
                           <GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-              onClick={async () => {
-                if (!FEATURES.analytics) {
-                  // Gate social login behind a feature flag for now
-                  alert('Google login is temporarily disabled');
-                  return;
-                }
-                const apiBaseUrl = await getApiBaseUrl();
-                window.location.href = `${apiBaseUrl}/api/auth/google`;
-              }}
-                            sx={{
-                py: { xs: 1.5, sm: 1.2 },
-                minHeight: { xs: '48px', sm: '42px' },
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', sm: '0.85rem' },
+                        onClick={async () => {
+                          if (!FEATURES.analytics) {
+                            // Gate social login behind a feature flag for now
+                            alert('Google login is temporarily disabled');
+                            return;
+                          }
+                          const apiBaseUrl = await getApiBaseUrl();
+                          window.location.href = `${apiBaseUrl}/api/auth/google`;
+                        }}
+                        sx={{
+                          py: { xs: 1.5, sm: 1.2 },
+                          minHeight: { xs: '48px', sm: '42px' },
+                          fontWeight: 600,
+                          fontSize: { xs: '0.9rem', sm: '0.85rem' },
                           background: 'rgba(255,255,255,0.95)',
-                color: '#4285F4',
-                borderColor: '#4285F4',
+                          color: '#4285F4',
+                          borderColor: '#4285F4',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
-                '&:hover': {
-                  background: '#4285F4',
-                  color: '#fff',
-                  borderColor: '#4285F4',
+                          '&:hover': {
+                            background: '#4285F4',
+                            color: '#fff',
+                            borderColor: '#4285F4',
                             borderWidth: 1.5,
-                },
-              }}
-            >
-              Google
-            </Button>
+                          },
+                        }}
+                      >
+                        Google
+                      </Button>
                     </motion.div>
-          </Grid>
+                  </Grid>
                   <Grid item xs={6}>
                     <motion.div
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
-            <Button
-              fullWidth
-              variant="outlined"
+                      <Button
+                        fullWidth
+                        variant="outlined"
                         startIcon={
                           <LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-              onClick={async () => {
-                if (!FEATURES.analytics) {
-                  alert('LinkedIn login is temporarily disabled');
-                  return;
-                }
-                const apiBaseUrl = await getApiBaseUrl();
-                window.location.href = `${apiBaseUrl}/api/auth/linkedin`;
-              }}
-                            sx={{
-                py: { xs: 1.5, sm: 1.2 },
-                minHeight: { xs: '48px', sm: '42px' },
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', sm: '0.85rem' },
+                        onClick={async () => {
+                          if (!FEATURES.analytics) {
+                            alert('LinkedIn login is temporarily disabled');
+                            return;
+                          }
+                          const apiBaseUrl = await getApiBaseUrl();
+                          window.location.href = `${apiBaseUrl}/api/auth/linkedin`;
+                        }}
+                        sx={{
+                          py: { xs: 1.5, sm: 1.2 },
+                          minHeight: { xs: '48px', sm: '42px' },
+                          fontWeight: 600,
+                          fontSize: { xs: '0.9rem', sm: '0.85rem' },
                           background: 'rgba(255,255,255,0.95)',
-                color: '#0077B5',
-                borderColor: '#0077B5',
+                          color: '#0077B5',
+                          borderColor: '#0077B5',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
-                '&:hover': {
-                  background: '#0077B5',
-                  color: '#fff',
-                  borderColor: '#0077B5',
+                          '&:hover': {
+                            background: '#0077B5',
+                            color: '#fff',
+                            borderColor: '#0077B5',
                             borderWidth: 1.5,
-                },
-              }}
-            >
-              LinkedIn
-            </Button>
+                          },
+                        }}
+                      >
+                        LinkedIn
+                      </Button>
                     </motion.div>
-          </Grid>
-        </Grid>
+                  </Grid>
+                </Grid>
               </Stack>
             </motion.div>
           </Paper>
         </motion.div>
       </Box>
-      </Box>
+    </Box>
   );
 };
 

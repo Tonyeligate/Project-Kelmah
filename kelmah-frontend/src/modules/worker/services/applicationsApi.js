@@ -31,7 +31,10 @@ const applicationsApi = {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('Job service unavailable for application details:', error.message);
+      console.warn(
+        'Job service unavailable for application details:',
+        error.message,
+      );
       throw error;
     }
   },
@@ -47,7 +50,10 @@ const applicationsApi = {
       );
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('Job service unavailable for application submission:', error.message);
+      console.warn(
+        'Job service unavailable for application submission:',
+        error.message,
+      );
       throw error;
     }
   },
@@ -92,7 +98,9 @@ const applicationsApi = {
       return response.data.data || response.data;
     } catch (error) {
       console.error('Failed to fetch application statistics:', error.message);
-      throw new Error(`Application stats service unavailable: ${error.message}`);
+      throw new Error(
+        `Application stats service unavailable: ${error.message}`,
+      );
     }
   },
 };

@@ -40,7 +40,9 @@ class BidApi {
    * @returns {Promise<Object>} Worker bids
    */
   async getWorkerBids(workerId, params = {}) {
-    const response = await apiClient.get(`/bids/worker/${workerId}`, { params });
+    const response = await apiClient.get(`/bids/worker/${workerId}`, {
+      params,
+    });
     return response.data;
   }
 
@@ -71,7 +73,9 @@ class BidApi {
    * @returns {Promise<Object>} Updated bid data
    */
   async acceptBid(bidId, hirerNotes = '') {
-    const response = await apiClient.patch(`/bids/${bidId}/accept`, { hirerNotes });
+    const response = await apiClient.patch(`/bids/${bidId}/accept`, {
+      hirerNotes,
+    });
     return response.data;
   }
 
@@ -82,7 +86,9 @@ class BidApi {
    * @returns {Promise<Object>} Updated bid data
    */
   async rejectBid(bidId, hirerNotes = '') {
-    const response = await apiClient.patch(`/bids/${bidId}/reject`, { hirerNotes });
+    const response = await apiClient.patch(`/bids/${bidId}/reject`, {
+      hirerNotes,
+    });
     return response.data;
   }
 
@@ -93,7 +99,9 @@ class BidApi {
    * @returns {Promise<Object>} Updated bid data
    */
   async withdrawBid(bidId, workerNotes = '') {
-    const response = await apiClient.patch(`/bids/${bidId}/withdraw`, { workerNotes });
+    const response = await apiClient.patch(`/bids/${bidId}/withdraw`, {
+      workerNotes,
+    });
     return response.data;
   }
 
@@ -109,7 +117,7 @@ class BidApi {
     const response = await apiClient.patch(`/bids/${bidId}/modify`, {
       field,
       newValue,
-      reason
+      reason,
     });
     return response.data;
   }
@@ -125,8 +133,10 @@ class BidApi {
     const params = {};
     if (month) params.month = month;
     if (year) params.year = year;
-    
-    const response = await apiClient.get(`/bids/stats/worker/${workerId}`, { params });
+
+    const response = await apiClient.get(`/bids/stats/worker/${workerId}`, {
+      params,
+    });
     return response.data;
   }
 

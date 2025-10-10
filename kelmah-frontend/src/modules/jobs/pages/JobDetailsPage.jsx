@@ -101,11 +101,13 @@ const JobDetailsPage = () => {
   useEffect(() => {
     const token = secureStorage.getAuthToken();
     if (!token) {
-      console.log('🔒 No auth token found, authentication required for job details');
+      console.log(
+        '🔒 No auth token found, authentication required for job details',
+      );
       setAuthRequired(true);
       return;
     }
-    
+
     // Only fetch job if authenticated
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
@@ -160,8 +162,8 @@ const JobDetailsPage = () => {
   };
 
   const handleSignIn = () => {
-    navigate('/auth/login', { 
-      state: { from: location.pathname + location.search }
+    navigate('/auth/login', {
+      state: { from: location.pathname + location.search },
     });
   };
 
@@ -169,15 +171,17 @@ const JobDetailsPage = () => {
   if (authRequired) {
     return (
       <Container maxWidth="lg">
-        <Box sx={{ 
-          mt: 4, 
-          minHeight: '60vh', 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}>
+        <Box
+          sx={{
+            mt: 4,
+            minHeight: '60vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+          }}
+        >
           <Paper elevation={3} sx={{ p: 4, maxWidth: 500 }}>
             <Typography variant="h5" gutterBottom color="primary">
               Authentication Required
@@ -185,17 +189,19 @@ const JobDetailsPage = () => {
             <Typography variant="body1" paragraph>
               Please sign in to view job details and apply for positions.
             </Typography>
-            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
-              <Button 
-                variant="contained" 
+            <Box
+              sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}
+            >
+              <Button
+                variant="contained"
                 color="primary"
                 onClick={handleSignIn}
                 size="large"
               >
                 Sign In
               </Button>
-              <Button 
-                variant="outlined" 
+              <Button
+                variant="outlined"
                 onClick={() => navigate(-1)}
                 size="large"
               >
@@ -258,14 +264,15 @@ const JobDetailsPage = () => {
           justifyContent: 'center',
           alignItems: 'center',
           flexDirection: 'column',
-          gap: 2
+          gap: 2,
         }}
       >
         <Alert severity="error" sx={{ maxWidth: 400 }}>
-          Job not found. The job you're looking for doesn't exist or has been removed.
+          Job not found. The job you're looking for doesn't exist or has been
+          removed.
         </Alert>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={() => navigate('/jobs')}
           sx={{ mt: 2 }}
         >
@@ -357,7 +364,10 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <LocationOn sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.location?.address || job.location?.city || job.location || 'Location not specified'}
+                        {job.location?.address ||
+                          job.location?.city ||
+                          job.location ||
+                          'Location not specified'}
                       </Typography>
                     </Box>
 
@@ -371,26 +381,23 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job?.budget && job.budget !== null ? (
-                          typeof job.budget === 'object' ? (
-                            job.budget.min === job.budget.max ? (
-                              `${job.budget.currency || 'GHS'} ${job.budget.amount?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
-                            ) : (
-                              `${job.budget.currency || 'GHS'} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
-                            )
-                          ) : (
-                            `${job?.currency || 'GHS'} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
-                          )
-                        ) : (
-                          'Budget not specified'
-                        )}
+                        {job?.budget && job.budget !== null
+                          ? typeof job.budget === 'object'
+                            ? job.budget.min === job.budget.max
+                              ? `${job.budget.currency || 'GHS'} ${job.budget.amount?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
+                              : `${job.budget.currency || 'GHS'} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
+                            : `${job?.currency || 'GHS'} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
+                          : 'Budget not specified'}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Schedule sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        Posted: {job?.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Unknown'}
+                        Posted:{' '}
+                        {job?.createdAt
+                          ? new Date(job.createdAt).toLocaleDateString()
+                          : 'Unknown'}
                       </Typography>
                     </Box>
 
@@ -534,7 +541,10 @@ const JobDetailsPage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Schedule sx={{ color: '#FFD700', mr: 1 }} />
                     <Typography variant="body1" sx={{ color: '#fff' }}>
-                      Complete by: {job.endDate ? new Date(job.endDate).toLocaleDateString() : 'No deadline specified'}
+                      Complete by:{' '}
+                      {job.endDate
+                        ? new Date(job.endDate).toLocaleDateString()
+                        : 'No deadline specified'}
                     </Typography>
                   </Box>
                 </Box>
@@ -617,7 +627,9 @@ const JobDetailsPage = () => {
                 </Typography>
 
                 <ProfileLink
-                  onClick={() => navigate(`/profile/${job.hirer?._id || job.hirer?.id}`)}
+                  onClick={() =>
+                    navigate(`/profile/${job.hirer?._id || job.hirer?.id}`)
+                  }
                 >
                   <Avatar
                     src={job.hirer?.avatar || job.hirer?.profilePicture}
@@ -627,8 +639,8 @@ const JobDetailsPage = () => {
 
                   <Box>
                     <Typography variant="h6" sx={{ color: '#FFD700' }}>
-                      {job.hirer?.firstName && job.hirer?.lastName 
-                        ? `${job.hirer.firstName} ${job.hirer.lastName}` 
+                      {job.hirer?.firstName && job.hirer?.lastName
+                        ? `${job.hirer.firstName} ${job.hirer.lastName}`
                         : job.hirer?.name || 'Hirer'}
                     </Typography>
 

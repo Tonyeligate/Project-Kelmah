@@ -16,7 +16,7 @@ const earningsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${workerId}/earnings/analytics`,
-        { params: { timeRange } }
+        { params: { timeRange } },
       );
       return response.data;
     } catch (error) {
@@ -34,7 +34,7 @@ const earningsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${workerId}/earnings/breakdown`,
-        { params: filters }
+        { params: filters },
       );
       return response.data;
     } catch (error) {
@@ -52,7 +52,7 @@ const earningsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${workerId}/payments/history`,
-        { params: pagination }
+        { params: pagination },
       );
       return response.data;
     } catch (error) {
@@ -70,10 +70,10 @@ const earningsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${workerId}/earnings/export`,
-        { 
+        {
           params: { timeRange, format: 'csv' },
-          responseType: 'blob'
-        }
+          responseType: 'blob',
+        },
       );
       return response.data;
     } catch (error) {
@@ -89,7 +89,7 @@ const earningsService = {
   getEarningsProjections: async (workerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${workerId}/earnings/projections`
+        `${API_URL}/${workerId}/earnings/projections`,
       );
       return response.data;
     } catch (error) {
@@ -107,7 +107,7 @@ const earningsService = {
     try {
       const response = await userServiceClient.get(
         `${API_URL}/${workerId}/earnings/tax`,
-        { params: { taxYear } }
+        { params: { taxYear } },
       );
       return response.data;
     } catch (error) {
@@ -123,13 +123,13 @@ const earningsService = {
   getPeerComparison: async (workerId) => {
     try {
       const response = await userServiceClient.get(
-        `${API_URL}/${workerId}/earnings/peer-comparison`
+        `${API_URL}/${workerId}/earnings/peer-comparison`,
       );
       return response.data;
     } catch (error) {
       throw error;
     }
-  }
+  },
 };
 
 // Removed mock generators and fallbacks. All methods now use real API or throw on failure.

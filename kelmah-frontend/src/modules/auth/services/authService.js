@@ -21,14 +21,19 @@ const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await authServiceClient.post('/api/auth/login', credentials);
-      
+      const response = await authServiceClient.post(
+        '/api/auth/login',
+        credentials,
+      );
+
       // Extract data from response (handle different response structures)
       const responseData = response.data.data || response.data;
       const { token, refreshToken, user } = responseData;
 
       if (!token || !user) {
-        throw new Error('Invalid response from server - missing token or user data');
+        throw new Error(
+          'Invalid response from server - missing token or user data',
+        );
       }
 
       // Store authentication data securely
@@ -45,37 +50,45 @@ const authService = {
       return { token, refreshToken, user, success: true };
     } catch (error) {
       console.error('Login failed:', error);
-      
+
       // Enhanced error handling with user-friendly messages
       let errorMessage = 'Login failed. Please try again.';
-      
+
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        errorMessage = 'Login is taking longer than usual. The service may be starting up. Please wait a moment and try again.';
+        errorMessage =
+          'Login is taking longer than usual. The service may be starting up. Please wait a moment and try again.';
       } else if (error.response?.status === 401) {
-        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        errorMessage =
+          'Invalid email or password. Please check your credentials and try again.';
       } else if (error.response?.status === 403) {
-        errorMessage = 'Your account has been temporarily disabled. Please contact support.';
+        errorMessage =
+          'Your account has been temporarily disabled. Please contact support.';
       } else if (error.response?.status === 429) {
-        errorMessage = 'Too many login attempts. Please wait a few minutes before trying again.';
+        errorMessage =
+          'Too many login attempts. Please wait a few minutes before trying again.';
       } else if (error.response?.status >= 500) {
-        errorMessage = 'Our servers are experiencing issues. Please try again in a few minutes.';
+        errorMessage =
+          'Our servers are experiencing issues. Please try again in a few minutes.';
       } else if (!error.response) {
-        errorMessage = 'Unable to connect to our servers. Please check your internet connection and try again.';
+        errorMessage =
+          'Unable to connect to our servers. Please check your internet connection and try again.';
       } else {
         // Use server message if available
-        errorMessage = error.response?.data?.message || 
-                      error.response?.data?.error || 
-                      error.message || 
-                      errorMessage;
+        errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          errorMessage;
       }
-      
+
       const enhancedError = new Error(errorMessage);
       enhancedError.originalError = error;
       enhancedError.status = error.response?.status;
-      enhancedError.isRetryable = error.code === 'ECONNABORTED' || 
-                                 error.response?.status >= 500 || 
-                                 !error.response;
-      
+      enhancedError.isRetryable =
+        error.code === 'ECONNABORTED' ||
+        error.response?.status >= 500 ||
+        !error.response;
+
       throw enhancedError;
     }
   },
@@ -131,7 +144,7 @@ const authService = {
       // Include refresh token in logout request if available
       const refreshToken = secureStorage.getRefreshToken();
       const logoutData = refreshToken ? { refreshToken } : {};
-      
+
       await authServiceClient.post('/api/auth/logout', logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
@@ -142,7 +155,7 @@ const authService = {
         clearTimeout(tokenRefreshTimeout);
         tokenRefreshTimeout = null;
       }
-      
+
       // Always clean up secure storage
       secureStorage.clear();
       console.log('Logout completed - all auth data cleared');
@@ -175,19 +188,20 @@ const authService = {
       }
 
       const response = await authServiceClient.post('/api/auth/refresh-token', {
-        refreshToken
+        refreshToken,
       });
-      
+
       const responseData = response.data.data || response.data;
-      const { token: newAccessToken, refreshToken: newRefreshToken } = responseData;
+      const { token: newAccessToken, refreshToken: newRefreshToken } =
+        responseData;
 
       if (newAccessToken) {
         secureStorage.setAuthToken(newAccessToken);
-        
+
         // Setup next automatic refresh
         authService.setupTokenRefresh(newAccessToken);
       }
-      
+
       if (newRefreshToken) {
         secureStorage.setRefreshToken(newRefreshToken);
       }
@@ -196,13 +210,13 @@ const authService = {
       return { token: newAccessToken, success: true };
     } catch (error) {
       console.error('Token refresh failed:', error);
-      
+
       // If refresh fails, clear auth data and force re-login
       secureStorage.clear();
-      
+
       // Dispatch custom event for components to handle re-login
       window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
-      
+
       return { success: false, error: error.message };
     }
   },
@@ -238,7 +252,10 @@ const authService = {
   // Update profile
   updateProfile: async (profileData) => {
     try {
-      const response = await authServiceClient.put('/api/auth/profile', profileData);
+      const response = await authServiceClient.put(
+        '/api/auth/profile',
+        profileData,
+      );
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -301,7 +318,9 @@ const authService = {
   // Email Verification Methods
   verifyEmail: async (token) => {
     try {
-      const response = await authServiceClient.get(`/api/auth/verify-email/${token}`);
+      const response = await authServiceClient.get(
+        `/api/auth/verify-email/${token}`,
+      );
       return {
         success: true,
         message: response.data.message || 'Email verified successfully',
@@ -318,18 +337,23 @@ const authService = {
 
   resendVerificationEmail: async (email) => {
     try {
-      const response = await authServiceClient.post('/api/auth/resend-verification-email', {
-        email,
-      });
+      const response = await authServiceClient.post(
+        '/api/auth/resend-verification-email',
+        {
+          email,
+        },
+      );
       return {
         success: true,
-        message: response.data.message || 'Verification email sent successfully',
+        message:
+          response.data.message || 'Verification email sent successfully',
       };
     } catch (error) {
       console.error('Resend verification email failed:', error);
       throw {
         success: false,
-        message: error.response?.data?.message || 'Failed to send verification email',
+        message:
+          error.response?.data?.message || 'Failed to send verification email',
       };
     }
   },
@@ -343,7 +367,8 @@ const authService = {
       return { success: true, ...payload };
     } catch (error) {
       console.error('MFA setup error:', error);
-      const message = error.response?.data?.message || 'Failed to initialize MFA';
+      const message =
+        error.response?.data?.message || 'Failed to initialize MFA';
       return { success: false, message };
     }
   },
@@ -351,7 +376,9 @@ const authService = {
   // Verify MFA (placeholder for future implementation)
   verifyMFA: async (token) => {
     try {
-      const response = await authServiceClient.post('/api/auth/verify-mfa', { token });
+      const response = await authServiceClient.post('/api/auth/verify-mfa', {
+        token,
+      });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
@@ -364,7 +391,10 @@ const authService = {
   // Disable MFA (placeholder for future implementation)
   disableMFA: async (password, token) => {
     try {
-      const response = await authServiceClient.post('/api/auth/disable-mfa', { password, token });
+      const response = await authServiceClient.post('/api/auth/disable-mfa', {
+        password,
+        token,
+      });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
@@ -390,27 +420,31 @@ const authService = {
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
       );
 
       const payload = JSON.parse(jsonPayload);
       const expiry = payload.exp * 1000; // Convert to milliseconds
       const now = Date.now();
-      
+
       // Refresh 5 minutes before expiry, but not less than 1 minute from now
-      const refreshTime = Math.max(expiry - (5 * 60 * 1000), now + (1 * 60 * 1000));
+      const refreshTime = Math.max(expiry - 5 * 60 * 1000, now + 1 * 60 * 1000);
       const timeUntilRefresh = refreshTime - now;
 
       if (timeUntilRefresh > 0) {
-        console.log(`Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
-        
+        console.log(
+          `Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`,
+        );
+
         tokenRefreshTimeout = setTimeout(async () => {
           console.log('Attempting automatic token refresh...');
           const result = await authService.refreshToken();
-          
+
           if (!result.success) {
-            console.warn('Automatic token refresh failed, user may need to re-login');
+            console.warn(
+              'Automatic token refresh failed, user may need to re-login',
+            );
           }
         }, timeUntilRefresh);
       }
@@ -425,18 +459,20 @@ const authService = {
       // Try secureStorage first
       let token = secureStorage.getAuthToken();
       let userData = secureStorage.getUserData();
-      
+
       // Fallback to localStorage if secureStorage fails (dual storage system compatibility)
       if (!token) {
-        console.log('No token in secureStorage, checking localStorage fallback...');
+        console.log(
+          'No token in secureStorage, checking localStorage fallback...',
+        );
         token = secureStorage.getAuthToken();
         const userString = localStorage.getItem('user');
-        
+
         if (token && userString) {
           try {
             userData = JSON.parse(userString);
             console.log('Found authentication data in localStorage fallback');
-            
+
             // Sync to secureStorage for future use
             secureStorage.setAuthToken(token);
             secureStorage.setUserData(userData);
@@ -447,17 +483,17 @@ const authService = {
           }
         }
       }
-      
+
       if (token) {
         // Setup token refresh for existing token
         authService.setupTokenRefresh(token);
-        
+
         // If we have user data from storage, use it directly (avoid API call)
         if (userData && userData.email) {
           console.log('Using stored user data for quick initialization');
           return { authenticated: true, user: userData };
         }
-        
+
         // Otherwise verify the token with API
         try {
           const verifyResult = await authService.verifyAuth();
@@ -468,7 +504,7 @@ const authService = {
             localStorage.removeItem('user');
             return { authenticated: false };
           }
-          
+
           return { authenticated: true, user: verifyResult.user };
         } catch (verifyError) {
           // If verification fails but we have user data, still allow authentication
@@ -477,11 +513,11 @@ const authService = {
             console.log('API verification failed, but using cached user data');
             return { authenticated: true, user: userData };
           }
-          
+
           throw verifyError;
         }
       }
-      
+
       console.log('No token found in storage');
       return { authenticated: false };
     } catch (error) {

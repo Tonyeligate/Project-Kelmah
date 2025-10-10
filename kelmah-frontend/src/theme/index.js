@@ -7,19 +7,19 @@ const BRAND_COLORS = {
   goldLight: '#FFE55C',
   goldDark: '#B8860B',
   goldMuted: 'rgba(255, 215, 0, 0.8)',
-  
+
   // Black variations - Secondary brand color
   black: '#000000',
   blackLight: '#1a1a1a',
   blackMedium: '#2c2c2c',
   blackSoft: '#333333',
-  
+
   // White variations - Accent color
   white: '#FFFFFF',
   whiteLight: '#FAFAFA',
   whiteDark: '#F5F5F5',
   whiteAlpha: 'rgba(255, 255, 255, 0.9)',
-  
+
   // Semantic colors
   success: '#4caf50',
   warning: '#ff9800',
@@ -205,7 +205,8 @@ const darkTheme = createTheme({
           margin: 0,
           padding: 0,
           // Ensure consistent font rendering
-          fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+          fontFamily:
+            '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
         },
@@ -562,7 +563,8 @@ const lightTheme = createTheme({
           },
           margin: 0,
           padding: 0,
-          fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+          fontFamily:
+            '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
         },
@@ -831,13 +833,16 @@ export const createGradient = (theme, colors) => {
 
 export const createGlassEffect = (theme, opacity = 0.1) => {
   return {
-    backgroundColor: theme.palette.mode === 'dark' 
-      ? `rgba(255, 255, 255, ${opacity})`
-      : `rgba(0, 0, 0, ${opacity})`,
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? `rgba(255, 255, 255, ${opacity})`
+        : `rgba(0, 0, 0, ${opacity})`,
     backdropFilter: 'blur(20px)',
-    border: `1px solid ${theme.palette.mode === 'dark' 
-      ? 'rgba(255, 215, 0, 0.2)' 
-      : 'rgba(0, 0, 0, 0.15)'}`,
+    border: `1px solid ${
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 215, 0, 0.2)'
+        : 'rgba(0, 0, 0, 0.15)'
+    }`,
   };
 };
 
@@ -853,14 +858,16 @@ export const KELMAH_DEPTH = {
   elevation: {
     low: '0 4px 12px rgba(0,0,0,0.25)',
     medium: '0 12px 32px rgba(0,0,0,0.35)',
-    high: '0 24px 60px rgba(0,0,0,0.45)'
+    high: '0 24px 60px rgba(0,0,0,0.45)',
   },
   blur: {
     glass: 'blur(10px)',
   },
   gradients: {
-    goldSheen: 'linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%)',
-    ghanaFlagSweep: 'linear-gradient(120deg, rgba(220,20,60,0.18), rgba(255,215,0,0.15), rgba(46,125,50,0.18))',
+    goldSheen:
+      'linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.05) 100%)',
+    ghanaFlagSweep:
+      'linear-gradient(120deg, rgba(220,20,60,0.18), rgba(255,215,0,0.15), rgba(46,125,50,0.18))',
   },
 };
 

@@ -177,7 +177,6 @@ class ReviewsApi {
     });
     return response.data;
   }
-
 }
 
 export default new ReviewsApi();

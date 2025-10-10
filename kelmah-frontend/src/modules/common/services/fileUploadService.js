@@ -1,6 +1,7 @@
 import { userServiceClient, messagingServiceClient } from './axios';
 
-const MAX_FILE_SIZE = (Number(import.meta.env.VITE_S3_MAX_SIZE_MB || 25)) * 1024 * 1024;
+const MAX_FILE_SIZE =
+  Number(import.meta.env.VITE_S3_MAX_SIZE_MB || 25) * 1024 * 1024;
 const ALLOWED_FILE_TYPES = {
   images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   documents: [
@@ -63,15 +64,19 @@ const fileUploadService = {
       throw new Error(validation.error);
     }
     try {
-      const client = service === 'user' ? userServiceClient : messagingServiceClient;
-      const presignPath = service === 'user' ? '/api/profile/uploads/presign' : '/api/uploads/presign';
+      const client =
+        service === 'user' ? userServiceClient : messagingServiceClient;
+      const presignPath =
+        service === 'user'
+          ? '/api/profile/uploads/presign'
+          : '/api/uploads/presign';
       const { data } = await client.post(presignPath, {
         folder,
         filename: file.name,
-        contentType: file.type
+        contentType: file.type,
       });
       const { putUrl, getUrl, maxSizeMb } = data.data || data;
-      if (file.size > (maxSizeMb * 1024 * 1024)) {
+      if (file.size > maxSizeMb * 1024 * 1024) {
         throw new Error(`File exceeds max size ${maxSizeMb}MB`);
       }
       // If presign is disabled on backend, fallback to local direct upload route
@@ -79,16 +84,28 @@ const fileUploadService = {
         // Backend will store locally when ENABLE_S3_UPLOADS !== 'true'
         const form = new FormData();
         form.append('files', file);
-        const localPath = service === 'user'
-          ? '/api/profile/uploads'
-          : `/api/messages/${folder.replace('attachments/', '')}/attachments`;
+        const localPath =
+          service === 'user'
+            ? '/api/profile/uploads'
+            : `/api/messages/${folder.replace('attachments/', '')}/attachments`;
         const resp = await client.post(localPath, form, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
         const uploaded = resp.data?.data?.files?.[0] || resp.data?.files?.[0];
-        return uploaded || { url: resp.data?.url, name: file.name, size: file.size, type: file.type };
+        return (
+          uploaded || {
+            url: resp.data?.url,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+          }
+        );
       }
-      await fetch(putUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+      await fetch(putUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
       return { url: getUrl, name: file.name, size: file.size, type: file.type };
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -102,7 +119,11 @@ const fileUploadService = {
 
     for (const file of files) {
       try {
-        const result = await fileUploadService.uploadFile(file, folder, service);
+        const result = await fileUploadService.uploadFile(
+          file,
+          folder,
+          service,
+        );
         uploads.push(result);
       } catch (error) {
         uploads.push({ error: error.message, filename: file.name });

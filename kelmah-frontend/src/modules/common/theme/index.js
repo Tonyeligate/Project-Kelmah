@@ -7,24 +7,24 @@ export { default as tokens } from './tokens';
 export { default as themeUtils } from './utils';
 
 // Re-export commonly used items for convenience
-export { 
-  colors, 
-  typography, 
-  spacing, 
-  borderRadius, 
+export {
+  colors,
+  typography,
+  spacing,
+  borderRadius,
   shadows,
   breakpoints,
   animation,
-  semantic 
+  semantic,
 } from './tokens';
 
-export { 
-  getColor, 
-  spacing as getSpacing, 
-  mediaQuery, 
-  cardStyles, 
-  buttonStyles, 
-  focusStyles, 
+export {
+  getColor,
+  spacing as getSpacing,
+  mediaQuery,
+  cardStyles,
+  buttonStyles,
+  focusStyles,
   hoverElevation,
-  ghanaTheme 
+  ghanaTheme,
 } from './utils';

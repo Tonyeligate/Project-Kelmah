@@ -64,11 +64,7 @@ function TabPanel(props) {
       aria-labelledby={`payment-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -95,14 +91,14 @@ const PaymentOverview = () => {
     failedPayments: 0,
     totalTransactions: 0,
     platformFees: 0,
-    payoutsPending: 0
+    payoutsPending: 0,
   });
 
   const [paymentMethods, setPaymentMethods] = useState({
     mobileMoney: 0,
     bankTransfer: 0,
     creditCard: 0,
-    cash: 0
+    cash: 0,
   });
 
   useEffect(() => {
@@ -113,12 +109,12 @@ const PaymentOverview = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Mock payment data for demonstration
       const mockPayments = [
         {
           id: 'PAY001',
-          amount: 500.00,
+          amount: 500.0,
           currency: 'GHS',
           status: 'completed',
           method: 'mobile_money',
@@ -126,14 +122,14 @@ const PaymentOverview = () => {
           payerName: 'John Doe',
           payeeName: 'Alice Johnson',
           jobTitle: 'Website Development',
-          transactionFee: 15.00,
-          platformFee: 25.00,
+          transactionFee: 15.0,
+          platformFee: 25.0,
           createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          description: 'Payment for completed web development project'
+          description: 'Payment for completed web development project',
         },
         {
           id: 'PAY002',
-          amount: 300.00,
+          amount: 300.0,
           currency: 'GHS',
           status: 'pending',
           method: 'bank_transfer',
@@ -141,14 +137,14 @@ const PaymentOverview = () => {
           payerName: 'Jane Smith',
           payeeName: 'Bob Wilson',
           jobTitle: 'Graphic Design',
-          transactionFee: 10.00,
-          platformFee: 15.00,
+          transactionFee: 10.0,
+          platformFee: 15.0,
           createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          description: 'Payment for graphic design services'
+          description: 'Payment for graphic design services',
         },
         {
           id: 'PAY003',
-          amount: 750.00,
+          amount: 750.0,
           currency: 'GHS',
           status: 'failed',
           method: 'mobile_money',
@@ -156,15 +152,15 @@ const PaymentOverview = () => {
           payerName: 'Mike Davis',
           payeeName: 'Carol Brown',
           jobTitle: 'Content Writing',
-          transactionFee: 0.00,
-          platformFee: 0.00,
+          transactionFee: 0.0,
+          platformFee: 0.0,
           createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
           description: 'Failed payment - insufficient funds',
-          failureReason: 'Insufficient balance in mobile money account'
+          failureReason: 'Insufficient balance in mobile money account',
         },
         {
           id: 'PAY004',
-          amount: 1200.00,
+          amount: 1200.0,
           currency: 'GHS',
           status: 'in_escrow',
           method: 'credit_card',
@@ -172,55 +168,69 @@ const PaymentOverview = () => {
           payerName: 'Sarah Johnson',
           payeeName: 'David Lee',
           jobTitle: 'Mobile App Development',
-          transactionFee: 36.00,
-          platformFee: 60.00,
+          transactionFee: 36.0,
+          platformFee: 60.0,
           createdAt: new Date(Date.now() - 0.5 * 24 * 60 * 60 * 1000),
-          description: 'Payment held in escrow pending project completion'
-        }
+          description: 'Payment held in escrow pending project completion',
+        },
       ];
 
       // Filter based on active tab and filters
       let filteredPayments = mockPayments;
-      
-      if (activeTab === 0) { // All
+
+      if (activeTab === 0) {
+        // All
         filteredPayments = mockPayments;
-      } else if (activeTab === 1) { // Pending
-        filteredPayments = mockPayments.filter(p => p.status === 'pending' || p.status === 'in_escrow');
-      } else if (activeTab === 2) { // Failed
-        filteredPayments = mockPayments.filter(p => p.status === 'failed');
+      } else if (activeTab === 1) {
+        // Pending
+        filteredPayments = mockPayments.filter(
+          (p) => p.status === 'pending' || p.status === 'in_escrow',
+        );
+      } else if (activeTab === 2) {
+        // Failed
+        filteredPayments = mockPayments.filter((p) => p.status === 'failed');
       }
 
       if (searchTerm) {
         filteredPayments = filteredPayments.filter(
-          payment => 
+          (payment) =>
             payment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            payment.payerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            payment.payeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            payment.jobTitle.toLowerCase().includes(searchTerm.toLowerCase())
+            payment.payerName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            payment.payeeName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            payment.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()),
         );
       }
 
       if (filterStatus !== 'all') {
         filteredPayments = filteredPayments.filter(
-          payment => payment.status === filterStatus
+          (payment) => payment.status === filterStatus,
         );
       }
 
       if (filterMethod !== 'all') {
         filteredPayments = filteredPayments.filter(
-          payment => payment.method === filterMethod
+          (payment) => payment.method === filterMethod,
         );
       }
 
       setPayments(filteredPayments);
 
       // Calculate analytics
-      const completed = mockPayments.filter(p => p.status === 'completed');
-      const pending = mockPayments.filter(p => p.status === 'pending' || p.status === 'in_escrow');
-      const failed = mockPayments.filter(p => p.status === 'failed');
+      const completed = mockPayments.filter((p) => p.status === 'completed');
+      const pending = mockPayments.filter(
+        (p) => p.status === 'pending' || p.status === 'in_escrow',
+      );
+      const failed = mockPayments.filter((p) => p.status === 'failed');
 
       const totalRevenue = completed.reduce((sum, p) => sum + p.amount, 0);
-      const platformFeesTotal = completed.reduce((sum, p) => sum + p.platformFee, 0);
+      const platformFeesTotal = completed.reduce(
+        (sum, p) => sum + p.platformFee,
+        0,
+      );
 
       setAnalytics({
         totalRevenue,
@@ -230,17 +240,19 @@ const PaymentOverview = () => {
         failedPayments: failed.length,
         totalTransactions: mockPayments.length,
         platformFees: platformFeesTotal,
-        payoutsPending: 3 // Mock pending payouts
+        payoutsPending: 3, // Mock pending payouts
       });
 
       // Calculate payment method distribution
       setPaymentMethods({
-        mobileMoney: mockPayments.filter(p => p.method === 'mobile_money').length,
-        bankTransfer: mockPayments.filter(p => p.method === 'bank_transfer').length,
-        creditCard: mockPayments.filter(p => p.method === 'credit_card').length,
-        cash: mockPayments.filter(p => p.method === 'cash').length
+        mobileMoney: mockPayments.filter((p) => p.method === 'mobile_money')
+          .length,
+        bankTransfer: mockPayments.filter((p) => p.method === 'bank_transfer')
+          .length,
+        creditCard: mockPayments.filter((p) => p.method === 'credit_card')
+          .length,
+        cash: mockPayments.filter((p) => p.method === 'cash').length,
       });
-
     } catch (err) {
       console.error('Error fetching payments:', err);
       setError('Failed to fetch payment data');
@@ -256,29 +268,40 @@ const PaymentOverview = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'success';
-      case 'pending': return 'warning';
-      case 'in_escrow': return 'info';
-      case 'failed': return 'error';
-      case 'cancelled': return 'default';
-      default: return 'default';
+      case 'completed':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'in_escrow':
+        return 'info';
+      case 'failed':
+        return 'error';
+      case 'cancelled':
+        return 'default';
+      default:
+        return 'default';
     }
   };
 
   const getMethodIcon = (method) => {
     switch (method) {
-      case 'mobile_money': return <MobileMoneyIcon />;
-      case 'bank_transfer': return <BankIcon />;
-      case 'credit_card': return <CardIcon />;
-      case 'cash': return <MoneyIcon />;
-      default: return <MoneyIcon />;
+      case 'mobile_money':
+        return <MobileMoneyIcon />;
+      case 'bank_transfer':
+        return <BankIcon />;
+      case 'credit_card':
+        return <CardIcon />;
+      case 'cash':
+        return <MoneyIcon />;
+      default:
+        return <MoneyIcon />;
     }
   };
 
   const formatCurrency = (amount, currency = 'GHS') => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: currency
+      currency: currency,
     }).format(amount);
   };
 
@@ -300,15 +323,19 @@ const PaymentOverview = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Typography variant="h4" gutterBottom>
           Payment Overview
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ExportIcon />}
-          >
+          <Button variant="outlined" startIcon={<ExportIcon />}>
             Export
           </Button>
           <Button
@@ -321,7 +348,7 @@ const PaymentOverview = () => {
           </Button>
         </Box>
       </Box>
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
@@ -333,16 +360,29 @@ const PaymentOverview = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Total Revenue
                   </Typography>
                   <Typography variant="h4">
                     {formatCurrency(analytics.totalRevenue)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <TrendingUpIcon color="success" sx={{ fontSize: 16, mr: 0.5 }} />
+                    <TrendingUpIcon
+                      color="success"
+                      sx={{ fontSize: 16, mr: 0.5 }}
+                    />
                     <Typography variant="body2" color="success.main">
                       +15% this month
                     </Typography>
@@ -359,16 +399,29 @@ const PaymentOverview = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Platform Fees
                   </Typography>
                   <Typography variant="h4">
                     {formatCurrency(analytics.platformFees)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <TrendingUpIcon color="success" sx={{ fontSize: 16, mr: 0.5 }} />
+                    <TrendingUpIcon
+                      color="success"
+                      sx={{ fontSize: 16, mr: 0.5 }}
+                    />
                     <Typography variant="body2" color="success.main">
                       +8% this month
                     </Typography>
@@ -385,9 +438,19 @@ const PaymentOverview = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Pending Payments
                   </Typography>
                   <Typography variant="h4">
@@ -410,9 +473,19 @@ const PaymentOverview = () => {
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="overline">
+                  <Typography
+                    color="textSecondary"
+                    gutterBottom
+                    variant="overline"
+                  >
                     Total Transactions
                   </Typography>
                   <Typography variant="h4">
@@ -442,7 +515,14 @@ const PaymentOverview = () => {
               <Grid container spacing={2}>
                 <Grid item xs={6} md={3}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 1,
+                      }}
+                    >
                       <MobileMoneyIcon color="primary" />
                       <Typography variant="h6" sx={{ ml: 1 }}>
                         {paymentMethods.mobileMoney}
@@ -453,14 +533,25 @@ const PaymentOverview = () => {
                     </Typography>
                     <LinearProgress
                       variant="determinate"
-                      value={(paymentMethods.mobileMoney / analytics.totalTransactions) * 100}
+                      value={
+                        (paymentMethods.mobileMoney /
+                          analytics.totalTransactions) *
+                        100
+                      }
                       sx={{ mt: 1, height: 8, borderRadius: 4 }}
                     />
                   </Box>
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 1,
+                      }}
+                    >
                       <BankIcon color="success" />
                       <Typography variant="h6" sx={{ ml: 1 }}>
                         {paymentMethods.bankTransfer}
@@ -471,7 +562,11 @@ const PaymentOverview = () => {
                     </Typography>
                     <LinearProgress
                       variant="determinate"
-                      value={(paymentMethods.bankTransfer / analytics.totalTransactions) * 100}
+                      value={
+                        (paymentMethods.bankTransfer /
+                          analytics.totalTransactions) *
+                        100
+                      }
                       color="success"
                       sx={{ mt: 1, height: 8, borderRadius: 4 }}
                     />
@@ -479,7 +574,14 @@ const PaymentOverview = () => {
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 1,
+                      }}
+                    >
                       <CardIcon color="warning" />
                       <Typography variant="h6" sx={{ ml: 1 }}>
                         {paymentMethods.creditCard}
@@ -490,7 +592,11 @@ const PaymentOverview = () => {
                     </Typography>
                     <LinearProgress
                       variant="determinate"
-                      value={(paymentMethods.creditCard / analytics.totalTransactions) * 100}
+                      value={
+                        (paymentMethods.creditCard /
+                          analytics.totalTransactions) *
+                        100
+                      }
                       color="warning"
                       sx={{ mt: 1, height: 8, borderRadius: 4 }}
                     />
@@ -498,7 +604,14 @@ const PaymentOverview = () => {
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 1,
+                      }}
+                    >
                       <MoneyIcon color="info" />
                       <Typography variant="h6" sx={{ ml: 1 }}>
                         {paymentMethods.cash}
@@ -509,7 +622,10 @@ const PaymentOverview = () => {
                     </Typography>
                     <LinearProgress
                       variant="determinate"
-                      value={(paymentMethods.cash / analytics.totalTransactions) * 100}
+                      value={
+                        (paymentMethods.cash / analytics.totalTransactions) *
+                        100
+                      }
                       color="info"
                       sx={{ mt: 1, height: 8, borderRadius: 4 }}
                     />
@@ -529,7 +645,12 @@ const PaymentOverview = () => {
                   Success Rate
                 </Typography>
                 <Typography variant="h4" color="success.main">
-                  {((analytics.completedPayments / analytics.totalTransactions) * 100).toFixed(1)}%
+                  {(
+                    (analytics.completedPayments /
+                      analytics.totalTransactions) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </Typography>
               </Box>
               <Box sx={{ mb: 2 }}>
@@ -540,7 +661,7 @@ const PaymentOverview = () => {
                   {analytics.failedPayments}
                 </Typography>
               </Box>
-    <Box>
+              <Box>
                 <Typography variant="body2" color="text.secondary">
                   Pending Payouts
                 </Typography>
@@ -562,14 +683,14 @@ const PaymentOverview = () => {
           textColor="primary"
         >
           <Tab label="All Payments" />
-          <Tab 
+          <Tab
             label={
               <Badge badgeContent={analytics.pendingPayments} color="warning">
                 Pending
               </Badge>
             }
           />
-          <Tab 
+          <Tab
             label={
               <Badge badgeContent={analytics.failedPayments} color="error">
                 Failed
@@ -691,14 +812,25 @@ const PaymentOverview = () => {
                           {formatCurrency(payment.amount)}
                         </Typography>
                         {payment.transactionFee > 0 && (
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                          >
                             Fee: {formatCurrency(payment.transactionFee)}
                           </Typography>
                         )}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'primary.main' }}>
+                          <Avatar
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              mr: 1,
+                              bgcolor: 'primary.main',
+                            }}
+                          >
                             {payment.payerName[0]}
                           </Avatar>
                           <Typography variant="body2">
@@ -708,7 +840,14 @@ const PaymentOverview = () => {
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'success.main' }}>
+                          <Avatar
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              mr: 1,
+                              bgcolor: 'success.main',
+                            }}
+                          >
                             {payment.payeeName[0]}
                           </Avatar>
                           <Typography variant="body2">
@@ -721,17 +860,24 @@ const PaymentOverview = () => {
                           {getMethodIcon(payment.method)}
                           <Box sx={{ ml: 1 }}>
                             <Typography variant="body2">
-                              {payment.method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              {payment.method
+                                .replace('_', ' ')
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {payment.methodDetails}
                             </Typography>
                           </Box>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={payment.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} 
+                        <Chip
+                          label={payment.status
+                            .replace('_', ' ')
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                           color={getStatusColor(payment.status)}
                           size="small"
                         />
@@ -742,15 +888,13 @@ const PaymentOverview = () => {
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton
-                          onClick={() => handleViewPayment(payment)}
-                        >
+                        <IconButton onClick={() => handleViewPayment(payment)}>
                           <ViewIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
-                  
+
                   {payments.length === 0 && !loading && (
                     <TableRow>
                       <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
@@ -768,7 +912,12 @@ const PaymentOverview = () => {
       </Card>
 
       {/* Payment Details Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Payment Details</DialogTitle>
         <DialogContent>
           {selectedPayment && (
@@ -777,8 +926,10 @@ const PaymentOverview = () => {
                 <Typography variant="h6" gutterBottom>
                   Payment ID: {selectedPayment.id}
                 </Typography>
-                <Chip 
-                  label={selectedPayment.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} 
+                <Chip
+                  label={selectedPayment.status
+                    .replace('_', ' ')
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
                   color={getStatusColor(selectedPayment.status)}
                   sx={{ mb: 2 }}
                 />
@@ -796,7 +947,8 @@ const PaymentOverview = () => {
                   Fees:
                 </Typography>
                 <Typography variant="body1">
-                  Transaction Fee: {formatCurrency(selectedPayment.transactionFee)}
+                  Transaction Fee:{' '}
+                  {formatCurrency(selectedPayment.transactionFee)}
                 </Typography>
                 <Typography variant="body1">
                   Platform Fee: {formatCurrency(selectedPayment.platformFee)}
@@ -832,7 +984,9 @@ const PaymentOverview = () => {
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   {getMethodIcon(selectedPayment.method)}
-                  <Typography sx={{ ml: 1 }}>{selectedPayment.methodDetails}</Typography>
+                  <Typography sx={{ ml: 1 }}>
+                    {selectedPayment.methodDetails}
+                  </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -845,7 +999,10 @@ const PaymentOverview = () => {
                 <Typography variant="subtitle2" gutterBottom>
                   Description:
                 </Typography>
-                <Typography variant="body1" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography
+                  variant="body1"
+                  sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}
+                >
                   {selectedPayment.description}
                 </Typography>
               </Grid>
@@ -863,9 +1020,7 @@ const PaymentOverview = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>
-            Close
-          </Button>
+          <Button onClick={() => setOpenDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -130,7 +130,7 @@ import mapService from '../../services/mapService';
 // 🎨 STUNNING ANIMATED BACKGROUND WITH PROFESSIONAL GRADIENTS
 const AnimatedBackground = () => {
   const theme = useTheme();
-  
+
   return (
     <Box
       sx={{
@@ -206,19 +206,35 @@ const AnimatedBackground = () => {
 };
 
 // 🚀 PROFESSIONAL FLOATING ACTION BUTTON WITH STUNNING ANIMATIONS
-const FloatingControls = ({ onToggleFullscreen, isFullscreen, onCenterMap, onRefresh }) => {
+const FloatingControls = ({
+  onToggleFullscreen,
+  isFullscreen,
+  onCenterMap,
+  onRefresh,
+}) => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
 
   const actions = [
-    { icon: <RefreshIcon />, name: 'Refresh Map', onClick: onRefresh, color: 'primary' },
-    { icon: <CenterIcon />, name: 'Center Map', onClick: onCenterMap, color: 'secondary' },
+    {
+      icon: <RefreshIcon />,
+      name: 'Refresh Map',
+      onClick: onRefresh,
+      color: 'primary',
+    },
+    {
+      icon: <CenterIcon />,
+      name: 'Center Map',
+      onClick: onCenterMap,
+      color: 'secondary',
+    },
     { icon: <LayersIcon />, name: 'Toggle Layers', color: 'info' },
     { icon: <PhotoIcon />, name: 'Take Screenshot', color: 'success' },
-    { icon: isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />, 
-      name: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen', 
-      onClick: onToggleFullscreen, 
-      color: 'warning' 
+    {
+      icon: isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />,
+      name: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
+      onClick: onToggleFullscreen,
+      color: 'warning',
     },
   ];
 
@@ -304,7 +320,12 @@ const FloatingControls = ({ onToggleFullscreen, isFullscreen, onCenterMap, onRef
 };
 
 // 🌟 PREMIUM SEARCH BAR WITH STUNNING VISUAL EFFECTS
-const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [] }) => {
+const PremiumSearchBar = ({
+  searchTerm,
+  onSearchChange,
+  onClear,
+  suggestions = [],
+}) => {
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -319,11 +340,11 @@ const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [
       }}
     >
       <motion.div
-        animate={{ 
+        animate={{
           scale: focused ? 1.02 : 1,
-          y: focused ? -2 : 0 
+          y: focused ? -2 : 0,
         }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         <TextField
           fullWidth
@@ -338,7 +359,7 @@ const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [
               <InputAdornment position="start">
                 <motion.div
                   animate={{ rotate: focused ? 360 : 0 }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  transition={{ duration: 0.6, ease: 'easeInOut' }}
                 >
                   <SearchIcon sx={{ color: '#FFD700', fontSize: 28 }} />
                 </motion.div>
@@ -346,7 +367,7 @@ const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [
             ),
             endAdornment: searchTerm && (
               <InputAdornment position="end">
-                <IconButton 
+                <IconButton
                   onClick={onClear}
                   sx={{
                     color: '#FFD700',
@@ -370,8 +391,8 @@ const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
               border: `2px solid ${focused ? '#FFD700' : 'rgba(255, 215, 0, 0.3)'}`,
-              boxShadow: focused 
-                ? `0 12px 40px rgba(255, 215, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8)` 
+              boxShadow: focused
+                ? `0 12px 40px rgba(255, 215, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8)`
                 : `0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
               fontSize: '1.1rem',
               fontWeight: 500,
@@ -440,23 +461,32 @@ const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [
                       py: 2,
                       px: 3,
                       '&:hover': {
-                        background: 'linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05))',
+                        background:
+                          'linear-gradient(90deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05))',
                         transform: 'translateX(4px)',
                       },
                       transition: 'all 0.2s ease',
-                      borderBottom: index < suggestions.length - 1 ? '1px solid rgba(0, 0, 0, 0.05)' : 'none',
+                      borderBottom:
+                        index < suggestions.length - 1
+                          ? '1px solid rgba(0, 0, 0, 0.05)'
+                          : 'none',
                     }}
                   >
                     <ListItemAvatar>
-                      <Avatar 
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                      <Avatar
+                        sx={{
+                          background:
+                            'linear-gradient(135deg, #FFD700, #FFA500)',
                           color: '#000',
                           width: 40,
                           height: 40,
                         }}
                       >
-                        {suggestion.type === 'job' ? <JobIcon /> : <WorkerIcon />}
+                        {suggestion.type === 'job' ? (
+                          <JobIcon />
+                        ) : (
+                          <WorkerIcon />
+                        )}
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
@@ -482,18 +512,18 @@ const PremiumSearchBar = ({ searchTerm, onSearchChange, onClear, suggestions = [
 };
 
 // 💎 ULTRA-PREMIUM FILTER PANEL WITH ADVANCED ANIMATIONS
-const PremiumFilterPanel = ({ 
-  isOpen, 
-  onClose, 
-  filters, 
-  onFiltersChange, 
+const PremiumFilterPanel = ({
+  isOpen,
+  onClose,
+  filters,
+  onFiltersChange,
   categories = [],
   priceRange = [0, 1000],
   onPriceRangeChange,
   distance = 10,
   onDistanceChange,
   sortBy = 'relevance',
-  onSortChange 
+  onSortChange,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -528,13 +558,14 @@ const PremiumFilterPanel = ({
       }}
     >
       <AnimatedBackground />
-      
+
       {/* 🎯 PREMIUM HEADER WITH CLOSE BUTTON */}
-      <AppBar 
-        position="static" 
+      <AppBar
+        position="static"
         elevation={0}
         sx={{
-          background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 193, 7, 0.9))',
+          background:
+            'linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 193, 7, 0.9))',
           color: '#000',
         }}
       >
@@ -542,11 +573,11 @@ const PremiumFilterPanel = ({
           <Typography variant="h6" fontWeight="bold">
             🎯 Advanced Filters
           </Typography>
-          <IconButton 
+          <IconButton
             onClick={onClose}
-            sx={{ 
+            sx={{
               color: '#000',
-              '&:hover': { 
+              '&:hover': {
                 background: 'rgba(0, 0, 0, 0.1)',
                 transform: 'scale(1.1)',
               },
@@ -579,9 +610,9 @@ const PremiumFilterPanel = ({
           }}
         >
           {tabs.map((tab, index) => (
-            <Tab 
+            <Tab
               key={index}
-              icon={tab.icon} 
+              icon={tab.icon}
               label={tab.label}
               iconPosition="start"
             />
@@ -603,19 +634,19 @@ const PremiumFilterPanel = ({
             >
               <Stack spacing={4}>
                 {/* 💰 PRICE RANGE SLIDER */}
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     background: 'rgba(255, 215, 0, 0.05)',
                     border: '1px solid rgba(255, 215, 0, 0.2)',
                     borderRadius: 3,
                   }}
                 >
                   <CardContent>
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        color: '#FFD700', 
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{
+                        color: '#FFD700',
                         fontWeight: 'bold',
                         display: 'flex',
                         alignItems: 'center',
@@ -624,8 +655,8 @@ const PremiumFilterPanel = ({
                     >
                       <PriceIcon /> Price Range
                     </Typography>
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}
                     >
                       ${priceRange[0]} - ${priceRange[1]}
@@ -640,14 +671,16 @@ const PremiumFilterPanel = ({
                       sx={{
                         color: '#FFD700',
                         '& .MuiSlider-thumb': {
-                          background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                          background:
+                            'linear-gradient(135deg, #FFD700, #FFA500)',
                           border: '3px solid #000',
                           '&:hover': {
                             boxShadow: '0 0 0 8px rgba(255, 215, 0, 0.2)',
                           },
                         },
                         '& .MuiSlider-track': {
-                          background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                          background:
+                            'linear-gradient(90deg, #FFD700, #FFA500)',
                           height: 6,
                         },
                         '& .MuiSlider-rail': {
@@ -660,19 +693,19 @@ const PremiumFilterPanel = ({
                 </Card>
 
                 {/* 📍 DISTANCE SLIDER */}
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     background: 'rgba(255, 215, 0, 0.05)',
                     border: '1px solid rgba(255, 215, 0, 0.2)',
                     borderRadius: 3,
                   }}
                 >
                   <CardContent>
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        color: '#FFD700', 
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{
+                        color: '#FFD700',
                         fontWeight: 'bold',
                         display: 'flex',
                         alignItems: 'center',
@@ -691,11 +724,13 @@ const PremiumFilterPanel = ({
                       sx={{
                         color: '#FFD700',
                         '& .MuiSlider-thumb': {
-                          background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                          background:
+                            'linear-gradient(135deg, #FFD700, #FFA500)',
                           border: '3px solid #000',
                         },
                         '& .MuiSlider-track': {
-                          background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                          background:
+                            'linear-gradient(90deg, #FFD700, #FFA500)',
                           height: 6,
                         },
                         '& .MuiSlider-rail': {
@@ -708,19 +743,19 @@ const PremiumFilterPanel = ({
                 </Card>
 
                 {/* 🏷️ CATEGORIES */}
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     background: 'rgba(255, 215, 0, 0.05)',
                     border: '1px solid rgba(255, 215, 0, 0.2)',
                     borderRadius: 3,
                   }}
                 >
                   <CardContent>
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        color: '#FFD700', 
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{
+                        color: '#FFD700',
                         fontWeight: 'bold',
                         display: 'flex',
                         alignItems: 'center',
@@ -729,27 +764,48 @@ const PremiumFilterPanel = ({
                     >
                       <CategoryIcon /> Categories
                     </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
-                      {['Construction', 'Plumbing', 'Electrical', 'Painting', 'Carpentry', 'Landscaping'].map((category) => (
+                    <Box
+                      sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}
+                    >
+                      {[
+                        'Construction',
+                        'Plumbing',
+                        'Electrical',
+                        'Painting',
+                        'Carpentry',
+                        'Landscaping',
+                      ].map((category) => (
                         <Chip
                           key={category}
                           label={category}
-                          variant={filters.categories?.includes(category) ? "filled" : "outlined"}
+                          variant={
+                            filters.categories?.includes(category)
+                              ? 'filled'
+                              : 'outlined'
+                          }
                           onClick={() => {
-                            const newCategories = filters.categories?.includes(category)
-                              ? filters.categories.filter(c => c !== category)
+                            const newCategories = filters.categories?.includes(
+                              category,
+                            )
+                              ? filters.categories.filter((c) => c !== category)
                               : [...(filters.categories || []), category];
-                            onFiltersChange({ ...filters, categories: newCategories });
+                            onFiltersChange({
+                              ...filters,
+                              categories: newCategories,
+                            });
                           }}
                           sx={{
-                            background: filters.categories?.includes(category) 
+                            background: filters.categories?.includes(category)
                               ? 'linear-gradient(135deg, #FFD700, #FFA500)'
                               : 'transparent',
-                            color: filters.categories?.includes(category) ? '#000' : '#FFD700',
+                            color: filters.categories?.includes(category)
+                              ? '#000'
+                              : '#FFD700',
                             border: '1px solid #FFD700',
                             fontWeight: 600,
                             '&:hover': {
-                              background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                              background:
+                                'linear-gradient(135deg, #FFD700, #FFA500)',
                               color: '#000',
                               transform: 'scale(1.05)',
                             },
@@ -774,10 +830,10 @@ const PremiumFilterPanel = ({
               transition={{ duration: 0.3 }}
             >
               <Stack spacing={3}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    color: '#FFD700', 
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: '#FFD700',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -786,7 +842,7 @@ const PremiumFilterPanel = ({
                 >
                   <SortIcon /> Sort Options
                 </Typography>
-                
+
                 <ToggleButtonGroup
                   value={sortBy}
                   exclusive
@@ -854,10 +910,10 @@ const PremiumFilterPanel = ({
               transition={{ duration: 0.3 }}
             >
               <Stack spacing={3}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    color: '#FFD700', 
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: '#FFD700',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -866,9 +922,9 @@ const PremiumFilterPanel = ({
                 >
                   <LocationIcon /> Location Settings
                 </Typography>
-                
+
                 <LocationSelector />
-                
+
                 <Button
                   variant="contained"
                   startIcon={<MyLocationIcon />}
@@ -901,10 +957,10 @@ const PremiumFilterPanel = ({
               transition={{ duration: 0.3 }}
             >
               <Stack spacing={3}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    color: '#FFD700', 
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: '#FFD700',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -913,9 +969,9 @@ const PremiumFilterPanel = ({
                 >
                   <AnalyticsIcon /> Search Analytics
                 </Typography>
-                
-                <Card 
-                  sx={{ 
+
+                <Card
+                  sx={{
                     background: 'rgba(255, 215, 0, 0.05)',
                     border: '1px solid rgba(255, 215, 0, 0.2)',
                     borderRadius: 3,
@@ -923,17 +979,56 @@ const PremiumFilterPanel = ({
                 >
                   <CardContent>
                     <Stack spacing={2}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography sx={{ color: '#FFD700' }}>Jobs Found</Typography>
-                        <Typography variant="h6" sx={{ color: '#FFF', fontWeight: 'bold' }}>247</Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography sx={{ color: '#FFD700' }}>
+                          Jobs Found
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{ color: '#FFF', fontWeight: 'bold' }}
+                        >
+                          247
+                        </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography sx={{ color: '#FFD700' }}>Workers Available</Typography>
-                        <Typography variant="h6" sx={{ color: '#FFF', fontWeight: 'bold' }}>156</Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography sx={{ color: '#FFD700' }}>
+                          Workers Available
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{ color: '#FFF', fontWeight: 'bold' }}
+                        >
+                          156
+                        </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography sx={{ color: '#FFD700' }}>Avg. Response Time</Typography>
-                        <Typography variant="h6" sx={{ color: '#FFF', fontWeight: 'bold' }}>2.3h</Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography sx={{ color: '#FFD700' }}>
+                          Avg. Response Time
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{ color: '#FFF', fontWeight: 'bold' }}
+                        >
+                          2.3h
+                        </Typography>
                       </Box>
                     </Stack>
                   </CardContent>
@@ -945,9 +1040,9 @@ const PremiumFilterPanel = ({
       </Box>
 
       {/* 🎯 ACTION BUTTONS */}
-      <Box 
-        sx={{ 
-          p: 3, 
+      <Box
+        sx={{
+          p: 3,
           borderTop: '1px solid rgba(255, 215, 0, 0.2)',
           background: 'rgba(0, 0, 0, 0.3)',
         }}
@@ -992,14 +1087,17 @@ const PremiumFilterPanel = ({
 };
 
 // Professional stats card component
-const QuickStatsCard = ({ icon: IconComponent, title, value, color, trend }) => {
+const QuickStatsCard = ({
+  icon: IconComponent,
+  title,
+  value,
+  color,
+  trend,
+}) => {
   const theme = useTheme();
-  
+
   return (
-    <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.98 }}
-    >
+    <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
       <Card
         sx={{
           background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${color}08 100%)`,
@@ -1024,12 +1122,24 @@ const QuickStatsCard = ({ icon: IconComponent, title, value, color, trend }) => 
         }}
       >
         <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color, lineHeight: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 'bold', color, lineHeight: 1 }}
+              >
                 {value}
               </Typography>
-              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+              <Typography
+                variant="caption"
+                sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}
+              >
                 {title}
               </Typography>
             </Box>
@@ -1069,7 +1179,7 @@ const QuickStatsCard = ({ icon: IconComponent, title, value, color, trend }) => 
 // Enhanced result item with professional animations
 const ProfessionalResultItem = ({ item, onClick, index }) => {
   const theme = useTheme();
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -1078,9 +1188,9 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
       whileHover={{ scale: 1.02, x: 4 }}
       whileTap={{ scale: 0.98 }}
     >
-      <Card 
-        sx={{ 
-          mb: 1.5, 
+      <Card
+        sx={{
+          mb: 1.5,
           cursor: 'pointer',
           background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main}05 100%)`,
           border: `1px solid ${item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main}22`,
@@ -1096,11 +1206,11 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
             height: '100%',
             background: `linear-gradient(180deg, ${item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main} 0%, ${item.type === 'job' ? theme.palette.secondary.dark : theme.palette.primary.dark} 100%)`,
           },
-          '&:hover': { 
+          '&:hover': {
             boxShadow: `0 8px 32px ${item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main}33`,
             transform: 'translateY(-2px)',
           },
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         onClick={() => console.log('Selected:', item)}
       >
@@ -1124,9 +1234,15 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
             >
               <Avatar
                 src={item.profileImage}
-                sx={{ 
-                  bgcolor: item.type === 'job' ? theme.palette.secondary.main + '22' : theme.palette.primary.main + '22',
-                  color: item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main,
+                sx={{
+                  bgcolor:
+                    item.type === 'job'
+                      ? theme.palette.secondary.main + '22'
+                      : theme.palette.primary.main + '22',
+                  color:
+                    item.type === 'job'
+                      ? theme.palette.secondary.main
+                      : theme.palette.primary.main,
                   width: 56,
                   height: 56,
                   border: `2px solid ${item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main}33`,
@@ -1136,52 +1252,88 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                 {item.type === 'job' ? <JobIcon /> : <WorkerIcon />}
               </Avatar>
             </Badge>
-            
+
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="h6" sx={{ 
-                  fontWeight: 'bold',
-                  color: item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  lineHeight: 1.2,
-                  fontSize: '1rem',
-                }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 'bold',
+                    color:
+                      item.type === 'job'
+                        ? theme.palette.secondary.main
+                        : theme.palette.primary.main,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: 1.2,
+                    fontSize: '1rem',
+                  }}
+                >
                   {item.title || item.name}
                 </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    ml: 1,
+                  }}
+                >
                   {item.online && (
                     <motion.div
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      <Box sx={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%', 
-                        bgcolor: '#4CAF50',
-                        boxShadow: '0 0 8px rgba(76, 175, 80, 0.6)',
-                      }} />
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          bgcolor: '#4CAF50',
+                          boxShadow: '0 0 8px rgba(76, 175, 80, 0.6)',
+                        }}
+                      />
                     </motion.div>
                   )}
                 </Box>
               </Box>
-              
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.4 }}>
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 2, lineHeight: 1.4 }}
+              >
                 {(item.description || item.bio)?.substring(0, 120)}...
               </Typography>
-              
+
               {/* Professional stats row */}
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
-                gap: 2, 
-                mb: 2,
-              }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
+                  gap: 2,
+                  mb: 2,
+                }}
+              >
                 {item.rating > 0 && (
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.5,
+                        mb: 0.5,
+                      }}
+                    >
                       <StarIcon fontSize="small" sx={{ color: '#FF9800' }} />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                         {item.rating.toFixed(1)}
@@ -1192,11 +1344,22 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                     </Typography>
                   </Box>
                 )}
-                
+
                 {(item.budget || item.hourlyRate) && (
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
-                      <PriceIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.5,
+                        mb: 0.5,
+                      }}
+                    >
+                      <PriceIcon
+                        fontSize="small"
+                        sx={{ color: theme.palette.secondary.main }}
+                      />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                         GHS {item.budget?.toLocaleString() || item.hourlyRate}
                       </Typography>
@@ -1206,10 +1369,18 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                     </Typography>
                   </Box>
                 )}
-                
+
                 {item.distance && (
                   <Box sx={{ textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.5,
+                        mb: 0.5,
+                      }}
+                    >
                       <LocationIcon fontSize="small" color="action" />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                         {mapService.formatDistance(item.distance)}
@@ -1221,44 +1392,64 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                   </Box>
                 )}
               </Box>
-              
+
               {/* Enhanced skills display */}
               {item.skills && item.skills.length > 0 && (
                 <Box>
-                  <Typography variant="caption" sx={{ 
-                    color: theme.palette.text.secondary, 
-                    fontWeight: 'medium',
-                    mb: 1,
-                    display: 'block',
-                  }}>
-                    {item.type === 'job' ? 'Required Skills:' : 'Specializations:'}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontWeight: 'medium',
+                      mb: 1,
+                      display: 'block',
+                    }}
+                  >
+                    {item.type === 'job'
+                      ? 'Required Skills:'
+                      : 'Specializations:'}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {(item.skills || []).slice(0, 3).map((skill, index) => (
-                      <Chip 
+                      <Chip
                         key={index}
                         label={skill}
                         size="small"
                         variant="outlined"
-                        sx={{ 
-                          borderColor: item.type === 'job' ? theme.palette.secondary.main + '66' : theme.palette.primary.main + '66',
-                          color: item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main,
+                        sx={{
+                          borderColor:
+                            item.type === 'job'
+                              ? theme.palette.secondary.main + '66'
+                              : theme.palette.primary.main + '66',
+                          color:
+                            item.type === 'job'
+                              ? theme.palette.secondary.main
+                              : theme.palette.primary.main,
                           fontSize: '0.7rem',
                           height: 24,
                           '&:hover': {
-                            bgcolor: item.type === 'job' ? theme.palette.secondary.main + '11' : theme.palette.primary.main + '11',
-                          }
+                            bgcolor:
+                              item.type === 'job'
+                                ? theme.palette.secondary.main + '11'
+                                : theme.palette.primary.main + '11',
+                          },
                         }}
                       />
                     ))}
                     {(item.skills || []).length > 3 && (
-                      <Chip 
+                      <Chip
                         label={`+${(item.skills || []).length - 3}`}
                         size="small"
                         variant="filled"
-                        sx={{ 
-                          bgcolor: item.type === 'job' ? theme.palette.secondary.main + '22' : theme.palette.primary.main + '22',
-                          color: item.type === 'job' ? theme.palette.secondary.main : theme.palette.primary.main,
+                        sx={{
+                          bgcolor:
+                            item.type === 'job'
+                              ? theme.palette.secondary.main + '22'
+                              : theme.palette.primary.main + '22',
+                          color:
+                            item.type === 'job'
+                              ? theme.palette.secondary.main
+                              : theme.palette.primary.main,
                           fontSize: '0.7rem',
                           height: 24,
                         }}
@@ -1288,7 +1479,7 @@ const MapSearchOverlay = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
   const [radius, setRadius] = useState(25);
@@ -1309,16 +1500,76 @@ const MapSearchOverlay = ({
   // Enhanced vocational data with more details
   const vocationalCategories = mapService.getVocationalCategories();
   const vocationalSkills = {
-    Carpentry: ['Cabinet Making', 'Furniture Building', 'Framing', 'Finish Carpentry', 'Wood Restoration'],
-    Masonry: ['Bricklaying', 'Stone Work', 'Concrete Work', 'Block Work', 'Tile Installation'],
-    Plumbing: ['Pipe Installation', 'Drain Cleaning', 'Water Systems', 'Gas Lines', 'Bathroom Renovation'],
-    Electrical: ['House Wiring', 'Circuit Installation', 'Lighting Systems', 'Generator Installation', 'Security Systems'],
-    Painting: ['Interior Painting', 'Exterior Painting', 'Spray Painting', 'Wall Preparation', 'Decorative Finishes'],
-    Welding: ['Arc Welding', 'Gas Welding', 'Metal Fabrication', 'Repair Welding', 'Structural Welding'],
-    HVAC: ['Air Conditioning', 'Heating Systems', 'Ventilation', 'Refrigeration', 'Duct Installation'],
-    Roofing: ['Roof Installation', 'Roof Repair', 'Gutter Installation', 'Waterproofing', 'Insulation'],
-    Landscaping: ['Garden Design', 'Tree Maintenance', 'Irrigation Systems', 'Lawn Care', 'Hardscaping'],
-    Security: ['CCTV Installation', 'Alarm Systems', 'Access Control', 'Security Consultation', 'Guard Services'],
+    Carpentry: [
+      'Cabinet Making',
+      'Furniture Building',
+      'Framing',
+      'Finish Carpentry',
+      'Wood Restoration',
+    ],
+    Masonry: [
+      'Bricklaying',
+      'Stone Work',
+      'Concrete Work',
+      'Block Work',
+      'Tile Installation',
+    ],
+    Plumbing: [
+      'Pipe Installation',
+      'Drain Cleaning',
+      'Water Systems',
+      'Gas Lines',
+      'Bathroom Renovation',
+    ],
+    Electrical: [
+      'House Wiring',
+      'Circuit Installation',
+      'Lighting Systems',
+      'Generator Installation',
+      'Security Systems',
+    ],
+    Painting: [
+      'Interior Painting',
+      'Exterior Painting',
+      'Spray Painting',
+      'Wall Preparation',
+      'Decorative Finishes',
+    ],
+    Welding: [
+      'Arc Welding',
+      'Gas Welding',
+      'Metal Fabrication',
+      'Repair Welding',
+      'Structural Welding',
+    ],
+    HVAC: [
+      'Air Conditioning',
+      'Heating Systems',
+      'Ventilation',
+      'Refrigeration',
+      'Duct Installation',
+    ],
+    Roofing: [
+      'Roof Installation',
+      'Roof Repair',
+      'Gutter Installation',
+      'Waterproofing',
+      'Insulation',
+    ],
+    Landscaping: [
+      'Garden Design',
+      'Tree Maintenance',
+      'Irrigation Systems',
+      'Lawn Care',
+      'Hardscaping',
+    ],
+    Security: [
+      'CCTV Installation',
+      'Alarm Systems',
+      'Access Control',
+      'Security Consultation',
+      'Guard Services',
+    ],
   };
 
   const sortOptions = [
@@ -1330,52 +1581,64 @@ const MapSearchOverlay = ({
 
   // Professional stats for quick overview
   const quickStats = [
-    { 
-      title: 'Active', 
-      value: searchResults.filter(r => r.type === searchType).length, 
-      icon: LiveIcon, 
+    {
+      title: 'Active',
+      value: searchResults.filter((r) => r.type === searchType).length,
+      icon: LiveIcon,
       color: '#4CAF50',
-      trend: 15 
+      trend: 15,
     },
-    { 
-      title: 'Verified', 
-      value: searchResults.filter(r => r.verified).length, 
-      icon: VerifiedIcon, 
+    {
+      title: 'Verified',
+      value: searchResults.filter((r) => r.verified).length,
+      icon: VerifiedIcon,
       color: '#2196F3',
-      trend: 8 
+      trend: 8,
     },
-    { 
-      title: 'Urgent', 
-      value: searchResults.filter(r => r.urgent).length, 
-      icon: FlashIcon, 
+    {
+      title: 'Urgent',
+      value: searchResults.filter((r) => r.urgent).length,
+      icon: FlashIcon,
       color: '#FF5722',
-      trend: -5 
+      trend: -5,
     },
-    { 
-      title: 'Top Rated', 
-      value: searchResults.filter(r => r.rating >= 4.5).length, 
-      icon: AwardIcon, 
+    {
+      title: 'Top Rated',
+      value: searchResults.filter((r) => r.rating >= 4.5).length,
+      icon: AwardIcon,
       color: '#FF9800',
-      trend: 12 
+      trend: 12,
     },
   ];
 
   // Handle search functionality
-  const handleSearch = useCallback((query) => {
-    setSearchQuery(query);
-    onSearch({
-      query,
+  const handleSearch = useCallback(
+    (query) => {
+      setSearchQuery(query);
+      onSearch({
+        query,
+        location,
+        radius,
+        filters: {
+          ...filters,
+          categories: selectedCategories,
+          skills: selectedSkills,
+        },
+        sortBy,
+        type: searchType,
+      });
+    },
+    [
       location,
       radius,
-      filters: {
-        ...filters,
-        categories: selectedCategories,
-        skills: selectedSkills,
-      },
+      filters,
+      selectedCategories,
+      selectedSkills,
       sortBy,
-      type: searchType,
-    });
-  }, [location, radius, filters, selectedCategories, selectedSkills, sortBy, searchType, onSearch]);
+      searchType,
+      onSearch,
+    ],
+  );
 
   const handleClearSearch = () => {
     setSearchQuery('');
@@ -1426,7 +1689,7 @@ const MapSearchOverlay = ({
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
         >
           <Stack spacing={2}>
             {/* 🔍 MAIN SEARCH BAR */}
@@ -1435,10 +1698,26 @@ const MapSearchOverlay = ({
               onSearchChange={handleSearch}
               onClear={handleClearSearch}
               suggestions={[
-                { title: 'Experienced Carpenter - Furniture Building', location: '2.5 km away', type: 'worker' },
-                { title: 'Kitchen Renovation Project', location: 'Downtown', type: 'job' },
-                { title: 'Master Electrician - 24/7 Service', location: '1.2 km away', type: 'worker' },
-                { title: 'Bathroom Plumbing Installation', location: 'Suburb Area', type: 'job' },
+                {
+                  title: 'Experienced Carpenter - Furniture Building',
+                  location: '2.5 km away',
+                  type: 'worker',
+                },
+                {
+                  title: 'Kitchen Renovation Project',
+                  location: 'Downtown',
+                  type: 'job',
+                },
+                {
+                  title: 'Master Electrician - 24/7 Service',
+                  location: '1.2 km away',
+                  type: 'worker',
+                },
+                {
+                  title: 'Bathroom Plumbing Installation',
+                  location: 'Suburb Area',
+                  type: 'job',
+                },
               ]}
             />
 
@@ -1446,7 +1725,7 @@ const MapSearchOverlay = ({
             <motion.div
               initial={{ y: -30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
             >
               <Grid container spacing={2}>
                 {quickStats.map((stat, index) => (
@@ -1488,19 +1767,36 @@ const MapSearchOverlay = ({
                         }}
                       >
                         <CardContent sx={{ py: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                            <stat.icon sx={{ color: stat.color, fontSize: 24, mr: 1 }} />
-                            <Typography variant="h6" fontWeight="bold" color="#333">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mb: 1,
+                            }}
+                          >
+                            <stat.icon
+                              sx={{ color: stat.color, fontSize: 24, mr: 1 }}
+                            />
+                            <Typography
+                              variant="h6"
+                              fontWeight="bold"
+                              color="#333"
+                            >
                               {stat.value}
                             </Typography>
                           </Box>
-                          <Typography variant="body2" color="rgba(0, 0, 0, 0.7)" fontWeight={500}>
+                          <Typography
+                            variant="body2"
+                            color="rgba(0, 0, 0, 0.7)"
+                            fontWeight={500}
+                          >
                             {stat.title}
                           </Typography>
                           {stat.trend !== 0 && (
-                            <Typography 
-                              variant="caption" 
-                              sx={{ 
+                            <Typography
+                              variant="caption"
+                              sx={{
                                 color: stat.trend > 0 ? '#4CAF50' : '#F44336',
                                 fontWeight: 600,
                                 display: 'flex',
@@ -1509,7 +1805,8 @@ const MapSearchOverlay = ({
                                 mt: 0.5,
                               }}
                             >
-                              {stat.trend > 0 ? '↗' : '↘'} {Math.abs(stat.trend)}%
+                              {stat.trend > 0 ? '↗' : '↘'}{' '}
+                              {Math.abs(stat.trend)}%
                             </Typography>
                           )}
                         </CardContent>
@@ -1524,9 +1821,14 @@ const MapSearchOverlay = ({
             <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
             >
-              <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                flexWrap="wrap"
+              >
                 <Button
                   variant="contained"
                   startIcon={<TuneIcon />}
@@ -1553,7 +1855,9 @@ const MapSearchOverlay = ({
                 <ToggleButtonGroup
                   value={searchType}
                   exclusive
-                  onChange={(e, newType) => newType && onFilterChange({ type: newType })}
+                  onChange={(e, newType) =>
+                    newType && onFilterChange({ type: newType })
+                  }
                   sx={{
                     '& .MuiToggleButton-root': {
                       background: 'rgba(255, 255, 255, 0.9)',
@@ -1565,7 +1869,8 @@ const MapSearchOverlay = ({
                         background: 'linear-gradient(135deg, #FFD700, #FFA500)',
                         color: '#000',
                         '&:hover': {
-                          background: 'linear-gradient(135deg, #FFE55C, #FFB347)',
+                          background:
+                            'linear-gradient(135deg, #FFE55C, #FFB347)',
                         },
                       },
                       '&:hover': {
@@ -1619,7 +1924,7 @@ const MapSearchOverlay = ({
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
       >
         <Paper
           sx={{
@@ -1640,10 +1945,10 @@ const MapSearchOverlay = ({
           }}
         >
           <Box sx={{ p: 3 }}>
-            <Typography 
-              variant="h6" 
-              gutterBottom 
-              sx={{ 
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
                 color: '#333',
                 fontWeight: 'bold',
                 display: 'flex',
@@ -1664,30 +1969,38 @@ const MapSearchOverlay = ({
                 >
                   <Accordion
                     sx={{
-                      background: selectedCategories.includes(category) 
+                      background: selectedCategories.includes(category)
                         ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05))'
                         : 'transparent',
                       '&:before': { display: 'none' },
-                      border: selectedCategories.includes(category) 
+                      border: selectedCategories.includes(category)
                         ? '1px solid rgba(255, 215, 0, 0.3)'
                         : '1px solid rgba(0, 0, 0, 0.1)',
                       borderRadius: '8px !important',
                       boxShadow: 'none',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 193, 7, 0.02))',
+                        background:
+                          'linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 193, 7, 0.02))',
                       },
                     }}
                   >
-                    <AccordionSummary 
+                    <AccordionSummary
                       expandIcon={<ExpandMoreIcon />}
                       onClick={() => {
-                        const newCategories = selectedCategories.includes(category)
-                          ? selectedCategories.filter(c => c !== category)
+                        const newCategories = selectedCategories.includes(
+                          category,
+                        )
+                          ? selectedCategories.filter((c) => c !== category)
                           : [...selectedCategories, category];
                         setSelectedCategories(newCategories);
                       }}
                     >
-                      <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={2}
+                        sx={{ width: '100%' }}
+                      >
                         <Avatar
                           sx={{
                             background: `linear-gradient(135deg, ${data.color}, ${data.color}88)`,
@@ -1701,7 +2014,10 @@ const MapSearchOverlay = ({
                           <Typography fontWeight={600} color="#333">
                             {category}
                           </Typography>
-                          <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+                          <Typography
+                            variant="caption"
+                            color="rgba(0, 0, 0, 0.6)"
+                          >
                             {data.count} available
                           </Typography>
                         </Box>
@@ -1709,7 +2025,8 @@ const MapSearchOverlay = ({
                           size="small"
                           label={data.avgRating}
                           sx={{
-                            background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                            background:
+                              'linear-gradient(135deg, #FFD700, #FFA500)',
                             color: '#000',
                             fontWeight: 'bold',
                           }}
@@ -1723,21 +2040,28 @@ const MapSearchOverlay = ({
                             key={skill}
                             label={skill}
                             size="small"
-                            variant={selectedSkills.includes(skill) ? "filled" : "outlined"}
+                            variant={
+                              selectedSkills.includes(skill)
+                                ? 'filled'
+                                : 'outlined'
+                            }
                             onClick={() => {
                               const newSkills = selectedSkills.includes(skill)
-                                ? selectedSkills.filter(s => s !== skill)
+                                ? selectedSkills.filter((s) => s !== skill)
                                 : [...selectedSkills, skill];
                               setSelectedSkills(newSkills);
                             }}
                             sx={{
-                              background: selectedSkills.includes(skill) 
+                              background: selectedSkills.includes(skill)
                                 ? 'linear-gradient(135deg, #FFD700, #FFA500)'
                                 : 'transparent',
-                              color: selectedSkills.includes(skill) ? '#000' : '#666',
+                              color: selectedSkills.includes(skill)
+                                ? '#000'
+                                : '#666',
                               border: '1px solid rgba(255, 215, 0, 0.3)',
                               '&:hover': {
-                                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                                background:
+                                  'linear-gradient(135deg, #FFD700, #FFA500)',
                                 color: '#000',
                               },
                             }}
@@ -1757,7 +2081,7 @@ const MapSearchOverlay = ({
       <motion.div
         initial={{ x: 300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8, delay: 0.8, ease: 'easeOut' }}
       >
         <Paper
           sx={{
@@ -1778,10 +2102,10 @@ const MapSearchOverlay = ({
           }}
         >
           <Box sx={{ p: 3 }}>
-            <Typography 
-              variant="h6" 
-              gutterBottom 
-              sx={{ 
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
                 color: '#333',
                 fontWeight: 'bold',
                 display: 'flex',
@@ -1791,8 +2115,8 @@ const MapSearchOverlay = ({
             >
               <LiveIcon sx={{ color: '#4CAF50' }} />
               Live Results
-              <Chip 
-                label={`${searchResults.length}`} 
+              <Chip
+                label={`${searchResults.length}`}
                 size="small"
                 sx={{
                   background: 'linear-gradient(135deg, #4CAF50, #45a049)',
@@ -1806,7 +2130,12 @@ const MapSearchOverlay = ({
             {loading ? (
               <Stack spacing={2}>
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
+                  <Skeleton
+                    key={i}
+                    variant="rectangular"
+                    height={80}
+                    sx={{ borderRadius: 2 }}
+                  />
                 ))}
               </Stack>
             ) : (
@@ -1821,7 +2150,8 @@ const MapSearchOverlay = ({
                   >
                     <Card
                       sx={{
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 248, 248, 0.9))',
+                        background:
+                          'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 248, 248, 0.9))',
                         border: '1px solid rgba(255, 215, 0, 0.1)',
                         borderRadius: 3,
                         cursor: 'pointer',
@@ -1839,23 +2169,48 @@ const MapSearchOverlay = ({
                             sx={{
                               width: 50,
                               height: 50,
-                              background: result.type === 'worker' 
-                                ? 'linear-gradient(135deg, #2196F3, #1976D2)'
-                                : 'linear-gradient(135deg, #FF9800, #F57C00)',
+                              background:
+                                result.type === 'worker'
+                                  ? 'linear-gradient(135deg, #2196F3, #1976D2)'
+                                  : 'linear-gradient(135deg, #FF9800, #F57C00)',
                             }}
                           >
-                            {result.type === 'worker' ? <WorkerIcon /> : <JobIcon />}
+                            {result.type === 'worker' ? (
+                              <WorkerIcon />
+                            ) : (
+                              <JobIcon />
+                            )}
                           </Avatar>
                           <Box sx={{ flex: 1 }}>
-                            <Typography variant="subtitle2" fontWeight="bold" color="#333">
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="bold"
+                              color="#333"
+                            >
                               {result.title}
                             </Typography>
-                            <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+                            <Typography
+                              variant="caption"
+                              color="rgba(0, 0, 0, 0.6)"
+                            >
                               📍 {result.distance} • 💰 ${result.price}
                             </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                              <Rating value={result.rating} size="small" readOnly />
-                              <Typography variant="caption" sx={{ ml: 1, color: '#666' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                mt: 0.5,
+                              }}
+                            >
+                              <Rating
+                                value={result.rating}
+                                size="small"
+                                readOnly
+                              />
+                              <Typography
+                                variant="caption"
+                                sx={{ ml: 1, color: '#666' }}
+                              >
                                 ({result.reviews})
                               </Typography>
                             </Box>
@@ -1865,7 +2220,8 @@ const MapSearchOverlay = ({
                               label="URGENT"
                               size="small"
                               sx={{
-                                background: 'linear-gradient(135deg, #FF5722, #D32F2F)',
+                                background:
+                                  'linear-gradient(135deg, #FF5722, #D32F2F)',
                                 color: '#fff',
                                 fontWeight: 'bold',
                                 animation: 'pulse 2s infinite',
@@ -1887,7 +2243,7 @@ const MapSearchOverlay = ({
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
+        transition={{ duration: 0.6, delay: 1.0, ease: 'easeOut' }}
       >
         <Paper
           sx={{
@@ -1910,12 +2266,15 @@ const MapSearchOverlay = ({
               <Grid item xs={12} sm={3}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <LiveIcon sx={{ color: '#4CAF50', fontSize: 20 }} />
-                  <Typography variant="body2" sx={{ color: '#FFD700', fontWeight: 600 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: '#FFD700', fontWeight: 600 }}
+                  >
                     Live Search Active
                   </Typography>
                 </Stack>
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Typography variant="body2" sx={{ color: '#FFF' }}>
@@ -1935,20 +2294,23 @@ const MapSearchOverlay = ({
                       },
                     }}
                   />
-                  <Typography variant="body2" sx={{ color: '#FFD700', fontWeight: 600 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: '#FFD700', fontWeight: 600 }}
+                  >
                     {loading ? '45%' : '100%'}
                   </Typography>
                 </Box>
               </Grid>
-              
+
               <Grid item xs={12} sm={3}>
                 <Stack direction="row" spacing={1} justifyContent="flex-end">
                   <Tooltip title="Share Search">
-                    <IconButton 
+                    <IconButton
                       size="small"
-                      sx={{ 
+                      sx={{
                         color: '#FFD700',
-                        '&:hover': { 
+                        '&:hover': {
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
@@ -1958,11 +2320,11 @@ const MapSearchOverlay = ({
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Save Search">
-                    <IconButton 
+                    <IconButton
                       size="small"
-                      sx={{ 
+                      sx={{
                         color: '#FFD700',
-                        '&:hover': { 
+                        '&:hover': {
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
@@ -1972,11 +2334,11 @@ const MapSearchOverlay = ({
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Export Results">
-                    <IconButton 
+                    <IconButton
                       size="small"
-                      sx={{ 
+                      sx={{
                         color: '#FFD700',
-                        '&:hover': { 
+                        '&:hover': {
                           background: 'rgba(255, 215, 0, 0.1)',
                           transform: 'scale(1.1)',
                         },
@@ -2000,7 +2362,9 @@ const MapSearchOverlay = ({
         onFiltersChange={handleFilterChange}
         categories={Object.keys(vocationalCategories)}
         priceRange={filters.budget}
-        onPriceRangeChange={(range) => handleFilterChange({ ...filters, budget: range })}
+        onPriceRangeChange={(range) =>
+          handleFilterChange({ ...filters, budget: range })
+        }
         distance={radius}
         onDistanceChange={setRadius}
         sortBy={sortBy}

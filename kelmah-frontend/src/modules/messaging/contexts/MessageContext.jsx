@@ -44,7 +44,9 @@ export const MessageProvider = ({ children }) => {
     try {
       const response = await messagingService.getConversations();
       // Ensure we extract the conversations array from the response
-      const convs = Array.isArray(response) ? response : (response?.conversations || response?.data || []);
+      const convs = Array.isArray(response)
+        ? response
+        : response?.conversations || response?.data || [];
       setConversations(Array.isArray(convs) ? convs : []);
     } catch (error) {
       console.error('Error loading conversations:', error);
@@ -66,15 +68,18 @@ export const MessageProvider = ({ children }) => {
     connectWebSocket._connecting = true;
 
     // Get backend WebSocket URL from runtime config
-  let wsUrl = 'https://kelmah-api-gateway-5loa.onrender.com'; // Production fallback
+    let wsUrl = 'https://kelmah-api-gateway-5loa.onrender.com'; // Production fallback
     try {
       const response = await fetch('/runtime-config.json');
       if (response.ok) {
         const config = await response.json();
-        wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+        wsUrl =
+          config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
       }
     } catch (configError) {
-      console.warn('⚠️ MessageContext: Failed to load runtime config, using fallback');
+      console.warn(
+        '⚠️ MessageContext: Failed to load runtime config, using fallback',
+      );
     }
 
     console.log('🔌 Connecting to messaging WebSocket backend:', wsUrl);
@@ -83,7 +88,7 @@ export const MessageProvider = ({ children }) => {
       auth: {
         token,
         userId: user.id,
-        userRole: user.role
+        userRole: user.role,
       },
       transports: ['websocket', 'polling'],
       upgrade: true,
@@ -126,12 +131,15 @@ export const MessageProvider = ({ children }) => {
       console.log('📨 New message received:', messageData);
 
       // Add to messages if it's for the current conversation
-      if (selectedConversation && messageData.conversationId === selectedConversation.id) {
-        setMessages(prev => {
+      if (
+        selectedConversation &&
+        messageData.conversationId === selectedConversation.id
+      ) {
+        setMessages((prev) => {
           // If an optimistic message exists with the same clientId, replace it
           const clientId = messageData.clientId;
           if (clientId) {
-            const index = prev.findIndex(m => m.id === clientId);
+            const index = prev.findIndex((m) => m.id === clientId);
             if (index !== -1) {
               const updated = [...prev];
               updated[index] = { ...messageData, status: 'sent' };
@@ -143,19 +151,23 @@ export const MessageProvider = ({ children }) => {
       }
 
       // Update conversation's last message
-      setConversations(prev =>
-        prev.map(conv =>
+      setConversations((prev) =>
+        prev.map((conv) =>
           conv.id === messageData.conversationId
-            ? { ...conv, lastMessage: messageData, updatedAt: messageData.createdAt }
-            : conv
-        )
+            ? {
+                ...conv,
+                lastMessage: messageData,
+                updatedAt: messageData.createdAt,
+              }
+            : conv,
+        ),
       );
     });
 
     // Typing indicators
     newSocket.on('user_typing', (data) => {
       const { conversationId, userId, isTyping, user: typingUser } = data;
-      setTypingUsers(prev => {
+      setTypingUsers((prev) => {
         const newMap = new Map(prev);
         const convMap = newMap.get(conversationId) || new Map();
         if (isTyping) {
@@ -179,13 +191,16 @@ export const MessageProvider = ({ children }) => {
     newSocket.on('messages_read', (data) => {
       console.log('📖 Messages marked as read:', data);
       // Update message read status
-      if (selectedConversation && data.conversationId === selectedConversation.id) {
-        setMessages(prev =>
-          prev.map(msg =>
+      if (
+        selectedConversation &&
+        data.conversationId === selectedConversation.id
+      ) {
+        setMessages((prev) =>
+          prev.map((msg) =>
             data.messageIds === 'all_unread' || data.messageIds.includes(msg.id)
               ? { ...msg, isRead: true, readAt: data.readAt }
-              : msg
-          )
+              : msg,
+          ),
         );
       }
     });
@@ -193,7 +208,7 @@ export const MessageProvider = ({ children }) => {
     // User status updates
     newSocket.on('user_status_changed', (data) => {
       const { userId, status } = data;
-      setOnlineUsers(prev => {
+      setOnlineUsers((prev) => {
         const newSet = new Set(prev);
         if (status === 'online') {
           newSet.add(userId);
@@ -216,7 +231,9 @@ export const MessageProvider = ({ children }) => {
   const disconnectWebSocket = useCallback(() => {
     if (socket) {
       console.log('🔌 Disconnecting WebSocket');
-      try { socket.removeAllListeners && socket.removeAllListeners(); } catch { }
+      try {
+        socket.removeAllListeners && socket.removeAllListeners();
+      } catch {}
       socket.disconnect();
       setSocket(null);
       setIsConnected(false);
@@ -240,7 +257,9 @@ export const MessageProvider = ({ children }) => {
 
       // Leave previous conversation room
       if (selectedConversation && socket) {
-        socket.emit('leave_conversation', { conversationId: selectedConversation.id });
+        socket.emit('leave_conversation', {
+          conversationId: selectedConversation.id,
+        });
       }
 
       setSelectedConversation(conversation);
@@ -267,12 +286,17 @@ export const MessageProvider = ({ children }) => {
           }, 5000);
         } else {
           // Fallback to REST API if WebSocket not available
-          const loadedMessages = await messagingService.getMessages(conversation.id);
+          const loadedMessages = await messagingService.getMessages(
+            conversation.id,
+          );
           setMessages(loadedMessages);
           setLoadingMessages(false);
         }
       } catch (error) {
-        console.error(`Error loading messages for conversation ${conversation.id}:`, error);
+        console.error(
+          `Error loading messages for conversation ${conversation.id}:`,
+          error,
+        );
         setMessages([]);
         setLoadingMessages(false);
       }
@@ -295,7 +319,10 @@ export const MessageProvider = ({ children }) => {
             id: clientId,
             conversationId: selectedConversation.id,
             senderId: user.id,
-            sender: { id: user.id, name: user?.name || user?.firstName || 'You' },
+            sender: {
+              id: user.id,
+              name: user?.name || user?.firstName || 'You',
+            },
             content: content.trim(),
             messageType,
             attachments,
@@ -304,64 +331,80 @@ export const MessageProvider = ({ children }) => {
             status: 'sending',
             optimistic: true,
           };
-          setMessages(prev => [...prev, optimisticMessage]);
-          setConversations(prev => prev.map(c => c.id === selectedConversation.id ? { ...c, lastMessage: optimisticMessage } : c));
+          setMessages((prev) => [...prev, optimisticMessage]);
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.id === selectedConversation.id
+                ? { ...c, lastMessage: optimisticMessage }
+                : c,
+            ),
+          );
 
           // Use acknowledgement to verify delivery; fallback to REST if failed
-          const useEncrypted = import.meta.env.VITE_ENABLE_E2E_ENVELOPE === 'true';
+          const useEncrypted =
+            import.meta.env.VITE_ENABLE_E2E_ENVELOPE === 'true';
           const eventName = useEncrypted ? 'send_encrypted' : 'send_message';
           const payload = useEncrypted
             ? {
-              conversationId: selectedConversation.id,
-              encryptedBody: content.trim(),
-              encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
-              messageType,
-              attachments,
-              clientId,
-            }
-            : {
-              conversationId: selectedConversation.id,
-              content: content.trim(),
-              messageType,
-              attachments,
-              clientId,
-            };
-
-          socket.emit(
-            eventName,
-            payload,
-            async (ack) => {
-              if (!ack || ack.ok !== true) {
-                console.warn('WebSocket send failed, falling back to REST', ack);
-                try {
-                  const recipient = selectedConversation.participants.find((p) => p.id !== user.id);
-                  const newMessage = await messagingService.sendMessage(
-                    user.id,
-                    recipient.id,
-                    content,
-                  );
-                  // Mark optimistic message as failed and append REST message
-                  setMessages((prev) => {
-                    const idx = prev.findIndex(m => m.id === clientId);
-                    const copy = [...prev];
-                    if (idx !== -1) copy[idx] = { ...copy[idx], status: 'failed' };
-                    return [...copy, newMessage];
-                  });
-                  setConversations((prev) =>
-                    prev.map((c) => (c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c)),
-                  );
-                } catch (e) {
-                  console.error('REST fallback failed:', e);
-                  // Mark optimistic message as failed
-                  setMessages(prev => prev.map(m => m.id === clientId ? { ...m, status: 'failed' } : m));
-                }
+                conversationId: selectedConversation.id,
+                encryptedBody: content.trim(),
+                encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
+                messageType,
+                attachments,
+                clientId,
               }
-            },
-          );
+            : {
+                conversationId: selectedConversation.id,
+                content: content.trim(),
+                messageType,
+                attachments,
+                clientId,
+              };
+
+          socket.emit(eventName, payload, async (ack) => {
+            if (!ack || ack.ok !== true) {
+              console.warn('WebSocket send failed, falling back to REST', ack);
+              try {
+                const recipient = selectedConversation.participants.find(
+                  (p) => p.id !== user.id,
+                );
+                const newMessage = await messagingService.sendMessage(
+                  user.id,
+                  recipient.id,
+                  content,
+                );
+                // Mark optimistic message as failed and append REST message
+                setMessages((prev) => {
+                  const idx = prev.findIndex((m) => m.id === clientId);
+                  const copy = [...prev];
+                  if (idx !== -1)
+                    copy[idx] = { ...copy[idx], status: 'failed' };
+                  return [...copy, newMessage];
+                });
+                setConversations((prev) =>
+                  prev.map((c) =>
+                    c.id === selectedConversation.id
+                      ? { ...c, lastMessage: newMessage }
+                      : c,
+                  ),
+                );
+              } catch (e) {
+                console.error('REST fallback failed:', e);
+                // Mark optimistic message as failed
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === clientId ? { ...m, status: 'failed' } : m,
+                  ),
+                );
+              }
+            }
+          });
           // Message will be added to UI via 'new_message' event
         } else {
           // Fallback to REST API
-          console.log('📤 Sending message via REST API (WebSocket unavailable)');
+          console.log(
+            '📤 Sending message via REST API (WebSocket unavailable)',
+          );
           const recipient = selectedConversation.participants.find(
             (p) => p.id !== user.id,
           );
@@ -412,7 +455,9 @@ export const MessageProvider = ({ children }) => {
 
   const clearConversation = useCallback(() => {
     if (selectedConversation && socket) {
-      socket.emit('leave_conversation', { conversationId: selectedConversation.id });
+      socket.emit('leave_conversation', {
+        conversationId: selectedConversation.id,
+      });
     }
     setSelectedConversation(null);
     setMessages([]);
@@ -432,14 +477,17 @@ export const MessageProvider = ({ children }) => {
   }, [selectedConversation, socket, isConnected]);
 
   // Mark messages as read
-  const markMessagesAsRead = useCallback((messageIds = []) => {
-    if (selectedConversation && socket && isConnected) {
-      socket.emit('mark_read', {
-        conversationId: selectedConversation.id,
-        messageIds
-      });
-    }
-  }, [selectedConversation, socket, isConnected]);
+  const markMessagesAsRead = useCallback(
+    (messageIds = []) => {
+      if (selectedConversation && socket && isConnected) {
+        socket.emit('mark_read', {
+          conversationId: selectedConversation.id,
+          messageIds,
+        });
+      }
+    },
+    [selectedConversation, socket, isConnected],
+  );
 
   // Get typing users for current conversation
   const getTypingUsers = useCallback(() => {
@@ -449,9 +497,12 @@ export const MessageProvider = ({ children }) => {
   }, [selectedConversation, typingUsers]);
 
   // Check if user is online
-  const isUserOnline = useCallback((userId) => {
-    return onlineUsers.has(userId);
-  }, [onlineUsers]);
+  const isUserOnline = useCallback(
+    (userId) => {
+      return onlineUsers.has(userId);
+    },
+    [onlineUsers],
+  );
 
   const value = {
     // Core messaging state

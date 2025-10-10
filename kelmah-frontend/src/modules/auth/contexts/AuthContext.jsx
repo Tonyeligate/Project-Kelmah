@@ -39,14 +39,16 @@ export const AuthProvider = ({ children }) => {
     // Skip AuthContext initialization - Redux handles all auth
     setLoading(false);
     setIsInitialized(true);
-    console.log('AuthContext: Skipping initialization - using Redux auth system');
+    console.log(
+      'AuthContext: Skipping initialization - using Redux auth system',
+    );
 
     // const initAuth = async () => {
     //   setLoading(true);
     //   try {
     //     // Use the new initialization method from authService
     //     const initResult = await authService.initializeAuth();
-    //     
+    //
     //     if (initResult.authenticated && initResult.user) {
     //       setUser(initResult.user);
     //       console.log('Authentication initialized successfully');
@@ -62,15 +64,15 @@ export const AuthProvider = ({ children }) => {
     //   }
     // };
 
-      // DISABLED: Token expiry events now handled by Redux auth system
-  // const handleTokenExpired = () => {
-  //   setUser(null);
-  //   setError('Session expired. Please login again.');
-  //   navigate('/login');
-  // };
+    // DISABLED: Token expiry events now handled by Redux auth system
+    // const handleTokenExpired = () => {
+    //   setUser(null);
+    //   setError('Session expired. Please login again.');
+    //   navigate('/login');
+    // };
 
-  // window.addEventListener('auth:tokenExpired', handleTokenExpired);
-    
+    // window.addEventListener('auth:tokenExpired', handleTokenExpired);
+
     // Use timeout to prevent race conditions with Redux auth
     // const timeoutId = setTimeout(initAuth, 50);
 
@@ -82,7 +84,9 @@ export const AuthProvider = ({ children }) => {
 
   // Login function - DISABLED: Now handled by Redux
   const login = useCallback(async (credentials) => {
-    console.log('AuthContext: Login called but disabled - using Redux auth system');
+    console.log(
+      'AuthContext: Login called but disabled - using Redux auth system',
+    );
     // setLoading(true);
     // setError(null);
 

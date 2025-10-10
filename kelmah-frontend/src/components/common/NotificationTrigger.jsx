@@ -26,59 +26,59 @@ import {
 } from '../../store/slices/notificationSlice';
 import websocketService from '../../services/websocketService';
 
-const NotificationTrigger = ({ 
+const NotificationTrigger = ({
   size = 'medium',
   showBadge = true,
   autoOpen = false,
-  onNotificationClick = null 
+  onNotificationClick = null,
 }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  
+
   // Refs
   const buttonRef = useRef(null);
   const audioRef = useRef(null);
-  
+
   // Redux state
   const unreadCount = useSelector(selectUnreadCount);
   const doNotDisturb = useSelector(selectDoNotDisturb);
   const soundEnabled = useSelector(selectSoundEnabled);
   const connectionStatus = useSelector(selectConnectionStatus);
   const notificationPanelOpen = useSelector(selectNotificationPanelOpen);
-  
+
   // Local state
   const [anchorEl, setAnchorEl] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
-  
+
   // Animation trigger for new notifications
   useEffect(() => {
     if (unreadCount > 0) {
       setHasNewNotifications(true);
       setIsAnimating(true);
-      
+
       // Play notification sound
       if (soundEnabled && !doNotDisturb && audioRef.current) {
         audioRef.current.play().catch(console.error);
       }
-      
+
       // Reset animation after 2 seconds
       const timer = setTimeout(() => {
         setIsAnimating(false);
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [unreadCount, soundEnabled, doNotDisturb]);
-  
+
   // Auto-open functionality
   useEffect(() => {
     if (autoOpen && hasNewNotifications && !notificationPanelOpen) {
       handleOpen();
     }
   }, [autoOpen, hasNewNotifications, notificationPanelOpen]);
-  
+
   // WebSocket connection status effects
   useEffect(() => {
     if (!connectionStatus.connected && connectionStatus.error) {
@@ -95,25 +95,25 @@ const NotificationTrigger = ({
       });
     }
   }, [connectionStatus.connected, connectionStatus.error, enqueueSnackbar]);
-  
+
   // Handle notification center open
   const handleOpen = (event) => {
     const target = event?.currentTarget || buttonRef.current;
     setAnchorEl(target);
     dispatch(setNotificationPanelOpen(true));
     setHasNewNotifications(false);
-    
+
     if (onNotificationClick) {
       onNotificationClick();
     }
   };
-  
+
   // Handle notification center close
   const handleClose = () => {
     setAnchorEl(null);
     dispatch(setNotificationPanelOpen(false));
   };
-  
+
   // Get notification icon based on state
   const getNotificationIcon = () => {
     if (doNotDisturb) {
@@ -121,21 +121,21 @@ const NotificationTrigger = ({
     }
     return <NotificationsIcon />;
   };
-  
+
   // Get badge color based on priority of unread notifications
   const getBadgeColor = () => {
     if (unreadCount === 0) return 'default';
     if (hasNewNotifications) return 'error';
     return 'primary';
   };
-  
+
   // Get connection status indicator color
   const getConnectionColor = () => {
     if (!connectionStatus.connected) return theme.palette.error.main;
     if (connectionStatus.reconnecting) return theme.palette.warning.main;
     return theme.palette.success.main;
   };
-  
+
   return (
     <>
       <Tooltip
@@ -143,8 +143,8 @@ const NotificationTrigger = ({
           doNotDisturb
             ? 'Notifications disabled'
             : unreadCount > 0
-            ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
-            : 'No new notifications'
+              ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
+              : 'No new notifications'
         }
         placement="bottom"
       >
@@ -184,7 +184,9 @@ const NotificationTrigger = ({
             }}
             sx={{
               '& .MuiBadge-badge': {
-                animation: hasNewNotifications ? 'bounce 0.5s ease-in-out' : 'none',
+                animation: hasNewNotifications
+                  ? 'bounce 0.5s ease-in-out'
+                  : 'none',
                 '@keyframes bounce': {
                   '0%, 20%, 53%, 80%, 100%': {
                     transform: 'translate3d(0, 0, 0)',
@@ -204,7 +206,7 @@ const NotificationTrigger = ({
           >
             {getNotificationIcon()}
           </Badge>
-          
+
           {/* Connection Status Indicator */}
           <Box
             sx={{
@@ -217,7 +219,9 @@ const NotificationTrigger = ({
               backgroundColor: getConnectionColor(),
               border: `2px solid ${theme.palette.background.paper}`,
               opacity: connectionStatus.connected ? 0.8 : 1,
-              animation: connectionStatus.reconnecting ? 'blink 1s infinite' : 'none',
+              animation: connectionStatus.reconnecting
+                ? 'blink 1s infinite'
+                : 'none',
               '@keyframes blink': {
                 '0%, 50%': { opacity: 0.3 },
                 '51%, 100%': { opacity: 1 },
@@ -226,7 +230,7 @@ const NotificationTrigger = ({
           />
         </IconButton>
       </Tooltip>
-      
+
       {/* Notification Center Popover */}
       <Popover
         open={Boolean(anchorEl)}
@@ -272,13 +276,9 @@ const NotificationTrigger = ({
           showTabs={true}
         />
       </Popover>
-      
+
       {/* Notification Sound */}
-      <audio
-        ref={audioRef}
-        preload="auto"
-        style={{ display: 'none' }}
-      >
+      <audio ref={audioRef} preload="auto" style={{ display: 'none' }}>
         <source src="/assets/sounds/notification.mp3" type="audio/mpeg" />
         <source src="/assets/sounds/notification.ogg" type="audio/ogg" />
         <source src="/assets/sounds/notification.wav" type="audio/wav" />

@@ -1,6 +1,9 @@
 import io from 'socket.io-client';
 import { store } from '../store/store';
-import { addNotification, updateOnlineUsers } from '../store/slices/notificationSlice';
+import {
+  addNotification,
+  updateOnlineUsers,
+} from '../store/slices/notificationSlice';
 import { WS_CONFIG } from '../config/environment';
 import { API_ENDPOINTS } from '../config/services';
 
@@ -45,10 +48,13 @@ class WebSocketService {
         const response = await fetch('/runtime-config.json');
         if (response.ok) {
           const config = await response.json();
-          wsUrl = config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
+          wsUrl =
+            config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
         }
       } catch (configError) {
-        console.warn('⚠️ WebSocketService: Failed to load runtime config, using fallback');
+        console.warn(
+          '⚠️ WebSocketService: Failed to load runtime config, using fallback',
+        );
       }
 
       console.log('🔌 WebSocket Service connecting to backend:', wsUrl);
@@ -58,7 +64,7 @@ class WebSocketService {
         auth: {
           token,
           userId,
-          userRole
+          userRole,
         },
         transports: ['websocket', 'polling'],
         upgrade: true,
@@ -94,7 +100,7 @@ class WebSocketService {
       this.socket.emit('join-room', {
         userId,
         userRole,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       // Process queued messages
@@ -104,14 +110,16 @@ class WebSocketService {
       this.startPingMonitoring();
 
       // Dispatch connection success
-      store.dispatch(addNotification({
-        id: Date.now(),
-        type: 'system',
-        title: 'Connected',
-        message: 'Real-time features activated',
-        severity: 'success',
-        autoHide: true
-      }));
+      store.dispatch(
+        addNotification({
+          id: Date.now(),
+          type: 'system',
+          title: 'Connected',
+          message: 'Real-time features activated',
+          severity: 'success',
+          autoHide: true,
+        }),
+      );
     });
 
     this.socket.on('disconnect', (reason) => {
@@ -120,14 +128,16 @@ class WebSocketService {
       this._connecting = false;
       this.stopPingMonitoring();
 
-      store.dispatch(addNotification({
-        id: Date.now(),
-        type: 'system',
-        title: 'Disconnected',
-        message: 'Reconnecting to real-time services...',
-        severity: 'warning',
-        autoHide: true
-      }));
+      store.dispatch(
+        addNotification({
+          id: Date.now(),
+          type: 'system',
+          title: 'Disconnected',
+          message: 'Reconnecting to real-time services...',
+          severity: 'warning',
+          autoHide: true,
+        }),
+      );
     });
 
     this.socket.on('connect_error', (error) => {
@@ -138,26 +148,30 @@ class WebSocketService {
 
     this.socket.on('reconnect', (attemptNumber) => {
       console.log('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
-      store.dispatch(addNotification({
-        id: Date.now(),
-        type: 'system',
-        title: 'Reconnected',
-        message: 'Real-time features restored',
-        severity: 'success',
-        autoHide: true
-      }));
+      store.dispatch(
+        addNotification({
+          id: Date.now(),
+          type: 'system',
+          title: 'Reconnected',
+          message: 'Real-time features restored',
+          severity: 'success',
+          autoHide: true,
+        }),
+      );
     });
 
     this.socket.on('reconnect_failed', () => {
       console.error('❌ WebSocket reconnection failed');
-      store.dispatch(addNotification({
-        id: Date.now(),
-        type: 'system',
-        title: 'Connection Failed',
-        message: 'Unable to connect to real-time services',
-        severity: 'error',
-        autoHide: false
-      }));
+      store.dispatch(
+        addNotification({
+          id: Date.now(),
+          type: 'system',
+          title: 'Connection Failed',
+          message: 'Unable to connect to real-time services',
+          severity: 'error',
+          autoHide: false,
+        }),
+      );
     });
 
     // Real-time message events
@@ -197,11 +211,15 @@ class WebSocketService {
 
     // User presence events
     this.socket.on('user-online', (data) => {
-      store.dispatch(updateOnlineUsers({ type: 'online', userId: data.userId }));
+      store.dispatch(
+        updateOnlineUsers({ type: 'online', userId: data.userId }),
+      );
     });
 
     this.socket.on('user-offline', (data) => {
-      store.dispatch(updateOnlineUsers({ type: 'offline', userId: data.userId }));
+      store.dispatch(
+        updateOnlineUsers({ type: 'offline', userId: data.userId }),
+      );
     });
 
     this.socket.on('online-users', (data) => {
@@ -214,15 +232,17 @@ class WebSocketService {
     });
 
     this.socket.on('maintenance-notice', (data) => {
-      store.dispatch(addNotification({
-        id: Date.now(),
-        type: 'system',
-        title: 'Maintenance Notice',
-        message: data.message,
-        severity: 'info',
-        autoHide: false,
-        actions: data.actions
-      }));
+      store.dispatch(
+        addNotification({
+          id: Date.now(),
+          type: 'system',
+          title: 'Maintenance Notice',
+          message: data.message,
+          severity: 'info',
+          autoHide: false,
+          actions: data.actions,
+        }),
+      );
     });
   }
 
@@ -233,19 +253,23 @@ class WebSocketService {
     console.log('📨 New message received:', data);
 
     // Add to Redux store
-    store.dispatch(addNotification({
-      id: data.messageId,
-      type: 'message',
-      title: `New message from ${data.senderName}`,
-      message: data.content.substring(0, 100) + (data.content.length > 100 ? '...' : ''),
-      severity: 'info',
-      autoHide: true,
-      metadata: {
-        conversationId: data.conversationId,
-        senderId: data.senderId,
-        timestamp: data.timestamp
-      }
-    }));
+    store.dispatch(
+      addNotification({
+        id: data.messageId,
+        type: 'message',
+        title: `New message from ${data.senderName}`,
+        message:
+          data.content.substring(0, 100) +
+          (data.content.length > 100 ? '...' : ''),
+        severity: 'info',
+        autoHide: true,
+        metadata: {
+          conversationId: data.conversationId,
+          senderId: data.senderId,
+          timestamp: data.timestamp,
+        },
+      }),
+    );
 
     // Trigger custom event listeners
     this.triggerEvent('message:new', data);
@@ -254,7 +278,7 @@ class WebSocketService {
     this.showBrowserNotification('New Message', data.content, {
       icon: '/assets/icons/message-icon.png',
       tag: `message-${data.messageId}`,
-      data: { conversationId: data.conversationId }
+      data: { conversationId: data.conversationId },
     });
   }
 
@@ -283,44 +307,46 @@ class WebSocketService {
       'new-job': {
         title: 'New Job Available',
         severity: 'info',
-        icon: '/assets/icons/job-icon.png'
+        icon: '/assets/icons/job-icon.png',
       },
       'job-match': {
         title: 'Perfect Job Match!',
         severity: 'success',
-        icon: '/assets/icons/match-icon.png'
+        icon: '/assets/icons/match-icon.png',
       },
       'job-deadline': {
         title: 'Job Deadline Reminder',
         severity: 'warning',
-        icon: '/assets/icons/deadline-icon.png'
-      }
+        icon: '/assets/icons/deadline-icon.png',
+      },
     };
 
     const config = notificationMap[data.type] || {
       title: 'Job Update',
       severity: 'info',
-      icon: '/assets/icons/job-icon.png'
+      icon: '/assets/icons/job-icon.png',
     };
 
-    store.dispatch(addNotification({
-      id: Date.now(),
-      type: 'job',
-      title: config.title,
-      message: data.message,
-      severity: config.severity,
-      autoHide: true,
-      metadata: {
-        jobId: data.jobId,
-        jobTitle: data.jobTitle,
-        clientName: data.clientName
-      }
-    }));
+    store.dispatch(
+      addNotification({
+        id: Date.now(),
+        type: 'job',
+        title: config.title,
+        message: data.message,
+        severity: config.severity,
+        autoHide: true,
+        metadata: {
+          jobId: data.jobId,
+          jobTitle: data.jobTitle,
+          clientName: data.clientName,
+        },
+      }),
+    );
 
     this.showBrowserNotification(config.title, data.message, {
       icon: config.icon,
       tag: `job-${data.jobId}`,
-      data: { jobId: data.jobId }
+      data: { jobId: data.jobId },
     });
 
     this.triggerEvent('job:notification', data);
@@ -332,19 +358,24 @@ class WebSocketService {
   handleJobApplication(data) {
     console.log('📋 Job application event:', data);
 
-    store.dispatch(addNotification({
-      id: Date.now(),
-      type: 'job-application',
-      title: data.type === 'new-application' ? 'New Job Application' : 'Application Update',
-      message: data.message,
-      severity: 'info',
-      autoHide: true,
-      metadata: {
-        applicationId: data.applicationId,
-        jobId: data.jobId,
-        applicantName: data.applicantName
-      }
-    }));
+    store.dispatch(
+      addNotification({
+        id: Date.now(),
+        type: 'job-application',
+        title:
+          data.type === 'new-application'
+            ? 'New Job Application'
+            : 'Application Update',
+        message: data.message,
+        severity: 'info',
+        autoHide: true,
+        metadata: {
+          applicationId: data.applicationId,
+          jobId: data.jobId,
+          applicantName: data.applicantName,
+        },
+      }),
+    );
 
     this.triggerEvent('job:application', data);
   }
@@ -356,26 +387,28 @@ class WebSocketService {
     console.log('🔄 Job status update:', data);
 
     const statusMap = {
-      'accepted': { severity: 'success', icon: '✅' },
-      'rejected': { severity: 'error', icon: '❌' },
-      'completed': { severity: 'success', icon: '🎉' },
-      'cancelled': { severity: 'warning', icon: '⚠️' }
+      accepted: { severity: 'success', icon: '✅' },
+      rejected: { severity: 'error', icon: '❌' },
+      completed: { severity: 'success', icon: '🎉' },
+      cancelled: { severity: 'warning', icon: '⚠️' },
     };
 
     const config = statusMap[data.status] || { severity: 'info', icon: 'ℹ️' };
 
-    store.dispatch(addNotification({
-      id: Date.now(),
-      type: 'job-status',
-      title: `Job ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`,
-      message: `${config.icon} ${data.message}`,
-      severity: config.severity,
-      autoHide: true,
-      metadata: {
-        jobId: data.jobId,
-        status: data.status
-      }
-    }));
+    store.dispatch(
+      addNotification({
+        id: Date.now(),
+        type: 'job-status',
+        title: `Job ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`,
+        message: `${config.icon} ${data.message}`,
+        severity: config.severity,
+        autoHide: true,
+        metadata: {
+          jobId: data.jobId,
+          status: data.status,
+        },
+      }),
+    );
 
     this.triggerEvent('job:status', data);
   }
@@ -390,44 +423,46 @@ class WebSocketService {
       'payment-received': {
         title: 'Payment Received',
         severity: 'success',
-        icon: '💚'
+        icon: '💚',
       },
       'payment-sent': {
         title: 'Payment Sent',
         severity: 'info',
-        icon: '💙'
+        icon: '💙',
       },
       'payment-failed': {
         title: 'Payment Failed',
         severity: 'error',
-        icon: '❌'
-      }
+        icon: '❌',
+      },
     };
 
     const config = paymentMap[data.type] || {
       title: 'Payment Update',
       severity: 'info',
-      icon: '💰'
+      icon: '💰',
     };
 
-    store.dispatch(addNotification({
-      id: Date.now(),
-      type: 'payment',
-      title: config.title,
-      message: `${config.icon} ${data.message}`,
-      severity: config.severity,
-      autoHide: data.type !== 'payment-failed',
-      metadata: {
-        transactionId: data.transactionId,
-        amount: data.amount,
-        paymentMethod: data.paymentMethod
-      }
-    }));
+    store.dispatch(
+      addNotification({
+        id: Date.now(),
+        type: 'payment',
+        title: config.title,
+        message: `${config.icon} ${data.message}`,
+        severity: config.severity,
+        autoHide: data.type !== 'payment-failed',
+        metadata: {
+          transactionId: data.transactionId,
+          amount: data.amount,
+          paymentMethod: data.paymentMethod,
+        },
+      }),
+    );
 
     this.showBrowserNotification(config.title, data.message, {
       icon: '/assets/icons/payment-icon.png',
       tag: `payment-${data.transactionId}`,
-      data: { transactionId: data.transactionId }
+      data: { transactionId: data.transactionId },
     });
 
     this.triggerEvent('payment:notification', data);
@@ -447,15 +482,17 @@ class WebSocketService {
   handleSystemNotification(data) {
     console.log('🔔 System notification:', data);
 
-    store.dispatch(addNotification({
-      id: Date.now(),
-      type: 'system',
-      title: data.title,
-      message: data.message,
-      severity: data.severity || 'info',
-      autoHide: data.autoHide !== false,
-      metadata: data.metadata
-    }));
+    store.dispatch(
+      addNotification({
+        id: Date.now(),
+        type: 'system',
+        title: data.title,
+        message: data.message,
+        severity: data.severity || 'info',
+        autoHide: data.autoHide !== false,
+        metadata: data.metadata,
+      }),
+    );
 
     if (data.browserNotification) {
       this.showBrowserNotification(data.title, data.message);
@@ -469,7 +506,11 @@ class WebSocketService {
    */
   sendMessage(conversationId, content, attachments = []) {
     if (!this.isConnected) {
-      this.queueMessage('send-message', { conversationId, content, attachments });
+      this.queueMessage('send-message', {
+        conversationId,
+        content,
+        attachments,
+      });
       return;
     }
 
@@ -477,7 +518,7 @@ class WebSocketService {
       conversationId,
       content,
       attachments,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -490,7 +531,7 @@ class WebSocketService {
     this.socket.emit('typing-indicator', {
       conversationId,
       isTyping,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -506,7 +547,7 @@ class WebSocketService {
     this.socket.emit('mark-message-read', {
       messageId,
       conversationId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -606,7 +647,7 @@ class WebSocketService {
    */
   triggerEvent(event, data) {
     if (this.eventListeners.has(event)) {
-      this.eventListeners.get(event).forEach(callback => {
+      this.eventListeners.get(event).forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
@@ -629,7 +670,7 @@ class WebSocketService {
           data: options.data || {},
           requireInteraction: false,
           silent: false,
-          ...options
+          ...options,
         });
 
         notification.onclick = () => {
@@ -665,17 +706,23 @@ class WebSocketService {
    */
   handleConnectionError(error) {
     this.reconnectAttempts++;
-    console.error(`WebSocket connection error (attempt ${this.reconnectAttempts}):`, error);
+    console.error(
+      `WebSocket connection error (attempt ${this.reconnectAttempts}):`,
+      error,
+    );
 
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      store.dispatch(addNotification({
-        id: Date.now(),
-        type: 'system',
-        title: 'Connection Failed',
-        message: 'Unable to establish real-time connection. Some features may be limited.',
-        severity: 'error',
-        autoHide: false
-      }));
+      store.dispatch(
+        addNotification({
+          id: Date.now(),
+          type: 'system',
+          title: 'Connection Failed',
+          message:
+            'Unable to establish real-time connection. Some features may be limited.',
+          severity: 'error',
+          autoHide: false,
+        }),
+      );
     }
   }
 
@@ -688,7 +735,7 @@ class WebSocketService {
       socketId: this.socket?.id,
       reconnectAttempts: this.reconnectAttempts,
       subscriptions: Array.from(this.subscriptions),
-      queuedMessages: this.messageQueue.length
+      queuedMessages: this.messageQueue.length,
     };
   }
 

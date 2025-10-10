@@ -28,7 +28,7 @@ import SmartNavigation from '../../../components/common/SmartNavigation';
 const Layout = ({ children, toggleTheme, mode }) => {
   const location = useLocation();
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md')); 
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
   const isDashboardPage =
@@ -46,7 +46,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
     location.pathname.includes('/reviews');
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
-  
+
   // Session expired banner state - moved outside conditional blocks
   const [sessionExpired, setSessionExpired] = useState(false);
   React.useEffect(() => {
@@ -60,29 +60,31 @@ const Layout = ({ children, toggleTheme, mode }) => {
     // On mobile, render children directly (no sidebar) + bottom nav + auto-show header
     if (isActualMobile) {
       return (
-        <Box sx={{ 
-          width: '100%', 
-          minHeight: '100vh',
-          position: 'relative',
-        }}>
+        <Box
+          sx={{
+            width: '100%',
+            minHeight: '100vh',
+            position: 'relative',
+          }}
+        >
           <Header toggleTheme={toggleTheme} mode={mode} />
           {children}
           <MobileBottomNav />
         </Box>
       );
     }
-    
+
     // Desktop: permanent sidebar + auto-show header
     if (isMdUp) {
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-            <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
-            <Sidebar variant="permanent" />
-            {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
-          <Box 
-            component="main" 
-            sx={{ 
-              flexGrow: 1, 
+          <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
+          <Sidebar variant="permanent" />
+          {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
               width: '100%',
               minWidth: 0, // Prevents flex item from growing beyond container
               pt: { xs: '48px', sm: '52px', md: '56px' }, // Add top padding for fixed header
@@ -91,9 +93,23 @@ const Layout = ({ children, toggleTheme, mode }) => {
             }}
           >
             {sessionExpired && (
-              <Box sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'warning.light', color: 'black', border: '1px solid', borderColor: 'warning.main' }}>
-                <Typography variant="body2" fontWeight="bold">Session expired</Typography>
-                <Typography variant="caption">Please log in again to continue.</Typography>
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 2,
+                  borderRadius: 1,
+                  bgcolor: 'warning.light',
+                  color: 'black',
+                  border: '1px solid',
+                  borderColor: 'warning.main',
+                }}
+              >
+                <Typography variant="body2" fontWeight="bold">
+                  Session expired
+                </Typography>
+                <Typography variant="caption">
+                  Please log in again to continue.
+                </Typography>
               </Box>
             )}
             {children}
@@ -116,8 +132,8 @@ const Layout = ({ children, toggleTheme, mode }) => {
           overflowY: 'auto',
         }}
       >
-          <Header toggleTheme={toggleTheme} mode={mode} />
-          {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
+        <Header toggleTheme={toggleTheme} mode={mode} />
+        {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
         <Sidebar
           variant="temporary"
           open={mobileOpen}
@@ -149,20 +165,22 @@ const Layout = ({ children, toggleTheme, mode }) => {
 
   // Public/non-dashboard pages
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      minHeight: '100vh',
-      width: '100%',
-      overflowX: 'hidden', // Prevents horizontal scroll only
-      overflowY: 'auto', // Allow natural vertical scrolling
-    }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        width: '100%',
+        overflowX: 'hidden', // Prevents horizontal scroll only
+        overflowY: 'auto', // Allow natural vertical scrolling
+      }}
+    >
       <Header toggleTheme={toggleTheme} mode={mode} />
       <Fade in key={location.pathname} timeout={500}>
-        <Box 
-          component="main" 
-          sx={{ 
-            flexGrow: 1, 
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
             width: '100%',
             minWidth: 0,
             py: { xs: 1, sm: 2, md: 3 },

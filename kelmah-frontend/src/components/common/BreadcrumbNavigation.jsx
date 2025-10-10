@@ -135,7 +135,7 @@ const BreadcrumbNavigation = () => {
       >
         {breadcrumbItems.map((item, index) => {
           const isLast = item.isLast;
-          
+
           if (isLast) {
             return (
               <Box

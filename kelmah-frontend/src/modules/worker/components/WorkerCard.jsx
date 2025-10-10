@@ -100,12 +100,21 @@ const WorkerCard = ({ worker }) => {
             spacing={1}
             sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
           >
-            {worker.skills?.filter(skill => skill && (skill.name || skill)).slice(0, 3).map((skill) => (
-              <Chip key={skill.name || skill} label={skill.name || skill} size="small" variant="outlined" />
-            ))}
-            {worker.skills?.filter(skill => skill && (skill.name || skill)).length > 3 && (
+            {worker.skills
+              ?.filter((skill) => skill && (skill.name || skill))
+              .slice(0, 3)
+              .map((skill) => (
+                <Chip
+                  key={skill.name || skill}
+                  label={skill.name || skill}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+            {worker.skills?.filter((skill) => skill && (skill.name || skill))
+              .length > 3 && (
               <Chip
-                label={`+${worker.skills.filter(skill => skill && (skill.name || skill)).length - 3}`}
+                label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
                 size="small"
                 variant="outlined"
               />

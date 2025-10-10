@@ -19,12 +19,16 @@ const PortfolioPage = () => {
         setSelected(list[0] || null);
       })
       .catch(() => setItems([]));
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Typography variant="h4" gutterBottom>My Portfolio</Typography>
+      <Typography variant="h4" gutterBottom>
+        My Portfolio
+      </Typography>
       <Box sx={{ mt: 2 }}>
         <PortfolioGallery items={items} />
       </Box>
@@ -38,5 +42,3 @@ const PortfolioPage = () => {
 };
 
 export default PortfolioPage;
-
-

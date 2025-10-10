@@ -18,7 +18,7 @@ class ErrorBoundary extends React.Component {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({
       error: error,
-      errorInfo: errorInfo
+      errorInfo: errorInfo,
     });
   }
 
@@ -44,7 +44,8 @@ class ErrorBoundary extends React.Component {
           <Alert severity="error" sx={{ mb: 3, maxWidth: 600 }}>
             <AlertTitle>Something went wrong</AlertTitle>
             <Typography variant="body2" sx={{ mt: 1 }}>
-              We're sorry, but something unexpected happened. This usually means the page needs to be refreshed.
+              We're sorry, but something unexpected happened. This usually means
+              the page needs to be refreshed.
             </Typography>
           </Alert>
 
@@ -79,7 +80,11 @@ class ErrorBoundary extends React.Component {
               <Typography variant="h6" gutterBottom>
                 Error Details (Development Only):
               </Typography>
-              <Typography variant="body2" component="pre" sx={{ fontSize: '0.75rem' }}>
+              <Typography
+                variant="body2"
+                component="pre"
+                sx={{ fontSize: '0.75rem' }}
+              >
                 {this.state.error && this.state.error.toString()}
                 <br />
                 {this.state.errorInfo.componentStack}

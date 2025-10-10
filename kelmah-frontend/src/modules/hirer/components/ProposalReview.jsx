@@ -76,10 +76,7 @@ const ProposalReview = () => {
       setProposals(response.data || []);
       setError(null);
     } catch (err) {
-      console.warn(
-        'Job service unavailable for proposals:',
-        err.message,
-      );
+      console.warn('Job service unavailable for proposals:', err.message);
       setProposals([]);
       setError('Unable to fetch proposals. Please try again later.');
     } finally {
@@ -90,7 +87,7 @@ const ProposalReview = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
       style: 'currency',
-      currency: "GHS",
+      currency: 'GHS',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -173,7 +170,10 @@ const ProposalReview = () => {
     accepted: proposals.filter((p) => p.status === 'accepted').length,
     rejected: proposals.filter((p) => p.status === 'rejected').length,
     averageRate:
-      proposals.length > 0 ? (proposals || []).reduce((sum, p) => sum + (p.proposedRate || 0), 0) / proposals.length : 0,
+      proposals.length > 0
+        ? (proposals || []).reduce((sum, p) => sum + (p.proposedRate || 0), 0) /
+          proposals.length
+        : 0,
   };
 
   if (loading) {

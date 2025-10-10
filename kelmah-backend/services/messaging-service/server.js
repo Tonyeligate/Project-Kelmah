@@ -478,36 +478,34 @@ process.on('uncaughtException', (error) => {
   gracefulShutdown('UNCAUGHT_EXCEPTION');
 });
 
-// Initialize MongoDB connection and start server
+// Initialize server and MongoDB connection in parallel (fixes cold start WebSocket issues)
 const startServer = async () => {
+  // Start HTTP/WebSocket server immediately (don't wait for MongoDB)
+  server.listen(PORT, () => {
+    console.log(`🚀 Messaging Service running on port ${PORT}`);
+    console.log(`📡 Socket.IO enabled for real-time messaging`);
+    console.log(`💬 WebSocket endpoint: ws://localhost:${PORT}`);
+    console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+    console.log(`📊 Socket metrics: http://localhost:${PORT}/api/socket/metrics`);
+    console.log(`🔗 CORS origins: ${process.env.ALLOWED_ORIGINS || 'localhost:5173, localhost:3000'}`);
+    console.log(`⚡ Server started - MongoDB connecting in background...`);
+  });
+
+  // Connect to MongoDB in parallel (non-blocking)
   try {
-    // Connect to MongoDB first
     await connectDB();
-    console.log('📦 MongoDB connection established');
-
-    // Start the server after successful DB connection
-    server.listen(PORT, () => {
-      console.log(`🚀 Messaging Service running on port ${PORT}`);
-      console.log(`📡 Socket.IO enabled for real-time messaging`);
-      console.log(`💬 WebSocket endpoint: ws://localhost:${PORT}`);
-      console.log(`🏥 Health check: http://localhost:${PORT}/health`);
-      console.log(`📊 Socket metrics: http://localhost:${PORT}/api/socket/metrics`);
-      console.log(`🔗 CORS origins: ${process.env.ALLOWED_ORIGINS || 'localhost:5173, localhost:3000'}`);
-      console.log(`✅ Messaging Service fully initialized and ready!`);
-    });
-
+    console.log('📦 MongoDB connection established - Full messaging functionality available!');
+    console.log(`✅ Messaging Service fully initialized and ready!`);
   } catch (error) {
-    console.error('💥 Failed to start Messaging Service:', error);
-
+    console.error('💥 MongoDB connection failed:', error.message);
+    
     if (process.env.NODE_ENV === 'production') {
-      console.error('🚨 Exiting due to startup failure in production');
-      process.exit(1);
+      console.warn('⚠️ Running in degraded mode without MongoDB (cold start recovery)');
+      console.warn('⚠️ Real-time messaging available, but message persistence disabled');
+      // Don't exit - allow service to recover when MongoDB becomes available
     } else {
-      console.warn('⚠️ Starting server without MongoDB in development mode');
-      server.listen(PORT, () => {
-        console.log(`🚀 Messaging Service running on port ${PORT} (MongoDB connection failed)`);
-        console.log(`⚠️ Some features may not work without database connection`);
-      });
+      console.warn('⚠️ Development mode: Running without MongoDB connection');
+      console.warn('⚠️ Some features may not work without database connection');
     }
   }
 };

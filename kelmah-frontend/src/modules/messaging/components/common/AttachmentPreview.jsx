@@ -1,4 +1,4 @@
-Vimport React, { useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
@@ -35,14 +34,6 @@ const PreviewContainer = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.action.hover,
   },
 }));
-
-const ImagePreview = styled('img')({
-  objectFit: 'cover',
-  borderRadius: 8,
-  cursor: 'pointer',
-  maxHeight: 150,
-  maxWidth: '100%',
-});
 
 const FileTypeIcon = ({ type }) => {
   if (type.startsWith('image/')) return <ImageIcon color="info" />;

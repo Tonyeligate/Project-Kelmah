@@ -117,13 +117,18 @@ export const verifyAuth = createAsyncThunk(
         // API returned success but no user data, use stored user
         const storedUserData = secureStorage.getUserData();
         if (storedUserData) {
-          console.log('Using stored user data for verification:', storedUserData.email);
+          console.log(
+            'Using stored user data for verification:',
+            storedUserData.email,
+          );
           return {
             user: storedUserData,
             isAuthenticated: true,
           };
         } else {
-          console.warn('API returned success but no user data and no stored user found');
+          console.warn(
+            'API returned success but no user data and no stored user found',
+          );
           // Don't throw error here, just return the stored user from initial state
           const initialStateUser = secureStorage.getUserData();
           if (initialStateUser) {
@@ -254,7 +259,10 @@ const authSlice = createSlice({
         state.user = action.payload.user || state.user;
         state.loading = false;
         state.error = null;
-        console.log('Auth verification fulfilled with user:', state.user?.email);
+        console.log(
+          'Auth verification fulfilled with user:',
+          state.user?.email,
+        );
       })
       .addCase(verifyAuth.rejected, (state, action) => {
         state.loading = false;
@@ -267,7 +275,10 @@ const authSlice = createSlice({
           state.user = null;
           state.token = null;
         }
-        console.log('Auth verification rejected but keeping existing auth state:', state.user?.email);
+        console.log(
+          'Auth verification rejected but keeping existing auth state:',
+          state.user?.email,
+        );
       })
       // Logout cases
       .addCase(logoutUser.pending, (state) => {

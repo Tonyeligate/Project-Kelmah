@@ -22,7 +22,9 @@ const ProtectedRoute = ({
   // Determine if the route is allowed based on roles or directly from prop
   const isAllowed = Array.isArray(roles)
     ? isAuthenticated && user && roles.includes(user.role)
-    : (typeof isAllowedProp === 'boolean' ? isAllowedProp : isAuthenticated);
+    : typeof isAllowedProp === 'boolean'
+      ? isAllowedProp
+      : isAuthenticated;
 
   // Show loading indicator while authentication is being checked
   if (loading) {

@@ -70,13 +70,20 @@ const InteractiveChart = ({
         border: '1px solid rgba(255, 215, 0, 0.1)',
       }}
     >
-      <Typography variant="h6" gutterBottom sx={{ color: theme.palette.primary.contrastText }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ color: theme.palette.primary.contrastText }}
+      >
         {title}
       </Typography>
       <motion.div initial="hidden" animate="visible" variants={chartVariants}>
         <ResponsiveContainer width="100%" height={height}>
           <ChartComponent data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={theme.palette.divider}
+            />
             <XAxis dataKey="name" stroke={theme.palette.text.secondary} />
             <YAxis stroke={theme.palette.text.secondary} />
             <Tooltip

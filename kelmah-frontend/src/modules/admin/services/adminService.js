@@ -1,6 +1,6 @@
 /**
  * Admin Service
- * 
+ *
  * Service layer for admin-related operations including user management,
  * system monitoring, and administrative tasks.
  */
@@ -13,8 +13,8 @@ export const adminService = {
     try {
       const params = { page, limit };
       if (search) {
-        const response = await adminClient.get('/users/search', { 
-          params: { ...params, q: search } 
+        const response = await adminClient.get('/users/search', {
+          params: { ...params, q: search },
         });
         return response.data;
       }
@@ -29,7 +29,9 @@ export const adminService = {
   // Payout queue
   async listPayouts(params = {}) {
     try {
-      const response = await adminClient.get('/payments/admin/payouts', { params });
+      const response = await adminClient.get('/payments/admin/payouts', {
+        params,
+      });
       return response.data;
     } catch (error) {
       console.error('Error listing payouts:', error);
@@ -39,7 +41,10 @@ export const adminService = {
 
   async enqueuePayout(data) {
     try {
-      const response = await adminClient.post('/payments/admin/payouts/queue', data);
+      const response = await adminClient.post(
+        '/payments/admin/payouts/queue',
+        data,
+      );
       return response.data;
     } catch (error) {
       console.error('Error enqueueing payout:', error);
@@ -49,7 +54,10 @@ export const adminService = {
 
   async processPayoutBatch(limit = 10) {
     try {
-      const response = await adminClient.post('/payments/admin/payouts/process', { limit });
+      const response = await adminClient.post(
+        '/payments/admin/payouts/process',
+        { limit },
+      );
       return response.data;
     } catch (error) {
       console.error('Error processing payout batch:', error);
@@ -71,7 +79,10 @@ export const adminService = {
   // Worker analytics
   async getWorkerAnalytics(workerId, params = {}) {
     try {
-      const response = await adminClient.get(`/users/analytics/worker/${workerId}`, { params });
+      const response = await adminClient.get(
+        `/users/analytics/worker/${workerId}`,
+        { params },
+      );
       return response.data;
     } catch (error) {
       console.error('Error fetching worker analytics:', error);
@@ -122,8 +133,8 @@ export const adminService = {
   // User Status Management
   async toggleUserStatus(userId, status) {
     try {
-      const response = await adminClient.put(`/users/${userId}`, { 
-        isActive: status 
+      const response = await adminClient.put(`/users/${userId}`, {
+        isActive: status,
       });
       return response.data;
     } catch (error) {
@@ -134,8 +145,8 @@ export const adminService = {
 
   async verifyUser(userId, verified = true) {
     try {
-      const response = await adminClient.put(`/users/${userId}`, { 
-        isEmailVerified: verified 
+      const response = await adminClient.put(`/users/${userId}`, {
+        isEmailVerified: verified,
       });
       return response.data;
     } catch (error) {
@@ -147,7 +158,7 @@ export const adminService = {
   // Bulk Operations
   async bulkUpdateUsers(userIds, updateData) {
     try {
-      const promises = userIds.map(id => this.updateUser(id, updateData));
+      const promises = userIds.map((id) => this.updateUser(id, updateData));
       const results = await Promise.allSettled(promises);
       return results;
     } catch (error) {
@@ -158,7 +169,7 @@ export const adminService = {
 
   async bulkDeleteUsers(userIds) {
     try {
-      const promises = userIds.map(id => this.deleteUser(id));
+      const promises = userIds.map((id) => this.deleteUser(id));
       const results = await Promise.allSettled(promises);
       return results;
     } catch (error) {
@@ -174,18 +185,18 @@ export const adminService = {
       const [usersResponse] = await Promise.all([
         adminClient.get('/users?limit=1'), // Get total count from pagination
       ]);
-      
+
       return {
         totalUsers: usersResponse.data.pagination?.total || 0,
         activeUsers: usersResponse.data.activeUsers ?? 0,
         newUsersThisMonth: usersResponse.data.newUsersThisMonth ?? 0,
-        systemHealth: usersResponse.data.systemHealth ?? 'unknown'
+        systemHealth: usersResponse.data.systemHealth ?? 'unknown',
       };
     } catch (error) {
       console.error('Error fetching system stats:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default adminService;

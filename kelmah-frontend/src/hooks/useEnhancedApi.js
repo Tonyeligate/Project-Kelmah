@@ -1,6 +1,6 @@
 /**
  * Enhanced API Hook with Security and Offline Capabilities
- * 
+ *
  * Provides secure API calls with automatic retry, offline queueing,
  * error handling, and user experience enhancements.
  */
@@ -20,7 +20,7 @@ const useEnhancedApi = (options = {}) => {
     autoRetry = true,
     cacheResults = false,
     cacheExpiry = 5 * 60 * 1000, // 5 minutes
-    offlineSupport = true
+    offlineSupport = true,
   } = options;
 
   const [loading, setLoading] = useState(false);
@@ -59,208 +59,232 @@ const useEnhancedApi = (options = {}) => {
   /**
    * Generate cache key for request
    */
-  const getCacheKey = useCallback((endpoint, params) => {
-    return `${serviceName}_${endpoint}_${JSON.stringify(params || {})}`;
-  }, [serviceName]);
+  const getCacheKey = useCallback(
+    (endpoint, params) => {
+      return `${serviceName}_${endpoint}_${JSON.stringify(params || {})}`;
+    },
+    [serviceName],
+  );
 
   /**
    * Get cached data if available and not expired
    */
-  const getCachedData = useCallback((cacheKey) => {
-    if (!cacheResults) return null;
+  const getCachedData = useCallback(
+    (cacheKey) => {
+      if (!cacheResults) return null;
 
-    const cached = cacheRef.current.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < cacheExpiry) {
-      return cached.data;
-    }
+      const cached = cacheRef.current.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < cacheExpiry) {
+        return cached.data;
+      }
 
-    // Remove expired cache
-    if (cached) {
-      cacheRef.current.delete(cacheKey);
-    }
+      // Remove expired cache
+      if (cached) {
+        cacheRef.current.delete(cacheKey);
+      }
 
-    return null;
-  }, [cacheResults, cacheExpiry]);
+      return null;
+    },
+    [cacheResults, cacheExpiry],
+  );
 
   /**
    * Cache response data
    */
-  const setCachedData = useCallback((cacheKey, responseData) => {
-    if (!cacheResults) return;
+  const setCachedData = useCallback(
+    (cacheKey, responseData) => {
+      if (!cacheResults) return;
 
-    cacheRef.current.set(cacheKey, {
-      data: responseData,
-      timestamp: Date.now()
-    });
-  }, [cacheResults]);
+      cacheRef.current.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now(),
+      });
+    },
+    [cacheResults],
+  );
 
   /**
    * Enhanced API call with security and error handling
    */
-  const callApi = useCallback(async (
-    endpoint,
-    options = {},
-    onSuccess,
-    onError
-  ) => {
-    const {
-      method = 'GET',
-      data: requestData,
-      params,
-      headers = {},
-      skipAuth = false,
-      timeout = 30000,
-      priority = 'normal' // high, normal, low
-    } = options;
+  const callApi = useCallback(
+    async (endpoint, options = {}, onSuccess, onError) => {
+      const {
+        method = 'GET',
+        data: requestData,
+        params,
+        headers = {},
+        skipAuth = false,
+        timeout = 30000,
+        priority = 'normal', // high, normal, low
+      } = options;
 
-    // Generate cache key
-    const cacheKey = getCacheKey(endpoint, { method, params, requestData });
+      // Generate cache key
+      const cacheKey = getCacheKey(endpoint, { method, params, requestData });
 
-    // Check cache for GET requests
-    if (method === 'GET') {
-      const cachedData = getCachedData(cacheKey);
-      if (cachedData) {
-        setData(cachedData);
-        if (onSuccess) onSuccess(cachedData);
-        return cachedData;
-      }
-    }
-
-    // If offline and no cache, show offline message
-    if (isOffline && !offlineSupport) {
-      const offlineError = new Error('No internet connection');
-      offlineError.isOffline = true;
-      setError(offlineError);
-      if (showErrorToast) {
-        enqueueSnackbar('You\'re offline. Please check your connection.', { 
-          variant: 'warning' 
-        });
-      }
-      if (onError) onError(offlineError);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    // Create abort controller for this request
-    abortControllerRef.current = new AbortController();
-
-    try {
-      const client = serviceManager.getService(serviceName);
-      
-      // Prepare request config
-      const config = {
-        method,
-        url: endpoint,
-        timeout,
-        signal: abortControllerRef.current.signal,
-        headers: {
-          ...headers,
-          'X-Priority': priority,
-          'X-Retry-Count': retryCount.toString()
-        }
-      };
-
-      // Add auth token if not skipped
-      if (!skipAuth) {
-        const token = secureStorage.getAuthToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+      // Check cache for GET requests
+      if (method === 'GET') {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) {
+          setData(cachedData);
+          if (onSuccess) onSuccess(cachedData);
+          return cachedData;
         }
       }
 
-      // Add data/params based on method
-      if (method === 'GET' && params) {
-        config.params = params;
-      } else if (requestData) {
-        config.data = requestData;
-      }
-
-      // Make the API call
-      const response = await client.request(config);
-      const responseData = response.data;
-
-      // Cache successful GET responses
-      if (method === 'GET' && cacheResults) {
-        setCachedData(cacheKey, responseData);
-      }
-
-      // Update state
-      setData(responseData);
-      setLoading(false);
-      setRetryCount(0);
-
-      // Show success toast if enabled
-      if (showSuccessToast) {
-        enqueueSnackbar('Operation completed successfully', { 
-          variant: 'success' 
-        });
-      }
-
-      // Call success callback
-      if (onSuccess) onSuccess(responseData);
-
-      return responseData;
-
-    } catch (apiError) {
-      setLoading(false);
-      
-      // Don't update error state if request was aborted
-      if (apiError.name === 'AbortError') {
+      // If offline and no cache, show offline message
+      if (isOffline && !offlineSupport) {
+        const offlineError = new Error('No internet connection');
+        offlineError.isOffline = true;
+        setError(offlineError);
+        if (showErrorToast) {
+          enqueueSnackbar("You're offline. Please check your connection.", {
+            variant: 'warning',
+          });
+        }
+        if (onError) onError(offlineError);
         return;
       }
 
-      // Enhance error with context
-      const enhancedError = {
-        ...apiError,
-        endpoint,
-        serviceName,
-        retryCount,
-        timestamp: Date.now(),
-        userMessage: getUserFriendlyMessage(apiError)
-      };
+      setLoading(true);
+      setError(null);
 
-      setError(enhancedError);
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
 
-      // Handle different error scenarios
-      if (enhancedError.response?.status === 401) {
-        // Clear auth data on authentication failure
-        secureStorage.clear();
-        enqueueSnackbar('Please log in again', { variant: 'warning' });
-      } else if (autoRetry && shouldRetry(enhancedError) && retryCount < retryAttempts) {
-        // Auto retry for retryable errors
-        setTimeout(() => {
-          setRetryCount(prev => prev + 1);
-          callApi(endpoint, options, onSuccess, onError);
-        }, getRetryDelay(retryCount));
-        
-        if (showErrorToast) {
-          enqueueSnackbar(`Retrying... (${retryCount + 1}/${retryAttempts})`, { 
-            variant: 'info' 
-          });
-        }
-      } else {
-        // Show error toast for non-retryable or max retry reached
-        if (showErrorToast) {
-          enqueueSnackbar(enhancedError.userMessage, { 
-            variant: 'error',
-            action: shouldRetry(enhancedError) ? 
-              <button onClick={() => retry()}>Retry</button> : null
-          });
+      try {
+        const client = serviceManager.getService(serviceName);
+
+        // Prepare request config
+        const config = {
+          method,
+          url: endpoint,
+          timeout,
+          signal: abortControllerRef.current.signal,
+          headers: {
+            ...headers,
+            'X-Priority': priority,
+            'X-Retry-Count': retryCount.toString(),
+          },
+        };
+
+        // Add auth token if not skipped
+        if (!skipAuth) {
+          const token = secureStorage.getAuthToken();
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
 
-        // Call error callback
-        if (onError) onError(enhancedError);
+        // Add data/params based on method
+        if (method === 'GET' && params) {
+          config.params = params;
+        } else if (requestData) {
+          config.data = requestData;
+        }
+
+        // Make the API call
+        const response = await client.request(config);
+        const responseData = response.data;
+
+        // Cache successful GET responses
+        if (method === 'GET' && cacheResults) {
+          setCachedData(cacheKey, responseData);
+        }
+
+        // Update state
+        setData(responseData);
+        setLoading(false);
+        setRetryCount(0);
+
+        // Show success toast if enabled
+        if (showSuccessToast) {
+          enqueueSnackbar('Operation completed successfully', {
+            variant: 'success',
+          });
+        }
+
+        // Call success callback
+        if (onSuccess) onSuccess(responseData);
+
+        return responseData;
+      } catch (apiError) {
+        setLoading(false);
+
+        // Don't update error state if request was aborted
+        if (apiError.name === 'AbortError') {
+          return;
+        }
+
+        // Enhance error with context
+        const enhancedError = {
+          ...apiError,
+          endpoint,
+          serviceName,
+          retryCount,
+          timestamp: Date.now(),
+          userMessage: getUserFriendlyMessage(apiError),
+        };
+
+        setError(enhancedError);
+
+        // Handle different error scenarios
+        if (enhancedError.response?.status === 401) {
+          // Clear auth data on authentication failure
+          secureStorage.clear();
+          enqueueSnackbar('Please log in again', { variant: 'warning' });
+        } else if (
+          autoRetry &&
+          shouldRetry(enhancedError) &&
+          retryCount < retryAttempts
+        ) {
+          // Auto retry for retryable errors
+          setTimeout(() => {
+            setRetryCount((prev) => prev + 1);
+            callApi(endpoint, options, onSuccess, onError);
+          }, getRetryDelay(retryCount));
+
+          if (showErrorToast) {
+            enqueueSnackbar(
+              `Retrying... (${retryCount + 1}/${retryAttempts})`,
+              {
+                variant: 'info',
+              },
+            );
+          }
+        } else {
+          // Show error toast for non-retryable or max retry reached
+          if (showErrorToast) {
+            enqueueSnackbar(enhancedError.userMessage, {
+              variant: 'error',
+              action: shouldRetry(enhancedError) ? (
+                <button onClick={() => retry()}>Retry</button>
+              ) : null,
+            });
+          }
+
+          // Call error callback
+          if (onError) onError(enhancedError);
+        }
+
+        throw enhancedError;
       }
-
-      throw enhancedError;
-    }
-  }, [
-    serviceName, retryCount, retryAttempts, retryDelay, autoRetry,
-    showSuccessToast, showErrorToast, isOffline, offlineSupport,
-    getCacheKey, getCachedData, setCachedData, enqueueSnackbar
-  ]);
+    },
+    [
+      serviceName,
+      retryCount,
+      retryAttempts,
+      retryDelay,
+      autoRetry,
+      showSuccessToast,
+      showErrorToast,
+      isOffline,
+      offlineSupport,
+      getCacheKey,
+      getCachedData,
+      setCachedData,
+      enqueueSnackbar,
+    ],
+  );
 
   /**
    * Manual retry function
@@ -275,14 +299,17 @@ const useEnhancedApi = (options = {}) => {
   /**
    * Clear cache for specific key or all cache
    */
-  const clearCache = useCallback((endpoint = null, params = null) => {
-    if (endpoint) {
-      const cacheKey = getCacheKey(endpoint, params);
-      cacheRef.current.delete(cacheKey);
-    } else {
-      cacheRef.current.clear();
-    }
-  }, [getCacheKey]);
+  const clearCache = useCallback(
+    (endpoint = null, params = null) => {
+      if (endpoint) {
+        const cacheKey = getCacheKey(endpoint, params);
+        cacheRef.current.delete(cacheKey);
+      } else {
+        cacheRef.current.clear();
+      }
+    },
+    [getCacheKey],
+  );
 
   /**
    * Cancel ongoing request
@@ -299,7 +326,7 @@ const useEnhancedApi = (options = {}) => {
    */
   const getUserFriendlyMessage = (error) => {
     if (error.isOffline || !navigator.onLine) {
-      return 'You\'re offline. Please check your internet connection.';
+      return "You're offline. Please check your internet connection.";
     }
 
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
@@ -311,7 +338,7 @@ const useEnhancedApi = (options = {}) => {
     }
 
     if (error.response?.status === 403) {
-      return 'You don\'t have permission to perform this action.';
+      return "You don't have permission to perform this action.";
     }
 
     if (error.response?.status === 404) {
@@ -334,8 +361,13 @@ const useEnhancedApi = (options = {}) => {
    */
   const shouldRetry = (error) => {
     const retryableStatuses = [408, 429, 500, 502, 503, 504];
-    const retryableCodes = ['ECONNABORTED', 'ENOTFOUND', 'ECONNRESET', 'ETIMEDOUT'];
-    
+    const retryableCodes = [
+      'ECONNABORTED',
+      'ENOTFOUND',
+      'ECONNRESET',
+      'ETIMEDOUT',
+    ];
+
     return (
       retryableStatuses.includes(error.response?.status) ||
       retryableCodes.includes(error.code) ||
@@ -361,16 +393,16 @@ const useEnhancedApi = (options = {}) => {
     cancel,
     clearCache,
     // Helper methods for common HTTP methods
-    get: (endpoint, params, onSuccess, onError) => 
+    get: (endpoint, params, onSuccess, onError) =>
       callApi(endpoint, { method: 'GET', params }, onSuccess, onError),
-    post: (endpoint, data, onSuccess, onError) => 
+    post: (endpoint, data, onSuccess, onError) =>
       callApi(endpoint, { method: 'POST', data }, onSuccess, onError),
-    put: (endpoint, data, onSuccess, onError) => 
+    put: (endpoint, data, onSuccess, onError) =>
       callApi(endpoint, { method: 'PUT', data }, onSuccess, onError),
-    patch: (endpoint, data, onSuccess, onError) => 
+    patch: (endpoint, data, onSuccess, onError) =>
       callApi(endpoint, { method: 'PATCH', data }, onSuccess, onError),
-    delete: (endpoint, onSuccess, onError) => 
-      callApi(endpoint, { method: 'DELETE' }, onSuccess, onError)
+    delete: (endpoint, onSuccess, onError) =>
+      callApi(endpoint, { method: 'DELETE' }, onSuccess, onError),
   };
 };
 

@@ -104,7 +104,11 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       : navRole === 'hirer'
         ? [
             { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
-            { text: 'Post a Job', icon: <PaymentIcon />, path: '/hirer/jobs/post' },
+            {
+              text: 'Post a Job',
+              icon: <PaymentIcon />,
+              path: '/hirer/jobs/post',
+            },
             { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
             {
               text: 'Applications',
@@ -164,7 +168,10 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Avatar
           alt={user?.firstName || 'Worker'}
-          src={user?.profileImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Im0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NSIgZmlsbD0iI0ZGRDcwMCIvPgo8L3N2Zz4K'}
+          src={
+            user?.profileImage ||
+            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Im0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NSIgZmlsbD0iI0ZGRDcwMCIvPgo8L3N2Zz4K'
+          }
           sx={{
             width: 80,
             height: 80,
@@ -177,17 +184,24 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
           {user?.profession || 'Carpenter'}
         </Typography>
-        
+
         {/* ✅ IMPROVED: Add current location indicator */}
-        <Box sx={{ 
-          mt: 2, 
-          p: 1, 
-          backgroundColor: 'rgba(212,175,55,0.1)', 
-          borderRadius: 1,
-          border: '1px solid rgba(212,175,55,0.3)',
-        }}>
-          <Typography variant="caption" sx={{ color: '#D4AF37', fontWeight: 'bold' }}>
-            Currently on: {mainNavItems.find(item => location.pathname === item.path)?.text || 'Dashboard'}
+        <Box
+          sx={{
+            mt: 2,
+            p: 1,
+            backgroundColor: 'rgba(212,175,55,0.1)',
+            borderRadius: 1,
+            border: '1px solid rgba(212,175,55,0.3)',
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{ color: '#D4AF37', fontWeight: 'bold' }}
+          >
+            Currently on:{' '}
+            {mainNavItems.find((item) => location.pathname === item.path)
+              ?.text || 'Dashboard'}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
@@ -227,35 +241,43 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         {mainNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-          <React.Fragment key={item.text}>
-            <ListItem
-              button
-              component={item.path ? RouterLink : 'div'}
-              to={item.path}
-              onClick={() => item.subItems && handleSubMenuToggle(item.text)}
+            <React.Fragment key={item.text}>
+              <ListItem
+                button
+                component={item.path ? RouterLink : 'div'}
+                to={item.path}
+                onClick={() => item.subItems && handleSubMenuToggle(item.text)}
                 sx={{
                   // ✅ IMPROVED: Add active state highlighting
-                  backgroundColor: isActive ? 'rgba(212,175,55,0.15)' : 'transparent',
-                  borderLeft: isActive ? '4px solid #D4AF37' : '4px solid transparent',
+                  backgroundColor: isActive
+                    ? 'rgba(212,175,55,0.15)'
+                    : 'transparent',
+                  borderLeft: isActive
+                    ? '4px solid #D4AF37'
+                    : '4px solid transparent',
                   '&:hover': {
-                    backgroundColor: isActive ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                    backgroundColor: isActive
+                      ? 'rgba(212,175,55,0.2)'
+                      : 'rgba(255,255,255,0.05)',
                   },
                   transition: 'all 0.3s ease',
                 }}
               >
-                <ListItemIcon sx={{ 
-                  color: isActive ? '#D4AF37' : '#fff',
-                  transition: 'color 0.3s ease',
-                }}>
-                {item.badge && item.badge > 0 ? (
-                  <Badge color="error" badgeContent={item.badge} max={99}>
-                    {item.icon}
-                  </Badge>
-                ) : (
-                  item.icon
-                )}
-              </ListItemIcon>
-                <ListItemText 
+                <ListItemIcon
+                  sx={{
+                    color: isActive ? '#D4AF37' : '#fff',
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  {item.badge && item.badge > 0 ? (
+                    <Badge color="error" badgeContent={item.badge} max={99}>
+                      {item.icon}
+                    </Badge>
+                  ) : (
+                    item.icon
+                  )}
+                </ListItemIcon>
+                <ListItemText
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
@@ -265,8 +287,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                     },
                   }}
                 />
-            </ListItem>
-          </React.Fragment>
+              </ListItem>
+            </React.Fragment>
           );
         })}
       </List>

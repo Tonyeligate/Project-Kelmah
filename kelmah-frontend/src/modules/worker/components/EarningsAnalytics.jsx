@@ -67,11 +67,15 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useSnackbar } from 'notistack';
-import { formatCurrency, formatDate, formatPercentage } from '../../../utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatPercentage,
+} from '../../../utils/formatters';
 
 const EarningsAnalytics = () => {
   // FIXED: Use standardized user normalization for consistent user data access
-  const { user: rawUser } = useSelector(state => state.auth);
+  const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -111,18 +115,29 @@ const EarningsAnalytics = () => {
     info: theme.palette.info.main,
   };
 
-  const pieColors = [COLORS.primary, COLORS.secondary, COLORS.success, COLORS.warning, COLORS.info];
+  const pieColors = [
+    COLORS.primary,
+    COLORS.secondary,
+    COLORS.success,
+    COLORS.warning,
+    COLORS.info,
+  ];
 
   // Load earnings data
   const loadEarningsData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await earningsService.getEarningsAnalytics(user.id, timeRange);
+      const response = await earningsService.getEarningsAnalytics(
+        user.id,
+        timeRange,
+      );
       setEarningsData(response.data);
       setError(null);
     } catch (err) {
       setError('Failed to load earnings data');
-      enqueueSnackbar('Failed to load earnings analytics', { variant: 'error' });
+      enqueueSnackbar('Failed to load earnings analytics', {
+        variant: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -146,7 +161,9 @@ const EarningsAnalytics = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      enqueueSnackbar('Earnings report exported successfully', { variant: 'success' });
+      enqueueSnackbar('Earnings report exported successfully', {
+        variant: 'success',
+      });
     } catch (error) {
       enqueueSnackbar('Failed to export earnings report', { variant: 'error' });
     }
@@ -195,9 +212,17 @@ const EarningsAnalytics = () => {
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
                       {card.title}
                     </Typography>
                     <Typography variant="h4" component="div">
@@ -212,7 +237,9 @@ const EarningsAnalytics = () => {
                         )}
                         <Typography
                           variant="body2"
-                          color={card.change >= 0 ? 'success.main' : 'error.main'}
+                          color={
+                            card.change >= 0 ? 'success.main' : 'error.main'
+                          }
                           sx={{ ml: 0.5 }}
                         >
                           {formatPercentage(Math.abs(card.change))}
@@ -222,7 +249,10 @@ const EarningsAnalytics = () => {
                   </Box>
                   <Avatar
                     sx={{
-                      backgroundColor: alpha(theme.palette[card.color].main, 0.1),
+                      backgroundColor: alpha(
+                        theme.palette[card.color].main,
+                        0.1,
+                      ),
                       color: theme.palette[card.color].main,
                       width: 56,
                       height: 56,
@@ -245,7 +275,12 @@ const EarningsAnalytics = () => {
 
     return (
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
           <Typography variant="h6">Earnings Trend</Typography>
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Metric</InputLabel>
@@ -269,20 +304,17 @@ const EarningsAnalytics = () => {
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={earningsData.chartData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="period"
-              tick={{ fontSize: 12 }}
-            />
+            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
             <YAxis
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => 
+              tickFormatter={(value) =>
                 selectedMetric === 'earnings' ? formatCurrency(value) : value
               }
             />
             <Tooltip
               formatter={(value) => [
                 selectedMetric === 'earnings' ? formatCurrency(value) : value,
-                metrics.find(m => m.value === selectedMetric)?.label
+                metrics.find((m) => m.value === selectedMetric)?.label,
               ]}
             />
             <Area
@@ -316,13 +348,18 @@ const EarningsAnalytics = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} (${formatPercentage(percent * 100)})`}
+                  label={({ name, percent }) =>
+                    `${name} (${formatPercentage(percent * 100)})`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="earnings"
                 >
                   {earningsData.categoryBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={pieColors[index % pieColors.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value) => formatCurrency(value)} />
@@ -355,10 +392,16 @@ const EarningsAnalytics = () => {
                       secondary={`${category.jobs} jobs • ${formatCurrency(category.earnings)}`}
                     />
                     <Typography variant="body2" color="text.secondary">
-                      {formatPercentage((category.earnings / earningsData.summary.totalEarnings) * 100)}
+                      {formatPercentage(
+                        (category.earnings /
+                          earningsData.summary.totalEarnings) *
+                          100,
+                      )}
                     </Typography>
                   </ListItem>
-                  {index < earningsData.categoryBreakdown.length - 1 && <Divider />}
+                  {index < earningsData.categoryBreakdown.length - 1 && (
+                    <Divider />
+                  )}
                 </React.Fragment>
               ))}
             </List>
@@ -383,12 +426,17 @@ const EarningsAnalytics = () => {
 
     const paginatedTransactions = earningsData.recentTransactions.slice(
       page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
+      page * rowsPerPage + rowsPerPage,
     );
 
     return (
       <Paper sx={{ p: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
           <Typography variant="h6">Recent Transactions</Typography>
           <Button
             startIcon={<DownloadIcon />}
@@ -415,9 +463,7 @@ const EarningsAnalytics = () => {
             <TableBody>
               {paginatedTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
-                  <TableCell>
-                    {formatDate(transaction.date)}
-                  </TableCell>
+                  <TableCell>{formatDate(transaction.date)}</TableCell>
                   <TableCell>
                     <Typography variant="body2" noWrap>
                       {transaction.jobTitle}
@@ -438,7 +484,9 @@ const EarningsAnalytics = () => {
                   <TableCell align="right">
                     <Typography
                       variant="body2"
-                      color={transaction.amount > 0 ? 'success.main' : 'error.main'}
+                      color={
+                        transaction.amount > 0 ? 'success.main' : 'error.main'
+                      }
                       fontWeight="medium"
                     >
                       {formatCurrency(transaction.amount)}
@@ -449,8 +497,11 @@ const EarningsAnalytics = () => {
                       label={transaction.status}
                       size="small"
                       color={
-                        transaction.status === 'completed' ? 'success' :
-                        transaction.status === 'pending' ? 'warning' : 'default'
+                        transaction.status === 'completed'
+                          ? 'success'
+                          : transaction.status === 'pending'
+                            ? 'warning'
+                            : 'default'
                       }
                     />
                   </TableCell>
@@ -517,9 +568,7 @@ const EarningsAnalytics = () => {
                   <Typography variant="body2" color="text.secondary">
                     Overall Performance
                   </Typography>
-                  <Typography variant="body2">
-                    {performance.level}
-                  </Typography>
+                  <Typography variant="body2">{performance.level}</Typography>
                 </Box>
               </Box>
               <LinearProgress
@@ -580,7 +629,12 @@ const EarningsAnalytics = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight={400}
+      >
         <CircularProgress />
       </Box>
     );
@@ -597,7 +651,12 @@ const EarningsAnalytics = () => {
   return (
     <Box>
       {/* Header */}
-      <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={3}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Typography variant="h4" component="h1">
           Earnings Analytics
         </Typography>

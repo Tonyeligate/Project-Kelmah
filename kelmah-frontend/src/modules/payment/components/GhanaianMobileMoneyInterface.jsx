@@ -54,13 +54,13 @@ import { useSnackbar } from 'notistack';
 import { formatCurrency, formatPhoneNumber } from '../../../utils/formatters';
 import paymentService from '../services/paymentService';
 
-const GhanaianMobileMoneyInterface = ({ 
-  amount, 
+const GhanaianMobileMoneyInterface = ({
+  amount,
   currency = 'GHS',
   onPaymentSuccess,
   onPaymentError,
   jobId,
-  description = 'Payment for services'
+  description = 'Payment for services',
 }) => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -89,7 +89,7 @@ const GhanaianMobileMoneyInterface = ({
       prefixes: ['024', '025', '053', '054', '055', '059'],
       features: ['Instant Transfer', '24/7 Available', 'No Extra Charges'],
       limits: { min: 1, max: 10000, daily: 50000 },
-      processingTime: '1-2 minutes'
+      processingTime: '1-2 minutes',
     },
     {
       id: 'vodafone',
@@ -100,7 +100,7 @@ const GhanaianMobileMoneyInterface = ({
       prefixes: ['020', '050'],
       features: ['Quick Processing', 'Secure Payments', 'Wide Coverage'],
       limits: { min: 1, max: 8000, daily: 40000 },
-      processingTime: '2-3 minutes'
+      processingTime: '2-3 minutes',
     },
     {
       id: 'airteltigo',
@@ -111,8 +111,8 @@ const GhanaianMobileMoneyInterface = ({
       prefixes: ['026', '027', '057', '056'],
       features: ['Fast Transfer', 'Low Fees', 'Reliable Service'],
       limits: { min: 1, max: 6000, daily: 30000 },
-      processingTime: '2-4 minutes'
-    }
+      processingTime: '2-4 minutes',
+    },
   ];
 
   const steps = [
@@ -120,7 +120,7 @@ const GhanaianMobileMoneyInterface = ({
     'Enter Phone Number',
     'Confirm Payment',
     'Enter PIN',
-    'Payment Processing'
+    'Payment Processing',
   ];
 
   // Load saved phone numbers
@@ -134,7 +134,7 @@ const GhanaianMobileMoneyInterface = ({
     let interval;
     if (paymentStatus === 'processing' && timeRemaining > 0) {
       interval = setInterval(() => {
-        setTimeRemaining(prev => prev - 1);
+        setTimeRemaining((prev) => prev - 1);
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -144,25 +144,23 @@ const GhanaianMobileMoneyInterface = ({
   const getProviderByPhone = (phone) => {
     const cleanPhone = phone.replace(/\D/g, '');
     const prefix = cleanPhone.substring(0, 3);
-    
-    return momoProviders.find(provider => 
-      provider.prefixes.includes(prefix)
-    );
+
+    return momoProviders.find((provider) => provider.prefixes.includes(prefix));
   };
 
   // Validate phone number
   const validatePhoneNumber = (phone) => {
     const cleanPhone = phone.replace(/\D/g, '');
-    
+
     if (cleanPhone.length !== 10) {
       return { valid: false, message: 'Phone number must be 10 digits' };
     }
-    
+
     const provider = getProviderByPhone(cleanPhone);
     if (!provider) {
       return { valid: false, message: 'Invalid mobile money number' };
     }
-    
+
     return { valid: true, provider };
   };
 
@@ -176,7 +174,7 @@ const GhanaianMobileMoneyInterface = ({
   const handlePhoneChange = (value) => {
     const cleanValue = value.replace(/\D/g, '').substring(0, 10);
     setPhoneNumber(cleanValue);
-    
+
     // Auto-detect provider
     if (cleanValue.length >= 3) {
       const provider = getProviderByPhone(cleanValue);
@@ -189,12 +187,12 @@ const GhanaianMobileMoneyInterface = ({
   // Handle proceed to confirmation
   const handleProceedToConfirm = () => {
     const validation = validatePhoneNumber(phoneNumber);
-    
+
     if (!validation.valid) {
       enqueueSnackbar(validation.message, { variant: 'error' });
       return;
     }
-    
+
     setActiveStep(2);
   };
 
@@ -203,34 +201,37 @@ const GhanaianMobileMoneyInterface = ({
     try {
       setProcessing(true);
       setPaymentStatus('processing');
-      
-      const provider = momoProviders.find(p => p.id === selectedProvider);
+
+      const provider = momoProviders.find((p) => p.id === selectedProvider);
       const paymentData = {
         amount,
         currency,
         phoneNumber: `233${phoneNumber.substring(1)}`, // Convert to international format
         provider: selectedProvider,
         jobId,
-        description
+        description,
       };
-      
-      const response = await paymentService.initiateMobileMoneyPayment(paymentData);
-      
+
+      const response =
+        await paymentService.initiateMobileMoneyPayment(paymentData);
+
       if (response.data.success) {
         setTransactionId(response.data.transactionId);
         setActiveStep(3);
         setShowPinDialog(true);
-        
+
         enqueueSnackbar(
           `Payment request sent to ${formatPhoneNumber(phoneNumber)}. Please enter your ${provider.shortName} PIN to complete.`,
-          { variant: 'info', autoHideDuration: 8000 }
+          { variant: 'info', autoHideDuration: 8000 },
         );
       } else {
         throw new Error(response.data.message || 'Payment initiation failed');
       }
     } catch (error) {
       setPaymentStatus('failed');
-      enqueueSnackbar(error.message || 'Payment initiation failed', { variant: 'error' });
+      enqueueSnackbar(error.message || 'Payment initiation failed', {
+        variant: 'error',
+      });
       if (onPaymentError) {
         onPaymentError(error);
       }
@@ -245,32 +246,41 @@ const GhanaianMobileMoneyInterface = ({
       setProcessing(true);
       setShowPinDialog(false);
       setActiveStep(4);
-      
+
       const response = await paymentService.confirmMobileMoneyPayment({
         transactionId,
         pin,
-        phoneNumber: `233${phoneNumber.substring(1)}`
+        phoneNumber: `233${phoneNumber.substring(1)}`,
       });
-      
+
       if (response.data.success) {
         setPaymentStatus('success');
-        
+
         // Save phone number for future use
-        const savedNumbers = JSON.parse(localStorage.getItem('savedMomoNumbers') || '[]');
-        const provider = momoProviders.find(p => p.id === selectedProvider);
+        const savedNumbers = JSON.parse(
+          localStorage.getItem('savedMomoNumbers') || '[]',
+        );
+        const provider = momoProviders.find((p) => p.id === selectedProvider);
         const numberInfo = {
           phoneNumber,
           provider: selectedProvider,
           providerName: provider.shortName,
-          lastUsed: new Date().toISOString()
+          lastUsed: new Date().toISOString(),
         };
-        
-        const filtered = savedNumbers.filter(n => n.phoneNumber !== phoneNumber);
+
+        const filtered = savedNumbers.filter(
+          (n) => n.phoneNumber !== phoneNumber,
+        );
         filtered.unshift(numberInfo);
-        localStorage.setItem('savedMomoNumbers', JSON.stringify(filtered.slice(0, 5)));
-        
-        enqueueSnackbar('Payment completed successfully!', { variant: 'success' });
-        
+        localStorage.setItem(
+          'savedMomoNumbers',
+          JSON.stringify(filtered.slice(0, 5)),
+        );
+
+        enqueueSnackbar('Payment completed successfully!', {
+          variant: 'success',
+        });
+
         if (onPaymentSuccess) {
           onPaymentSuccess({
             transactionId,
@@ -278,7 +288,7 @@ const GhanaianMobileMoneyInterface = ({
             currency,
             phoneNumber,
             provider: selectedProvider,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       } else {
@@ -326,8 +336,12 @@ const GhanaianMobileMoneyInterface = ({
       sx={{
         cursor: 'pointer',
         transition: 'all 0.2s ease-in-out',
-        border: selectedProvider === provider.id ? `2px solid ${provider.color}` : '1px solid',
-        borderColor: selectedProvider === provider.id ? provider.color : 'divider',
+        border:
+          selectedProvider === provider.id
+            ? `2px solid ${provider.color}`
+            : '1px solid',
+        borderColor:
+          selectedProvider === provider.id ? provider.color : 'divider',
         '&:hover': {
           transform: 'translateY(-2px)',
           boxShadow: theme.shadows[4],
@@ -354,18 +368,23 @@ const GhanaianMobileMoneyInterface = ({
             </Typography>
           </Box>
         </Box>
-        
+
         <Box mb={2}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Compatible Numbers:
           </Typography>
           <Box display="flex" gap={0.5} flexWrap="wrap">
-            {provider.prefixes.map(prefix => (
-              <Chip key={prefix} label={prefix} size="small" variant="outlined" />
+            {provider.prefixes.map((prefix) => (
+              <Chip
+                key={prefix}
+                label={prefix}
+                size="small"
+                variant="outlined"
+              />
             ))}
           </Box>
         </Box>
-        
+
         <List dense>
           {provider.features.map((feature, index) => (
             <ListItem key={index} sx={{ px: 0 }}>
@@ -379,10 +398,11 @@ const GhanaianMobileMoneyInterface = ({
             </ListItem>
           ))}
         </List>
-        
+
         <Box mt={2}>
           <Typography variant="caption" color="text.secondary">
-            Limits: {formatCurrency(provider.limits.min)} - {formatCurrency(provider.limits.max)} per transaction
+            Limits: {formatCurrency(provider.limits.min)} -{' '}
+            {formatCurrency(provider.limits.max)} per transaction
           </Typography>
         </Box>
       </CardContent>
@@ -391,60 +411,82 @@ const GhanaianMobileMoneyInterface = ({
 
   // Render payment confirmation
   const renderPaymentConfirmation = () => {
-    const provider = momoProviders.find(p => p.id === selectedProvider);
-    
+    const provider = momoProviders.find((p) => p.id === selectedProvider);
+
     return (
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          display="flex"
+          alignItems="center"
+          gap={1}
+        >
           <ReceiptIcon color="primary" />
           Payment Confirmation
         </Typography>
-        
+
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Box mb={2}>
-              <Typography variant="body2" color="text.secondary">Amount</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Amount
+              </Typography>
               <Typography variant="h5" color="primary" fontWeight="bold">
                 {formatCurrency(amount)}
               </Typography>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <Box mb={2}>
-              <Typography variant="body2" color="text.secondary">Payment Method</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Payment Method
+              </Typography>
               <Box display="flex" alignItems="center" gap={1}>
-                <Avatar sx={{ width: 24, height: 24, bgcolor: alpha(provider.color, 0.1) }}>
+                <Avatar
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    bgcolor: alpha(provider.color, 0.1),
+                  }}
+                >
                   <MobileIcon fontSize="small" sx={{ color: provider.color }} />
                 </Avatar>
                 <Typography variant="body1">{provider.shortName}</Typography>
               </Box>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12}>
             <Box mb={2}>
-              <Typography variant="body2" color="text.secondary">Phone Number</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Phone Number
+              </Typography>
               <Typography variant="body1" fontWeight="medium">
                 {formatPhoneNumber(phoneNumber)}
               </Typography>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12}>
             <Box mb={2}>
-              <Typography variant="body2" color="text.secondary">Description</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Description
+              </Typography>
               <Typography variant="body1">{description}</Typography>
             </Box>
           </Grid>
         </Grid>
-        
+
         <Alert severity="info" sx={{ mt: 2 }}>
           <Typography variant="body2">
-            You will receive a payment prompt on your phone. Please check your phone and enter your {provider.shortName} PIN to complete the payment.
+            You will receive a payment prompt on your phone. Please check your
+            phone and enter your {provider.shortName} PIN to complete the
+            payment.
           </Typography>
         </Alert>
-        
+
         <Box display="flex" gap={2} mt={3}>
           <Button variant="outlined" onClick={() => setActiveStep(1)}>
             Back
@@ -453,7 +495,9 @@ const GhanaianMobileMoneyInterface = ({
             variant="contained"
             onClick={handleInitiatePayment}
             disabled={processing}
-            startIcon={processing ? <CircularProgress size={20} /> : <SendIcon />}
+            startIcon={
+              processing ? <CircularProgress size={20} /> : <SendIcon />
+            }
           >
             {processing ? 'Initiating...' : 'Initiate Payment'}
           </Button>
@@ -474,14 +518,20 @@ const GhanaianMobileMoneyInterface = ({
           <Typography variant="body2" color="text.secondary" paragraph>
             Please complete the payment on your phone
           </Typography>
-          
-          <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={2}>
+
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            gap={1}
+            mb={2}
+          >
             <TimerIcon color="action" />
             <Typography variant="body2">
               Time remaining: {formatTimeRemaining(timeRemaining)}
             </Typography>
           </Box>
-          
+
           <Alert severity="warning" sx={{ mt: 2 }}>
             <Typography variant="body2">
               Don't close this page. We're waiting for payment confirmation.
@@ -489,7 +539,7 @@ const GhanaianMobileMoneyInterface = ({
           </Alert>
         </>
       )}
-      
+
       {paymentStatus === 'success' && (
         <>
           <CheckIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
@@ -500,11 +550,12 @@ const GhanaianMobileMoneyInterface = ({
             Transaction ID: {transactionId}
           </Typography>
           <Typography variant="body1" paragraph>
-            Your payment of {formatCurrency(amount)} has been processed successfully.
+            Your payment of {formatCurrency(amount)} has been processed
+            successfully.
           </Typography>
         </>
       )}
-      
+
       {paymentStatus === 'failed' && (
         <>
           <ErrorIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
@@ -528,15 +579,22 @@ const GhanaianMobileMoneyInterface = ({
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom display="flex" alignItems="center" gap={1}>
+      <Typography
+        variant="h5"
+        gutterBottom
+        display="flex"
+        alignItems="center"
+        gap={1}
+      >
         <MobileIcon color="primary" />
         Mobile Money Payment
       </Typography>
-      
+
       <Typography variant="body2" color="text.secondary" paragraph>
-        Pay securely using your mobile money account. Supported providers in Ghana.
+        Pay securely using your mobile money account. Supported providers in
+        Ghana.
       </Typography>
-      
+
       {/* Stepper */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Stepper activeStep={activeStep} alternativeLabel>
@@ -547,14 +605,14 @@ const GhanaianMobileMoneyInterface = ({
           ))}
         </Stepper>
       </Paper>
-      
+
       {/* Step Content */}
       {activeStep === 0 && (
         <Box>
           <Typography variant="h6" gutterBottom>
             Select Your Mobile Money Provider
           </Typography>
-          
+
           {/* Saved Numbers */}
           {savedNumbers.length > 0 && (
             <Paper sx={{ p: 2, mb: 3 }}>
@@ -563,11 +621,22 @@ const GhanaianMobileMoneyInterface = ({
               </Typography>
               <List>
                 {savedNumbers.map((savedNumber, index) => {
-                  const provider = momoProviders.find(p => p.id === savedNumber.provider);
+                  const provider = momoProviders.find(
+                    (p) => p.id === savedNumber.provider,
+                  );
                   return (
-                    <ListItem key={index} button onClick={() => handleSavedNumberSelect(savedNumber)}>
+                    <ListItem
+                      key={index}
+                      button
+                      onClick={() => handleSavedNumberSelect(savedNumber)}
+                    >
                       <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: alpha(provider.color, 0.1), color: provider.color }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: alpha(provider.color, 0.1),
+                            color: provider.color,
+                          }}
+                        >
                           <MobileIcon />
                         </Avatar>
                       </ListItemAvatar>
@@ -585,19 +654,19 @@ const GhanaianMobileMoneyInterface = ({
               <Divider sx={{ my: 2 }} />
             </Paper>
           )}
-          
+
           <Grid container spacing={3}>
             {momoProviders.map(renderProviderCard)}
           </Grid>
         </Box>
       )}
-      
+
       {activeStep === 1 && (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             Enter Your Phone Number
           </Typography>
-          
+
           <TextField
             fullWidth
             label="Mobile Money Number"
@@ -613,20 +682,21 @@ const GhanaianMobileMoneyInterface = ({
             }}
             helperText={
               phoneNumber.length >= 3 && selectedProvider
-                ? `${momoProviders.find(p => p.id === selectedProvider)?.shortName} number detected`
+                ? `${momoProviders.find((p) => p.id === selectedProvider)?.shortName} number detected`
                 : 'Enter your 10-digit mobile money number'
             }
             sx={{ mb: 3 }}
           />
-          
+
           {selectedProvider && (
             <Alert severity="info" sx={{ mb: 2 }}>
               <Typography variant="body2">
-                Provider: {momoProviders.find(p => p.id === selectedProvider)?.name}
+                Provider:{' '}
+                {momoProviders.find((p) => p.id === selectedProvider)?.name}
               </Typography>
             </Alert>
           )}
-          
+
           <Box display="flex" gap={2}>
             <Button variant="outlined" onClick={() => setActiveStep(0)}>
               Back
@@ -641,22 +711,29 @@ const GhanaianMobileMoneyInterface = ({
           </Box>
         </Paper>
       )}
-      
+
       {activeStep === 2 && renderPaymentConfirmation()}
-      
+
       {(activeStep === 3 || activeStep === 4) && renderProcessingStatus()}
-      
+
       {/* PIN Dialog */}
-      <Dialog open={showPinDialog} onClose={() => setShowPinDialog(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={showPinDialog}
+        onClose={() => setShowPinDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle display="flex" alignItems="center" gap={1}>
           <SecurityIcon color="primary" />
           Enter Your PIN
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Please enter your {momoProviders.find(p => p.id === selectedProvider)?.shortName} PIN to authorize this payment.
+            Please enter your{' '}
+            {momoProviders.find((p) => p.id === selectedProvider)?.shortName}{' '}
+            PIN to authorize this payment.
           </Typography>
-          
+
           <TextField
             fullWidth
             type="password"
@@ -667,10 +744,11 @@ const GhanaianMobileMoneyInterface = ({
             inputProps={{ maxLength: 4 }}
             sx={{ mt: 2 }}
           />
-          
+
           <Alert severity="warning" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              Never share your PIN with anyone. We'll never ask for your PIN outside of this secure payment process.
+              Never share your PIN with anyone. We'll never ask for your PIN
+              outside of this secure payment process.
             </Typography>
           </Alert>
         </DialogContent>
@@ -680,7 +758,9 @@ const GhanaianMobileMoneyInterface = ({
             onClick={handlePinSubmit}
             variant="contained"
             disabled={pin.length !== 4 || processing}
-            startIcon={processing ? <CircularProgress size={20} /> : <SecurityIcon />}
+            startIcon={
+              processing ? <CircularProgress size={20} /> : <SecurityIcon />
+            }
           >
             {processing ? 'Confirming...' : 'Confirm Payment'}
           </Button>

@@ -1,6 +1,6 @@
 /**
  * Secure Storage Utility
- * 
+ *
  * Provides secure client-side storage for sensitive data like tokens
  * with encryption, automatic cleanup, and security best practices.
  */
@@ -12,14 +12,17 @@ class SecureStorage {
     this.storageKey = 'kelmah_secure_data';
     this.encryptionKey = this.generateEncryptionKey();
     this.maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    
+
     // Initialize storage with error recovery
     this.initializeStorage();
-    
+
     // Set up periodic cleanup
-    setInterval(() => {
-      this.cleanupExpiredData();
-    }, 60 * 60 * 1000); // Every hour
+    setInterval(
+      () => {
+        this.cleanupExpiredData();
+      },
+      60 * 60 * 1000,
+    ); // Every hour
   }
 
   /**
@@ -30,7 +33,10 @@ class SecureStorage {
       // Try to access storage to detect corruption early
       this.cleanupExpiredData();
     } catch (error) {
-      console.warn('Storage initialization failed, performing recovery:', error.message);
+      console.warn(
+        'Storage initialization failed, performing recovery:',
+        error.message,
+      );
       this.performStorageRecovery();
     }
   }
@@ -41,27 +47,36 @@ class SecureStorage {
   performStorageRecovery() {
     try {
       console.log('Performing storage recovery...');
-      
+
       // Clear all Kelmah-related localStorage keys
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('kelmah') || key.includes('auth') || key.includes('token'))) {
+        if (
+          key &&
+          (key.startsWith('kelmah') ||
+            key.includes('auth') ||
+            key.includes('token'))
+        ) {
           keysToRemove.push(key);
         }
       }
-      
-      keysToRemove.forEach(key => {
+
+      keysToRemove.forEach((key) => {
         try {
           localStorage.removeItem(key);
         } catch (removeError) {
-          console.warn('Failed to remove key during recovery:', key, removeError);
+          console.warn(
+            'Failed to remove key during recovery:',
+            key,
+            removeError,
+          );
         }
       });
-      
+
       // Regenerate encryption key
       this.encryptionKey = this.generateEncryptionKey();
-      
+
       console.log('Storage recovery completed');
       return true;
     } catch (error) {
@@ -91,7 +106,8 @@ class SecureStorage {
    * Generate unique session ID
    */
   generateSessionId() {
-    const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const sessionId =
+      'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     sessionStorage.setItem('session_id', sessionId);
     return sessionId;
   }
@@ -109,6 +125,10 @@ class SecureStorage {
       }
       return secret;
     } catch (error) {
+      console.warn(
+        'Local storage unavailable, using session-scoped secret:',
+        error?.message || error,
+      );
       // Fallback to session-scoped value if localStorage is unavailable
       return sessionStorage.getItem('session_id') || this.generateSessionId();
     }
@@ -120,7 +140,10 @@ class SecureStorage {
   encrypt(data) {
     try {
       const jsonString = JSON.stringify(data);
-      const encrypted = CryptoJS.AES.encrypt(jsonString, this.encryptionKey).toString();
+      const encrypted = CryptoJS.AES.encrypt(
+        jsonString,
+        this.encryptionKey,
+      ).toString();
       return encrypted;
     } catch (error) {
       console.error('Encryption failed:', error);
@@ -140,15 +163,20 @@ class SecureStorage {
 
       const decrypted = CryptoJS.AES.decrypt(encryptedData, this.encryptionKey);
       const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
-      
+
       if (!jsonString || jsonString.trim() === '') {
-        console.warn('Decryption resulted in empty string - possibly wrong key or corrupted data');
+        console.warn(
+          'Decryption resulted in empty string - possibly wrong key or corrupted data',
+        );
         return null;
       }
-      
+
       return JSON.parse(jsonString);
     } catch (error) {
-      console.warn('Decryption failed, clearing corrupted storage:', error.message);
+      console.warn(
+        'Decryption failed, clearing corrupted storage:',
+        error.message,
+      );
       // Clear the corrupted data immediately
       try {
         localStorage.removeItem(this.storageKey);
@@ -192,7 +220,7 @@ class SecureStorage {
       const dataWithTimestamp = {
         ...data,
         _timestamp: Date.now(),
-        _version: '1.0'
+        _version: '1.0',
       };
 
       const encrypted = this.encrypt(dataWithTimestamp);
@@ -214,7 +242,7 @@ class SecureStorage {
     const currentData = this.getSecureData();
     currentData[key] = {
       value,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     return this.setSecureData(currentData);
   }
@@ -270,11 +298,15 @@ class SecureStorage {
       const data = this.getSecureData();
       let hasChanges = false;
 
-      Object.keys(data).forEach(key => {
+      Object.keys(data).forEach((key) => {
         if (key.startsWith('_')) return; // Skip metadata
 
         const item = data[key];
-        if (item && item.timestamp && Date.now() - item.timestamp > this.maxAge) {
+        if (
+          item &&
+          item.timestamp &&
+          Date.now() - item.timestamp > this.maxAge
+        ) {
           delete data[key];
           hasChanges = true;
         }
@@ -321,11 +353,12 @@ class SecureStorage {
   getStorageInfo() {
     const data = this.getSecureData();
     return {
-      keys: Object.keys(data).filter(key => !key.startsWith('_')),
-      totalItems: Object.keys(data).filter(key => !key.startsWith('_')).length,
+      keys: Object.keys(data).filter((key) => !key.startsWith('_')),
+      totalItems: Object.keys(data).filter((key) => !key.startsWith('_'))
+        .length,
       lastUpdated: data._timestamp,
       version: data._version,
-      isSecureContext: this.isSecureContext()
+      isSecureContext: this.isSecureContext(),
     };
   }
 
@@ -333,7 +366,7 @@ class SecureStorage {
   validateData() {
     try {
       const data = this.getSecureData();
-      
+
       // Check if data structure is valid
       if (typeof data !== 'object') {
         return false;
@@ -342,7 +375,7 @@ class SecureStorage {
       // Check if we can decrypt and re-encrypt
       const testKey = 'validation_test';
       const testValue = { test: true, timestamp: Date.now() };
-      
+
       this.setItem(testKey, testValue);
       const retrieved = this.getItem(testKey);
       this.removeItem(testKey);

@@ -46,12 +46,12 @@ import {
 import { useSnackbar } from 'notistack';
 import locationService from '../services/locationService';
 
-const LocationBasedSearch = ({ 
-  onLocationSelect, 
-  initialLocation = null, 
+const LocationBasedSearch = ({
+  onLocationSelect,
+  initialLocation = null,
   radius = 10,
   showMap = true,
-  compact = false 
+  compact = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -72,68 +72,188 @@ const LocationBasedSearch = ({
     {
       name: 'Greater Accra Region',
       cities: [
-        { name: 'Accra', type: 'capital', jobs: 245, coordinates: [5.6037, -0.1870] },
+        {
+          name: 'Accra',
+          type: 'capital',
+          jobs: 245,
+          coordinates: [5.6037, -0.187],
+        },
         { name: 'Tema', type: 'city', jobs: 89, coordinates: [5.6698, 0.0166] },
-        { name: 'Kasoa', type: 'city', jobs: 67, coordinates: [5.5289, -0.4177] },
-        { name: 'Madina', type: 'suburb', jobs: 45, coordinates: [5.6819, -0.1676] },
-        { name: 'East Legon', type: 'suburb', jobs: 78, coordinates: [5.6504, -0.1615] },
-        { name: 'Airport City', type: 'district', jobs: 34, coordinates: [5.6054, -0.1699] },
-        { name: 'Spintex', type: 'area', jobs: 56, coordinates: [5.6234, -0.1234] },
-        { name: 'Dansoman', type: 'suburb', jobs: 23, coordinates: [5.5397, -0.2618] },
-      ]
+        {
+          name: 'Kasoa',
+          type: 'city',
+          jobs: 67,
+          coordinates: [5.5289, -0.4177],
+        },
+        {
+          name: 'Madina',
+          type: 'suburb',
+          jobs: 45,
+          coordinates: [5.6819, -0.1676],
+        },
+        {
+          name: 'East Legon',
+          type: 'suburb',
+          jobs: 78,
+          coordinates: [5.6504, -0.1615],
+        },
+        {
+          name: 'Airport City',
+          type: 'district',
+          jobs: 34,
+          coordinates: [5.6054, -0.1699],
+        },
+        {
+          name: 'Spintex',
+          type: 'area',
+          jobs: 56,
+          coordinates: [5.6234, -0.1234],
+        },
+        {
+          name: 'Dansoman',
+          type: 'suburb',
+          jobs: 23,
+          coordinates: [5.5397, -0.2618],
+        },
+      ],
     },
     {
       name: 'Ashanti Region',
       cities: [
-        { name: 'Kumasi', type: 'capital', jobs: 156, coordinates: [6.6885, -1.6244] },
-        { name: 'Obuasi', type: 'city', jobs: 34, coordinates: [6.2027, -1.6634] },
-        { name: 'Ejisu', type: 'town', jobs: 12, coordinates: [6.7439, -1.3690] },
-        { name: 'Mampong', type: 'town', jobs: 18, coordinates: [7.0632, -1.4009] },
-      ]
+        {
+          name: 'Kumasi',
+          type: 'capital',
+          jobs: 156,
+          coordinates: [6.6885, -1.6244],
+        },
+        {
+          name: 'Obuasi',
+          type: 'city',
+          jobs: 34,
+          coordinates: [6.2027, -1.6634],
+        },
+        {
+          name: 'Ejisu',
+          type: 'town',
+          jobs: 12,
+          coordinates: [6.7439, -1.369],
+        },
+        {
+          name: 'Mampong',
+          type: 'town',
+          jobs: 18,
+          coordinates: [7.0632, -1.4009],
+        },
+      ],
     },
     {
       name: 'Western Region',
       cities: [
-        { name: 'Sekondi-Takoradi', type: 'capital', jobs: 98, coordinates: [4.9344, -1.7569] },
-        { name: 'Tarkwa', type: 'city', jobs: 45, coordinates: [5.3006, -1.9967] },
-        { name: 'Axim', type: 'town', jobs: 15, coordinates: [4.8665, -2.2405] },
-      ]
+        {
+          name: 'Sekondi-Takoradi',
+          type: 'capital',
+          jobs: 98,
+          coordinates: [4.9344, -1.7569],
+        },
+        {
+          name: 'Tarkwa',
+          type: 'city',
+          jobs: 45,
+          coordinates: [5.3006, -1.9967],
+        },
+        {
+          name: 'Axim',
+          type: 'town',
+          jobs: 15,
+          coordinates: [4.8665, -2.2405],
+        },
+      ],
     },
     {
       name: 'Central Region',
       cities: [
-        { name: 'Cape Coast', type: 'capital', jobs: 67, coordinates: [5.1340, -1.2811] },
-        { name: 'Winneba', type: 'city', jobs: 23, coordinates: [5.3511, -0.6250] },
-        { name: 'Swedru', type: 'town', jobs: 19, coordinates: [5.5344, -0.6987] },
-      ]
+        {
+          name: 'Cape Coast',
+          type: 'capital',
+          jobs: 67,
+          coordinates: [5.134, -1.2811],
+        },
+        {
+          name: 'Winneba',
+          type: 'city',
+          jobs: 23,
+          coordinates: [5.3511, -0.625],
+        },
+        {
+          name: 'Swedru',
+          type: 'town',
+          jobs: 19,
+          coordinates: [5.5344, -0.6987],
+        },
+      ],
     },
     {
       name: 'Northern Region',
       cities: [
-        { name: 'Tamale', type: 'capital', jobs: 78, coordinates: [9.4034, -0.8424] },
-        { name: 'Yendi', type: 'town', jobs: 12, coordinates: [9.4427, -0.0093] },
-      ]
+        {
+          name: 'Tamale',
+          type: 'capital',
+          jobs: 78,
+          coordinates: [9.4034, -0.8424],
+        },
+        {
+          name: 'Yendi',
+          type: 'town',
+          jobs: 12,
+          coordinates: [9.4427, -0.0093],
+        },
+      ],
     },
     {
       name: 'Other Regions',
       cities: [
-        { name: 'Ho', type: 'capital', jobs: 34, coordinates: [6.6009, 0.4704] },
-        { name: 'Koforidua', type: 'capital', jobs: 45, coordinates: [6.0936, -0.2570] },
-        { name: 'Sunyani', type: 'capital', jobs: 28, coordinates: [7.3382, -2.3265] },
-        { name: 'Wa', type: 'capital', jobs: 15, coordinates: [10.0606, -2.5057] },
-        { name: 'Bolgatanga', type: 'capital', jobs: 18, coordinates: [10.7856, -0.8513] },
-      ]
-    }
+        {
+          name: 'Ho',
+          type: 'capital',
+          jobs: 34,
+          coordinates: [6.6009, 0.4704],
+        },
+        {
+          name: 'Koforidua',
+          type: 'capital',
+          jobs: 45,
+          coordinates: [6.0936, -0.257],
+        },
+        {
+          name: 'Sunyani',
+          type: 'capital',
+          jobs: 28,
+          coordinates: [7.3382, -2.3265],
+        },
+        {
+          name: 'Wa',
+          type: 'capital',
+          jobs: 15,
+          coordinates: [10.0606, -2.5057],
+        },
+        {
+          name: 'Bolgatanga',
+          type: 'capital',
+          jobs: 18,
+          coordinates: [10.7856, -0.8513],
+        },
+      ],
+    },
   ];
 
   // All cities flattened for search
-  const allCities = ghanaRegions.flatMap(region => 
-    region.cities.map(city => ({
+  const allCities = ghanaRegions.flatMap((region) =>
+    region.cities.map((city) => ({
       ...city,
       region: region.name,
       label: `${city.name}, ${region.name}`,
-      value: city.name
-    }))
+      value: city.name,
+    })),
   );
 
   // Load initial data
@@ -165,12 +285,14 @@ const LocationBasedSearch = ({
   // Get current location
   const getCurrentLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      enqueueSnackbar('Geolocation is not supported by this browser', { variant: 'error' });
+      enqueueSnackbar('Geolocation is not supported by this browser', {
+        variant: 'error',
+      });
       return;
     }
 
     setGettingLocation(true);
-    
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
@@ -178,28 +300,35 @@ const LocationBasedSearch = ({
           const location = {
             coordinates: [latitude, longitude],
             name: 'Current Location',
-            type: 'current'
+            type: 'current',
           };
-          
+
           // Try to get address from coordinates
-          const addressResponse = await locationService.reverseGeocode(latitude, longitude);
+          const addressResponse = await locationService.reverseGeocode(
+            latitude,
+            longitude,
+          );
           if (addressResponse.data) {
             location.name = addressResponse.data.address;
             location.city = addressResponse.data.city;
             location.region = addressResponse.data.region;
           }
-          
+
           setCurrentLocation(location);
           if (onLocationSelect) {
             onLocationSelect(location, searchRadius);
           }
-          
+
           // Load nearby locations
           loadNearbyLocations(latitude, longitude);
-          
-          enqueueSnackbar('Location detected successfully', { variant: 'success' });
+
+          enqueueSnackbar('Location detected successfully', {
+            variant: 'success',
+          });
         } catch (error) {
-          enqueueSnackbar('Failed to get location details', { variant: 'error' });
+          enqueueSnackbar('Failed to get location details', {
+            variant: 'error',
+          });
         } finally {
           setGettingLocation(false);
         }
@@ -207,7 +336,7 @@ const LocationBasedSearch = ({
       (error) => {
         setGettingLocation(false);
         let message = 'Failed to get your location';
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             message = 'Location access denied by user';
@@ -219,14 +348,14 @@ const LocationBasedSearch = ({
             message = 'Location request timed out';
             break;
         }
-        
+
         enqueueSnackbar(message, { variant: 'error' });
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000 // 5 minutes
-      }
+        maximumAge: 300000, // 5 minutes
+      },
     );
   }, [enqueueSnackbar, onLocationSelect, searchRadius]);
 
@@ -234,7 +363,11 @@ const LocationBasedSearch = ({
   const loadNearbyLocations = async (lat, lng) => {
     try {
       setLoading(true);
-      const response = await locationService.getNearbyLocations(lat, lng, searchRadius);
+      const response = await locationService.getNearbyLocations(
+        lat,
+        lng,
+        searchRadius,
+      );
       setNearbyLocations(response.data || []);
     } catch (error) {
       console.error('Failed to load nearby locations:', error);
@@ -246,7 +379,7 @@ const LocationBasedSearch = ({
   // Handle location selection
   const handleLocationSelect = async (location) => {
     setCurrentLocation(location);
-    
+
     // Save to recent searches
     try {
       await locationService.saveRecentSearch(location);
@@ -254,7 +387,7 @@ const LocationBasedSearch = ({
     } catch (error) {
       console.error('Failed to save recent search:', error);
     }
-    
+
     if (onLocationSelect) {
       onLocationSelect(location, searchRadius);
     }
@@ -263,21 +396,24 @@ const LocationBasedSearch = ({
   // Handle radius change
   const handleRadiusChange = (event, newValue) => {
     setSearchRadius(newValue);
-    
+
     if (currentLocation && onLocationSelect) {
       onLocationSelect(currentLocation, newValue);
     }
-    
+
     // If we have coordinates, reload nearby locations
     if (currentLocation?.coordinates) {
-      loadNearbyLocations(currentLocation.coordinates[0], currentLocation.coordinates[1]);
+      loadNearbyLocations(
+        currentLocation.coordinates[0],
+        currentLocation.coordinates[1],
+      );
     }
   };
 
   // Handle search
   const handleSearch = async (query) => {
     if (!query.trim()) return;
-    
+
     try {
       setLoading(true);
       const response = await locationService.searchLocations(query);
@@ -310,13 +446,15 @@ const LocationBasedSearch = ({
   const renderLocationItem = (location, showJobCount = true) => (
     <ListItem key={location.name} disablePadding>
       <ListItemButton onClick={() => handleLocationSelect(location)}>
-        <ListItemIcon>
-          {getLocationIcon(location.type)}
-        </ListItemIcon>
+        <ListItemIcon>{getLocationIcon(location.type)}</ListItemIcon>
         <ListItemText
           primary={location.name}
           secondary={
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
               <Typography variant="body2" color="text.secondary">
                 {location.region || location.city}
               </Typography>
@@ -338,7 +476,13 @@ const LocationBasedSearch = ({
   return (
     <Box>
       {!compact && (
-        <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          display="flex"
+          alignItems="center"
+          gap={1}
+        >
           <LocationIcon color="primary" />
           Location-Based Search
         </Typography>
@@ -346,12 +490,23 @@ const LocationBasedSearch = ({
 
       {/* Current Location Section */}
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
           <Typography variant="subtitle1">Current Location</Typography>
           <Button
             variant="outlined"
             size="small"
-            startIcon={gettingLocation ? <CircularProgress size={16} /> : <MyLocationIcon />}
+            startIcon={
+              gettingLocation ? (
+                <CircularProgress size={16} />
+              ) : (
+                <MyLocationIcon />
+              )
+            }
             onClick={getCurrentLocation}
             disabled={gettingLocation}
           >
@@ -360,8 +515,8 @@ const LocationBasedSearch = ({
         </Box>
 
         {currentLocation ? (
-          <Alert 
-            severity="success" 
+          <Alert
+            severity="success"
             icon={<LocationIcon />}
             action={
               <IconButton size="small" onClick={() => setCurrentLocation(null)}>
@@ -398,7 +553,7 @@ const LocationBasedSearch = ({
                 { value: 5, label: '5km' },
                 { value: 15, label: '15km' },
                 { value: 30, label: '30km' },
-                { value: 50, label: '50km' }
+                { value: 50, label: '50km' },
               ]}
               valueLabelDisplay="auto"
               valueLabelFormat={(value) => `${value}km`}
@@ -468,7 +623,13 @@ const LocationBasedSearch = ({
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="subtitle1" gutterBottom display="flex" alignItems="center" gap={1}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                display="flex"
+                alignItems="center"
+                gap={1}
+              >
                 <TravelIcon color="primary" />
                 Popular Locations
               </Typography>
@@ -486,13 +647,22 @@ const LocationBasedSearch = ({
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="subtitle1" gutterBottom display="flex" alignItems="center" gap={1}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                display="flex"
+                alignItems="center"
+                gap={1}
+              >
                 <MapIcon color="primary" />
                 Browse by Region
               </Typography>
               <List dense>
                 {ghanaRegions.map((region) => {
-                  const totalJobs = region.cities.reduce((sum, city) => sum + (city.jobs || 0), 0);
+                  const totalJobs = region.cities.reduce(
+                    (sum, city) => sum + (city.jobs || 0),
+                    0,
+                  );
                   return (
                     <ListItem key={region.name} disablePadding>
                       <ListItemButton>
@@ -502,8 +672,15 @@ const LocationBasedSearch = ({
                         <ListItemText
                           primary={region.name}
                           secondary={
-                            <Box display="flex" alignItems="center" justifyContent="space-between">
-                              <Typography variant="body2" color="text.secondary">
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {region.cities.length} cities
                               </Typography>
                               <Chip
@@ -529,12 +706,20 @@ const LocationBasedSearch = ({
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="subtitle1" gutterBottom display="flex" alignItems="center" gap={1}>
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                >
                   <ExploreIcon color="primary" />
                   Recent Searches
                 </Typography>
                 <List dense>
-                  {recentSearches.slice(0, 5).map((location) => renderLocationItem(location, false))}
+                  {recentSearches
+                    .slice(0, 5)
+                    .map((location) => renderLocationItem(location, false))}
                 </List>
               </CardContent>
             </Card>
@@ -546,12 +731,20 @@ const LocationBasedSearch = ({
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="subtitle1" gutterBottom display="flex" alignItems="center" gap={1}>
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                >
                   <NearMeIcon color="primary" />
                   Nearby Locations
                 </Typography>
                 <List dense>
-                  {nearbyLocations.map((location) => renderLocationItem(location))}
+                  {nearbyLocations.map((location) =>
+                    renderLocationItem(location),
+                  )}
                 </List>
               </CardContent>
             </Card>
@@ -569,7 +762,10 @@ const LocationBasedSearch = ({
             <Grid item xs={6} sm={3}>
               <Box textAlign="center">
                 <Typography variant="h4" color="primary">
-                  {nearbyLocations.reduce((sum, loc) => sum + (loc.jobs || 0), 0)}
+                  {nearbyLocations.reduce(
+                    (sum, loc) => sum + (loc.jobs || 0),
+                    0,
+                  )}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   Nearby Jobs

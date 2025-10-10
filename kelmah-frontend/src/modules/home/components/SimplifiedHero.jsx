@@ -213,10 +213,14 @@ const SimplifiedHero = () => {
                       >
                         🚀 How It Works
                       </Typography>
-                      
+
                       <Stack spacing={2}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar sx={{ bgcolor: '#4CAF50', width: 48, height: 48 }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <Avatar
+                            sx={{ bgcolor: '#4CAF50', width: 48, height: 48 }}
+                          >
                             1
                           </Avatar>
                           <Box>
@@ -229,8 +233,12 @@ const SimplifiedHero = () => {
                           </Box>
                         </Box>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar sx={{ bgcolor: '#2196F3', width: 48, height: 48 }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <Avatar
+                            sx={{ bgcolor: '#2196F3', width: 48, height: 48 }}
+                          >
                             2
                           </Avatar>
                           <Box>
@@ -243,8 +251,12 @@ const SimplifiedHero = () => {
                           </Box>
                         </Box>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar sx={{ bgcolor: '#FF9800', width: 48, height: 48 }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <Avatar
+                            sx={{ bgcolor: '#FF9800', width: 48, height: 48 }}
+                          >
                             3
                           </Avatar>
                           <Box>
@@ -257,8 +269,12 @@ const SimplifiedHero = () => {
                           </Box>
                         </Box>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar sx={{ bgcolor: '#FFD700', width: 48, height: 48 }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <Avatar
+                            sx={{ bgcolor: '#FFD700', width: 48, height: 48 }}
+                          >
                             4
                           </Avatar>
                           <Box>

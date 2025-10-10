@@ -90,7 +90,11 @@ const StatusChip = ({ status }) => {
       case 'open':
         return { label: 'Open', color: 'success', icon: <ActiveIcon /> };
       case 'in-progress':
-        return { label: 'In Progress', color: 'warning', icon: <ExpiredIcon /> };
+        return {
+          label: 'In Progress',
+          color: 'warning',
+          icon: <ExpiredIcon />,
+        };
       case 'completed':
         return { label: 'Completed', color: 'success', icon: <ActiveIcon /> };
       case 'cancelled':
@@ -150,7 +154,14 @@ const JobManagementPage = () => {
   }, [dispatch]);
 
   // Tab statuses (canonical)
-  const tabStatuses = ['all', 'open', 'in-progress', 'completed', 'cancelled', 'draft'];
+  const tabStatuses = [
+    'all',
+    'open',
+    'in-progress',
+    'completed',
+    'cancelled',
+    'draft',
+  ];
 
   // Filter jobs based on tab and search
   const filteredJobs = jobs.filter((job) => {
@@ -374,9 +385,12 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 In Progress
-                {jobs.filter((job) => job.status === 'in-progress').length > 0 && (
+                {jobs.filter((job) => job.status === 'in-progress').length >
+                  0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'in-progress').length}
+                    label={
+                      jobs.filter((job) => job.status === 'in-progress').length
+                    }
                     size="small"
                     color="warning"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
@@ -389,9 +403,12 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 Completed
-                {jobs.filter((job) => job.status === 'completed').length > 0 && (
+                {jobs.filter((job) => job.status === 'completed').length >
+                  0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'completed').length}
+                    label={
+                      jobs.filter((job) => job.status === 'completed').length
+                    }
                     size="small"
                     color="success"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
@@ -404,9 +421,12 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 Cancelled
-                {jobs.filter((job) => job.status === 'cancelled').length > 0 && (
+                {jobs.filter((job) => job.status === 'cancelled').length >
+                  0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'cancelled').length}
+                    label={
+                      jobs.filter((job) => job.status === 'cancelled').length
+                    }
                     size="small"
                     color="error"
                     sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}

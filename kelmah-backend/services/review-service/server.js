@@ -159,6 +159,38 @@ async function connectDbWithRetry() {
 // Initialize database connection
 connectDbWithRetry();
 
+const buildHealthStatus = () => {
+  const mongoState = mongoose.connection.readyState;
+  const mongoStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+
+  const healthy = mongoState === 1;
+
+  return {
+    status: healthy ? 'healthy' : 'degraded',
+    service: 'review-service',
+    timestamp: new Date().toISOString(),
+    version: process.env.APP_VERSION || '1.0.0',
+    database: {
+      state: mongoStates[mongoState] || 'unknown',
+      connected: healthy,
+      host: mongoose.connection.host || null,
+      name: mongoose.connection.name || null,
+    },
+    uptime: process.uptime(),
+  };
+};
+
+const healthHandler = (req, res) => {
+  const payload = buildHealthStatus();
+  const statusCode = payload.status === 'healthy' ? 200 : 503;
+  res.status(statusCode).json(payload);
+};
+
 // ==================== ROUTES ====================
 
 // Health check endpoint
@@ -177,6 +209,9 @@ app.get('/', (req, res) => {
     }
   });
 });
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // Review routes
 app.post('/api/reviews', reviewController.submitReview);

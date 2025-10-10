@@ -90,7 +90,8 @@ const EnhancedReviewsPage = () => {
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null); // Fix: Added missing filterMenuAnchor state
   const [sortMenuAnchor, setSortMenuAnchor] = useState(null); // Fix: Added missing sortMenuAnchor state
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null); // Fix: Added missing moreMenuAnchor state
-  const [feedback, setFeedback] = useState({ // Fix: Added missing feedback state
+  const [feedback, setFeedback] = useState({
+    // Fix: Added missing feedback state
     open: false,
     message: '',
     severity: 'success',
@@ -115,9 +116,20 @@ const EnhancedReviewsPage = () => {
         } else {
           const [stats, workerReviews] = await Promise.all([
             reviewsApi.getWorkerRating(user.id),
-            reviewsApi.getWorkerReviews(user.id, { limit: 20, status: 'approved' })
+            reviewsApi.getWorkerReviews(user.id, {
+              limit: 20,
+              status: 'approved',
+            }),
           ]);
-          setReviewStats({ overall: { averageRating: stats.averageRating, totalReviews: stats.totalReviews, ratingDistribution: stats.ratingDistribution }, categories: stats.categoryRatings || {}, recent: {} });
+          setReviewStats({
+            overall: {
+              averageRating: stats.averageRating,
+              totalReviews: stats.totalReviews,
+              ratingDistribution: stats.ratingDistribution,
+            },
+            categories: stats.categoryRatings || {},
+            recent: {},
+          });
           setReviews(workerReviews?.reviews || []);
         }
       } catch (error) {

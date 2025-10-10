@@ -5,7 +5,10 @@
  * and comprehensive mock data fallbacks.
  */
 
-import { userServiceClient, jobServiceClient } from '../../common/services/axios';
+import {
+  userServiceClient,
+  jobServiceClient,
+} from '../../common/services/axios';
 
 // Clients come preconfigured with auth and retries
 
@@ -18,14 +21,20 @@ export const hirerService = {
       const response = await userServiceClient.get('/api/users/me/credentials');
       return response.data;
     } catch (error) {
-      console.warn('User service unavailable for hirer profile:', error.message);
+      console.warn(
+        'User service unavailable for hirer profile:',
+        error.message,
+      );
       throw error;
     }
   },
 
   async updateProfile(profileData) {
     try {
-      const response = await userServiceClient.put('/api/users/me/profile', profileData);
+      const response = await userServiceClient.put(
+        '/api/users/me/profile',
+        profileData,
+      );
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -51,15 +60,15 @@ export const hirerService = {
 
   searchWorkers: async (searchParams = {}) => {
     try {
-      const response = await userServiceClient.get('/api/users/workers/search', {
-        params: searchParams,
-      });
+      const response = await userServiceClient.get(
+        '/api/users/workers/search',
+        {
+          params: searchParams,
+        },
+      );
       return response.data;
     } catch (error) {
-      console.warn(
-        'Worker search unavailable:',
-        error.message,
-      );
+      console.warn('Worker search unavailable:', error.message);
       return {
         workers: [],
         pagination: { currentPage: 1, totalPages: 1, totalItems: 0 },
@@ -69,7 +78,9 @@ export const hirerService = {
 
   async getSavedWorkers() {
     try {
-      const response = await userServiceClient.get('/api/users/me/saved-workers');
+      const response = await userServiceClient.get(
+        '/api/users/me/saved-workers',
+      );
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Saved workers unavailable:', error.message);
@@ -79,7 +90,10 @@ export const hirerService = {
 
   async saveWorker(workerId) {
     try {
-      const response = await userServiceClient.post('/api/users/me/saved-workers', { workerId });
+      const response = await userServiceClient.post(
+        '/api/users/me/saved-workers',
+        { workerId },
+      );
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -89,7 +103,9 @@ export const hirerService = {
 
   async unsaveWorker(workerId) {
     try {
-      const response = await userServiceClient.delete(`/api/users/me/saved-workers/${workerId}`);
+      const response = await userServiceClient.delete(
+        `/api/users/me/saved-workers/${workerId}`,
+      );
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);

@@ -1,5 +1,12 @@
 import React from 'react';
-import { BottomNavigation, BottomNavigationAction, Paper, Badge, useTheme, Box } from '@mui/material';
+import {
+  BottomNavigation,
+  BottomNavigationAction,
+  Paper,
+  Badge,
+  useTheme,
+  Box,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import {
@@ -31,33 +38,35 @@ const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
   paddingBottom: theme.spacing(1),
 }));
 
-const StyledBottomNavigationAction = styled(BottomNavigationAction)(({ theme }) => ({
-  color: '#b2afa3',
-  minWidth: 'auto',
-  padding: theme.spacing(0.5, 1),
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&.Mui-selected': {
-    color: 'white',
+const StyledBottomNavigationAction = styled(BottomNavigationAction)(
+  ({ theme }) => ({
+    color: '#b2afa3',
+    minWidth: 'auto',
+    padding: theme.spacing(0.5, 1),
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&.Mui-selected': {
+      color: 'white',
+      '& .MuiBottomNavigationAction-label': {
+        fontSize: '0.75rem',
+        fontWeight: 600,
+        letterSpacing: '0.015em',
+      },
+      '& .MuiSvgIcon-root': {
+        transform: 'scale(1.1)',
+      },
+    },
     '& .MuiBottomNavigationAction-label': {
       fontSize: '0.75rem',
-      fontWeight: 600,
+      fontWeight: 500,
+      marginTop: theme.spacing(0.5),
       letterSpacing: '0.015em',
     },
     '& .MuiSvgIcon-root': {
-      transform: 'scale(1.1)',
+      fontSize: '1.5rem',
+      transition: 'transform 0.2s ease',
     },
-  },
-  '& .MuiBottomNavigationAction-label': {
-    fontSize: '0.75rem',
-    fontWeight: 500,
-    marginTop: theme.spacing(0.5),
-    letterSpacing: '0.015em',
-  },
-  '& .MuiSvgIcon-root': {
-    fontSize: '1.5rem',
-    transition: 'transform 0.2s ease',
-  },
-}));
+  }),
+);
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -70,7 +79,12 @@ const MobileBottomNav = () => {
   // Determine current tab based on path
   let currentValue;
   if (path.includes('/dashboard')) currentValue = 'dashboard';
-  else if (path.startsWith('/search') || path.startsWith('/hirer/find-talent') || path.includes('/find-work') || path.startsWith('/find-talents'))
+  else if (
+    path.startsWith('/search') ||
+    path.startsWith('/hirer/find-talent') ||
+    path.includes('/find-work') ||
+    path.startsWith('/find-talents')
+  )
     currentValue = 'jobs';
   else if (path.includes('/applications')) currentValue = 'jobs';
   else if (path.startsWith('/messages')) currentValue = 'messages';
@@ -101,26 +115,26 @@ const MobileBottomNav = () => {
 
   const navigationItems = [
     {
-      label: "Home",
-      value: "dashboard",
+      label: 'Home',
+      value: 'dashboard',
       icon: <HomeIcon />,
       badge: null,
     },
     {
-      label: "Jobs",
-      value: "jobs",
+      label: 'Jobs',
+      value: 'jobs',
       icon: <JobsIcon />,
       badge: null,
     },
     {
-      label: "Messages",
-      value: "messages",
+      label: 'Messages',
+      value: 'messages',
       icon: <MessagesIcon />,
       badge: null,
     },
     {
-      label: "Profile",
-      value: "profile",
+      label: 'Profile',
+      value: 'profile',
       icon: <ProfileIcon />,
       badge: null,
     },

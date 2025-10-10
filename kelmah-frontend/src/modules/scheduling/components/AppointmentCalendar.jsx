@@ -41,7 +41,11 @@ const AppointmentCalendar = ({
       acc[dateKey].push(app);
       return acc;
     } catch (error) {
-      console.warn('Error processing appointment date in calendar:', app.date, error);
+      console.warn(
+        'Error processing appointment date in calendar:',
+        app.date,
+        error,
+      );
       return acc;
     }
   }, {});
@@ -132,7 +136,7 @@ const AppointmentCalendar = ({
           value={selectedDate}
           onChange={onDateChange}
           slots={{
-            day: (props) => renderDay(props.day, null, props)
+            day: (props) => renderDay(props.day, null, props),
           }}
           sx={{
             width: '100%',

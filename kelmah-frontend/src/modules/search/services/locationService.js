@@ -29,7 +29,7 @@ const locationService = {
   getNearbyLocations: async (lat, lng, radius = 10) => {
     try {
       const response = await userServiceClient.get(`${API_URL}/nearby`, {
-        params: { lat, lng, radius }
+        params: { lat, lng, radius },
       });
       return response.data;
     } catch (error) {
@@ -45,7 +45,7 @@ const locationService = {
   searchLocations: async (query) => {
     try {
       const response = await userServiceClient.get(`${API_URL}/search`, {
-        params: { q: query }
+        params: { q: query },
       });
       return response.data;
     } catch (error) {
@@ -61,9 +61,12 @@ const locationService = {
    */
   reverseGeocode: async (lat, lng) => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/reverse-geocode`, {
-        params: { lat, lng }
-      });
+      const response = await userServiceClient.get(
+        `${API_URL}/reverse-geocode`,
+        {
+          params: { lat, lng },
+        },
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -76,7 +79,9 @@ const locationService = {
    */
   getRecentSearches: async () => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/recent-searches`);
+      const response = await userServiceClient.get(
+        `${API_URL}/recent-searches`,
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -90,7 +95,10 @@ const locationService = {
    */
   saveRecentSearch: async (location) => {
     try {
-      const response = await userServiceClient.post(`${API_URL}/recent-searches`, location);
+      const response = await userServiceClient.post(
+        `${API_URL}/recent-searches`,
+        location,
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -104,7 +112,9 @@ const locationService = {
    */
   getLocationStats: async (locationName) => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/stats/${locationName}`);
+      const response = await userServiceClient.get(
+        `${API_URL}/stats/${locationName}`,
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -121,7 +131,7 @@ const locationService = {
     try {
       const response = await userServiceClient.post(`${API_URL}/travel-info`, {
         origin,
-        destination
+        destination,
       });
       return response.data;
     } catch (error) {
@@ -137,13 +147,13 @@ const locationService = {
   getLocationSuggestions: async (query) => {
     try {
       const response = await userServiceClient.get(`${API_URL}/suggestions`, {
-        params: { q: query }
+        params: { q: query },
       });
       return response.data;
     } catch (error) {
       throw error;
     }
-  }
+  },
 };
 
 export default locationService;

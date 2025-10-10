@@ -70,21 +70,36 @@ const EnhancedUpcomingAppointments = () => {
 
   // Generate mock appointment data (dev-only)
   const generateAppointments = () => {
-    const appointmentTypes = ['Client Meeting', 'Project Start', 'Inspection', 'Consultation', 'Material Delivery'];
+    const appointmentTypes = [
+      'Client Meeting',
+      'Project Start',
+      'Inspection',
+      'Consultation',
+      'Material Delivery',
+    ];
     const locations = ['Accra', 'Kumasi', 'Tamale', 'Cape Coast', 'Tema'];
-    const clients = ['Johnson Residence', 'Miller Office', 'Smith Home', 'Brown Construction', 'Davis Renovation'];
-    
+    const clients = [
+      'Johnson Residence',
+      'Miller Office',
+      'Smith Home',
+      'Brown Construction',
+      'Davis Renovation',
+    ];
+
     return Array.from({ length: 6 }, (_, index) => {
       const baseDate = new Date();
       const daysAhead = index === 0 ? 0 : Math.floor(Math.random() * 7) + 1;
-      const appointmentDate = new Date(baseDate.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+      const appointmentDate = new Date(
+        baseDate.getTime() + daysAhead * 24 * 60 * 60 * 1000,
+      );
       const hour = Math.floor(Math.random() * 8) + 9; // 9 AM to 5 PM
       appointmentDate.setHours(hour, index % 2 === 0 ? 0 : 30, 0, 0);
-      
-      const type = appointmentTypes[Math.floor(Math.random() * appointmentTypes.length)];
+
+      const type =
+        appointmentTypes[Math.floor(Math.random() * appointmentTypes.length)];
       const client = clients[Math.floor(Math.random() * clients.length)];
       const location = locations[Math.floor(Math.random() * locations.length)];
-      
+
       return {
         id: `apt_${index + 1}`,
         title: `${type}: ${client}`,
@@ -93,12 +108,18 @@ const EnhancedUpcomingAppointments = () => {
         datetime: appointmentDate,
         location: location,
         duration: Math.floor(Math.random() * 3) + 1, // 1-3 hours
-        status: index === 0 ? 'upcoming' : Math.random() > 0.8 ? 'confirmed' : 'pending',
-        priority: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
+        status:
+          index === 0
+            ? 'upcoming'
+            : Math.random() > 0.8
+              ? 'confirmed'
+              : 'pending',
+        priority:
+          Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
         description: `${type} scheduled with ${client} in ${location}. Please arrive 15 minutes early.`,
         clientContact: {
           phone: '+233 20 123 4567',
-          email: 'client@example.com'
+          email: 'client@example.com',
         },
         reminders: ['1 hour before', '15 minutes before'],
         canReschedule: true,
@@ -127,13 +148,19 @@ const EnhancedUpcomingAppointments = () => {
             status: a.status || 'pending',
             priority: a.priority || 'low',
             description: a.notes || 'Scheduled appointment',
-            clientContact: { phone: a.clientPhone || '', email: a.clientEmail || '' },
+            clientContact: {
+              phone: a.clientPhone || '',
+              email: a.clientEmail || '',
+            },
             reminders: a.reminders || [],
             canReschedule: true,
             canCancel: true,
           }));
           setAppointments(mapped.sort((x, y) => x.datetime - y.datetime));
-        } else if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
+        } else if (
+          import.meta.env.MODE === 'development' &&
+          FEATURES.useMocks
+        ) {
           const appointmentsData = generateAppointments();
           setAppointments(appointmentsData);
         } else {
@@ -170,7 +197,10 @@ const EnhancedUpcomingAppointments = () => {
           status: a.status || 'pending',
           priority: a.priority || 'low',
           description: a.notes || 'Scheduled appointment',
-          clientContact: { phone: a.clientPhone || '', email: a.clientEmail || '' },
+          clientContact: {
+            phone: a.clientPhone || '',
+            email: a.clientEmail || '',
+          },
           reminders: a.reminders || [],
           canReschedule: true,
           canCancel: true,
@@ -192,34 +222,48 @@ const EnhancedUpcomingAppointments = () => {
   };
 
   const handleMarkComplete = (appointmentId) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === appointmentId ? { ...apt, status: 'completed' } : apt
-    ));
+    setAppointments((prev) =>
+      prev.map((apt) =>
+        apt.id === appointmentId ? { ...apt, status: 'completed' } : apt,
+      ),
+    );
   };
 
   const handleCancelAppointment = (appointmentId) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === appointmentId ? { ...apt, status: 'cancelled' } : apt
-    ));
+    setAppointments((prev) =>
+      prev.map((apt) =>
+        apt.id === appointmentId ? { ...apt, status: 'cancelled' } : apt,
+      ),
+    );
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'confirmed': return '#4CAF50';
-      case 'pending': return '#FF9800';
-      case 'upcoming': return '#2196F3';
-      case 'completed': return '#9C27B0';
-      case 'cancelled': return '#F44336';
-      default: return '#9E9E9E';
+      case 'confirmed':
+        return '#4CAF50';
+      case 'pending':
+        return '#FF9800';
+      case 'upcoming':
+        return '#2196F3';
+      case 'completed':
+        return '#9C27B0';
+      case 'cancelled':
+        return '#F44336';
+      default:
+        return '#9E9E9E';
     }
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return '#F44336';
-      case 'medium': return '#FF9800';
-      case 'low': return '#4CAF50';
-      default: return '#9E9E9E';
+      case 'high':
+        return '#F44336';
+      case 'medium':
+        return '#FF9800';
+      case 'low':
+        return '#4CAF50';
+      default:
+        return '#9E9E9E';
     }
   };
 
@@ -227,7 +271,7 @@ const EnhancedUpcomingAppointments = () => {
     const now = new Date();
     const diff = datetime.getTime() - now.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) {
       return `Today, ${datetime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (days === 1) {
@@ -235,23 +279,29 @@ const EnhancedUpcomingAppointments = () => {
     } else if (days < 7) {
       return `${datetime.toLocaleDateString([], { weekday: 'long' })}, ${datetime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else {
-      return datetime.toLocaleDateString([], { 
-        month: 'short', 
+      return datetime.toLocaleDateString([], {
+        month: 'short',
         day: 'numeric',
-        hour: '2-digit', 
-        minute: '2-digit' 
+        hour: '2-digit',
+        minute: '2-digit',
       });
     }
   };
 
   const getAppointmentIcon = (type) => {
     switch (type) {
-      case 'client_meeting': return <PersonIcon />;
-      case 'project_start': return <WorkIcon />;
-      case 'inspection': return <EventIcon />;
-      case 'consultation': return <PersonIcon />;
-      case 'material_delivery': return <WorkIcon />;
-      default: return <EventIcon />;
+      case 'client_meeting':
+        return <PersonIcon />;
+      case 'project_start':
+        return <WorkIcon />;
+      case 'inspection':
+        return <EventIcon />;
+      case 'consultation':
+        return <PersonIcon />;
+      case 'material_delivery':
+        return <WorkIcon />;
+      default:
+        return <EventIcon />;
     }
   };
 
@@ -281,7 +331,11 @@ const EnhancedUpcomingAppointments = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button variant="outlined" onClick={handleRefresh} startIcon={<RefreshIcon />}>
+          <Button
+            variant="outlined"
+            onClick={handleRefresh}
+            startIcon={<RefreshIcon />}
+          >
             Try Again
           </Button>
         </Box>
@@ -295,8 +349,8 @@ const EnhancedUpcomingAppointments = () => {
         title={
           <Stack direction="row" alignItems="center" spacing={2}>
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
-          Upcoming Appointments
-        </Typography>
+              Upcoming Appointments
+            </Typography>
             <ScheduleIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
           </Stack>
         }
@@ -308,12 +362,12 @@ const EnhancedUpcomingAppointments = () => {
               </IconButton>
             </Tooltip>
             <Tooltip title="Refresh">
-              <IconButton 
-                onClick={handleRefresh} 
+              <IconButton
+                onClick={handleRefresh}
                 disabled={refreshing}
                 sx={{ color: '#FFD700' }}
               >
-                <RefreshIcon 
+                <RefreshIcon
                   sx={{
                     animation: refreshing ? 'spin 1s linear infinite' : 'none',
                     '@keyframes spin': {
@@ -329,7 +383,9 @@ const EnhancedUpcomingAppointments = () => {
       >
         {appointments.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <ScheduleIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
+            <ScheduleIcon
+              sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)', mb: 2 }}
+            />
             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
               No upcoming appointments
             </Typography>
@@ -364,30 +420,44 @@ const EnhancedUpcomingAppointments = () => {
                     }}
                     onClick={() => handleViewDetails(appointment)}
                   >
-                <ListItemAvatar>
+                    <ListItemAvatar>
                       <Avatar
                         sx={{
-                          backgroundColor: alpha(getStatusColor(appointment.status), 0.2),
+                          backgroundColor: alpha(
+                            getStatusColor(appointment.status),
+                            0.2,
+                          ),
                           color: getStatusColor(appointment.status),
                           width: 48,
                           height: 48,
                         }}
                       >
                         {getAppointmentIcon(appointment.type)}
-                  </Avatar>
-                </ListItemAvatar>
-                    
-                <ListItemText
+                      </Avatar>
+                    </ListItemAvatar>
+
+                    <ListItemText
                       primary={
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-                          <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 600 }}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1}
+                          sx={{ mb: 0.5 }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ color: '#fff', fontWeight: 600 }}
+                          >
                             {appointment.title}
                           </Typography>
                           <Chip
                             label={appointment.status}
                             size="small"
                             sx={{
-                              backgroundColor: alpha(getStatusColor(appointment.status), 0.2),
+                              backgroundColor: alpha(
+                                getStatusColor(appointment.status),
+                                0.2,
+                              ),
                               color: getStatusColor(appointment.status),
                               fontSize: '0.7rem',
                               height: '20px',
@@ -410,15 +480,39 @@ const EnhancedUpcomingAppointments = () => {
                       }
                       secondary={
                         <Stack spacing={0.5}>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <TimeIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }} />
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={1}
+                          >
+                            <TimeIcon
+                              sx={{
+                                fontSize: 14,
+                                color: 'rgba(255,255,255,0.5)',
+                              }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'rgba(255,255,255,0.7)' }}
+                            >
                               {formatDateTime(appointment.datetime)}
                             </Typography>
                           </Stack>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <LocationIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }} />
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={1}
+                          >
+                            <LocationIcon
+                              sx={{
+                                fontSize: 14,
+                                color: 'rgba(255,255,255,0.5)',
+                              }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'rgba(255,255,255,0.7)' }}
+                            >
                               {appointment.location}
                             </Typography>
                           </Stack>
@@ -427,7 +521,7 @@ const EnhancedUpcomingAppointments = () => {
                       primaryTypographyProps={{ component: 'div' }}
                       secondaryTypographyProps={{ component: 'div' }}
                     />
-                    
+
                     <ListItemSecondaryAction>
                       <IconButton
                         edge="end"
@@ -442,14 +536,16 @@ const EnhancedUpcomingAppointments = () => {
                       </IconButton>
                     </ListItemSecondaryAction>
                   </ListItem>
-                  
+
                   {index < Math.min(appointments.length - 1, 4) && (
-                    <Divider sx={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
+                    <Divider
+                      sx={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    />
                   )}
                 </motion.div>
               ))}
             </AnimatePresence>
-            
+
             {appointments.length > 5 && (
               <ListItem sx={{ justifyContent: 'center', py: 2 }}>
                 <Button
@@ -472,14 +568,15 @@ const EnhancedUpcomingAppointments = () => {
       </DashboardCard>
 
       {/* Appointment Details Dialog */}
-      <Dialog 
-        open={dialogOpen} 
+      <Dialog
+        open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
-            background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
             border: '1px solid rgba(255,215,0,0.2)',
           },
         }}
@@ -487,9 +584,16 @@ const EnhancedUpcomingAppointments = () => {
         {selectedAppointment && (
           <>
             <DialogTitle>
-              <Stack direction="row" alignItems="start" justifyContent="space-between">
+              <Stack
+                direction="row"
+                alignItems="start"
+                justifyContent="space-between"
+              >
                 <Box>
-                  <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: '#FFD700', fontWeight: 700 }}
+                  >
                     {selectedAppointment.title}
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
@@ -497,7 +601,10 @@ const EnhancedUpcomingAppointments = () => {
                       label={selectedAppointment.status}
                       size="small"
                       sx={{
-                        backgroundColor: alpha(getStatusColor(selectedAppointment.status), 0.2),
+                        backgroundColor: alpha(
+                          getStatusColor(selectedAppointment.status),
+                          0.2,
+                        ),
                         color: getStatusColor(selectedAppointment.status),
                         fontSize: '0.7rem',
                       }}
@@ -506,23 +613,32 @@ const EnhancedUpcomingAppointments = () => {
                       label={selectedAppointment.priority.toUpperCase()}
                       size="small"
                       sx={{
-                        backgroundColor: alpha(getPriorityColor(selectedAppointment.priority), 0.2),
+                        backgroundColor: alpha(
+                          getPriorityColor(selectedAppointment.priority),
+                          0.2,
+                        ),
                         color: getPriorityColor(selectedAppointment.priority),
                         fontSize: '0.7rem',
                       }}
                     />
                   </Stack>
                 </Box>
-                <IconButton onClick={() => setDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                <IconButton
+                  onClick={() => setDialogOpen(false)}
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
                   <CancelIcon />
                 </IconButton>
               </Stack>
             </DialogTitle>
-            
+
             <DialogContent>
               <Stack spacing={3}>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ color: '#FFD700', mb: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: '#FFD700', mb: 1 }}
+                  >
                     Schedule
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
@@ -531,16 +647,25 @@ const EnhancedUpcomingAppointments = () => {
                       {formatDateTime(selectedAppointment.datetime)}
                     </Typography>
                   </Stack>
-                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    sx={{ mt: 1 }}
+                  >
                     <TimeIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
                     <Typography sx={{ color: '#fff' }}>
-                      Duration: {selectedAppointment.duration} hour{selectedAppointment.duration > 1 ? 's' : ''}
+                      Duration: {selectedAppointment.duration} hour
+                      {selectedAppointment.duration > 1 ? 's' : ''}
                     </Typography>
                   </Stack>
                 </Box>
 
                 <Box>
-                  <Typography variant="subtitle2" sx={{ color: '#FFD700', mb: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: '#FFD700', mb: 1 }}
+                  >
                     Location
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
@@ -552,7 +677,10 @@ const EnhancedUpcomingAppointments = () => {
                 </Box>
 
                 <Box>
-                  <Typography variant="subtitle2" sx={{ color: '#FFD700', mb: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: '#FFD700', mb: 1 }}
+                  >
                     Client Contact
                   </Typography>
                   <Stack spacing={1}>
@@ -572,7 +700,10 @@ const EnhancedUpcomingAppointments = () => {
                 </Box>
 
                 <Box>
-                  <Typography variant="subtitle2" sx={{ color: '#FFD700', mb: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: '#FFD700', mb: 1 }}
+                  >
                     Description
                   </Typography>
                   <Typography sx={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -581,19 +712,17 @@ const EnhancedUpcomingAppointments = () => {
                 </Box>
               </Stack>
             </DialogContent>
-            
+
             <DialogActions>
-              <Button onClick={() => setDialogOpen(false)}>
-                Close
-              </Button>
+              <Button onClick={() => setDialogOpen(false)}>Close</Button>
               {selectedAppointment.canReschedule && (
                 <Button startIcon={<EditIcon />} sx={{ color: '#FFD700' }}>
                   Reschedule
                 </Button>
               )}
               {selectedAppointment.status !== 'completed' && (
-                <Button 
-                  startIcon={<CompleteIcon />} 
+                <Button
+                  startIcon={<CompleteIcon />}
                   sx={{ color: '#4CAF50' }}
                   onClick={() => {
                     handleMarkComplete(selectedAppointment.id);
@@ -617,34 +746,42 @@ const EnhancedUpcomingAppointments = () => {
           setSelectedForMenu(null);
         }}
       >
-        <MenuItem onClick={() => {
-          if (selectedForMenu) handleViewDetails(selectedForMenu);
-          setMenuAnchor(null);
-          setSelectedForMenu(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            if (selectedForMenu) handleViewDetails(selectedForMenu);
+            setMenuAnchor(null);
+            setSelectedForMenu(null);
+          }}
+        >
           <EventIcon sx={{ mr: 1 }} /> View Details
         </MenuItem>
         {selectedForMenu?.canReschedule && (
-          <MenuItem onClick={() => {
-            setMenuAnchor(null);
-            setSelectedForMenu(null);
-          }}>
+          <MenuItem
+            onClick={() => {
+              setMenuAnchor(null);
+              setSelectedForMenu(null);
+            }}
+          >
             <EditIcon sx={{ mr: 1 }} /> Reschedule
           </MenuItem>
         )}
-        <MenuItem onClick={() => {
-          if (selectedForMenu) handleMarkComplete(selectedForMenu.id);
-          setMenuAnchor(null);
-          setSelectedForMenu(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            if (selectedForMenu) handleMarkComplete(selectedForMenu.id);
+            setMenuAnchor(null);
+            setSelectedForMenu(null);
+          }}
+        >
           <CompleteIcon sx={{ mr: 1 }} /> Mark Complete
         </MenuItem>
         {selectedForMenu?.canCancel && (
-          <MenuItem onClick={() => {
-            if (selectedForMenu) handleCancelAppointment(selectedForMenu.id);
-            setMenuAnchor(null);
-            setSelectedForMenu(null);
-          }}>
+          <MenuItem
+            onClick={() => {
+              if (selectedForMenu) handleCancelAppointment(selectedForMenu.id);
+              setMenuAnchor(null);
+              setSelectedForMenu(null);
+            }}
+          >
             <DeleteIcon sx={{ mr: 1 }} /> Cancel
           </MenuItem>
         )}

@@ -78,20 +78,20 @@ import {
 import { formatRelativeTime, formatDate } from '../../utils/formatters';
 import websocketService from '../../services/websocketService';
 
-const NotificationCenter = ({ 
-  open = false, 
+const NotificationCenter = ({
+  open = false,
   onClose = null,
   anchorEl = null,
   maxHeight = 600,
   maxWidth = 400,
   showTabs = true,
-  defaultTab = 'all'
+  defaultTab = 'all',
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  
+
   // Redux state
   const notifications = useSelector(selectNotifications);
   const unreadCount = useSelector(selectUnreadCount);
@@ -99,7 +99,7 @@ const NotificationCenter = ({
   const doNotDisturb = useSelector(selectDoNotDisturb);
   const soundEnabled = useSelector(selectSoundEnabled);
   const unreadNotifications = useSelector(selectUnreadNotifications);
-  
+
   // Local state
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [selectedNotification, setSelectedNotification] = useState(null);
@@ -119,13 +119,13 @@ const NotificationCenter = ({
   // Filter notifications by type
   const getFilteredNotifications = () => {
     if (activeTab === 'all') return notifications;
-    return notifications.filter(n => n.type === activeTab);
+    return notifications.filter((n) => n.type === activeTab);
   };
 
   // Get notification icon based on type and severity
   const getNotificationIcon = (notification) => {
     const typeConfig = notificationTypes[notification.type];
-    
+
     if (notification.severity === 'error') {
       return <ErrorIcon color="error" />;
     } else if (notification.severity === 'warning') {
@@ -135,7 +135,7 @@ const NotificationCenter = ({
     } else if (typeConfig) {
       return React.cloneElement(typeConfig.icon, { color: typeConfig.color });
     }
-    
+
     return <InfoIcon color="info" />;
   };
 
@@ -147,11 +147,17 @@ const NotificationCenter = ({
     }
 
     // Navigate based on notification type and metadata
-    if (notification.type === 'message' && notification.metadata?.conversationId) {
+    if (
+      notification.type === 'message' &&
+      notification.metadata?.conversationId
+    ) {
       navigate(`/messages/${notification.metadata.conversationId}`);
     } else if (notification.type === 'job' && notification.metadata?.jobId) {
       navigate(`/jobs/${notification.metadata.jobId}`);
-    } else if (notification.type === 'payment' && notification.metadata?.transactionId) {
+    } else if (
+      notification.type === 'payment' &&
+      notification.metadata?.transactionId
+    ) {
       navigate(`/payments/${notification.metadata.transactionId}`);
     }
 
@@ -221,8 +227,12 @@ const NotificationCenter = ({
             setContextMenu(e.currentTarget);
           }}
           sx={{
-            backgroundColor: isUnread ? alpha(priorityColor, 0.05) : 'transparent',
-            borderLeft: isUnread ? `4px solid ${priorityColor}` : '4px solid transparent',
+            backgroundColor: isUnread
+              ? alpha(priorityColor, 0.05)
+              : 'transparent',
+            borderLeft: isUnread
+              ? `4px solid ${priorityColor}`
+              : '4px solid transparent',
             '&:hover': {
               backgroundColor: alpha(priorityColor, 0.08),
             },
@@ -233,7 +243,11 @@ const NotificationCenter = ({
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-              badgeContent={isUnread ? <UnreadIcon sx={{ fontSize: 12, color: priorityColor }} /> : null}
+              badgeContent={
+                isUnread ? (
+                  <UnreadIcon sx={{ fontSize: 12, color: priorityColor }} />
+                ) : null
+              }
             >
               <Avatar
                 sx={{
@@ -262,7 +276,12 @@ const NotificationCenter = ({
                   <Chip label="High" size="small" color="error" />
                 )}
                 {notification.priority === 'urgent' && (
-                  <Chip label="Urgent" size="small" color="error" variant="filled" />
+                  <Chip
+                    label="Urgent"
+                    size="small"
+                    color="error"
+                    variant="filled"
+                  />
                 )}
               </Box>
             }
@@ -283,7 +302,9 @@ const NotificationCenter = ({
                   {notification.message}
                 </Typography>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <ScheduleIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                  <ScheduleIcon
+                    sx={{ fontSize: 14, color: 'text.secondary' }}
+                  />
                   <Typography variant="caption" color="text.secondary">
                     {formatRelativeTime(notification.timestamp)}
                   </Typography>
@@ -313,7 +334,7 @@ const NotificationCenter = ({
             </IconButton>
           </ListItemSecondaryAction>
         </ListItem>
-        
+
         {index < getFilteredNotifications().length - 1 && <Divider />}
       </React.Fragment>
     );
@@ -333,8 +354,11 @@ const NotificationCenter = ({
           sx={{ minHeight: 48 }}
         >
           {Object.entries(notificationTypes).map(([type, config]) => {
-            const count = type === 'all' ? notifications.length : notifications.filter(n => n.type === type).length;
-            
+            const count =
+              type === 'all'
+                ? notifications.length
+                : notifications.filter((n) => n.type === type).length;
+
             return (
               <Tab
                 key={type}
@@ -368,21 +392,24 @@ const NotificationCenter = ({
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Box display="flex" alignItems="center" gap={1}>
           <NotificationsIcon color="primary" />
-          <Typography variant="h6">
-            Notifications
-          </Typography>
+          <Typography variant="h6">Notifications</Typography>
           {unreadCount > 0 && (
             <Badge badgeContent={unreadCount} color="error" />
           )}
         </Box>
 
         <Box display="flex" gap={1}>
-          <Tooltip title={doNotDisturb ? 'Enable notifications' : 'Do not disturb'}>
-            <IconButton size="small" onClick={() => dispatch(toggleDoNotDisturb())}>
+          <Tooltip
+            title={doNotDisturb ? 'Enable notifications' : 'Do not disturb'}
+          >
+            <IconButton
+              size="small"
+              onClick={() => dispatch(toggleDoNotDisturb())}
+            >
               {doNotDisturb ? <NotificationsOffIcon /> : <NotificationsIcon />}
             </IconButton>
           </Tooltip>
-          
+
           <Tooltip title={soundEnabled ? 'Mute sounds' : 'Enable sounds'}>
             <IconButton size="small" onClick={() => dispatch(toggleSound())}>
               {soundEnabled ? <SoundIcon /> : <SilentIcon />}
@@ -440,7 +467,9 @@ const NotificationCenter = ({
       py={6}
       px={3}
     >
-      <NotificationsIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+      <NotificationsIcon
+        sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+      />
       <Typography variant="h6" color="text.secondary" gutterBottom>
         No notifications
       </Typography>
@@ -477,7 +506,7 @@ const NotificationCenter = ({
           ) : (
             <List sx={{ py: 0 }}>
               {filteredNotifications.map((notification, index) =>
-                renderNotificationItem(notification, index)
+                renderNotificationItem(notification, index),
               )}
             </List>
           )}
@@ -491,16 +520,28 @@ const NotificationCenter = ({
         onClose={() => setContextMenu(null)}
       >
         {selectedNotification && !selectedNotification.read && (
-          <MenuItem onClick={() => handleNotificationAction(selectedNotification, 'mark-read')}>
+          <MenuItem
+            onClick={() =>
+              handleNotificationAction(selectedNotification, 'mark-read')
+            }
+          >
             <CheckIcon sx={{ mr: 1 }} />
             Mark as read
           </MenuItem>
         )}
-        <MenuItem onClick={() => handleNotificationAction(selectedNotification, 'snooze')}>
+        <MenuItem
+          onClick={() =>
+            handleNotificationAction(selectedNotification, 'snooze')
+          }
+        >
           <ScheduleIcon sx={{ mr: 1 }} />
           Snooze for 1 hour
         </MenuItem>
-        <MenuItem onClick={() => handleNotificationAction(selectedNotification, 'remove')}>
+        <MenuItem
+          onClick={() =>
+            handleNotificationAction(selectedNotification, 'remove')
+          }
+        >
           <ClearIcon sx={{ mr: 1 }} />
           Remove
         </MenuItem>
@@ -519,42 +560,50 @@ const NotificationCenter = ({
             <Typography variant="subtitle2" gutterBottom>
               Notification Types
             </Typography>
-            
+
             <FormControlLabel
               control={
                 <Switch
                   checked={notificationSettings.desktop}
-                  onChange={(e) => handleSettingsUpdate('desktop', e.target.checked)}
+                  onChange={(e) =>
+                    handleSettingsUpdate('desktop', e.target.checked)
+                  }
                 />
               }
               label="Desktop notifications"
             />
-            
+
             <FormControlLabel
               control={
                 <Switch
                   checked={notificationSettings.sound}
-                  onChange={(e) => handleSettingsUpdate('sound', e.target.checked)}
+                  onChange={(e) =>
+                    handleSettingsUpdate('sound', e.target.checked)
+                  }
                 />
               }
               label="Sound notifications"
             />
-            
+
             <FormControlLabel
               control={
                 <Switch
                   checked={notificationSettings.email}
-                  onChange={(e) => handleSettingsUpdate('email', e.target.checked)}
+                  onChange={(e) =>
+                    handleSettingsUpdate('email', e.target.checked)
+                  }
                 />
               }
               label="Email notifications"
             />
-            
+
             <FormControlLabel
               control={
                 <Switch
                   checked={notificationSettings.sms}
-                  onChange={(e) => handleSettingsUpdate('sms', e.target.checked)}
+                  onChange={(e) =>
+                    handleSettingsUpdate('sms', e.target.checked)
+                  }
                 />
               }
               label="SMS notifications"
@@ -565,12 +614,14 @@ const NotificationCenter = ({
             <Typography variant="subtitle2" gutterBottom>
               Marketing & Updates
             </Typography>
-            
+
             <FormControlLabel
               control={
                 <Switch
                   checked={notificationSettings.marketing}
-                  onChange={(e) => handleSettingsUpdate('marketing', e.target.checked)}
+                  onChange={(e) =>
+                    handleSettingsUpdate('marketing', e.target.checked)
+                  }
                 />
               }
               label="Marketing communications"

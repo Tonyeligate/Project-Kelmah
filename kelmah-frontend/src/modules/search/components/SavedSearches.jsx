@@ -54,12 +54,16 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import { formatDate, formatRelativeTime, formatCurrency } from '../../../utils/formatters';
+import {
+  formatDate,
+  formatRelativeTime,
+  formatCurrency,
+} from '../../../utils/formatters';
 
-const SavedSearches = ({ 
-  showHeader = true, 
-  compact = false, 
-  onSearchSelect = null 
+const SavedSearches = ({
+  showHeader = true,
+  compact = false,
+  onSearchSelect = null,
 }) => {
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
@@ -114,8 +118,13 @@ const SavedSearches = ({
       };
 
       if (isEditing && selectedSearch) {
-        await smartSearchService.updateSavedSearch(selectedSearch.id, searchData);
-        enqueueSnackbar('Saved search updated successfully', { variant: 'success' });
+        await smartSearchService.updateSavedSearch(
+          selectedSearch.id,
+          searchData,
+        );
+        enqueueSnackbar('Saved search updated successfully', {
+          variant: 'success',
+        });
       } else {
         await smartSearchService.createSavedSearch(user.id, searchData);
         enqueueSnackbar('Search saved successfully', { variant: 'success' });
@@ -133,7 +142,9 @@ const SavedSearches = ({
     if (window.confirm('Are you sure you want to delete this saved search?')) {
       try {
         await smartSearchService.deleteSavedSearch(searchId);
-        enqueueSnackbar('Saved search deleted successfully', { variant: 'success' });
+        enqueueSnackbar('Saved search deleted successfully', {
+          variant: 'success',
+        });
         loadSavedSearches();
       } catch (error) {
         enqueueSnackbar('Failed to delete saved search', { variant: 'error' });
@@ -145,24 +156,24 @@ const SavedSearches = ({
   const handleRunSearch = async (search) => {
     try {
       setRunningSearchId(search.id);
-      
+
       // Update last run timestamp
       await smartSearchService.updateSavedSearch(search.id, {
-        lastRun: new Date().toISOString()
+        lastRun: new Date().toISOString(),
       });
-      
+
       if (onSearchSelect) {
         onSearchSelect(search);
       } else {
         // Navigate to search results
         const queryString = new URLSearchParams({
           q: search.query,
-          ...search.filters
+          ...search.filters,
         }).toString();
-        
+
         window.location.href = `/search/jobs?${queryString}`;
       }
-      
+
       loadSavedSearches(); // Refresh to update last run time
     } catch (error) {
       enqueueSnackbar('Failed to run search', { variant: 'error' });
@@ -175,14 +186,16 @@ const SavedSearches = ({
   const handleToggleAlerts = async (searchId, currentState) => {
     try {
       await smartSearchService.updateSavedSearch(searchId, {
-        alertsEnabled: !currentState
+        alertsEnabled: !currentState,
       });
-      
+
       enqueueSnackbar(
-        !currentState ? 'Alerts enabled for this search' : 'Alerts disabled for this search',
-        { variant: 'success' }
+        !currentState
+          ? 'Alerts enabled for this search'
+          : 'Alerts disabled for this search',
+        { variant: 'success' },
       );
-      
+
       loadSavedSearches();
     } catch (error) {
       enqueueSnackbar('Failed to update alert settings', { variant: 'error' });
@@ -223,16 +236,16 @@ const SavedSearches = ({
 
   // Handle form input changes
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // Get filter summary text
   const getFilterSummary = (filters) => {
     const parts = [];
-    
+
     if (filters.location) parts.push(`📍 ${filters.location}`);
     if (filters.category) parts.push(`🔧 ${filters.category}`);
     if (filters.minBudget || filters.maxBudget) {
@@ -242,9 +255,11 @@ const SavedSearches = ({
     }
     if (filters.urgency) parts.push(`⏰ ${filters.urgency}`);
     if (filters.skills && filters.skills.length > 0) {
-      parts.push(`🛠️ ${filters.skills.slice(0, 2).join(', ')}${filters.skills.length > 2 ? '...' : ''}`);
+      parts.push(
+        `🛠️ ${filters.skills.slice(0, 2).join(', ')}${filters.skills.length > 2 ? '...' : ''}`,
+      );
     }
-    
+
     return parts.length > 0 ? parts.join(' • ') : 'No filters applied';
   };
 
@@ -354,21 +369,26 @@ const SavedSearches = ({
 
       <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
         <Stack direction="row" spacing={1}>
-          <Tooltip title={search.alertsEnabled ? 'Disable alerts' : 'Enable alerts'}>
+          <Tooltip
+            title={search.alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
+          >
             <IconButton
               size="small"
-              onClick={() => handleToggleAlerts(search.id, search.alertsEnabled)}
+              onClick={() =>
+                handleToggleAlerts(search.id, search.alertsEnabled)
+              }
               color={search.alertsEnabled ? 'primary' : 'default'}
             >
-              {search.alertsEnabled ? <NotificationsIcon /> : <NotificationsOffIcon />}
+              {search.alertsEnabled ? (
+                <NotificationsIcon />
+              ) : (
+                <NotificationsOffIcon />
+              )}
             </IconButton>
           </Tooltip>
 
           <Tooltip title="Edit search">
-            <IconButton
-              size="small"
-              onClick={() => handleOpenDialog(search)}
-            >
+            <IconButton size="small" onClick={() => handleOpenDialog(search)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
@@ -377,7 +397,13 @@ const SavedSearches = ({
         <Button
           variant="contained"
           size="small"
-          startIcon={runningSearchId === search.id ? <CircularProgress size={16} /> : <RunIcon />}
+          startIcon={
+            runningSearchId === search.id ? (
+              <CircularProgress size={16} />
+            ) : (
+              <RunIcon />
+            )
+          }
           onClick={() => handleRunSearch(search)}
           disabled={runningSearchId === search.id}
         >
@@ -395,18 +421,22 @@ const SavedSearches = ({
           <Card>
             <CardContent>
               <Box mb={2}>
-                <div style={{ 
-                  height: 24, 
-                  backgroundColor: theme.palette.grey[300], 
-                  borderRadius: 4,
-                  marginBottom: 8 
-                }} />
-                <div style={{ 
-                  height: 16, 
-                  backgroundColor: theme.palette.grey[200], 
-                  borderRadius: 4,
-                  width: '70%' 
-                }} />
+                <div
+                  style={{
+                    height: 24,
+                    backgroundColor: theme.palette.grey[300],
+                    borderRadius: 4,
+                    marginBottom: 8,
+                  }}
+                />
+                <div
+                  style={{
+                    height: 16,
+                    backgroundColor: theme.palette.grey[200],
+                    borderRadius: 4,
+                    width: '70%',
+                  }}
+                />
               </Box>
             </CardContent>
           </Card>
@@ -419,7 +449,12 @@ const SavedSearches = ({
     return (
       <Box>
         {showHeader && (
-          <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+          <Box
+            mb={3}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Typography variant="h5" display="flex" alignItems="center" gap={1}>
               <BookmarkIcon color="primary" />
               Saved Searches
@@ -433,7 +468,7 @@ const SavedSearches = ({
 
   if (error) {
     return (
-      <Alert 
+      <Alert
         severity="error"
         action={
           <Button size="small" onClick={loadSavedSearches}>
@@ -449,13 +484,18 @@ const SavedSearches = ({
   return (
     <Box>
       {showHeader && (
-        <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+        <Box
+          mb={3}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Typography variant="h5" display="flex" alignItems="center" gap={1}>
             <BookmarkIcon color="primary" />
             Saved Searches
             <Badge badgeContent={savedSearches.length} color="primary" />
           </Typography>
-          
+
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -474,7 +514,8 @@ const SavedSearches = ({
             No Saved Searches Yet
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Save your frequently used search criteria to quickly find relevant jobs
+            Save your frequently used search criteria to quickly find relevant
+            jobs
           </Typography>
           <Button
             variant="contained"
@@ -500,24 +541,33 @@ const SavedSearches = ({
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItem onClick={() => {
-          handleRunSearch(selectedSearch);
-          setAnchorEl(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleRunSearch(selectedSearch);
+            setAnchorEl(null);
+          }}
+        >
           <RunIcon fontSize="small" sx={{ mr: 1 }} />
           Run Search
         </MenuItem>
-        <MenuItem onClick={() => {
-          handleOpenDialog(selectedSearch);
-          setAnchorEl(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleOpenDialog(selectedSearch);
+            setAnchorEl(null);
+          }}
+        >
           <EditIcon fontSize="small" sx={{ mr: 1 }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={() => {
-          handleToggleAlerts(selectedSearch?.id, selectedSearch?.alertsEnabled);
-          setAnchorEl(null);
-        }}>
+        <MenuItem
+          onClick={() => {
+            handleToggleAlerts(
+              selectedSearch?.id,
+              selectedSearch?.alertsEnabled,
+            );
+            setAnchorEl(null);
+          }}
+        >
           {selectedSearch?.alertsEnabled ? (
             <>
               <NotificationsOffIcon fontSize="small" sx={{ mr: 1 }} />
@@ -531,7 +581,7 @@ const SavedSearches = ({
           )}
         </MenuItem>
         <Divider />
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             handleDelete(selectedSearch?.id);
             setAnchorEl(null);
@@ -575,7 +625,8 @@ const SavedSearches = ({
 
             <Alert severity="info">
               <Typography variant="body2">
-                Filter criteria will be captured from your current search filters when saving
+                Filter criteria will be captured from your current search
+                filters when saving
               </Typography>
             </Alert>
 
@@ -583,14 +634,14 @@ const SavedSearches = ({
               control={
                 <Switch
                   checked={formData.alertsEnabled}
-                  onChange={(e) => handleInputChange('alertsEnabled', e.target.checked)}
+                  onChange={(e) =>
+                    handleInputChange('alertsEnabled', e.target.checked)
+                  }
                 />
               }
               label={
                 <Box>
-                  <Typography variant="body2">
-                    Enable job alerts
-                  </Typography>
+                  <Typography variant="body2">Enable job alerts</Typography>
                   <Typography variant="caption" color="text.secondary">
                     Get notified when new jobs match this search
                   </Typography>
@@ -615,8 +666,8 @@ const SavedSearches = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             variant="contained"
             disabled={!formData.name.trim()}
           >

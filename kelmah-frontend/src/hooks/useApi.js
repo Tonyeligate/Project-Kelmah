@@ -30,60 +30,79 @@ export const useApi = (apiFunction, options = {}) => {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  const executeApi = useCallback(async (...args) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const result = await apiFunction(...args);
-      
-      setData(result);
-      setRetryCount(0);
-      
-      if (onSuccess) {
-        onSuccess(result);
+  const executeApi = useCallback(
+    async (...args) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const result = await apiFunction(...args);
+
+        setData(result);
+        setRetryCount(0);
+
+        if (onSuccess) {
+          onSuccess(result);
+        }
+
+        if (showSuccessToast && result) {
+          toast.success('Operation completed successfully');
+        }
+
+        return result;
+      } catch (err) {
+        console.error('API Error:', err);
+        setError(err);
+
+        // Retry logic
+        if (retryCount < retryAttempts) {
+          setTimeout(
+            () => {
+              setRetryCount((prev) => prev + 1);
+              executeApi(...args);
+            },
+            retryDelay * (retryCount + 1),
+          ); // Exponential backoff
+          return;
+        }
+
+        if (onError) {
+          onError(err);
+        }
+
+        if (showErrorToast) {
+          const errorMessage =
+            err.response?.data?.message || err.message || 'An error occurred';
+          toast.error(`Service Error: ${errorMessage}`);
+        }
+
+        throw err;
+      } finally {
+        setLoading(false);
       }
-      
-      if (showSuccessToast && result) {
-        toast.success('Operation completed successfully');
-      }
-      
-      return result;
-    } catch (err) {
-      console.error('API Error:', err);
-      setError(err);
-      
-      // Retry logic
-      if (retryCount < retryAttempts) {
-        setTimeout(() => {
-          setRetryCount(prev => prev + 1);
-          executeApi(...args);
-        }, retryDelay * (retryCount + 1)); // Exponential backoff
-        return;
-      }
-      
-      if (onError) {
-        onError(err);
-      }
-      
-      if (showErrorToast) {
-        const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
-        toast.error(`Service Error: ${errorMessage}`);
-      }
-      
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [apiFunction, onSuccess, onError, showErrorToast, showSuccessToast, retryCount, retryAttempts, retryDelay]);
+    },
+    [
+      apiFunction,
+      onSuccess,
+      onError,
+      showErrorToast,
+      showSuccessToast,
+      retryCount,
+      retryAttempts,
+      retryDelay,
+    ],
+  );
 
   const refetch = useCallback(() => {
     return executeApi();
   }, [executeApi]);
 
-  const mutate = useCallback(async (...args) => {
-    return executeApi(...args);
-  }, [executeApi]);
+  const mutate = useCallback(
+    async (...args) => {
+      return executeApi(...args);
+    },
+    [executeApi],
+  );
 
   const reset = useCallback(() => {
     setData(initialData);
@@ -117,7 +136,7 @@ export const useApi = (apiFunction, options = {}) => {
  */
 export const usePaginatedApi = (apiFunction, options = {}) => {
   const { initialPage = 1, initialLimit = 10, ...restOptions } = options;
-  
+
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
   const [totalPages, setTotalPages] = useState(0);
@@ -137,12 +156,15 @@ export const usePaginatedApi = (apiFunction, options = {}) => {
           restOptions.onSuccess(result);
         }
       },
-    }
+    },
   );
 
-  const goToPage = useCallback((newPage) => {
-    setPage(Math.max(1, Math.min(newPage, totalPages)));
-  }, [totalPages]);
+  const goToPage = useCallback(
+    (newPage) => {
+      setPage(Math.max(1, Math.min(newPage, totalPages)));
+    },
+    [totalPages],
+  );
 
   const nextPage = useCallback(() => {
     goToPage(page + 1);
@@ -185,7 +207,7 @@ export const usePaginatedApi = (apiFunction, options = {}) => {
  */
 export const useMultipleApi = (apiCalls, options = {}) => {
   const { immediate = true, dependencies = [] } = options;
-  
+
   const [results, setResults] = useState({});
   const [loading, setLoading] = useState(immediate);
   const [errors, setErrors] = useState({});
@@ -193,16 +215,18 @@ export const useMultipleApi = (apiCalls, options = {}) => {
   const executeAll = useCallback(async () => {
     setLoading(true);
     setErrors({});
-    
-    const promises = Object.entries(apiCalls).map(async ([key, apiFunction]) => {
-      try {
-        const result = await apiFunction();
-        return { key, result, error: null };
-      } catch (error) {
-        console.error(`API Error for ${key}:`, error);
-        return { key, result: null, error };
-      }
-    });
+
+    const promises = Object.entries(apiCalls).map(
+      async ([key, apiFunction]) => {
+        try {
+          const result = await apiFunction();
+          return { key, result, error: null };
+        } catch (error) {
+          console.error(`API Error for ${key}:`, error);
+          return { key, result: null, error };
+        }
+      },
+    );
 
     try {
       const resolvedPromises = await Promise.allSettled(promises);
@@ -244,7 +268,8 @@ export const useMultipleApi = (apiCalls, options = {}) => {
     errors,
     refetchAll,
     hasErrors: Object.keys(errors).length > 0,
-    allSuccessful: Object.keys(errors).length === 0 && Object.keys(results).length > 0,
+    allSuccessful:
+      Object.keys(errors).length === 0 && Object.keys(results).length > 0,
   };
 };
 
@@ -255,51 +280,60 @@ export const useMultipleApi = (apiCalls, options = {}) => {
  * @returns {Object} - Form submission utilities
  */
 export const useApiSubmit = (submitFunction, options = {}) => {
-  const { onSuccess, onError, resetOnSuccess = false, showSuccessToast = true } = options;
-  
+  const {
+    onSuccess,
+    onError,
+    resetOnSuccess = false,
+    showSuccessToast = true,
+  } = options;
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const submit = useCallback(async (formData) => {
-    try {
-      setSubmitting(true);
-      setError(null);
-      setSuccess(false);
-      
-      const result = await submitFunction(formData);
-      
-      setSuccess(true);
-      
-      if (onSuccess) {
-        onSuccess(result);
+  const submit = useCallback(
+    async (formData) => {
+      try {
+        setSubmitting(true);
+        setError(null);
+        setSuccess(false);
+
+        const result = await submitFunction(formData);
+
+        setSuccess(true);
+
+        if (onSuccess) {
+          onSuccess(result);
+        }
+
+        if (showSuccessToast) {
+          toast.success('Form submitted successfully');
+        }
+
+        if (resetOnSuccess) {
+          setTimeout(() => setSuccess(false), 3000);
+        }
+
+        return result;
+      } catch (err) {
+        console.error('Submit Error:', err);
+        setError(err);
+
+        if (onError) {
+          onError(err);
+        }
+
+        const errorMessage =
+          err.response?.data?.message || err.message || 'Submission failed';
+        toast.error(errorMessage);
+
+        throw err;
+      } finally {
+        setSubmitting(false);
       }
-      
-      if (showSuccessToast) {
-        toast.success('Form submitted successfully');
-      }
-      
-      if (resetOnSuccess) {
-        setTimeout(() => setSuccess(false), 3000);
-      }
-      
-      return result;
-    } catch (err) {
-      console.error('Submit Error:', err);
-      setError(err);
-      
-      if (onError) {
-        onError(err);
-      }
-      
-      const errorMessage = err.response?.data?.message || err.message || 'Submission failed';
-      toast.error(errorMessage);
-      
-      throw err;
-    } finally {
-      setSubmitting(false);
-    }
-  }, [submitFunction, onSuccess, onError, resetOnSuccess, showSuccessToast]);
+    },
+    [submitFunction, onSuccess, onError, resetOnSuccess, showSuccessToast],
+  );
 
   const reset = useCallback(() => {
     setError(null);
