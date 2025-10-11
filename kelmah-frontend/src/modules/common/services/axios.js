@@ -532,9 +532,24 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
     withCredentials: false, // Disable credentials for ngrok compatibility
   });
 
-  // 🔥 FIX: Add request interceptor for auth token
+  // 🔥 FIX: Add request interceptor for dynamic baseURL and auth token
   client.interceptors.request.use(
-    (config) => {
+    async (config) => {
+      // 🔥 CRITICAL FIX: Dynamically update baseURL from runtime-config.json
+      // This solves the issue where service clients use stale '/api' baseURL
+      // which axios converts to absolute URLs (https://frontend.vercel.app/api/...)
+      try {
+        const currentBaseURL = await getApiBaseUrl();
+        if (currentBaseURL && currentBaseURL !== config.baseURL) {
+          console.log(
+            `🔄 Service client updating baseURL: ${config.baseURL} → ${currentBaseURL}`,
+          );
+          config.baseURL = currentBaseURL;
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to update service client baseURL:', error.message);
+      }
+
       // Normalize URL to prevent /api/jobs/api/jobs duplication
       config = normalizeUrlForGateway(config);
       
