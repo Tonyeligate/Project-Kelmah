@@ -42,7 +42,7 @@ const jobsApi = {
   async getJobs(params = {}) {
     try {
       console.log('🔍 Calling job service API with params:', params);
-      const response = await jobServiceClient.get('/jobs', { params });
+      const response = await jobServiceClient.get('/api/jobs', { params });
       console.log('📊 Raw API response:', response.data);
 
       // Handle different response formats from the backend
@@ -107,7 +107,7 @@ const jobsApi = {
    * Create a job (hirer)
    */
   async createJob(jobData) {
-    const response = await jobServiceClient.post('/jobs', jobData);
+    const response = await jobServiceClient.post('/api/jobs', jobData);
     return response.data?.data || response.data;
   },
 
@@ -115,7 +115,7 @@ const jobsApi = {
    * Saved jobs
    */
   async getSavedJobs(params = {}) {
-    const response = await jobServiceClient.get('/jobs/saved', { params });
+    const response = await jobServiceClient.get('/api/jobs/saved', { params });
     const payload = response.data?.data || response.data;
     const jobs = Array.isArray(payload?.jobs)
       ? payload.jobs
@@ -138,7 +138,7 @@ const jobsApi = {
    */
   async getContracts() {
     try {
-      const response = await jobServiceClient.get('/jobs/contracts');
+      const response = await jobServiceClient.get('/api/jobs/contracts');
       // Prefer nested data shape, fallback to flat
       return response.data?.data?.contracts || response.data?.contracts || [];
     } catch (error) {
@@ -234,7 +234,7 @@ const jobsApi = {
   async searchJobs(searchParams) {
     try {
       // Backend supports filtering and text search via /api/jobs with ?search=
-      const response = await jobServiceClient.get('/jobs', {
+      const response = await jobServiceClient.get('/api/jobs', {
         params: searchParams,
       });
       const jobs = response.data.data || response.data.jobs || [];
@@ -279,7 +279,7 @@ const jobsApi = {
    */
   async getJobCategories() {
     try {
-      const response = await jobServiceClient.get('/jobs/categories');
+      const response = await jobServiceClient.get('/api/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
