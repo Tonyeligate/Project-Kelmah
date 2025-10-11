@@ -17,12 +17,12 @@ const isDevelopment = import.meta.env.MODE === 'development';
 // In development: /api → localhost:5000 (API Gateway) → localhost:500X (services)
 // In production: /api → Vercel rewrite → LocalTunnel → localhost:5000 (API Gateway) → Render services
 const SERVICES = {
-  AUTH_SERVICE: '/api/auth',
-  USER_SERVICE: '/api/users',
-  JOB_SERVICE: '/api/jobs',
-  MESSAGING_SERVICE: '/api/messaging',
-  PAYMENT_SERVICE: '/api/payments',
-  REVIEW_SERVICE: '/api/reviews',
+  AUTH_SERVICE: '/api',
+  USER_SERVICE: '/api',
+  JOB_SERVICE: '/api',
+  MESSAGING_SERVICE: '/api',
+  PAYMENT_SERVICE: '/api',
+  REVIEW_SERVICE: '/api',
 };
 
 // WebSocket URL helper - routes through API Gateway
