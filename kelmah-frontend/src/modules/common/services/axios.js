@@ -492,32 +492,31 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
 
 // Helper: prefer gateway base when VITE_API_URL is provided
 const getClientBaseUrl = async (serviceUrl) => {
-  // If serviceUrl is '/api' or starts with '/api/', use it directly
-  if (serviceUrl && (serviceUrl === '/api' || serviceUrl.startsWith('/api/'))) {
-    return serviceUrl;
-  }
-
-  // If a global gateway URL is set, use it for all services
-  const hasGatewayEnv =
-    typeof import.meta !== 'undefined' &&
-    import.meta.env &&
-    import.meta.env.VITE_API_URL;
+  // 🔥 FIX: Always call getApiBaseUrl() to get the absolute URL from runtime-config.json
+  // This ensures the double-faced logic works correctly (LocalTunnel or Render)
+  // Even when serviceUrl is '/api', we need the absolute URL to prevent normalization issues
+  
   const isHttps =
     typeof window !== 'undefined' &&
     window.location &&
     window.location.protocol === 'https:';
 
-  if (hasGatewayEnv) {
+  // Always try to get the API base URL from runtime-config.json first
+  try {
     const baseURL = await getApiBaseUrl();
-    // Avoid mixed-content by preferring relative /api over http:// base when on https
-    if (isHttps && typeof baseURL === 'string' && baseURL.startsWith('http:')) {
-      return '/api';
+    if (baseURL && baseURL !== '/api') {
+      // Avoid mixed-content by preferring relative /api over http:// base when on https
+      if (isHttps && typeof baseURL === 'string' && baseURL.startsWith('http:')) {
+        return '/api';
+      }
+      return baseURL; // Returns absolute URL like 'https://kelmah-api-gateway-qlyk.onrender.com'
     }
-    return baseURL; // e.g., http(s)://gateway or '/api'
+  } catch (error) {
+    console.warn('⚠️ Failed to get API base URL:', error.message);
   }
 
-  // Fallback to service-specific URL (production direct service)
-  return serviceUrl;
+  // Fallback to serviceUrl if getApiBaseUrl() returns '/api' or fails
+  return serviceUrl || '/api';
 };
 
 // Create service-specific clients with async base URL initialization
