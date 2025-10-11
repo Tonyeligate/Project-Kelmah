@@ -83,20 +83,32 @@ const normalizeUrlForGateway = (config) => {
     const base = typeof config.baseURL === 'string' ? config.baseURL : '';
     const url = typeof config.url === 'string' ? config.url : '';
     
+    console.log('🔧 normalizeUrlForGateway - base:', base, 'url:', url);
+    
     // Check if baseURL is a RELATIVE path starting with /api (not an absolute URL)
     // Absolute URLs (https://...) should NOT trigger normalization
     const isRelativeBase = base.startsWith('/');
+    console.log('🔧 isRelativeBase:', isRelativeBase);
+    
     const baseHasApi = isRelativeBase && (base === '/api' || base.startsWith('/api/'));
+    console.log('🔧 baseHasApi:', baseHasApi);
+    
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
+    console.log('🔧 urlStartsWithApi:', urlStartsWithApi);
 
     if (baseHasApi && urlStartsWithApi) {
       // Remove the leading /api from the url to avoid /api/api or /api/jobs/api/jobs duplication
+      const oldUrl = url;
       config.url = url.replace(/^\/api\/?/, '/');
       console.log(
-        `🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`,
+        `🔧 URL normalized: ${oldUrl} -> ${config.url} (baseURL: ${base})`,
       );
+    } else {
+      console.log('🔧 NO NORMALIZATION - baseHasApi:', baseHasApi, 'urlStartsWithApi:', urlStartsWithApi);
     }
-  } catch (_) {}
+  } catch (error) {
+    console.error('🔧 normalizeUrlForGateway error:', error);
+  }
   return config;
 };
 
@@ -540,20 +552,26 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
       // 🔥 CRITICAL FIX: Dynamically update baseURL from runtime-config.json
       // This solves the issue where service clients use stale '/api' baseURL
       // which axios converts to absolute URLs (https://frontend.vercel.app/api/...)
+      console.log('🔍 BEFORE UPDATE - baseURL:', config.baseURL, 'url:', config.url);
       try {
         const currentBaseURL = await getApiBaseUrl();
+        console.log('🔍 getApiBaseUrl returned:', currentBaseURL);
         if (currentBaseURL && currentBaseURL !== config.baseURL) {
           console.log(
             `🔄 Service client updating baseURL: ${config.baseURL} → ${currentBaseURL}`,
           );
           config.baseURL = currentBaseURL;
+        } else {
+          console.log('🔍 NO UPDATE - currentBaseURL:', currentBaseURL, 'config.baseURL:', config.baseURL);
         }
       } catch (error) {
         console.warn('⚠️ Failed to update service client baseURL:', error.message);
       }
 
+      console.log('🔍 BEFORE NORMALIZE - baseURL:', config.baseURL, 'url:', config.url);
       // Normalize URL to prevent /api/jobs/api/jobs duplication
       config = normalizeUrlForGateway(config);
+      console.log('🔍 AFTER NORMALIZE - baseURL:', config.baseURL, 'url:', config.url);
       
       // Add auth token securely
       const token = secureStorage.getAuthToken();
