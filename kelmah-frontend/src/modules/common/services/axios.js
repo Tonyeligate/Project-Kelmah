@@ -82,11 +82,13 @@ const normalizeUrlForGateway = (config) => {
   try {
     const base = typeof config.baseURL === 'string' ? config.baseURL : '';
     const url = typeof config.url === 'string' ? config.url : '';
-    const baseEndsWithApi = base === '/api' || base.endsWith('/api');
+    
+    // Check if baseURL contains /api (anywhere, like '/api', '/api/jobs', '/api/users')
+    const baseHasApi = base.includes('/api');
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
 
-    if (baseEndsWithApi && urlStartsWithApi) {
-      // Remove the leading /api from the url to avoid /api/api duplication
+    if (baseHasApi && urlStartsWithApi) {
+      // Remove the leading /api from the url to avoid /api/api or /api/jobs/api/jobs duplication
       config.url = url.replace(/^\/api\/?/, '/');
       console.log(
         `🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`,
@@ -533,6 +535,9 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
   // 🔥 FIX: Add request interceptor for auth token
   client.interceptors.request.use(
     (config) => {
+      // Normalize URL to prevent /api/jobs/api/jobs duplication
+      config = normalizeUrlForGateway(config);
+      
       // Add auth token securely
       const token = secureStorage.getAuthToken();
       if (token) {
