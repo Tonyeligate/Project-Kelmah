@@ -83,8 +83,10 @@ const normalizeUrlForGateway = (config) => {
     const base = typeof config.baseURL === 'string' ? config.baseURL : '';
     const url = typeof config.url === 'string' ? config.url : '';
     
-    // Check if baseURL contains /api (anywhere, like '/api', '/api/jobs', '/api/users')
-    const baseHasApi = base.includes('/api');
+    // Check if baseURL is a RELATIVE path starting with /api (not an absolute URL)
+    // Absolute URLs (https://...) should NOT trigger normalization
+    const isRelativeBase = base.startsWith('/');
+    const baseHasApi = isRelativeBase && (base === '/api' || base.startsWith('/api/'));
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
 
     if (baseHasApi && urlStartsWithApi) {
