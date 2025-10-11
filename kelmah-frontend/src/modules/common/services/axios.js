@@ -725,8 +725,11 @@ const addInterceptorsToClients = async () => {
     // Request interceptor
     client.interceptors.request.use(
       (config) => {
-        // Normalize to avoid /api/api duplication
-        config = normalizeUrlForGateway(config);
+        // 🔥 REMOVED: normalizeUrlForGateway(config) call
+        // Service clients already have their own interceptor with normalization
+        // that runs AFTER baseURL update. This duplicate interceptor was running
+        // BEFORE baseURL update and incorrectly stripping /api from URLs!
+        
         // Add auth token securely
         const token = secureStorage.getAuthToken();
         if (token) {

@@ -1,13 +1,13 @@
 {
-  "ngrokUrl": "https://kelmah-api-gateway-qlyk.onrender.com",
-  "websocketUrl": "wss://kelmah-api-gateway-qlyk.onrender.com",
-  "API_URL": "https://kelmah-api-gateway-qlyk.onrender.com",
-  "WS_URL": "https://kelmah-api-gateway-qlyk.onrender.com",
+  "ngrokUrl": "/api",
+  "websocketUrl": "/socket.io",
+  "API_URL": "/api",
+  "WS_URL": "/socket.io",
   "NODE_ENV": "production",
-  "TUNNEL_TYPE": "render",
+  "TUNNEL_TYPE": "vercel-proxy",
   "WEBSOCKET_MODE": "unified",
   "isDevelopment": false,
-  "timestamp": "2025-10-09T00:00:00.000Z",
+  "timestamp": "2025-10-11T02:41:00.000Z",
   "version": "1.0.0",
-  "comment": "Using Render API Gateway - Production Backend"
+  "comment": "Using Vercel proxy to Render API Gateway - RELATIVE URLs to avoid CORS"
 }
