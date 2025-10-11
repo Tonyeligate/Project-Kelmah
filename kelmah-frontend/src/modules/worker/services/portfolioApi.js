@@ -2,6 +2,27 @@ import axios from '../../common/services/axios';
 
 export const portfolioApi = {
   async getMyPortfolio(params = {}) {
+    // Changed from '/api/profile/...' to '/profile/...' to avoid /api duplication
+    // baseURL='/api' is provided by axios instance on Vercel
+    const { data } = await axios.get('/profile/portfolio/search', {
+      params,
+    });
+    return data?.data || data;
+  },
+  async getWorkerPortfolio(workerId, params = {}) {
+    const { data } = await axios.get(
+      `/profile/workers/${workerId}/portfolio`,
+      { params },
+    );
+    return data?.data || data;
+  },
+  async getPortfolioItem(id) {
+    const { data } = await axios.get(`/profile/portfolio/${id}`);
+    return data?.data || data;
+  },./../common/services/axios';
+
+export const portfolioApi = {
+  async getMyPortfolio(params = {}) {
     const { data } = await axios.get('/api/profile/portfolio/search', {
       params,
     });

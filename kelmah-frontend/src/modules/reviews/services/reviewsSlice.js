@@ -6,7 +6,9 @@ export const submitReview = createAsyncThunk(
   'reviews/submit',
   async (reviewData, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post('/api/reviews', reviewData);
+      // Changed from '/api/reviews' to '/reviews' to avoid /api duplication
+      // baseURL='/api' is provided by axiosInstance on Vercel
+      const response = await axiosInstance.post('/reviews', reviewData);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -25,7 +27,7 @@ export const fetchReviewsByRecipient = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await axiosInstance.get('/api/reviews', {
+      const response = await axiosInstance.get('/reviews', {
         params: {
           recipientId,
           recipientType,

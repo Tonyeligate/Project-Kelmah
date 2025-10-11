@@ -132,7 +132,9 @@ export const warmUpService = async (serviceUrl) => {
     );
 
     // Warm up via axios with proper base URL configuration
-    const response = await axios.get('/api/health', {
+    // Changed from '/api/health' to '/health' to avoid /api duplication
+    // baseURL='/api' is provided by axios instance on Vercel
+    const response = await axios.get('/health', {
       timeout: 5000,
       headers: {
         'Content-Type': 'application/json',

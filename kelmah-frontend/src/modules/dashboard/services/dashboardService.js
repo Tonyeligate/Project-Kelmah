@@ -145,7 +145,9 @@ class DashboardService {
   // Get dashboard overview data
   async getOverview() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/overview');
+      // Changed from '/api/dashboard/...' to '/dashboard/...' to avoid /api duplication
+      // baseURL='/api' is provided by axiosInstance on Vercel
+      const response = await axiosInstance.get('/dashboard/overview');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
@@ -156,7 +158,7 @@ class DashboardService {
   // Get recent activity
   async getRecentActivity(page = 1, limit = 10) {
     try {
-      const response = await axiosInstance.get('/api/dashboard/activity', {
+      const response = await axiosInstance.get('/dashboard/activity', {
         params: { page, limit },
       });
       return response.data.data;
@@ -169,7 +171,7 @@ class DashboardService {
   // Get statistics
   async getStatistics(timeframe = 'week') {
     try {
-      const response = await axiosInstance.get('/api/dashboard/statistics', {
+      const response = await axiosInstance.get('/dashboard/statistics', {
         params: { timeframe },
       });
       return response.data.data;
@@ -182,7 +184,7 @@ class DashboardService {
   // Get upcoming tasks
   async getUpcomingTasks() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/tasks');
+      const response = await axiosInstance.get('/dashboard/tasks');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching upcoming tasks:', error);
@@ -193,7 +195,7 @@ class DashboardService {
   // Get recent messages
   async getRecentMessages() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/messages');
+      const response = await axiosInstance.get('/dashboard/messages');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching recent messages:', error);
@@ -204,7 +206,7 @@ class DashboardService {
   // Get performance metrics
   async getPerformanceMetrics() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/performance');
+      const response = await axiosInstance.get('/dashboard/performance');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching performance metrics:', error);
@@ -215,7 +217,7 @@ class DashboardService {
   // Get quick actions
   async getQuickActions() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/quick-actions');
+      const response = await axiosInstance.get('/dashboard/quick-actions');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching quick actions:', error);
@@ -227,7 +229,7 @@ class DashboardService {
   async getNotificationsSummary() {
     try {
       const response = await axiosInstance.get(
-        '/api/dashboard/notifications-summary',
+        '/dashboard/notifications-summary',
       );
       return response.data.data;
     } catch (error) {
@@ -239,7 +241,7 @@ class DashboardService {
   // Get real-time stats
   async getRealTimeStats() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/stats');
+      const response = await axiosInstance.get('/dashboard/stats');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching real-time stats:', error);
@@ -250,7 +252,7 @@ class DashboardService {
   // Get job matches for workers
   async getJobMatches() {
     try {
-      const response = await axiosInstance.get('/api/dashboard/job-matches');
+      const response = await axiosInstance.get('/dashboard/job-matches');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Error fetching job matches:', error);

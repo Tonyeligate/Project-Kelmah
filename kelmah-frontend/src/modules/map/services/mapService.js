@@ -154,7 +154,9 @@ class MapService {
       if (skills) searchParams.skills = skills.join(',');
       if (rating) searchParams.minRating = rating;
 
-      const response = await axiosInstance.get('/api/workers/search/location', {
+      // Changed from '/api/workers/search/location' to '/workers/search/location'
+      // baseURL='/api' is provided by axiosInstance on Vercel, preventing /api duplication
+      const response = await axiosInstance.get('/workers/search/location', {
         params: searchParams,
       });
 
