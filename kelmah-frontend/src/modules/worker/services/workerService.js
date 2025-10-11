@@ -108,7 +108,7 @@ const workerService = {
    * @returns {Promise<{ skills: Array, licenses: Array, certifications: Array }>}
    */
   getMyCredentials: async () => {
-    const response = await userServiceClient.get('/api/users/me/credentials');
+    const response = await userServiceClient.get('/users/me/credentials');
     const payload = response?.data?.data ?? response?.data ?? {};
 
     return {
@@ -558,7 +558,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of saved jobs
    */
   getSavedJobs: async () => {
-    const response = await jobServiceClient.get('/api/jobs/saved');
+    const response = await jobServiceClient.get('/jobs/saved');
     return response.data;
   },
 
@@ -586,7 +586,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of job applications
    */
   getApplications: async (filters = {}) => {
-    const response = await jobServiceClient.get('/api/jobs/applications/me', {
+    const response = await jobServiceClient.get('/jobs/applications/me', {
       params: filters,
     });
     return response.data;

@@ -81,7 +81,7 @@ class HirerService {
    */
   async getProfile() {
     try {
-      const response = await userServiceClient.get('/api/users/hirers/me');
+      const response = await userServiceClient.get('/users/hirers/me');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch hirer profile:', error);

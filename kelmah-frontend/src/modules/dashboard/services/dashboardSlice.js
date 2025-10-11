@@ -70,10 +70,10 @@ export const fetchDashboardData = createAsyncThunk(
         workersResponse,
         analyticsResponse,
       ] = await Promise.allSettled([
-        userServiceClient.get('/api/users/dashboard/metrics'),
-        jobServiceClient.get('/api/jobs/dashboard'),
-        userServiceClient.get('/api/users/dashboard/workers'),
-        userServiceClient.get('/api/users/dashboard/analytics'),
+        userServiceClient.get('/users/dashboard/metrics'),
+        jobServiceClient.get('/jobs/dashboard'),
+        userServiceClient.get('/users/dashboard/workers'),
+        userServiceClient.get('/users/dashboard/analytics'),
       ]);
 
       // Extract successful responses or use enhanced mock data

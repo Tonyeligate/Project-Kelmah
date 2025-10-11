@@ -18,7 +18,7 @@ export const hirerService = {
   // Profile Management
   async getProfile() {
     try {
-      const response = await userServiceClient.get('/api/users/me/credentials');
+      const response = await userServiceClient.get('/users/me/credentials');
       return response.data;
     } catch (error) {
       console.warn(
@@ -45,7 +45,7 @@ export const hirerService = {
   // Job Management
   async getJobs(status = 'active') {
     try {
-      const response = await jobServiceClient.get('/api/jobs/my-jobs', {
+      const response = await jobServiceClient.get('/jobs/my-jobs', {
         params: { status, role: 'hirer' },
       });
       return response.data;

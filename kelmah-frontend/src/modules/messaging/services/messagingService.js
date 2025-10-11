@@ -92,7 +92,7 @@ export const messagingService = {
     attachments = [],
   ) {
     try {
-      const response = await messagingServiceClient.post('/api/messages', {
+      const response = await messagingServiceClient.post('/messages', {
         sender: senderId,
         recipient: recipientId,
         content,

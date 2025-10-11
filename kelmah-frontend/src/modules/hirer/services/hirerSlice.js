@@ -14,7 +14,7 @@ export const fetchHirerProfile = createAsyncThunk(
   async () => {
     try {
       // Align with user-service: profile is served under /api/profile
-      const response = await userServiceClient.get('/api/users/me/credentials');
+      const response = await userServiceClient.get('/users/me/credentials');
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -30,7 +30,7 @@ export const fetchHirerJobs = createAsyncThunk(
   'hirer/fetchJobs',
   async (status = 'all') => {
     try {
-      const response = await jobServiceClient.get('/api/jobs/my-jobs', {
+      const response = await jobServiceClient.get('/jobs/my-jobs', {
         params: { status, role: 'hirer' },
       });
       const jobs =
@@ -52,7 +52,7 @@ export const createHirerJob = createAsyncThunk(
   'hirer/createJob',
   async (jobData) => {
     try {
-      const response = await jobServiceClient.post('/api/jobs', jobData);
+      const response = await jobServiceClient.post('/jobs', jobData);
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Job service unavailable for job creation:', error.message);
@@ -194,7 +194,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
   'hirer/fetchAnalytics',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await userServiceClient.get('/api/users/me/analytics');
+      const response = await userServiceClient.get('/users/me/analytics');
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
