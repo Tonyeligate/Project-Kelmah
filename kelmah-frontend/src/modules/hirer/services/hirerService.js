@@ -61,7 +61,7 @@ export const hirerService = {
   searchWorkers: async (searchParams = {}) => {
     try {
       const response = await userServiceClient.get(
-        '/api/users/workers/search',
+        '/users/workers/search',
         {
           params: searchParams,
         },

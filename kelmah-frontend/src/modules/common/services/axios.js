@@ -490,8 +490,8 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
 
 // Helper: prefer gateway base when VITE_API_URL is provided
 const getClientBaseUrl = async (serviceUrl) => {
-  // If serviceUrl already has a full path like '/api/users', use it directly
-  if (serviceUrl && serviceUrl.startsWith('/api/')) {
+  // If serviceUrl is '/api' or starts with '/api/', use it directly
+  if (serviceUrl && (serviceUrl === '/api' || serviceUrl.startsWith('/api/'))) {
     return serviceUrl;
   }
 
