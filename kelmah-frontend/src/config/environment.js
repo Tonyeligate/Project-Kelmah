@@ -44,31 +44,31 @@ const computeApiBase = async () => {
     isBrowser && window.location && window.location.protocol === 'https:';
   const isVercel = isBrowser && window.location.hostname.includes('vercel.app');
 
-  // Load runtime config for dynamic LocalTunnel URL (replaces ngrok)
-  const config = await loadRuntimeConfig();
-  const localtunnelUrl = config?.localtunnelUrl || config?.ngrokUrl; // Support both keys for backward compatibility
-
-  // For Vercel deployments, use LocalTunnel URL from runtime config
+  // 🔥 FIX: On Vercel deployments, ALWAYS use relative /api to trigger proxy
+  // This avoids CORS issues and leverages Vercel's rewrites in vercel.json
+  // The proxy handles routing to the actual backend (LocalTunnel or Render)
   if (isVercel) {
     console.log(
-      '🔗 Vercel deployment detected, using LocalTunnel URL from runtime config',
-    );
-    if (localtunnelUrl) {
-      return localtunnelUrl;
-    }
-    console.warn(
-      '⚠️ No LocalTunnel URL in runtime config, falling back to /api',
+      '🔗 Vercel deployment detected, using relative /api path (triggers Vercel proxy)',
     );
     return '/api';
   }
 
-  // For production, use LocalTunnel URL from runtime config
+  // Load runtime config for dynamic LocalTunnel URL (for local development)
+  const config = await loadRuntimeConfig();
+  const localtunnelUrl = config?.localtunnelUrl || config?.ngrokUrl; // Support both keys for backward compatibility
+
+  // For production builds NOT on Vercel (e.g., static hosting), use absolute URL from runtime config
   if (isProduction) {
     if (localtunnelUrl) {
+      console.log(
+        '🔗 Production mode, using backend URL from runtime config:',
+        localtunnelUrl,
+      );
       return localtunnelUrl;
     }
     console.warn(
-      '⚠️ No LocalTunnel URL in runtime config, falling back to /api',
+      '⚠️ No backend URL in runtime config, falling back to /api',
     );
     return '/api';
   }
