@@ -108,7 +108,14 @@ const JobDetailsPage = () => {
       return;
     }
 
-    // Only fetch job if authenticated
+    // Validate jobId before fetching
+    if (!id || id === 'undefined' || id === 'null') {
+      console.error('❌ Invalid job ID:', id);
+      setAuthRequired(false); // Don't show auth message, show error instead
+      return;
+    }
+
+    // Only fetch job if authenticated and valid jobId
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
@@ -251,6 +258,33 @@ const JobDetailsPage = () => {
         }}
       >
         <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  // Check for invalid jobId
+  if (!id || id === 'undefined' || id === 'null') {
+    return (
+      <Box
+        sx={{
+          minHeight: '80vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
+        <Alert severity="error" sx={{ maxWidth: 400 }}>
+          Invalid job ID. Please select a valid job to view details.
+        </Alert>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/jobs')}
+          sx={{ mt: 2 }}
+        >
+          Back to Jobs
+        </Button>
       </Box>
     );
   }

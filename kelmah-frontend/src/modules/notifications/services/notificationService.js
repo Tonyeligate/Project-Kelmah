@@ -140,7 +140,26 @@ class NotificationService {
   // Get notifications
   async getNotifications(params = {}) {
     try {
-      const response = await this.client.get('/api/notifications', { params });
+      // Add retry-control header to prevent excessive retries on rate limit
+      const response = await this.client.get('/api/notifications', { 
+        params,
+        headers: {
+          'X-Retry-Limit': '2', // Limit retries for this endpoint
+        },
+        // Disable automatic retries for this endpoint to prevent rate limiting
+        'axios-retry': {
+          retries: 2, // Max 2 retries instead of default
+          retryDelay: (retryCount) => retryCount * 2000, // 2s, 4s delays
+          retryCondition: (error) => {
+            // Don't retry on 429 (rate limit) or 4xx errors except 408, 429, 503
+            if (error.response) {
+              const status = error.response.status;
+              return status === 408 || status === 503; // Only retry timeouts and service unavailable
+            }
+            return false;
+          }
+        }
+      });
       // Normalize to { notifications, pagination }
       const data = response.data;
       if (Array.isArray(data)) {

@@ -109,9 +109,18 @@ export const NotificationProvider = ({ children }) => {
         setError(null); // Clear any previous errors
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
-        setError('Could not load notifications. Please check your connection.');
-        // Ensure we always have a valid array, never undefined
-        setNotifications([]);
+        
+        // Handle rate limiting gracefully - don't show error to user
+        if (err.response?.status === 429) {
+          console.warn('⏸️ Notifications rate limited, will retry later');
+          setError(null); // Don't show error for rate limiting
+          // Keep existing notifications, don't clear them
+        } else {
+          setError('Could not load notifications. Please check your connection.');
+          // Ensure we always have a valid array, never undefined
+          setNotifications([]);
+        }
+        
         setPagination({ page: 1, limit: 20, total: 0, pages: 0 });
       } finally {
         setLoading(false);

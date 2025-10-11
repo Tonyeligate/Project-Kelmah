@@ -151,6 +151,12 @@ const jobsApi = {
    * Get a single job by ID
    */
   async getJobById(jobId) {
+    // Validate jobId before making API call
+    if (!jobId || jobId === 'undefined' || jobId === 'null') {
+      console.error('❌ Invalid job ID provided to getJobById:', jobId);
+      throw new Error('Invalid job ID');
+    }
+
     try {
       const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
       console.log('🔍 Single job API response:', response.data);
