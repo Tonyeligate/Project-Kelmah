@@ -61,7 +61,7 @@ import {
   Work as WorkIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import reviewsApi from '../../../../services/reviewsApi';
+import reviewService from '../../../reviews/services/reviewService';
 import { FEATURES } from '../../../../config/environment';
 
 /**
@@ -131,7 +131,7 @@ const ReviewModerationQueue = () => {
       try {
         // Use real admin queue endpoint
         const status = tabs[selectedTab]?.value || 'pending';
-        const data = await reviewsApi.getModerationQueue({
+        const data = await reviewService.getModerationQueue({
           page,
           limit: 10,
           status,
@@ -214,7 +214,7 @@ const ReviewModerationQueue = () => {
 
     async moderateReview(reviewId, status, note = '') {
       try {
-        const result = await reviewsApi.moderateReview(reviewId, status, note);
+        const result = await reviewService.moderateReview(reviewId, status, note);
         return result;
       } catch (e) {
         if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
@@ -229,7 +229,7 @@ const ReviewModerationQueue = () => {
       try {
         // No dedicated bulk endpoint; simulate sequence for now
         for (const id of reviewIds) {
-          await reviewsApi.moderateReview(id, status, note);
+          await reviewService.moderateReview(id, status, note);
         }
         return {
           success: true,

@@ -51,7 +51,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../modules/auth/contexts/AuthContext';
-import reviewsApi from '../../services/reviewsApi';
+import reviewService from '../../modules/reviews/services/reviewService';
 
 /**
  * Comprehensive Review & Rating System Component
@@ -125,7 +125,7 @@ const ReviewSystem = ({
     try {
       setLoading(true);
       const [reviewsResponse, ratingResponse] = await Promise.all([
-        reviewsApi.getWorkerReviews(workerId, {
+        reviewService.getWorkerReviews(workerId, {
           page,
           limit: 10,
           status: filters.status,
@@ -134,7 +134,7 @@ const ReviewSystem = ({
           sortBy,
           order: sortOrder,
         }),
-        reviewsApi.getWorkerRating(workerId),
+        reviewService.getWorkerRating(workerId),
       ]);
 
       setReviews(reviewsResponse.reviews || []);
@@ -159,7 +159,7 @@ const ReviewSystem = ({
     const check = async () => {
       try {
         setCheckingEligibility(true);
-        const result = await reviewsApi.canReviewWorker(
+        const result = await reviewService.canReviewWorker(
           workerId,
           jobId || null,
         );
@@ -185,7 +185,7 @@ const ReviewSystem = ({
 
   const handleReviewSubmit = async () => {
     try {
-      const result = await reviewsApi.submitReview({
+      const result = await reviewService.submitReview({
         workerId,
         jobId,
         ...reviewForm,
@@ -221,7 +221,7 @@ const ReviewSystem = ({
 
   const handleAddResponse = async (reviewId, comment) => {
     try {
-      await reviewsApi.addWorkerResponse(reviewId, comment);
+      await reviewService.addWorkerResponse(reviewId, comment);
       showFeedback('Response added successfully', 'success');
       setResponseDialogOpen(false);
       // Refresh reviews
@@ -605,7 +605,7 @@ const ReviewSystem = ({
               <Button
                 size="small"
                 startIcon={<ThumbUpIcon />}
-                onClick={() => reviewsApi.voteHelpful(review._id)}
+                onClick={() => reviewService.voteHelpful(review._id)}
                 sx={{ color: 'rgba(255,255,255,0.7)' }}
               >
                 Helpful ({review.helpfulVotes})
@@ -932,12 +932,12 @@ const ReviewSystem = ({
           setSelectedReview(null);
         }}
       >
-        <MenuItem onClick={() => reviewsApi.voteHelpful(selectedReview?._id)}>
+        <MenuItem onClick={() => reviewService.voteHelpful(selectedReview?._id)}>
           <ThumbUpIcon sx={{ mr: 1 }} /> Mark Helpful
         </MenuItem>
         <MenuItem
           onClick={() =>
-            reviewsApi.reportReview(selectedReview?._id, 'inappropriate')
+            reviewService.reportReview(selectedReview?._id, 'inappropriate')
           }
         >
           <ReportIcon sx={{ mr: 1 }} /> Report Review

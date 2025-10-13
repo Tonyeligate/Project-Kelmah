@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import hirerService from './hirerService';
+import { hirerService } from '@/modules/hirer/services/hirerService';
 
 // Async thunk for fetching hirer dashboard data
 export const fetchHirerDashboardData = createAsyncThunk(

@@ -93,7 +93,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import TextField from '@mui/material/TextField';
 import ReviewSystem from '../../../components/reviews/ReviewSystem';
-import reviewsApi from '../../../services/reviewsApi';
+import reviewService from '../../reviews/services/reviewService';
 
 const Input = styled('input')({
   display: 'none',
@@ -237,7 +237,7 @@ function WorkerProfile() {
         workerService.getWorkHistory(workerId),
         workerService.getWorkerAvailability(workerId),
         workerService.getWorkerStats(workerId),
-        reviewsApi.getWorkerRating(workerId),
+        reviewService.getWorkerRating(workerId),
         workerService.getWorkerEarnings(workerId),
       ]);
 

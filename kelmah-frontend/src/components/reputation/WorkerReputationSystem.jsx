@@ -39,7 +39,7 @@ import {
   Group as GroupIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import reviewsApi from '../../services/reviewsApi';
+import reviewService from '../../modules/reviews/services/reviewService';
 
 /**
  * Comprehensive Worker Reputation System

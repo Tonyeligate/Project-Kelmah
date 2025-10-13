@@ -67,7 +67,7 @@ import {
   RadialBar,
 } from 'recharts';
 import { motion } from 'framer-motion';
-import reviewsApi from '../../../../services/reviewsApi';
+import reviewService from '../../../reviews/services/reviewService';
 import { FEATURES } from '../../../../config/environment';
 
 /**
@@ -125,7 +125,7 @@ const ReviewAnalyticsDashboard = () => {
   const analyticsApi = {
     async getReviewAnalytics(timeRange = '30d') {
       try {
-        const data = await reviewsApi.getReviewAnalytics(timeRange);
+        const data = await reviewService.getReviewAnalytics(timeRange);
         return data;
       } catch (e) {
         if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {

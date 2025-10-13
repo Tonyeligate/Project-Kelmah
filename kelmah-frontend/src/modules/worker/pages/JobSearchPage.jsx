@@ -151,7 +151,7 @@ import {
   selectSavedJobs,
   fetchSavedJobs,
 } from '../../jobs/services/jobSlice';
-import jobsApi from '../../jobs/services/jobsApi';
+import jobsApi from '../../jobs/services/jobsService';
 // TODO: Integrate bid and user performance functionality into appropriate module services
 import EnhancedJobCard from '../components/EnhancedJobCard';
 import UserPerformanceDashboard from '../components/UserPerformanceDashboard';

@@ -8,7 +8,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import portfolioApi from '../services/portfolioApi';
+import portfolioApi from '../services/portfolioService';
 
 const CertificateManager = ({ certificates = [], onAdd, onRemove }) => {
   return (

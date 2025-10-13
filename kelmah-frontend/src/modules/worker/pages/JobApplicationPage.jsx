@@ -29,7 +29,7 @@ import {
   Skeleton,
   useTheme,
 } from '@mui/material';
-import jobsApi from '../../jobs/services/jobsApi';
+import jobsApi from '../../jobs/services/jobsService';
 import {
   Search as SearchIcon,
   LocationOn as LocationIcon,

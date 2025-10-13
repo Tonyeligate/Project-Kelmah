@@ -60,7 +60,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
-import jobsApi from '../../../jobs/services/jobsApi';
+import jobsApi from '../../../jobs/services/jobsService';
 import {
   saveJobToServer,
   unsaveJobFromServer,
