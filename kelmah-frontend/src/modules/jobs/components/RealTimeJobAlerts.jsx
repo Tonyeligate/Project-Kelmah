@@ -58,7 +58,7 @@ import {
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import websocketService from '../../../services/websocketService';
-import jobService from '../services/jobService';
+import jobsService from '../services/jobsService';
 import { addNotification } from '../../../store/slices/notificationSlice';
 import {
   formatCurrency,
@@ -160,7 +160,7 @@ const RealTimeJobAlerts = ({
   const loadAlertSettings = async () => {
     try {
       // Load from API or localStorage
-      const response = await jobService.getJobAlertSettings(user.id);
+      const response = await jobsService.getJobAlertSettings(user.id);
       setAlertSettings(response.data || []);
 
       // Check if alerts are enabled globally
@@ -426,7 +426,7 @@ const RealTimeJobAlerts = ({
       }
 
       // Save to API
-      await jobService.saveJobAlertSetting(setting);
+      await jobsService.saveJobAlertSetting(setting);
 
       // Save to localStorage as backup
       localStorage.setItem('jobAlertSettings', JSON.stringify(alertSettings));
@@ -448,7 +448,7 @@ const RealTimeJobAlerts = ({
   const handleDeleteAlertSetting = async (settingId) => {
     try {
       setAlertSettings((prev) => prev.filter((s) => s.id !== settingId));
-      await jobService.deleteJobAlertSetting(settingId);
+      await jobsService.deleteJobAlertSetting(settingId);
       enqueueSnackbar('Alert setting deleted', { variant: 'success' });
     } catch (error) {
       enqueueSnackbar('Failed to delete alert setting', { variant: 'error' });

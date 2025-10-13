@@ -42,7 +42,7 @@ import {
   ArrowBack as ArrowBackIcon,
   FilterList as FilterListIcon,
 } from '@mui/icons-material';
-import applicationsApi from '../services/applicationsApi';
+import applicationsService from '../services/applicationsService';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
@@ -61,7 +61,7 @@ const MyApplicationsPage = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const data = await applicationsApi.getMyApplications();
+        const data = await applicationsService.getMyApplications();
         // Ensure data is an array, fallback to empty array if not
         const applicationsArray = Array.isArray(data) ? data : [];
         setApplications(applicationsArray);

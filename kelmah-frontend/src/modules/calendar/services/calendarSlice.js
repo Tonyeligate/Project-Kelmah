@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import eventsApi from './eventsApi';
+import eventsService from './eventsService';
 
 const initialState = {
   events: [],
@@ -12,7 +12,7 @@ export const fetchEvents = createAsyncThunk(
   'calendar/fetchEvents',
   async (_, { rejectWithValue }) => {
     try {
-      const events = await eventsApi.getEvents();
+      const events = await eventsService.getEvents();
       console.log('Fetched events:', events);
       return events;
     } catch (error) {
@@ -26,7 +26,7 @@ export const addEvent = createAsyncThunk(
   'calendar/addEvent',
   async (eventData, { rejectWithValue }) => {
     try {
-      const event = await eventsApi.createEvent(eventData);
+      const event = await eventsService.createEvent(eventData);
       return event;
     } catch (error) {
       return rejectWithValue(error.message);

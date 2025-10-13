@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import PortfolioGallery from '../components/PortfolioGallery';
 import ProjectShowcase from '../components/ProjectShowcase';
-import portfolioApi from '../services/portfolioApi';
+import portfolioService from '../services/portfolioService';
 
 const PortfolioPage = () => {
   const [items, setItems] = useState([]);
@@ -10,7 +10,7 @@ const PortfolioPage = () => {
 
   useEffect(() => {
     let mounted = true;
-    portfolioApi
+    portfolioService
       .getMyPortfolio({ sortBy: 'relevance', limit: 12 })
       .then((res) => {
         if (!mounted) return;

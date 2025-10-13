@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import jobsApi from '../services/jobsApi';
+import jobsService from '../services/jobsService';
 import {
   Container,
   Grid,
@@ -464,7 +464,7 @@ const JobsPage = () => {
         setLoading(true);
         console.log('🔍 Fetching jobs from API...');
 
-        const response = await jobsApi.getJobs({
+        const response = await jobsService.getJobs({
           status: 'open',
           search: searchQuery || undefined,
           category: selectedCategory || undefined,

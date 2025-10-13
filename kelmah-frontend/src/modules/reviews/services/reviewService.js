@@ -1,88 +1,118 @@
-import reviewServiceClient from '../../common/services/axios';
+import { userServiceClient } from '../../common/services/axios';
 
+/**
+ * Review Service - Handles review management
+ * Routes through User Service for review operations
+ */
 class ReviewService {
-  // Get reviews for a specific user
+  /**
+   * Get reviews for a specific worker with pagination and filters
+   */
   async getUserReviews(userId, page = 1, limit = 10, filters = {}) {
     try {
-      // Call backend for reviews of a worker
-      const response = await reviewServiceClient.get(
-        `/api/reviews/worker/${userId}`,
-        {
-          params: { page, limit, ...filters },
-        },
-      );
-      // Normalize backend response to { reviews, pagination }
-      const raw = response.data;
-      const reviews = raw?.data?.reviews || raw?.data || raw?.reviews || [];
-      const pagination = raw?.data?.pagination ||
-        raw?.pagination || { page, limit, total: reviews.length, pages: 1 };
-      return { reviews, pagination };
+      const response = await userServiceClient.get(`/reviews/worker/${userId}`, {
+        params: { page, limit, ...filters }
+      });
+      return response.data;
     } catch (error) {
       console.error('Error fetching user reviews:', error);
       throw error;
     }
   }
 
-  // Get reviews for a specific job
+  /**
+   * Get reviews for a specific job with pagination
+   */
   async getJobReviews(jobId, page = 1, limit = 10) {
     try {
-      const response = await reviewServiceClient.get(
-        `/api/reviews/job/${jobId}`,
-        {
-          params: { page, limit },
-        },
-      );
-      const raw = response.data;
-      const reviews = raw.data || [];
-      const pagination = raw.meta?.pagination || {};
-      return { reviews, pagination };
+      const response = await userServiceClient.get(`/reviews/job/${jobId}`, {
+        params: { page, limit }
+      });
+      return response.data;
     } catch (error) {
       console.error('Error fetching job reviews:', error);
       throw error;
     }
   }
 
-  // Get review statistics for a user
-  // Optionally implement stats endpoint when available
-
-  // Create a new review
+  /**
+   * Create a new review
+   */
   async createReview(reviewData) {
     try {
-      const response = await reviewServiceClient.post(
-        '/api/reviews',
-        reviewData,
-      );
-      return response.data?.data || response.data;
+      const response = await userServiceClient.post('/reviews', reviewData);
+      return response.data;
     } catch (error) {
       console.error('Error creating review:', error);
       throw error;
     }
   }
 
-  // Update a review
+  /**
+   * Update an existing review
+   */
   async updateReview(reviewId, reviewData) {
     try {
-      const response = await reviewServiceClient.put(
-        `/api/reviews/${reviewId}`,
-        reviewData,
-      );
-      return response.data.data;
+      const response = await userServiceClient.put(`/reviews/${reviewId}`, reviewData);
+      return response.data;
     } catch (error) {
       console.error('Error updating review:', error);
       throw error;
     }
   }
 
-  // Delete a review
+  /**
+   * Delete a review
+   */
   async deleteReview(reviewId) {
     try {
-      await reviewServiceClient.delete(`/api/reviews/${reviewId}`);
-      return true;
+      const response = await userServiceClient.delete(`/reviews/${reviewId}`);
+      return response.data;
     } catch (error) {
       console.error('Error deleting review:', error);
       throw error;
     }
   }
+
+  /**
+   * Get a single review by ID
+   */
+  async getReview(reviewId) {
+    try {
+      const response = await userServiceClient.get(`/reviews/${reviewId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching review:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Report a review as inappropriate
+   */
+  async reportReview(reviewId, reason) {
+    try {
+      const response = await userServiceClient.post(`/reviews/${reviewId}/report`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Error reporting review:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get review statistics for a worker
+   */
+  async getReviewStats(userId) {
+    try {
+      const response = await userServiceClient.get(`/reviews/worker/${userId}/stats`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching review stats:', error);
+      throw error;
+    }
+  }
 }
 
-export default new ReviewService();
+const reviewService = new ReviewService();
+export default reviewService;

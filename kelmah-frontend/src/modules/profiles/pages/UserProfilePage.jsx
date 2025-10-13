@@ -32,7 +32,7 @@ import {
 import { format } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import axiosInstance from '../../common/services/axios';
-import reviewsApi from '../../../services/reviewsApi';
+import reviewService from '../../reviews/services/reviewService';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 
 function UserProfilePage() {
@@ -61,13 +61,13 @@ function UserProfilePage() {
 
   const fetchReviews = async () => {
     try {
-      const [list, rating] = await Promise.all([
-        reviewsApi.getWorkerReviews(userId, { status: 'approved', limit: 10 }),
-        reviewsApi.getWorkerRating(userId),
+      const [reviewsData, stats] = await Promise.all([
+        reviewService.getUserReviews(userId, 1, 10),
+        reviewService.getReviewStats(userId),
       ]);
-      setReviews(list.reviews || []);
+      setReviews(reviewsData.reviews || []);
       setRatings({
-        average_rating: rating?.averageRating || 0,
+        average_rating: stats?.averageRating || 0,
         total_ratings: rating?.totalReviews || 0,
       });
     } catch (error) {

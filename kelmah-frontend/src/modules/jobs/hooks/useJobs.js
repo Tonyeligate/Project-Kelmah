@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import jobService from '../services/jobsApi';
+import jobService from '../services/jobsService';
 import { setJobs, setLoading, setError } from '../services/jobSlice';
 
 export const useJobs = () => {

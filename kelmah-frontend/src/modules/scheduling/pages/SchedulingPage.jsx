@@ -53,7 +53,7 @@ import AppointmentCalendar from '../components/AppointmentCalendar';
 import AppointmentForm from '../components/AppointmentForm';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import jobsService from '../../jobs/services/jobsApi';
+import jobsService from '../../jobs/services/jobsService';
 // Import workersApi for user loading functionality
 import workerService from '../../worker/services/workerService';
 import { FEATURES } from '../../../config/environment';

@@ -64,7 +64,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useAuth } from '../../auth/contexts/AuthContext';
-import reviewsApi from '../../../services/reviewsApi';
+import reviewService from '../services/reviewService';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -115,11 +115,8 @@ const EnhancedReviewsPage = () => {
           setReviewStats({});
         } else {
           const [stats, workerReviews] = await Promise.all([
-            reviewsApi.getWorkerRating(user.id),
-            reviewsApi.getWorkerReviews(user.id, {
-              limit: 20,
-              status: 'approved',
-            }),
+            reviewService.getReviewStats(user.id),
+            reviewService.getUserReviews(user.id, 1, 20),
           ]);
           setReviewStats({
             overall: {
