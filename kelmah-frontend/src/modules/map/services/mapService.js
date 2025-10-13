@@ -114,7 +114,7 @@ class MapService {
         searchParams.maxBudget = budget[1];
       }
 
-      const response = await axiosInstance.get('/api/jobs/search/location', {
+      const response = await axiosInstance.get('/jobs/search/location', {
         params: searchParams,
       });
 
@@ -154,7 +154,7 @@ class MapService {
       if (skills) searchParams.skills = skills.join(',');
       if (rating) searchParams.minRating = rating;
 
-      // Changed from '/api/workers/search/location' to '/workers/search/location'
+      // Changed from '/workers/search/location' to '/workers/search/location'
       // baseURL='/api' is provided by axiosInstance on Vercel, preventing /api duplication
       const response = await axiosInstance.get('/workers/search/location', {
         params: searchParams,

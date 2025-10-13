@@ -74,7 +74,7 @@ const JobSearch = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.get('/api/jobs/search', {
+      const response = await axiosInstance.get('/jobs/search', {
         params: filters,
       });
       setJobs(response.data.data);

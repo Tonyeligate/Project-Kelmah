@@ -10,7 +10,7 @@ const paymentService = {
   getWallet: async () => {
     try {
       // Backend exposes wallet at /api/payments/wallet (mounted router returns data at "/")
-      const { data } = await paymentServiceClient.get('/api/payments/wallet');
+      const { data } = await paymentServiceClient.get('/payments/wallet');
       return data;
     } catch (error) {
       console.warn('Wallet service unavailable:', error.message);
@@ -64,13 +64,13 @@ const paymentService = {
 
   // Payment methods
   getPaymentMethods: async () => {
-    const { data } = await paymentServiceClient.get('/api/payments/methods');
+    const { data } = await paymentServiceClient.get('/payments/methods');
     return data;
   },
 
   addPaymentMethod: async (methodData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/methods',
+      '/payments/methods',
       methodData,
     );
     return data;
@@ -93,7 +93,7 @@ const paymentService = {
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
     const response = await paymentServiceClient.get(
-      '/api/payments/transactions/history',
+      '/payments/transactions/history',
       { params },
     );
     // Normalize to { data, pagination }
@@ -119,7 +119,7 @@ const paymentService = {
         transactionData.paymentMethod || transactionData.paymentMethodId,
     };
     const { data } = await paymentServiceClient.post(
-      '/api/payments/transactions',
+      '/payments/transactions',
       normalized,
     );
     return data;
@@ -128,7 +128,7 @@ const paymentService = {
   // Escrow operations
   getEscrows: async () => {
     try {
-      const { data } = await paymentServiceClient.get('/api/payments/escrows');
+      const { data } = await paymentServiceClient.get('/payments/escrows');
       return data;
     } catch (error) {
       console.warn('Escrow service unavailable:', error.message);
@@ -215,7 +215,7 @@ const paymentService = {
 
   fundEscrow: async (payload) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/escrows/fund',
+      '/payments/escrows/fund',
       payload,
     );
     return data;
@@ -245,7 +245,7 @@ const paymentService = {
 
   // Bills operations
   getBills: async () => {
-    const { data } = await paymentServiceClient.get('/api/payments/bills');
+    const { data } = await paymentServiceClient.get('/payments/bills');
     return data;
   },
 
@@ -259,7 +259,7 @@ const paymentService = {
   // Wallet fund operations
   withdrawFunds: async (amount, methodId) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/transactions',
+      '/payments/transactions',
       { amount, type: 'withdrawal', paymentMethodId: methodId },
     );
     return data;
@@ -267,7 +267,7 @@ const paymentService = {
 
   addFunds: async (amount, methodId) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/transactions',
+      '/payments/transactions',
       { amount, type: 'deposit', paymentMethodId: methodId },
     );
     return data;
@@ -275,13 +275,13 @@ const paymentService = {
 
   // Payment settings
   getPaymentSettings: async () => {
-    const { data } = await paymentServiceClient.get('/api/payments/settings');
+    const { data } = await paymentServiceClient.get('/payments/settings');
     return data;
   },
 
   updatePaymentSettings: async (settings) => {
     const { data } = await paymentServiceClient.put(
-      '/api/payments/settings',
+      '/payments/settings',
       settings,
     );
     return data;
@@ -292,7 +292,7 @@ const paymentService = {
   // MTN Mobile Money operations
   processMtnMoMoPayment: async (paymentData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/mtn-momo/request-to-pay',
+      '/payments/mtn-momo/request-to-pay',
       paymentData,
     );
     return data;
@@ -307,7 +307,7 @@ const paymentService = {
 
   validateMtnMoMoAccount: async (phoneNumber) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/mtn-momo/validate',
+      '/payments/mtn-momo/validate',
       { phoneNumber },
     );
     return data;
@@ -316,7 +316,7 @@ const paymentService = {
   // Vodafone Cash operations
   processVodafoneCashPayment: async (paymentData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/vodafone-cash/request-to-pay',
+      '/payments/vodafone-cash/request-to-pay',
       paymentData,
     );
     return data;
@@ -332,7 +332,7 @@ const paymentService = {
   // AirtelTigo Money operations
   processAirtelTigoPayment: async (paymentData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/airteltigo/request-to-pay',
+      '/payments/airteltigo/request-to-pay',
       paymentData,
     );
     return data;
@@ -397,7 +397,7 @@ const paymentService = {
   // Paystack Ghana integration
   processPaystackPayment: async (paymentData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/paystack/initialize',
+      '/payments/paystack/initialize',
       paymentData,
     );
     return data;
@@ -413,7 +413,7 @@ const paymentService = {
   // Stripe integration
   createStripePaymentIntent: async (intentData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/create-payment-intent',
+      '/payments/create-payment-intent',
       intentData,
     );
     return data;
@@ -422,7 +422,7 @@ const paymentService = {
   // Bank transfer operations (Ghana banks)
   initiateBankTransfer: async (transferData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/bank-transfer/initiate',
+      '/payments/bank-transfer/initiate',
       transferData,
     );
     return data;
@@ -438,7 +438,7 @@ const paymentService = {
   // Get available Ghana payment methods
   getGhanaPaymentMethods: async () => {
     const { data } = await paymentServiceClient.get(
-      '/api/payments/ghana/methods',
+      '/payments/ghana/methods',
     );
     return data;
   },
@@ -446,7 +446,7 @@ const paymentService = {
   // Worker payout operations (for paying workers)
   processWorkerPayout: async (payoutData) => {
     const { data } = await paymentServiceClient.post(
-      '/api/payments/payout/worker',
+      '/payments/payout/worker',
       payoutData,
     );
     return data;

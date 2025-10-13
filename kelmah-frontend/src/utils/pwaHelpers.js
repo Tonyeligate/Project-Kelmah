@@ -412,7 +412,7 @@ const urlBase64ToUint8Array = (base64String) => {
 // Send subscription to server
 const sendSubscriptionToServer = async (subscription) => {
   try {
-    const response = await fetch('/api/notifications/push/subscribe', {
+    const response = await fetch('/notifications/push/subscribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

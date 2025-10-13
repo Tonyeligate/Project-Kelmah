@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import {
@@ -64,7 +64,7 @@ const JobApplication = () => {
   const fetchAvailableJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/jobs/available');
+      const response = await fetch('/jobs/available');
       const data = await response.json();
       setAvailableJobs(data);
       setError(null);

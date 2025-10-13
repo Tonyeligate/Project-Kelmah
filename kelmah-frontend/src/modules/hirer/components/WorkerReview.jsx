@@ -78,7 +78,7 @@ const WorkerReview = () => {
       setLoading(true);
       // Try to fetch from user service, fall back to mock data
       const response = await userServiceClient.get(
-        '/api/users/workers/completed-jobs',
+        '/users/workers/completed-jobs',
       );
       setWorkers(response.data || []);
       setError(null);

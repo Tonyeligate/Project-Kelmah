@@ -72,7 +72,7 @@ const ProposalReview = () => {
     try {
       setLoading(true);
       // Try to fetch from job service, fall back to mock data
-      const response = await jobServiceClient.get('/api/jobs/proposals');
+      const response = await jobServiceClient.get('/jobs/proposals');
       setProposals(response.data || []);
       setError(null);
     } catch (err) {

@@ -367,12 +367,12 @@ const GeoLocationSearch = () => {
       let response;
       if (searchType === 0) {
         // Search for jobs
-        response = await axiosInstance.get('/api/jobs/search', {
+        response = await axiosInstance.get('/jobs/search', {
           params: searchParams,
         });
       } else {
         // Search for workers/professionals
-        response = await axiosInstance.get('/api/workers/search', {
+        response = await axiosInstance.get('/workers/search', {
           params: searchParams,
         });
       }

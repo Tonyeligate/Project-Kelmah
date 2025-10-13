@@ -417,7 +417,7 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
       if (
         error.response?.status === 501 &&
         typeof config?.url === 'string' &&
-        config.url.includes('/api/payments/escrows')
+        config.url.includes('/payments/escrows')
       ) {
         if (LOG_CONFIG.enableConsole) {
           console.warn(

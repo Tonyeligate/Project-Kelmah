@@ -4,7 +4,7 @@ import {
   getUserServiceClient,
 } from '../../common/services/axios';
 
-const API_URL = '/api/users/workers';
+const API_URL = '/users/workers';
 
 const unwrapPayload = (response) =>
   response?.data?.data ?? response?.data ?? {};

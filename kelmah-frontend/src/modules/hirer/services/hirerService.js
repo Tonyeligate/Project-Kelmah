@@ -32,7 +32,7 @@ export const hirerService = {
   async updateProfile(profileData) {
     try {
       const response = await userServiceClient.put(
-        '/api/users/me/profile',
+        '/users/me/profile',
         profileData,
       );
       return response.data;
@@ -79,7 +79,7 @@ export const hirerService = {
   async getSavedWorkers() {
     try {
       const response = await userServiceClient.get(
-        '/api/users/me/saved-workers',
+        '/users/me/saved-workers',
       );
       return response.data.data || response.data;
     } catch (error) {
@@ -91,7 +91,7 @@ export const hirerService = {
   async saveWorker(workerId) {
     try {
       const response = await userServiceClient.post(
-        '/api/users/me/saved-workers',
+        '/users/me/saved-workers',
         { workerId },
       );
       return response.data;

@@ -141,7 +141,7 @@ class NotificationService {
   async getNotifications(params = {}) {
     try {
       // Add retry-control header to prevent excessive retries on rate limit
-      const response = await this.client.get('/api/notifications', { 
+      const response = await this.client.get('/notifications', { 
         params,
         headers: {
           'X-Retry-Limit': '2', // Limit retries for this endpoint
@@ -239,7 +239,7 @@ class NotificationService {
   // Mark all notifications as read
   async markAllAsRead() {
     try {
-      const response = await this.client.patch('/api/notifications/read/all');
+      const response = await this.client.patch('/notifications/read/all');
       return response.data;
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
@@ -250,7 +250,7 @@ class NotificationService {
   // Clear all notifications
   async clearAllNotifications() {
     try {
-      const response = await this.client.delete('/api/notifications/clear-all');
+      const response = await this.client.delete('/notifications/clear-all');
       return response.data;
     } catch (error) {
       console.error('Failed to clear all notifications:', error);
@@ -261,7 +261,7 @@ class NotificationService {
   // Get unread count
   async getUnreadCount() {
     try {
-      const response = await this.client.get('/api/notifications/unread/count');
+      const response = await this.client.get('/notifications/unread/count');
       return response.data.unreadCount;
     } catch (error) {
       console.error('Failed to get unread count:', error);
@@ -285,7 +285,7 @@ class NotificationService {
   // Get notification preferences (channels and types)
   async getPreferences() {
     try {
-      const response = await this.client.get('/api/notifications/preferences');
+      const response = await this.client.get('/notifications/preferences');
       return response.data?.data || response.data;
     } catch (error) {
       console.error('Failed to load notification preferences:', error);
@@ -297,7 +297,7 @@ class NotificationService {
   async updatePreferences(preferences) {
     try {
       const response = await this.client.put(
-        '/api/notifications/preferences',
+        '/notifications/preferences',
         preferences,
       );
       return response.data?.data || response.data;

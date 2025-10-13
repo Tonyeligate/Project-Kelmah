@@ -171,7 +171,7 @@ const SearchPage = () => {
 
     try {
       // Use consistent API endpoint for all users
-      const apiEndpoint = '/api/workers';
+      const apiEndpoint = '/workers';
       console.log('🔍 Using API endpoint:', apiEndpoint);
 
       // Prepare API parameters

@@ -1,6 +1,6 @@
 import { userServiceClient } from '../../common/services/axios';
 
-const API_URL = '/api/workers';
+const API_URL = '/workers';
 
 /**
  * Service for managing worker earnings and analytics

@@ -97,7 +97,7 @@ const authService = {
   register: async (userData) => {
     try {
       const response = await authServiceClient.post(
-        '/api/auth/register',
+        '/auth/register',
         userData,
       );
       const { token, user } = response.data.data || response.data;
@@ -225,7 +225,7 @@ const authService = {
   forgotPassword: async (email) => {
     try {
       const response = await authServiceClient.post(
-        '/api/auth/forgot-password',
+        '/auth/forgot-password',
         { email },
       );
       return response.data;
@@ -239,7 +239,7 @@ const authService = {
   resetPassword: async (token, password) => {
     try {
       const response = await authServiceClient.post(
-        '/api/auth/reset-password',
+        '/auth/reset-password',
         { token, password },
       );
       return response.data;
@@ -253,7 +253,7 @@ const authService = {
   updateProfile: async (profileData) => {
     try {
       const response = await authServiceClient.put(
-        '/api/auth/profile',
+        '/auth/profile',
         profileData,
       );
       const { user } = response.data.data || response.data;
@@ -273,7 +273,7 @@ const authService = {
   changePassword: async (currentPassword, newPassword) => {
     try {
       const response = await authServiceClient.post(
-        '/api/auth/change-password',
+        '/auth/change-password',
         {
           currentPassword,
           newPassword,
@@ -338,7 +338,7 @@ const authService = {
   resendVerificationEmail: async (email) => {
     try {
       const response = await authServiceClient.post(
-        '/api/auth/resend-verification-email',
+        '/auth/resend-verification-email',
         {
           email,
         },

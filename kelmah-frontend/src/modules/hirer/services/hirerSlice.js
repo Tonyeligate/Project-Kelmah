@@ -66,7 +66,7 @@ export const updateHirerProfile = createAsyncThunk(
   async (profileData) => {
     try {
       const response = await userServiceClient.put(
-        '/api/users/me/profile',
+        '/users/me/profile',
         profileData,
       );
       return response.data.data || response.data;
@@ -210,13 +210,13 @@ export const fetchPaymentSummary = createAsyncThunk(
       // Compose summary from wallet, escrows, and transactions
       const [walletResp, escrowsResp, txResp] = await Promise.all([
         paymentServiceClient
-          .get('/api/payments/wallet')
+          .get('/payments/wallet')
           .catch(() => ({ data: null })),
         paymentServiceClient
-          .get('/api/payments/escrows')
+          .get('/payments/escrows')
           .catch(() => ({ data: [] })),
         paymentServiceClient
-          .get('/api/payments/transactions/history')
+          .get('/payments/transactions/history')
           .catch(() => ({ data: [] })),
       ]);
 

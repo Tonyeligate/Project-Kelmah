@@ -69,7 +69,7 @@ export const fetchWorkerJobs = createAsyncThunk(
   'worker/fetchJobs',
   async (status = 'active', { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/jobs/assigned', {
+      const response = await api.get('/jobs/assigned', {
         params: { status },
       });
       const payload = response.data?.data || response.data;
@@ -91,7 +91,7 @@ export const fetchWorkerApplications = createAsyncThunk(
   'worker/fetchApplications',
   async (status = 'pending', { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/jobs/applications/me', {
+      const response = await api.get('/jobs/applications/me', {
         params: { status },
       });
       const apps = response.data?.data || response.data || [];

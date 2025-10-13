@@ -129,7 +129,7 @@ export const messagingService = {
     try {
       const params = { q: query, attachments, period, sender };
       const response = await messagingServiceClient.get(
-        '/api/messages/search',
+        '/messages/search',
         { params },
       );
       const payload = response.data;

@@ -108,7 +108,7 @@ const WorkerSearch = () => {
     (async () => {
       try {
         console.log('WorkerSearch - fetching bookmarks');
-        const res = await userServiceClient.get('/api/users/bookmarks');
+        const res = await userServiceClient.get('/users/bookmarks');
         const ids = res?.data?.data?.workerIds || [];
         setSavedWorkers(ids);
       } catch (err) {
