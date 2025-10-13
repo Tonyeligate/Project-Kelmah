@@ -34,22 +34,23 @@ const getWebSocketUrl = (service) => {
 
 // Base API paths for each service
 const getServicePath = (service, path) => {
-  // ✅ All services route through API Gateway
+  // ✅ Routes through API Gateway - removed /api/ prefix since service clients already have baseURL: '/api'
+  // This prevents double /api/api/ prefix issue
   switch (service) {
     case 'AUTH_SERVICE':
-      return `/api/auth${path}`;
+      return `/auth${path}`;
     case 'USER_SERVICE':
-      return `/api/users${path}`;
+      return `/users${path}`;
     case 'JOB_SERVICE':
-      return `/api/jobs${path}`;
+      return `/jobs${path}`;
     case 'MESSAGING_SERVICE':
-      return `/api/messages${path}`;
+      return `/messages${path}`;
     case 'PAYMENT_SERVICE':
-      return `/api/payments${path}`;
+      return `/payments${path}`;
     case 'REVIEW_SERVICE':
-      return `/api/reviews${path}`;
+      return `/reviews${path}`;
     default:
-      return `/api${path}`;
+      return `${path}`;
   }
 };
 

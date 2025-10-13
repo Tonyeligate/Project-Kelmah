@@ -11,20 +11,21 @@ import { SERVICES, getApiBaseUrl } from '../config/environment';
 const serviceHealthCache = new Map();
 const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-// Health check endpoints - Standardize to /api/health for consistency
+// Health check endpoints - Using '/health' without /api/ prefix
+// baseURL='/api' is provided by axios instance, so endpoints should NOT include /api/
 const HEALTH_ENDPOINTS = {
-  [SERVICES.AUTH_SERVICE]: '/api/health',
-  [SERVICES.USER_SERVICE]: '/api/health',
-  [SERVICES.JOB_SERVICE]: '/api/health',
-  [SERVICES.MESSAGING_SERVICE]: '/api/health',
-  [SERVICES.PAYMENT_SERVICE]: '/api/health',
+  [SERVICES.AUTH_SERVICE]: '/health',
+  [SERVICES.USER_SERVICE]: '/health',
+  [SERVICES.JOB_SERVICE]: '/health',
+  [SERVICES.MESSAGING_SERVICE]: '/health',
+  [SERVICES.PAYMENT_SERVICE]: '/health',
 };
 
 /**
  * Check if a service is healthy
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
-  const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/api/health'; // Default to /api/health
+  const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/health'; // Default to /health without /api/ prefix
 
   let base;
 
