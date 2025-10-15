@@ -40,7 +40,7 @@ function loadModels() {
   _SkillCategory = null;
   _WorkerSkill = null;
 
-  console.log('✅ All models loaded and ready');
+  console.log('✅ All models loaded and ready (v2.1 - includes Availability, Portfolio)');
 }
 
 // Export object with GETTERS that return the actual models

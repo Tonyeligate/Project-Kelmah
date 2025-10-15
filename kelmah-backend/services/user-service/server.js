@@ -450,9 +450,10 @@ if (require.main === module) {
       });
       
       // CRITICAL: Load models AFTER MongoDB connection is ready
-      logger.info("📦 Loading models after MongoDB connection...");
+      logger.info("📦 Loading models after MongoDB connection... (v2.1)");
       const modelsModule = require("./models");
       modelsModule.loadModels(); // Populate the internal model variables
+      logger.info("✅ Models loaded successfully");
       
       // The getters will now return the actual models
       User = modelsModule.User;
