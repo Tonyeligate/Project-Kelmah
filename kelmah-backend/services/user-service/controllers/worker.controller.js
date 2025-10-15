@@ -5,7 +5,8 @@
 
 const mongoose = require('mongoose');
 const modelsModule = require('../models');
-const { WorkerProfile, WorkerSkill, Portfolio, Skill, User, Availability } = modelsModule;
+// DO NOT destructure models at module load time - use modelsModule.ModelName or local variables
+// Models are loaded AFTER database connection, so they're undefined at module load time
 const { ensureConnection } = require('../config/db');
 const { validateInput, handleServiceError } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
@@ -563,16 +564,9 @@ class WorkerController {
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
 
-      let MongoUser = User;
-      let MongoWorkerProfile = WorkerProfile;
-
-      if (!MongoUser || !MongoWorkerProfile) {
-        if (typeof modelsModule.loadModels === 'function') {
-          modelsModule.loadModels();
-        }
-        MongoUser = modelsModule.User;
-        MongoWorkerProfile = modelsModule.WorkerProfile;
-      }
+      // Always get models from modelsModule (they're loaded after DB connection)
+      const MongoUser = modelsModule.User;
+      const MongoWorkerProfile = modelsModule.WorkerProfile;
 
       if (!MongoUser) {
         return res.status(503).json({
@@ -895,16 +889,9 @@ class WorkerController {
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
 
-      let MongoUser = User;
-      let MongoAvailability = Availability;
-
-      if (!MongoUser || !MongoAvailability) {
-        if (typeof modelsModule.loadModels === 'function') {
-          modelsModule.loadModels();
-        }
-        MongoUser = modelsModule.User;
-        MongoAvailability = modelsModule.Availability;
-      }
+      // Always get models from modelsModule (they're loaded after DB connection)
+      const MongoUser = modelsModule.User;
+      const MongoAvailability = modelsModule.Availability;
 
       if (!MongoUser || !MongoAvailability) {
         console.warn('Availability request missing initialized models, returning fallback');
