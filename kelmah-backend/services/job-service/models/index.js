@@ -1,18 +1,16 @@
 /**
- * Job Service Models Index - Uses Shared Models
- * Updated to use centralized shared models instead of local duplicates
- * CRITICAL: Pass connected mongoose instance to shared models
+ * Job Service Models Index
+ * Uses shared models for cross-service entities, local models for service-specific
  */
 
 // Get the connected mongoose instance from db config
 const { mongoose } = require('../config/db');
 
-// Import shared models and ensure they use the connected mongoose instance
-// NOTE: Shared models already have their schemas defined, we just need to ensure
-// they're using the correct mongoose instance (the one that's connected)
-const { Job, Application, User, SavedJob } = require('../../../shared/models');
+// Import shared models (truly cross-service)
+const { Job, Application, User } = require('../../../shared/models');
 
-// Import service-specific models
+// Import LOCAL service-specific models
+const SavedJob = require('./SavedJob');  // ✅ Local (only job-service)
 const Bid = require('./Bid');
 const UserPerformance = require('./UserPerformance');
 const Category = require('./Category');
@@ -22,13 +20,13 @@ const ContractTemplate = require('./ContractTemplate');
 
 // Export models
 module.exports = {
-  // Shared models (using connected mongoose instance)
-  Job,
-  Application,
-  User,
+  // Shared models
+  Job,         // ✅ Shared (used by job, review, payment)
+  Application, // ✅ Shared (used by job, review, payment)
+  User,        // ✅ Shared (used by all services)
+  
+  // Local service-specific models
   SavedJob,
-
-  // Service-specific models
   Bid,
   UserPerformance,
   Category,

@@ -24,15 +24,21 @@ function loadModels() {
     }
   }
 
-  // Import service-specific models
+  // Import service-specific models (ONLY Mongoose models)
   _WorkerProfile = require('./WorkerProfileMongo');
-  _Portfolio = require('./Portfolio');
   _Certificate = require('./Certificate');
-  _Skill = require('./Skill');
-  _SkillCategory = require('./SkillCategory');
-  _WorkerSkill = require('./WorkerSkill');
   _Availability = require('./Availability');
   _Bookmark = require('./Bookmark');
+  
+  // Load Portfolio from LOCAL service (NOT shared - it's user-service specific)
+  _Portfolio = require('./Portfolio');
+  
+  // ⚠️ Skill, SkillCategory, WorkerSkill are OLD SEQUELIZE models
+  // They are NOT loaded to avoid BSON version conflicts
+  // Skills are now embedded in User model as simple string arrays
+  _Skill = null;
+  _SkillCategory = null;
+  _WorkerSkill = null;
 
   console.log('✅ All models loaded and ready');
 }

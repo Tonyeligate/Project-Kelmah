@@ -1,5 +1,5 @@
 /**
- * Refresh Token Model - MongoDB/Mongoose (secure)
+ * Refresh Token Model - Local to Auth Service
  * Stores only tokenHash + tokenId (jti) and version, never the raw token
  */
 
@@ -31,14 +31,15 @@ const RefreshTokenSchema = new mongoose.Schema({
 }, { 
   timestamps: true, 
   collection: 'refreshtokens',
-  // bufferCommands controlled globally by mongoose.set() in server startup
   autoCreate: true
 });
 
+// Indexes
 RefreshTokenSchema.index({ userId: 1, tokenId: 1 }, { unique: true });
 RefreshTokenSchema.index({ tokenHash: 1 }, { unique: true, sparse: true });
 RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+// Instance Methods
 RefreshTokenSchema.methods.isExpired = function() {
   return this.expiresAt < new Date();
 };
@@ -50,6 +51,7 @@ RefreshTokenSchema.methods.revoke = function(ip) {
   return this.save();
 };
 
+// Static Methods
 RefreshTokenSchema.statics.cleanupExpired = function() {
   return this.deleteMany({
     $or: [

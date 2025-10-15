@@ -1,24 +1,23 @@
 /**
- * Messaging Service Models Index - Uses Shared Models with Local Extensions
- * Updated to use centralized shared models with local extended versions where needed
+ * Messaging Service Models Index
+ * All models are LOCAL to messaging-service (best practice for microservices)
+ * Only imports User from shared (used across multiple services)
  */
 
-// Import from shared models
-const { Conversation, User } = require('../../../shared/models');
+// Import User from shared (truly cross-service model)
+const { User } = require('../../../shared/models');
 
-// Import service-specific models (extended versions)
-const Message = require('./Message'); // Extended version with recipient, attachments, etc.
-const Notification = require('./Notification'); // Extended version with readStatus, priority, etc.
+// Import LOCAL service-specific models
+const Conversation = require('./Conversation');
+const Message = require('./Message');
+const Notification = require('./Notification');
 const NotificationPreference = require('./NotificationPreference');
 
 // Export models
 module.exports = {
-  // Shared models
-  Conversation,
-  Message,
-  User,
-
-  // Extended local models
-  Notification,
-  NotificationPreference
+  User,          // ✅ Shared (used by all services)
+  Conversation,  // ✅ Local (only messaging-service)
+  Message,       // ✅ Local (only messaging-service)
+  Notification,  // ✅ Local (only messaging-service)
+  NotificationPreference  // ✅ Local (only messaging-service)
 };

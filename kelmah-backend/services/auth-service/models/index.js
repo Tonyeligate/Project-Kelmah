@@ -1,19 +1,18 @@
 /**
- * Auth Service Models Index - Uses Shared Models
- * Updated to use centralized shared models instead of local duplicates
+ * Auth Service Models Index
+ * Uses shared User model, local auth-specific models
  */
 
-// Import from shared models
-const { User, RefreshToken } = require('../../../shared/models');
-const RevokedToken = require('./RevokedToken');
+// Import User from shared (cross-service model)
+const { User } = require('../../../shared/models');
+
+// Import LOCAL auth-specific models
+const RefreshToken = require('./RefreshToken');  // ✅ Local (only auth-service)
+const RevokedToken = require('./RevokedToken');  // ✅ Local (only auth-service)
 
 // Export models
 module.exports = {
-  User,
-  RefreshToken,
-  RevokedToken
+  User,          // ✅ Shared (used by all services)
+  RefreshToken,  // ✅ Local (only auth-service)
+  RevokedToken   // ✅ Local (only auth-service)
 };
-
-// Note: User and RefreshToken now come from shared models directory
-// Only service-specific models like RevokedToken remain local
-// No additional association setup is needed like in Sequelize
