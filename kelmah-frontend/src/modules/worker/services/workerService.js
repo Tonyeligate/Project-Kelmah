@@ -295,10 +295,8 @@ const workerService = {
       }
 
       const client = await getUserServiceClient();
-      const baseUrl = client?.defaults?.baseURL ?? '';
-      const prefix =
-        typeof baseUrl === 'string' && baseUrl.endsWith('/api') ? '' : '/api';
-      response = await client.get(`${prefix}/availability/${workerId}`);
+      // ⚠️ FIX: Use correct path /users/workers/{id}/availability, not /availability/{id}
+      response = await client.get(`/users/workers/${workerId}/availability`);
     }
     const payload = unwrapPayload(response);
     const status = payload?.status;
@@ -345,11 +343,9 @@ const workerService = {
       }
 
       const client = await getUserServiceClient();
-      const baseUrl = client?.defaults?.baseURL ?? '';
-      const prefix =
-        typeof baseUrl === 'string' && baseUrl.endsWith('/api') ? '' : '/api';
+      // ⚠️ FIX: Use correct path /users/workers/{id}/availability, not /availability/{id}
       response = await client.put(
-        `${prefix}/availability/${workerId}`,
+        `/users/workers/${workerId}/availability`,
         availabilityData,
       );
     }
