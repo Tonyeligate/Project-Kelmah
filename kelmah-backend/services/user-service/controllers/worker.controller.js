@@ -316,8 +316,8 @@ class WorkerController {
 
       const offset = (page - 1) * limit;
 
-      // ✅ FIXED: Use shared MongoDB User model (already imported at top)
-      const MongoUser = User;
+      // Always get models from modelsModule (they're loaded after DB connection)
+      const MongoUser = modelsModule.User;
 
       // Build MongoDB query
       const mongoQuery = {
