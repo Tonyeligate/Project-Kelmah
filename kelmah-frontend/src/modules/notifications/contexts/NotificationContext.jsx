@@ -39,100 +39,77 @@ export const NotificationProvider = ({ children }) => {
     (n) => !n.read && n.readStatus?.isRead !== true,
   ).length;
 
+  // Normalize the user object from Redux or props to extract ONLY the ID
+  // ⚠️ CRITICAL FIX: Only track user.id to prevent re-fetches on user object mutations
+  const userId = useMemo(() => {
+    const rawUser = user || userProp;
+    if (!rawUser) return null;
+    return rawUser.id || rawUser._id || rawUser.userId;
+  }, [user?.id, user?._id, user?.userId, userProp?.id, userProp?._id, userProp?.userId]);
+
+  // Track last fetch timestamp to prevent rapid re-fetches
+  const lastFetchRef = useRef(0);
+  const MIN_FETCH_INTERVAL = 30000; // 30 seconds minimum between fetches
+
   const fetchNotifications = useCallback(
-    async (params = {}) => {
-      // ✅ FIX: Check both user AND token availability before making API call
-      if (!user) return;
-      const token = secureStorage.getAuthToken();
-      if (!token) {
-        console.log(
-          '⏸️ Skipping notifications fetch - no auth token available yet',
-        );
+    async ({ limit = 20, skip = 0 } = {}) => {
+      // Rate limiting check - prevent rapid re-fetches
+      const now = Date.now();
+      if (now - lastFetchRef.current < MIN_FETCH_INTERVAL) {
+        console.log('⏱️ Skipping notification fetch - too soon since last fetch');
         return;
       }
 
-      setLoading(true);
-      console.log('🔄 Fetching real notification data from API...');
+      // Only fetch if we have a user ID and token
+      const currentToken = secureStorage.getItem('token');
+      if (!userId || !currentToken) {
+        setLoading(false);
+        return; // Not logged in
+      }
 
       try {
-        const resp = await notificationServiceUser.getNotifications(params);
-        // Normalize backend shapes: controller returns { notifications, ... }
-        // but service may already unwrap .data
-        const list = Array.isArray(resp?.notifications)
-          ? resp.notifications
-          : Array.isArray(resp?.data?.notifications)
-            ? resp.data.notifications
-            : Array.isArray(resp?.data)
-              ? resp.data
-              : Array.isArray(resp)
-                ? resp
-                : [];
-        // If list items are raw Notification documents, map to UI shape keys
-        const normalized = list.map((n) => ({
-          id: n.id || n._id,
-          title: n.title || n.content || n.message,
-          message: n.content || n.message || '',
-          createdAt: n.createdAt || n.date || new Date().toISOString(),
-          read: n.read ?? n.readStatus?.isRead ?? false,
-          type: n.type || 'system',
-          ...n,
-        }));
+        setLoading(true);
+        lastFetchRef.current = now; // Update last fetch timestamp
 
-        console.log('📩 Notifications received:', {
-          responseType: typeof resp,
-          hasData: !!resp?.data,
-          isArray: Array.isArray(resp?.data || resp),
-          count: Array.isArray(list) ? list.length : 0,
-        });
-
-        setNotifications(normalized);
-        const pag = resp?.pagination || resp?.data?.pagination;
-        if (pag) {
-          setPagination({
-            page: parseInt(pag.page) || 1,
-            limit: parseInt(pag.limit) || 20,
-            total: parseInt(pag.total) || normalized.length,
-            pages:
-              parseInt(pag.pages) ||
-              Math.ceil(
-                (parseInt(pag.total) || normalized.length) /
-                  (parseInt(pag.limit) || 20),
-              ),
+        const { data, pagination: paginationData } =
+          await notificationServiceUser.getNotifications({
+            limit,
+            skip,
           });
-        } else {
-          setPagination((prev) => ({
-            ...prev,
-            total: normalized.length,
-            pages: 1,
-          }));
-        }
-        setError(null); // Clear any previous errors
+
+        setNotifications(data);
+        setPagination(paginationData);
+        setUnreadCount(data.filter((n) => !n.read).length);
+        setError(null);
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
-        
-        // Handle rate limiting gracefully - don't show error to user
-        if (err.response?.status === 429) {
-          console.warn('⏸️ Notifications rate limited, will retry later');
-          setError(null); // Don't show error for rate limiting
-          // Keep existing notifications, don't clear them
+        // Check if it's a 429 Too Many Requests error
+        if (err?.response?.status === 429) {
+          // Rate limited - back off significantly
+          console.warn('⚠️ Rate limited on notifications endpoint - backing off 2 minutes');
+          lastFetchRef.current = now + 120000; // Block fetches for 2 minutes
+          setError(
+            'Too many requests. Please wait a moment before refreshing.',
+          );
         } else {
-          setError('Could not load notifications. Please check your connection.');
-          // Ensure we always have a valid array, never undefined
-          setNotifications([]);
+          setError('Failed to load notifications.');
         }
-        
-        setPagination({ page: 1, limit: 20, total: 0, pages: 0 });
       } finally {
         setLoading(false);
       }
     },
-    [user],
+    [userId], // ⚠️ CRITICAL: Only depend on userId, not entire user object
   );
 
+  // ⚠️ FIX: Only fetch on mount and when userId changes (not entire user object)
+  // This prevents rapid re-fetches when Redux updates user object properties
   useEffect(() => {
-    fetchNotifications();
+    // Only fetch if we have a userId
+    if (userId) {
+      fetchNotifications();
+    }
 
-    if (user) {
+    if (userId) {
       try {
         const token = secureStorage.getAuthToken();
 
@@ -164,7 +141,8 @@ export const NotificationProvider = ({ children }) => {
         );
       }
     };
-  }, [fetchNotifications, user]);
+  }, [fetchNotifications, userId]); // ⚠️ CRITICAL: Depend on userId, not user object
+
 
   const markAsRead = async (id) => {
     try {

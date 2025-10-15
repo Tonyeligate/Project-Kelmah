@@ -449,7 +449,8 @@ const retryInterceptor = (client, maxRetries = timeoutConfig.retries) => {
         error.message?.includes('timeout') ||
         error.message?.includes('Network Error') ||
         status >= 500 || // Server errors
-        status === 429 || // Rate limiting
+        // ⚠️ CRITICAL FIX: DO NOT retry 429 Rate Limiting - it compounds the problem
+        // status === 429 || // Rate limiting - REMOVED to prevent retry storms
         status === 408 || // Request timeout
         !error.response; // No response usually means network/timeout issue
 
