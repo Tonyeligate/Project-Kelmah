@@ -64,6 +64,28 @@ router.get('/workers', (req, res, next) => {
 }, WorkerController.getAllWorkers);
 
 // Worker-specific parameterized routes (MUST be after specific routes like /search)
+router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
+  const modelsModule = require('../models');
+  res.json({
+    success: true,
+    debug: {
+      User: !!modelsModule.User,
+      WorkerProfile: !!modelsModule.WorkerProfile,
+      Portfolio: !!modelsModule.Portfolio,
+      Availability: !!modelsModule.Availability,
+      Certificate: !!modelsModule.Certificate,
+      Bookmark: !!modelsModule.Bookmark,
+      connectionState: require('mongoose').connection.readyState,
+      connectionStates: {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+      }
+    }
+  });
+});
+
 router.get("/workers/:id/availability", verifyGatewayRequest, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
     workerId: req.params.id,
