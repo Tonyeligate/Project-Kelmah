@@ -385,6 +385,7 @@ app.use(
     }).unknown(true),
   }),
   createDynamicProxy('user', {
+    pathRewrite: { '^/': '/api/users/' }, // ✅ FIX: Restore /api/users prefix that Express strips
     onProxyReq: (proxyReq, req) => {
       console.log('📤 [API Gateway] Proxying to user service:', {
         method: proxyReq.method,
