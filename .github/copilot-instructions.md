@@ -267,9 +267,15 @@ shared/
 
 ### Production Setup
 - **Frontend**: Deployed on Vercel with API rewrites to backend
-- **Backend**: Services run on containers/EC2 with internal load balancing
+- **Backend**: Services run on Render with internal load balancing
 - **Database**: MongoDB clusters per service
 - **Real-time**: Socket.IO with Redis adapter for scaling
+- **⚠️ AUTO-DEPLOYMENT**: All services are configured for automatic deployment on git push to main branch
+  - **Frontend (Vercel)**: Auto-deploys on push to main (~1-2 minutes)
+  - **Backend (Render)**: Auto-deploys on push to main (~2-3 minutes)
+  - **NEVER** tell user "wait for deployment" - fixes are automatically deployed
+  - **NEVER** ask user to manually deploy - system handles all deployments
+  - **ASSUME**: Any fix pushed to GitHub is automatically deploying/deployed
 
 ### Key Files for Deployment
 - `kelmah-frontend/vercel.json` - Frontend deployment config with API rewrites
