@@ -719,7 +719,16 @@ class WorkerController {
       });
 
     } catch (error) {
-      console.error('Get profile completion error:', error);
+      console.error('❌ ERROR in getProfileCompletion - Full details:', {
+        errorName: error?.name,
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+        workerId,
+        modelsModuleLoaded: !!modelsModule,
+        UserModelExists: !!User,
+        WorkerProfileModelExists: !!WorkerProfile,
+        connectionState: mongoose.connection.readyState
+      });
       if (isDbUnavailableError(error)) {
         return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
       }
@@ -981,7 +990,16 @@ class WorkerController {
         }
       });
     } catch (error) {
-      console.error('Error fetching worker availability:', error);
+      console.error('❌ ERROR in getWorkerAvailability - Full details:', {
+        errorName: error?.name,
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+        workerId,
+        modelsModuleLoaded: !!modelsModule,
+        AvailabilityModelExists: !!Availability,
+        UserModelExists: !!User,
+        connectionState: mongoose.connection.readyState
+      });
       if (isDbUnavailableError(error)) {
         return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
       }

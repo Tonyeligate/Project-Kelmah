@@ -33,7 +33,6 @@ const AvailabilitySchema = new Schema(
 
 AvailabilitySchema.index({ user: 1 }, { unique: true });
 
-// Use mongoose.connection.model() to ensure model uses the active connection
 module.exports = mongoose.connection.models.Availability || mongoose.connection.model('Availability', AvailabilitySchema);
 
 
