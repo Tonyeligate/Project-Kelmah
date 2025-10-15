@@ -44,10 +44,9 @@ export const NotificationProvider = ({ children }) => {
   // Normalize the user object from Redux or props to extract ONLY the ID
   // ⚠️ CRITICAL FIX: Only track user.id to prevent re-fetches on user object mutations
   const userId = useMemo(() => {
-    const rawUser = user || userProp;
-    if (!rawUser) return null;
-    return rawUser.id || rawUser._id || rawUser.userId;
-  }, [user?.id, user?._id, user?.userId, userProp?.id, userProp?._id, userProp?.userId]);
+    if (!user) return null;
+    return user.id || user._id || user.userId;
+  }, [user?.id, user?._id, user?.userId]);
 
   // Track last fetch timestamp to prevent rapid re-fetches
   const lastFetchRef = useRef(0);
