@@ -10,7 +10,7 @@ const eventsService = {
    */
   getEvents: async () => {
     try {
-      const response = await gatewayClient.get('/api/events');
+      const response = await gatewayClient.get('/events');
       return response.data;
     } catch (error) {
       console.error('Error fetching events:', error);

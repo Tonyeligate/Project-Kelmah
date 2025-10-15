@@ -13,7 +13,7 @@ export const messagingService = {
   async getConversations() {
     try {
       // Direct service path (matches messaging-service server.js)
-      const response = await messagingServiceClient.get('/api/conversations');
+      const response = await messagingServiceClient.get('/conversations');
       // Normalize response shape
       const payload = response.data;
       if (Array.isArray(payload)) return payload;
@@ -31,7 +31,7 @@ export const messagingService = {
   async createConversation(participantId, jobId) {
     try {
       // Align with backend: expects participantIds array and optional type
-      const response = await messagingServiceClient.post('/api/conversations', {
+      const response = await messagingServiceClient.post('/conversations', {
         participantIds: [participantId],
         type: 'direct',
         jobId,
@@ -49,7 +49,7 @@ export const messagingService = {
   // Create conversation from job application
   async createConversationFromApplication(applicationId) {
     try {
-      const response = await messagingServiceClient.post('/api/conversations', {
+      const response = await messagingServiceClient.post('/conversations', {
         applicationId,
       });
       return response.data;
@@ -66,7 +66,7 @@ export const messagingService = {
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
       const response = await messagingServiceClient.get(
-        `/api/messages/conversations/${conversationId}/messages`,
+        `/messages/conversations/${conversationId}/messages`,
         {
           params: { page, limit },
         },
@@ -110,7 +110,7 @@ export const messagingService = {
   // Create a direct conversation with a single participant
   async createDirectConversation(participantId) {
     try {
-      const response = await messagingServiceClient.post('/api/conversations', {
+      const response = await messagingServiceClient.post('/conversations', {
         participantIds: [participantId],
         type: 'direct',
       });

@@ -21,7 +21,7 @@ export const checkApiHealth = async (showLoading = true) => {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const timeout = baseTimeoutMs * attempt; // simple linear backoff
     try {
-      const response = await gatewayClient.get('/api/health', {
+      const response = await gatewayClient.get('/health', {
         timeout,
         skipAuthRefresh: true,
         skipErrorHandling: true,

@@ -94,7 +94,7 @@ const applicationsApi = {
    */
   getApplicationStats: async () => {
     try {
-      const response = await jobServiceClient.get('/api/applications/stats');
+      const response = await jobServiceClient.get('/applications/stats');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Failed to fetch application statistics:', error.message);

@@ -8,7 +8,7 @@ class SchedulingService {
    */
   async getAppointments(params = {}) {
     try {
-      const response = await schedulingClient.get('/api/appointments', {
+      const response = await schedulingClient.get('/appointments', {
         params,
       });
       return response.data.data || response.data;
@@ -24,7 +24,7 @@ class SchedulingService {
   async getAppointmentsByJob(jobId, params = {}) {
     try {
       const response = await schedulingClient.get(
-        `/api/appointments/job/${jobId}`,
+        `/appointments/job/${jobId}`,
         { params },
       );
       return response.data.data || response.data;
@@ -46,7 +46,7 @@ class SchedulingService {
       if (role) queryParams.role = role;
 
       const response = await schedulingClient.get(
-        `/api/appointments/user/${userId}`,
+        `/appointments/user/${userId}`,
         {
           params: queryParams,
         },

@@ -47,20 +47,20 @@ class SettingsService {
   }
   // Get notification preferences from backend (supported endpoint)
   async getNotificationPreferences() {
-    const response = await userServiceClient.get('/api/settings/notifications');
+    const response = await userServiceClient.get('/settings/notifications');
     return response.data.data;
   }
 
   // Update user settings
   async updateSettings(settings) {
-    const response = await userServiceClient.put('/api/settings', settings);
+    const response = await userServiceClient.put('/settings', settings);
     return response.data.data;
   }
 
   // Update notification preferences
   async updateNotificationPreferences(preferences) {
     const response = await userServiceClient.put(
-      '/api/settings/notifications',
+      '/settings/notifications',
       preferences,
     );
     return response.data.data;
@@ -69,7 +69,7 @@ class SettingsService {
   // Update privacy settings
   async updatePrivacySettings(settings) {
     const response = await userServiceClient.put(
-      '/api/settings/privacy',
+      '/settings/privacy',
       settings,
     );
     return response.data.data;
@@ -77,7 +77,7 @@ class SettingsService {
 
   // Update language preference
   async updateLanguage(language) {
-    const response = await userServiceClient.put('/api/settings/language', {
+    const response = await userServiceClient.put('/settings/language', {
       language,
     });
     return response.data.data;
@@ -85,7 +85,7 @@ class SettingsService {
 
   // Update theme preference
   async updateTheme(theme) {
-    const response = await userServiceClient.put('/api/settings/theme', {
+    const response = await userServiceClient.put('/settings/theme', {
       theme,
     });
     return response.data.data;
@@ -94,7 +94,7 @@ class SettingsService {
   // Get available languages
   async getLanguages() {
     try {
-      const response = await userServiceClient.get('/api/settings/languages');
+      const response = await userServiceClient.get('/settings/languages');
       return response.data.data;
     } catch (error) {
       console.warn(
@@ -113,7 +113,7 @@ class SettingsService {
   // Get available themes
   async getThemes() {
     try {
-      const response = await userServiceClient.get('/api/settings/themes');
+      const response = await userServiceClient.get('/settings/themes');
       return response.data.data;
     } catch (error) {
       console.warn(
