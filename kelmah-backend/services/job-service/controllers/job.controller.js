@@ -350,11 +350,20 @@ const getJobs = async (req, res, next) => {
     console.log('[GET JOBS] Direct driver query executed successfully');
     console.log('[GET JOBS] Jobs found:', jobs.length);
     
-    // Manually populate hirer data
+    // Manually populate hirer data with all required fields
     const hirerIds = [...new Set(jobs.map(j => j.hirer).filter(Boolean))];
     const hirers = await usersCollection
       .find({ _id: { $in: hirerIds } })
-      .project({ firstName: 1, lastName: 1, profileImage: 1 })
+      .project({ 
+        firstName: 1, 
+        lastName: 1, 
+        profileImage: 1,
+        avatar: 1,
+        verified: 1,
+        isVerified: 1,
+        rating: 1,
+        email: 1
+      })
       .toArray();
     
     const hirerMap = new Map(hirers.map(h => [h._id.toString(), h]));
@@ -381,12 +390,16 @@ const getJobs = async (req, res, next) => {
       profession: job.category,
       skills_required: job.skills ? job.skills.join(', ') : '',
       created_at: job.createdAt,
-      // Add avatar field for hirer
+      // Add complete hirer object with all fields for frontend
       hirer: job.hirer ? {
         ...job.hirer,
         _id: job.hirer._id.toString(),
-        avatar: job.hirer.profileImage,
-        name: `${job.hirer.firstName} ${job.hirer.lastName}`
+        avatar: job.hirer.profileImage || job.hirer.avatar,
+        logo: job.hirer.profileImage || job.hirer.avatar,
+        name: `${job.hirer.firstName} ${job.hirer.lastName}`,
+        verified: job.hirer.verified || job.hirer.isVerified || false,
+        rating: job.hirer.rating || null,
+        email: job.hirer.email || null
       } : null
     }));
 
