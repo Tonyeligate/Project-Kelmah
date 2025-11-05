@@ -1,3 +1,67 @@
+/**
+ * JobsPage - Main Jobs Listing Page
+ * 
+ * DATA FLOW MAP:
+ * ================================================================================
+ * 
+ * 1. JOB LISTINGS FETCH
+ *    UI Component: JobsPage.jsx (this file)
+ *    ↓
+ *    Service: jobsService.getJobs() 
+ *    Location: kelmah-frontend/src/modules/jobs/services/jobsService.js
+ *    ↓
+ *    API Call: GET /api/jobs?status=open&category={}&location={}&search={}
+ *    Backend: kelmah-backend/services/job-service/routes/jobRoutes.js
+ *    ↓
+ *    Response: { success: true, items: [...], total: 12, page: 1 }
+ *    ↓
+ *    Transform: transformJobListItem() - handles employer data mapping
+ *    ↓
+ *    State Update: setJobs(transformedData)
+ *    ↓
+ *    UI Render: Job cards displayed with employer info, badges, filters
+ * 
+ * 2. SEARCH/FILTER FLOW
+ *    User Input: SearchFilters component (search bar, dropdowns)
+ *    ↓
+ *    State: searchQuery, selectedCategory, selectedLocation
+ *    ↓
+ *    useEffect: Triggers API refetch when filters change
+ *    ↓
+ *    Re-renders: filteredJobs → uniqueJobs (deduplicated) → UI
+ * 
+ * 3. JOB CARD CLICK
+ *    User Action: Click on job card
+ *    ↓
+ *    Navigation: navigate(`/jobs/${job._id}`)
+ *    ↓
+ *    Route: /jobs/:id → JobDetailsPage.jsx
+ * 
+ * 4. APPLY BUTTON CLICK
+ *    User Action: Click "Apply Now"
+ *    ↓
+ *    Auth Check: useAuthCheck() hook
+ *    ↓
+ *    If not authenticated: navigate('/login', { state: { from, message } })
+ *    If authenticated: navigate(`/jobs/${job.id}/apply`)
+ *    ↓
+ *    Route: /jobs/:id/apply → JobApplicationForm.jsx
+ * 
+ * EMPLOYER DATA ISSUE TRACKING:
+ * ================================================================================
+ * Issue: API returns "hirer": null and "hirer_name": "Unknown"
+ * Root Cause: Backend database lacks employer population
+ * Frontend Fix: transformJobListItem() now handles multiple fallbacks:
+ *   1. Full hirer object (preferred)
+ *   2. hirer_name string
+ *   3. company/companyName fields
+ *   4. Fallback: "Professional Employer" with _isFallback flag
+ * 
+ * Backend TODO: Populate hirer field in job-service with actual employer data
+ * Location: kelmah-backend/services/job-service/controllers/jobController.js
+ * Action: Add .populate('hirer', 'name logo verified rating') to Job.find()
+ */
+
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import jobsService from '../services/jobsService';
 import {
@@ -576,8 +640,8 @@ const JobsPage = () => {
     const matchesSearch =
       !searchQuery ||
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (job.company &&
-        job.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (job.employer?.name &&
+        job.employer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (job.skills &&
         job.skills.some((skill) =>
           skill.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -587,11 +651,16 @@ const JobsPage = () => {
       !selectedCategory || job.category === selectedCategory;
     const matchesLocation =
       !selectedLocation ||
-      (job.location && job.location.includes(selectedLocation)) ||
-      (job.location?.city && job.location.city.includes(selectedLocation));
+      (job.location?.city && job.location.city.includes(selectedLocation)) ||
+      (typeof job.location === 'string' && job.location.includes(selectedLocation));
 
     return matchesSearch && matchesCategory && matchesLocation;
   });
+
+  // Deduplicate jobs by ID to prevent showing same job multiple times
+  const uniqueJobs = Array.from(
+    new Map(filteredJobs.map(job => [job.id, job])).values()
+  );
 
   return (
     <ErrorBoundary>
@@ -1120,7 +1189,7 @@ const JobsPage = () => {
               </Box>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Chip
-                  label={`${filteredJobs.length} Job${filteredJobs.length !== 1 ? 's' : ''} Found`}
+                  label={`${uniqueJobs.length} Job${uniqueJobs.length !== 1 ? 's' : ''} Found`}
                   icon={<WorkIcon sx={{ fontSize: 18 }} />}
                   sx={{
                     bgcolor: 'rgba(212,175,55,0.2)',
@@ -1219,7 +1288,7 @@ const JobsPage = () => {
               </Box>
             )}
 
-            {!loading && !error && filteredJobs.length === 0 && (
+            {!loading && !error && uniqueJobs.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Box
                   sx={{
@@ -1281,7 +1350,7 @@ const JobsPage = () => {
             <Grid container spacing={{ xs: 2, sm: 3 }}>
               {!loading &&
                 !error &&
-                filteredJobs.map((job, index) => (
+                uniqueJobs.map((job, index) => (
                   <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -1385,9 +1454,26 @@ const JobsPage = () => {
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
                                   }}
                                 >
-                                  {job.hirer?.name || job.hirer_name || 'Verified Employer'}
+                                  {job.employer?.logo && (
+                                    <Avatar
+                                      src={job.employer.logo}
+                                      alt={job.employer.name}
+                                      sx={{
+                                        width: 16,
+                                        height: 16,
+                                        mr: 0.5,
+                                      }}
+                                    />
+                                  )}
+                                  {job.employer?.name || job.hirerName || job.hirer?.name || 'Professional Employer'}
+                                  {job.employer?.verified && (
+                                    <Verified sx={{ fontSize: 12, color: '#4CAF50', ml: 0.5 }} />
+                                  )}
                                 </Typography>
                               </Box>
                             </Box>
@@ -1400,35 +1486,49 @@ const JobsPage = () => {
                               }}
                             >
                               {(job.urgent || job.proposalCount > 10) && (
-                                <Chip
-                                  label={job.urgent ? "URGENT" : "HOT"}
-                                  size="small"
-                                  icon={job.urgent ? <FlashOnIcon sx={{ fontSize: 16 }} /> : <FireIcon sx={{ fontSize: 16 }} />}
-                                  sx={{
-                                    bgcolor: job.urgent ? '#ff4444' : '#ff9800',
-                                    color: 'white',
-                                    fontWeight: 'bold',
-                                    fontSize: '0.7rem',
-                                    animation: 'pulse 2s infinite',
-                                    '@keyframes pulse': {
-                                      '0%, 100%': { opacity: 1 },
-                                      '50%': { opacity: 0.7 },
-                                    },
-                                  }}
-                                />
+                                <Tooltip 
+                                  title={job.urgent ? "This job needs immediate attention" : "High competition - many applicants"}
+                                  arrow
+                                  placement="left"
+                                >
+                                  <Chip
+                                    label={job.urgent ? "URGENT" : "HOT"}
+                                    size="small"
+                                    icon={job.urgent ? <FlashOnIcon sx={{ fontSize: 16 }} /> : <FireIcon sx={{ fontSize: 16 }} />}
+                                    sx={{
+                                      bgcolor: job.urgent ? '#ff4444' : '#ff9800',
+                                      color: 'white',
+                                      fontWeight: 'bold',
+                                      fontSize: '0.7rem',
+                                      animation: 'pulse 2s infinite',
+                                      '@keyframes pulse': {
+                                        '0%, 100%': { opacity: 1 },
+                                        '50%': { opacity: 0.7 },
+                                      },
+                                      cursor: 'help',
+                                    }}
+                                  />
+                                </Tooltip>
                               )}
                               {job.verified && (
-                                <Chip
-                                  icon={<Verified sx={{ fontSize: 14 }} />}
-                                  label="Verified"
-                                  size="small"
-                                  sx={{
-                                    bgcolor: 'rgba(76,175,80,0.2)',
-                                    color: '#4CAF50',
-                                    border: '1px solid #4CAF50',
-                                    fontSize: '0.7rem',
-                                  }}
-                                />
+                                <Tooltip 
+                                  title="This employer has been verified by Kelmah"
+                                  arrow
+                                  placement="left"
+                                >
+                                  <Chip
+                                    icon={<Verified sx={{ fontSize: 14 }} />}
+                                    label="Verified"
+                                    size="small"
+                                    sx={{
+                                      bgcolor: 'rgba(76,175,80,0.2)',
+                                      color: '#4CAF50',
+                                      border: '1px solid #4CAF50',
+                                      fontSize: '0.7rem',
+                                      cursor: 'help',
+                                    }}
+                                  />
+                                </Tooltip>
                               )}
                             </Box>
                           </Box>
@@ -1725,7 +1825,7 @@ const JobsPage = () => {
           </motion.div>
 
           {/* Load More Section */}
-          {!loading && !error && filteredJobs.length > 0 && (
+          {!loading && !error && uniqueJobs.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1733,7 +1833,7 @@ const JobsPage = () => {
             >
               <Box sx={{ textAlign: 'center', mt: 6 }}>
                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
-                  Showing {filteredJobs.length} of 12 total opportunities
+                  Showing {uniqueJobs.length} of 12 total opportunities
                 </Typography>
                 <Button
                   variant="outlined"
@@ -1797,7 +1897,7 @@ const JobsPage = () => {
                       variant="h3"
                       sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
                     >
-                      {filteredJobs.length}
+                      {uniqueJobs.length}
                     </Typography>
                     <Typography
                       variant="body1"

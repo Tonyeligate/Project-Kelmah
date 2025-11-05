@@ -6,15 +6,64 @@ import { jobServiceClient } from '../../common/services/axios';
 const transformJobListItem = (job) => {
   if (!job) return null;
 
+  // Handle employer/hirer data with multiple fallbacks
+  const getEmployerInfo = () => {
+    // Priority 1: Full hirer object with populated data
+    if (job.hirer && typeof job.hirer === 'object' && job.hirer.name) {
+      return {
+        name: job.hirer.name,
+        logo: job.hirer.logo || job.hirer.avatar || null,
+        verified: job.hirer.verified || job.hirer.isVerified || false,
+        rating: job.hirer.rating || null,
+        id: job.hirer._id || job.hirer.id || null,
+      };
+    }
+    
+    // Priority 2: Hirer name as string (ObjectId reference)
+    if (job.hirer_name && job.hirer_name !== 'Unknown') {
+      return {
+        name: job.hirer_name,
+        logo: null,
+        verified: false,
+        rating: null,
+        id: job.hirer || null,
+      };
+    }
+    
+    // Priority 3: Company name field
+    if (job.company || job.companyName) {
+      return {
+        name: job.company || job.companyName,
+        logo: job.companyLogo || null,
+        verified: false,
+        rating: null,
+        id: null,
+      };
+    }
+    
+    // Fallback: Professional placeholder
+    return {
+      name: 'Professional Employer',
+      logo: null,
+      verified: false,
+      rating: null,
+      id: null,
+      _isFallback: true, // Flag for backend data improvement
+    };
+  };
+
+  const employer = getEmployerInfo();
+
   return {
-    id: job.id,
+    id: job._id || job.id, // Handle MongoDB _id or regular id
     title: job.title,
-    description: job.description?.substring(0, 150) + '...',
+    description: job.description?.substring(0, 150) + (job.description?.length > 150 ? '...' : ''),
+    fullDescription: job.description, // Keep full description for detail view
     category: job.category,
     subcategory: job.subcategory,
     type: job.type,
     budget: job.budget,
-    currency: job.currency,
+    currency: job.currency || 'GHS',
     status: job.status,
     location: job.location,
     skills: job.skills || [],
@@ -24,13 +73,20 @@ const transformJobListItem = (job) => {
       ? new Date(job.endDate)
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     startDate: job.startDate ? new Date(job.startDate) : new Date(),
+    // Employer information
+    employer,
+    hirer: employer, // Backward compatibility
+    hirerName: employer.name,
+    hirerLogo: employer.logo,
+    hirerVerified: employer.verified,
     // Additional fields for display
-    hirer: job.hirer || { name: job.hirer_name || 'Unknown Company' },
     proposalCount: job.proposalCount || 0,
     viewCount: job.viewCount || 0,
     rating: job.rating || 4.5,
-    urgent: job.urgent || false,
-    verified: job.verified || false,
+    urgent: job.urgent || job.proposalCount > 15, // Auto-mark as urgent if many applicants
+    verified: job.verified || employer.verified,
+    paymentType: job.paymentType || 'fixed',
+    duration: job.duration,
   };
 };
 
