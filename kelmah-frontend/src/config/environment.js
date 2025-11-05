@@ -170,52 +170,6 @@ const selectHealthyBase = async (candidates) => {
 
 // Primary API URL selection with mixed-content protection
 const computeApiBase = async () => {
-<<<<<<< Updated upstream
-  const envUrl = import.meta.env.VITE_API_URL;
-  const isProduction = import.meta.env.PROD;
-  const isBrowser = typeof window !== 'undefined';
-  const isHttpsPage =
-    isBrowser && window.location && window.location.protocol === 'https:';
-  const isVercel = isBrowser && window.location.hostname.includes('vercel.app');
-
-  // 🔥 FIX: On Vercel deployments, ALWAYS use relative /api to trigger proxy
-  // This avoids CORS issues and leverages Vercel's rewrites in vercel.json
-  // The proxy handles routing to the actual backend (LocalTunnel or Render)
-  if (isVercel) {
-    console.log(
-      '🔗 Vercel deployment detected, using relative /api path (triggers Vercel proxy)',
-    );
-    return '/api';
-  }
-
-  // Load runtime config for dynamic LocalTunnel URL (for local development)
-  const config = await loadRuntimeConfig();
-  const localtunnelUrl = config?.localtunnelUrl || config?.ngrokUrl; // Support both keys for backward compatibility
-
-  // For production builds NOT on Vercel (e.g., static hosting), use absolute URL from runtime config
-  if (isProduction) {
-    if (localtunnelUrl) {
-      console.log(
-        '🔗 Production mode, using backend URL from runtime config:',
-        localtunnelUrl,
-      );
-      return localtunnelUrl;
-    }
-    console.warn(
-      '⚠️ No backend URL in runtime config, falling back to /api',
-    );
-    return '/api';
-  }
-
-  // If we have an environment URL, use it (unless it's http on https page)
-  if (envUrl) {
-    // On HTTPS pages, avoid absolute http URLs to prevent mixed-content
-    if (isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn(
-        '⚠️ Rejecting http URL on https page, using relative /api for LocalTunnel routing',
-      );
-      return '/api';
-=======
   if (cachedApiBaseUrl) {
     return cachedApiBaseUrl;
   }
@@ -230,7 +184,6 @@ const computeApiBase = async () => {
     if (typeof window === 'undefined') {
       cachedApiBaseUrl = envUrl || '/api';
       return cachedApiBaseUrl;
->>>>>>> Stashed changes
     }
 
     const isHttpsPage = window.location?.protocol === 'https:';
@@ -261,15 +214,6 @@ const computeApiBase = async () => {
   } finally {
     apiBaseUrlPromise = null;
   }
-<<<<<<< Updated upstream
-
-  // No environment URL set - use relative /api to trigger Vercel rewrites to LocalTunnel
-  console.log(
-    '🔗 No VITE_API_URL set, using /api for Vercel→LocalTunnel routing',
-  );
-  return '/api';
-=======
->>>>>>> Stashed changes
 };
 
 // Export async function to get API base URL
