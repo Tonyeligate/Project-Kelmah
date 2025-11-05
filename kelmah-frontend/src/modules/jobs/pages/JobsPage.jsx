@@ -55,9 +55,9 @@
  *   1. Full hirer object (preferred)
  *   2. hirer_name string
  *   3. company/companyName fields
- *   4. Fallback: "Professional Employer" with _isFallback flag
+ *   4. Fallback: "Employer Name Pending" with _isFallback + _needsAdminReview flags
  * 
- * Backend TODO: Populate hirer field in job-service with actual employer data
+ * Backend TODO: Add .populate('hirer') in job-service jobController.js
  * Location: kelmah-backend/services/job-service/controllers/jobController.js
  * Action: Add .populate('hirer', 'name logo verified rating') to Job.find()
  */
@@ -1594,7 +1594,7 @@ const JobsPage = () => {
                                       }}
                                     />
                                   )}
-                                  {job.employer?.name || job.hirerName || job.hirer?.name || 'Professional Employer'}
+                                  {job.employer?.name || 'Employer Name Pending'}
                                   {job.employer?.verified && (
                                     <Verified sx={{ fontSize: 12, color: '#4CAF50', ml: 0.5 }} />
                                   )}
