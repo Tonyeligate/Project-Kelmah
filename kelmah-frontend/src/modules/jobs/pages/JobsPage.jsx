@@ -868,9 +868,14 @@ const JobsPage = () => {
                     <Grid
                       container
                       spacing={{ xs: 1.5, sm: 2 }}
-                      alignItems="center"
+                      alignItems="stretch"
+                      sx={{
+                        // Ensure proper alignment and prevent overflow
+                        width: '100%',
+                        margin: 0,
+                      }}
                     >
-                      <Grid item xs={12} sm={6}>
+                      <Grid item xs={12} sm={5}>
                         <TextField
                           fullWidth
                           size={isSmallMobile ? 'medium' : 'small'}
@@ -893,7 +898,7 @@ const JobsPage = () => {
                           sx={{
                             '& .MuiOutlinedInput-root': {
                               color: 'white',
-                              minHeight: { xs: '48px', sm: '40px' },
+                              height: '40px', // Fixed height for alignment
                               '& fieldset': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -906,6 +911,7 @@ const JobsPage = () => {
                             },
                             '& .MuiInputBase-input': {
                               fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                              padding: '8.5px 14px', // Consistent padding
                               '&::placeholder': {
                                 color: 'rgba(255,255,255,0.6)',
                                 opacity: 1,
@@ -953,6 +959,7 @@ const JobsPage = () => {
                             sx={{
                               color: 'white',
                               fontSize: '0.875rem',
+                              height: '40px', // Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -1019,6 +1026,7 @@ const JobsPage = () => {
                             sx={{
                               color: 'white',
                               fontSize: '0.875rem',
+                              height: '40px', // Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -1047,12 +1055,20 @@ const JobsPage = () => {
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={12} sm={1}>
-                        <Tooltip title="Search for jobs">
+                      <Grid 
+                        item 
+                        xs={12} 
+                        sm={2}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'stretch', // Stretch to match height
+                        }}
+                      >
+                        <Tooltip title="Search for jobs" placement="top">
                           <Button
                             fullWidth
                             variant="contained"
-                            size="small"
+                            size="medium"
                             startIcon={<SearchIcon />}
                             onClick={() => {
                               console.log('🔍 Search triggered!');
@@ -1064,14 +1080,20 @@ const JobsPage = () => {
                               color: 'black',
                               fontWeight: 'bold',
                               fontSize: '0.875rem',
-                              minHeight: '40px',
+                              height: '40px', // Match other elements
+                              minWidth: { xs: '100%', sm: 'auto' },
+                              padding: { xs: '8px 16px', sm: '8px 12px' },
                               boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
+                              whiteSpace: 'nowrap',
                               '&:hover': {
                                 bgcolor: '#B8941F',
                                 boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
                                 transform: 'translateY(-2px)',
                               },
                               transition: 'all 0.3s ease',
+                              // Ensure button stays within bounds
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
                             }}
                           >
                             Search
