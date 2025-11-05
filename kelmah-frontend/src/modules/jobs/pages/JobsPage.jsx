@@ -320,14 +320,18 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
     <Paper
       ref={ref}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 2.5, md: 3 },  // ✅ Responsive padding
         textAlign: 'center',
         bgcolor: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(212,175,55,0.2)',
+        minHeight: { xs: '120px', sm: '140px', md: '160px' },  // ✅ Responsive min-height
+        display: 'flex',  // ✅ Better centering
+        flexDirection: 'column',
+        justifyContent: 'center',
         '&:hover': {
           border: '1px solid #D4AF37',
           boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-          transform: 'translateY(-4px)',
+          transform: { xs: 'none', sm: 'translateY(-4px)' },  // ✅ Desktop-only hover
         },
         transition: 'all 0.3s ease-in-out',
         position: 'relative',
@@ -355,7 +359,8 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
         sx={{
           color: '#D4AF37',
           fontWeight: 'bold',
-          mb: 1,
+          mb: { xs: 0.5, sm: 0.75, md: 1 },  // ✅ Responsive margin
+          fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' },  // ✅ Responsive font size
           position: 'relative',
           zIndex: 1,
         }}
@@ -378,6 +383,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
         sx={{
           color: 'rgba(255,255,255,0.8)',
           fontWeight: 'medium',
+          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },  // ✅ Responsive font size
           position: 'relative',
           zIndex: 1,
         }}
@@ -806,13 +812,15 @@ const JobsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Box sx={{ mb: 4, mt: 0 }}>
-              {' '}
-              {/* Minimal spacing from header */}
+            <Box sx={{ mb: { xs: 2, md: 4 }, mt: { xs: 1, md: 0 }, px: { xs: 1, sm: 0 } }}>
+              {/* Mobile-optimized hero section */}
               <Grid container spacing={{ xs: 2, md: 3 }} alignItems="center">
                 {/* Left Side - Hero Text */}
                 <Grid item xs={12} md={4}>
-                  <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                  <Box sx={{ 
+                    textAlign: { xs: 'center', md: 'left' },
+                    px: { xs: 1, sm: 0 }
+                  }}>
                     <Typography
                       variant="h4"
                       component="h1"
@@ -823,14 +831,15 @@ const JobsPage = () => {
                         backgroundClip: 'text',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        mb: 1,
+                        mb: { xs: 0.5, md: 1 },
                         fontSize: {
-                          xs: '1.25rem',
-                          sm: '1.5rem',
+                          xs: '1.35rem',  // ✅ Increased from 1.25rem for better mobile readability
+                          sm: '1.65rem',   // ✅ Increased from 1.5rem
                           md: '2rem',
                           lg: '2.25rem',
                         },
-                        lineHeight: { xs: 1.2, md: 1.3 },
+                        lineHeight: { xs: 1.3, md: 1.3 },  // ✅ Better line spacing on mobile
+                        wordWrap: 'break-word',  // ✅ Prevent text overflow
                       }}
                     >
                       {isSmallMobile
@@ -841,9 +850,10 @@ const JobsPage = () => {
                       variant="h6"
                       sx={{
                         color: 'rgba(255,255,255,0.8)',
-                        fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
-                        lineHeight: { xs: 1.4, md: 1.5 },
+                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },  // ✅ Improved readability
+                        lineHeight: { xs: 1.5, md: 1.5 },  // ✅ Better line spacing
                         maxWidth: { xs: '100%', md: '90%' },
+                        wordWrap: 'break-word',  // ✅ Prevent overflow
                       }}
                     >
                       {isSmallMobile
@@ -858,11 +868,12 @@ const JobsPage = () => {
                   <Paper
                     elevation={8}
                     sx={{
-                      p: 2,
+                      p: { xs: 1.5, sm: 2 },  // ✅ Reduced padding on mobile
                       bgcolor: 'rgba(255,255,255,0.05)',
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(212,175,55,0.2)',
-                      borderRadius: 2,
+                      borderRadius: { xs: 2, sm: 2 },
+                      mx: { xs: 1, sm: 0 },  // ✅ Add horizontal margin on mobile
                     }}
                   >
                     <Grid
@@ -878,7 +889,7 @@ const JobsPage = () => {
                       <Grid item xs={12} sm={5}>
                         <TextField
                           fullWidth
-                          size={isSmallMobile ? 'medium' : 'small'}
+                          size="small"  // ✅ Changed from conditional to always "small" for consistency
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           onKeyPress={(e) => {
@@ -898,7 +909,7 @@ const JobsPage = () => {
                           sx={{
                             '& .MuiOutlinedInput-root': {
                               color: 'white',
-                              height: '40px', // Fixed height for alignment
+                              height: { xs: '44px', sm: '40px' },  // ✅ Larger touch target on mobile (44px is Apple's recommended minimum)
                               '& fieldset': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -910,8 +921,8 @@ const JobsPage = () => {
                               },
                             },
                             '& .MuiInputBase-input': {
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' },
-                              padding: '8.5px 14px', // Consistent padding
+                              fontSize: { xs: '0.95rem', sm: '0.875rem' },  // ✅ Larger text on mobile
+                              padding: { xs: '10px 14px', sm: '8.5px 14px' },  // ✅ Comfortable padding
                               '&::placeholder': {
                                 color: 'rgba(255,255,255,0.6)',
                                 opacity: 1,
@@ -938,7 +949,7 @@ const JobsPage = () => {
                             shrink
                             sx={{
                               color: 'rgba(255,255,255,0.7)',
-                              fontSize: '0.75rem',
+                              fontSize: { xs: '0.8rem', sm: '0.75rem' },  // ✅ Slightly larger on mobile
                               transform: 'translate(14px, -9px) scale(0.85)',
                               '&.Mui-focused': {
                                 color: '#D4AF37',
@@ -958,8 +969,8 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: 'white',
-                              fontSize: '0.875rem',
-                              height: '40px', // Match TextField height
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Larger text on mobile
+                              height: { xs: '44px', sm: '40px' },  // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -972,6 +983,9 @@ const JobsPage = () => {
                                 },
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
+                              },
+                              '& .MuiSelect-select': {  // ✅ Proper padding for mobile touch
+                                padding: { xs: '10px 14px', sm: '8.5px 14px' },
                               },
                             }}
                           >
@@ -1005,7 +1019,7 @@ const JobsPage = () => {
                             shrink
                             sx={{
                               color: 'rgba(255,255,255,0.7)',
-                              fontSize: '0.75rem',
+                              fontSize: { xs: '0.8rem', sm: '0.75rem' },  // ✅ Slightly larger on mobile
                               transform: 'translate(14px, -9px) scale(0.85)',
                               '&.Mui-focused': {
                                 color: '#D4AF37',
@@ -1025,8 +1039,8 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: 'white',
-                              fontSize: '0.875rem',
-                              height: '40px', // Match TextField height
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Larger text on mobile
+                              height: { xs: '44px', sm: '40px' },  // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -1039,6 +1053,9 @@ const JobsPage = () => {
                                 },
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
+                              },
+                              '& .MuiSelect-select': {  // ✅ Proper padding for mobile touch
+                                padding: { xs: '10px 14px', sm: '8.5px 14px' },
                               },
                             }}
                           >
@@ -1079,21 +1096,25 @@ const JobsPage = () => {
                               bgcolor: '#D4AF37',
                               color: 'black',
                               fontWeight: 'bold',
-                              fontSize: '0.875rem',
-                              height: '40px', // Match other elements
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Slightly larger on mobile
+                              height: { xs: '44px', sm: '40px' },  // ✅ Match other elements (44px for mobile touch)
                               minWidth: { xs: '100%', sm: 'auto' },
-                              padding: { xs: '8px 16px', sm: '8px 12px' },
+                              padding: { xs: '10px 20px', sm: '8px 12px' },  // ✅ More comfortable mobile padding
                               boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
                               whiteSpace: 'nowrap',
                               '&:hover': {
                                 bgcolor: '#B8941F',
                                 boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
-                                transform: 'translateY(-2px)',
+                                transform: { xs: 'none', sm: 'translateY(-2px)' },  // ✅ Disable transform on mobile
                               },
                               transition: 'all 0.3s ease',
                               // Ensure button stays within bounds
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
+                              // ✅ Better mobile touch feedback
+                              '&:active': {
+                                transform: 'scale(0.98)',
+                              },
                             }}
                           >
                             Search
@@ -1103,14 +1124,16 @@ const JobsPage = () => {
                     </Grid>
 
                     {/* Advanced Filters Toggle - Compact */}
-                    <Box sx={{ mt: 1, textAlign: 'center' }}>
+                    <Box sx={{ mt: { xs: 1, sm: 1 }, textAlign: 'center' }}>
                       <Button
                         startIcon={<FilterListIcon />}
                         onClick={() => setShowFilters(!showFilters)}
                         size="small"
                         sx={{
                           color: '#D4AF37',
-                          fontSize: '0.75rem',
+                          fontSize: { xs: '0.8rem', sm: '0.75rem' },  // ✅ Responsive font size
+                          padding: { xs: '6px 12px', sm: '4px 8px' },  // ✅ Better mobile padding
+                          minHeight: { xs: '36px', sm: 'auto' },  // ✅ Minimum touch target
                           '&:hover': {
                             bgcolor: 'rgba(212,175,55,0.1)',
                           },
@@ -1502,7 +1525,7 @@ const JobsPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: isSmallMobile ? 1 : 1.02 }}  // ✅ Disable scale on mobile
                     >
                       <Card
                         sx={{
@@ -1511,11 +1534,12 @@ const JobsPage = () => {
                           flexDirection: 'column',
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(212,175,55,0.2)',
-                          borderRadius: { xs: 3, sm: 2 },
-                          minHeight: { xs: '280px', sm: '320px' },
+                          borderRadius: { xs: 2, sm: 2 },  // ✅ Consistent border radius
+                          minHeight: { xs: '300px', sm: '320px' },  // ✅ Better mobile min-height
                           cursor: 'pointer',
                           position: 'relative',
                           overflow: 'hidden',
+                          mx: { xs: 1, sm: 0 },  // ✅ Add horizontal margin on mobile for better spacing
                           '&::before': {
                             content: '""',
                             position: 'absolute',
@@ -1531,10 +1555,14 @@ const JobsPage = () => {
                           '&:hover': {
                             border: '1px solid #D4AF37',
                             boxShadow: '0 12px 40px rgba(212,175,55,0.4)',
-                            transform: { xs: 'none', sm: 'translateY(-4px)' },
+                            transform: { xs: 'none', sm: 'translateY(-4px)' },  // ✅ Disable transform on mobile
                             '&::before': {
                               transform: 'scaleX(1)',
                             },
+                          },
+                          // ✅ Mobile active state for better feedback
+                          '&:active': {
+                            transform: { xs: 'scale(0.98)', sm: 'translateY(-4px)' },
                           },
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
@@ -1542,7 +1570,7 @@ const JobsPage = () => {
                         role="article"
                         aria-label={`Job posting: ${job.title}`}
                       >
-                        <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+                        <CardContent sx={{ flexGrow: 1, p: { xs: 2.5, sm: 3 } }}>  {/* ✅ Better mobile padding */}
                           {/* Job Header */}
                           <Box
                             sx={{
@@ -1837,7 +1865,12 @@ const JobsPage = () => {
                           </Box>
                         </CardContent>
 
-                        <CardActions sx={{ p: 3, pt: 0 }}>
+                        <CardActions sx={{ 
+                          p: { xs: 2, sm: 3 },  // ✅ Better mobile padding
+                          pt: 0,
+                          gap: { xs: 1, sm: 0 },  // ✅ Add gap between buttons on mobile
+                          flexWrap: { xs: 'wrap', sm: 'nowrap' },  // ✅ Allow wrapping on very small screens
+                        }}>
                           <Button
                             variant="contained"
                             fullWidth
@@ -1876,8 +1909,15 @@ const JobsPage = () => {
                               bgcolor: '#D4AF37',
                               color: 'black',
                               fontWeight: 'bold',
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Slightly larger on mobile
+                              padding: { xs: '10px 16px', sm: '8px 16px' },  // ✅ Better mobile padding
+                              minHeight: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly height
                               '&:hover': {
                                 bgcolor: '#B8941F',
+                              },
+                              // ✅ Mobile active feedback
+                              '&:active': {
+                                transform: 'scale(0.98)',
                               },
                             }}
                           >
@@ -1900,7 +1940,10 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: '#D4AF37',
+                              minWidth: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
+                              minHeight: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                              '&:active': { transform: 'scale(0.95)' },  // ✅ Active feedback
                             }}
                           >
                             <Visibility />
@@ -1927,7 +1970,10 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: '#D4AF37',
+                              minWidth: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
+                              minHeight: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                              '&:active': { transform: 'scale(0.95)' },  // ✅ Active feedback
                             }}
                           >
                             <BookmarkBorder />
@@ -2012,21 +2058,26 @@ const JobsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <Box sx={{ mt: 8, mb: 6 }}>
+            <Box sx={{ 
+              mt: { xs: 6, md: 8 },  // ✅ Reduced top margin on mobile
+              mb: { xs: 4, md: 6 },  // ✅ Reduced bottom margin on mobile
+              px: { xs: 1, sm: 0 },  // ✅ Add horizontal padding on mobile
+            }}>
               <Typography
                 variant="h4"
                 sx={{
                   color: '#D4AF37',
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  mb: 4,
+                  mb: { xs: 3, md: 4 },  // ✅ Responsive margin
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },  // ✅ Responsive font size
                 }}
               >
                 Platform Statistics
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>  {/* ✅ Responsive spacing */}
                 {/* Available Jobs Stat */}
-                <Grid item xs={6} md={3}>
+                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={uniqueJobs.length}
                     label="Available Jobs"
@@ -2034,7 +2085,7 @@ const JobsPage = () => {
                   />
                 </Grid>
                 {/* Active Employers Stat */}
-                <Grid item xs={6} md={3}>
+                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={2500}
                     suffix="+"
@@ -2042,7 +2093,7 @@ const JobsPage = () => {
                   />
                 </Grid>
                 {/* Skilled Workers Stat */}
-                <Grid item xs={6} md={3}>
+                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={15000}
                     suffix="+"
@@ -2050,7 +2101,7 @@ const JobsPage = () => {
                   />
                 </Grid>
                 {/* Success Rate Stat */}
-                <Grid item xs={6} md={3}>
+                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
                     value={98}
                     suffix="%"
@@ -2069,8 +2120,9 @@ const JobsPage = () => {
           >
             <Paper
               sx={{
-                mt: 4,
-                p: 4,
+                mt: { xs: 3, md: 4 },  // ✅ Reduced mobile margin
+                p: { xs: 2.5, sm: 3, md: 4 },  // ✅ Responsive padding
+                mx: { xs: 1, sm: 0 },  // ✅ Mobile horizontal spacing
                 textAlign: 'center',
                 bgcolor: 'rgba(212,175,55,0.1)',
                 border: '1px solid rgba(212,175,55,0.3)',
@@ -2078,7 +2130,13 @@ const JobsPage = () => {
             >
               <Typography
                 variant="h4"
-                sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 2 }}
+                sx={{ 
+                  color: '#D4AF37', 
+                  fontWeight: 'bold', 
+                  mb: { xs: 1.5, md: 2 },  // ✅ Responsive margin
+                  fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' },  // ✅ Responsive font
+                  px: { xs: 1, sm: 0 },  // ✅ Mobile padding
+                }}
               >
                 Ready to Take Your Career to the Next Level?
               </Typography>
@@ -2086,9 +2144,12 @@ const JobsPage = () => {
                 variant="body1"
                 sx={{
                   color: 'rgba(255,255,255,0.8)',
-                  mb: 3,
+                  mb: { xs: 2.5, md: 3 },  // ✅ Responsive margin
+                  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },  // ✅ Responsive font
+                  lineHeight: { xs: 1.5, md: 1.6 },  // ✅ Better readability
                   maxWidth: 600,
                   mx: 'auto',
+                  px: { xs: 1, sm: 0 },  // ✅ Mobile padding
                 }}
               >
                 Join thousands of skilled professionals who've found their dream
@@ -2098,9 +2159,10 @@ const JobsPage = () => {
               <Box
                 sx={{
                   display: 'flex',
-                  gap: 2,
+                  gap: { xs: 1.5, sm: 2 },  // ✅ Responsive gap
                   justifyContent: 'center',
                   flexWrap: 'wrap',
+                  px: { xs: 1, sm: 0 },  // ✅ Mobile padding
                 }}
               >
                 <Button
@@ -2120,9 +2182,14 @@ const JobsPage = () => {
                     bgcolor: '#D4AF37',
                     color: 'black',
                     fontWeight: 'bold',
-                    px: 4,
+                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },  // ✅ Responsive font
+                    px: { xs: 3, sm: 3.5, md: 4 },  // ✅ Responsive padding
+                    minHeight: { xs: '44px', sm: '48px' },  // ✅ Touch target
                     '&:hover': {
                       bgcolor: '#B8941F',
+                    },
+                    '&:active': {
+                      transform: 'scale(0.98)',  // ✅ Touch feedback
                     },
                   }}
                 >
@@ -2143,10 +2210,15 @@ const JobsPage = () => {
                   sx={{
                     borderColor: '#D4AF37',
                     color: '#D4AF37',
-                    px: 4,
+                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },  // ✅ Responsive font
+                    px: { xs: 3, sm: 3.5, md: 4 },  // ✅ Responsive padding
+                    minHeight: { xs: '44px', sm: '48px' },  // ✅ Touch target
                     '&:hover': {
                       borderColor: '#B8941F',
                       bgcolor: 'rgba(212,175,55,0.1)',
+                    },
+                    '&:active': {
+                      transform: 'scale(0.98)',  // ✅ Touch feedback
                     },
                   }}
                 >
