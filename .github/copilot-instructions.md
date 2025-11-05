@@ -495,6 +495,202 @@ spec-kit/
 - **Documentation Reference**: Use project knowledge from documentation for decision-making
 - **Professional Standards**: Apply professional judgment based on project purpose
 
+## UI Component Data Flow Tracing Protocol ⚠️ MANDATORY FOR ALL UI WORK
+
+### Objective
+For every UI component examined or fixed, trace the complete data flow from user interaction to the component's assigned frontend API. Report any breakages, mismatches, or unclear responsibilities and suggest fixes.
+
+### Component-to-API Mapping Requirements
+
+**For Each UI Component:**
+1. **Component Identification**
+   - Identify exact file/component code responsible for UI element
+   - Document component location: `kelmah-frontend/src/modules/[domain]/components/[component].jsx`
+   - Note component type: page, container, presentational, or utility
+
+2. **API Connection Mapping**
+   - Locate function, hook, service, or utility calling the API endpoint
+   - Document service file: `kelmah-frontend/src/modules/[domain]/services/[service].js`
+   - Map UI action → Redux action/hook → API function → Backend endpoint
+   - Specify: URL path, HTTP method, payload shape, response shape
+
+3. **Data Flow Documentation Template**
+   ```
+   UI Component: [ComponentName.jsx]
+   Location: kelmah-frontend/src/modules/[domain]/components/
+   
+   User Action: [click Apply, enter search, select filter, etc.]
+   ↓
+   Event Handler: [handleApply(), onSearch(), handleFilterChange()]
+   ↓
+   State Management: [Redux dispatch, useState update, Context change]
+   ↓
+   API Service: kelmah-frontend/src/modules/[domain]/services/[service].js
+   ↓
+   API Call: [POST /api/jobs/:id/apply, GET /api/jobs?search=term]
+   ↓
+   Backend Endpoint: kelmah-backend/services/[service]/routes/[route].js
+   ↓
+   Expected Response: { success: boolean, data: [...], message: string }
+   ↓
+   UI Update: [Show success message, update list, redirect user]
+   ```
+
+### Data and Action Flow Verification
+
+**Input Validation:**
+- ✅ Verify user input triggers expected state updates
+- ✅ Check Redux/Context/Store actions dispatch correctly
+- ✅ Confirm right frontend API functions called with correct params
+- ✅ Validate payload format matches backend expectations
+
+**Response Handling:**
+- ✅ Check data from backend passed down correctly (props/context/state)
+- ✅ Verify UI renders received data as intended (no stale/missing data)
+- ✅ Ensure dynamic updates reflect live backend state
+- ✅ Validate error responses trigger appropriate UI feedback
+
+**State Synchronization:**
+- ✅ Confirm no unnecessary middleman layers between UI and API
+- ✅ Check for redundant fetches or unclear state sync
+- ✅ Verify loading states work correctly
+- ✅ Ensure optimistic updates (if any) reconcile with server response
+
+### API Success, Error, and Loading States
+
+**Required UI States:**
+1. **Loading State**
+   - ✅ Spinner/skeleton screen during API call
+   - ✅ Disabled buttons to prevent duplicate requests
+   - ✅ Loading indicator placement and visibility
+
+2. **Success State**
+   - ✅ Success message/toast notification
+   - ✅ UI update reflects new data
+   - ✅ Redirect or navigation if required
+   - ✅ Clear any error states
+
+3. **Error State**
+   - ✅ Clear error message displayed to user
+   - ✅ Error boundary coverage for critical failures
+   - ✅ Retry mechanism available
+   - ✅ Fallback UI or graceful degradation
+
+### Actionable Output Format
+
+**For Each Feature Audited, Provide:**
+
+```markdown
+## [Feature Name] Data Flow Analysis
+
+### UI Component Chain
+- **Component File**: `kelmah-frontend/src/modules/jobs/components/JobCard.jsx`
+- **Service File**: `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- **Redux Slice**: `kelmah-frontend/src/modules/jobs/services/jobSlice.js`
+
+### Flow Map
+```
+User clicks "Apply Now" button
+  ↓
+JobCard.jsx: handleApply() @ line 245
+  ↓
+dispatch(applyToJob(jobId))
+  ↓
+jobSlice.js: applyToJob thunk @ line 180
+  ↓
+jobsService.js: applyToJob(jobId) @ line 320
+  ↓
+axios.post('/api/jobs/:id/apply', { coverLetter, resume })
+  ↓
+Backend: POST /api/jobs/:id/apply
+  ↓
+Response: { success: true, application: {...} }
+  ↓
+Redux state updated: applications array
+  ↓
+JobCard re-renders: "Applied" badge shown
+```
+
+### Issues Found
+❌ **Issue 1**: Loading state not implemented
+- **Location**: JobCard.jsx line 245
+- **Fix**: Add `isLoading` state check before showing button
+
+✅ **Issue 2**: Error handling exists but generic
+- **Location**: jobSlice.js line 195
+- **Recommendation**: Add specific error messages for 401, 403, 404
+
+⚠️ **Issue 3**: No optimistic update
+- **Location**: JobCard.jsx
+- **Enhancement**: Show "Applied" immediately, rollback if API fails
+
+### Recommendations
+1. Create reusable `useJobApplication` hook
+2. Standardize error messages across job features
+3. Add retry logic for failed applications
+```
+
+### Common Data Flow Anti-Patterns to Flag
+
+**❌ Red Flags:**
+1. UI directly calls backend URL (bypassing service layer)
+2. API response not validated before rendering
+3. Multiple components fetching same data independently
+4. State updates not synchronized across components
+5. Error states missing or poorly handled
+6. Loading states inconsistent or missing
+7. Stale data shown after updates
+8. No error boundaries around critical flows
+
+**✅ Best Practices:**
+1. Single service file per domain handles all API calls
+2. Redux/Context centralizes shared state
+3. Custom hooks encapsulate common patterns
+4. Consistent error/loading/success state handling
+5. Optimistic updates with rollback capability
+6. Clear separation: UI → State → Service → API
+7. Type checking on API responses (if using TypeScript)
+8. Comprehensive error boundaries
+
+### File & Code Reference Standards
+
+**Always Specify:**
+- ✅ Exact file paths from project root
+- ✅ Line numbers for functions/components mentioned
+- ✅ Import statements showing dependencies
+- ✅ Related files in the data flow chain
+- ✅ Backend endpoint corresponding to frontend call
+
+**Example Reference:**
+```
+Component: kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx (line 145)
+Handler: handleSearch (line 245-267)
+Service: kelmah-frontend/src/modules/jobs/services/jobsService.js (line 42)
+API Call: getJobs({ search, category, location })
+Backend: kelmah-backend/services/job-service/routes/jobRoutes.js (line 28)
+Controller: kelmah-backend/services/job-service/controllers/jobController.js (line 65)
+```
+
+### Data Flow Improvement Recommendations
+
+**When Suggesting Improvements:**
+1. **Reusable Hooks**: Propose custom hooks for repeated patterns
+   - Example: `useJobSearch`, `useJobApplication`, `useJobFilters`
+
+2. **Unified Patterns**: Identify inconsistencies across features
+   - Example: "Jobs use Redux, but Worker profiles use Context - consider standardizing"
+
+3. **Performance**: Flag unnecessary re-renders or redundant API calls
+   - Example: "Search triggers API call on every keystroke - debounce recommended"
+
+4. **Error Recovery**: Suggest retry mechanisms and fallbacks
+   - Example: "Add exponential backoff for failed job submissions"
+
+5. **Type Safety**: Recommend validation for API responses
+   - Example: "Add Zod schema validation for job API responses"
+
+**⚠️ MANDATORY: Document complete data flow for every UI component touched during development or debugging.**
+
 ## Project Context & Purpose
 
 ### Platform Mission
