@@ -16,6 +16,7 @@ const transformJobListItem = (job) => {
         verified: job.hirer.verified || job.hirer.isVerified || false,
         rating: job.hirer.rating || null,
         id: job.hirer._id || job.hirer.id || null,
+        _source: 'hirer_object',
       };
     }
     
@@ -27,6 +28,7 @@ const transformJobListItem = (job) => {
         verified: false,
         rating: null,
         id: job.hirer || null,
+        _source: 'hirer_name_string',
       };
     }
     
@@ -38,17 +40,22 @@ const transformJobListItem = (job) => {
         verified: false,
         rating: null,
         id: null,
+        _source: 'company_field',
       };
     }
     
-    // Fallback: Professional placeholder
+    // Fallback: Flag for admin review
+    console.warn(`⚠️ Job ${job._id || job.id} missing employer data - flagged for admin review`);
     return {
-      name: 'Professional Employer',
+      name: 'Employer Name Pending',
       logo: null,
       verified: false,
       rating: null,
       id: null,
       _isFallback: true, // Flag for backend data improvement
+      _needsAdminReview: true, // Flag for admin attention
+      _jobId: job._id || job.id,
+      _source: 'fallback',
     };
   };
 
@@ -133,12 +140,35 @@ const jobsApi = {
 
       console.log('✅ Extracted jobs:', jobs.length);
 
+      // Track and report jobs with missing employer data
+      const jobsNeedingReview = [];
+      const transformedJobs = jobs.map((job) => {
+        const transformed = transformJobListItem(job);
+        if (transformed.employer._needsAdminReview) {
+          jobsNeedingReview.push({
+            jobId: transformed.id,
+            title: transformed.title,
+            category: transformed.category,
+            postedDate: transformed.postedDate,
+          });
+        }
+        return transformed;
+      });
+
+      // Log jobs needing admin review
+      if (jobsNeedingReview.length > 0) {
+        console.warn(`⚠️ ${jobsNeedingReview.length} jobs missing employer data:`, jobsNeedingReview);
+        // TODO: Send notification to admin dashboard
+        // adminNotificationService.flagJobsForReview(jobsNeedingReview);
+      }
+
       return {
-        data: jobs.map(transformJobListItem),
-        jobs: jobs.map(transformJobListItem),
+        data: transformedJobs,
+        jobs: transformedJobs,
         totalPages,
         totalJobs,
         currentPage,
+        jobsNeedingReview: jobsNeedingReview.length, // Include count in response
       };
     } catch (error) {
       console.error('❌ Job service API error:', error);

@@ -210,6 +210,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
+import CountUp from 'react-countup';
+import { useInView } from 'react-intersection-observer';
 // Auth state via Redux only
 // import useAuth from '../../auth/hooks/useAuth';
 import { useDispatch, useSelector } from 'react-redux';
@@ -306,6 +308,128 @@ const HeroSection = styled(Box)(({ theme }) => ({
     animation: `${rotateGlow} 30s linear infinite`,
   },
 }));
+
+// Animated Stat Card Component with CountUp
+const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  return (
+    <Paper
+      ref={ref}
+      sx={{
+        p: 3,
+        textAlign: 'center',
+        bgcolor: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(212,175,55,0.2)',
+        '&:hover': {
+          border: '1px solid #D4AF37',
+          boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
+          transform: 'translateY(-4px)',
+        },
+        transition: 'all 0.3s ease-in-out',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Animated glow effect on hover */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: '-100%',
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent)',
+          transition: 'left 0.5s ease-in-out',
+          '.MuiPaper-root:hover &': {
+            left: '100%',
+          },
+        }}
+      />
+      
+      <Typography
+        variant="h3"
+        sx={{
+          color: '#D4AF37',
+          fontWeight: 'bold',
+          mb: 1,
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {inView ? (
+          <CountUp
+            end={value}
+            duration={2.5}
+            separator=","
+            suffix={suffix}
+            useEasing={true}
+          />
+        ) : (
+          '0'
+        )}
+      </Typography>
+      
+      <Typography
+        variant="body1"
+        sx={{
+          color: 'rgba(255,255,255,0.8)',
+          fontWeight: 'medium',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {label}
+      </Typography>
+      
+      {/* Live indicator for real-time stats */}
+      {isLive && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              bgcolor: '#4ade80',
+              boxShadow: '0 0 8px #4ade80',
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  opacity: 1,
+                },
+                '50%': {
+                  opacity: 0.5,
+                },
+              },
+            }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              color: '#4ade80',
+              fontSize: '0.65rem',
+              fontWeight: 'medium',
+            }}
+          >
+            LIVE
+          </Typography>
+        </Box>
+      )}
+    </Paper>
+  );
+};
 
 const categoryData = [
   {
@@ -1879,129 +2003,37 @@ const JobsPage = () => {
                 Platform Statistics
               </Typography>
               <Grid container spacing={3}>
+                {/* Available Jobs Stat */}
                 <Grid item xs={6} md={3}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: 'center',
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(212,175,55,0.2)',
-                      '&:hover': {
-                        border: '1px solid #D4AF37',
-                        boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-                      },
-                      transition: 'all 0.3s ease-in-out',
-                    }}
-                  >
-                    <Typography
-                      variant="h3"
-                      sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
-                    >
-                      {uniqueJobs.length}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontWeight: 'medium',
-                      }}
-                    >
-                      Available Jobs
-                    </Typography>
-                  </Paper>
+                  <AnimatedStatCard
+                    value={uniqueJobs.length}
+                    label="Available Jobs"
+                    isLive={true}
+                  />
                 </Grid>
+                {/* Active Employers Stat */}
                 <Grid item xs={6} md={3}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: 'center',
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(212,175,55,0.2)',
-                      '&:hover': {
-                        border: '1px solid #D4AF37',
-                        boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-                      },
-                      transition: 'all 0.3s ease-in-out',
-                    }}
-                  >
-                    <Typography
-                      variant="h3"
-                      sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
-                    >
-                      2,500+
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontWeight: 'medium',
-                      }}
-                    >
-                      Active Employers
-                    </Typography>
-                  </Paper>
+                  <AnimatedStatCard
+                    value={2500}
+                    suffix="+"
+                    label="Active Employers"
+                  />
                 </Grid>
+                {/* Skilled Workers Stat */}
                 <Grid item xs={6} md={3}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: 'center',
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(212,175,55,0.2)',
-                      '&:hover': {
-                        border: '1px solid #D4AF37',
-                        boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-                      },
-                      transition: 'all 0.3s ease-in-out',
-                    }}
-                  >
-                    <Typography
-                      variant="h3"
-                      sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
-                    >
-                      15K+
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontWeight: 'medium',
-                      }}
-                    >
-                      Skilled Workers
-                    </Typography>
-                  </Paper>
+                  <AnimatedStatCard
+                    value={15000}
+                    suffix="+"
+                    label="Skilled Workers"
+                  />
                 </Grid>
+                {/* Success Rate Stat */}
                 <Grid item xs={6} md={3}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: 'center',
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(212,175,55,0.2)',
-                      '&:hover': {
-                        border: '1px solid #D4AF37',
-                        boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-                      },
-                      transition: 'all 0.3s ease-in-out',
-                    }}
-                  >
-                    <Typography
-                      variant="h3"
-                      sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
-                    >
-                      98%
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255,255,255,0.8)',
-                        fontWeight: 'medium',
-                      }}
-                    >
-                      Success Rate
-                    </Typography>
-                  </Paper>
+                  <AnimatedStatCard
+                    value={98}
+                    suffix="%"
+                    label="Success Rate"
+                  />
                 </Grid>
               </Grid>
             </Box>
