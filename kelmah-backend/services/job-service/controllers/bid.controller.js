@@ -113,17 +113,18 @@ exports.getJobBids = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied. You can only view bids for your own jobs');
     }
 
-    const { count, rows } = await Bid.findAndCountAll({
-      where: { job: jobId },
-      offset,
-      limit,
-      order: [['bidTimestamp', 'DESC']],
-      include: [
-        { model: 'User', as: 'worker', attributes: ['firstName', 'lastName', 'profilePicture'] }
-      ]
-    });
+    const query = { job: jobId };
+    const [total, bids] = await Promise.all([
+      Bid.countDocuments(query),
+      Bid.find(query)
+        .sort({ bidTimestamp: -1 })
+        .skip(offset)
+        .limit(limit)
+        .populate('worker', 'firstName lastName profilePicture')
+        .populate('job', 'title category locationDetails'),
+    ]);
 
-    return paginatedResponse(res, 200, 'Job bids retrieved successfully', rows, page, limit, count);
+    return paginatedResponse(res, 200, 'Job bids retrieved successfully', bids, page, limit, total);
   } catch (error) {
     next(error);
   }
@@ -142,17 +143,18 @@ exports.getWorkerBids = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied');
     }
 
-    const { count, rows } = await Bid.findAndCountAll({
-      where: { worker: workerId },
-      offset,
-      limit,
-      order: [['bidTimestamp', 'DESC']],
-      include: [
-        { model: 'Job', as: 'job', attributes: ['title', 'category', 'locationDetails'] }
-      ]
-    });
+    const query = { worker: workerId };
+    const [total, bids] = await Promise.all([
+      Bid.countDocuments(query),
+      Bid.find(query)
+        .sort({ bidTimestamp: -1 })
+        .skip(offset)
+        .limit(limit)
+        .populate('job', 'title category locationDetails')
+        .populate('worker', 'firstName lastName profilePicture'),
+    ]);
 
-    return paginatedResponse(res, 200, 'Worker bids retrieved successfully', rows, page, limit, count);
+    return paginatedResponse(res, 200, 'Worker bids retrieved successfully', bids, page, limit, total);
   } catch (error) {
     next(error);
   }

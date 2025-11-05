@@ -14,7 +14,7 @@ const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
 
 // MongoDB connection 
-const { connectDB } = require("./config/db");
+const { connectDB, mongoose } = require("./config/db");
 
 // CRITICAL FIX: DO NOT set bufferCommands = false at module load time
 // Models created with bufferCommands=false will fail even after connection is ready
@@ -74,13 +74,60 @@ if (process.env.ENABLE_WORKER_SQL === 'true') {
 }
 
 const app = express();
+<<<<<<< Updated upstream
 // Trust proxy headers (Render forwards X-Forwarded-For)
+=======
+>>>>>>> Stashed changes
 app.set('trust proxy', 1);
 // Optional tracing
 try { require('./utils/tracing').initTracing('user-service'); } catch { }
 try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('user-service'); monitoring.initTracing('user-service'); } catch { }
 
 // Middleware
+
+let isDatabaseReady = false;
+
+mongoose.connection.on('connected', () => {
+  isDatabaseReady = true;
+  logger.info('✅ MongoDB connection ready');
+});
+
+mongoose.connection.on('disconnected', () => {
+  isDatabaseReady = false;
+  logger.warn('⚠️ MongoDB connection lost');
+});
+
+const warmupBypassPaths = new Set([
+  '/',
+  '/health',
+  '/api/health',
+  '/health/live',
+  '/api/health/live',
+  '/health/ready',
+  '/api/health/ready'
+]);
+
+const requireDatabaseReady = (req, res, next) => {
+  if (req.method === 'OPTIONS' || isDatabaseReady) {
+    return next();
+  }
+
+  const path = req.path || '';
+  if (warmupBypassPaths.has(path) || path.startsWith('/health') || path.startsWith('/api/health')) {
+    return next();
+  }
+
+  logger.info('⏳ User service waiting for database connection', {
+    path,
+    method: req.method,
+  });
+
+  res.set('Retry-After', '5');
+  return res.status(503).json({
+    success: false,
+    message: 'User service is initializing its database connection. Please retry shortly.',
+  });
+};
 
 // Add HTTP request logging
 app.use(createHttpLogger(logger));
@@ -146,6 +193,8 @@ try {
   });
   app.use(limiter);
 }
+
+app.use(requireDatabaseReady);
 
 // API routes
 app.use("/api/users", userRoutes);
@@ -383,7 +432,12 @@ const PORT = process.env.USER_SERVICE_PORT || 5002;
 // Only start the server if this file is run directly
 if (require.main === module) {
   connectDB()
+<<<<<<< Updated upstream
     .then(async () => {
+=======
+    .then(() => {
+    isDatabaseReady = true;
+>>>>>>> Stashed changes
       logger.info("✅ User Service connected to MongoDB");
       
       // CRITICAL: Wait for connection to be fully ready before starting server

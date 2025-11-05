@@ -22,6 +22,9 @@ export { SERVICES };
 
 // Load runtime config for dynamic LocalTunnel URL
 let runtimeConfig = null;
+let cachedApiBaseUrl = null;
+let apiBaseUrlPromise = null;
+
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
     try {
@@ -35,8 +38,139 @@ const loadRuntimeConfig = async () => {
   return runtimeConfig;
 };
 
+const HEALTH_CHECK_PATH = '/health/aggregate';
+const HEALTH_CHECK_TIMEOUT_MS = 4000;
+const LAST_HEALTHY_BASE_KEY = 'kelmah:lastHealthyApiBase';
+
+const getStoredApiBase = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY) || null;
+  } catch (error) {
+    console.warn('⚠️ Unable to read cached API base from storage:', error?.message || error);
+    return null;
+  }
+};
+
+const storeApiBase = (baseUrl) => {
+  if (typeof window === 'undefined' || !baseUrl) return;
+  try {
+    window.localStorage?.setItem(LAST_HEALTHY_BASE_KEY, baseUrl);
+  } catch (error) {
+    console.warn('⚠️ Unable to persist API base selection:', error?.message || error);
+  }
+};
+
+const buildHealthCheckUrl = (baseUrl) => {
+  if (!baseUrl) {
+    return null;
+  }
+
+  // Ensure trailing slash consistency
+  const trimmedBase = baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
+
+  if (trimmedBase === '') {
+    return '/api' + HEALTH_CHECK_PATH;
+  }
+
+  if (trimmedBase.endsWith('/api')) {
+    return `${trimmedBase}${HEALTH_CHECK_PATH}`;
+  }
+
+  return `${trimmedBase}/api${HEALTH_CHECK_PATH}`;
+};
+
+const probeApiBase = async (baseUrl) => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const healthUrl = buildHealthCheckUrl(baseUrl);
+  if (!healthUrl) {
+    return false;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
+    const response = await fetch(healthUrl, {
+      method: 'GET',
+      credentials: 'omit',
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        'X-Frontend-Health-Probe': 'kelmah-ui',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return response.ok;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn(`⚠️ API base probe failed for ${baseUrl}:`, error?.message || error);
+    }
+    return false;
+  }
+};
+
+const gatherCandidateBases = (config, envUrl) => {
+  const candidates = [];
+  const stored = getStoredApiBase();
+  if (stored) {
+    candidates.push(stored);
+  }
+
+  const runtimeCandidates = [
+    config?.apiGatewayUrl,
+    config?.API_URL,
+    config?.ngrokUrl,
+    config?.localtunnelUrl,
+    config?.LOCAL_TUNNEL_URL,
+  ];
+
+  candidates.push(...runtimeCandidates);
+
+  if (envUrl) {
+    candidates.push(envUrl);
+  }
+
+  if (import.meta.env.VITE_FALLBACK_API_URL) {
+    candidates.push(import.meta.env.VITE_FALLBACK_API_URL);
+  }
+
+  // Local development fallbacks
+  if (import.meta.env.DEV) {
+    candidates.push('http://localhost:5000');
+  }
+
+  // Relative gateway route should always be last-resort fallback
+  candidates.push('/api');
+
+  return Array.from(new Set(candidates.filter(Boolean)));
+};
+
+const selectHealthyBase = async (candidates) => {
+  for (const base of candidates) {
+    const healthy = await probeApiBase(base);
+    if (healthy) {
+      storeApiBase(base);
+      if (import.meta.env.DEV) {
+        console.log(`✅ Selected healthy API base: ${base}`);
+      }
+      return base;
+    }
+  }
+
+  // Nothing was reachable; fall back to the first provided candidate
+  const fallback = candidates[0];
+  if (fallback && import.meta.env.DEV) {
+    console.warn(`⚠️ Using fallback API base despite failed probes: ${fallback}`);
+  }
+  return fallback || '/api';
+};
+
 // Primary API URL selection with mixed-content protection
 const computeApiBase = async () => {
+<<<<<<< Updated upstream
   const envUrl = import.meta.env.VITE_API_URL;
   const isProduction = import.meta.env.PROD;
   const isBrowser = typeof window !== 'undefined';
@@ -81,15 +215,61 @@ const computeApiBase = async () => {
         '⚠️ Rejecting http URL on https page, using relative /api for LocalTunnel routing',
       );
       return '/api';
-    }
-    return envUrl;
+=======
+  if (cachedApiBaseUrl) {
+    return cachedApiBaseUrl;
   }
+
+  if (apiBaseUrlPromise) {
+    return apiBaseUrlPromise;
+  }
+
+  apiBaseUrlPromise = (async () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+
+    if (typeof window === 'undefined') {
+      cachedApiBaseUrl = envUrl || '/api';
+      return cachedApiBaseUrl;
+>>>>>>> Stashed changes
+    }
+
+    const isHttpsPage = window.location?.protocol === 'https:';
+
+    // Prevent mixed content issues up front
+    let sanitizedEnvUrl = envUrl;
+    if (envUrl && isHttpsPage && envUrl.startsWith('http:')) {
+      console.warn('⚠️ Rejecting http URL on https page, using relative /api instead');
+      sanitizedEnvUrl = null;
+    }
+
+    const config = await loadRuntimeConfig();
+    const candidates = gatherCandidateBases(config, sanitizedEnvUrl);
+
+    if (candidates.length === 0) {
+      cachedApiBaseUrl = '/api';
+      return cachedApiBaseUrl;
+    }
+
+    const selectedBase = await selectHealthyBase(candidates);
+    cachedApiBaseUrl = selectedBase || '/api';
+
+    return cachedApiBaseUrl;
+  })();
+
+  try {
+    return await apiBaseUrlPromise;
+  } finally {
+    apiBaseUrlPromise = null;
+  }
+<<<<<<< Updated upstream
 
   // No environment URL set - use relative /api to trigger Vercel rewrites to LocalTunnel
   console.log(
     '🔗 No VITE_API_URL set, using /api for Vercel→LocalTunnel routing',
   );
   return '/api';
+=======
+>>>>>>> Stashed changes
 };
 
 // Export async function to get API base URL

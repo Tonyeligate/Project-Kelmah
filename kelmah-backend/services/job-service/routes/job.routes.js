@@ -88,10 +88,10 @@ router.get('/:id/applications', authorizeRoles('hirer'), jobController.getJobApp
 router.put('/:id/applications/:applicationId', authorizeRoles('hirer'), jobController.updateApplicationStatus);
 router.delete('/:id/applications/:applicationId', authorizeRoles('worker'), jobController.withdrawApplication);
 
-// Saved jobs
-router.get('/saved', jobController.getSavedJobs);
-router.post('/:id/save', jobController.saveJob);
-router.delete('/:id/save', jobController.unsaveJob);
+// Saved jobs (require authentication)
+router.get('/saved', authorizeRoles('worker', 'hirer'), jobController.getSavedJobs);
+router.post('/:id/save', authorizeRoles('worker', 'hirer'), jobController.saveJob);
+router.delete('/:id/save', authorizeRoles('worker', 'hirer'), jobController.unsaveJob);
 
 // Analytics routes (admin only)
 router.get("/analytics", authorizeRoles("admin"), jobController.getJobAnalytics);

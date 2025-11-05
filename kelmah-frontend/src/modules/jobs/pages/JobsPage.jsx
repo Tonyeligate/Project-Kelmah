@@ -683,11 +683,20 @@ const JobsPage = () => {
                           size={isSmallMobile ? 'medium' : 'small'}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              console.log('🔍 Search triggered via Enter key!');
+                              // Search is already triggered by state change
+                            }
+                          }}
                           placeholder={
                             isSmallMobile
                               ? 'Search jobs...'
                               : 'Search jobs, skills, companies...'
                           }
+                          inputProps={{
+                            'aria-label': 'Search for jobs, skills, or companies',
+                          }}
                           sx={{
                             '& .MuiOutlinedInput-root': {
                               color: 'white',
@@ -745,6 +754,9 @@ const JobsPage = () => {
                               setSelectedCategory(e.target.value)
                             }
                             displayEmpty
+                            inputProps={{
+                              'aria-label': 'Select trade category',
+                            }}
                             sx={{
                               color: 'white',
                               fontSize: '0.875rem',
@@ -808,6 +820,9 @@ const JobsPage = () => {
                               setSelectedLocation(e.target.value)
                             }
                             displayEmpty
+                            inputProps={{
+                              'aria-label': 'Select location',
+                            }}
                             sx={{
                               color: 'white',
                               fontSize: '0.875rem',
@@ -840,32 +855,35 @@ const JobsPage = () => {
                         </FormControl>
                       </Grid>
                       <Grid item xs={12} sm={1}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          size="small"
-                          startIcon={<SearchIcon />}
-                          onClick={() => {
-                            console.log('🔍 Search button clicked!');
-                            console.log('Search params:', {
-                              searchQuery,
-                              selectedCategory,
-                              selectedLocation,
-                              budgetRange,
-                            });
-                          }}
-                          sx={{
-                            bgcolor: '#D4AF37',
-                            color: 'black',
-                            fontWeight: 'bold',
-                            fontSize: '0.875rem',
-                            '&:hover': {
-                              bgcolor: '#B8941F',
-                            },
-                          }}
-                        >
-                          Search
-                        </Button>
+                        <Tooltip title="Search for jobs">
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            size="small"
+                            startIcon={<SearchIcon />}
+                            onClick={() => {
+                              console.log('🔍 Search triggered!');
+                              // Trigger re-fetch with current filters
+                              // The useEffect will automatically trigger with updated state
+                            }}
+                            sx={{
+                              bgcolor: '#D4AF37',
+                              color: 'black',
+                              fontWeight: 'bold',
+                              fontSize: '0.875rem',
+                              minHeight: '40px',
+                              boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
+                              '&:hover': {
+                                bgcolor: '#B8941F',
+                                boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
+                                transform: 'translateY(-2px)',
+                              },
+                              transition: 'all 0.3s ease',
+                            }}
+                          >
+                            Search
+                          </Button>
+                        </Tooltip>
                       </Grid>
                     </Grid>
 
@@ -1045,54 +1063,218 @@ const JobsPage = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 2,
               }}
             >
-              <Typography
-                variant="h5"
-                sx={{ color: '#D4AF37', fontWeight: 'bold' }}
-              >
-                Featured Opportunities
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box>
+                <Typography
+                  variant="h5"
+                  sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
+                >
+                  Featured Opportunities
+                </Typography>
+                {(searchQuery || selectedCategory || selectedLocation) && (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                      Active filters:
+                    </Typography>
+                    {searchQuery && (
+                      <Chip
+                        label={`Search: "${searchQuery}"`}
+                        size="small"
+                        onDelete={() => setSearchQuery('')}
+                        sx={{
+                          bgcolor: 'rgba(212,175,55,0.2)',
+                          color: '#D4AF37',
+                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                        }}
+                      />
+                    )}
+                    {selectedCategory && (
+                      <Chip
+                        label={`Category: ${selectedCategory}`}
+                        size="small"
+                        onDelete={() => setSelectedCategory('')}
+                        sx={{
+                          bgcolor: 'rgba(212,175,55,0.2)',
+                          color: '#D4AF37',
+                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                        }}
+                      />
+                    )}
+                    {selectedLocation && (
+                      <Chip
+                        label={`Location: ${selectedLocation}`}
+                        size="small"
+                        onDelete={() => setSelectedLocation('')}
+                        sx={{
+                          bgcolor: 'rgba(212,175,55,0.2)',
+                          color: '#D4AF37',
+                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                        }}
+                      />
+                    )}
+                  </Box>
+                )}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Chip
-                  label={`${filteredJobs.length} Jobs Found`}
+                  label={`${filteredJobs.length} Job${filteredJobs.length !== 1 ? 's' : ''} Found`}
+                  icon={<WorkIcon sx={{ fontSize: 18 }} />}
                   sx={{
                     bgcolor: 'rgba(212,175,55,0.2)',
                     color: '#D4AF37',
                     fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    px: 1,
                   }}
                 />
               </Box>
             </Box>
 
             {loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress size={60} sx={{ color: '#FFD700' }} />
-                <Typography variant="h6" sx={{ ml: 2, color: '#fff' }}>
-                  Loading jobs...
-                </Typography>
+              <Box>
+                <Grid container spacing={{ xs: 2, sm: 3 }}>
+                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                    <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={item}>
+                      <Card
+                        sx={{
+                          height: '100%',
+                          bgcolor: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(212,175,55,0.2)',
+                          borderRadius: 2,
+                          minHeight: 320,
+                        }}
+                      >
+                        <CardContent sx={{ p: 3 }}>
+                          <Box sx={{ display: 'flex', mb: 2, gap: 2 }}>
+                            <Skeleton variant="circular" width={40} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            <Box sx={{ flex: 1 }}>
+                              <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }} />
+                              <Skeleton variant="text" width="50%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            </Box>
+                          </Box>
+                          <Skeleton variant="text" width="100%" sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }} />
+                          <Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 2 }} />
+                          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                            <Skeleton variant="rectangular" width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
+                            <Skeleton variant="rectangular" width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
+                            <Skeleton variant="rectangular" width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
+                          </Box>
+                          <Skeleton variant="rectangular" width="100%" height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1, mt: 2 }} />
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
               </Box>
             )}
 
             {error && (
               <Box sx={{ py: 4 }}>
-                <Alert
-                  severity="error"
-                  sx={{ bgcolor: '#2d1b1b', color: '#fff' }}
+                <Paper
+                  sx={{
+                    p: 4,
+                    bgcolor: 'rgba(244,67,54,0.1)',
+                    border: '1px solid rgba(244,67,54,0.3)',
+                    borderRadius: 2,
+                    textAlign: 'center',
+                  }}
                 >
-                  {error}
-                </Alert>
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: '50%',
+                      bgcolor: 'rgba(244,67,54,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 2,
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 48 }}>⚠️</Typography>
+                  </Box>
+                  <Typography variant="h6" sx={{ color: '#ff6b6b', mb: 2, fontWeight: 'bold' }}>
+                    Unable to Load Jobs
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+                    {error}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => window.location.reload()}
+                    sx={{
+                      bgcolor: '#D4AF37',
+                      color: 'black',
+                      fontWeight: 'bold',
+                      '&:hover': { bgcolor: '#B8941F' },
+                    }}
+                  >
+                    Retry
+                  </Button>
+                </Paper>
               </Box>
             )}
 
             {!loading && !error && filteredJobs.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h5" sx={{ color: '#fff', mb: 2 }}>
-                  No jobs found
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#ccc' }}>
-                  Try adjusting your search criteria or check back later.
-                </Typography>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    border: '2px dashed rgba(212,175,55,0.3)',
+                    borderRadius: 3,
+                    p: 6,
+                    maxWidth: 600,
+                    mx: 'auto',
+                  }}
+                >
+                  <SearchIcon sx={{ fontSize: 80, color: '#D4AF37', mb: 2, opacity: 0.5 }} />
+                  <Typography variant="h5" sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}>
+                    No Jobs Found
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+                    {searchQuery || selectedCategory || selectedLocation
+                      ? "We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms."
+                      : "No jobs are currently available. Check back soon for new opportunities!"}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {(searchQuery || selectedCategory || selectedLocation) && (
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSelectedCategory('');
+                          setSelectedLocation('');
+                        }}
+                        sx={{
+                          bgcolor: '#D4AF37',
+                          color: 'black',
+                          fontWeight: 'bold',
+                          '&:hover': { bgcolor: '#B8941F' },
+                        }}
+                      >
+                        Clear All Filters
+                      </Button>
+                    )}
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate('/post-job')}
+                      sx={{
+                        borderColor: '#D4AF37',
+                        color: '#D4AF37',
+                        '&:hover': {
+                          borderColor: '#B8941F',
+                          bgcolor: 'rgba(212,175,55,0.1)',
+                        },
+                      }}
+                    >
+                      Post a Job
+                    </Button>
+                  </Box>
+                </Box>
               </Box>
             )}
 
@@ -1116,13 +1298,34 @@ const JobsPage = () => {
                           border: '1px solid rgba(212,175,55,0.2)',
                           borderRadius: { xs: 3, sm: 2 },
                           minHeight: { xs: '280px', sm: '320px' },
+                          cursor: 'pointer',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '4px',
+                            background: 'linear-gradient(90deg, #D4AF37, #FFD700)',
+                            transform: 'scaleX(0)',
+                            transformOrigin: 'left',
+                            transition: 'transform 0.3s ease',
+                          },
                           '&:hover': {
                             border: '1px solid #D4AF37',
-                            boxShadow: '0 8px 32px rgba(212,175,55,0.3)',
-                            transform: { xs: 'none', sm: 'translateY(-2px)' },
+                            boxShadow: '0 12px 40px rgba(212,175,55,0.4)',
+                            transform: { xs: 'none', sm: 'translateY(-4px)' },
+                            '&::before': {
+                              transform: 'scaleX(1)',
+                            },
                           },
-                          transition: 'all 0.3s ease-in-out',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
+                        onClick={() => navigate(`/jobs/${job._id || job.id}`)}
+                        role="article"
+                        aria-label={`Job posting: ${job.title}`}
                       >
                         <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
                           {/* Job Header */}
@@ -1184,7 +1387,7 @@ const JobsPage = () => {
                                     whiteSpace: 'nowrap',
                                   }}
                                 >
-                                  {job.hirer?.name || 'Unknown Company'}
+                                  {job.hirer?.name || job.hirer_name || 'Verified Employer'}
                                 </Typography>
                               </Box>
                             </Box>
@@ -1193,29 +1396,37 @@ const JobsPage = () => {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'end',
+                                gap: 0.5,
                               }}
                             >
-                              {job.urgent && (
+                              {(job.urgent || job.proposalCount > 10) && (
                                 <Chip
-                                  label="URGENT"
+                                  label={job.urgent ? "URGENT" : "HOT"}
                                   size="small"
+                                  icon={job.urgent ? <FlashOnIcon sx={{ fontSize: 16 }} /> : <FireIcon sx={{ fontSize: 16 }} />}
                                   sx={{
-                                    bgcolor: '#ff4444',
+                                    bgcolor: job.urgent ? '#ff4444' : '#ff9800',
                                     color: 'white',
                                     fontWeight: 'bold',
-                                    mb: 1,
+                                    fontSize: '0.7rem',
+                                    animation: 'pulse 2s infinite',
+                                    '@keyframes pulse': {
+                                      '0%, 100%': { opacity: 1 },
+                                      '50%': { opacity: 0.7 },
+                                    },
                                   }}
                                 />
                               )}
                               {job.verified && (
                                 <Chip
-                                  icon={<Verified sx={{ fontSize: 16 }} />}
+                                  icon={<Verified sx={{ fontSize: 14 }} />}
                                   label="Verified"
                                   size="small"
                                   sx={{
                                     bgcolor: 'rgba(76,175,80,0.2)',
                                     color: '#4CAF50',
                                     border: '1px solid #4CAF50',
+                                    fontSize: '0.7rem',
                                   }}
                                 />
                               )}
@@ -1237,11 +1448,13 @@ const JobsPage = () => {
                               />
                               <Typography
                                 variant="body2"
-                                sx={{ color: 'white' }}
+                                sx={{ color: 'white', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
                               >
-                                {job.location?.city ||
-                                  job.location ||
-                                  'Location not specified'}
+                                {job.location?.city
+                                  ? `${job.location.city}${job.location.country ? ', ' + job.location.country : ''}`
+                                  : typeof job.location === 'string'
+                                  ? job.location
+                                  : 'Remote/Flexible'}
                               </Typography>
                             </Box>
 
@@ -1259,15 +1472,15 @@ const JobsPage = () => {
                               <Typography
                                 variant="body2"
                                 fontWeight="bold"
-                                sx={{ color: '#D4AF37' }}
+                                sx={{ color: '#D4AF37', fontSize: { xs: '0.875rem', sm: '0.95rem' } }}
                               >
                                 {job?.budget
                                   ? typeof job?.budget === 'object'
-                                    ? job.budget.min === job.budget.max
-                                      ? `${job.budget.currency || 'GHS'} ${job.budget.amount?.toLocaleString() || 0}`
-                                      : `${job.budget.currency || 'GHS'} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0}`
-                                    : `${job?.currency || 'GHS'} ${job?.budget?.toLocaleString()}`
-                                  : 'Budget not specified'}
+                                    ? job.budget.min === job.budget.max || !job.budget.max
+                                      ? `GHS ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
+                                      : `GHS ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
+                                    : `GHS ${job?.budget?.toLocaleString()}`
+                                  : 'Negotiable'}
                               </Typography>
                               <Chip
                                 label={job.paymentType || 'Fixed'}
@@ -1512,31 +1725,40 @@ const JobsPage = () => {
           </motion.div>
 
           {/* Load More Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <Box sx={{ textAlign: 'center', mt: 6 }}>
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<RefreshIcon />}
-                sx={{
-                  borderColor: '#D4AF37',
-                  color: '#D4AF37',
-                  px: 4,
-                  py: 1.5,
-                  '&:hover': {
-                    borderColor: '#B8941F',
-                    bgcolor: 'rgba(212,175,55,0.1)',
-                  },
-                }}
-              >
-                Load More Opportunities
-              </Button>
-            </Box>
-          </motion.div>
+          {!loading && !error && filteredJobs.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <Box sx={{ textAlign: 'center', mt: 6 }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
+                  Showing {filteredJobs.length} of 12 total opportunities
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<RefreshIcon />}
+                  onClick={() => {
+                    // TODO: Implement pagination/load more
+                    console.log('Load more functionality - to be implemented');
+                  }}
+                  sx={{
+                    borderColor: '#D4AF37',
+                    color: '#D4AF37',
+                    px: 4,
+                    py: 1.5,
+                    '&:hover': {
+                      borderColor: '#B8941F',
+                      bgcolor: 'rgba(212,175,55,0.1)',
+                    },
+                  }}
+                >
+                  Load More Opportunities
+                </Button>
+              </Box>
+            </motion.div>
+          )}
 
           {/* Stats Section - Moved to Bottom */}
           <motion.div
@@ -1730,6 +1952,16 @@ const JobsPage = () => {
                 <Button
                   variant="contained"
                   size="large"
+                  onClick={() => {
+                    if (!authState.isAuthenticated) {
+                      navigate('/login', {
+                        state: { from: '/jobs', message: 'Sign in to create job alerts' }
+                      });
+                      return;
+                    }
+                    // TODO: Implement job alert creation
+                    console.log('Create job alert feature - to be implemented');
+                  }}
                   sx={{
                     bgcolor: '#D4AF37',
                     color: 'black',
@@ -1745,6 +1977,15 @@ const JobsPage = () => {
                 <Button
                   variant="outlined"
                   size="large"
+                  onClick={() => {
+                    if (!authState.isAuthenticated) {
+                      navigate('/login', {
+                        state: { from: '/profile/upload-cv', message: 'Sign in to upload your CV' }
+                      });
+                      return;
+                    }
+                    navigate('/profile/upload-cv');
+                  }}
                   sx={{
                     borderColor: '#D4AF37',
                     color: '#D4AF37',

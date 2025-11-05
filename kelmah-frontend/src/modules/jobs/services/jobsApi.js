@@ -41,6 +41,7 @@ const jobsApi = {
    */
   async getJobs(params = {}) {
     try {
+<<<<<<< Updated upstream
       console.log('🔍 Calling job service API with params:', params);
       const response = await jobServiceClient.get('/jobs', { params });
       console.log('📊 Raw API response:', response.data);
@@ -77,6 +78,18 @@ const jobsApi = {
 
       console.log('✅ Extracted jobs:', jobs.length);
 
+=======
+      const response = await jobServiceClient.get('/api/jobs', { params });
+      
+      // Normalize backend pagination envelope: prefer items+page+total+limit format
+      const payload = response.data || {};
+      const jobs = payload.items || payload.data || payload.jobs || [];
+      const totalJobs = payload.total || payload.totalJobs || jobs.length;
+      const limit = payload.limit || params.limit || 10;
+      const totalPages = payload.totalPages || Math.ceil(totalJobs / limit);
+      const currentPage = payload.page || payload.currentPage || 1;
+      
+>>>>>>> Stashed changes
       return {
         data: jobs.map(transformJobListItem),
         jobs: jobs.map(transformJobListItem),
@@ -85,6 +98,7 @@ const jobsApi = {
         currentPage,
       };
     } catch (error) {
+<<<<<<< Updated upstream
       console.error('❌ Job service API error:', error);
       console.error('❌ Error details:', {
         message: error.message,
@@ -93,6 +107,9 @@ const jobsApi = {
         data: error.response?.data,
       });
       // No mock data fallback; return empty results to reflect real state
+=======
+      // Return empty results on error without logging to production console
+>>>>>>> Stashed changes
       return {
         data: [],
         jobs: [],
@@ -138,11 +155,19 @@ const jobsApi = {
    */
   async getContracts() {
     try {
+<<<<<<< Updated upstream
       const response = await jobServiceClient.get('/jobs/contracts');
       // Prefer nested data shape, fallback to flat
       return response.data?.data?.contracts || response.data?.contracts || [];
+=======
+      const response = await jobServiceClient.get('/api/jobs/contracts');
+      return (
+        response.data?.data?.contracts ||
+        response.data?.contracts ||
+        []
+      );
+>>>>>>> Stashed changes
     } catch (error) {
-      console.warn('Job service unavailable for contracts:', error.message);
       return [];
     }
   },
@@ -158,6 +183,7 @@ const jobsApi = {
     }
 
     try {
+<<<<<<< Updated upstream
       const response = await jobServiceClient.get(`/jobs/${jobId}`);
       console.log('🔍 Single job API response:', response.data);
 
@@ -222,10 +248,40 @@ const jobsApi = {
             }
           : raw;
       return normalized;
+=======
+      const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
+      
+      // Handle array response format
+      if (response.data?.items && Array.isArray(response.data.items)) {
+        const job = response.data.items.find(item => item.id === jobId || item._id === jobId);
+        if (job) return this._normalizeJobFields(job);
+      }
+      
+      // Handle single job response
+      const raw = response.data?.data || response.data;
+      return raw ? this._normalizeJobFields(raw) : null;
+>>>>>>> Stashed changes
     } catch (error) {
-      console.warn(`Job service unavailable for job ${jobId}:`, error.message);
       return null;
     }
+  },
+
+  /**
+   * Normalize job fields for UI consumption
+   */
+  _normalizeJobFields(job) {
+    return {
+      ...job,
+      created_at: job.created_at || job.createdAt || job.postedDate,
+      hirer_name: job.hirer_name || job.hirer?.name,
+      postedDate: job.postedDate || (job.createdAt ? new Date(job.createdAt) : undefined),
+      deadline: job.deadline || (job.endDate ? new Date(job.endDate) : undefined),
+      skills: Array.isArray(job.skills)
+        ? job.skills
+        : (typeof job.skills_required === 'string'
+          ? job.skills_required.split(',').map(s => s.trim()).filter(Boolean)
+          : []),
+    };
   },
 
   /**
@@ -233,8 +289,12 @@ const jobsApi = {
    */
   async searchJobs(searchParams) {
     try {
+<<<<<<< Updated upstream
       // Backend supports filtering and text search via /jobs with ?search=
       const response = await jobServiceClient.get('/jobs', {
+=======
+      const response = await jobServiceClient.get('/api/jobs', {
+>>>>>>> Stashed changes
         params: searchParams,
       });
       const jobs = response.data.data || response.data.jobs || [];
@@ -245,7 +305,6 @@ const jobsApi = {
         currentPage: response.data.currentPage || 1,
       };
     } catch (error) {
-      console.warn('Job service unavailable for job search:', error.message);
       return {
         jobs: [],
         totalPages: 1,
@@ -259,6 +318,7 @@ const jobsApi = {
    * Apply to a job
    */
   async applyToJob(jobId, applicationData) {
+<<<<<<< Updated upstream
     try {
       const response = await jobServiceClient.post(
         `/jobs/${jobId}/apply`,
@@ -272,6 +332,10 @@ const jobsApi = {
       );
       throw error;
     }
+=======
+    const response = await jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+    return response.data;
+>>>>>>> Stashed changes
   },
 
   /**
@@ -282,10 +346,13 @@ const jobsApi = {
       const response = await jobServiceClient.get('/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
+<<<<<<< Updated upstream
       console.warn(
         'Job service unavailable for job categories:',
         error.message,
       );
+=======
+>>>>>>> Stashed changes
       return [];
     }
   },
@@ -319,5 +386,8 @@ const jobsApi = {
     }
   },
 };
+
+// Align legacy callers expecting applyForJob with current implementation
+jobsApi.applyForJob = jobsApi.applyToJob;
 
 export default jobsApi;

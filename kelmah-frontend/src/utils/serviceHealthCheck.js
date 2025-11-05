@@ -19,13 +19,42 @@ const HEALTH_ENDPOINTS = {
   [SERVICES.JOB_SERVICE]: '/health',
   [SERVICES.MESSAGING_SERVICE]: '/health',
   [SERVICES.PAYMENT_SERVICE]: '/health',
+<<<<<<< Updated upstream
+=======
+};
+
+const DEFAULT_HEALTH_ENDPOINT = '/health';
+
+const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  if (!baseUrl) {
+    return `/api${normalizedEndpoint}`;
+  }
+
+  const trimmedBase = baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
+
+  if (trimmedBase === '') {
+    return `/api${normalizedEndpoint}`;
+  }
+
+  if (trimmedBase.endsWith('/api')) {
+    return `${trimmedBase}${normalizedEndpoint}`;
+  }
+
+  return `${trimmedBase}/api${normalizedEndpoint}`;
+>>>>>>> Stashed changes
 };
 
 /**
  * Check if a service is healthy
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
+<<<<<<< Updated upstream
   const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || '/health'; // Default to /health without /api/ prefix
+=======
+  const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || DEFAULT_HEALTH_ENDPOINT;
+>>>>>>> Stashed changes
 
   let base;
 
@@ -61,14 +90,20 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
   }
 
   // For aggregate health check, use the correct endpoint
+<<<<<<< Updated upstream
   const fullUrl = isAggregateCheck
     ? `${base}/health/aggregate`
     : `${base}${healthEndpoint}`;
+=======
+  const endpoint = isAggregateCheck ? '/health/aggregate' : healthEndpoint;
+  const fullUrl = buildHealthUrl(base, endpoint);
+>>>>>>> Stashed changes
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    const startTime = Date.now();
     const response = await fetch(fullUrl, {
       method: 'GET',
       signal: controller.signal,
@@ -81,6 +116,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
 
     const isHealthy = response.ok;
     const responseTime = Date.now();
+    const duration = responseTime - startTime;
 
     // Cache the result
     serviceHealthCache.set(serviceUrl, {
@@ -93,8 +129,13 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
     console.log(`🏥 Service Health Check - ${serviceUrl}:`, {
       healthy: isHealthy,
       status: response.status,
+<<<<<<< Updated upstream
       responseTime: `${Date.now() - responseTime}ms`,
       url: fullUrl,
+=======
+      responseTime: `${duration}ms`,
+      url: fullUrl
+>>>>>>> Stashed changes
     });
 
     return isHealthy;
