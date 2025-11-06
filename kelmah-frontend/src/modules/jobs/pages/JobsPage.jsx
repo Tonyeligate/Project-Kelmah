@@ -731,7 +731,7 @@ const JobsPage = () => {
         console.error('❌ Failed to fetch platform stats:', err);
         // Fallback to reasonable defaults if API fails
         setPlatformStats({
-          availableJobs: uniqueJobs.length || 0,
+          availableJobs: 0,
           activeEmployers: 0,
           skilledWorkers: 0,
           successRate: 0,
@@ -745,7 +745,7 @@ const JobsPage = () => {
     // Refresh stats every 5 minutes
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [uniqueJobs.length]);
+  }, []); // Empty dependency - only fetch once on mount and then refresh via interval
 
   // Error boundary component for better error handling
   const ErrorBoundary = ({ children, fallback }) => {
