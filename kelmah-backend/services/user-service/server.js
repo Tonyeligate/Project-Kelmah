@@ -19,7 +19,6 @@ const { connectDB, mongoose } = require("./config/db");
 // CRITICAL FIX: DO NOT set bufferCommands = false at module load time
 // Models created with bufferCommands=false will fail even after connection is ready
 // Instead, use default bufferCommands=true and ensure connection is ready before server starts
-const mongoose = require('mongoose');
 
 // CRITICAL FIX: Import models AFTER this comment to avoid schema initialization issues
 // Models will be imported after MongoDB connection is established
@@ -74,10 +73,6 @@ if (process.env.ENABLE_WORKER_SQL === 'true') {
 }
 
 const app = express();
-<<<<<<< Updated upstream
-// Trust proxy headers (Render forwards X-Forwarded-For)
-=======
->>>>>>> Stashed changes
 app.set('trust proxy', 1);
 // Optional tracing
 try { require('./utils/tracing').initTracing('user-service'); } catch { }
@@ -432,12 +427,7 @@ const PORT = process.env.USER_SERVICE_PORT || 5002;
 // Only start the server if this file is run directly
 if (require.main === module) {
   connectDB()
-<<<<<<< Updated upstream
     .then(async () => {
-=======
-    .then(() => {
-    isDatabaseReady = true;
->>>>>>> Stashed changes
       logger.info("✅ User Service connected to MongoDB");
       
       // CRITICAL: Wait for connection to be fully ready before starting server
