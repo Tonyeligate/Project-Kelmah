@@ -177,17 +177,17 @@ const ServiceCard = styled(Card)(({ theme }) => ({
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: { xs: 180, sm: 200, md: 220 },
+  height: { xs: 200, sm: 200, md: 220 },  // ✅ Updated to 200px max per user request
   transition: 'transform 0.4s ease',
   position: 'relative',
   objectFit: 'cover',  // ✅ Better image scaling
   // Mobile-specific optimizations
   '@media (max-width: 600px)': {
-    height: 180,  // ✅ Increased from 160px for better visibility
+    height: 200,  // ✅ Updated to 200px max per user request
   },
   // ✅ Ensure images load efficiently
   '@media (max-width: 360px)': {
-    height: 160,  // ✅ Smaller screens get appropriate sizing
+    height: 180,  // ✅ Smaller screens get appropriate sizing
   },
 }));
 
@@ -231,6 +231,7 @@ const HomePage = () => {
     checking: false,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);  // ✅ NEW: Error state
   const [bgIndex, setBgIndex] = useState(0);
 
   // Enhanced services with proper vocational trade focus
@@ -297,6 +298,7 @@ const HomePage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
+      setError(null);  // ✅ Clear any initialization errors
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -312,9 +314,11 @@ const HomePage = () => {
           }
           return prev;
         });
+        setError(null);  // ✅ Clear errors on successful API check
       } catch (error) {
         console.warn('API check failed, continuing anyway:', error);
-        setApiStatus({ isReachable: true, checking: false });
+        setApiStatus({ isReachable: false, checking: false });
+        setError('Unable to connect to server. Some features may be limited.');  // ✅ Set error message
       }
     };
     checkApiStatus();
@@ -331,6 +335,48 @@ const HomePage = () => {
   return (
     <>
       <LoadingScreen isLoading={isLoading} />
+      
+      {/* ✅ NEW: Error Message Display */}
+      {error && !isLoading && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: { xs: 60, sm: 70 },
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1200,
+            width: { xs: '90%', sm: '500px' },
+            maxWidth: '90vw',
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: 'error.main',
+              color: 'white',
+              px: { xs: 2, sm: 3 },
+              py: { xs: 1.5, sm: 2 },
+              borderRadius: 2,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+            }}
+          >
+            <Typography variant="body2" sx={{ flex: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              {error}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={() => setError(null)}
+              sx={{ color: 'white', minWidth: '44px', minHeight: '44px' }}
+            >
+              <Box component="span" sx={{ fontSize: '1.5rem' }}>×</Box>
+            </IconButton>
+          </Box>
+        </Box>
+      )}
+      
       <GestureControl>
         <Box sx={{ position: 'relative' }}>
           {/* Enhanced platform status badge */}
@@ -1095,6 +1141,65 @@ const HomePage = () => {
           </Section>
         </Box>
       </GestureControl>
+      
+      {/* ✅ NEW: Sticky Footer Navigation for Mobile */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: { xs: 'flex', md: 'none' },  // Only mobile
+          gap: 1,
+          p: 1.5,
+          backgroundColor: 'rgba(0, 0, 0, 0.95)',
+          borderTop: '2px solid rgba(255, 215, 0, 0.3)',
+          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)',
+          zIndex: 1000,
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <StyledButton
+          variant="contained"
+          fullWidth
+          sx={{
+            background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+            color: '#000',
+            fontWeight: 800,
+            minHeight: '44px',
+            fontSize: '0.9rem',
+            boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #FFC000 0%, #FFD700 100%)',
+            },
+            '&:active': { transform: 'scale(0.98)' },
+          }}
+          onClick={() => navigate('/register')}
+        >
+          Join Kelmah
+        </StyledButton>
+        <StyledButton
+          variant="outlined"
+          fullWidth
+          sx={{
+            borderColor: '#FFD700',
+            color: '#FFD700',
+            borderWidth: 2,
+            fontWeight: 700,
+            minHeight: '44px',
+            fontSize: '0.9rem',
+            background: 'rgba(255, 215, 0, 0.08)',
+            '&:hover': {
+              background: 'rgba(255, 215, 0, 0.15)',
+              borderColor: '#FFC000',
+            },
+            '&:active': { transform: 'scale(0.98)' },
+          }}
+          onClick={() => navigate('/hirer/find-talent')}
+        >
+          Find Workers
+        </StyledButton>
+      </Box>
     </>
   );
 };
