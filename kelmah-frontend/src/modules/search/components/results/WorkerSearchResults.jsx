@@ -18,6 +18,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { MapOutlined as MapIcon } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import WorkerCard from '../../../worker/components/WorkerCard';
 
 const WorkerSearchResults = ({
@@ -35,6 +36,7 @@ const WorkerSearchResults = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   // Handle page change in pagination
   const handlePageChange = (event, value) => {
@@ -172,6 +174,7 @@ const WorkerSearchResults = ({
           <WorkerCard
             worker={worker}
             onSave={onSaveWorker ? () => onSaveWorker(worker) : undefined}
+            isPublicView={!isAuthenticated}
           />
         </Grid>
       ))}

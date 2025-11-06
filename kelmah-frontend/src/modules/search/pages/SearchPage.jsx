@@ -24,6 +24,8 @@ import {
 
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
+import CompactSearchBar from '../components/common/CompactSearchBar';
+import MobileFilterDrawer from '../components/common/MobileFilterDrawer';
 import SearchResults from '../components/results/SearchResults';
 import WorkerSearchResults from '../components/results/WorkerSearchResults';
 import JobMapView from '../components/map/JobMapView';
@@ -77,6 +79,7 @@ const SearchPage = () => {
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showSavedSearches, setShowSavedSearches] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Parse search parameters from URL on component mount
   useEffect(() => {
@@ -440,8 +443,24 @@ const SearchPage = () => {
       />
 
       <Container maxWidth="lg" sx={{ pt: 0 }}>
-        {/* Search Form */}
-        <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
+        {/* Search Form - Responsive: Compact on mobile, full on desktop */}
+        {isMobile ? (
+          <>
+            <CompactSearchBar
+              onSearchClick={() => performSearch(searchParams)}
+              onFilterClick={() => setShowMobileFilters(true)}
+              placeholder="Search skilled workers in Ghana..."
+            />
+            <MobileFilterDrawer
+              open={showMobileFilters}
+              onClose={() => setShowMobileFilters(false)}
+              onSearch={handleSearch}
+              initialFilters={searchParams}
+            />
+          </>
+        ) : (
+          <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
+        )}
 
         {/* Quick Actions - Show only for authenticated hirers */}
         {isAuthenticated && isHirer && (

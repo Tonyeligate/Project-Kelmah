@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Card,
   CardContent,
-  CardActionArea,
+  CardActions,
   Typography,
   Box,
   Chip,
@@ -11,23 +11,52 @@ import {
   Grid,
   Avatar,
   Rating,
+  Button,
+  Tooltip,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
   WorkOutline as WorkIcon,
   AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
+  Message as MessageIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-const WorkerCard = ({ worker }) => {
+const WorkerCard = ({ worker, isPublicView = false }) => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const isHirer = user?.role === 'hirer' || user?.userType === 'hirer';
 
-  // Handle click on card
-  const handleClick = () => {
-    navigate(`/workers/${worker.id}`);
+  // Handle view profile
+  const handleViewProfile = (e) => {
+    e.stopPropagation();
+    navigate(`/workers/${worker.id || worker._id || worker.userId}`);
   };
+
+  // Handle message worker
+  const handleMessage = (e) => {
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          from: `/workers/${worker.id}`,
+          message: 'Please sign in to message workers',
+        },
+      });
+      return;
+    }
+
+    // Navigate to messaging page with worker ID
+    navigate(`/messages?userId=${worker.userId || worker.id}`);
+  };
+
+  // Determine if user can message (authenticated and is hirer)
+  const canMessage = isAuthenticated && isHirer;
 
   return (
     <Card
@@ -43,8 +72,7 @@ const WorkerCard = ({ worker }) => {
         },
       }}
     >
-      <CardActionArea onClick={handleClick} sx={{ flexGrow: 1 }}>
-        <CardContent>
+      <CardContent sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={handleViewProfile}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar
               src={worker.profileImage}
@@ -163,14 +191,67 @@ const WorkerCard = ({ worker }) => {
             )}
           </Grid>
         </CardContent>
-      </CardActionArea>
+
+      {/* Contact Action Buttons */}
+      <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}>
+        <Button
+          variant="outlined"
+          startIcon={<VisibilityIcon />}
+          onClick={handleViewProfile}
+          size="small"
+          sx={{
+            minHeight: '44px',
+            flex: 1,
+            mr: 1,
+            borderColor: 'rgba(255, 215, 0, 0.5)',
+            color: 'text.primary',
+            '&:hover': {
+              borderColor: '#FFD700',
+              bgcolor: 'rgba(255, 215, 0, 0.08)',
+            },
+          }}
+        >
+          View Profile
+        </Button>
+        <Tooltip
+          title={!canMessage ? 'Sign in as a hirer to message workers' : ''}
+          arrow
+        >
+          <span style={{ flex: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<MessageIcon />}
+              onClick={handleMessage}
+              disabled={!canMessage}
+              size="small"
+              fullWidth
+              sx={{
+                minHeight: '44px',
+                bgcolor: canMessage ? '#FFD700' : 'action.disabledBackground',
+                color: canMessage ? '#000' : 'text.disabled',
+                '&:hover': {
+                  bgcolor: canMessage ? '#FFC700' : undefined,
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'action.disabledBackground',
+                  color: 'text.disabled',
+                },
+              }}
+            >
+              {canMessage ? 'Message' : 'Sign In'}
+            </Button>
+          </span>
+        </Tooltip>
+      </CardActions>
     </Card>
   );
 };
 
 WorkerCard.propTypes = {
   worker: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    _id: PropTypes.string,
+    userId: PropTypes.string,
     name: PropTypes.string.isRequired,
     profileImage: PropTypes.string,
     title: PropTypes.string,
@@ -182,6 +263,7 @@ WorkerCard.propTypes = {
     location: PropTypes.string,
     skills: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
+  isPublicView: PropTypes.bool,
 };
 
 export default WorkerCard;
