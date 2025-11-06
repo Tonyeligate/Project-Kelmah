@@ -606,6 +606,13 @@ const JobsPage = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [platformStats, setPlatformStats] = useState({
+    availableJobs: 0,
+    activeEmployers: 0,
+    skilledWorkers: 0,
+    successRate: 0,
+    loading: true
+  });
   // Ghana-aware helpers for better UX and ranking
   const GHANA_REGIONS = [
     'Greater Accra',
@@ -699,6 +706,46 @@ const JobsPage = () => {
 
     fetchFn();
   }, [searchQuery, selectedCategory, selectedLocation, budgetRange]);
+
+  // Fetch platform statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        console.log('📊 Fetching platform statistics...');
+        const response = await fetch('/api/jobs/stats');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          console.log('✅ Platform stats loaded:', data.data);
+          setPlatformStats({
+            availableJobs: data.data.availableJobs || 0,
+            activeEmployers: data.data.activeEmployers || 0,
+            skilledWorkers: data.data.skilledWorkers || 0,
+            successRate: data.data.successRate || 0,
+            loading: false
+          });
+        } else {
+          throw new Error('Invalid stats response format');
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch platform stats:', err);
+        // Fallback to reasonable defaults if API fails
+        setPlatformStats({
+          availableJobs: uniqueJobs.length || 0,
+          activeEmployers: 0,
+          skilledWorkers: 0,
+          successRate: 0,
+          loading: false
+        });
+      }
+    };
+
+    fetchStats();
+    
+    // Refresh stats every 5 minutes
+    const interval = setInterval(fetchStats, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [uniqueJobs.length]);
 
   // Error boundary component for better error handling
   const ErrorBoundary = ({ children, fallback }) => {
@@ -2083,7 +2130,7 @@ const JobsPage = () => {
                 {/* Available Jobs Stat */}
                 <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={uniqueJobs.length}
+                    value={platformStats.loading ? uniqueJobs.length : platformStats.availableJobs}
                     label="Available Jobs"
                     isLive={true}
                   />
@@ -2091,7 +2138,7 @@ const JobsPage = () => {
                 {/* Active Employers Stat */}
                 <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={2500}
+                    value={platformStats.loading ? 0 : platformStats.activeEmployers}
                     suffix="+"
                     label="Active Employers"
                   />
@@ -2099,7 +2146,7 @@ const JobsPage = () => {
                 {/* Skilled Workers Stat */}
                 <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={15000}
+                    value={platformStats.loading ? 0 : platformStats.skilledWorkers}
                     suffix="+"
                     label="Skilled Workers"
                   />
@@ -2107,7 +2154,7 @@ const JobsPage = () => {
                 {/* Success Rate Stat */}
                 <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={98}
+                    value={platformStats.loading ? 0 : platformStats.successRate}
                     suffix="%"
                     label="Success Rate"
                   />

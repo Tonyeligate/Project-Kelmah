@@ -21,6 +21,7 @@ const {
   paginatedResponse,
 } = require("../utils/response");
 const { ensureConnection } = require('../config/db');
+const { transformJobsForFrontend } = require('../utils/jobTransform');
 
 /**
  * Create a new job
@@ -373,35 +374,8 @@ const getJobs = async (req, res, next) => {
       }
     });
 
-    // Transform jobs to match frontend expectations
-    const transformedJobs = jobs.map(job => ({
-      ...job,
-      _id: job._id.toString(), // Convert ObjectId to string
-      // Add budget object for complex budget display
-      budget: {
-        min: job.bidding?.minBidAmount || job.budget || 0,
-        max: job.bidding?.maxBidAmount || job.budget || 0,
-        type: job.paymentType || 'fixed',
-        amount: job.budget || 0,
-        currency: job.currency || 'GHS'
-      },
-      // Add missing fields that frontend expects
-      hirer_name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown',
-      profession: job.category,
-      skills_required: job.skills ? job.skills.join(', ') : '',
-      created_at: job.createdAt,
-      // Add complete hirer object with all fields for frontend
-      hirer: job.hirer ? {
-        ...job.hirer,
-        _id: job.hirer._id.toString(),
-        avatar: job.hirer.profileImage || job.hirer.avatar,
-        logo: job.hirer.profileImage || job.hirer.avatar,
-        name: `${job.hirer.firstName} ${job.hirer.lastName}`,
-        verified: job.hirer.verified || job.hirer.isVerified || false,
-        rating: job.hirer.rating || null,
-        email: job.hirer.email || null
-      } : null
-    }));
+    // Transform jobs to match frontend expectations (using shared transformation)
+    const transformedJobs = transformJobsForFrontend(jobs);
 
     // Get total count using direct driver
     console.log('[GET JOBS] Getting total count...');
@@ -1345,11 +1319,14 @@ const advancedJobSearch = async (req, res, next) => {
     const countResult = await Job.aggregate(countPipeline);
     const total = countResult.length > 0 ? countResult[0].total : 0;
 
+    // Transform jobs to match frontend expectations (same format as getJobs)
+    const transformedJobs = transformJobsForFrontend(jobs);
+
     return paginatedResponse(
       res,
       200,
       'Advanced job search completed',
-      jobs,
+      transformedJobs,
       pageNum,
       pageSize,
       total
@@ -1976,6 +1953,106 @@ const getExpiredJobs = async (req, res, next) => {
   }
 };
 
+/**
+ * Get platform statistics
+ * @route GET /api/jobs/stats
+ * @access Public
+ */
+const getPlatformStats = async (req, res, next) => {
+  try {
+    await ensureConnection();
+    
+    const now = new Date();
+    const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    // Run all queries in parallel for better performance
+    const [
+      availableJobs,
+      activeEmployersResult,
+      skilledWorkers,
+      completedJobs,
+      cancelledJobs,
+      totalApplications,
+      successfulPlacements
+    ] = await Promise.all([
+      // Available jobs: open status and not expired
+      Job.countDocuments({ 
+        status: 'open', 
+        expiresAt: { $gt: now } 
+      }),
+      
+      // Active employers: distinct hirers with active jobs in last 30 days
+      Job.aggregate([
+        { 
+          $match: { 
+            createdAt: { $gte: THIRTY_DAYS_AGO }, 
+            status: { $in: ['open', 'in-progress', 'completed'] } 
+          } 
+        },
+        { $group: { _id: '$hirer' } },
+        { $count: 'count' }
+      ]),
+      
+      // Skilled workers: active workers with verified profiles
+      User.countDocuments({ 
+        role: 'worker', 
+        isActive: true,
+        isEmailVerified: true
+      }),
+      
+      // Completed jobs for success rate calculation
+      Job.countDocuments({ status: 'completed' }),
+      
+      // Cancelled jobs for success rate calculation
+      Job.countDocuments({ status: 'cancelled' }),
+      
+      // Total applications for success rate
+      Application.countDocuments({}),
+      
+      // Successful placements (applications that led to completed jobs)
+      Application.countDocuments({ 
+        status: 'accepted'
+      })
+    ]);
+
+    // Calculate success rate based on completed vs cancelled jobs
+    const totalResolvedJobs = completedJobs + cancelledJobs;
+    let successRate = 0;
+    if (totalResolvedJobs > 0) {
+      successRate = Math.round((completedJobs / totalResolvedJobs) * 100);
+    } else if (totalApplications > 0 && successfulPlacements > 0) {
+      // Fallback: calculate from applications
+      successRate = Math.round((successfulPlacements / totalApplications) * 100);
+    }
+
+    const stats = {
+      availableJobs: availableJobs || 0,
+      activeEmployers: activeEmployersResult?.[0]?.count || 0,
+      skilledWorkers: skilledWorkers || 0,
+      successRate: successRate || 0,
+      lastUpdated: new Date().toISOString()
+    };
+
+    // Return with cache headers (1 hour cache)
+    res.set('Cache-Control', 'public, max-age=3600');
+    return successResponse(res, 200, 'Platform statistics retrieved successfully', stats);
+    
+  } catch (error) {
+    console.error('Error fetching platform statistics:', error);
+    
+    // Fallback to reasonable defaults if query fails
+    const fallbackStats = {
+      availableJobs: 0,
+      activeEmployers: 0,
+      skilledWorkers: 0,
+      successRate: 0,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    return successResponse(res, 200, 'Platform statistics retrieved (fallback)', fallbackStats);
+  }
+};
+
 module.exports = {
   createJob,
   getJobs,
@@ -2011,4 +2088,5 @@ module.exports = {
   extendJobDeadline,
   renewJob,
   getExpiredJobs,
+  getPlatformStats,
 };
