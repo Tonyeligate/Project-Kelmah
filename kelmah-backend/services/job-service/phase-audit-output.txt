@@ -1,0 +1,242 @@
+
+================================================================================
+­ƒöì PHASE-BASED COMPREHENSIVE DATABASE INTEGRITY AUDIT
+Kelmah Jobs & Talents Marketplace
+================================================================================
+
+­ƒôí Connecting to MongoDB Atlas...
+Ô£à Connected to MongoDB Atlas
+
+­ƒôè Initial Database State:
+   Workers: 21
+   Jobs: 12
+
+
+================================================================================
+PHASE 1: TEXT INDEX VERIFICATION
+================================================================================
+
+­ƒôï Current Indexes:
+   Workers: _id_, email_1, phone_1, googleId_1, facebookId_1, linkedinId_1, role_1, isActive_1, createdAt_1, locationCoordinates_2dsphere, worker_text_search
+   Jobs: _id_, title_text_description_text_category_text_skills_text, locationDetails.coordinates_2dsphere, locationDetails.region_1_requirements.primarySkills_1, performanceTier_1_bidding.bidStatus_1, expiresAt_1_status_1
+
+­ƒº¬ Testing Current Text Search:
+   Workers with "plumbing": 2
+   Jobs with "plumbing": 2
+   Jobs with "painting": 2
+Ô£à Workers text index exists
+Ô£à Jobs text index exists
+
+­ƒöä Re-testing Text Search:
+   Ô£ô Workers with "plumbing": 2
+   Ô£ô Jobs with "plumbing": 2
+   Ô£ô Jobs with "painting": 2
+
+================================================================================
+PHASE 2: WORKERS COLLECTION AUDIT
+================================================================================
+
+­ƒôè Auditing 21 workers...
+
+­ƒöì Issue #1: Trade Mismatch Detection
+   ­ƒôè Trade mismatches fixed: 0
+
+­ƒöì Issue #2: Invalid Work Types
+   ­ƒôè Null: 0, Invalid: 0
+
+­ƒöì Issue #3: Location Gaps
+   ­ƒôè Missing city: 0, Missing region: 0
+
+­ƒöì Issue #4: Rating Integrity
+   ­ƒôè Invalid ratings: 0, Negative reviews: 0
+
+­ƒöì Issue #5: Hourly Rate Validation
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 60 GHS (ID: 6892f48b6c0c9f13ca24e10d)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 48 GHS (ID: 6892f48e6c0c9f13ca24e111)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 52 GHS (ID: 6892f4926c0c9f13ca24e115)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 42 GHS (ID: 6892f4966c0c9f13ca24e119)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 60 GHS (ID: 6892f4b86c0c9f13ca24e13d)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 48 GHS (ID: 6892f4bc6c0c9f13ca24e141)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 52 GHS (ID: 6892f4c06c0c9f13ca24e145)
+   ÔÜá´©Å [HOURLY_RATE] Suspicious test rate: 42 GHS (ID: 68bc397a40fd355247ffffbe)
+   ­ƒôè Invalid rates: 0, Suspicious rates: 8
+
+­ƒöì Issue #6: Duplicate/Test Data Detection
+   ­ƒö┤ [TEST_DATA] Test worker detected: Test User (test@example.com) - test name pattern + test email domain + test rate + test name (ID: 68bc397a40fd355247ffffbe)
+   ­ƒùæ´©Å  [TEST_DATA] Deleted test worker: Test User (ID: 68bc397a40fd355247ffffbe)
+   ­ƒôè Test users found and deleted: 1
+
+
+================================================================================
+PHASE 3: JOBS COLLECTION AUDIT
+================================================================================
+
+­ƒôè Auditing 12 jobs...
+
+­ƒöì Issue #7: Title/Description Validation
+   ­ƒôè Empty titles: 0, Empty desc: 0, Short desc: 0
+
+­ƒöì Issue #8: Required Skills Validation
+   ­ƒôè Jobs with empty skills: 0
+
+­ƒöì Issue #9: Budget Validation
+   ­ƒôè Invalid budgets: 0
+
+­ƒöì Issue #10: Application Count Validation
+   ­ƒôè Null counts fixed: 0, Unrealistic: 0
+
+­ƒöì Issue #11: Duplicate Job Detection
+   ­ƒƒá [DUPLICATE_JOB] "Master Plumber - Residential & Commercial" posted 2 times
+   ­ƒùæ´©Å  [DUPLICATE_JOB] Deleted duplicate of "Master Plumber - Residential & Commercial" (ID: 68ba673f877110c40c71832c)
+   ­ƒƒá [DUPLICATE_JOB] "Senior Electrical Engineer - Commercial Projects" posted 2 times
+   ­ƒùæ´©Å  [DUPLICATE_JOB] Deleted duplicate of "Senior Electrical Engineer - Commercial Projects" (ID: 68ba673f877110c40c71832a)
+   ­ƒƒá [DUPLICATE_JOB] "HVAC Technician - Climate Control Systems" posted 2 times
+   ­ƒùæ´©Å  [DUPLICATE_JOB] Deleted duplicate of "HVAC Technician - Climate Control Systems" (ID: 68ba673f877110c40c718330)
+   ­ƒƒá [DUPLICATE_JOB] "Expert Carpenter - Custom Furniture Specialist" posted 2 times
+   ­ƒùæ´©Å  [DUPLICATE_JOB] Deleted duplicate of "Expert Carpenter - Custom Furniture Specialist" (ID: 68ba673f877110c40c71832e)
+   ­ƒƒá [DUPLICATE_JOB] "Construction Supervisor - Building Projects" posted 2 times
+   ­ƒùæ´©Å  [DUPLICATE_JOB] Deleted duplicate of "Construction Supervisor - Building Projects" (ID: 68ba6740877110c40c718332)
+   ­ƒƒá [DUPLICATE_JOB] "Professional Painter - Residential & Commercial" posted 2 times
+   ­ƒùæ´©Å  [DUPLICATE_JOB] Deleted duplicate of "Professional Painter - Residential & Commercial" (ID: 68ba6740877110c40c718334)
+   ­ƒôè Duplicate jobs deleted: 6
+
+­ƒöì Issue #12: Job Status Validation
+   ­ƒôè Invalid statuses fixed: 0
+
+
+================================================================================
+PHASE 4: CROSS-COLLECTION VALIDATION
+================================================================================
+
+­ƒöì Issue #13: Broken Job References
+   ­ƒôè Orphaned jobs: 0
+
+­ƒöì Issue #14: Trade Category Standardization
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892b8f766a1e818f0c46151)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892b90166a1e818f0c46159)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892b90b66a1e818f0c46161)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4816c0c9f13ca24e105)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4876c0c9f13ca24e109)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f48b6c0c9f13ca24e10d)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f48e6c0c9f13ca24e111)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4926c0c9f13ca24e115)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4966c0c9f13ca24e119)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f49a6c0c9f13ca24e11d)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f49d6c0c9f13ca24e121)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4a16c0c9f13ca24e125)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4a56c0c9f13ca24e129)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4a96c0c9f13ca24e12d)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4ad6c0c9f13ca24e131)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4b16c0c9f13ca24e135)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4b56c0c9f13ca24e139)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4b86c0c9f13ca24e13d)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4bc6c0c9f13ca24e141)
+   Ô£à [TRADE_STD] Standardized: [General Work] ÔåÆ [General Maintenance] (ID: 6892f4c06c0c9f13ca24e145)
+   Ô£à [TRADE_STD] "Electrical" ÔåÆ "Electrical Work" (ID: 68ba25116529c7cef511d248)
+   Ô£à [TRADE_STD] "Plumbing" ÔåÆ "Plumbing Services" (ID: 68ba25116529c7cef511d24a)
+   Ô£à [TRADE_STD] "Carpentry" ÔåÆ "Carpentry & Woodwork" (ID: 68ba25116529c7cef511d24c)
+   Ô£à [TRADE_STD] "HVAC" ÔåÆ "HVAC & Climate Control" (ID: 68ba25116529c7cef511d24e)
+   Ô£à [TRADE_STD] "Construction" ÔåÆ "Construction & Building" (ID: 68ba25126529c7cef511d250)
+   Ô£à [TRADE_STD] "Painting" ÔåÆ "Painting & Decoration" (ID: 68ba25126529c7cef511d252)
+   ­ƒôè Workers: 20, Jobs: 6 standardized
+
+
+================================================================================
+PHASE 5: FUNCTIONAL TESTING
+================================================================================
+
+­ƒº¬ Running Comprehensive Tests...
+
+Ô£ô Test 1 - Text Search:
+   Workers with "plumbing": 2 Ô£à
+   Jobs with "painting": 1 Ô£à
+
+Ô£ô Test 2 - Filter by Trade:
+   Workers with approved trades: 20 Ô£à
+   Jobs with approved trades: 6 Ô£à
+
+Ô£ô Test 3 - Sort by Rating (Top 5):
+   1. Kwame Gyamfi - 4.9 Ô¡É (156 reviews)
+   2. Efua Mensah - 4.9 Ô¡É (124 reviews)
+   3. Yaa Wiredu - 4.9 Ô¡É (124 reviews)
+   4. Adjoa Ofori - 4.9 Ô¡É (94 reviews)
+   5. Esi Darko - 4.9 Ô¡É (94 reviews)
+
+Ô£ô Test 4 - Sort by Popularity (Top 5):
+   1. HVAC Technician - Climate Control Systems - 0 applicants
+   2. Construction Supervisor - Building Projects - 0 applicants
+   3. Master Plumber - Residential & Commercial - 0 applicants
+   4. Senior Electrical Engineer - Commercial Projects - 0 applicants
+   5. Expert Carpenter - Custom Furniture Specialist - 0 applicants
+
+Ô£ô Test 5 - Test Data Cleanup:
+   Workers with test rates: 7 ÔÜá´©Å
+
+Ô£ô Test 6 - Duplicate Detection:
+   Duplicate jobs remaining: 0 Ô£à
+
+
+================================================================================
+PHASE 6: DATA QUALITY REPORT
+================================================================================
+
+­ƒôè FINAL DATABASE STATE:
+
+   Workers: 20 (was 21)
+   Jobs: 6 (was 12)
+   Workers deleted: 1
+   Jobs deleted: 6
+
+­ƒôï SUMMARY BY CATEGORY:
+
+   Issues Found:
+      HOURLY_RATE: 8
+      TEST_DATA: 1
+      DUPLICATE_JOB: 6
+
+   Fixes Applied:
+      TRADE_STD: 26
+
+   Total Deletions: 7
+
+­ƒôê DATA INTEGRITY METRICS:
+
+   Workers with valid data: 100.0%
+   Jobs with valid data: 100.0%
+
+­ƒÆ¥ Detailed report saved: C:\Users\aship\Desktop\Project-Kelmah\kelmah-backend\services\job-service\scripts\phase-audit-report-1762458042473.json
+
+
+================================================================================
+PHASE 7: BACKEND API VALIDATION RECOMMENDATIONS
+================================================================================
+
+­ƒôï Required API Endpoints:
+
+GET /api/workers/search
+   Params: keywords, city, workType, primaryTrade, sortBy, page, limit
+   Ô£ô Must use $text search for keywords
+   Ô£ô Must apply exact filters for dropdowns
+   Ô£ô Must support sorting (relevance, rating, price, date)
+   Ô£ô Must return accurate count
+
+GET /api/jobs/search
+   Params: keywords, city, primaryTrade, maxBudget, sortBy, page, limit
+   Ô£ô Must use $text search for keywords
+   Ô£ô Must apply exact filters for dropdowns
+   Ô£ô Must support sorting (relevance, budget, date)
+   Ô£ô Must handle pagination correctly
+
+================================================================================
+Ô£à PHASE-BASED AUDIT COMPLETE
+================================================================================
+
+­ƒôè CRITICAL SUCCESS CRITERIA:
+
+   Ô£ô Text search functional: Ô£à
+   Ô£ô Trade filtering working: Ô£à
+   Ô£ô No duplicate jobs: Ô£à
+   Ô£ô No test data: ÔÜá´©Å
+   Ô£ô Data integrity >90%: Ô£à
+
+Connection closed.
