@@ -146,6 +146,26 @@ const MobileNav = ({ open, onClose }) => {
   };
 
   const navigationItems = [
+    // Public navigation (always visible)
+    {
+      label: 'Home',
+      icon: <HomeIcon />,
+      path: '/',
+      show: true,
+    },
+    {
+      label: 'Jobs',
+      icon: <WorkIcon />,
+      path: '/jobs',
+      show: true,
+    },
+    {
+      label: 'Find Workers',
+      icon: <SearchIcon />,
+      path: '/find-talents',
+      show: true,
+    },
+    // Authenticated user navigation
     {
       label: 'Dashboard',
       icon: <DashboardIcon />,
@@ -153,19 +173,7 @@ const MobileNav = ({ open, onClose }) => {
       show: showUserMenu,
     },
     {
-      label: 'Find Work',
-      icon: <SearchIcon />,
-      path: '/jobs',
-      show: showUserMenu && user?.role === 'worker',
-    },
-    {
-      label: 'Find Workers',
-      icon: <WorkIcon />,
-      path: '/search',
-      show: showUserMenu && user?.role === 'hirer',
-    },
-    {
-      label: 'Applications',
+      label: 'My Applications',
       icon: <AssignmentIcon />,
       path:
         user?.role === 'worker'

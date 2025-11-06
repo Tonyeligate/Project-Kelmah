@@ -227,6 +227,7 @@ import {
 import { InteractiveJobCard as JobCard } from '../../common/components/cards';
 import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
+import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 
 // Advanced Animations with Smooth Transitions
 const float = keyframes`
@@ -795,6 +796,9 @@ const JobsPage = () => {
   return (
     <ErrorBoundary>
       <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
+        {/* Breadcrumb Navigation */}
+        <BreadcrumbNavigation />
+        
         <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
           <Helmet>
             <title>

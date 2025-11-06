@@ -16,23 +16,22 @@ const useNavLinks = () => {
     const links = [
       { label: 'Home', to: '/' },
       { label: 'Jobs', to: '/jobs' },
+      { label: 'Find Workers', to: '/find-talents' }, // Changed from "Find Talents" for consistency
     ];
 
-    // Show public Find Talents when not authenticated; hirers get their dashboard view
-    if (!isAuthenticated || hasRole('hirer')) {
-      links.push({
-        label: 'Find Talents',
-        to:
-          isAuthenticated && hasRole('hirer')
-            ? '/hirer/find-talent'
-            : '/find-talents',
-      });
+    // Add "Post a Job" for authenticated hirers
+    if (isAuthenticated && hasRole('hirer')) {
+      links.push({ label: 'Post a Job', to: '/hirer/jobs/post' });
     }
 
+    // Add pricing for all users
     links.push({ label: 'Pricing', to: '/premium' });
+    
+    // Add Messages for authenticated users
     if (isAuthenticated) {
       links.push({ label: 'Messages', to: '/messages' });
     }
+    
     return links;
   }, [isInitialized, isAuthenticated, hasRole]);
 
