@@ -183,14 +183,15 @@ const WorkerSearchResults = ({
 
   // Renders pagination
   const renderPagination = () => {
-    if (!pagination || pagination.pages <= 1) {
+    const totalPages = pagination?.totalPages || pagination?.pages || 0;
+    if (!pagination || totalPages <= 1) {
       return null;
     }
 
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Pagination
-          count={pagination.pages}
+          count={totalPages}
           page={pagination.page || 1}
           onChange={handlePageChange}
           color="primary"

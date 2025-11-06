@@ -232,7 +232,7 @@ const SearchPage = () => {
           page: paginationData.page || apiParams.page,
           limit: paginationData.limit || apiParams.limit,
           totalItems: paginationData.total || 0,
-          totalPages: paginationData.totalPages || 1,
+          totalPages: paginationData.totalPages || paginationData.pages || 1,
         });
       } else {
         setError(response.data.message || 'Failed to search');
