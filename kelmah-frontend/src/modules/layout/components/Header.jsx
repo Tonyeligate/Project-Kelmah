@@ -506,6 +506,46 @@ const Header = ({
     showAuthButtons,
   ]);
 
+  // ✅ NEW: Mobile scroll behavior - hide on scroll down, show on scroll up
+  React.useEffect(() => {
+    if (!isMobile) return; // Only apply on mobile
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show header when scrolling up or at top
+      if (currentScrollY < lastScrollY || currentScrollY < 50) {
+        setIsHeaderVisible(true);
+      } 
+      // Hide header when scrolling down beyond 50px
+      else if (currentScrollY > 50 && currentScrollY > lastScrollY) {
+        setIsHeaderVisible(false);
+      }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const requestTick = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const onScroll = () => requestTick();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isMobile]);
+
   // ✅ NEW: Current page detection for responsive header content
   const getCurrentPageInfo = () => {
     const path = location.pathname;
@@ -1010,21 +1050,20 @@ const Header = ({
 
   return (
     <StyledAppBar
-      position={autoShowMode && !isMobile ? 'fixed' : 'static'}
+      position={autoShowMode || isMobile ? 'fixed' : 'static'}
       elevation={0}
       sx={{
-        // Auto-hide animation
+        // ✅ ENHANCED: Auto-hide animation works on mobile too
         transform:
-          autoShowMode && !isMobile
+          autoShowMode || isMobile
             ? isHeaderVisible
               ? 'translateY(0)'
               : 'translateY(-100%)'
             : 'translateY(0)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         zIndex: theme.zIndex.appBar + 1,
-        // Fixed positioning for auto-hide mode
-        ...(autoShowMode &&
-          !isMobile && {
+        // Fixed positioning for auto-hide mode and mobile
+        ...((autoShowMode || isMobile) && {
             position: 'fixed',
             top: 0,
             left: 0,

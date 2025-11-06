@@ -181,9 +181,16 @@ const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
   transition: 'transform 0.4s ease',
   position: 'relative',
   objectFit: 'cover',  // ✅ Better image scaling
+  
+  /* ✅ PERFORMANCE OPTIMIZATIONS FOR MOBILE SCROLL */
+  willChange: 'transform',  // Hint browser for GPU acceleration
+  backfaceVisibility: 'hidden',  // Reduce repaints
+  transform: 'translateZ(0)',  // Force GPU acceleration
+  
   // Mobile-specific optimizations
   '@media (max-width: 600px)': {
     height: 200,  // ✅ Updated to 200px max per user request
+    contain: 'layout style paint',  // Isolate paint operations
   },
   // ✅ Ensure images load efficiently
   '@media (max-width: 360px)': {
@@ -233,6 +240,7 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);  // ✅ NEW: Error state
   const [bgIndex, setBgIndex] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);  // ✅ NEW: Scroll progress tracking
 
   // Enhanced services with proper vocational trade focus
   const services = [
@@ -324,6 +332,31 @@ const HomePage = () => {
     checkApiStatus();
   }, []);
 
+  // ✅ NEW: Scroll Progress Tracking for Mobile
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      
+      // Calculate scroll progress (0-100)
+      const scrollableHeight = documentHeight - windowHeight;
+      const progress = scrollableHeight > 0 
+        ? Math.min(100, Math.max(0, (scrollTop / scrollableHeight) * 100))
+        : 0;
+      
+      setScrollProgress(progress);
+    };
+
+    // Add scroll listener with passive flag for better performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Initial calculation
+    handleScroll();
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     const rotate = setInterval(
       () => setBgIndex((i) => (i + 1) % services.length),
@@ -376,6 +409,30 @@ const HomePage = () => {
           </Box>
         </Box>
       )}
+      
+      {/* ✅ NEW: Scroll Progress Indicator - Mobile Only */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          zIndex: 1300,
+          display: { xs: 'block', md: 'none' },  // Mobile only
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <Box
+          sx={{
+            height: '100%',
+            width: `${scrollProgress}%`,
+            background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 100%)',
+            transition: 'width 0.1s ease-out',
+            boxShadow: '0 0 10px rgba(255, 215, 0, 0.5)',
+          }}
+        />
+      </Box>
       
       <GestureControl>
         <Box sx={{ position: 'relative' }}>
@@ -903,8 +960,11 @@ const HomePage = () => {
                       >
                         <Box sx={{ position: 'relative' }}>
                           <ServiceCardMedia
+                            component="img"
                             image={service.image}
                             title={service.title}
+                            loading="lazy"
+                            alt={`${service.title} service`}
                           />
                           <TradeIcon className="service-icon">
                             {service.icon}
