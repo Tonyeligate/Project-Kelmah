@@ -210,41 +210,58 @@ const WorkerSearchResults = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        mb: 3,
+        mb: 2,
         flexWrap: 'wrap',
-        gap: 2,
+        gap: { xs: 1, sm: 2 },
+        py: 1,
       }}
     >
-      <Typography variant="body2" color="text.secondary">
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+      >
         {pagination.total
-          ? `${pagination.total} workers found`
+          ? `${pagination.total} worker${pagination.total !== 1 ? 's' : ''} found`
           : 'Searching...'}
       </Typography>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>Sort by</InputLabel>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
+        <FormControl
+          size="small"
+          sx={{
+            minWidth: { xs: 100, sm: 140 },
+            '& .MuiInputBase-root': {
+              fontSize: { xs: '0.85rem', sm: '0.875rem' },
+            },
+          }}
+        >
+          <InputLabel sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}>
+            Sort by
+          </InputLabel>
           <Select
             value={filters.sort || 'relevance'}
             onChange={handleSortChange}
             label="Sort by"
           >
             <MenuItem value="relevance">Relevance</MenuItem>
-            <MenuItem value="rating">Rating</MenuItem>
-            <MenuItem value="price">Price</MenuItem>
-            <MenuItem value="distance">Distance</MenuItem>
+            <MenuItem value="rating">Highest Rated</MenuItem>
+            <MenuItem value="price">Lowest Price</MenuItem>
+            <MenuItem value="distance">Nearest</MenuItem>
             <MenuItem value="newest">Newest</MenuItem>
           </Select>
         </FormControl>
 
-        {onToggleView && (
+        {/* Map View button - Hidden for now (non-functional) */}
+        {onToggleView && false && (
           <Button
             variant="outlined"
             startIcon={<MapIcon />}
             onClick={onToggleView}
             size="small"
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
-            {showMap ? 'List View' : 'Map View'}
+            {showMap ? 'List' : 'Map'}
           </Button>
         )}
       </Box>

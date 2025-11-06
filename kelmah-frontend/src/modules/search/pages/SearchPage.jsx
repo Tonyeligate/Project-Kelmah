@@ -26,6 +26,7 @@ import {
 import JobSearchForm from '../components/common/JobSearchForm';
 import CompactSearchBar from '../components/common/CompactSearchBar';
 import MobileFilterDrawer from '../components/common/MobileFilterDrawer';
+import CollapsibleHeroSection from '../components/common/CollapsibleHeroSection';
 import SearchResults from '../components/results/SearchResults';
 import WorkerSearchResults from '../components/results/WorkerSearchResults';
 import JobMapView from '../components/map/JobMapView';
@@ -597,28 +598,8 @@ const SearchPage = () => {
         {!isAuthenticated && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              {/* Public User Header */}
-              <Box sx={{ mb: 3, textAlign: 'center' }}>
-                <Typography
-                  variant="h5"
-                  component="h2"
-                  gutterBottom
-                  sx={{ fontWeight: 'bold', color: 'primary.main' }}
-                >
-                  🔍 Discover Skilled Workers in Ghana
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
-                  Browse available carpenters, plumbers, electricians, masons,
-                  and other skilled professionals
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Sign up to contact workers and post your own jobs
-                </Typography>
-              </Box>
+              {/* Collapsible Hero Section - Optimized for Mobile */}
+              <CollapsibleHeroSection isAuthenticated={isAuthenticated} />
 
               <WorkerSearchResults
                 workers={searchResults}
