@@ -42,6 +42,8 @@ import ConstructionIcon from '@mui/icons-material/Construction';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import SecurityIcon from '@mui/icons-material/Security';
 import StarIcon from '@mui/icons-material/Star';
+import WorkIcon from '@mui/icons-material/Work';
+import EngineeringIcon from '@mui/icons-material/Engineering';
 import { alpha } from '@mui/material/styles';
 
 const Section = styled(Box)(({ theme }) => ({
