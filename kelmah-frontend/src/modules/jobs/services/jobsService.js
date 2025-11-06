@@ -105,7 +105,7 @@ const jobsApi = {
   async getJobs(params = {}) {
     try {
       console.log('🔍 Calling job service API with params:', params);
-      const response = await jobServiceClient.get('/jobs', { params });
+      const response = await jobServiceClient.get('/api/jobs', { params });
       console.log('📊 Raw API response:', response.data);
 
       // Handle different response formats from the backend

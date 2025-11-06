@@ -181,17 +181,19 @@ const SearchPage = () => {
       // Prepare API parameters
       const apiParams = {
         page: params.page || 1,
-        limit: params.limit || 10,
-        sort: sortOrder,
+        limit: params.limit || 12, // Changed from 10 to 12 for grid layout
+        sortBy: sortOrder, // Changed from 'sort' to 'sortBy' to match backend
       };
 
-      // Add search filters
-      if (params.keyword) apiParams.keyword = params.keyword;
-      if (params.jobType) apiParams.jobType = params.jobType;
-      if (params.experienceLevel)
-        apiParams.experienceLevel = params.experienceLevel;
-      if (params.budgetMin) apiParams.minBudget = params.budgetMin;
-      if (params.budgetMax) apiParams.maxBudget = params.budgetMax;
+      // Add search filters - MAP TO BACKEND EXPECTED PARAMS
+      if (params.keyword) apiParams.workNeeded = params.keyword; // ✅ Backend expects 'workNeeded'
+      if (params.location) apiParams.where = params.location; // ✅ Backend expects 'where'
+      if (params.jobType) apiParams.type = params.jobType; // ✅ Backend expects 'type' (work type)
+      if (params.trade) apiParams.trade = params.trade; // ✅ Backend expects 'trade'
+      if (params.experienceLevel) apiParams.experienceLevel = params.experienceLevel;
+      if (params.budgetMin) apiParams.minPrice = params.budgetMin; // ✅ Backend expects 'minPrice'
+      if (params.budgetMax) apiParams.maxPrice = params.budgetMax; // ✅ Backend expects 'maxPrice'
+      if (params.minRating) apiParams.minRating = params.minRating;
 
       // Add categories and skills
       if (params.categories && params.categories.length > 0) {
@@ -202,7 +204,7 @@ const SearchPage = () => {
         apiParams.skills = params.skills.join(',');
       }
 
-      // Add location parameters
+      // Add location parameters for geospatial search
       if (params.location && params.location.coordinates) {
         apiParams.latitude = params.location.coordinates.latitude;
         apiParams.longitude = params.location.coordinates.longitude;
@@ -309,12 +311,84 @@ const SearchPage = () => {
 
   // Handle sort order change
   const handleSortChange = (newSortOrder) => {
+    console.log('🔄 Sort changed to:', newSortOrder);
     setSortOrder(newSortOrder);
 
-    // Update URL and perform search with new sort order
+    // ✅ FIX: Preserve all search params when sorting
     const newParams = { ...searchParams };
+    
+    // Update URL with new sort order
     updateSearchURL(newParams);
-    performSearch(newParams);
+    
+    // ✅ FIX: Perform search with preserved params AND new sort order
+    // The sortOrder state will be updated by setSortOrder above,
+    // but performSearch needs to use the new value immediately
+    performSearchWithSort(newParams, newSortOrder);
+  };
+
+  // Helper function to perform search with explicit sort order
+  const performSearchWithSort = async (params, sort) => {
+    console.log('🔍 performSearchWithSort called with params:', params, 'sort:', sort);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const apiEndpoint = '/workers';
+      const apiParams = {
+        page: params.page || 1,
+        limit: params.limit || 12,
+        sortBy: sort || sortOrder, // Use provided sort or fallback to state
+      };
+
+      // Add search filters - MAP TO BACKEND EXPECTED PARAMS
+      if (params.keyword) apiParams.workNeeded = params.keyword;
+      if (params.location) apiParams.where = params.location;
+      if (params.jobType) apiParams.type = params.jobType;
+      if (params.trade) apiParams.trade = params.trade;
+      if (params.experienceLevel) apiParams.experienceLevel = params.experienceLevel;
+      if (params.budgetMin) apiParams.minPrice = params.budgetMin;
+      if (params.budgetMax) apiParams.maxPrice = params.budgetMax;
+      if (params.minRating) apiParams.minRating = params.minRating;
+
+      if (params.categories && params.categories.length > 0) {
+        apiParams.categories = params.categories.join(',');
+      }
+      if (params.skills && params.skills.length > 0) {
+        apiParams.skills = params.skills.join(',');
+      }
+      if (params.location && params.location.coordinates) {
+        apiParams.latitude = params.location.coordinates.latitude;
+        apiParams.longitude = params.location.coordinates.longitude;
+        apiParams.radius = params.distance || 50;
+      }
+
+      console.log('🔍 API call with params:', apiParams);
+      const response = await axios.get(apiEndpoint, { params: apiParams });
+
+      if (response.data && response.data.success) {
+        const payload = response.data.data || response.data;
+        const workers = Array.isArray(payload)
+          ? payload
+          : payload?.workers || payload?.results || [];
+        setSearchResults(workers);
+        const paginationData = payload?.pagination || response.data.meta?.pagination || {};
+        setPagination({
+          page: paginationData.page || apiParams.page,
+          limit: paginationData.limit || apiParams.limit,
+          totalItems: paginationData.total || 0,
+          totalPages: paginationData.totalPages || paginationData.pages || 1,
+        });
+      } else {
+        setError(response.data.message || 'Failed to search');
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error searching:', error);
+      setError(error.response?.data?.message || 'An error occurred while searching');
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle filter removal
