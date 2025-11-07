@@ -123,9 +123,26 @@ const WorkerSearchResults = ({
 
     return (
       <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-          Active Filters:
-        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 1,
+            mb: 1,
+          }}
+        >
+          <Typography variant="subtitle2">Active Filters:</Typography>
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => onRemoveFilter && onRemoveFilter('all')}
+            sx={{ textTransform: 'none' }}
+          >
+            Clear all filters
+          </Button>
+        </Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {activeFilters.map((filter, index) => (
             <Chip

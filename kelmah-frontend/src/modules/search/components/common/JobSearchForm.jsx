@@ -83,16 +83,26 @@ const JobSearchForm = ({
     'Project-based',
   ];
 
+  const getSnapshot = (overrides = {}) => ({
+    keyword: overrides.keyword !== undefined ? overrides.keyword : keyword,
+    location: overrides.location !== undefined ? overrides.location : location,
+    jobType: overrides.jobType !== undefined ? overrides.jobType : jobType,
+    category: overrides.category !== undefined ? overrides.category : category,
+    skills: overrides.skills !== undefined ? overrides.skills : skills,
+  });
+
+  const emitSearch = (overrides = {}) => {
+    if (!submitHandler) {
+      return;
+    }
+    const payload = getSnapshot(overrides);
+    submitHandler(payload);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (submitHandler) {
-      submitHandler({
-        keyword,
-        location,
-        jobType,
-        category,
-        skills,
-      });
+      emitSearch();
     } else {
       // eslint-disable-next-line no-console
       console.warn('JobSearchForm submitted without handler');
@@ -101,13 +111,17 @@ const JobSearchForm = ({
 
   const handleAddSkill = () => {
     if (skill && !skills.includes(skill)) {
-      setSkills([...skills, skill]);
+      const nextSkills = [...skills, skill];
+      setSkills(nextSkills);
+      emitSearch({ skills: nextSkills });
       setSkill('');
     }
   };
 
   const handleRemoveSkill = (skillToRemove) => {
-    setSkills(skills.filter((s) => s !== skillToRemove));
+    const nextSkills = skills.filter((s) => s !== skillToRemove);
+    setSkills(nextSkills);
+    emitSearch({ skills: nextSkills });
   };
 
   return (
@@ -121,7 +135,11 @@ const JobSearchForm = ({
               variant="outlined"
               size="small"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                const nextKeyword = e.target.value;
+                setKeyword(nextKeyword);
+              }}
+              onBlur={() => emitSearch()}
               placeholder="e.g., Carpenter, Plumber"
             />
           </Grid>
@@ -133,7 +151,11 @@ const JobSearchForm = ({
               variant="outlined"
               size="small"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) => {
+                const nextLocation = e.target.value;
+                setLocation(nextLocation);
+              }}
+              onBlur={() => emitSearch()}
               placeholder="e.g., Accra, Kumasi"
             />
           </Grid>
@@ -143,7 +165,11 @@ const JobSearchForm = ({
               <InputLabel>Type</InputLabel>
               <Select
                 value={jobType}
-                onChange={(e) => setJobType(e.target.value)}
+                onChange={(e) => {
+                  const nextJobType = e.target.value;
+                  setJobType(nextJobType);
+                  emitSearch({ jobType: nextJobType });
+                }}
                 label="Type"
               >
                 <MenuItem value="">Any</MenuItem>
@@ -161,7 +187,11 @@ const JobSearchForm = ({
               <InputLabel>Trade</InputLabel>
               <Select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  const nextCategory = e.target.value;
+                  setCategory(nextCategory);
+                  emitSearch({ category: nextCategory });
+                }}
                 label="Trade"
               >
                 <MenuItem value="">Any</MenuItem>
