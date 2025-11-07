@@ -861,10 +861,16 @@ class WorkerController {
         },
       });
     } catch (error) {
-      console.error('❌ Error in getWorkerById:', {
+      console.error('❌ Error in getWorkerById - FULL DIAGNOSTIC:', {
         errorName: error?.name,
         errorMessage: error?.message,
+        errorStack: error?.stack,
         workerId,
+        mongooseState: mongoose.connection.readyState,
+        modelsLoaded: {
+          User: !!modelsModule.User,
+          WorkerProfile: !!modelsModule.WorkerProfile,
+        },
       });
       if (isDbUnavailableError(error)) {
         return res.status(503).json({
