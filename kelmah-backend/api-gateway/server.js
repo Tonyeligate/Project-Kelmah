@@ -17,6 +17,7 @@ const axios = require('axios');
 const winston = require('winston');
 const mongoose = require('mongoose');
 const { connectDB } = require('./config/db');
+const { createKeepAliveManager } = require('./utils/serviceKeepAlive');
 
 // Import middleware
 const { authenticate, authorizeRoles, optionalAuth } = require('./middlewares/auth');
@@ -89,6 +90,10 @@ const logger = winston.createLogger({
 // Global service registry - will be populated by intelligent discovery
 let services = {};
 let socketIoProxyInstance = null;
+const keepAliveManager = createKeepAliveManager({
+  getServices: () => services,
+  logger
+});
 
 // Initialize services on startup
 const initializeServices = async () => {
@@ -198,7 +203,13 @@ app.use(cors({
   origin: corsOriginHandler,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-requested-with'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'ngrok-skip-browser-warning', 
+    'x-requested-with',
+    'x-frontend-health-probe'  // ✅ FIXED: Allow frontend health probe header
+  ],
   exposedHeaders: ['ngrok-skip-browser-warning']
 }));
 
@@ -530,12 +541,12 @@ app.use(
     })(req, res, next);
   },
   createDynamicProxy('user', {
-    // When Gateway strips /api/workers, req.url becomes / or /search or /:id
-    // We need to forward to user service as /api/workers, /api/workers/search, /api/workers/:id
+    // ✅ FIXED: User service mounts workers under /api/users/workers
+    // Gateway receives /api/workers -> forward as /api/users/workers
     pathRewrite: {
-      '^/$': '/api/workers',           // Root -> /api/workers
-      '^/search': '/api/workers/search', // /search -> /api/workers/search
-      '^/(.+)': '/api/workers/$1'      // Other paths -> /api/workers/{path}
+      '^/$': '/api/users/workers',           // /api/workers -> /api/users/workers
+      '^/search': '/api/users/workers/search', // /api/workers/search -> /api/users/workers/search
+      '^/(.+)': '/api/users/workers/$1'      // /api/workers/* -> /api/users/workers/*
     },
     onProxyReq: (proxyReq, req) => {
       console.log('🔄 [API Gateway] Proxying worker request:', {
@@ -1022,6 +1033,7 @@ const startServer = async () => {
   try {
     // Initialize service discovery first
     await initializeServices();
+  keepAliveManager.start();
 
     // Create job proxy now that services are discovered
     jobProxyMiddleware = createEnhancedJobProxy(services.job, {
