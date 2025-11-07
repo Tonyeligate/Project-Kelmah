@@ -50,7 +50,6 @@ import {
 } from '@mui/icons-material';
 import { userServiceClient } from '../../common/services/axios';
 import messagingService from '../../messaging/services/messagingService';
-import { useNavigate } from 'react-router-dom';
 
 // No mock data - using real API data only
 
