@@ -7,7 +7,7 @@
 
 const axios = require('axios');
 
-const API_BASE = 'https://kelmah-api-gateway-5loa.onrender.com/api';
+const API_BASE = 'https://kelmah-api-gateway-nhxc.onrender.com/api';
 
 async function testDashboard() {
   console.log('🧪 TESTING AUTHENTICATED DASHBOARD REQUESTS');

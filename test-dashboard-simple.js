@@ -6,8 +6,8 @@ async function testDashboard() {
   try {
     // Step 1: Login
     console.log('🔐 Step 1: Login...');
-    const loginRes = await axios.post(
-      'https://kelmah-api-gateway-5loa.onrender.com/api/auth/login',
+        const loginResponse = await axios.post(
+      'https://kelmah-api-gateway-nhxc.onrender.com/api/auth/login',
       {
         email: 'giftyafisa@gmail.com',
         password: '11221122Tg'
@@ -29,7 +29,7 @@ async function testDashboard() {
     
     try {
       const metricsRes = await axios.get(
-        'https://kelmah-api-gateway-5loa.onrender.com/api/users/dashboard/metrics',
+        'https://kelmah-api-gateway-nhxc.onrender.com/api/users/dashboard/metrics',
         {
           headers: {
             'Authorization': `Bearer ${token}`,
