@@ -101,17 +101,22 @@ class WorkerController {
   static async getAllWorkers(req, res) {
     try {
       console.log('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
+      console.log('🔍 Query params:', JSON.stringify(req.query));
       await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
         page = 1,
         limit = 20,
-        location,
+        city, // NEW: Use 'city' instead of 'location'
+        location, // Keep for backward compatibility
+        primaryTrade, // NEW: Map to specializations
+        workType, // NEW: Filter by work type
         skills,
         rating,
         availability,
         maxRate,
         verified,
-        search
+        search,
+        keywords // NEW: Text search
       } = req.query;
 
       const offset = (page - 1) * limit;
@@ -128,42 +133,73 @@ class WorkerController {
         isActive: true
       };
 
-      // Apply filters
-      if (location) {
-        mongoQuery.location = { $regex: location, $options: 'i' };
+      console.log('🔍 Building query with filters:', { city, location, primaryTrade, workType, keywords, search });
+
+      // FIXED: Location filter - use location field (contains city)
+      if (city || location) {
+        const locationSearch = city || location;
+        mongoQuery.location = { $regex: locationSearch, $options: 'i' };
+        console.log('📍 Location filter:', locationSearch);
       }
 
+      // FIXED: Primary Trade filter - use specializations array
+      if (primaryTrade) {
+        mongoQuery.specializations = primaryTrade; // Array contains check
+        console.log('🔧 Trade filter:', primaryTrade);
+      }
+
+      // FIXED: Work Type filter - use workerProfile.workType
+      if (workType) {
+        mongoQuery['workerProfile.workType'] = workType;
+        console.log('💼 Work type filter:', workType);
+      }
+
+      // Rating filter
       if (rating) {
         mongoQuery.rating = { $gte: parseFloat(rating) };
       }
 
+      // Availability status
       if (availability) {
         mongoQuery.availabilityStatus = availability;
       }
 
+      // Max hourly rate
       if (maxRate) {
         mongoQuery.hourlyRate = { $lte: parseFloat(maxRate) };
       }
 
+      // Verified workers only
       if (verified === 'true') {
         mongoQuery.isVerified = true;
       }
 
-      // Search functionality
-      if (search) {
-        mongoQuery.$or = [
-          { firstName: { $regex: search, $options: 'i' } },
-          { lastName: { $regex: search, $options: 'i' } },
-          { profession: { $regex: search, $options: 'i' } },
-          { bio: { $regex: search, $options: 'i' } }
-        ];
+      // FIXED: Text search - use keywords or search parameter
+      const searchTerm = keywords || search;
+      if (searchTerm) {
+        // Try text search first, fallback to regex
+        try {
+          mongoQuery.$text = { $search: searchTerm };
+          console.log('🔎 Text search:', searchTerm);
+        } catch (error) {
+          console.log('⚠️ Text search failed, using regex fallback');
+          mongoQuery.$or = [
+            { firstName: { $regex: searchTerm, $options: 'i' } },
+            { lastName: { $regex: searchTerm, $options: 'i' } },
+            { profession: { $regex: searchTerm, $options: 'i' } },
+            { bio: { $regex: searchTerm, $options: 'i' } },
+            { skills: { $regex: searchTerm, $options: 'i' } }
+          ];
+        }
       }
 
-      // Skills filter
+      // Skills filter (array of skills)
       if (skills) {
-        const skillsArray = skills.split(',');
+        const skillsArray = Array.isArray(skills) ? skills : skills.split(',');
         mongoQuery.skills = { $in: skillsArray };
       }
+
+      console.log('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
 
       // Execute MongoDB query using direct driver
       const [workers, totalCount] = await Promise.all([
@@ -175,6 +211,8 @@ class WorkerController {
           .toArray(),
         usersCollection.countDocuments(mongoQuery)
       ]);
+
+      console.log(`✅ Found ${workers.length} workers (total: ${totalCount})`);
 
       // Ranking weights from env or defaults
       const weights = {
@@ -238,6 +276,7 @@ class WorkerController {
         name: `${worker.firstName} ${worker.lastName}`,
         bio: worker.bio || `${worker.profession || 'Professional Worker'} with ${worker.yearsOfExperience || 0} years of experience.`,
         location: worker.location || 'Ghana',
+        city: worker.location ? worker.location.split(',')[0].trim() : 'Accra', // Extract city from location
         hourlyRate: worker.hourlyRate || 25,
         currency: worker.currency || 'GHS',
         rating: worker.rating || 4.5,
@@ -246,56 +285,38 @@ class WorkerController {
         availabilityStatus: worker.availabilityStatus || 'available',
         isVerified: worker.isVerified || false,
         profilePicture: worker.profilePicture || null,
+        specializations: worker.specializations || ['General Maintenance'],
+        profession: worker.profession || 'General Worker',
+        workType: worker.workerProfile?.workType || 'Full-time',
         skills: worker.skills?.map(skill => ({
-          name: skill,
-          proficiency: 'Intermediate',
-          certified: false
-        })) || [{ name: worker.profession || 'General Work', proficiency: 'Intermediate', certified: false }],
-        specializations: [worker.profession || 'General Work'],
-        title: worker.profession || 'General Worker',
-        experience: `${worker.yearsOfExperience || 2} years`,
-        rankScore: scoreFor(worker)
-      }));
+          name: typeof skill === 'string' ? skill : skill.skillName || skill.name || skill,
+          level: typeof skill === 'string' ? 'Intermediate' : skill.level || 'Intermediate'
+        })) || [],
+        rankScore: 0 // Will be calculated below
+      })).map((w) => ({ ...w, rankScore: scoreFor(w) }));
 
-      res.status(200).json({
+      // Sort by rank score for better relevance
+      formattedWorkers.sort((a, b) => b.rankScore - a.rankScore);
+
+      return res.status(200).json({
         success: true,
-        message: 'Workers retrieved successfully',
-        data: {
-          workers: formattedWorkers,
-          pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            total: totalCount,
-            pages: Math.ceil(totalCount / limit)
-          },
-          filters: {
-            location,
-            skills,
-            rating,
-            availability,
-            maxRate,
-            verified,
-            search
-          }
+        workers: formattedWorkers,
+        pagination: {
+          currentPage: Number(page),
+          limit: Number(limit),
+          totalPages: Math.ceil(totalCount / limit),
+          totalWorkers: totalCount
         }
       });
-
     } catch (error) {
-      console.error('Get all workers error:', error);
-      if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
-        return res.status(503).json({
-          success: false,
-          message: 'User Service database is reconnecting. Please try again shortly.',
-          code: 'USER_DB_NOT_READY'
-        });
-      }
-      return handleServiceError(res, error, 'Failed to retrieve workers');
+      console.error('❌ Error in getAllWorkers:', error);
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      });
     }
   }
 
-  /**
-   * Search workers with advanced filtering
-   */
   static async searchWorkers(req, res) {
     try {
       await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });

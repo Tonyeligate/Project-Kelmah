@@ -207,7 +207,7 @@ const getJobs = async (req, res, next) => {
       const client = mongoose.connection.getClient();
       const db = client.db();
       const jobsCollection = db.collection('jobs');
-      const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
+      const directCount = await jobsCollection.countDocuments({ status: 'Open', visibility: 'public' });
       console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
       
       // If direct query works, try to use it
@@ -227,8 +227,8 @@ const getJobs = async (req, res, next) => {
 
     console.log('[GET JOBS] Pagination:', { page, limit, startIndex });
 
-    // Build query
-    let query = { status: "open", visibility: "public" };
+    // Build query - FIXED: Use capitalized "Open" status
+    let query = { status: "Open", visibility: "public" };
     console.log('[GET JOBS] Initial query:', JSON.stringify(query));
 
     // Filtering
@@ -467,7 +467,7 @@ const updateJob = async (req, res, next) => {
     }
 
     // Check if job can be updated
-    if (job.status !== "draft" && job.status !== "open") {
+    if (job.status !== "draft" && job.status !== "Open") {
       return errorResponse(
         res,
         400,
@@ -536,7 +536,7 @@ const deleteJob = async (req, res, next) => {
     }
 
     // Check if job can be deleted
-    if (job.status !== "draft" && job.status !== "open") {
+    if (job.status !== "draft" && job.status !== "Open") {
       return errorResponse(
         res,
         400,
@@ -697,7 +697,7 @@ const getDashboardJobs = async (req, res) => {
   let recentJobs = [];
 
   try {
-    recentJobs = await Job.find({ status: 'open', visibility: 'public' })
+    recentJobs = await Job.find({ status: 'Open', visibility: 'public' })
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('hirer', 'firstName lastName companyName')
@@ -720,7 +720,7 @@ const getDashboardJobs = async (req, res) => {
   }
 
   const [totalOpenResult, totalTodayResult] = await Promise.allSettled([
-    Job.countDocuments({ status: 'open', visibility: 'public' }),
+    Job.countDocuments({ status: 'Open', visibility: 'public' }),
     Job.countDocuments({
       status: 'open',
       createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
@@ -871,7 +871,7 @@ const getJobRecommendations = async (req, res, next) => {
 
     // Build base query for available jobs
     let query = { 
-      status: 'open', 
+      status: 'Open', 
       visibility: 'public',
       // Don't show jobs user already applied to
       'applications.applicant': { $ne: workerId }
@@ -1116,9 +1116,9 @@ const advancedJobSearch = async (req, res, next) => {
     // Build aggregation pipeline for advanced search
     const pipeline = [];
 
-    // Match stage - basic filters
+    // Match stage - basic filters - FIXED: Use capitalized "Open" status
     const matchStage = { 
-      status: 'open', 
+      status: 'Open', 
       visibility: 'public' 
     };
 
@@ -1384,7 +1384,7 @@ const getJobAnalytics = async (req, res, next) => {
       topSkills
     ] = await Promise.all([
       Job.countDocuments({ visibility: 'public' }),
-      Job.countDocuments({ status: 'open', visibility: 'public' }),
+      Job.countDocuments({ status: 'Open', visibility: 'public' }),
       Job.countDocuments({ status: 'completed', visibility: 'public' }),
       Job.countDocuments({ 
         createdAt: { $gte: startDate },
@@ -1544,7 +1544,7 @@ const applyToJob = async (req, res, next) => {
     if (!job) return errorResponse(res, 404, 'Job not found');
 
     // Only allow applying to open/public jobs
-    if (job.status !== 'open' || job.visibility === 'private') {
+    if (job.status !== 'Open' || job.visibility === 'private') {
       return errorResponse(res, 400, 'Job is not open for applications');
     }
 
@@ -1813,7 +1813,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         { 'requirements.secondarySkills': { $in: allSkills } },
         { skills: { $in: allSkills } }
       ],
-      status: 'open',
+      status: 'Open',
       'bidding.bidStatus': 'open'
     })
     .populate('hirer', 'firstName lastName profilePicture')
@@ -1857,7 +1857,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         { 'requirements.secondarySkills': { $in: allSkills } },
         { skills: { $in: allSkills } }
       ],
-      status: 'open',
+      status: 'Open',
       'bidding.bidStatus': 'open'
     });
 
