@@ -32,6 +32,35 @@ const OPTIONAL_PROFILE_FIELDS = [
   'yearsOfExperience',
 ];
 
+// Normalised mapping between UI trade filters and stored worker values
+const TRADE_SYNONYM_MAP = {
+  carpentry: ['Carpentry', 'Carpenter', 'Carpentry & Woodwork', 'Woodwork', 'Joinery'],
+  masonry: ['Masonry', 'Mason', 'Masonry & Stonework', 'Bricklayer', 'Stonework'],
+  plumbing: ['Plumbing', 'Plumber', 'Plumbing Services'],
+  'electrical work': ['Electrical Work', 'Electrician', 'Licensed Electrician', 'Electrical Engineer', 'Electrical Services'],
+  painting: ['Painting', 'Painter', 'Painting & Decoration', 'Decorating'],
+  welding: ['Welding', 'Welder', 'Welding Services', 'Metal Work'],
+  roofing: ['Roofing', 'Roofer', 'Roofing Services'],
+  flooring: ['Flooring', 'Flooring Specialist', 'Tile & Flooring', 'Tiling', 'Tiler'],
+  hvac: ['HVAC', 'HVAC & Climate Control', 'Air Conditioning', 'Air Conditioning Technician'],
+  landscaping: ['Landscaping', 'Landscaper', 'Gardener', 'Landscaping Services'],
+  'general construction': ['General Construction', 'Construction', 'Construction & Building', 'Builder', 'General Contractor'],
+  maintenance: ['Maintenance', 'General Maintenance', 'Handyman'],
+};
+
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildTradeRegexes = (trade) => {
+  if (!trade) {
+    return [];
+  }
+
+  const normalisedKey = trade.trim().toLowerCase();
+  const synonyms = TRADE_SYNONYM_MAP[normalisedKey] || [trade];
+  const canonical = Array.from(new Set([trade, ...synonyms]));
+  return canonical.map((term) => new RegExp(escapeRegex(term), 'i'));
+};
+
 const buildProfileFallbackPayload = (reason = 'USER_SERVICE_DB_UNAVAILABLE') => ({
   completionPercentage: 0,
   requiredCompletion: 0,
@@ -142,10 +171,26 @@ class WorkerController {
         console.log('📍 Location filter:', locationSearch);
       }
 
-      // FIXED: Primary Trade filter - use specializations array
+      // FIXED: Primary Trade filter - handle synonyms across multiple fields
       if (primaryTrade) {
-        mongoQuery.specializations = primaryTrade; // Array contains check
-        console.log('🔧 Trade filter:', primaryTrade);
+        const tradeRegexes = buildTradeRegexes(primaryTrade);
+        const tradeConditions = [];
+
+        if (tradeRegexes.length > 0) {
+          tradeConditions.push({ specializations: { $in: tradeRegexes } });
+          tradeConditions.push({ profession: { $in: tradeRegexes } });
+          tradeConditions.push({ category: { $in: tradeRegexes } });
+          tradeConditions.push({ primaryTrade: { $in: tradeRegexes } });
+          tradeConditions.push({ 'workerProfile.tradeCategory': { $in: tradeRegexes } });
+          tradeConditions.push({ 'workerProfile.primaryTrade': { $in: tradeRegexes } });
+        }
+
+        if (tradeConditions.length > 0) {
+          mongoQuery.$and = mongoQuery.$and || [];
+          mongoQuery.$and.push({ $or: tradeConditions });
+        }
+
+        console.log('🔧 Trade filter:', primaryTrade, '→ patterns:', tradeRegexes.map((regex) => regex.source));
       }
 
       // FIXED: Work Type filter - use workerProfile.workType
