@@ -10,6 +10,14 @@ const WorkerSearchPage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
+  const handleGoBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   // Debug authentication state
   console.log('WorkerSearchPage - isAuthenticated:', isAuthenticated);
 
@@ -104,6 +112,16 @@ const WorkerSearchPage = () => {
         <title>Find Skilled Workers - Kelmah | Ghana's Top Talent Pool</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Button variant="text" color="inherit" onClick={handleGoBack}>
+            ← Go Back
+          </Button>
+        </Box>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Button variant="outlined" color="inherit" onClick={handleGoBack}>
+            ← Go Back
+          </Button>
+        </Box>
         <Typography
           variant="h2"
           sx={{

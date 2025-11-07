@@ -67,6 +67,7 @@ const WorkerSearch = () => {
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOption, setSortOption] = useState('relevance');
 
   const [filters, setFilters] = useState({
     skills: [],
@@ -119,6 +120,122 @@ const WorkerSearch = () => {
     'Tamale, Northern',
   ];
 
+  const sortOptions = [
+    { value: 'relevance', label: 'Best Match' },
+    { value: 'rating_desc', label: 'Rating (High to Low)' },
+    { value: 'rating_asc', label: 'Rating (Low to High)' },
+    { value: 'price_low', label: 'Hourly Rate (Low to High)' },
+    { value: 'price_high', label: 'Hourly Rate (High to Low)' },
+    { value: 'experience_desc', label: 'Experience (High to Low)' },
+  ];
+
+  const normalizeWorkerRecord = (worker = {}) => {
+    const skillsArray = Array.isArray(worker.skills)
+      ? worker.skills
+          .map((skill) => {
+            if (typeof skill === 'string') return skill;
+            if (skill?.name) return skill.name;
+            if (skill?.skillName) return skill.skillName;
+            if (skill?.label) return skill.label;
+            return typeof skill === 'object' && skill !== null
+              ? JSON.stringify(skill)
+              : String(skill || '').trim();
+          })
+          .filter(Boolean)
+      : Array.isArray(worker.specializations)
+      ? worker.specializations.filter(Boolean)
+      : [];
+
+    const experienceYears =
+      worker.yearsOfExperience ?? worker.experienceYears ?? null;
+
+    const parsedExperience = (() => {
+      if (typeof worker.experience === 'string' && worker.experience.length) {
+        return worker.experience;
+      }
+      if (experienceYears !== null && experienceYears !== undefined) {
+        return `${experienceYears}+ years`;
+      }
+      return 'Experience not specified';
+    })();
+
+    const safeIdValue =
+      worker.id ||
+      worker.userId ||
+      (worker._id && worker._id.toString ? worker._id.toString() : worker._id) ||
+      worker.workerId ||
+      worker.email ||
+      null;
+    const safeId = safeIdValue || `worker-${Date.now()}-${Math.random()}`;
+
+    const normalizedRate = Number(
+      worker.hourlyRate ?? worker.rate ?? worker.minRate ?? 25,
+    );
+
+    return {
+      id: safeId,
+      userId: safeId,
+      name:
+        worker.name ||
+        [worker.firstName, worker.lastName].filter(Boolean).join(' ') ||
+        'Skilled Worker',
+      title:
+        worker.title ||
+        worker.profession ||
+        (Array.isArray(worker.specializations)
+          ? worker.specializations[0]
+          : null) ||
+        'Professional Worker',
+      location: worker.location || worker.city || 'Ghana',
+      rating: Number(worker.rating ?? worker.averageRating ?? 0),
+      reviewCount: worker.reviewCount ?? worker.totalReviews ?? 0,
+      availability:
+        worker.availability || worker.availabilityStatus || 'available',
+      hourlyRate: Number.isFinite(normalizedRate) ? normalizedRate : 25,
+      experience: parsedExperience,
+      bio:
+        worker.bio ||
+        'Experienced professional delivering quality craftsmanship and reliable service.',
+      skills: skillsArray,
+      specializations:
+        Array.isArray(worker.specializations) && worker.specializations.length
+          ? worker.specializations
+          : skillsArray,
+      isVerified: Boolean(worker.isVerified),
+      featured: Boolean(worker.featured),
+      rankScore: Number(worker.rankScore ?? 0),
+      avatar: worker.profilePicture || worker.avatar || null,
+    };
+  };
+
+  const sortWorkerList = (list = [], option = 'relevance') => {
+    const workersCopy = [...list];
+
+    switch (option) {
+      case 'rating_desc':
+        return workersCopy.sort((a, b) => b.rating - a.rating);
+      case 'rating_asc':
+        return workersCopy.sort((a, b) => a.rating - b.rating);
+      case 'price_low':
+        return workersCopy.sort((a, b) => a.hourlyRate - b.hourlyRate);
+      case 'price_high':
+        return workersCopy.sort((a, b) => b.hourlyRate - a.hourlyRate);
+      case 'experience_desc':
+        return workersCopy.sort((a, b) => {
+          const parseYears = (value) => {
+            if (typeof value === 'number') return value;
+            if (!value) return 0;
+            const match = String(value).match(/(\d+(?:\.\d+)?)/);
+            return match ? parseFloat(match[1]) : 0;
+          };
+          return parseYears(b.experience) - parseYears(a.experience);
+        });
+      case 'relevance':
+      default:
+        return workersCopy.sort((a, b) => b.rankScore - a.rankScore);
+    }
+  };
+
   useEffect(() => {
     console.log('WorkerSearch useEffect - making API calls');
     fetchWorkers();
@@ -133,7 +250,7 @@ const WorkerSearch = () => {
         console.log('WorkerSearch - bookmarks fetch failed:', err.message);
       }
     })();
-  }, [page, filters, searchQuery]);
+  }, [page, filters, searchQuery, sortOption]);
 
   const fetchWorkers = async () => {
     try {
@@ -195,12 +312,20 @@ const WorkerSearch = () => {
         const workersData =
           response.data.data?.workers || response.data.workers || [];
         const pagination = response.data.data?.pagination || {};
-        setWorkers(workersData);
-        setTotalPages(pagination.pages || response.data.totalPages || 1);
+
+        const normalizedWorkers = Array.isArray(workersData)
+          ? workersData.map((worker) => normalizeWorkerRecord(worker))
+          : [];
+
+        const sortedWorkers = sortWorkerList(normalizedWorkers, sortOption);
+
+        setWorkers(sortedWorkers);
+        setTotalPages(pagination.totalPages || pagination.pages || response.data.totalPages || 1);
+
         try {
           localStorage.setItem(
             'worker_search_cache',
-            JSON.stringify(workersData),
+            JSON.stringify(sortedWorkers),
           );
         } catch (_) {}
       } else {
@@ -240,9 +365,17 @@ const WorkerSearch = () => {
 
       if (filters.skills.length > 0 && filteredWorkers.length) {
         filteredWorkers = filteredWorkers.filter(
-          (worker) =>
-            Array.isArray(worker.skills) &&
-            filters.skills.some((skill) => worker.skills.includes(skill)),
+          (worker) => {
+            if (!Array.isArray(worker.skills)) return false;
+            const normalizedSkills = worker.skills.map((skill) =>
+              typeof skill === 'string'
+                ? skill
+                : skill?.name || skill?.skillName || skill,
+            );
+            return filters.skills.some((skill) =>
+              normalizedSkills.includes(skill),
+            );
+          },
         );
       }
 
@@ -250,6 +383,24 @@ const WorkerSearch = () => {
         filteredWorkers = filteredWorkers.filter((worker) =>
           (worker.location || '').includes(filters.location),
         );
+      }
+
+      if (filters.primaryTrade && filteredWorkers.length) {
+        filteredWorkers = filteredWorkers.filter((worker) => {
+          const specializations = Array.isArray(worker.specializations)
+            ? worker.specializations
+            : [];
+          const skillsList = Array.isArray(worker.skills) ? worker.skills : [];
+          const normalizedSkills = skillsList.map((skill) =>
+            typeof skill === 'string'
+              ? skill
+              : skill?.name || skill?.skillName || skill,
+          );
+          return (
+            specializations.includes(filters.primaryTrade) ||
+            normalizedSkills.includes(filters.primaryTrade)
+          );
+        });
       }
 
       if (filters.availability !== 'all' && filteredWorkers.length) {
@@ -272,8 +423,13 @@ const WorkerSearch = () => {
         );
       }
 
-      setWorkers(filteredWorkers);
-      setTotalPages(Math.ceil((filteredWorkers.length || 0) / 6) || 1);
+      const normalizedFallback = filteredWorkers.map((worker) =>
+        normalizeWorkerRecord(worker),
+      );
+      const sortedFallback = sortWorkerList(normalizedFallback, sortOption);
+
+      setWorkers(sortedFallback);
+      setTotalPages(Math.ceil((sortedFallback.length || 0) / 6) || 1);
     } finally {
       setLoading(false);
     }
@@ -302,6 +458,12 @@ const WorkerSearch = () => {
         ? prev.skills.filter((s) => s !== skill)
         : [...prev.skills, skill],
     }));
+    setPage(1);
+  };
+
+  const handleSortChange = (event) => {
+    const { value } = event.target;
+    setSortOption(value);
     setPage(1);
   };
 
@@ -344,7 +506,7 @@ const WorkerSearch = () => {
   };
 
   const getAvailabilityColor = (availability) => {
-    switch (availability) {
+    switch (String(availability || '').toLowerCase()) {
       case 'available':
         return 'success';
       case 'busy':
@@ -357,7 +519,7 @@ const WorkerSearch = () => {
   };
 
   const getAvailabilityLabel = (availability) => {
-    switch (availability) {
+    switch (String(availability || '').toLowerCase()) {
       case 'available':
         return 'Available';
       case 'busy':
@@ -365,15 +527,20 @@ const WorkerSearch = () => {
       case 'unavailable':
         return 'Unavailable';
       default:
-        return availability;
+        return availability || 'Status Unknown';
     }
   };
+
+  const isWorkerAvailable = (availability) =>
+    String(availability || '')
+      .toLowerCase()
+      .includes('available');
 
   // Search Statistics with null safety
   const searchStats = {
     totalWorkers: Array.isArray(workers) ? workers.length : 0,
     availableWorkers: Array.isArray(workers)
-      ? workers.filter((w) => w?.availability === 'available').length
+      ? workers.filter((w) => isWorkerAvailable(w?.availability)).length
       : 0,
     averageRating:
       Array.isArray(workers) && workers.length > 0
@@ -533,6 +700,21 @@ const WorkerSearch = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <Box display="flex" gap={2} alignItems="center">
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel id="worker-sort-label">Sort By</InputLabel>
+                  <Select
+                    labelId="worker-sort-label"
+                    value={sortOption}
+                    label="Sort By"
+                    onChange={handleSortChange}
+                  >
+                    {sortOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <Button
                   variant="outlined"
                   startIcon={<FilterIcon />}
@@ -544,10 +726,11 @@ const WorkerSearch = () => {
                 {(filters.skills.length > 0 ||
                   filters.location ||
                   filters.primaryTrade ||
-                  filters.availability !== 'all') && (
+                  filters.availability !== 'all' ||
+                  sortOption !== 'relevance') && (
                   <Button
                     size="small"
-                    onClick={() =>
+                    onClick={() => {
                       setFilters({
                         skills: [],
                         minRating: 0,
@@ -556,8 +739,10 @@ const WorkerSearch = () => {
                         availability: 'all',
                         experience: 'all',
                         primaryTrade: '',
-                      })
-                    }
+                      });
+                      setSortOption('relevance');
+                      setPage(1);
+                    }}
                   >
                     Clear
                   </Button>
@@ -844,14 +1029,23 @@ const WorkerSearch = () => {
                       {Array.isArray(worker.skills) &&
                         worker.skills
                           .slice(0, 3)
-                          .map((skill, index) => (
-                            <Chip
-                              key={index}
-                              label={skill}
-                              size="small"
-                              variant="outlined"
-                            />
-                          ))}
+                          .map((skill, index) => {
+                            const label =
+                              typeof skill === 'string'
+                                ? skill
+                                : skill?.name ||
+                                  skill?.skillName ||
+                                  skill?.label ||
+                                  String(skill || 'Skill');
+                            return (
+                              <Chip
+                                key={index}
+                                label={label}
+                                size="small"
+                                variant="outlined"
+                              />
+                            );
+                          })}
                       {Array.isArray(worker.skills) &&
                         worker.skills.length > 3 && (
                           <Chip
@@ -893,7 +1087,12 @@ const WorkerSearch = () => {
                       color="text.secondary"
                       sx={{ mb: 2 }}
                     >
-                      {worker.bio.substring(0, 120)}...
+                      {(
+                        typeof worker.bio === 'string' ? worker.bio : ''
+                      ).substring(0, 120)}
+                      {typeof worker.bio === 'string' && worker.bio.length > 120
+                        ? '...'
+                        : ''}
                     </Typography>
 
                     {/* Action Buttons */}
