@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -74,6 +75,7 @@ const WorkerSearch = () => {
     location: '',
     availability: 'all',
     experience: 'all',
+    primaryTrade: '', // ✅ ADDED: Trade/Specialization filter
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
@@ -90,6 +92,22 @@ const WorkerSearch = () => {
     'Masonry',
     'Roofing',
     'HVAC',
+  ];
+
+  // ✅ ADDED: Trade/Specialization options matching backend schema
+  const tradeOptions = [
+    'Electrical Work',
+    'Plumbing Services',
+    'Carpentry & Woodwork',
+    'Painting & Decoration',
+    'Masonry & Stonework',
+    'Roofing Services',
+    'HVAC & Climate Control',
+    'Landscaping',
+    'Construction & Building',
+    'Welding Services',
+    'Tiling & Flooring',
+    'General Maintenance',
   ];
 
   const locationOptions = [
@@ -122,20 +140,55 @@ const WorkerSearch = () => {
       setLoading(true);
       console.log('WorkerSearch - fetchWorkers called');
 
-      // Try to fetch from user service, fall back to mock data
+      // ✅ FIXED: Build query params with correct backend parameter names
       const queryParams = new URLSearchParams({
         page: page.toString(),
-        search: searchQuery,
-        ...filters,
-        skills: filters.skills.join(','),
+        limit: '20',
       });
+
+      // Add search/keywords parameter
+      if (searchQuery) {
+        queryParams.append('keywords', searchQuery); // Backend accepts 'keywords' or 'search'
+      }
+
+      // Add location filter (backend accepts 'city' or 'location')
+      if (filters.location) {
+        queryParams.append('city', filters.location.split(',')[0].trim()); // Extract city name
+      }
+
+      // ✅ CRITICAL FIX: Add primaryTrade filter for specialization
+      if (filters.primaryTrade) {
+        queryParams.append('primaryTrade', filters.primaryTrade);
+      }
+
+      // Add skills filter
+      if (filters.skills && filters.skills.length > 0) {
+        queryParams.append('skills', filters.skills.join(','));
+      }
+
+      // Add rating filter
+      if (filters.minRating > 0) {
+        queryParams.append('rating', filters.minRating.toString());
+      }
+
+      // Add max rate filter
+      if (filters.maxRate < 100) {
+        queryParams.append('maxRate', filters.maxRate.toString());
+      }
+
+      // Add availability filter
+      if (filters.availability && filters.availability !== 'all') {
+        queryParams.append('availability', filters.availability);
+      }
 
       console.log(
         'WorkerSearch - making API call to:',
-        `/api/users/workers/search?${queryParams}`,
+        `/api/workers?${queryParams.toString()}`,
       );
+
+      // ✅ FIXED: Use correct endpoint path (removed /users prefix)
       const response = await userServiceClient.get(
-        `/api/users/workers/search?${queryParams}`,
+        `/api/workers?${queryParams.toString()}`,
       );
 
       if (response.data) {
@@ -281,8 +334,8 @@ const WorkerSearch = () => {
   };
 
   const handleDialogOpen = (worker) => {
-    setSelectedWorker(worker);
-    setDialogOpen(true);
+    // Navigate to worker profile page instead of opening dialog
+    navigate(`/worker-profile/${worker.id}`);
   };
 
   const handleDialogClose = () => {
@@ -490,6 +543,7 @@ const WorkerSearch = () => {
                 </Button>
                 {(filters.skills.length > 0 ||
                   filters.location ||
+                  filters.primaryTrade ||
                   filters.availability !== 'all') && (
                   <Button
                     size="small"
@@ -501,6 +555,7 @@ const WorkerSearch = () => {
                         location: '',
                         availability: 'all',
                         experience: 'all',
+                        primaryTrade: '',
                       })
                     }
                   >
@@ -549,6 +604,28 @@ const WorkerSearch = () => {
                       ),
                     )}
                   </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Trade/Specialization
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <Select
+                      value={filters.primaryTrade}
+                      onChange={(e) =>
+                        handleFilterChange('primaryTrade', e.target.value)
+                      }
+                      displayEmpty
+                    >
+                      <MenuItem value="">All Trades</MenuItem>
+                      {tradeOptions.map((trade) => (
+                        <MenuItem key={trade} value={trade}>
+                          {trade}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
