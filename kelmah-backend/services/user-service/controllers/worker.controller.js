@@ -799,65 +799,64 @@ class WorkerController {
         });
       }
 
-      const usersCollection = mongoose.connection.db.collection('users');
-      const workerWithDefaults = workerDoc
-        ? await autopopulateWorkerDefaults(workerDoc, usersCollection)
-        : null;
+      // Build simplified worker payload without complex helper dependencies
+      const worker = workerDoc || {};
+      const profile = workerProfileDoc || {};
 
-      const mergedWorker = {
-        ...(workerWithDefaults || {}),
-        workerProfile: workerProfileDoc || workerWithDefaults?.workerProfile || null,
-      };
-
-      const formattedWorker = formatWorkerForResponse(mergedWorker);
-
-      const extendedWorkerPayload = {
-        ...formattedWorker,
-        user: workerWithDefaults
-          ? {
-              id: workerWithDefaults._id?.toString(),
-              firstName: workerWithDefaults.firstName || '',
-              lastName: workerWithDefaults.lastName || '',
-              email: workerWithDefaults.email || '',
-              phone: workerWithDefaults.phone || workerWithDefaults.phoneNumber || null,
-            }
-          : null,
+      const workerPayload = {
+        id: worker._id?.toString() || '',
+        userId: worker._id?.toString() || '',
+        name: `${worker.firstName || ''} ${worker.lastName || ''}`.trim(),
+        bio: worker.bio || profile.bio || `Professional worker with experience in ${worker.location || 'Ghana'}.`,
+        location: worker.location || profile.location || 'Ghana',
+        city: worker.location ? worker.location.split(',')[0].trim() : 'Accra',
+        hourlyRate: worker.hourlyRate || profile.hourlyRate || 25,
+        currency: worker.currency || profile.currency || 'GHS',
+        rating: worker.rating || 4.5,
+        totalReviews: worker.totalReviews || 0,
+        totalJobsCompleted: worker.totalJobsCompleted || 0,
+        availabilityStatus: worker.availabilityStatus || profile.availabilityStatus || 'available',
+        isVerified: worker.isVerified || false,
+        profilePicture: worker.profilePicture || profile.profilePicture || null,
+        specializations: worker.specializations || ['General Maintenance'],
+        profession: worker.profession || 'General Worker',
+        workType: profile.workType || 'Full-time',
+        skills: Array.isArray(worker.skills)
+          ? worker.skills.map(skill => ({
+              name: typeof skill === 'string' ? skill : skill.skillName || skill.name || skill,
+              level: typeof skill === 'string' ? 'Intermediate' : skill.level || 'Intermediate'
+            }))
+          : [],
+        user: {
+          id: worker._id?.toString() || '',
+          firstName: worker.firstName || '',
+          lastName: worker.lastName || '',
+          email: worker.email || '',
+          phone: worker.phone || worker.phoneNumber || null,
+        },
         verification: {
-          isVerified: Boolean(mergedWorker.isVerified),
-          verifiedAt: mergedWorker.verifiedAt || null,
-          level: mergedWorker.workerProfile?.verificationLevel || null,
-          backgroundCheckStatus:
-            mergedWorker.workerProfile?.backgroundCheckStatus || 'not_required',
+          isVerified: Boolean(worker.isVerified),
+          verifiedAt: worker.verifiedAt || null,
+          level: profile.verificationLevel || null,
+          backgroundCheckStatus: profile.backgroundCheckStatus || 'not_required',
         },
         profile: {
-          picture:
-            mergedWorker.profilePicture ||
-            mergedWorker.workerProfile?.profilePicture ||
-            null,
-          bio: mergedWorker.bio || '',
-          location: mergedWorker.location || mergedWorker.workerProfile?.location || 'Ghana',
+          picture: worker.profilePicture || profile.profilePicture || null,
+          bio: worker.bio || profile.bio || '',
+          location: worker.location || profile.location || 'Ghana',
         },
         rateRange: {
-          min:
-            mergedWorker.workerProfile?.hourlyRateMin ||
-            mergedWorker.hourlyRate ||
-            0,
-          max:
-            mergedWorker.workerProfile?.hourlyRateMax ||
-            mergedWorker.hourlyRate ||
-            0,
-          currency:
-            mergedWorker.currency ||
-            mergedWorker.workerProfile?.currency ||
-            'GHS',
+          min: profile.hourlyRateMin || worker.hourlyRate || 0,
+          max: profile.hourlyRateMax || worker.hourlyRate || 0,
+          currency: worker.currency || profile.currency || 'GHS',
         },
-        workerProfile: mergedWorker.workerProfile || null,
+        workerProfile: profile || null,
       };
 
       return res.status(200).json({
         success: true,
         data: {
-          worker: extendedWorkerPayload,
+          worker: workerPayload,
         },
       });
     } catch (error) {
