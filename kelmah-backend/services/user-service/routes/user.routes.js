@@ -63,6 +63,14 @@ router.get('/workers', (req, res, next) => {
   next();
 }, WorkerController.getAllWorkers);
 
+router.get('/workers/:id', (req, res, next) => {
+  console.log('✅ [USER-ROUTES] /workers/:id route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.getWorkerById);
+
 // Worker-specific parameterized routes (MUST be after specific routes like /search)
 router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
   const modelsModule = require('../models');

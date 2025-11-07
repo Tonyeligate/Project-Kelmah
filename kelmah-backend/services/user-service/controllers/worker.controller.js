@@ -61,6 +61,153 @@ const buildTradeRegexes = (trade) => {
   return canonical.map((term) => new RegExp(escapeRegex(term), 'i'));
 };
 
+const WORKER_RANK_WEIGHTS = {
+  verified: Number(process.env.RANK_WEIGHT_VERIFIED || 0.3),
+  rating: Number(process.env.RANK_WEIGHT_RATING || 0.5),
+  jobsCompleted: Number(process.env.RANK_WEIGHT_JOBS || 0.2),
+};
+
+const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
+
+const scoreWorker = (worker = {}) => {
+  const ratingNorm = clamp01(Number(worker.rating || 0) / 5);
+  const jobsNorm = clamp01(
+    Math.log10(1 + Number(worker.totalJobsCompleted || 0)) / 3,
+  );
+  const verifiedBonus = worker.isVerified ? 1 : 0;
+
+  return (
+    WORKER_RANK_WEIGHTS.rating * ratingNorm +
+    WORKER_RANK_WEIGHTS.jobsCompleted * jobsNorm +
+    WORKER_RANK_WEIGHTS.verified * verifiedBonus
+  );
+};
+
+const autopopulateWorkerDefaults = async (worker, usersCollection) => {
+  if (!worker) {
+    return worker;
+  }
+
+  let updateNeeded = false;
+  const updates = {};
+
+  if (!worker.profession) {
+    updates.profession = 'General Worker';
+    updateNeeded = true;
+  }
+
+  if (!worker.skills || worker.skills.length === 0) {
+    updates.skills = ['General Work'];
+    updateNeeded = true;
+  }
+
+  if (!worker.hourlyRate) {
+    updates.hourlyRate = 25;
+    updateNeeded = true;
+  }
+
+  if (!worker.currency) {
+    updates.currency = 'GHS';
+    updateNeeded = true;
+  }
+
+  if (worker.rating === undefined) {
+    updates.rating = 4.5;
+    updateNeeded = true;
+  }
+
+  if (!worker.totalReviews) {
+    updates.totalReviews = 0;
+    updateNeeded = true;
+  }
+
+  if (!worker.totalJobsCompleted) {
+    updates.totalJobsCompleted = 0;
+    updateNeeded = true;
+  }
+
+  if (!worker.availabilityStatus) {
+    updates.availabilityStatus = 'available';
+    updateNeeded = true;
+  }
+
+  if (worker.isVerified === undefined) {
+    updates.isVerified = false;
+    updateNeeded = true;
+  }
+
+  if (!worker.bio) {
+    updates.bio = `Experienced ${
+      worker.profession || 'General Worker'
+    } with ${worker.yearsOfExperience || 2} years of experience in ${
+      worker.location || 'Accra, Ghana'
+    }.`;
+    updateNeeded = true;
+  }
+
+  if (updateNeeded && usersCollection) {
+    try {
+      await usersCollection.updateOne(
+        { _id: worker._id },
+        { $set: updates },
+      );
+      console.log(
+        `✅ Auto-populated worker fields for ${
+          worker.firstName || ''
+        } ${worker.lastName || ''}`,
+      );
+    } catch (error) {
+      console.error(
+        `❌ Failed to auto-populate worker fields for ${worker._id}:`,
+        error,
+      );
+    }
+  }
+
+  return { ...worker, ...updates };
+};
+
+const formatWorkerForResponse = (workerDoc) => {
+  if (!workerDoc) {
+    return null;
+  }
+
+  return {
+    id: workerDoc._id.toString(),
+    userId: workerDoc._id.toString(),
+    name: `${workerDoc.firstName || ''} ${workerDoc.lastName || ''}`.trim(),
+    bio:
+      workerDoc.bio ||
+      `${workerDoc.profession || 'Professional Worker'} with ${
+        workerDoc.yearsOfExperience || 0
+      } years of experience.`,
+    location: workerDoc.location || 'Ghana',
+    city: workerDoc.location
+      ? workerDoc.location.split(',')[0].trim()
+      : 'Accra',
+    hourlyRate: workerDoc.hourlyRate || 25,
+    currency: workerDoc.currency || 'GHS',
+    rating: workerDoc.rating || 4.5,
+    totalReviews: workerDoc.totalReviews || 0,
+    totalJobsCompleted: workerDoc.totalJobsCompleted || 0,
+    availabilityStatus: workerDoc.availabilityStatus || 'available',
+    isVerified: workerDoc.isVerified || false,
+    profilePicture: workerDoc.profilePicture || null,
+    specializations: workerDoc.specializations || ['General Maintenance'],
+    profession: workerDoc.profession || 'General Worker',
+    workType: workerDoc.workerProfile?.workType || 'Full-time',
+    skills:
+      workerDoc.skills?.map((skill) => ({
+        name:
+          typeof skill === 'string'
+            ? skill
+            : skill.skillName || skill.name || skill,
+        level: typeof skill === 'string' ? 'Intermediate' : skill.level || 'Intermediate',
+      })) || [],
+    rankScore: scoreWorker(workerDoc),
+  };
+};
+
 const buildProfileFallbackPayload = (reason = 'USER_SERVICE_DB_UNAVAILABLE') => ({
   completionPercentage: 0,
   requiredCompletion: 0,
@@ -597,6 +744,136 @@ class WorkerController {
         });
       }
       return handleServiceError(res, error, 'Search failed');
+    }
+  }
+
+  static async getWorkerById(req, res) {
+    const workerId = req.params.id;
+    if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid worker ID required',
+        code: 'INVALID_WORKER_ID',
+      });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('⚠️ MongoDB not ready for getWorkerById request', {
+        readyState: mongoose.connection.readyState,
+      });
+      return res.status(503).json({
+        success: false,
+        message: 'User Service database is reconnecting. Please try again shortly.',
+        code: 'USER_SERVICE_DB_NOT_READY',
+      });
+    }
+
+    try {
+      await ensureConnection({
+        timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+      });
+
+      const MongoUser = modelsModule.User;
+      const MongoWorkerProfile = modelsModule.WorkerProfile;
+
+      if (!MongoUser) {
+        return res.status(503).json({
+          success: false,
+          message: 'User model not initialized',
+          code: 'USER_MODEL_UNAVAILABLE',
+        });
+      }
+
+      const [workerDoc, workerProfileDoc] = await Promise.all([
+        MongoUser.findById(workerId).lean(),
+        MongoWorkerProfile
+          ? MongoWorkerProfile.findOne({ userId: workerId }).lean()
+          : null,
+      ]);
+
+      if (!workerDoc && !workerProfileDoc) {
+        return res.status(404).json({
+          success: false,
+          message: 'Worker not found',
+          code: 'WORKER_NOT_FOUND',
+        });
+      }
+
+      const usersCollection = mongoose.connection.db.collection('users');
+      const workerWithDefaults = workerDoc
+        ? await autopopulateWorkerDefaults(workerDoc, usersCollection)
+        : null;
+
+      const mergedWorker = {
+        ...(workerWithDefaults || {}),
+        workerProfile: workerProfileDoc || workerWithDefaults?.workerProfile || null,
+      };
+
+      const formattedWorker = formatWorkerForResponse(mergedWorker);
+
+      const extendedWorkerPayload = {
+        ...formattedWorker,
+        user: workerWithDefaults
+          ? {
+              id: workerWithDefaults._id?.toString(),
+              firstName: workerWithDefaults.firstName || '',
+              lastName: workerWithDefaults.lastName || '',
+              email: workerWithDefaults.email || '',
+              phone: workerWithDefaults.phone || workerWithDefaults.phoneNumber || null,
+            }
+          : null,
+        verification: {
+          isVerified: Boolean(mergedWorker.isVerified),
+          verifiedAt: mergedWorker.verifiedAt || null,
+          level: mergedWorker.workerProfile?.verificationLevel || null,
+          backgroundCheckStatus:
+            mergedWorker.workerProfile?.backgroundCheckStatus || 'not_required',
+        },
+        profile: {
+          picture:
+            mergedWorker.profilePicture ||
+            mergedWorker.workerProfile?.profilePicture ||
+            null,
+          bio: mergedWorker.bio || '',
+          location: mergedWorker.location || mergedWorker.workerProfile?.location || 'Ghana',
+        },
+        rateRange: {
+          min:
+            mergedWorker.workerProfile?.hourlyRateMin ||
+            mergedWorker.hourlyRate ||
+            0,
+          max:
+            mergedWorker.workerProfile?.hourlyRateMax ||
+            mergedWorker.hourlyRate ||
+            0,
+          currency:
+            mergedWorker.currency ||
+            mergedWorker.workerProfile?.currency ||
+            'GHS',
+        },
+        workerProfile: mergedWorker.workerProfile || null,
+      };
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          worker: extendedWorkerPayload,
+        },
+      });
+    } catch (error) {
+      console.error('❌ Error in getWorkerById:', {
+        errorName: error?.name,
+        errorMessage: error?.message,
+        workerId,
+      });
+      if (isDbUnavailableError(error)) {
+        return res.status(503).json({
+          success: false,
+          message: 'User Service database is temporarily unavailable.',
+          code: 'USER_SERVICE_DB_UNAVAILABLE',
+        });
+      }
+      return handleServiceError(res, error, 'Failed to get worker profile');
     }
   }
 
