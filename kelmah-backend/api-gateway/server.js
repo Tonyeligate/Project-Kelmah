@@ -434,6 +434,68 @@ app.use(
   })
 );
 
+// 🔥 NEW: Workers route alias - frontend expects /api/workers
+// Route to user service's /api/users/workers endpoint
+app.use('/api/workers',
+  // Debug logging middleware
+  (req, res, next) => {
+    console.log('🔍 [API Gateway] /api/workers route hit:', {
+      method: req.method,
+      originalUrl: req.originalUrl,
+      path: req.path,
+      url: req.url,
+      query: req.query,
+      hasUser: !!req.user
+    });
+    next();
+  },
+  // Public GET access for worker listings - no auth required
+  optionalAuth,
+  celebrate({
+    [Segments.QUERY]: Joi.object({
+      page: Joi.number().integer().min(1).default(1),
+      limit: Joi.number().integer().min(1).max(100).default(20),
+    }).unknown(true),
+  }),
+  createDynamicProxy('user', {
+    pathRewrite: (path, req) => {
+      // Rewrite /api/workers → /api/users/workers
+      const newPath = path.replace(/^\//, '/api/users/workers/');
+      console.log(`🔄 [Path Rewrite] /api/workers${path} → ${newPath}`);
+      return newPath;
+    },
+    onProxyReq: (proxyReq, req) => {
+      console.log('📤 [API Gateway] Proxying to user service:', {
+        method: proxyReq.method,
+        path: proxyReq.path,
+        host: proxyReq.getHeader('host'),
+        hasAuth: !!req.user
+      });
+      if (req.user) {
+        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        proxyReq.setHeader('x-auth-source', 'api-gateway');
+      }
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      console.log('📥 [API Gateway] Response from user service:', {
+        statusCode: proxyRes.statusCode,
+        path: req.originalUrl
+      });
+    },
+    onError: (err, req, res) => {
+      console.error('❌ [API Gateway] Proxy error:', {
+        message: err.message,
+        path: req.originalUrl,
+        code: err.code
+      });
+      res.status(503).json({
+        error: 'User service unavailable',
+        message: err.message
+      });
+    }
+  })
+);
+
 // 🔥 FIX: Availability route alias - frontend expects /api/availability/{userId}
 // but actual route is /api/users/workers/{userId}/availability
 app.use('/api/availability',

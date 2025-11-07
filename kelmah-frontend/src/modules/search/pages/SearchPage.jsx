@@ -340,7 +340,7 @@ const SearchPage = () => {
   }, [searchParams.keyword]);
 
   const executeWorkerSearch = async (params = {}, { sortOption } = {}) => {
-    const apiEndpoint = '/workers';
+    const apiEndpoint = '/api/workers';
     const apiParams = buildWorkerQueryParams(params);
 
     console.log('🔍 executeWorkerSearch - params:', params);
