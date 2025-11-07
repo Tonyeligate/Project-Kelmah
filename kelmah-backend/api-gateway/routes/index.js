@@ -10,6 +10,7 @@ const router = express.Router();
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const jobRoutes = require('./job.routes');
+const searchRoutes = require('./search.routes');
 const messagingRoutes = require('./messaging.routes');
 const reviewRoutes = require('./review.routes');
 const paymentRoutes = require('./payment.routes');
@@ -92,6 +93,7 @@ router.get('/status', async (req, res) => {
 router.use('/api/auth', authRoutes);
 router.use('/api/users', userRoutes);
 router.use('/api/jobs', jobRoutes);
+router.use('/api/search', searchRoutes);
 router.use('/api/messages', messagingRoutes);
 router.use('/api/conversations', messagingRoutes);
 router.use('/api/notifications', messagingRoutes); // Add notifications route

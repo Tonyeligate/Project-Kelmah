@@ -186,6 +186,204 @@ const createContractDispute = async (req, res, next) => {
 };
 
 /**
+ * Get search suggestions for job queries
+ * @route GET /api/jobs/suggestions
+ * @access Public
+ */
+const getSearchSuggestions = async (req, res, next) => {
+  try {
+    await ensureConnection();
+
+    const rawQuery = (
+      req.query.q ||
+      req.query.query ||
+      req.query.keyword ||
+      ''
+    ).toString().trim();
+
+    if (!rawQuery || rawQuery.length < 2) {
+      return successResponse(res, 200, 'Search suggestions retrieved', []);
+    }
+
+    const normalizedQuery = rawQuery.replace(/\s+/g, ' ');
+    const escapedQuery = normalizedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const startsWithRegex = new RegExp(`^${escapedQuery}`, 'i');
+    const containsRegex = new RegExp(escapedQuery, 'i');
+
+    const mongoose = require('mongoose');
+    const client = mongoose.connection.getClient();
+    const db = client.db();
+    const jobsCollection = db.collection('jobs');
+    const usersCollection = db.collection('users');
+
+    const jobs = await jobsCollection
+      .find({
+        status: 'Open',
+        visibility: 'public',
+        $or: [
+          { title: startsWithRegex },
+          { category: startsWithRegex },
+          { 'requirements.primarySkills': startsWithRegex },
+          { 'requirements.secondarySkills': startsWithRegex },
+          { skills: startsWithRegex },
+          { 'location.city': startsWithRegex },
+          { 'location.region': startsWithRegex },
+          { 'location.address': containsRegex }
+        ]
+      })
+      .project({
+        title: 1,
+        category: 1,
+        skills: 1,
+        requirements: 1,
+        location: 1,
+        hirer: 1,
+        createdAt: 1
+      })
+      .limit(40)
+      .toArray();
+
+    const hirerIds = Array.from(
+      new Set(
+        jobs
+          .map((job) => job.hirer)
+          .filter(Boolean)
+          .map((hirerId) => {
+            try {
+              return new mongoose.Types.ObjectId(hirerId);
+            } catch (_) {
+              return null;
+            }
+          })
+          .filter(Boolean)
+      )
+    );
+
+    let hirerMap = new Map();
+    if (hirerIds.length > 0) {
+      const hirers = await usersCollection
+        .find({ _id: { $in: hirerIds } })
+        .project({
+          firstName: 1,
+          lastName: 1,
+          companyName: 1,
+          businessName: 1
+        })
+        .toArray();
+
+      hirerMap = new Map(hirers.map((hirer) => [hirer._id.toString(), hirer]));
+    }
+
+    const suggestionAccumulator = new Map();
+    const registerSuggestion = (type, value, meta = {}) => {
+      if (!value || typeof value !== 'string') return;
+      const trimmedValue = value.trim();
+      if (!trimmedValue) return;
+      const key = `${type}:${trimmedValue.toLowerCase()}`;
+      if (!suggestionAccumulator.has(key)) {
+        suggestionAccumulator.set(key, {
+          type,
+          value: trimmedValue,
+          hits: 0,
+          meta: { ...meta }
+        });
+      }
+      const entry = suggestionAccumulator.get(key);
+      entry.hits += 1;
+      if (meta && Object.keys(meta).length > 0) {
+        entry.meta = { ...entry.meta, ...meta };
+      }
+    };
+
+    jobs.forEach((job) => {
+      registerSuggestion('jobTitle', job.title);
+      if (job.category) {
+        registerSuggestion('category', job.category);
+      }
+      if (Array.isArray(job.skills)) {
+        job.skills.forEach((skill) => registerSuggestion('skill', skill));
+      }
+      if (job.requirements) {
+        const { primarySkills, secondarySkills } = job.requirements;
+        if (Array.isArray(primarySkills)) {
+          primarySkills.forEach((skill) => registerSuggestion('skill', skill));
+        }
+        if (Array.isArray(secondarySkills)) {
+          secondarySkills.forEach((skill) => registerSuggestion('skill', skill));
+        }
+      }
+      const location = job.location || {};
+      if (typeof location === 'string') {
+        registerSuggestion('location', location);
+      } else {
+        registerSuggestion('location', location.address);
+        registerSuggestion('location', location.city);
+        registerSuggestion('location', location.region);
+        registerSuggestion('location', location.country);
+      }
+      if (job.hirer) {
+        const hirer = hirerMap.get(job.hirer.toString());
+        if (hirer) {
+          const hirerLabel =
+            hirer.companyName ||
+            hirer.businessName ||
+            [hirer.firstName, hirer.lastName].filter(Boolean).join(' ').trim();
+          if (hirerLabel) {
+            registerSuggestion('hirer', hirerLabel, { hirerId: job.hirer.toString() });
+          }
+        }
+      }
+    });
+
+    const typePriority = {
+      jobTitle: 0,
+      skill: 1,
+      category: 2,
+      location: 3,
+      hirer: 4
+    };
+
+    const buildHighlight = (value) => {
+      const lowerValue = value.toLowerCase();
+      const lowerQuery = normalizedQuery.toLowerCase();
+      const index = lowerValue.indexOf(lowerQuery);
+      if (index === -1) {
+        return {
+          prefix: value,
+          match: '',
+          suffix: ''
+        };
+      }
+      return {
+        prefix: value.slice(0, index),
+        match: value.slice(index, index + normalizedQuery.length),
+        suffix: value.slice(index + normalizedQuery.length)
+      };
+    };
+
+    const suggestions = Array.from(suggestionAccumulator.values())
+      .map((suggestion) => ({
+        ...suggestion,
+        highlight: buildHighlight(suggestion.value)
+      }))
+      .sort((a, b) => {
+        if (b.hits !== a.hits) return b.hits - a.hits;
+        const aPriority = typePriority[a.type] ?? 99;
+        const bPriority = typePriority[b.type] ?? 99;
+        if (aPriority !== bPriority) return aPriority - bPriority;
+        return a.value.localeCompare(b.value);
+      })
+      .slice(0, 8)
+      .map(({ hits, ...rest }) => rest);
+
+    return successResponse(res, 200, 'Search suggestions retrieved', suggestions);
+  } catch (error) {
+    console.error('[GET SEARCH SUGGESTIONS ERROR]', error);
+    next(error);
+  }
+};
+
+/**
  * Get all jobs with filtering, sorting and pagination
  * @route GET /api/jobs
  * @access Public
@@ -2103,4 +2301,5 @@ module.exports = {
   renewJob,
   getExpiredJobs,
   getPlatformStats,
+  getSearchSuggestions,
 };

@@ -243,6 +243,434 @@ const buildAvailabilityFallbackPayload = (workerId = null, reason = 'USER_SERVIC
   user: workerId,
 });
 
+const isNil = (value) => value === null || value === undefined;
+
+const toIsoString = (value) => {
+  if (isNil(value)) {
+    return null;
+  }
+
+  try {
+    const dateValue = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(dateValue.getTime())) {
+      return null;
+    }
+    return dateValue.toISOString();
+  } catch (err) {
+    return null;
+  }
+};
+
+const toSafeString = (value, fallback = '') => {
+  if (isNil(value)) {
+    return fallback;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (typeof value.toString === 'function') {
+    try {
+      const stringified = value.toString();
+      return typeof stringified === 'string' ? stringified : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  return fallback;
+};
+
+const toSafeNumber = (value, fallback = 0) => {
+  if (isNil(value)) {
+    return fallback;
+  }
+
+  const numeric = typeof value === 'string' ? Number(value) : value;
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+const toSafeBoolean = (value, fallback = false) => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+
+  if (typeof value === 'string') {
+    const normalised = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'y', 'on'].includes(normalised)) {
+      return true;
+    }
+    if (['false', '0', 'no', 'n', 'off'].includes(normalised)) {
+      return false;
+    }
+    return fallback;
+  }
+
+  if (!isNil(value)) {
+    return Boolean(value);
+  }
+
+  return fallback;
+};
+
+const toArray = (value) => {
+  if (Array.isArray(value)) {
+    return value.filter((item) => !isNil(item));
+  }
+  return [];
+};
+
+const uniqBy = (items = [], getKey = (item) => item) => {
+  const seen = new Set();
+  const result = [];
+
+  items.forEach((item) => {
+    if (isNil(item)) {
+      return;
+    }
+
+    const key = getKey(item);
+    if (isNil(key)) {
+      return;
+    }
+
+    const keyString = String(key).toLowerCase();
+    if (seen.has(keyString)) {
+      return;
+    }
+
+    seen.add(keyString);
+    result.push(item);
+  });
+
+  return result;
+};
+
+const normalizeSkill = (skill, source = 'user') => {
+  if (isNil(skill)) {
+    return null;
+  }
+
+  if (typeof skill === 'string') {
+    const trimmed = skill.trim();
+    return trimmed
+      ? {
+          name: trimmed,
+          level: 'Intermediate',
+          source,
+        }
+      : null;
+  }
+
+  if (typeof skill === 'object') {
+    const name = toSafeString(skill.name || skill.skillName || skill.title || skill._id).trim();
+    if (!name) {
+      return null;
+    }
+
+    const level = toSafeString(skill.level || skill.proficiency || skill.skillLevel || 'Intermediate').trim();
+
+    return {
+      name,
+      level: level || 'Intermediate',
+      source,
+    };
+  }
+
+  const fallbackName = toSafeString(skill).trim();
+  return fallbackName
+    ? {
+        name: fallbackName,
+        level: 'Intermediate',
+        source,
+      }
+    : null;
+};
+
+const mapAvailableHours = (availableHours) => {
+  if (!availableHours) {
+    return [];
+  }
+
+  const entries = availableHours instanceof Map
+    ? Array.from(availableHours.entries())
+    : typeof availableHours === 'object'
+      ? Object.entries(availableHours)
+      : [];
+
+  return entries
+    .map(([day, value]) => {
+      const start = toSafeString(value?.start, null);
+      const end = toSafeString(value?.end, null);
+      const normalisedDay = toSafeString(day, '').toLowerCase();
+
+      if (!normalisedDay || !start || !end) {
+        return null;
+      }
+
+      return {
+        day: normalisedDay,
+        start,
+        end,
+        available: toSafeBoolean(value?.available, true),
+      };
+    })
+    .filter(Boolean);
+};
+
+const mapDaySlots = (daySlots) => {
+  if (!Array.isArray(daySlots)) {
+    return [];
+  }
+
+  return daySlots
+    .map((slot) => {
+      const dayOfWeek = typeof slot?.dayOfWeek === 'number' ? slot.dayOfWeek : null;
+
+      if (isNil(dayOfWeek)) {
+        return null;
+      }
+
+      const slots = Array.isArray(slot?.slots)
+        ? slot.slots
+            .map((timeSlot) => {
+              const start = toSafeString(timeSlot?.start, null);
+              const end = toSafeString(timeSlot?.end, null);
+              if (!start || !end) {
+                return null;
+              }
+              return { start, end };
+            })
+            .filter(Boolean)
+        : [];
+
+      return {
+        dayOfWeek,
+        slots,
+      };
+    })
+    .filter(Boolean);
+};
+
+const mapPortfolioDoc = (item) => {
+  if (!item) {
+    return null;
+  }
+
+  const images = toArray(item.images).map((image) =>
+    typeof image === 'object' ? toSafeString(image.url, '') : toSafeString(image, '')
+  ).filter(Boolean);
+
+  const skillsUsed = uniqBy(
+    toArray(item.skillsUsed).map((skill) => toSafeString(skill, '').trim()).filter(Boolean),
+    (skill) => skill
+  );
+
+  return {
+    id: toSafeString(item._id || item.id, ''),
+    title: toSafeString(item.title, ''),
+    description: toSafeString(item.description, ''),
+    projectType: toSafeString(item.projectType, 'professional'),
+    status: toSafeString(item.status, 'draft'),
+    isFeatured: toSafeBoolean(item.isFeatured, false),
+    isActive: toSafeBoolean(item.isActive, true),
+    completedAt: toIsoString(item.endDate || item.completedAt),
+    clientName: toSafeString(item.clientName, ''),
+    metrics: {
+      projectValue: isNil(item.projectValue) ? null : toSafeNumber(item.projectValue, null),
+      currency: toSafeString(item.currency, 'GHS'),
+      viewCount: toSafeNumber(item.viewCount, 0),
+      likeCount: toSafeNumber(item.likeCount, 0),
+      shareCount: toSafeNumber(item.shareCount, 0),
+    },
+    skillsUsed,
+    images,
+    source: 'portfolioCollection',
+    createdAt: toIsoString(item.createdAt),
+    updatedAt: toIsoString(item.updatedAt),
+  };
+};
+
+const mapEmbeddedPortfolioItem = (item, index = 0) => {
+  if (!item) {
+    return null;
+  }
+
+  const skills = uniqBy(
+    toArray(item.skills).map((skill) => toSafeString(skill, '').trim()).filter(Boolean),
+    (skill) => skill
+  );
+
+  return {
+    id: toSafeString(item._id || item.id, '') || `embedded-portfolio-${index}`,
+    title: toSafeString(item.title, ''),
+    description: toSafeString(item.description, ''),
+    projectType: toSafeString(item.projectType, 'professional'),
+    status: toSafeString(item.status, 'published'),
+    isFeatured: toSafeBoolean(item.isFeatured, false),
+    isActive: toSafeBoolean(item.isActive, true),
+    completedAt: toIsoString(item.completedAt),
+    clientName: toSafeString(item.client, ''),
+    metrics: {
+      projectValue: isNil(item.projectValue) ? null : toSafeNumber(item.projectValue, null),
+      currency: toSafeString(item.currency, 'GHS'),
+      viewCount: toSafeNumber(item.viewCount, 0),
+      likeCount: toSafeNumber(item.likeCount, 0),
+      shareCount: toSafeNumber(item.shareCount, 0),
+    },
+    skillsUsed: skills,
+    images: toArray(item.images).map((image) => toSafeString(image?.url || image, '')).filter(Boolean),
+    source: 'profileEmbedded',
+    createdAt: toIsoString(item.createdAt),
+    updatedAt: toIsoString(item.updatedAt),
+  };
+};
+
+const mapCertificateDoc = (doc) => {
+  if (!doc) {
+    return null;
+  }
+
+  return {
+    id: toSafeString(doc._id || doc.id, ''),
+    name: toSafeString(doc.name, ''),
+    issuer: toSafeString(doc.issuer, ''),
+    credentialId: toSafeString(doc.credentialId, ''),
+    issueDate: toIsoString(doc.issuedAt || doc.issueDate),
+    expiryDate: toIsoString(doc.expiresAt || doc.expiryDate),
+    status: toSafeString(doc.status, 'pending'),
+    verification: {
+      result: toSafeString(doc.verification?.result || (doc.status === 'verified' ? 'verified' : 'pending'), 'pending'),
+      verifiedAt: toIsoString(doc.verification?.verifiedAt),
+      requestedAt: toIsoString(doc.verification?.requestedAt),
+      verifier: toSafeString(doc.verification?.verifier, ''),
+      notes: toSafeString(doc.verification?.notes, ''),
+    },
+    links: {
+      url: toSafeString(doc.url, ''),
+      shareToken: toSafeString(doc.shareToken, ''),
+      verificationUrl: toSafeString(doc.verification?.url || doc.metadata?.verificationUrl, ''),
+    },
+    metadata: doc.metadata || {},
+    source: 'certificateCollection',
+    createdAt: toIsoString(doc.createdAt),
+    updatedAt: toIsoString(doc.updatedAt),
+  };
+};
+
+const mapEmbeddedCertificate = (item, index = 0) => {
+  if (!item) {
+    return null;
+  }
+
+  return {
+    id: toSafeString(item._id || item.id, '') || `embedded-cert-${index}`,
+    name: toSafeString(item.name, ''),
+    issuer: toSafeString(item.issuer, ''),
+    credentialId: toSafeString(item.credentialId, ''),
+    issueDate: toIsoString(item.issueDate),
+    expiryDate: toIsoString(item.expiryDate),
+    status: toSafeString(item.status || item.verificationStatus, 'pending'),
+    verification: {
+      result: toSafeString(item.verification?.result || item.verificationStatus, 'pending'),
+      verificationUrl: toSafeString(item.verificationUrl, ''),
+    },
+    links: {
+      url: toSafeString(item.verificationUrl, ''),
+    },
+    source: 'profileEmbedded',
+  };
+};
+
+const buildAvailabilitySection = (availabilityDoc, profile, worker) => {
+  const status = toSafeString(profile?.availabilityStatus || worker?.availabilityStatus, 'available');
+
+  const isAvailable = toSafeBoolean(
+    !isNil(availabilityDoc?.isAvailable)
+      ? availabilityDoc?.isAvailable
+      : !isNil(profile?.isAvailable)
+        ? profile?.isAvailable
+        : status === 'available',
+    true,
+  );
+
+  const schedule = toArray(availabilityDoc?.schedule).map((entry) => ({
+    start: toIsoString(entry?.start),
+    end: toIsoString(entry?.end),
+    status: toSafeString(entry?.status, ''),
+  })).filter((entry) => entry.start || entry.end || entry.status);
+
+  return {
+    status,
+    isAvailable,
+    timezone: toSafeString(availabilityDoc?.timezone || profile?.timezone, 'Africa/Accra'),
+    daySlots: mapDaySlots(availabilityDoc?.daySlots),
+    availableHours: mapAvailableHours(profile?.availableHours),
+    schedule,
+    nextAvailable: toIsoString(availabilityDoc?.nextAvailable),
+    message: toSafeString(availabilityDoc?.message || profile?.availabilityMessage, ''),
+    pausedUntil: toIsoString(availabilityDoc?.pausedUntil || profile?.pausedUntil),
+    lastUpdated: toIsoString(availabilityDoc?.updatedAt || profile?.updatedAt || worker?.updatedAt),
+    emergencyAvailable: toSafeBoolean(profile?.emergencyAvailable, false),
+    notes: toSafeString(availabilityDoc?.notes, ''),
+    source: {
+      availability: Boolean(availabilityDoc),
+      workerProfile: Boolean(profile && (profile.availabilityStatus || profile.availableHours)),
+    },
+  };
+};
+
+const buildStats = (worker = {}, profile = {}) => {
+  const rating = !isNil(profile.rating) ? profile.rating : worker.rating;
+  const totalReviews = !isNil(profile.totalReviews) ? profile.totalReviews : worker.totalReviews;
+  const totalJobsCompleted = !isNil(profile.totalJobsCompleted) ? profile.totalJobsCompleted : worker.totalJobsCompleted;
+  const totalJobs = !isNil(profile.totalJobs) ? profile.totalJobs : worker.totalJobsCompleted;
+
+  return {
+    rating: toSafeNumber(rating, 0),
+    totalReviews: toSafeNumber(totalReviews, 0),
+    totalJobsCompleted: toSafeNumber(totalJobsCompleted, 0),
+    totalJobs: toSafeNumber(totalJobs, 0),
+    completionRate: toSafeNumber(profile.profileCompleteness ?? profile.completionRate, 0),
+    responseRate: toSafeNumber(profile.responseRate, 0),
+    profileViews: toSafeNumber(profile.profileViews, 0),
+    totalEarnings: toSafeNumber(profile.totalEarnings, 0),
+    averageResponseTime: toSafeNumber(profile.averageResponseTime, 0),
+  };
+};
+
+const buildVerificationSnapshot = (worker = {}, profile = {}, certificationSummary = {}) => {
+  const isVerified = toSafeBoolean(
+    !isNil(profile.isVerified) ? profile.isVerified : worker.isVerified,
+    false,
+  );
+
+  return {
+    isVerified,
+    verificationLevel: toSafeString(
+      profile.verificationLevel || (isVerified ? 'basic' : 'none'),
+      'none',
+    ),
+    backgroundCheckStatus: toSafeString(profile.backgroundCheckStatus, 'not_required'),
+    verifiedCertificates: certificationSummary.verifiedCount || 0,
+    totalCertificates: certificationSummary.total || 0,
+    lastReviewedAt: toIsoString(profile.updatedAt || worker.updatedAt),
+  };
+};
+
 const isDbUnavailableError = (error) => {
   if (!error) {
     return false;
@@ -751,7 +1179,6 @@ class WorkerController {
     const workerId = req.params.id;
     
     try {
-      // Step 1: Validate ID
       if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
         return res.status(400).json({
           success: false,
@@ -760,7 +1187,6 @@ class WorkerController {
         });
       }
 
-      // Step 2: Check DB connection
       if (mongoose.connection.readyState !== 1) {
         console.warn('⚠️ MongoDB not ready for getWorkerById request');
         return res.status(503).json({
@@ -770,12 +1196,10 @@ class WorkerController {
         });
       }
 
-      // Step 3: Ensure connection
       await ensureConnection({
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
 
-      // Step 4: Get models
       const MongoUser = modelsModule.User;
       const MongoWorkerProfile = modelsModule.WorkerProfile;
 
@@ -788,20 +1212,23 @@ class WorkerController {
         });
       }
 
-      // Step 5: Query database
-      const workerDoc = await MongoUser.findById(workerId).lean().catch(err => {
-        console.error('❌ Error querying User:', err);
-        return null;
-      });
-      
-      const workerProfileDoc = MongoWorkerProfile
-        ? await MongoWorkerProfile.findOne({ userId: workerId }).lean().catch(err => {
-            console.error('⚠️ Error querying WorkerProfile:', err);
+      const [workerDoc, workerProfileDoc] = await Promise.all([
+        MongoUser.findById(workerId)
+          .lean()
+          .catch((err) => {
+            console.error('❌ Error querying User:', err);
             return null;
-          })
-        : null;
+          }),
+        MongoWorkerProfile
+          ? MongoWorkerProfile.findOne({ userId: workerId })
+              .lean()
+              .catch((err) => {
+                console.error('⚠️ Error querying WorkerProfile:', err);
+                return null;
+              })
+          : null,
+      ]);
 
-      // Step 6: Check if found
       if (!workerDoc && !workerProfileDoc) {
         return res.status(404).json({
           success: false,
@@ -810,53 +1237,233 @@ class WorkerController {
         });
       }
 
-      // Step 7: Build safe payload
+      if (workerDoc && (workerDoc.role !== 'worker' || workerDoc.isActive === false || workerDoc.deletedAt)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Worker not found',
+          code: 'NOT_AN_ACTIVE_WORKER',
+        });
+      }
+
+      const workerProfileId = workerProfileDoc?._id;
+
+      const [availabilityDoc, certificateDocs, portfolioDocs] = await Promise.all([
+        modelsModule.Availability
+          ? modelsModule.Availability.findOne({ user: workerId })
+              .lean()
+              .catch((err) => {
+                console.error('⚠️ Error querying Availability:', err);
+                return null;
+              })
+          : null,
+        modelsModule.Certificate
+          ? modelsModule.Certificate.find({ workerId, status: { $ne: 'archived' } })
+              .sort({ status: -1, createdAt: -1 })
+              .limit(25)
+              .lean()
+              .catch((err) => {
+                console.error('⚠️ Error querying Certificates:', err);
+                return [];
+              })
+          : [],
+        workerProfileId && modelsModule.Portfolio
+          ? modelsModule.Portfolio.find({
+              workerProfileId,
+              isActive: true,
+              status: { $ne: 'archived' },
+            })
+              .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+              .limit(20)
+              .lean()
+              .catch((err) => {
+                console.error('⚠️ Error querying Portfolio:', err);
+                return [];
+              })
+          : [],
+      ]);
+
       const worker = workerDoc || {};
       const profile = workerProfileDoc || {};
 
-      const safeString = (val, fallback = '') => {
-        if (!val) return fallback;
-        if (typeof val === 'string') return val;
-        if (val.toString && typeof val.toString === 'function') {
-          try {
-            return val.toString();
-          } catch (e) {
-            return fallback;
-          }
-        }
-        return String(val || fallback);
+      const skills = uniqBy(
+        [
+          ...toArray(worker.skills).map((skill) => normalizeSkill(skill, 'user')), 
+          ...toArray(profile.skills).map((skill) => normalizeSkill(skill, 'profile')),
+        ].filter(Boolean),
+        (skill) => skill.name.toLowerCase(),
+      );
+
+      const specializations = uniqBy(
+        [
+          ...toArray(worker.specializations).map((item) => toSafeString(item, '').trim()).filter(Boolean),
+          ...toArray(profile.specializations).map((item) => toSafeString(item, '').trim()).filter(Boolean),
+        ],
+        (item) => item.toLowerCase(),
+      );
+
+      const languages = uniqBy(
+        toArray(profile.languages).map((item) => toSafeString(item, '').trim()).filter(Boolean),
+        (lang) => lang.toLowerCase(),
+      );
+
+      const embeddedPortfolio = toArray(profile.portfolioItems)
+        .map((item, index) => mapEmbeddedPortfolioItem(item, index))
+        .filter(Boolean);
+
+      const collectedPortfolio = toArray(portfolioDocs)
+        .map((item) => mapPortfolioDoc(item))
+        .filter(Boolean);
+
+      const combinedPortfolio = uniqBy(
+        [...embeddedPortfolio, ...collectedPortfolio],
+        (item) => item.id || `${item.title}-${item.completedAt || item.createdAt || ''}`,
+      );
+
+      const embeddedCertificates = toArray(profile.certifications)
+        .map((item, index) => mapEmbeddedCertificate(item, index))
+        .filter(Boolean);
+
+      const collectedCertificates = toArray(certificateDocs)
+        .map((item) => mapCertificateDoc(item))
+        .filter(Boolean);
+
+      const combinedCertificates = uniqBy(
+        [...collectedCertificates, ...embeddedCertificates],
+        (item) => item.id || `${item.name}-${item.issueDate || ''}`,
+      );
+
+      const certificationSummary = {
+        items: combinedCertificates.slice(0, 20),
+        total: combinedCertificates.length,
+        verifiedCount: combinedCertificates.filter((cert) => {
+          const status = toSafeString(cert.status, '').toLowerCase();
+          const result = toSafeString(cert.verification?.result, '').toLowerCase();
+          return status === 'verified' || result === 'verified';
+        }).length,
       };
-      
-      const safeNumber = (val, fallback = 0) => Number(val) || fallback;
-      const safeBool = (val) => Boolean(val);
+
+      const portfolioSummary = {
+        items: combinedPortfolio.slice(0, 20),
+        total: combinedPortfolio.length,
+        featured: combinedPortfolio.filter((item) => item.isFeatured).slice(0, 5),
+      };
+
+      const stats = buildStats(worker, profile);
+
+      const rate = {
+        amount: !isNil(profile.hourlyRate) ? toSafeNumber(profile.hourlyRate, null) : toSafeNumber(worker.hourlyRate, null),
+        min: toSafeNumber(profile.hourlyRateMin, null),
+        max: toSafeNumber(profile.hourlyRateMax, null),
+        currency: toSafeString(profile.currency || worker.currency, 'GHS'),
+      };
+
+      const hourlyRateValue = !isNil(rate.amount) && Number.isFinite(rate.amount)
+        ? rate.amount
+        : !isNil(rate.min) && Number.isFinite(rate.min)
+          ? rate.min
+          : !isNil(rate.max) && Number.isFinite(rate.max)
+            ? rate.max
+            : 0;
+
+      const availability = buildAvailabilitySection(availabilityDoc, profile, worker);
+
+      const verification = buildVerificationSnapshot(worker, profile, certificationSummary);
 
       const workerPayload = {
-        id: worker._id ? safeString(worker._id) : '',
-        userId: worker._id ? safeString(worker._id) : '',
-        name: `${safeString(worker.firstName)} ${safeString(worker.lastName)}`.trim() || 'Worker',
-        bio: safeString(worker.bio || profile.bio, `Professional worker in ${worker.location || 'Ghana'}.`),
-        location: safeString(worker.location || profile.location, 'Ghana'),
-        city: safeString(worker.location, 'Accra').split(',')[0].trim(),
-        hourlyRate: safeNumber(worker.hourlyRate || profile.hourlyRate, 25),
-        currency: safeString(worker.currency || profile.currency, 'GHS'),
-        rating: safeNumber(worker.rating, 4.5),
-        totalReviews: safeNumber(worker.totalReviews, 0),
-        totalJobsCompleted: safeNumber(worker.totalJobsCompleted, 0),
-        availabilityStatus: safeString(worker.availabilityStatus || profile.availabilityStatus, 'available'),
-        isVerified: safeBool(worker.isVerified),
+        id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
+        userId: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
+        name: `${toSafeString(worker.firstName)} ${toSafeString(worker.lastName)}`.trim() || 'Worker',
+        firstName: toSafeString(worker.firstName, ''),
+        lastName: toSafeString(worker.lastName, ''),
+        bio: toSafeString(profile.bio || worker.bio, `Professional worker in ${worker.location || 'Ghana'}.`),
+        tagline: toSafeString(profile.tagline || profile.headline, ''),
+        location: toSafeString(profile.location || worker.location, 'Ghana'),
+        city: toSafeString(profile.location || worker.location, 'Accra').split(',')[0].trim(),
+        country: toSafeString(profile.country || worker.country || 'Ghana', 'Ghana'),
+        hourlyRate: hourlyRateValue,
+        rate,
+        currency: rate.currency,
+        rating: stats.rating,
+        totalReviews: stats.totalReviews,
+        totalJobsCompleted: stats.totalJobsCompleted,
+        availabilityStatus: toSafeString(profile.availabilityStatus || worker.availabilityStatus, 'available'),
+        isVerified: verification.isVerified,
         profilePicture: worker.profilePicture || profile.profilePicture || null,
-        specializations: worker.specializations || ['General Maintenance'],
-        profession: safeString(worker.profession, 'General Worker'),
-        workType: safeString(profile.workType, 'Full-time'),
-        skills: Array.isArray(worker.skills)
-          ? worker.skills.slice(0, 10).map(skill => ({
-              name: safeString(typeof skill === 'string' ? skill : (skill?.skillName || skill?.name || skill)),
-              level: safeString(typeof skill === 'string' ? 'Intermediate' : skill?.level, 'Intermediate')
-            }))
-          : [],
+        bannerImage: profile.bannerImage || null,
+        specializations,
+        profession: toSafeString(worker.profession || profile.profession, 'General Worker'),
+        workType: toSafeString(profile.workType || 'Full-time'),
+        skills,
+        languages,
+        stats,
+        verification,
+        availability,
+        experience: {
+          level: toSafeString(profile.experienceLevel, ''),
+          years: toSafeNumber(!isNil(profile.yearsOfExperience) ? profile.yearsOfExperience : worker.yearsOfExperience, 0),
+          preferredJobTypes: toArray(profile.preferredJobTypes).map((item) => toSafeString(item, '')).filter(Boolean),
+          workingHoursPreference: toSafeString(profile.workingHoursPreference, ''),
+          travelWillingness: toSafeString(profile.travelWillingness, ''),
+          emergencyAvailable: toSafeBoolean(profile.emergencyAvailable, false),
+        },
+        portfolio: portfolioSummary,
+        certifications: certificationSummary,
+        contact: {
+          email: toSafeString(worker.email, ''),
+          phone: toSafeString(worker.phone, ''),
+          website: toSafeString(profile.website || worker.website, ''),
+          social: {
+            linkedin: toSafeString(profile.linkedinUrl || profile.socialLinks?.linkedin, ''),
+            instagram: toSafeString(profile.socialLinks?.instagram, ''),
+            facebook: toSafeString(profile.socialLinks?.facebook, ''),
+          },
+        },
+        business: profile.businessInfo
+          ? {
+              name: toSafeString(profile.businessInfo.businessName, ''),
+              type: toSafeString(profile.businessInfo.businessType, ''),
+              registrationNumber: toSafeString(profile.businessInfo.registrationNumber, ''),
+              taxId: toSafeString(profile.businessInfo.taxId, ''),
+            }
+          : null,
+        insurance: profile.insuranceInfo
+          ? {
+              hasInsurance: toSafeBoolean(profile.insuranceInfo.hasInsurance, false),
+              provider: toSafeString(profile.insuranceInfo.provider, ''),
+              expiryDate: toIsoString(profile.insuranceInfo.expiryDate),
+              coverage: toSafeNumber(profile.insuranceInfo.coverage, null),
+            }
+          : null,
+        user: {
+          id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
+          email: toSafeString(worker.email, ''),
+          phone: toSafeString(worker.phone, ''),
+          role: toSafeString(worker.role, 'worker'),
+          isActive: toSafeBoolean(worker.isActive, true),
+          isEmailVerified: toSafeBoolean(worker.isEmailVerified, false),
+          createdAt: toIsoString(worker.createdAt),
+          updatedAt: toIsoString(worker.updatedAt),
+          lastLogin: toIsoString(worker.lastLogin),
+        },
+        lastActiveAt: toIsoString(profile.lastActiveAt || worker.lastLogin),
+        metadata: {
+          retrievedAt: new Date().toISOString(),
+          source: {
+            user: Boolean(workerDoc),
+            workerProfile: Boolean(workerProfileDoc),
+            availability: Boolean(availabilityDoc),
+            portfolio: combinedPortfolio.length > 0,
+            certifications: combinedCertificates.length > 0,
+          },
+        },
       };
 
-      // Step 8: Send response
+      workerPayload.rankScore = scoreWorker({
+        rating: stats.rating,
+        totalJobsCompleted: stats.totalJobsCompleted,
+        isVerified: verification.isVerified,
+      });
+
       return res.status(200).json({
         success: true,
         data: {

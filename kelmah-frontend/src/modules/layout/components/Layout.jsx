@@ -31,19 +31,22 @@ const Layout = ({ children, toggleTheme, mode }) => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
+  const currentPath = location.pathname || '';
+  const isPublicWorkerProfile = currentPath.startsWith('/worker-profile');
   const isDashboardPage =
-    location.pathname.includes('/dashboard') ||
-    location.pathname.startsWith('/worker') ||
-    location.pathname.startsWith('/hirer') ||
-    location.pathname === '/dashboard' ||
-    // Additional dashboard-related paths
-    location.pathname.includes('/profile/edit') ||
-    location.pathname.includes('/applications') ||
-    location.pathname.includes('/contracts') ||
-    location.pathname.includes('/payments') ||
-    location.pathname.includes('/wallet') ||
-    location.pathname.includes('/schedule') ||
-    location.pathname.includes('/reviews');
+    !isPublicWorkerProfile &&
+    (currentPath.includes('/dashboard') ||
+      currentPath.startsWith('/worker') ||
+      currentPath.startsWith('/hirer') ||
+      currentPath === '/dashboard' ||
+      // Additional dashboard-related paths
+      currentPath.includes('/profile/edit') ||
+      currentPath.includes('/applications') ||
+      currentPath.includes('/contracts') ||
+      currentPath.includes('/payments') ||
+      currentPath.includes('/wallet') ||
+      currentPath.includes('/schedule') ||
+      currentPath.includes('/reviews'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 
