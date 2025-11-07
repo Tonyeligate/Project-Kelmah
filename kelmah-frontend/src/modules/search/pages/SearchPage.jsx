@@ -45,6 +45,173 @@ const PageWrapper = styled(Box)(({ theme }) => ({
   minHeight: 'calc(100vh - 64px)',
 }));
 
+const extractLocationString = (location) => {
+  if (!location) {
+    return '';
+  }
+
+  if (typeof location === 'string') {
+    return location;
+  }
+
+  if (typeof location === 'object') {
+    return (
+      location.address ||
+      location.city ||
+      location.name ||
+      location.label ||
+      ''
+    );
+  }
+
+  return '';
+};
+
+const normalizeWorkerRecord = (worker = {}) => {
+  const id =
+    worker.id ||
+    worker.userId ||
+    (worker._id && worker._id.toString ? worker._id.toString() : worker._id);
+
+  const skillsArray = Array.isArray(worker.skills)
+    ? worker.skills.map((skill) =>
+        typeof skill === 'string'
+          ? skill
+          : skill?.name || skill?.skillName || skill?.label || String(skill),
+      )
+    : Array.isArray(worker.specializations)
+    ? worker.specializations.filter(Boolean)
+    : [];
+
+  return {
+    id: id || `worker-${Date.now()}-${Math.random()}`,
+    userId: id || worker.userId,
+    name:
+      worker.name ||
+      [worker.firstName, worker.lastName].filter(Boolean).join(' ') ||
+      'Skilled Worker',
+    title:
+      worker.title ||
+      worker.profession ||
+      (Array.isArray(worker.specializations)
+        ? worker.specializations[0]
+        : '') ||
+      'Professional Worker',
+    location: worker.location || worker.city || 'Ghana',
+    rating: Number(worker.rating ?? worker.averageRating ?? 0),
+    reviewCount: worker.reviewCount ?? worker.totalReviews ?? 0,
+    hourlyRate: Number(worker.hourlyRate ?? worker.rate ?? worker.minRate ?? 0),
+    bio:
+      worker.bio ||
+      'Experienced professional delivering quality craftsmanship and reliable service.',
+    skills: skillsArray,
+    availabilityStatus: worker.availabilityStatus || worker.availability || 'available',
+    profileImage: worker.profilePicture || worker.avatar || worker.profileImage || null,
+    createdAt: worker.createdAt || null,
+    updatedAt: worker.updatedAt || null,
+    rankScore: Number(worker.rankScore ?? 0),
+  };
+};
+
+const sortWorkerResults = (workers = [], sortOption = 'relevance') => {
+  const list = [...workers];
+
+  switch (sortOption) {
+    case 'rating':
+      return list.sort(
+        (a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0),
+      );
+    case 'price':
+      return list.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
+    case 'newest':
+      return list.sort((a, b) => {
+        const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        return bTime - aTime;
+      });
+    case 'distance':
+      // Distance sorting requires geo coordinates; retain current order for now
+      return list;
+    case 'relevance':
+    default:
+      return list.sort((a, b) => (b.rankScore || 0) - (a.rankScore || 0));
+  }
+};
+
+const buildWorkerQueryParams = (params = {}) => {
+  const query = {
+    page: params.page || 1,
+    limit: params.limit || 12,
+  };
+
+  const keyword =
+    params.keyword ||
+    params.query ||
+    params.search ||
+    params.workNeeded ||
+    params.keywords;
+  if (keyword) {
+    query.keywords = keyword;
+  }
+
+  const locationValue = extractLocationString(params.location);
+  if (locationValue) {
+    query.city = locationValue.split(',')[0].trim();
+  }
+
+  if (params.location && params.location.coordinates) {
+    const { coordinates } = params.location;
+    const latitude = coordinates.latitude ?? coordinates[0];
+    const longitude = coordinates.longitude ?? coordinates[1];
+
+    if (latitude !== undefined && longitude !== undefined) {
+      query.latitude = latitude;
+      query.longitude = longitude;
+      if (params.distance) {
+        query.radius = params.distance;
+      }
+    }
+  }
+
+  const trade = params.trade || params.category || params.primaryTrade;
+  if (trade) {
+    query.primaryTrade = trade;
+  }
+
+  const jobType = params.jobType || params.workType || params.type;
+  if (jobType) {
+    query.workType = jobType;
+  }
+
+  const skills = params.skills || params.skill;
+  if (Array.isArray(skills) && skills.length > 0) {
+    query.skills = skills.join(',');
+  } else if (typeof skills === 'string' && skills) {
+    query.skills = skills;
+  }
+
+  const minRating = params.minRating || params.rating || params.minimumRating;
+  if (minRating) {
+    query.rating = minRating;
+  }
+
+  const maxRate = params.budgetMax || params.maxRate;
+  if (maxRate) {
+    query.maxRate = maxRate;
+  }
+
+  const availability = params.availability;
+  if (availability) {
+    query.availability = availability;
+  }
+
+  if (params.verifiedOnly) {
+    query.verified = 'true';
+  }
+
+  return query;
+};
+
 /**
  * Search Page
  * Provides advanced job search functionality with location-based filtering
@@ -95,13 +262,19 @@ const SearchPage = () => {
         params.limit = parseInt(value, 10) || 10;
       } else if (key === 'sort') {
         setSortOrder(value);
+        params.sort = value;
       } else if (key === 'categories' || key === 'skills') {
         params[key] = value.split(',').filter(Boolean);
       } else if (key === 'location') {
-        try {
-          params.location = JSON.parse(decodeURIComponent(value));
-        } catch (err) {
-          params.location = { address: value };
+        const decodedValue = value?.trim?.() ?? value;
+        if (decodedValue && decodedValue.startsWith('{') && decodedValue.endsWith('}')) {
+          try {
+            params.location = JSON.parse(decodedValue);
+          } catch (err) {
+            params.location = decodedValue;
+          }
+        } else {
+          params.location = decodedValue;
         }
       } else if (
         key === 'budgetMin' ||
@@ -166,107 +339,141 @@ const SearchPage = () => {
     };
   }, [searchParams.keyword]);
 
-  // Perform search with provided parameters
-  const performSearch = async (params = searchParams) => {
-    console.log('🔍 performSearch called with params:', params);
-    console.log('🔍 isAuthenticated:', isAuthenticated, 'isHirer:', isHirer);
+  const executeWorkerSearch = async (params = {}, { sortOption } = {}) => {
+    const apiEndpoint = '/workers';
+    const apiParams = buildWorkerQueryParams(params);
+
+    console.log('🔍 executeWorkerSearch - params:', params);
+    console.log('🔍 executeWorkerSearch - query:', apiParams);
+
     setLoading(true);
     setError(null);
 
     try {
-      // Use consistent API endpoint for all users
-      const apiEndpoint = '/workers';
-      console.log('🔍 Using API endpoint:', apiEndpoint);
-
-      // Prepare API parameters
-      const apiParams = {
-        page: params.page || 1,
-        limit: params.limit || 12, // Changed from 10 to 12 for grid layout
-        sortBy: sortOrder, // Changed from 'sort' to 'sortBy' to match backend
-      };
-
-      // Add search filters - MAP TO BACKEND EXPECTED PARAMS
-      if (params.keyword) apiParams.workNeeded = params.keyword; // ✅ Backend expects 'workNeeded'
-      if (params.location) apiParams.where = params.location; // ✅ Backend expects 'where'
-      if (params.jobType) apiParams.type = params.jobType; // ✅ Backend expects 'type' (work type)
-      if (params.trade) apiParams.trade = params.trade; // ✅ Backend expects 'trade'
-      if (params.experienceLevel) apiParams.experienceLevel = params.experienceLevel;
-      if (params.budgetMin) apiParams.minPrice = params.budgetMin; // ✅ Backend expects 'minPrice'
-      if (params.budgetMax) apiParams.maxPrice = params.budgetMax; // ✅ Backend expects 'maxPrice'
-      if (params.minRating) apiParams.minRating = params.minRating;
-
-      // Add categories and skills
-      if (params.categories && params.categories.length > 0) {
-        apiParams.categories = params.categories.join(',');
-      }
-
-      if (params.skills && params.skills.length > 0) {
-        apiParams.skills = params.skills.join(',');
-      }
-
-      // Add location parameters for geospatial search
-      if (params.location && params.location.coordinates) {
-        apiParams.latitude = params.location.coordinates.latitude;
-        apiParams.longitude = params.location.coordinates.longitude;
-        apiParams.radius = params.distance || 50;
-      }
-
-      // Make API request to appropriate endpoint
-      console.log(
-        '🔍 Making API request to:',
-        apiEndpoint,
-        'with params:',
-        apiParams,
-      );
       const response = await axios.get(apiEndpoint, { params: apiParams });
       console.log('🔍 API response:', response.data);
 
-      if (response.data && response.data.success) {
-        // Unwrap standardized payloads: { data: { workers, pagination } } or { workers }
-        const payload = response.data.data || response.data;
-        const workers = Array.isArray(payload)
-          ? payload
-          : payload?.workers || payload?.results || [];
-        console.log('🔍 Extracted workers:', workers);
-        setSearchResults(workers);
-        const paginationData =
-          payload?.pagination || response.data.meta?.pagination || {};
-        setPagination({
-          page: paginationData.page || apiParams.page,
-          limit: paginationData.limit || apiParams.limit,
-          totalItems: paginationData.total || 0,
-          totalPages: paginationData.totalPages || paginationData.pages || 1,
-        });
-      } else {
-        setError(response.data.message || 'Failed to search');
-        setSearchResults([]);
+      if (!response.data || !response.data.success) {
+        const message =
+          response.data?.message || 'Failed to fetch worker search results';
+        throw new Error(message);
       }
+
+      const payload = response.data.data || response.data;
+      const rawWorkers = Array.isArray(payload)
+        ? payload
+        : payload?.workers || payload?.results || [];
+
+      const normalizedWorkers = rawWorkers.map((worker) =>
+        normalizeWorkerRecord(worker),
+      );
+
+      const activeSort = sortOption || params.sort || sortOrder || 'relevance';
+      const sortedWorkers = sortWorkerResults(normalizedWorkers, activeSort);
+
+      setSearchResults(sortedWorkers);
+
+      const paginationData =
+        payload?.pagination || response.data.meta?.pagination || {};
+      const totalItems =
+        paginationData.totalWorkers ||
+        paginationData.totalItems ||
+        paginationData.total ||
+        sortedWorkers.length;
+      const perPage = paginationData.limit || apiParams.limit || 12;
+      const totalPages =
+        paginationData.totalPages ||
+        paginationData.pages ||
+        Math.max(1, Math.ceil(totalItems / perPage));
+
+      setPagination({
+        page: paginationData.currentPage || paginationData.page || apiParams.page || 1,
+        limit: perPage,
+        totalItems,
+        totalPages,
+        total: totalItems,
+      });
     } catch (error) {
       console.error('Error searching:', error);
-      setError(
-        error.response?.data?.message || 'An error occurred while searching',
-      );
+      setError(error.message || 'An error occurred while searching');
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Perform search with provided parameters
+  const performSearch = async (params = searchParams) => {
+    await executeWorkerSearch(params, {});
+  };
+
   // Handle search form submission
   const handleSearch = (filters) => {
-    // Update search parameters
-    const newParams = { ...filters, page: 1 };
-    setSearchParams(newParams);
+    const nextSort = filters.sort || searchParams.sort || sortOrder;
 
-    // Update URL with new search parameters
-    updateSearchURL(newParams);
+    const normalizedParams = {
+      ...searchParams,
+      ...filters,
+      trade: filters.trade || filters.category || searchParams.trade || searchParams.category || filters.primaryTrade || '',
+      category: filters.category || filters.trade || filters.primaryTrade || '',
+    };
 
-    // Perform search
-    performSearch(newParams);
+    if (!normalizedParams.trade) {
+      delete normalizedParams.trade;
+    }
+    if (!normalizedParams.category) {
+      delete normalizedParams.category;
+    }
+
+    const newParams = {
+      ...normalizedParams,
+      page: 1,
+      sort: nextSort,
+    };
+
+    if (nextSort !== sortOrder) {
+      setSortOrder(nextSort);
+    }
+
+    const sanitizedParams = Object.entries(newParams).reduce((acc, [key, value]) => {
+      if (value === null || value === undefined) {
+        return acc;
+      }
+
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '') {
+          return acc;
+        }
+        acc[key] = trimmed;
+        return acc;
+      }
+
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          return acc;
+        }
+        acc[key] = value;
+        return acc;
+      }
+
+      acc[key] = value;
+      return acc;
+    }, {});
+
+    // Preserve explicit sort order even if "relevance"
+    sanitizedParams.sort = nextSort;
+    sanitizedParams.page = 1;
+
+    setSearchParams(sanitizedParams);
+
+    updateSearchURL(sanitizedParams, nextSort);
+
+    performSearch(sanitizedParams);
   };
 
   // Update URL with search parameters
-  const updateSearchURL = (params) => {
+  const updateSearchURL = (params, sortOverride) => {
     const queryParams = new URLSearchParams();
 
     // Add all search parameters to URL
@@ -287,14 +494,24 @@ const SearchPage = () => {
     });
 
     // Add sort order to URL
-    if (sortOrder !== 'relevance') {
-      queryParams.set('sort', sortOrder);
+    const effectiveSort = sortOverride || params.sort || sortOrder;
+    if (effectiveSort && effectiveSort !== 'relevance') {
+      queryParams.set('sort', effectiveSort);
+    } else if (effectiveSort === 'relevance') {
+      queryParams.delete('sort');
     }
 
     // Update URL with new search parameters
+    const currentPath = location.pathname || '';
+    const targetPath = currentPath.startsWith('/find-talents')
+      ? currentPath
+      : currentPath.startsWith('/search')
+      ? currentPath
+      : '/find-talents';
+
     navigate(
       {
-        pathname: '/search',
+        pathname: targetPath,
         search: queryParams.toString(),
       },
       { replace: true },
@@ -305,7 +522,7 @@ const SearchPage = () => {
   const handlePageChange = (newPage) => {
     const newParams = { ...searchParams, page: newPage };
     setSearchParams(newParams);
-    updateSearchURL(newParams);
+    updateSearchURL(newParams, newParams.sort || sortOrder);
     performSearch(newParams);
   };
 
@@ -315,80 +532,22 @@ const SearchPage = () => {
     setSortOrder(newSortOrder);
 
     // ✅ FIX: Preserve all search params when sorting
-    const newParams = { ...searchParams };
-    
+    const newParams = { ...searchParams, sort: newSortOrder };
+
+    // Update stored params for downstream consumers
+    setSearchParams(newParams);
+
     // Update URL with new sort order
-    updateSearchURL(newParams);
-    
-    // ✅ FIX: Perform search with preserved params AND new sort order
-    // The sortOrder state will be updated by setSortOrder above,
-    // but performSearch needs to use the new value immediately
+    updateSearchURL(newParams, newSortOrder);
+
+    // Perform search with preserved params AND new sort order
     performSearchWithSort(newParams, newSortOrder);
   };
 
   // Helper function to perform search with explicit sort order
   const performSearchWithSort = async (params, sort) => {
     console.log('🔍 performSearchWithSort called with params:', params, 'sort:', sort);
-    setLoading(true);
-    setError(null);
-
-    try {
-      const apiEndpoint = '/workers';
-      const apiParams = {
-        page: params.page || 1,
-        limit: params.limit || 12,
-        sortBy: sort || sortOrder, // Use provided sort or fallback to state
-      };
-
-      // Add search filters - MAP TO BACKEND EXPECTED PARAMS
-      if (params.keyword) apiParams.workNeeded = params.keyword;
-      if (params.location) apiParams.where = params.location;
-      if (params.jobType) apiParams.type = params.jobType;
-      if (params.trade) apiParams.trade = params.trade;
-      if (params.experienceLevel) apiParams.experienceLevel = params.experienceLevel;
-      if (params.budgetMin) apiParams.minPrice = params.budgetMin;
-      if (params.budgetMax) apiParams.maxPrice = params.budgetMax;
-      if (params.minRating) apiParams.minRating = params.minRating;
-
-      if (params.categories && params.categories.length > 0) {
-        apiParams.categories = params.categories.join(',');
-      }
-      if (params.skills && params.skills.length > 0) {
-        apiParams.skills = params.skills.join(',');
-      }
-      if (params.location && params.location.coordinates) {
-        apiParams.latitude = params.location.coordinates.latitude;
-        apiParams.longitude = params.location.coordinates.longitude;
-        apiParams.radius = params.distance || 50;
-      }
-
-      console.log('🔍 API call with params:', apiParams);
-      const response = await axios.get(apiEndpoint, { params: apiParams });
-
-      if (response.data && response.data.success) {
-        const payload = response.data.data || response.data;
-        const workers = Array.isArray(payload)
-          ? payload
-          : payload?.workers || payload?.results || [];
-        setSearchResults(workers);
-        const paginationData = payload?.pagination || response.data.meta?.pagination || {};
-        setPagination({
-          page: paginationData.page || apiParams.page,
-          limit: paginationData.limit || apiParams.limit,
-          totalItems: paginationData.total || 0,
-          totalPages: paginationData.totalPages || paginationData.pages || 1,
-        });
-      } else {
-        setError(response.data.message || 'Failed to search');
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error('Error searching:', error);
-      setError(error.response?.data?.message || 'An error occurred while searching');
-      setSearchResults([]);
-    } finally {
-      setLoading(false);
-    }
+    await executeWorkerSearch(params, { sortOption: sort });
   };
 
   // Handle filter removal
@@ -402,6 +561,25 @@ const SearchPage = () => {
           delete newParams[key];
         }
       });
+      newParams.page = 1;
+      newParams.sort = 'relevance';
+      setSortOrder('relevance');
+    } else if (filterKey === 'keyword') {
+      delete newParams.keyword;
+      delete newParams.query;
+      newParams.page = 1;
+    } else if (filterKey === 'location') {
+      delete newParams.location;
+      delete newParams.distance;
+      newParams.page = 1;
+    } else if (filterKey === 'jobType') {
+      delete newParams.jobType;
+      delete newParams.workType;
+      newParams.page = 1;
+    } else if (filterKey === 'trade' || filterKey === 'category') {
+      delete newParams.trade;
+      delete newParams.category;
+      delete newParams.primaryTrade;
       newParams.page = 1;
     } else if (filterKey === 'categories' || filterKey === 'skills') {
       // Remove specific category or skill
@@ -420,12 +598,7 @@ const SearchPage = () => {
       // Clear budget filters
       delete newParams.budgetMin;
       delete newParams.budgetMax;
-    } else if (filterKey === 'location') {
-      // Clear location filters
-      delete newParams.location;
-      delete newParams.distance;
-    } else {
-      // Clear specific filter
+    } else if (filterKey) {
       delete newParams[filterKey];
     }
 
@@ -434,7 +607,7 @@ const SearchPage = () => {
 
     // Update state and URL
     setSearchParams(newParams);
-    updateSearchURL(newParams);
+    updateSearchURL(newParams, newParams.sort || sortOrder);
     performSearch(newParams);
   };
 

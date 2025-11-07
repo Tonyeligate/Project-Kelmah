@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -14,13 +14,49 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
 
-const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
-  const [keyword, setKeyword] = useState(initialValues.keyword || '');
-  const [location, setLocation] = useState(initialValues.location || '');
-  const [jobType, setJobType] = useState(initialValues.jobType || '');
-  const [category, setCategory] = useState(initialValues.category || '');
-  const [skills, setSkills] = useState(initialValues.skills || []);
+const JobSearchForm = ({
+  onSubmit,
+  onSearch,
+  initialValues = {},
+  initialFilters,
+}) => {
+  const resolvedInitials = initialFilters || initialValues || {};
+  const {
+    keyword: initialKeyword = '',
+    location: initialLocation = '',
+    jobType: initialJobType = '',
+    category: initialCategory = '',
+    skills: initialSkills = [],
+  } = resolvedInitials;
+
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const [location, setLocation] = useState(initialLocation);
+  const [jobType, setJobType] = useState(initialJobType);
+  const [category, setCategory] = useState(initialCategory);
+  const [skills, setSkills] = useState(initialSkills);
   const [skill, setSkill] = useState('');
+
+  useEffect(() => {
+    setKeyword(initialKeyword);
+  }, [initialKeyword]);
+
+  useEffect(() => {
+    setLocation(initialLocation);
+  }, [initialLocation]);
+
+  useEffect(() => {
+    setJobType(initialJobType);
+  }, [initialJobType]);
+
+  useEffect(() => {
+    setCategory(initialCategory);
+  }, [initialCategory]);
+
+  useEffect(() => {
+    setSkills(Array.isArray(initialSkills) ? initialSkills : []);
+  }, [initialSkills]);
+
+  const submitHandler = onSearch || onSubmit;
 
   // Vocational job categories for Ghana's skilled trades
   const jobCategories = [
@@ -49,13 +85,18 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
-      keyword,
-      location,
-      jobType,
-      category,
-      skills,
-    });
+    if (submitHandler) {
+      submitHandler({
+        keyword,
+        location,
+        jobType,
+        category,
+        skills,
+      });
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn('JobSearchForm submitted without handler');
+    }
   };
 
   const handleAddSkill = () => {
@@ -170,8 +211,10 @@ const JobSearchForm = ({ onSubmit, initialValues = {} }) => {
 };
 
 JobSearchForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func,
+  onSearch: PropTypes.func,
   initialValues: PropTypes.object,
+  initialFilters: PropTypes.object,
 };
 
 export default JobSearchForm;

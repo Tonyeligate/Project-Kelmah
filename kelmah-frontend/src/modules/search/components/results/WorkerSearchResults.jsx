@@ -60,18 +60,48 @@ const WorkerSearchResults = ({
       activeFilters.push({ key: 'keyword', value: filters.keyword });
     }
 
-    if (filters.location?.address) {
-      activeFilters.push({ key: 'location', value: filters.location.address });
+    const locationLabel =
+      typeof filters.location === 'string'
+        ? filters.location
+        : filters.location?.address;
+    if (locationLabel) {
+      activeFilters.push({ key: 'location', value: locationLabel });
     }
 
-    if (filters.jobType) {
-      activeFilters.push({ key: 'jobType', value: filters.jobType });
+    if (filters.jobType || filters.workType) {
+      activeFilters.push({
+        key: 'jobType',
+        value: filters.jobType || filters.workType,
+      });
     }
 
-    if (filters.budgetMin || filters.budgetMax) {
+    const tradeLabel =
+      filters.trade || filters.category || filters.primaryTrade || '';
+    if (tradeLabel) {
+      activeFilters.push({ key: 'trade', value: tradeLabel });
+    }
+
+    if (filters.minRating || filters.rating) {
+      const ratingValue = filters.minRating || filters.rating;
+      activeFilters.push({
+        key: 'rating',
+        value: `${ratingValue}+ Stars`,
+      });
+    }
+
+    if (filters.availability) {
+      activeFilters.push({
+        key: 'availability',
+        value: filters.availability,
+      });
+    }
+
+    if (filters.budgetMin || filters.budgetMax || filters.maxRate) {
       activeFilters.push({
         key: 'budget',
-        value: `$${filters.budgetMin || 0} - $${filters.budgetMax || 'Any'}`,
+        value: `₵${filters.budgetMin || 0} - ₵${
+          filters.budgetMax || filters.maxRate || 'Any'
+        }`,
       });
     }
 
@@ -101,7 +131,9 @@ const WorkerSearchResults = ({
             <Chip
               key={`${filter.key}-${index}`}
               label={filter.value}
-              onDelete={() => onRemoveFilter && onRemoveFilter(filter.key)}
+              onDelete={() =>
+                onRemoveFilter && onRemoveFilter(filter.key, filter.value)
+              }
               color="primary"
               variant="outlined"
               size="small"
@@ -221,9 +253,17 @@ const WorkerSearchResults = ({
         color="text.secondary"
         sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
       >
-        {pagination.total
-          ? `${pagination.total} worker${pagination.total !== 1 ? 's' : ''} found`
-          : 'Searching...'}
+        {(() => {
+          const totalCount =
+            pagination.total ??
+            pagination.totalItems ??
+            pagination.totalWorkers ??
+            0;
+          if (totalCount > 0) {
+            return `${totalCount} worker${totalCount !== 1 ? 's' : ''} found`;
+          }
+          return loading ? 'Searching...' : 'No workers found';
+        })()}
       </Typography>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>

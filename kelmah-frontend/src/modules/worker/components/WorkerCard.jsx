@@ -34,7 +34,10 @@ const WorkerCard = ({ worker, isPublicView = false }) => {
   // Handle view profile
   const handleViewProfile = (e) => {
     e.stopPropagation();
-    navigate(`/workers/${worker.id || worker._id || worker.userId}`);
+    const targetId = worker.id || worker._id || worker.userId;
+    if (targetId) {
+      navigate(`/worker-profile/${targetId}`);
+    }
   };
 
   // Handle message worker
