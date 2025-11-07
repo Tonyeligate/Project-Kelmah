@@ -814,13 +814,25 @@ class WorkerController {
       const worker = workerDoc || {};
       const profile = workerProfileDoc || {};
 
-      const safeString = (val, fallback = '') => (val || fallback).toString();
+      const safeString = (val, fallback = '') => {
+        if (!val) return fallback;
+        if (typeof val === 'string') return val;
+        if (val.toString && typeof val.toString === 'function') {
+          try {
+            return val.toString();
+          } catch (e) {
+            return fallback;
+          }
+        }
+        return String(val || fallback);
+      };
+      
       const safeNumber = (val, fallback = 0) => Number(val) || fallback;
       const safeBool = (val) => Boolean(val);
 
       const workerPayload = {
-        id: safeString(worker._id),
-        userId: safeString(worker._id),
+        id: worker._id ? safeString(worker._id) : '',
+        userId: worker._id ? safeString(worker._id) : '',
         name: `${safeString(worker.firstName)} ${safeString(worker.lastName)}`.trim() || 'Worker',
         bio: safeString(worker.bio || profile.bio, `Professional worker in ${worker.location || 'Ghana'}.`),
         location: safeString(worker.location || profile.location, 'Ghana'),
