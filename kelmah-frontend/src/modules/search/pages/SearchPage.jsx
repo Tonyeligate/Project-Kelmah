@@ -501,18 +501,34 @@ const SearchPage = () => {
       queryParams.delete('sort');
     }
 
-    // Update URL with new search parameters
+    // Update URL with new search parameters only when we are on a search route.
     const currentPath = location.pathname || '';
+    const isSearchContext =
+      currentPath.startsWith('/find-talents') || currentPath.startsWith('/search');
+
+    if (!isSearchContext) {
+      // Guard against in-flight search effects forcing navigation when the
+      // user has already moved to a different page (e.g. worker profile).
+      return;
+    }
+
     const targetPath = currentPath.startsWith('/find-talents')
       ? currentPath
       : currentPath.startsWith('/search')
       ? currentPath
       : '/find-talents';
 
+    const nextSearch = queryParams.toString();
+    const currentSearch = (location.search || '').replace(/^[?]/, '');
+
+    if (targetPath === currentPath && nextSearch === currentSearch) {
+      return;
+    }
+
     navigate(
       {
         pathname: targetPath,
-        search: queryParams.toString(),
+        search: nextSearch,
       },
       { replace: true },
     );
