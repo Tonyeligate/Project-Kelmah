@@ -749,34 +749,38 @@ class WorkerController {
 
   static async getWorkerById(req, res) {
     const workerId = req.params.id;
-    if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid worker ID required',
-        code: 'INVALID_WORKER_ID',
-      });
-    }
-
-    if (mongoose.connection.readyState !== 1) {
-      console.warn('⚠️ MongoDB not ready for getWorkerById request', {
-        readyState: mongoose.connection.readyState,
-      });
-      return res.status(503).json({
-        success: false,
-        message: 'User Service database is reconnecting. Please try again shortly.',
-        code: 'USER_SERVICE_DB_NOT_READY',
-      });
-    }
-
+    
     try {
+      // Step 1: Validate ID
+      if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid worker ID required',
+          code: 'INVALID_WORKER_ID',
+        });
+      }
+
+      // Step 2: Check DB connection
+      if (mongoose.connection.readyState !== 1) {
+        console.warn('⚠️ MongoDB not ready for getWorkerById request');
+        return res.status(503).json({
+          success: false,
+          message: 'User Service database is reconnecting. Please try again shortly.',
+          code: 'USER_SERVICE_DB_NOT_READY',
+        });
+      }
+
+      // Step 3: Ensure connection
       await ensureConnection({
         timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
       });
 
+      // Step 4: Get models
       const MongoUser = modelsModule.User;
       const MongoWorkerProfile = modelsModule.WorkerProfile;
 
       if (!MongoUser) {
+        console.error('❌ User model not available');
         return res.status(503).json({
           success: false,
           message: 'User model not initialized',
@@ -784,13 +788,20 @@ class WorkerController {
         });
       }
 
-      const [workerDoc, workerProfileDoc] = await Promise.all([
-        MongoUser.findById(workerId).lean(),
-        MongoWorkerProfile
-          ? MongoWorkerProfile.findOne({ userId: workerId }).lean()
-          : null,
-      ]);
+      // Step 5: Query database
+      const workerDoc = await MongoUser.findById(workerId).lean().catch(err => {
+        console.error('❌ Error querying User:', err);
+        return null;
+      });
+      
+      const workerProfileDoc = MongoWorkerProfile
+        ? await MongoWorkerProfile.findOne({ userId: workerId }).lean().catch(err => {
+            console.error('⚠️ Error querying WorkerProfile:', err);
+            return null;
+          })
+        : null;
 
+      // Step 6: Check if found
       if (!workerDoc && !workerProfileDoc) {
         return res.status(404).json({
           success: false,
@@ -799,86 +810,62 @@ class WorkerController {
         });
       }
 
-      // Build simplified worker payload without complex helper dependencies
+      // Step 7: Build safe payload
       const worker = workerDoc || {};
       const profile = workerProfileDoc || {};
 
+      const safeString = (val, fallback = '') => (val || fallback).toString();
+      const safeNumber = (val, fallback = 0) => Number(val) || fallback;
+      const safeBool = (val) => Boolean(val);
+
       const workerPayload = {
-        id: worker._id?.toString() || '',
-        userId: worker._id?.toString() || '',
-        name: `${worker.firstName || ''} ${worker.lastName || ''}`.trim(),
-        bio: worker.bio || profile.bio || `Professional worker with experience in ${worker.location || 'Ghana'}.`,
-        location: worker.location || profile.location || 'Ghana',
-        city: worker.location ? worker.location.split(',')[0].trim() : 'Accra',
-        hourlyRate: worker.hourlyRate || profile.hourlyRate || 25,
-        currency: worker.currency || profile.currency || 'GHS',
-        rating: worker.rating || 4.5,
-        totalReviews: worker.totalReviews || 0,
-        totalJobsCompleted: worker.totalJobsCompleted || 0,
-        availabilityStatus: worker.availabilityStatus || profile.availabilityStatus || 'available',
-        isVerified: worker.isVerified || false,
+        id: safeString(worker._id),
+        userId: safeString(worker._id),
+        name: `${safeString(worker.firstName)} ${safeString(worker.lastName)}`.trim() || 'Worker',
+        bio: safeString(worker.bio || profile.bio, `Professional worker in ${worker.location || 'Ghana'}.`),
+        location: safeString(worker.location || profile.location, 'Ghana'),
+        city: safeString(worker.location, 'Accra').split(',')[0].trim(),
+        hourlyRate: safeNumber(worker.hourlyRate || profile.hourlyRate, 25),
+        currency: safeString(worker.currency || profile.currency, 'GHS'),
+        rating: safeNumber(worker.rating, 4.5),
+        totalReviews: safeNumber(worker.totalReviews, 0),
+        totalJobsCompleted: safeNumber(worker.totalJobsCompleted, 0),
+        availabilityStatus: safeString(worker.availabilityStatus || profile.availabilityStatus, 'available'),
+        isVerified: safeBool(worker.isVerified),
         profilePicture: worker.profilePicture || profile.profilePicture || null,
         specializations: worker.specializations || ['General Maintenance'],
-        profession: worker.profession || 'General Worker',
-        workType: profile.workType || 'Full-time',
+        profession: safeString(worker.profession, 'General Worker'),
+        workType: safeString(profile.workType, 'Full-time'),
         skills: Array.isArray(worker.skills)
-          ? worker.skills.map(skill => ({
-              name: typeof skill === 'string' ? skill : skill.skillName || skill.name || skill,
-              level: typeof skill === 'string' ? 'Intermediate' : skill.level || 'Intermediate'
+          ? worker.skills.slice(0, 10).map(skill => ({
+              name: safeString(typeof skill === 'string' ? skill : (skill?.skillName || skill?.name || skill)),
+              level: safeString(typeof skill === 'string' ? 'Intermediate' : skill?.level, 'Intermediate')
             }))
           : [],
-        user: {
-          id: worker._id?.toString() || '',
-          firstName: worker.firstName || '',
-          lastName: worker.lastName || '',
-          email: worker.email || '',
-          phone: worker.phone || worker.phoneNumber || null,
-        },
-        verification: {
-          isVerified: Boolean(worker.isVerified),
-          verifiedAt: worker.verifiedAt || null,
-          level: profile.verificationLevel || null,
-          backgroundCheckStatus: profile.backgroundCheckStatus || 'not_required',
-        },
-        profile: {
-          picture: worker.profilePicture || profile.profilePicture || null,
-          bio: worker.bio || profile.bio || '',
-          location: worker.location || profile.location || 'Ghana',
-        },
-        rateRange: {
-          min: profile.hourlyRateMin || worker.hourlyRate || 0,
-          max: profile.hourlyRateMax || worker.hourlyRate || 0,
-          currency: worker.currency || profile.currency || 'GHS',
-        },
-        workerProfile: profile || null,
       };
 
+      // Step 8: Send response
       return res.status(200).json({
         success: true,
         data: {
           worker: workerPayload,
         },
       });
+
     } catch (error) {
-      console.error('❌ Error in getWorkerById - FULL DIAGNOSTIC:', {
-        errorName: error?.name,
-        errorMessage: error?.message,
-        errorStack: error?.stack,
+      console.error('❌ getWorkerById FATAL ERROR:', {
+        name: error?.name,
+        message: error?.message,
+        stack: error?.stack?.split('\n').slice(0, 5).join('\n'),
         workerId,
-        mongooseState: mongoose.connection.readyState,
-        modelsLoaded: {
-          User: !!modelsModule.User,
-          WorkerProfile: !!modelsModule.WorkerProfile,
-        },
       });
-      if (isDbUnavailableError(error)) {
-        return res.status(503).json({
-          success: false,
-          message: 'User Service database is temporarily unavailable.',
-          code: 'USER_SERVICE_DB_UNAVAILABLE',
-        });
-      }
-      return handleServiceError(res, error, 'Failed to get worker profile');
+      
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching worker profile',
+        code: 'INTERNAL_SERVER_ERROR',
+        debug: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
     }
   }
 
