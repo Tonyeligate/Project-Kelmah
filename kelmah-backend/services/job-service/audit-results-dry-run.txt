@@ -1,0 +1,284 @@
+
+================================================================================
+COMPREHENSIVE DATA INTEGRITY AUDIT - 5 PHASE PROTOCOL
+Kelmah Platform Database - November 6, 2025
+================================================================================
+
+Mode: ­ƒöì DRY RUN (no changes applied)
+Run with --apply flag to actually fix issues
+
+­ƒôí Connecting to MongoDB Atlas...
+Ô£à Connected to database: kelmah_platform
+
+
+================================================================================
+PHASE 1: INDEX CREATION & VERIFICATION
+================================================================================
+
+­ƒôï Checking existing indexes...
+
+Workers Collection Indexes:
+  - _id_: {"_id":1}
+  - email_1: {"email":1}
+  - phone_1: {"phone":1}
+  - googleId_1: {"googleId":1}
+  - facebookId_1: {"facebookId":1}
+  - linkedinId_1: {"linkedinId":1}
+  - role_1: {"role":1}
+  - isActive_1: {"isActive":1}
+  - createdAt_1: {"createdAt":1}
+  - locationCoordinates_2dsphere: {"locationCoordinates":"2dsphere"}
+  - worker_text_search: {"_fts":"text","_ftsx":1}
+
+Jobs Collection Indexes:
+  - _id_: {"_id":1}
+  - title_text_description_text_category_text_skills_text: {"_fts":"text","_ftsx":1}
+  - locationDetails.coordinates_2dsphere: {"locationDetails.coordinates":"2dsphere"}
+  - locationDetails.region_1_requirements.primarySkills_1: {"locationDetails.region":1,"requirements.primarySkills":1}
+  - performanceTier_1_bidding.bidStatus_1: {"performanceTier":1,"bidding.bidStatus":1}
+  - expiresAt_1_status_1: {"expiresAt":1,"status":1}
+
+­ƒº¬ Testing Text Search (before index creation)...
+  Ô£à Workers text search working: "electrician" found 2 results
+  Ô£à Jobs text search working: "painting" found 1 results
+
+Ô£à Workers text index already exists
+
+Ô£à Jobs text index already exists
+
+Ô£à Phase 1 Complete: Index verification finished
+
+================================================================================
+PHASE 2: WORKERS DATA AUDIT (7 CHECKS)
+================================================================================
+
+­ƒôè Total workers in database: 20
+
+CHECK 1: Trade Mismatch (primaryTrade not in specializations)
+--------------------------------------------------------------------------------
+Found 0 workers with trade mismatch
+Ô£à No trade mismatches found
+
+
+CHECK 2: Invalid Work Types
+--------------------------------------------------------------------------------
+Found 0 workers with invalid work types
+Ô£à All work types are valid
+
+
+CHECK 3: Missing Location Data
+--------------------------------------------------------------------------------
+Found 20 workers with missing city
+
+Missing locations (showing first 5):
+  - kwame.asante1@kelmah.test: city="undefined"
+  - efua.mensah@kelmah.test: city="undefined"
+  - kwaku.osei@kelmah.test: city="undefined"
+  - yaa.adjei@kelmah.test: city="undefined"
+  - fiifi.boateng@kelmah.test: city="undefined"
+­ƒöì DRY RUN: Would delete these workers (missing required field)
+
+
+CHECK 4: Rating Out of Range
+--------------------------------------------------------------------------------
+Found 0 workers with invalid ratings
+Ô£à All ratings are in valid range (0-5)
+
+
+CHECK 5: Invalid Hourly Rate
+--------------------------------------------------------------------------------
+Found 0 workers with invalid hourly rates
+Ô£à All hourly rates are in valid range (0-500)
+
+
+CHECK 6: Duplicate/Test Data Removal
+--------------------------------------------------------------------------------
+Found 0 test/demo records
+Ô£à No test/demo data found
+
+
+CHECK 7: Specialization Standardization
+--------------------------------------------------------------------------------
+Found 0 workers with unstandardized trades
+Ô£à All trades are standardized
+
+Ô£à Phase 2 Complete: Workers data audit finished
+
+================================================================================
+PHASE 3: JOBS DATA AUDIT (6 CHECKS)
+================================================================================
+
+­ƒôè Total jobs in database: 6
+
+CHECK 1: Missing Required Fields (title, description)
+--------------------------------------------------------------------------------
+Found 0 jobs with missing required fields
+Ô£à All jobs have required fields
+
+
+CHECK 2: Invalid Budget
+--------------------------------------------------------------------------------
+Found 0 jobs with invalid budgets
+Ô£à All budgets are in valid range (0-100,000)
+
+
+CHECK 3: Missing City
+--------------------------------------------------------------------------------
+Found 6 jobs with missing city
+
+Jobs with missing city (showing first 3):
+  - "Senior Electrical Engineer - Commercial Projects": city="undefined"
+  - "Master Plumber - Residential & Commercial": city="undefined"
+  - "Expert Carpenter - Custom Furniture Specialist": city="undefined"
+­ƒöì DRY RUN: Would delete these jobs
+
+
+CHECK 4: Application Count Issues
+--------------------------------------------------------------------------------
+Found 0 jobs with unrealistic application counts (>1000)
+Found 6 jobs with null application counts
+­ƒöì DRY RUN: Would set application counts to 0
+
+
+CHECK 5: Duplicate Jobs
+--------------------------------------------------------------------------------
+Found 0 duplicate jobs
+Ô£à No duplicate jobs found
+
+
+CHECK 6: Status Validation
+--------------------------------------------------------------------------------
+Found 6 jobs with invalid status
+
+Invalid statuses (showing first 3):
+  - "Senior Electrical Engineer - Commercial Projects": status="open"
+  - "Master Plumber - Residential & Commercial": status="open"
+  - "Expert Carpenter - Custom Furniture Specialist": status="open"
+­ƒöì DRY RUN: Would set status="Open" for these jobs
+
+Ô£à Phase 3 Complete: Jobs data audit finished
+
+================================================================================
+PHASE 4: CRITICAL TESTING (7 TESTS)
+================================================================================
+
+TEST 1: Text Search for Workers ("electrician")
+--------------------------------------------------------------------------------
+Result: 2 workers found
+Expected: > 0
+Ô£à PASSED
+
+TEST 2: Text Search for Jobs ("painting")
+--------------------------------------------------------------------------------
+Result: 1 jobs found
+Expected: > 0
+Ô£à PASSED
+
+TEST 3: Filter by Trade (Exact Match - "Electrical Work")
+--------------------------------------------------------------------------------
+Result: 0 workers found
+Expected: > 0
+ÔØî FAILED - Trade standardization incomplete
+
+
+TEST 4: Filter by City ("Accra")
+--------------------------------------------------------------------------------
+Result: 0 workers found
+Expected: > 0
+ÔØî FAILED
+
+
+TEST 5: Combined Filters (City + Trade + Text Search)
+--------------------------------------------------------------------------------
+Result: 0 workers found
+Expected: > 0 (if data exists matching all criteria)
+Ô£à PASSED - Query executes correctly
+
+TEST 6: No Duplicates
+--------------------------------------------------------------------------------
+Total workers: 20
+Unique IDs: 20
+Ô£à PASSED - No duplicates
+
+TEST 7: No Test Data (hourlyRate in [42, 52, 48, 60])
+--------------------------------------------------------------------------------
+Result: 0 test records found
+Expected: 0
+Ô£à PASSED - All test data removed
+
+================================================================================
+PHASE 4 SUMMARY: 5/7 tests passed (71%)
+================================================================================
+
+Ô£à Phase 4 Complete: Critical testing finished
+
+================================================================================
+PHASE 5: GENERATE REPORT
+================================================================================
+
+­ƒôè COMPREHENSIVE AUDIT REPORT
+================================================================================
+
+Audit Date: 2025-11-06T20:49:04.986Z
+Mode: DRY RUN (no changes applied)
+
+­ƒôê SUMMARY:
+  Workers Audited: 20
+  Jobs Audited: 6
+  Total Issues Found: 38
+  Total Records Modified: 0
+  Tests Passed: 5/7 (71%)
+  Search Accuracy Improvement: 0%
+
+­ƒöì ISSUES BREAKDOWN:
+  Workers:
+    - Trade mismatches: 0
+    - Invalid work types: 0
+    - Missing locations: 20
+    - Invalid ratings: 0
+    - Invalid hourly rates: 0
+    - Test data records: 0
+    - Unstandardized trades: 0
+  Jobs:
+    - Missing required fields: 0
+    - Invalid budgets: 0
+    - Missing cities: 6
+    - Application count issues: 6
+    - Duplicate jobs: 0
+    - Invalid statuses: 6
+
+­ƒöº ACTIONS APPLIED:
+  Workers:
+    - Records deleted: 0
+    - Records updated: 0
+    - Trades standardized: 0
+  Jobs:
+    - Records deleted: 0
+    - Records updated: 0
+
+­ƒº¬ TEST RESULTS:
+  Ô£à textSearchWorkers: count: 2, expected: > 0
+  Ô£à textSearchJobs: count: 1, expected: > 0
+  ÔØî filterByTrade: count: 0, expected: > 0
+  ÔØî filterByCity: count: 0, expected: > 0
+  Ô£à combinedFilters: count: 0, expected: > 0
+  Ô£à noDuplicates: Total: 20, Unique: 20
+  Ô£à noTestData: count: 0, expected: 0
+
+­ƒÆí RECOMMENDATIONS:
+  1. CRITICAL: Complete trade standardization - exact match filtering broken
+  2. Re-run audit with --apply flag to fix identified issues
+
+­ƒôä Full report saved to: ./data-integrity-audit-report.json
+
+Ô£à Phase 5 Complete: Report generated
+
+================================================================================
+Ô£à COMPREHENSIVE DATA INTEGRITY AUDIT COMPLETE
+================================================================================
+
+ÔÜá´©Å  This was a DRY RUN - no changes were applied
+   Run with --apply flag to actually fix issues:
+   node data-integrity-audit-5-phase.js --apply
+
+­ƒôí Database connection closed
