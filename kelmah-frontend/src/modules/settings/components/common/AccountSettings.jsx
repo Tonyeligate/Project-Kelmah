@@ -21,13 +21,14 @@ const AccountSettings = () => {
   const profile = useSelector(selectProfile);
   const loading = useSelector(selectProfileLoading);
   const error = useSelector(selectProfileError);
-  const { updateProfile } = useProfile();
+  const { user } = useSelector((state) => state.auth);
+  const { updateProfile, loadProfile } = useProfile();
 
   const [formData, setFormData] = useState({
-    firstName: profile?.firstName || '',
-    lastName: profile?.lastName || '',
-    email: profile?.email || '',
-    phone: profile?.phone || '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
   });
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -35,14 +36,25 @@ const AccountSettings = () => {
     severity: 'success',
   });
 
+  // Load profile data on mount
   useEffect(() => {
-    setFormData({
-      firstName: profile?.firstName || '',
-      lastName: profile?.lastName || '',
-      email: profile?.email || '',
-      phone: profile?.phone || '',
-    });
-  }, [profile]);
+    if (!profile) {
+      loadProfile();
+    }
+  }, [profile, loadProfile]);
+
+  // Update form when profile or user data changes
+  useEffect(() => {
+    const profileData = profile || user;
+    if (profileData) {
+      setFormData({
+        firstName: profileData.firstName || profileData.name?.split(' ')[0] || '',
+        lastName: profileData.lastName || profileData.name?.split(' ')[1] || '',
+        email: profileData.email || '',
+        phone: profileData.phone || profileData.phoneNumber || '',
+      });
+    }
+  }, [profile, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -17,11 +17,17 @@ import {
 import { Close } from '@mui/icons-material';
 
 const JOB_CATEGORIES = [
-  'Web Development',
-  'Mobile Development',
-  'UI/UX Design',
-  'Data Science',
-  'DevOps',
+  'Plumbing',
+  'Electrical',
+  'Carpentry',
+  'Masonry',
+  'Welding',
+  'Painting',
+  'HVAC',
+  'Roofing',
+  'Tiling',
+  'Interior Design',
+  'Landscaping',
   'Other',
 ];
 

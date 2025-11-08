@@ -638,7 +638,7 @@ const Register = () => {
                         variant="outlined"
                         fullWidth
                         required
-                        placeholder="Enter your last name"
+                        placeholder="Last name"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         InputProps={{

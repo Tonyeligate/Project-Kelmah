@@ -271,11 +271,17 @@ const JobPostingPage = () => {
                 onChange={handleChange}
               >
                 {[
-                  'Web Development',
-                  'Mobile Development',
-                  'Design',
-                  'Writing',
-                  'Marketing',
+                  'Plumbing',
+                  'Electrical',
+                  'Carpentry',
+                  'Masonry',
+                  'Welding',
+                  'Painting',
+                  'HVAC',
+                  'Roofing',
+                  'Tiling',
+                  'Interior Design',
+                  'Landscaping',
                 ].map((cat) => (
                   <MenuItem key={cat} value={cat}>
                     {cat}

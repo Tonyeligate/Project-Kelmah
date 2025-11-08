@@ -58,6 +58,74 @@ export const hirerService = {
     }
   },
 
+  // Dashboard Data
+  async getDashboardData() {
+    try {
+      const response = await userServiceClient.get('/users/hirers/dashboard');
+      return response.data;
+    } catch (error) {
+      console.warn('Dashboard data unavailable, using fallback:', error.message);
+      // Return fallback dashboard data structure
+      return {
+        metrics: {
+          activeJobs: 0,
+          totalApplications: 0,
+          newApplications: 0,
+          hiredWorkers: 0,
+        },
+        activeJobs: [],
+        recentApplications: [],
+        notifications: [],
+      };
+    }
+  },
+
+  async getStats(timeframe = '30d') {
+    try {
+      const response = await userServiceClient.get('/users/hirers/metrics', {
+        params: { timeframe },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Metrics unavailable, using fallback:', error.message);
+      return {
+        activeJobs: 0,
+        totalJobs: 0,
+        totalApplications: 0,
+        newApplications: 0,
+        totalSpent: 0,
+        monthlySpent: 0,
+        hiredWorkers: 0,
+        activeWorkers: 0,
+      };
+    }
+  },
+
+  async getRecentJobs(limit = 10) {
+    try {
+      const response = await jobServiceClient.get('/jobs/my-jobs', {
+        params: { status: 'active', limit, role: 'hirer' },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Recent jobs unavailable:', error.message);
+      return [];
+    }
+  },
+
+  async getApplications(filters = {}) {
+    try {
+      const limit = filters.limit || 10;
+      const response = await userServiceClient.get('/users/hirers/applications/recent', {
+        params: { limit },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Applications unavailable:', error.message);
+      return [];
+    }
+  },
+
   searchWorkers: async (searchParams = {}) => {
     try {
       const response = await userServiceClient.get(

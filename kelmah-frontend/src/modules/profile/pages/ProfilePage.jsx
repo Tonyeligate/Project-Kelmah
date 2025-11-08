@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -45,6 +45,7 @@ const ProfilePage = () => {
   const isActualMobile = useMediaQuery('(max-width: 768px)');
 
   const {
+    loadProfile,
     updateProfile,
     updateSkills,
     updateEducation,
@@ -57,6 +58,7 @@ const ProfilePage = () => {
   const profile = useSelector(selectProfile);
   const loading = useSelector(selectProfileLoading);
   const error = useSelector(selectProfileError);
+  const { user } = useSelector((state) => state.auth);
 
   const [selectedTab, setSelectedTab] = useState(0);
   const [editing, setEditing] = useState(false);
@@ -68,6 +70,13 @@ const ProfilePage = () => {
     bio: '',
     location: '',
   });
+
+  // Load profile on mount if not already loaded
+  useEffect(() => {
+    if (!profile && !loading) {
+      loadProfile();
+    }
+  }, [profile, loading, loadProfile]);
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);

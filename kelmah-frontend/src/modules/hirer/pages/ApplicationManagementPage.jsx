@@ -208,7 +208,13 @@ function ApplicationManagementPage() {
             <Tabs
               value={activeTab}
               onChange={(e, newValue) => setActiveTab(newValue)}
-              sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}
+              sx={{ 
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                '& .MuiTab-root': {
+                  minWidth: 120,
+                  px: 2,
+                },
+              }}
               centered
             >
               <Tab label="Pending" value="pending" />
