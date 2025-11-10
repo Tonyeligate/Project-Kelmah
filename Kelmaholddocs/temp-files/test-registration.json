@@ -1,8 +1,0 @@
-{
-  "firstName": "Test",
-  "lastName": "Worker", 
-  "email": "testworker123@test.com",
-  "password": "TestPass123!",
-  "role": "worker",
-  "phone": "+233555123456"
-}

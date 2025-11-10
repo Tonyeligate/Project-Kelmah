@@ -1,1 +1,0 @@
-# Kelmah Platform Diagrams

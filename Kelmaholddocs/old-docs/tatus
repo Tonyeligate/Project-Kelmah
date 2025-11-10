@@ -1,5 +1,0 @@
-[33mc690f38[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m 🔧 CRITICAL FIX: Complete MongoDB migration for User & Job Services
-[33m7658915[m 🔧 CRITICAL FIX: Convert Auth Service to MongoDB
-[33m9501dd5[m 🗄️ COMPLETE MONGODB MIGRATION - Remove PostgreSQL dependencies
-[33m1014c1b[m 🔄 Implement Real Data Connection Fix - Remove Mock Data Dependencies
-[33md4b18e0[m Add authentication implementation completion documentation
