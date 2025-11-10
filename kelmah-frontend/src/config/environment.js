@@ -367,6 +367,21 @@ export const API_ENDPOINTS = {
     LOGOUT: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/logout'),
     VERIFY: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/verify'),
     REFRESH: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/refresh-token'),
+    CHANGE_PASSWORD: buildEndpoint(
+      SERVICES.AUTH_SERVICE,
+      '/auth/change-password',
+    ),
+    RESEND_VERIFICATION_EMAIL: buildEndpoint(
+      SERVICES.AUTH_SERVICE,
+      '/auth/resend-verification-email',
+    ),
+    VERIFY_EMAIL_TOKEN: (token) =>
+      buildEndpoint(
+        SERVICES.AUTH_SERVICE,
+        `/auth/verify-email/${token}`,
+      ),
+    PROFILE: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/profile'),
+    VALIDATE: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/validate'),
     FORGOT_PASSWORD: buildEndpoint(
       SERVICES.AUTH_SERVICE,
       '/auth/forgot-password',

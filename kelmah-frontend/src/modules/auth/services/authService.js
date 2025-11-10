@@ -5,7 +5,7 @@
  * using the new environment configuration system.
  */
 
-import { AUTH_CONFIG } from '../../../config/environment';
+import { AUTH_CONFIG, API_ENDPOINTS } from '../../../config/environment';
 import { authServiceClient } from '../../common/services/axios';
 import { secureStorage } from '../../../utils/secureStorage';
 
@@ -17,12 +17,14 @@ import { secureStorage } from '../../../utils/secureStorage';
 // Token refresh tracking
 let tokenRefreshTimeout = null;
 
+const { AUTH: AUTH_ENDPOINTS } = API_ENDPOINTS;
+
 const authService = {
   // Login user
   login: async (credentials) => {
     try {
       const response = await authServiceClient.post(
-        '/auth/login',
+        AUTH_ENDPOINTS.LOGIN,
         credentials,
       );
 
@@ -97,7 +99,7 @@ const authService = {
   register: async (userData) => {
     try {
       const response = await authServiceClient.post(
-        '/auth/register',
+        AUTH_ENDPOINTS.REGISTER,
         userData,
       );
       const { token, user } = response.data.data || response.data;
@@ -119,7 +121,7 @@ const authService = {
   // Verify authentication
   verifyAuth: async () => {
     try {
-      const response = await authServiceClient.get('/auth/verify');
+  const response = await authServiceClient.get(AUTH_ENDPOINTS.VERIFY);
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -145,7 +147,7 @@ const authService = {
       const refreshToken = secureStorage.getRefreshToken();
       const logoutData = refreshToken ? { refreshToken } : {};
 
-      await authServiceClient.post('/auth/logout', logoutData);
+  await authServiceClient.post(AUTH_ENDPOINTS.LOGOUT, logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
@@ -187,7 +189,7 @@ const authService = {
         throw new Error('No refresh token available');
       }
 
-      const response = await authServiceClient.post('/auth/refresh-token', {
+      const response = await authServiceClient.post(AUTH_ENDPOINTS.REFRESH, {
         refreshToken,
       });
 
@@ -225,7 +227,7 @@ const authService = {
   forgotPassword: async (email) => {
     try {
       const response = await authServiceClient.post(
-        '/auth/forgot-password',
+        AUTH_ENDPOINTS.FORGOT_PASSWORD,
         { email },
       );
       return response.data;
@@ -239,7 +241,7 @@ const authService = {
   resetPassword: async (token, password) => {
     try {
       const response = await authServiceClient.post(
-        '/auth/reset-password',
+        AUTH_ENDPOINTS.RESET_PASSWORD,
         { token, password },
       );
       return response.data;
@@ -253,7 +255,7 @@ const authService = {
   updateProfile: async (profileData) => {
     try {
       const response = await authServiceClient.put(
-        '/auth/profile',
+        AUTH_ENDPOINTS.PROFILE,
         profileData,
       );
       const { user } = response.data.data || response.data;
@@ -273,7 +275,7 @@ const authService = {
   changePassword: async (currentPassword, newPassword) => {
     try {
       const response = await authServiceClient.post(
-        '/auth/change-password',
+        AUTH_ENDPOINTS.CHANGE_PASSWORD,
         {
           currentPassword,
           newPassword,
@@ -319,7 +321,7 @@ const authService = {
   verifyEmail: async (token) => {
     try {
       const response = await authServiceClient.get(
-        `/api/auth/verify-email/${token}`,
+        AUTH_ENDPOINTS.VERIFY_EMAIL_TOKEN(token),
       );
       return {
         success: true,
@@ -338,7 +340,7 @@ const authService = {
   resendVerificationEmail: async (email) => {
     try {
       const response = await authServiceClient.post(
-        '/auth/resend-verification-email',
+        AUTH_ENDPOINTS.RESEND_VERIFICATION_EMAIL,
         {
           email,
         },
@@ -361,7 +363,9 @@ const authService = {
   // MFA Setup (placeholder for future implementation)
   setupMFA: async () => {
     try {
-      const response = await authServiceClient.post('/auth/setup-mfa');
+      const response = await authServiceClient.post(
+        AUTH_ENDPOINTS.MFA_SETUP,
+      );
       // Expect { success, data: { secret, otpauthUrl, qrCode? } }
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
@@ -376,9 +380,12 @@ const authService = {
   // Verify MFA (placeholder for future implementation)
   verifyMFA: async (token) => {
     try {
-      const response = await authServiceClient.post('/auth/verify-mfa', {
+      const response = await authServiceClient.post(
+        AUTH_ENDPOINTS.MFA_VERIFY,
+        {
         token,
-      });
+        },
+      );
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
@@ -391,10 +398,13 @@ const authService = {
   // Disable MFA (placeholder for future implementation)
   disableMFA: async (password, token) => {
     try {
-      const response = await authServiceClient.post('/auth/disable-mfa', {
-        password,
-        token,
-      });
+      const response = await authServiceClient.post(
+        AUTH_ENDPOINTS.MFA_DISABLE,
+        {
+          password,
+          token,
+        },
+      );
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {
