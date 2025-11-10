@@ -1,2 +1,0 @@
-cd .. && git add kelmah-frontend/src/config/env.js kelmah-backend/services/auth-service/server.js && git commit -m "Fix API_BASE_URL suffix in env.js and loosen CORS in auth-service" && git push origin main
-
