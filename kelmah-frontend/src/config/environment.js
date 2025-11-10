@@ -388,7 +388,63 @@ export const API_ENDPOINTS = {
     UPDATE: buildEndpoint(SERVICES.USER_SERVICE, '/users/profile'),
     LIST: buildEndpoint(SERVICES.USER_SERVICE, '/users'),
     WORKERS: buildEndpoint(SERVICES.USER_SERVICE, '/users/workers'),
+    WORKERS_SEARCH: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/workers/search',
+    ),
+    WORKER_DETAIL: (workerId) =>
+      buildEndpoint(SERVICES.USER_SERVICE, `/users/workers/${workerId}`),
+    WORKER_BOOKMARK: (workerId) =>
+      buildEndpoint(
+        SERVICES.USER_SERVICE,
+        `/users/workers/${workerId}/bookmark`,
+      ),
     HIRERS: buildEndpoint(SERVICES.USER_SERVICE, '/users/hirers'),
+    BOOKMARKS: buildEndpoint(SERVICES.USER_SERVICE, '/users/bookmarks'),
+    ME_CREDENTIALS: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/me/credentials',
+    ),
+    PROFILE_PICTURE: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/picture',
+    ),
+    PROFILE_SKILLS: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/skills',
+    ),
+    PROFILE_EDUCATION: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/education',
+    ),
+    PROFILE_EXPERIENCE: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/experience',
+    ),
+    PROFILE_PREFERENCES: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/preferences',
+    ),
+    PROFILE_STATISTICS: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/statistics',
+    ),
+    PROFILE_ACTIVITY: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/profile/activity',
+    ),
+    DASHBOARD_METRICS: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/dashboard/metrics',
+    ),
+    DASHBOARD_WORKERS: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/dashboard/workers',
+    ),
+    DASHBOARD_ANALYTICS: buildEndpoint(
+      SERVICES.USER_SERVICE,
+      '/users/dashboard/analytics',
+    ),
   },
 
   // Job Service Endpoints
@@ -400,6 +456,13 @@ export const API_ENDPOINTS = {
     DELETE: buildEndpoint(SERVICES.JOB_SERVICE, '/jobs'),
     APPLY: buildEndpoint(SERVICES.JOB_SERVICE, '/jobs/apply'),
     MY_JOBS: buildEndpoint(SERVICES.JOB_SERVICE, '/jobs/my-jobs'),
+    DASHBOARD: buildEndpoint(SERVICES.JOB_SERVICE, '/jobs/dashboard'),
+    RECOMMENDATIONS: buildEndpoint(
+      SERVICES.JOB_SERVICE,
+      '/jobs/recommendations',
+    ),
+    APPLICATIONS: (id) =>
+      buildEndpoint(SERVICES.JOB_SERVICE, `/jobs/${id}/applications`),
     BY_ID: (id) => buildEndpoint(SERVICES.JOB_SERVICE, `/jobs/${id}`),
   },
 
@@ -416,11 +479,11 @@ export const API_ENDPOINTS = {
   PAYMENT: {
     BASE: buildEndpoint(SERVICES.PAYMENT_SERVICE, ''),
     METHODS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/methods'),
-    PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions'),
-    HISTORY: buildEndpoint(
+    PROCESS: buildEndpoint(
       SERVICES.PAYMENT_SERVICE,
-      '/payments/transactions/history',
+      '/payments/transactions',
     ),
+    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/history'),
     WALLET: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/wallet'),
     ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrows'),
   },

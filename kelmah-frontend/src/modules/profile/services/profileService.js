@@ -1,11 +1,13 @@
 import { userServiceClient } from '../../common/services/axios';
-import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
+import { API_ENDPOINTS } from '../../../config/environment';
 
 class ProfileService {
   // Get user profile
   async getProfile() {
     try {
-      const response = await userServiceClient.get('/profile');
+      const response = await userServiceClient.get(
+        API_ENDPOINTS.USER.PROFILE,
+      );
       return response.data?.data || response.data;
     } catch (error) {
       console.warn('Profile service unavailable:', { error: error.message });
@@ -24,7 +26,10 @@ class ProfileService {
   // Update user profile
   async updateProfile(profileData) {
     try {
-      const response = await userServiceClient.put('/profile', profileData);
+      const response = await userServiceClient.put(
+        API_ENDPOINTS.USER.UPDATE,
+        profileData,
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -38,7 +43,7 @@ class ProfileService {
       const formData = new FormData();
       formData.append('profilePicture', file);
       const response = await userServiceClient.post(
-        '/profile/picture',
+        API_ENDPOINTS.USER.PROFILE_PICTURE,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -54,9 +59,12 @@ class ProfileService {
   // Update user skills
   async updateSkills(skills) {
     try {
-      const response = await userServiceClient.put('/profile/skills', {
-        skills,
-      });
+      const response = await userServiceClient.put(
+        API_ENDPOINTS.USER.PROFILE_SKILLS,
+        {
+          skills,
+        },
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating skills:', error);
@@ -67,9 +75,12 @@ class ProfileService {
   // Update user education
   async updateEducation(education) {
     try {
-      const response = await userServiceClient.put('/profile/education', {
-        education,
-      });
+      const response = await userServiceClient.put(
+        API_ENDPOINTS.USER.PROFILE_EDUCATION,
+        {
+          education,
+        },
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating education:', error);
@@ -80,9 +91,12 @@ class ProfileService {
   // Update user experience
   async updateExperience(experience) {
     try {
-      const response = await userServiceClient.put('/profile/experience', {
-        experience,
-      });
+      const response = await userServiceClient.put(
+        API_ENDPOINTS.USER.PROFILE_EXPERIENCE,
+        {
+          experience,
+        },
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating experience:', error);
@@ -93,9 +107,12 @@ class ProfileService {
   // Update user preferences
   async updatePreferences(preferences) {
     try {
-      const response = await userServiceClient.put('/profile/preferences', {
-        preferences,
-      });
+      const response = await userServiceClient.put(
+        API_ENDPOINTS.USER.PROFILE_PREFERENCES,
+        {
+          preferences,
+        },
+      );
       return response.data.data;
     } catch (error) {
       console.error('Error updating preferences:', error);
@@ -106,7 +123,9 @@ class ProfileService {
   // Get user statistics
   async getStatistics() {
     try {
-      const response = await userServiceClient.get('/profile/statistics');
+      const response = await userServiceClient.get(
+        API_ENDPOINTS.USER.PROFILE_STATISTICS,
+      );
       return (
         response.data?.data ||
         response.data || { jobsCompleted: 0, successRate: 0 }
@@ -120,9 +139,12 @@ class ProfileService {
   // Get user activity
   async getActivity(filters = {}) {
     try {
-      const response = await userServiceClient.get('/profile/activity', {
-        params: filters,
-      });
+      const response = await userServiceClient.get(
+        API_ENDPOINTS.USER.PROFILE_ACTIVITY,
+        {
+          params: filters,
+        },
+      );
       return response.data?.data || response.data || [];
     } catch (error) {
       console.warn('Activity service unavailable:', { error: error.message });

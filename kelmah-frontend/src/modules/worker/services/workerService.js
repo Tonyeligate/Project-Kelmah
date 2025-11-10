@@ -1,10 +1,14 @@
+import { API_ENDPOINTS } from '../../../config/environment';
 import {
   userServiceClient,
   jobServiceClient,
   getUserServiceClient,
 } from '../../common/services/axios';
 
-const API_URL = '/users/workers';
+const WORKERS_BASE = API_ENDPOINTS.USER.WORKERS;
+
+const workerPath = (workerId, suffix = '') =>
+  `${API_ENDPOINTS.USER.WORKER_DETAIL(workerId)}${suffix}`;
 
 const unwrapPayload = (response) =>
   response?.data?.data ?? response?.data ?? {};
@@ -36,7 +40,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of worker objects
    */
   getWorkers: (filters = {}) => {
-    return userServiceClient.get(API_URL, { params: filters });
+    return userServiceClient.get(WORKERS_BASE, { params: filters });
   },
 
   /**
@@ -45,7 +49,7 @@ const workerService = {
    * @returns {Promise<Object>} - Worker object
    */
   getWorkerById: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}`);
+    return userServiceClient.get(workerPath(workerId));
   },
 
   /**
@@ -55,7 +59,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of review objects
    */
   getWorkerReviews: (workerId, filters = {}) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/reviews`, {
+    return userServiceClient.get(workerPath(workerId, '/reviews'), {
       params: filters,
     });
   },
@@ -67,7 +71,10 @@ const workerService = {
    * @returns {Promise<Object>} - Created review object
    */
   submitReview: (workerId, reviewData) => {
-    return userServiceClient.post(`${API_URL}/${workerId}/reviews`, reviewData);
+    return userServiceClient.post(
+      workerPath(workerId, '/reviews'),
+      reviewData,
+    );
   },
 
   /**
@@ -77,7 +84,7 @@ const workerService = {
    * @returns {Promise<Object>} - Updated worker profile
    */
   updateWorkerProfile: (workerId, profileData) => {
-    return userServiceClient.put(`${API_URL}/${workerId}`, profileData);
+    return userServiceClient.put(workerPath(workerId), profileData);
   },
 
   /**
@@ -87,11 +94,15 @@ const workerService = {
    * @returns {Promise<Object>} - Upload response
    */
   uploadProfileImage: (workerId, formData) => {
-    return userServiceClient.post(`${API_URL}/${workerId}/image`, formData, {
+    return userServiceClient.post(
+      workerPath(workerId, '/image'),
+      formData,
+      {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    });
+      },
+    );
   },
 
   /**
@@ -100,7 +111,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of skill objects
    */
   getWorkerSkills: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/skills`);
+    return userServiceClient.get(workerPath(workerId, '/skills'));
   },
 
   /**
@@ -127,7 +138,10 @@ const workerService = {
    * @returns {Promise<Object>} - Added skill object
    */
   addWorkerSkill: (workerId, skillData) => {
-    return userServiceClient.post(`${API_URL}/${workerId}/skills`, skillData);
+    return userServiceClient.post(
+      workerPath(workerId, '/skills'),
+      skillData,
+    );
   },
 
   /**
@@ -139,7 +153,7 @@ const workerService = {
    */
   updateWorkerSkill: (workerId, skillId, skillData) => {
     return userServiceClient.put(
-      `${API_URL}/${workerId}/skills/${skillId}`,
+      workerPath(workerId, `/skills/${skillId}`),
       skillData,
     );
   },
@@ -151,7 +165,9 @@ const workerService = {
    * @returns {Promise<void>}
    */
   deleteWorkerSkill: (workerId, skillId) => {
-    return userServiceClient.delete(`${API_URL}/${workerId}/skills/${skillId}`);
+    return userServiceClient.delete(
+      workerPath(workerId, `/skills/${skillId}`),
+    );
   },
 
   /**
@@ -172,7 +188,7 @@ const workerService = {
    */
   addPortfolioItem: (workerId, portfolioData) => {
     return userServiceClient.post(
-      `${API_URL}/${workerId}/portfolio`,
+      workerPath(workerId, '/portfolio'),
       portfolioData,
     );
   },
@@ -186,7 +202,7 @@ const workerService = {
    */
   updatePortfolioItem: (workerId, portfolioId, portfolioData) => {
     return userServiceClient.put(
-      `${API_URL}/${workerId}/portfolio/${portfolioId}`,
+      workerPath(workerId, `/portfolio/${portfolioId}`),
       portfolioData,
     );
   },
@@ -199,7 +215,7 @@ const workerService = {
    */
   deletePortfolioItem: (workerId, portfolioId) => {
     return userServiceClient.delete(
-      `${API_URL}/${workerId}/portfolio/${portfolioId}`,
+      workerPath(workerId, `/portfolio/${portfolioId}`),
     );
   },
 
@@ -209,7 +225,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of certificate objects
    */
   getWorkerCertificates: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/certificates`);
+    return userServiceClient.get(workerPath(workerId, '/certificates'));
   },
 
   /**
@@ -220,7 +236,7 @@ const workerService = {
    */
   addCertificate: (workerId, certificateData) => {
     return userServiceClient.post(
-      `${API_URL}/${workerId}/certificates`,
+      workerPath(workerId, '/certificates'),
       certificateData,
     );
   },
@@ -234,7 +250,7 @@ const workerService = {
    */
   updateCertificate: (workerId, certificateId, certificateData) => {
     return userServiceClient.put(
-      `${API_URL}/${workerId}/certificates/${certificateId}`,
+      workerPath(workerId, `/certificates/${certificateId}`),
       certificateData,
     );
   },
@@ -247,7 +263,7 @@ const workerService = {
    */
   deleteCertificate: (workerId, certificateId) => {
     return userServiceClient.delete(
-      `${API_URL}/${workerId}/certificates/${certificateId}`,
+      workerPath(workerId, `/certificates/${certificateId}`),
     );
   },
 
@@ -257,7 +273,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of work history items
    */
   getWorkHistory: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/work-history`);
+    return userServiceClient.get(workerPath(workerId, '/work-history'));
   },
 
   /**
@@ -268,7 +284,7 @@ const workerService = {
    */
   addWorkHistory: (workerId, workHistoryData) => {
     return userServiceClient.post(
-      `${API_URL}/${workerId}/work-history`,
+      workerPath(workerId, '/work-history'),
       workHistoryData,
     );
   },
@@ -286,7 +302,7 @@ const workerService = {
     let response;
     try {
       response = await userServiceClient.get(
-        `${API_URL}/${workerId}/availability`,
+        workerPath(workerId, '/availability'),
       );
     } catch (error) {
       const status = error?.response?.status;
@@ -333,7 +349,7 @@ const workerService = {
     let response;
     try {
       response = await userServiceClient.put(
-        `${API_URL}/${workerId}/availability`,
+        workerPath(workerId, '/availability'),
         availabilityData,
       );
     } catch (error) {
@@ -382,7 +398,7 @@ const workerService = {
     }
 
     const response = await userServiceClient.get(
-      `${API_URL}/${workerId}/completeness`,
+      workerPath(workerId, '/completeness'),
     );
     const payload = unwrapPayload(response);
     const completion =
@@ -414,9 +430,12 @@ const workerService = {
    * @returns {Promise<Array>} - Array of recent jobs
    */
   getWorkerJobs: async ({ limit = 10 } = {}) => {
-    const response = await userServiceClient.get(`${API_URL}/jobs/recent`, {
+    const response = await userServiceClient.get(
+      `${WORKERS_BASE}/jobs/recent`,
+      {
       params: { limit },
-    });
+      },
+    );
 
     const payload = unwrapPayload(response);
     const jobs = Array.isArray(payload?.jobs)
@@ -440,7 +459,7 @@ const workerService = {
    * @returns {Promise<Object>} - Earnings information
    */
   getWorkerEarnings: (workerId, filters = {}) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/earnings`, {
+    return userServiceClient.get(workerPath(workerId, '/earnings'), {
       params: filters,
     });
   },
@@ -468,7 +487,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of nearby workers
    */
   getNearbyWorkers: (locationData) => {
-    return userServiceClient.post(`${API_URL}/nearby`, locationData);
+    return userServiceClient.post(`${WORKERS_BASE}/nearby`, locationData);
   },
 
   /**
@@ -477,7 +496,9 @@ const workerService = {
    * @returns {Promise<Object>} - Search results with pagination
    */
   searchWorkers: (searchParams) => {
-    return userServiceClient.get(`${API_URL}/search`, { params: searchParams });
+    return userServiceClient.get(`${WORKERS_BASE}/search`, {
+      params: searchParams,
+    });
   },
 
   /**
@@ -486,7 +507,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   bookmarkWorker: (workerId) => {
-    return userServiceClient.post(`${API_URL}/${workerId}/bookmark`);
+    return userServiceClient.post(workerPath(workerId, '/bookmark'));
   },
 
   /**
@@ -503,7 +524,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   removeBookmark: (workerId) => {
-    return userServiceClient.delete(`${API_URL}/${workerId}/bookmark`);
+    return userServiceClient.delete(workerPath(workerId, '/bookmark'));
   },
 
   /**
@@ -513,7 +534,10 @@ const workerService = {
    * @returns {Promise<void>}
    */
   reportWorker: (workerId, reportData) => {
-    return userServiceClient.post(`${API_URL}/${workerId}/report`, reportData);
+    return userServiceClient.post(
+      workerPath(workerId, '/report'),
+      reportData,
+    );
   },
 
   /**
@@ -522,7 +546,7 @@ const workerService = {
    * @returns {Promise<Object>} - Verification status
    */
   getVerificationStatus: (workerId) => {
-    return userServiceClient.get(`${API_URL}/${workerId}/verification`);
+    return userServiceClient.get(workerPath(workerId, '/verification'));
   },
 
   /**
@@ -533,7 +557,7 @@ const workerService = {
    */
   requestVerification: (workerId, verificationData) => {
     return userServiceClient.post(
-      `${API_URL}/${workerId}/verification`,
+      workerPath(workerId, '/verification'),
       verificationData,
     );
   },
@@ -544,7 +568,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of recommended workers
    */
   getRecommendedWorkers: (preferences = {}) => {
-    return userServiceClient.get(`${API_URL}/recommended`, {
+    return userServiceClient.get(`${WORKERS_BASE}/recommended`, {
       params: preferences,
     });
   },

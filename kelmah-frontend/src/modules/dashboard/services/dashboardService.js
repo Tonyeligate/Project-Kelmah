@@ -1,5 +1,9 @@
-import axiosInstance from '../../common/services/axios';
-import { WS_CONFIG } from '../../../config/environment';
+import axiosInstance, {
+  userServiceClient,
+  jobServiceClient,
+  messagingServiceClient,
+} from '../../common/services/axios';
+import { WS_CONFIG, API_ENDPOINTS } from '../../../config/environment';
 import { io } from 'socket.io-client';
 
 /**
@@ -145,131 +149,272 @@ class DashboardService {
   // Get dashboard overview data
   async getOverview() {
     try {
-      // Changed from '/api/dashboard/...' to '/dashboard/...' to avoid /api duplication
-      // baseURL='/api' is provided by axiosInstance on Vercel
-      const response = await axiosInstance.get('/dashboard/overview');
-      return response.data.data || response.data;
+      const [metricsRes, jobsRes, analyticsRes, workersRes] =
+        await Promise.allSettled([
+          userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_METRICS),
+          jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD),
+          userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_ANALYTICS),
+          userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_WORKERS),
+        ]);
+
+      const metrics =
+        metricsRes.status === 'fulfilled'
+          ? metricsRes.value.data?.data || metricsRes.value.data
+          : {
+              totalUsers: 0,
+              totalWorkers: 0,
+              activeWorkers: 0,
+              totalJobs: 0,
+              completedJobs: 0,
+              growthRate: 0,
+              source: 'fallback',
+            };
+
+      const jobsData =
+        jobsRes.status === 'fulfilled'
+          ? jobsRes.value.data?.data || jobsRes.value.data
+          : { recentJobs: [], totalOpenJobs: 0, totalJobsToday: 0 };
+
+      const analytics =
+        analyticsRes.status === 'fulfilled'
+          ? analyticsRes.value.data?.data || analyticsRes.value.data
+          : { userGrowth: [], topSkills: [], trends: [] };
+
+      const workers =
+        workersRes.status === 'fulfilled'
+          ? workersRes.value.data?.workers || workersRes.value.data || []
+          : [];
+
+      return {
+        metrics,
+        jobs: jobsData,
+        analytics,
+        workers,
+      };
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
-      throw error;
+      return {
+        metrics: {
+          totalUsers: 0,
+          totalWorkers: 0,
+          activeWorkers: 0,
+          totalJobs: 0,
+          completedJobs: 0,
+          growthRate: 0,
+          source: 'fallback-error',
+        },
+        jobs: { recentJobs: [], totalOpenJobs: 0, totalJobsToday: 0 },
+        analytics: { userGrowth: [], topSkills: [], trends: [] },
+        workers: [],
+      };
     }
   }
 
   // Get recent activity
   async getRecentActivity(page = 1, limit = 10) {
     try {
-      const response = await axiosInstance.get('/dashboard/activity', {
-        params: { page, limit },
-      });
-      return response.data.data;
+      const response = await jobServiceClient.get(
+        API_ENDPOINTS.JOB.DASHBOARD,
+        {
+          params: { page, limit },
+        },
+      );
+      const data = response.data?.data || response.data || {};
+      const activities = Array.isArray(data.recentJobs) ? data.recentJobs : [];
+      return {
+        activities,
+        hasMore: activities.length >= limit,
+      };
     } catch (error) {
       console.error('Error fetching recent activity:', error);
-      throw error;
+      return {
+        activities: [],
+        hasMore: false,
+      };
     }
   }
 
   // Get statistics
   async getStatistics(timeframe = 'week') {
     try {
-      const response = await axiosInstance.get('/dashboard/statistics', {
-        params: { timeframe },
-      });
-      return response.data.data;
+      const response = await userServiceClient.get(
+        API_ENDPOINTS.USER.DASHBOARD_ANALYTICS,
+        {
+          params: { timeframe },
+        },
+      );
+      return response.data?.data || response.data || {};
     } catch (error) {
       console.error('Error fetching statistics:', error);
-      throw error;
+      return {
+        userGrowth: [],
+        metrics: {},
+        timeframe,
+        fallback: true,
+      };
     }
   }
 
   // Get upcoming tasks
   async getUpcomingTasks() {
     try {
-      const response = await axiosInstance.get('/dashboard/tasks');
-      return response.data.data;
+      const response = await userServiceClient.get(
+        API_ENDPOINTS.USER.DASHBOARD_WORKERS,
+      );
+      const workers = response.data?.workers || response.data || [];
+      return workers.slice(0, 5).map((worker, index) => ({
+        id: worker.id || index,
+        title: `Follow up with ${worker.name || 'worker'}`,
+        dueDate: new Date(Date.now() + index * 86400000).toISOString(),
+        status: worker.isAvailable ? 'scheduled' : 'pending',
+      }));
     } catch (error) {
       console.error('Error fetching upcoming tasks:', error);
-      throw error;
+      return [];
     }
   }
 
   // Get recent messages
   async getRecentMessages() {
     try {
-      const response = await axiosInstance.get('/dashboard/messages');
-      return response.data.data;
+      const response = await messagingServiceClient.get(
+        API_ENDPOINTS.MESSAGING.CONVERSATIONS,
+        { params: { limit: 5 } },
+      );
+      const conversations =
+        response.data?.data || response.data?.conversations || response.data;
+      if (Array.isArray(conversations)) {
+        return conversations;
+      }
+      return [];
     } catch (error) {
       console.error('Error fetching recent messages:', error);
-      throw error;
+      return [];
     }
   }
 
   // Get performance metrics
   async getPerformanceMetrics() {
     try {
-      const response = await axiosInstance.get('/dashboard/performance');
-      return response.data.data;
+      const response = await userServiceClient.get(
+        API_ENDPOINTS.USER.DASHBOARD_ANALYTICS,
+      );
+      const analytics = response.data?.data || response.data || {};
+      return {
+        completionRate: analytics.completionRate || 0,
+        clientSatisfaction: analytics.clientSatisfaction || 0,
+        averageResponseTime: analytics.averageResponseTime || 'N/A',
+        jobsThisMonth: analytics.jobsThisMonth || 0,
+        earningsThisMonth: analytics.earningsThisMonth || 0,
+      };
     } catch (error) {
       console.error('Error fetching performance metrics:', error);
-      throw error;
+      return {
+        completionRate: 0,
+        clientSatisfaction: 0,
+        averageResponseTime: 'N/A',
+        jobsThisMonth: 0,
+        earningsThisMonth: 0,
+        fallback: true,
+      };
     }
   }
 
   // Get quick actions
   async getQuickActions() {
     try {
-      const response = await axiosInstance.get('/dashboard/quick-actions');
-      return response.data.data;
+      const overview = await this.getOverview();
+      const topJob = overview.jobs?.recentJobs?.[0];
+      return [
+        topJob
+          ? {
+              id: topJob.id || 'job-highlight',
+              label: `Review ${topJob.title}`,
+              type: 'job',
+              source: 'jobs',
+            }
+          : {
+              id: 'refresh-dashboard',
+              label: 'Refresh dashboard data',
+              type: 'action',
+            },
+        {
+          id: 'update-profile',
+          label: 'Update your profile details',
+          type: 'profile',
+        },
+      ];
     } catch (error) {
       console.error('Error fetching quick actions:', error);
-      throw error;
+      return [
+        {
+          id: 'refresh-dashboard',
+          label: 'Refresh dashboard data',
+          type: 'action',
+        },
+      ];
     }
   }
 
   // Get notifications summary
   async getNotificationsSummary() {
     try {
-      const response = await axiosInstance.get(
-        '/dashboard/notifications-summary',
-      );
-      return response.data.data;
+      const overview = await this.getOverview();
+      return {
+        unreadMessages: overview.metrics?.activeWorkers || 0,
+        pendingJobs: overview.jobs?.totalOpenJobs || 0,
+        newApplicants: overview.metrics?.totalWorkers || 0,
+      };
     } catch (error) {
       console.error('Error fetching notifications summary:', error);
-      throw error;
+      return {
+        unreadMessages: 0,
+        pendingJobs: 0,
+        newApplicants: 0,
+      };
     }
   }
 
   // Get real-time stats
   async getRealTimeStats() {
     try {
-      const response = await axiosInstance.get('/dashboard/stats');
-      return response.data.data || response.data;
+      const overview = await this.getOverview();
+      return overview.metrics || {};
     } catch (error) {
       console.error('Error fetching real-time stats:', error);
-      throw error;
+      return {
+        totalUsers: 0,
+        totalWorkers: 0,
+        activeWorkers: 0,
+        totalJobs: 0,
+        completedJobs: 0,
+      };
     }
   }
 
   // Get job matches for workers
   async getJobMatches() {
     try {
-      const response = await axiosInstance.get('/dashboard/job-matches');
-      return response.data.data || response.data;
+      const response = await jobServiceClient.get(
+        API_ENDPOINTS.JOB.RECOMMENDATIONS,
+      );
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching job matches:', error);
-      throw error;
+      return [];
     }
   }
 
   // Get personalized recommendations
   async getRecommendations() {
     try {
-      const response = await axiosInstance.get(
-        '/api/dashboard/recommendations',
+      const response = await jobServiceClient.get(
+        API_ENDPOINTS.JOB.RECOMMENDATIONS,
       );
-      return response.data.data || response.data;
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      throw error;
+      return [];
     }
   }
 }

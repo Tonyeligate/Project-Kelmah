@@ -3,6 +3,7 @@ import {
   userServiceClient,
   jobServiceClient,
 } from '../../common/services/axios';
+import { API_ENDPOINTS } from '../../../config/environment';
 
 // Use centralized clients with auth/retries
 
@@ -70,10 +71,10 @@ export const fetchDashboardData = createAsyncThunk(
         workersResponse,
         analyticsResponse,
       ] = await Promise.allSettled([
-        userServiceClient.get('/users/dashboard/metrics'),
-        jobServiceClient.get('/jobs/dashboard'),
-        userServiceClient.get('/users/dashboard/workers'),
-        userServiceClient.get('/users/dashboard/analytics'),
+  userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_METRICS),
+  jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD),
+  userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_WORKERS),
+  userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_ANALYTICS),
       ]);
 
       // Extract successful responses or use enhanced mock data
@@ -246,7 +247,7 @@ export const updateJobStatus = createAsyncThunk(
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
       const response = await jobServiceClient.patch(
-        `/api/jobs/${jobId}/status`,
+        `${API_ENDPOINTS.JOB.BY_ID(jobId)}/status`,
         { status },
       );
       return { jobId, ...response.data };
