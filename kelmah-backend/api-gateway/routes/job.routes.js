@@ -61,16 +61,6 @@ const publicJobProxy = (req, res, next) => {
   return proxy(req, res, next);
 };
 
-<<<<<<< Updated upstream
-// Public routes - job browsing (NO AUTH REQUIRED)
-router.get('', publicJobProxy); // Handle /api/jobs without trailing slash
-router.get('/public', publicJobProxy); // Browse jobs without login (legacy)
-router.get('/public/:jobId', publicJobProxy); // View job details without login (legacy)
-router.get('/categories', publicJobProxy); // Get job categories
-router.get('/search', publicJobProxy); // Search jobs
-router.get('/', publicJobProxy); // ⚠️ FIX: Browse jobs list publicly (main homepage)
-router.get('/:jobId([0-9a-fA-F]{24})', publicJobProxy); // ⚠️ FIX: View job details publicly (MongoDB ObjectId pattern)
-=======
 // Public routes - job browsing
 router.get('/', publicJobProxy); // Browse jobs without login
 router.get('/search', publicJobProxy); // Search jobs
@@ -78,7 +68,6 @@ router.get('/categories', publicJobProxy); // Get job categories
 router.get('/public', publicJobProxy); // Legacy alias for browsing without login
 router.get('/public/:jobId', publicJobProxy); // Legacy alias for viewing job details without login
 router.get('/:jobId([a-fA-F0-9]{24})', publicJobProxy); // View job details without login
->>>>>>> Stashed changes
 
 // All other routes require authentication
 router.use(authenticate);

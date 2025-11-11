@@ -1,6 +1,7 @@
 import { userServiceClient } from '../../common/services/axios';
 
 const API_URL = '/api/search';
+const JOB_RECOMMENDATIONS_ENDPOINT = '/api/jobs/recommendations';
 
 /**
  * Service for AI-powered smart job search and recommendations
@@ -14,12 +15,30 @@ const smartSearchService = {
    */
   getSmartJobRecommendations: async (userId, options = {}) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/recommendations/${userId}`,
-        { params: options },
-      );
+      const response = await userServiceClient.get(JOB_RECOMMENDATIONS_ENDPOINT, {
+        params: {
+          userId,
+          ...options,
+        },
+      });
       return response.data;
     } catch (error) {
+      if (error?.response?.status === 403) {
+        return {
+          jobs: [],
+          insights: null,
+          status: 'forbidden',
+        };
+      }
+
+      if (error?.response?.status === 404 || error?.response?.status === 204) {
+        return {
+          jobs: [],
+          insights: null,
+          status: 'empty',
+        };
+      }
+
       throw error;
     }
   },

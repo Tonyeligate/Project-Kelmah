@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { normalizeUser } from '../../../utils/userUtils';
@@ -70,6 +70,15 @@ const SmartJobRecommendations = ({
   const savedJobs = useSelector(selectSavedJobs) || [];
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
+  const isWorker = useMemo(
+    () => user?.role === 'worker' || user?.userType === 'worker',
+    [user?.role, user?.userType],
+  );
+  const savedJobIds = useMemo(() => {
+    return new Set(
+      (savedJobs || []).map((saved) => saved.id || saved._id || saved.jobId),
+    );
+  }, [savedJobs]);
 
   // State management
   const [recommendations, setRecommendations] = useState([]);
@@ -77,6 +86,7 @@ const SmartJobRecommendations = ({
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [aiInsights, setAiInsights] = useState(null);
+  const [infoMessage, setInfoMessage] = useState(null);
 
   // Load recommendations
   const loadRecommendations = useCallback(
@@ -93,6 +103,21 @@ const SmartJobRecommendations = ({
           setRecommendations([]);
           setAiInsights(null);
           setError(null);
+          setInfoMessage('Sign in to see personalized job recommendations.');
+          setLoading(false);
+          setRefreshing(false);
+          return;
+        }
+
+        if (!isWorker) {
+          setRecommendations([]);
+          setAiInsights(null);
+          setError(null);
+          setInfoMessage(
+            'Smart job recommendations are available for worker accounts. Switch to a worker profile to discover tailored opportunities.',
+          );
+          setLoading(false);
+          setRefreshing(false);
           return;
         }
 
@@ -104,45 +129,71 @@ const SmartJobRecommendations = ({
           },
         );
 
-        setRecommendations(response.data.jobs || []);
-        setAiInsights(response.data.insights || null);
-        setSavedJobs(new Set(response.data.savedJobIds || []));
+        const payload = response || {};
+
+        setRecommendations(payload.jobs || []);
+        setAiInsights(payload.insights || null);
+        setInfoMessage(
+          payload.jobs && payload.jobs.length === 0
+            ? 'Complete your worker profile to unlock AI-powered job matches tailored to your skills.'
+            : null,
+        );
         setError(null);
       } catch (err) {
-        setError('Failed to load job recommendations');
-        enqueueSnackbar('Failed to load smart recommendations', {
-          variant: 'error',
-        });
+        const status = err?.response?.status;
+
+        if (status === 403) {
+          setInfoMessage(
+            'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
+          );
+          setError(null);
+        } else if (status === 404 || status === 204) {
+          setInfoMessage(
+            'No recommendations are available yet. Keep your profile up to date and check back soon.',
+          );
+          setError(null);
+        } else {
+          setError('Failed to load job recommendations');
+          setInfoMessage(null);
+          enqueueSnackbar('Failed to load smart recommendations', {
+            variant: 'error',
+          });
+        }
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [user?.id, maxRecommendations, filterCriteria, enqueueSnackbar],
+    [
+      user?.id,
+      isWorker,
+      maxRecommendations,
+      filterCriteria,
+      enqueueSnackbar,
+    ],
   );
 
   useEffect(() => {
     // Load only when user is available; otherwise show empty state without errors
-    if (user?.id) {
-      loadRecommendations();
-    } else {
-      setLoading(false);
-      setRecommendations([]);
-      setAiInsights(null);
-    }
-  }, [loadRecommendations, user?.id]);
+    loadRecommendations();
+  }, [loadRecommendations]);
 
   // Handle save/unsave job
   const handleToggleSave = async (jobId) => {
+    if (!jobId) {
+      enqueueSnackbar('Job reference unavailable. Please refresh.', {
+        variant: 'warning',
+      });
+      return;
+    }
+
     if (!isAuthenticated) {
       navigate('/login', { state: { from: window.location.pathname } });
       return;
     }
 
     try {
-      const isSaved = savedJobs.some(
-        (saved) => saved.id === jobId || saved._id === jobId,
-      );
+      const isSaved = savedJobIds.has(jobId);
 
       if (isSaved) {
         await dispatch(unsaveJobFromServer(jobId));
@@ -161,6 +212,13 @@ const SmartJobRecommendations = ({
 
   // Handle job application
   const handleApplyToJob = async (jobId) => {
+    if (!jobId) {
+      enqueueSnackbar('Job reference unavailable. Please refresh.', {
+        variant: 'warning',
+      });
+      return;
+    }
+
     try {
       await searchService.trackJobInteraction(jobId, 'apply_click');
       if (onJobSelect) {
@@ -177,6 +235,13 @@ const SmartJobRecommendations = ({
 
   // Handle view job details
   const handleViewJob = async (jobId) => {
+    if (!jobId) {
+      enqueueSnackbar('Job reference unavailable. Please refresh.', {
+        variant: 'warning',
+      });
+      return;
+    }
+
     try {
       await searchService.trackJobInteraction(jobId, 'view_click');
       if (onJobSelect) {
@@ -265,13 +330,12 @@ const SmartJobRecommendations = ({
   const renderJobCard = (job) => {
     const matchColor = getMatchScoreColor(job.matchScore);
     const urgency = getUrgencyIndicator(job.urgency);
-    const isSaved = savedJobs.some(
-      (saved) => saved.id === job.id || saved._id === job.id,
-    );
+    const jobKey = job.id || job._id || job.jobId;
+    const isSaved = jobKey ? savedJobIds.has(jobKey) : false;
 
     return (
       <Card
-        key={job.id}
+        key={jobKey || job.title}
         sx={{
           height: '100%',
           display: 'flex',
@@ -476,7 +540,7 @@ const SmartJobRecommendations = ({
             <Tooltip title={isSaved ? 'Remove from saved' : 'Save job'}>
               <IconButton
                 size="small"
-                onClick={() => handleToggleSave(job.id)}
+                onClick={() => handleToggleSave(jobKey)}
                 color={isSaved ? 'primary' : 'default'}
               >
                 {isSaved ? <SaveIcon /> : <SaveBorderIcon />}
@@ -484,7 +548,7 @@ const SmartJobRecommendations = ({
             </Tooltip>
 
             <Tooltip title="View details">
-              <IconButton size="small" onClick={() => handleViewJob(job.id)}>
+              <IconButton size="small" onClick={() => handleViewJob(jobKey)}>
                 <ViewIcon />
               </IconButton>
             </Tooltip>
@@ -499,7 +563,7 @@ const SmartJobRecommendations = ({
           <Button
             variant="contained"
             size="small"
-            onClick={() => handleApplyToJob(job.id)}
+            onClick={() => handleApplyToJob(jobKey)}
             sx={{ minWidth: 80 }}
           >
             Apply Now
@@ -546,6 +610,42 @@ const SmartJobRecommendations = ({
           </Box>
         )}
         {renderLoadingSkeleton()}
+      </Box>
+    );
+  }
+
+  if (infoMessage && recommendations.length === 0) {
+    return (
+      <Box>
+        {showHeader && (
+          <Box
+            mb={3}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h5" display="flex" alignItems="center" gap={1}>
+              <BrainIcon color="primary" />
+              Smart Job Recommendations
+              <Badge badgeContent={0} color="primary" />
+            </Typography>
+          </Box>
+        )}
+
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <AIIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            Recommendations Unavailable
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            {infoMessage}
+          </Typography>
+          {!isWorker && (
+            <Button variant="contained" href="/profile">
+              Update Profile
+            </Button>
+          )}
+        </Paper>
       </Box>
     );
   }
@@ -614,11 +714,14 @@ const SmartJobRecommendations = ({
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {recommendations.map((job) => (
-            <Grid item xs={12} sm={6} md={4} key={job.id}>
-              {renderJobCard(job)}
-            </Grid>
-          ))}
+          {recommendations.map((job) => {
+            const jobKey = job.id || job._id || job.jobId;
+            return (
+              <Grid item xs={12} sm={6} md={4} key={jobKey || job.title}>
+                {renderJobCard(job)}
+              </Grid>
+            );
+          })}
         </Grid>
       )}
 

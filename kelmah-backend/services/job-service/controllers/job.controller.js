@@ -21,7 +21,7 @@ const {
   paginatedResponse,
 } = require("../utils/response");
 const { ensureConnection } = require('../config/db');
-const { transformJobsForFrontend } = require('../utils/jobTransform');
+const { transformJobsForFrontend, transformJobForFrontend } = require('../utils/jobTransform');
 
 /**
  * Create a new job
@@ -1123,53 +1123,113 @@ const getContracts = async (req, res, next) => {
  */
 const getJobRecommendations = async (req, res, next) => {
   try {
-    const workerId = req.user.id;
-    const { limit = 20, minScore = 40 } = req.query;
-    
-    // Get worker profile (assuming it's available via user service)
-    const worker = await User.findById(workerId);
+    const workerId = req.user?.id;
+    const {
+      limit = 20,
+      minScore = 40,
+      includeInsights: rawIncludeInsights = true,
+      includeBreakdown: rawIncludeBreakdown = true,
+      includeReasons: rawIncludeReasons = true,
+    } = req.query;
+
+    const toBoolean = (value, defaultValue) => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'string') {
+        const lower = value.toLowerCase();
+        if (['true', '1', 'yes', 'on'].includes(lower)) return true;
+        if (['false', '0', 'no', 'off'].includes(lower)) return false;
+      }
+      return defaultValue;
+    };
+
+    const includeInsights = toBoolean(rawIncludeInsights, true);
+    const includeBreakdown = toBoolean(rawIncludeBreakdown, true);
+    const includeReasons = toBoolean(rawIncludeReasons, true);
+
+    if (!workerId) {
+      return errorResponse(res, 400, 'Worker identifier is required');
+    }
+
+    const numericLimit = Math.max(1, Math.min(50, parseInt(limit, 10) || 20));
+    const numericMinScore = Math.max(0, Math.min(100, parseInt(minScore, 10) || 40));
+
+    const worker = await User.findById(workerId).lean();
     if (!worker || worker.role !== 'worker') {
       return errorResponse(res, 403, 'Only workers can access job recommendations');
     }
 
-    // Build base query for available jobs
-    let query = { 
-      status: 'Open', 
+    const query = {
+      status: 'Open',
       visibility: 'public',
-      // Don't show jobs user already applied to
-      'applications.applicant': { $ne: workerId }
+      'applications.applicant': { $ne: workerId },
     };
 
-    // Get all available jobs
-    const jobs = await Job.find(query)
-      .populate('hirer', 'firstName lastName profileImage rating totalJobsPosted')
+    const candidateJobs = await Job.find(query)
+      .populate('hirer', 'firstName lastName profileImage rating totalJobsPosted companyName businessName')
       .sort('-createdAt')
-      .limit(parseInt(limit) * 2); // Get more to allow for filtering
+      .limit(numericLimit * 4)
+      .lean();
 
-    // Calculate match scores for each job
-    const jobsWithScores = jobs.map(job => {
-      const matchScore = calculateJobMatchScore(job, worker);
-      
-      return {
-        ...job.toObject(),
-        matchScore: matchScore.totalScore,
-        matchDetails: matchScore.breakdown,
-        matchReasons: matchScore.reasons
+    const scoredJobs = candidateJobs
+      .map((jobDoc) => {
+        const job = transformJobForFrontend(jobDoc);
+        const matchScore = calculateJobMatchScore(jobDoc, worker);
+
+        return {
+          job,
+          matchScore: matchScore.totalScore,
+          matchDetails: matchScore.breakdown,
+          matchReasons: matchScore.reasons,
+        };
+      })
+      .filter((entry) => entry.matchScore >= numericMinScore)
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, numericLimit);
+
+    const jobs = scoredJobs.map((entry) => {
+      const jobPayload = {
+        ...entry.job,
+        matchScore: entry.matchScore,
       };
+
+      if (includeBreakdown) {
+        jobPayload.matchBreakdown = entry.matchDetails;
+      }
+      if (includeReasons) {
+        jobPayload.aiReasoning = entry.matchReasons?.join('; ');
+        jobPayload.aiReasons = entry.matchReasons;
+      }
+
+      return jobPayload;
     });
 
-    // Filter by minimum score and sort by match score
-    const recommendedJobs = jobsWithScores
-      .filter(job => job.matchScore >= parseInt(minScore))
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, parseInt(limit));
+    const defaultInsights = {
+      summary: `We analysed ${candidateJobs.length} recent jobs and found ${jobs.length} strong matches for your skills and profile.`,
+      tags: [],
+    };
+
+    if (includeInsights) {
+      if (Array.isArray(worker.skills)) {
+        defaultInsights.tags.push(...worker.skills.slice(0, 3));
+      }
+      if (typeof worker.primaryTrade === 'string') {
+        defaultInsights.tags.push(worker.primaryTrade);
+      }
+    }
 
     return successResponse(res, 200, 'Job recommendations retrieved successfully', {
-      jobs: recommendedJobs,
-      totalRecommendations: recommendedJobs.length,
-      averageMatchScore: recommendedJobs.reduce((sum, job) => sum + job.matchScore, 0) / recommendedJobs.length || 0
+      jobs,
+      insights: includeInsights ? defaultInsights : undefined,
+      totalRecommendations: jobs.length,
+      averageMatchScore:
+        jobs.length > 0
+          ? Math.round(
+              (jobs.reduce((sum, jobEntry) => sum + (jobEntry.matchScore || 0), 0) /
+                jobs.length) *
+                100,
+            ) / 100
+          : 0,
     });
-
   } catch (error) {
     next(error);
   }
