@@ -387,7 +387,7 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchHirerProfile.fulfilled, (state, action) => {
         state.loading.profile = false;
-        state.profile = action.payload.data || action.payload;
+        state.profile = action.payload?.data || action.payload || null;
       })
       .addCase(fetchHirerProfile.rejected, (state, action) => {
         state.loading.profile = false;
@@ -403,7 +403,7 @@ const hirerSlice = createSlice({
       })
       .addCase(updateHirerProfile.fulfilled, (state, action) => {
         state.loading.profile = false;
-        state.profile = action.payload.data || action.payload;
+        state.profile = action.payload?.data || action.payload || null;
       })
       .addCase(updateHirerProfile.rejected, (state, action) => {
         state.loading.profile = false;
@@ -417,8 +417,10 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchHirerJobs.fulfilled, (state, action) => {
         state.loading.jobs = false;
-        const { status, jobs } = action.payload;
-        state.jobs[status] = jobs;
+        const { status, jobs } = action.payload || {};
+        if (status && Array.isArray(jobs)) {
+          state.jobs[status] = jobs;
+        }
       })
       .addCase(fetchHirerJobs.rejected, (state, action) => {
         state.loading.jobs = false;
@@ -435,8 +437,10 @@ const hirerSlice = createSlice({
       })
       .addCase(createHirerJob.fulfilled, (state, action) => {
         state.loading.jobs = false;
-        const newJob = action.payload.data || action.payload;
-        state.jobs.draft.unshift(newJob);
+        const newJob = action.payload?.data || action.payload;
+        if (newJob && state.jobs.draft) {
+          state.jobs.draft.unshift(newJob);
+        }
       })
       .addCase(createHirerJob.rejected, (state, action) => {
         state.loading.jobs = false;
@@ -445,7 +449,10 @@ const hirerSlice = createSlice({
 
       // Update Job Status
       .addCase(updateJobStatus.fulfilled, (state, action) => {
-        const { jobId, status } = action.payload.data || action.payload;
+        const payload = action.payload?.data || action.payload || {};
+        const { jobId, status } = payload;
+        if (!jobId || !status) return;
+        
         // Move job between status lists
         let movedJob = null;
         Object.keys(state.jobs).forEach((currentStatus) => {
@@ -479,8 +486,8 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchJobApplications.fulfilled, (state, action) => {
         state.loading.applications = false;
-        const { applications } = action.payload;
-        state.applications = applications;
+        const { applications } = action.payload || {};
+        state.applications = Array.isArray(applications) ? applications : [];
       })
       .addCase(fetchJobApplications.rejected, (state, action) => {
         state.loading.applications = false;
@@ -497,7 +504,7 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchHirerAnalytics.fulfilled, (state, action) => {
         state.loading.analytics = false;
-        state.analytics = action.payload.data || action.payload;
+        state.analytics = action.payload?.data || action.payload || null;
       })
       .addCase(fetchHirerAnalytics.rejected, (state, action) => {
         state.loading.analytics = false;
@@ -513,8 +520,8 @@ const hirerSlice = createSlice({
       })
       .addCase(fetchPaymentSummary.fulfilled, (state, action) => {
         state.loading.payments = false;
-        state.payments = action.payload.data || action.payload;
-      })
+        state.payments = action.payload?.data || action.payload || null;
+      });
       .addCase(fetchPaymentSummary.rejected, (state, action) => {
         state.loading.payments = false;
         state.error.payments = action.payload || 'Failed to fetch payments';
