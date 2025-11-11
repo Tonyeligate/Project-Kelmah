@@ -759,34 +759,97 @@ const getMyJobs = async (req, res, next) => {
   try {
     await ensureConnection();
 
+    const mongoose = require('mongoose');
+
+    let hirerObjectId;
+    try {
+      hirerObjectId = new mongoose.Types.ObjectId(req.user.id);
+    } catch (objectIdError) {
+      return errorResponse(res, 400, 'Invalid hirer identifier');
+    }
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
 
-    // Build query
-    let query = { hirer: req.user.id };
+    const client = mongoose.connection.getClient();
+    const db = client.db();
+    const jobsCollection = db.collection('jobs');
+    const usersCollection = db.collection('users');
 
-    // Filter by status
+    // Build query
+    const query = { hirer: hirerObjectId };
     if (req.query.status) {
       query.status = req.query.status;
     }
 
-    // Execute query with pagination
-    const jobs = await Job.find(query)
-      .populate("worker", "firstName lastName profileImage")
+    const sortField = req.query.sort || '-createdAt';
+    const sortOrder = sortField.startsWith('-') ? -1 : 1;
+    const sortKey = sortField.replace(/^-/, '');
+
+    const jobs = await jobsCollection
+      .find(query)
+      .sort({ [sortKey]: sortOrder })
       .skip(startIndex)
       .limit(limit)
-      .sort(req.query.sort || "-createdAt");
+      .toArray();
 
-    // Get total count
-    const total = await Job.countDocuments(query);
+    const workerIds = Array.from(
+      new Set(
+        jobs
+          .map((job) => job.worker)
+          .filter(Boolean)
+          .map((id) => {
+            try {
+              return new mongoose.Types.ObjectId(id);
+            } catch (_) {
+              return null;
+            }
+          })
+          .filter(Boolean)
+          .map((objectId) => objectId.toString())
+      )
+    );
+
+    let workerMap = new Map();
+    if (workerIds.length > 0) {
+      const workerObjectIds = workerIds.map((id) => new mongoose.Types.ObjectId(id));
+      const workers = await usersCollection
+        .find({ _id: { $in: workerObjectIds } })
+        .project({ firstName: 1, lastName: 1, profileImage: 1 })
+        .toArray();
+      workerMap = new Map(workers.map((worker) => [worker._id.toString(), worker]));
+    }
+
+    const normalizedJobs = jobs.map((job) => {
+      const jobId = job._id?.toString?.() || String(job._id);
+      const workerId = job.worker ? job.worker.toString() : null;
+      const worker = workerId ? workerMap.get(workerId) : null;
+
+      return {
+        ...job,
+        _id: jobId,
+        id: jobId,
+        hirer: job.hirer?.toString?.() || String(job.hirer),
+        worker: worker
+          ? {
+              _id: worker._id.toString(),
+              firstName: worker.firstName || null,
+              lastName: worker.lastName || null,
+              profileImage: worker.profileImage || null,
+            }
+          : null,
+      };
+    });
+
+    const total = await jobsCollection.countDocuments(query);
 
     return paginatedResponse(
       res,
       200,
-      "My jobs retrieved successfully",
-      jobs,
+      'My jobs retrieved successfully',
+      normalizedJobs,
       page,
       limit,
       total,
