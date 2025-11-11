@@ -282,6 +282,7 @@ const HirerDashboardPage = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(Date.now());
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // Get data from Redux store using selectors
   const user = useSelector((state) => state.auth.user);
@@ -307,15 +308,33 @@ const HirerDashboardPage = () => {
 
   // Fetch hirer data on component mount
   useEffect(() => {
+    let timeoutId;
+    
     const fetchHirerData = async () => {
       try {
         setError(null);
+        setLoadingTimeout(false);
+        
+        // Set 10-second timeout for loading state
+        timeoutId = setTimeout(() => {
+          setLoadingTimeout(true);
+          setError('Loading is taking longer than expected. Please check your connection and try refreshing.');
+        }, 10000);
+        
+        // ⏱️ Add small delay to ensure auth token is stored and axios interceptors are ready
+        // This prevents race condition where API calls fire before token is attached
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Fetch hirer profile and jobs
         await Promise.all([
           dispatch(fetchHirerProfile()).unwrap(),
           dispatch(fetchHirerJobs('active')).unwrap(),
           dispatch(fetchHirerJobs('completed')).unwrap(),
         ]);
+
+        // Clear timeout if successful
+        clearTimeout(timeoutId);
+        setLoadingTimeout(false);
 
         // Fetch applications for each active job
         if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
@@ -328,11 +347,17 @@ const HirerDashboardPage = () => {
         }
       } catch (err) {
         console.error('Error fetching hirer data:', err);
+        clearTimeout(timeoutId);
+        setLoadingTimeout(false);
         setError('Failed to load hirer data. Please try again.');
       }
     };
 
     fetchHirerData();
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [dispatch, activeJobs]);
 
   // Handler for refreshing data
@@ -911,9 +936,28 @@ const HirerDashboardPage = () => {
         }}
       >
         <CircularProgress sx={{ mb: 2, color: 'secondary.main' }} />
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.secondary" gutterBottom>
           Loading your dashboard...
         </Typography>
+        
+        {/* Show timeout warning after 10 seconds */}
+        {loadingTimeout && (
+          <Alert 
+            severity="warning" 
+            sx={{ mt: 3, maxWidth: 500 }}
+            action={
+              <Button 
+                color="inherit" 
+                size="small"
+                onClick={() => window.location.reload()}
+              >
+                Refresh
+              </Button>
+            }
+          >
+            Loading is taking longer than expected. Please check your connection or try refreshing the page.
+          </Alert>
+        )}
       </Box>
     );
   }
