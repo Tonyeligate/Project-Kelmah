@@ -25,6 +25,18 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
+const ELIGIBLE_PATH_PREFIXES = [
+  '/jobs',
+  '/search',
+  '/worker/dashboard',
+  '/worker/job',
+  '/worker/applications',
+  '/hirer/dashboard',
+  '/hirer/find',
+  '/hirer/post-job',
+  '/messages',
+];
+
 const SmartNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,18 +45,14 @@ const SmartNavigation = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Show suggestions after a delay on job-related pages
+  // Toggle visibility based on current path eligibility
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (
-        location.pathname.includes('/jobs') ||
-        location.pathname.includes('/search')
-      ) {
-        setShowSuggestions(true);
-      }
-    }, 3000);
+    const { pathname } = location;
+    const isEligible = ELIGIBLE_PATH_PREFIXES.some((prefix) =>
+      pathname.startsWith(prefix),
+    );
 
-    return () => clearTimeout(timer);
+    setShowSuggestions(isEligible);
   }, [location.pathname]);
 
   // Don't show on mobile or if user is not authenticated

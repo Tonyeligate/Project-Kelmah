@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Grid,
   Box,
@@ -14,10 +15,16 @@ import {
   CircularProgress,
   Skeleton,
   Alert,
+  Stack,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { MapOutlined as MapIcon } from '@mui/icons-material';
+import {
+  MapOutlined as MapIcon,
+  SearchOff as SearchOffIcon,
+  Lightbulb as LightbulbIcon,
+  Refresh as RefreshIcon,
+} from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import WorkerCard from '../../../worker/components/WorkerCard';
 
@@ -37,6 +44,7 @@ const WorkerSearchResults = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
   // Handle page change in pagination
   const handlePageChange = (event, value) => {
@@ -192,28 +200,124 @@ const WorkerSearchResults = ({
   );
 
   // Renders empty state
-  const renderEmptyState = () => (
-    <Box
-      sx={{
-        textAlign: 'center',
-        py: 8,
-        px: 2,
-      }}
-    >
-      <Typography variant="h5" color="text.secondary" gutterBottom>
-        No workers found
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Try adjusting your search criteria or filters
-      </Typography>
-      <Button
-        variant="outlined"
-        onClick={() => onRemoveFilter && onRemoveFilter('all')}
+  const renderEmptyState = () => {
+    const handleClearFilters = () => {
+      if (onRemoveFilter) {
+        onRemoveFilter('all');
+      }
+    };
+
+    const handleBrowseJobs = () => {
+      navigate('/jobs');
+    };
+
+    const tips = [
+      'Broaden your location search or remove distance filters',
+      'Try adding related skills or trades instead of exact matches',
+      'Toggle between job types (Full-time, Contract, Gig)',
+    ];
+
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          textAlign: 'center',
+          py: 8,
+          px: { xs: 2, md: 6 },
+          background: 'linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(45,45,45,0.95) 100%)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 3,
+        }}
       >
-        Clear all filters
-      </Button>
-    </Box>
-  );
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            mb: 3,
+          }}
+        >
+          <Box
+            sx={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              background: 'rgba(255, 215, 0, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#FFD700',
+            }}
+          >
+            <SearchOffIcon sx={{ fontSize: 36 }} />
+          </Box>
+        </Box>
+
+        <Typography variant="h5" sx={{ color: '#fff', fontWeight: 'bold' }} gutterBottom>
+          We couldn’t find any workers that match… yet
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.75)', mb: 4 }}>
+          Adjust your filters or explore other talent pools to uncover more professionals.
+        </Typography>
+
+        <Stack
+          spacing={1.5}
+          sx={{
+            maxWidth: 420,
+            mx: 'auto',
+            textAlign: 'left',
+            mb: 4,
+          }}
+        >
+          {tips.map((tip) => (
+            <Stack direction="row" spacing={1.5} alignItems="flex-start" key={tip}>
+              <LightbulbIcon sx={{ color: '#FFC107', mt: 0.5, fontSize: 20 }} />
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                {tip}
+              </Typography>
+            </Stack>
+          ))}
+        </Stack>
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          justifyContent="center"
+        >
+          <Button
+            variant="contained"
+            startIcon={<RefreshIcon />}
+            onClick={handleClearFilters}
+            sx={{
+              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+              color: '#000',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+              },
+            }}
+          >
+            Reset filters
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleBrowseJobs}
+            sx={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff' }}
+          >
+            Browse open jobs
+          </Button>
+        </Stack>
+
+        {!isAuthenticated && (
+          <Typography
+            variant="caption"
+            sx={{ color: 'rgba(255,255,255,0.6)', mt: 3, display: 'block' }}
+          >
+            Tip: Create an account to save promising workers to your dashboard.
+          </Typography>
+        )}
+      </Paper>
+    );
+  };
 
   // Renders worker cards
   const renderWorkerCards = () => (

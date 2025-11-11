@@ -70,6 +70,7 @@ import { useMessages } from '../contexts/MessageContext';
 import messagingService from '../services/messagingService';
 import ConversationList from '../components/common/ConversationList';
 import Chatbox from '../components/common/Chatbox';
+import SEO from '../../common/components/common/SEO';
 
 // Enhanced Messaging Page with modern features
 const EnhancedMessagingPage = () => {
@@ -1797,13 +1798,19 @@ const EnhancedMessagingPage = () => {
   }
 
   return (
-    <Box
-      sx={{
-        height: 'calc(100vh - 64px)',
-        p: { xs: 1, sm: 2, md: 3 },
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-      }}
-    >
+    <>
+      <SEO
+        title="Messages"
+        description="Stay connected with workers and hirers through secure real-time conversations on Kelmah."
+        openGraph={{ type: 'website' }}
+      />
+      <Box
+        sx={{
+          height: 'calc(100vh - 64px)',
+          p: { xs: 1, sm: 2, md: 3 },
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        }}
+      >
       <Grid container spacing={2} sx={{ height: '100%' }}>
         {isMobile ? (
           selectedConversation ? (
@@ -1932,21 +1939,22 @@ const EnhancedMessagingPage = () => {
       </Dialog>
 
       {/* Feedback Snackbar */}
-      <Snackbar
-        open={feedback.open}
-        autoHideDuration={4000}
-        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
+        <Snackbar
+          open={feedback.open}
+          autoHideDuration={4000}
           onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
-          severity={feedback.severity}
-          sx={{ width: '100%' }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          {feedback.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert
+            onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+            severity={feedback.severity}
+            sx={{ width: '100%' }}
+          >
+            {feedback.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </>
   );
 };
 
