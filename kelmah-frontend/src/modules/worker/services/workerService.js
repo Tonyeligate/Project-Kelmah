@@ -98,9 +98,9 @@ const workerService = {
       workerPath(workerId, '/image'),
       formData,
       {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       },
     );
   },
@@ -119,7 +119,9 @@ const workerService = {
    * @returns {Promise<{ skills: Array, licenses: Array, certifications: Array }>}
    */
   getMyCredentials: async () => {
-    const response = await userServiceClient.get('/users/me/credentials');
+    const response = await userServiceClient.get(
+      API_ENDPOINTS.USER.ME_CREDENTIALS,
+    );
     const payload = response?.data?.data ?? response?.data ?? {};
 
     return {

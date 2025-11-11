@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API_ENDPOINTS } from '../../../config/environment';
 import {
-  authServiceClient,
   userServiceClient,
   jobServiceClient,
   paymentServiceClient,
 } from '../../common/services/axios';
+
+const { USER, JOB } = API_ENDPOINTS;
 
 // Clients are centralized in modules/common/services/axios.js with auth interceptors
 
@@ -14,7 +16,7 @@ export const fetchHirerProfile = createAsyncThunk(
   async () => {
     try {
       // Align with user-service: profile is served under /api/profile
-      const response = await userServiceClient.get('/users/me/credentials');
+      const response = await userServiceClient.get(USER.ME_CREDENTIALS);
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -30,7 +32,7 @@ export const fetchHirerJobs = createAsyncThunk(
   'hirer/fetchJobs',
   async (status = 'all') => {
     try {
-      const response = await jobServiceClient.get('/jobs/my-jobs', {
+      const response = await jobServiceClient.get(JOB.MY_JOBS, {
         params: { status, role: 'hirer' },
       });
       const jobs =
@@ -52,7 +54,7 @@ export const createHirerJob = createAsyncThunk(
   'hirer/createJob',
   async (jobData) => {
     try {
-      const response = await jobServiceClient.post('/jobs', jobData);
+      const response = await jobServiceClient.post(JOB.CREATE, jobData);
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Job service unavailable for job creation:', error.message);
@@ -66,7 +68,7 @@ export const updateHirerProfile = createAsyncThunk(
   async (profileData) => {
     try {
       const response = await userServiceClient.put(
-        '/users/me/profile',
+        USER.UPDATE,
         profileData,
       );
       return response.data.data || response.data;
@@ -140,7 +142,7 @@ export const updateJobStatus = createAsyncThunk(
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
       const response = await jobServiceClient.patch(
-        `/api/jobs/${jobId}/status`,
+        `${JOB.BY_ID(jobId)}/status`,
         {
           status,
         },
@@ -160,7 +162,7 @@ export const deleteHirerJob = createAsyncThunk(
   'hirer/deleteJob',
   async (jobId, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.delete(`/api/jobs/${jobId}`);
+      const response = await jobServiceClient.delete(JOB.BY_ID(jobId));
       return { jobId };
     } catch (error) {
       console.warn(
@@ -177,7 +179,7 @@ export const fetchJobApplications = createAsyncThunk(
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
       const response = await jobServiceClient.get(
-        `/api/jobs/${jobId}/applications`,
+        JOB.APPLICATIONS(jobId),
         {
           params: { status },
         },
@@ -194,7 +196,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
   'hirer/fetchAnalytics',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await userServiceClient.get('/users/me/analytics');
+      const response = await userServiceClient.get(USER.DASHBOARD_ANALYTICS);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
