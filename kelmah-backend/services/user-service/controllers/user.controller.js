@@ -481,59 +481,163 @@ exports.getUserAvailability = async (req, res, next) => {
 /**
  * Get user credentials
  */
-exports.getUserCredentials = async (req, res, next) => {
+exports.getUserCredentials = async (req, res) => {
   try {
-    // Use the MongoDB WorkerProfile from our models index
-    const { WorkerProfile } = require('../models');
-    const WorkerSkill = require('../models/WorkerSkill');
-    const Certificate = require('../models/Certificate');
-
     const userId = req.user?.id;
+
     if (!userId) {
-      return res.status(400).json({ success: false, message: 'User ID required' });
+      return res.status(401).json({
+        success: false,
+        error: {
+          message: 'Unauthorized - missing user context',
+          code: 'UNAUTHORIZED',
+        },
+      });
     }
 
-    // Get worker profile
-    const workerProfile = await WorkerProfile.findOne({ userId }).lean();
+    await ensureConnection({
+      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+    });
 
-    // Get skills
-    const workerSkills = await WorkerSkill.find({ userId })
-      .populate('skillId', 'name category')
-      .select('proficiencyLevel yearsOfExperience isVerified')
-      .lean();
+    if (typeof db.loadModels === 'function') {
+      db.loadModels();
+    }
 
-    // Get certifications
-    const certifications = await Certificate.find({ userId })
-      .select('name issuingOrganization issueDate expiryDate isVerified')
-      .lean();
+  const WorkerProfileModel = db.WorkerProfile;
+    const Certificate = require('../models/Certificate');
 
-    const skills = workerSkills.map(ws => ({
-      id: ws._id,
-      name: ws.skillId?.name || 'Unknown Skill',
-      category: ws.skillId?.category || 'General',
-      proficiencyLevel: ws.proficiencyLevel || 'beginner',
-      yearsOfExperience: ws.yearsOfExperience || 0,
-      isVerified: ws.isVerified || false
+    if (!WorkerProfileModel) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          message: 'Worker profile model not initialized',
+          code: 'MODEL_NOT_READY',
+        },
+      });
+    }
+
+    const workerProfile = await WorkerProfileModel.findOne({ userId }).lean();
+
+    if (!workerProfile) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          skills: [],
+          licenses: [],
+          certifications: [],
+        },
+        meta: {
+          source: 'user-service',
+          hasProfile: false,
+        },
+      });
+    }
+
+    const normalizedSkills = (Array.isArray(workerProfile.skills) ? workerProfile.skills : [])
+      .filter(Boolean)
+      .map((skill, index) => {
+        if (typeof skill === 'string') {
+          return {
+            id: `${workerProfile._id || userId}-skill-${index}`,
+            name: skill,
+            category: 'general',
+            proficiencyLevel: workerProfile.experienceLevel || 'intermediate',
+            yearsOfExperience: workerProfile.yearsOfExperience || 0,
+            isVerified: Boolean(workerProfile.isVerified),
+          };
+        }
+
+        if (skill && typeof skill === 'object') {
+          return {
+            id: skill._id?.toString() || skill.id || `${workerProfile._id || userId}-skill-${index}`,
+            name: skill.name || skill.label || 'Unknown Skill',
+            category: skill.category || skill.type || 'general',
+            proficiencyLevel: skill.proficiencyLevel || skill.level || workerProfile.experienceLevel || 'intermediate',
+            yearsOfExperience: Number(skill.yearsOfExperience ?? skill.experience ?? workerProfile.yearsOfExperience ?? 0),
+            isVerified: Boolean(skill.isVerified || skill.verified || workerProfile.isVerified),
+          };
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+
+    let certificateDocs = [];
+
+    if (Certificate && typeof Certificate.find === 'function') {
+      certificateDocs = await Certificate.find({ workerId: workerProfile.userId }).lean();
+    }
+
+    let normalizedCertifications = [];
+
+    if (certificateDocs.length > 0) {
+      normalizedCertifications = certificateDocs.map((cert) => ({
+        id: cert._id?.toString(),
+        name: cert.name,
+        issuingOrganization: cert.issuer || cert.issuingOrganization || '',
+        issueDate: cert.issuedAt || cert.issueDate || null,
+        expiryDate: cert.expiresAt || cert.expiryDate || null,
+        status: cert.status || cert.verification?.result || (cert.isVerified ? 'verified' : 'pending'),
+        isVerified: Boolean(
+          cert.status === 'verified' ||
+          cert.verification?.result === 'verified' ||
+          cert.isVerified
+        ),
+      }));
+    } else if (Array.isArray(workerProfile.certifications)) {
+      normalizedCertifications = workerProfile.certifications.map((cert, index) => ({
+        id: cert._id?.toString() || cert.id || `${workerProfile._id || userId}-cert-${index}`,
+        name: cert.name,
+        issuingOrganization: cert.issuer || cert.issuingOrganization || '',
+        issueDate: cert.issueDate || cert.issuedAt || null,
+        expiryDate: cert.expiryDate || cert.expiresAt || null,
+        status: cert.status || (cert.isVerified ? 'verified' : 'pending'),
+        isVerified: Boolean(cert.isVerified || cert.status === 'verified'),
+      }));
+    }
+
+    const sourceLicenses = Array.isArray(workerProfile.licenses)
+      ? workerProfile.licenses
+      : Array.isArray(workerProfile.certifications)
+        ? workerProfile.certifications.filter((item) =>
+            (item.type && item.type.toLowerCase() === 'license') ||
+            (item.category && item.category.toLowerCase() === 'license') ||
+            (item.label && item.label.toLowerCase().includes('license'))
+          )
+        : [];
+
+    const normalizedLicenses = sourceLicenses.map((license, index) => ({
+      id: license._id?.toString() || license.id || `${workerProfile._id || userId}-license-${index}`,
+      name: license.name || license.title || 'License',
+      issuingOrganization: license.issuer || license.issuingOrganization || license.provider || '',
+      issueDate: license.issueDate || license.issuedAt || null,
+      expiryDate: license.expiryDate || license.expiresAt || null,
+      isVerified: Boolean(license.isVerified || license.status === 'verified'),
     }));
 
-    const licenses = workerProfile?.licenses || [];
-    const formattedCertifications = certifications.map(cert => ({
-      id: cert._id,
-      name: cert.name,
-      issuingOrganization: cert.issuingOrganization,
-      issueDate: cert.issueDate,
-      expiryDate: cert.expiryDate,
-      isVerified: cert.isVerified || false
-    }));
-
-    res.json({
-      skills,
-      licenses,
-      certifications: formattedCertifications
+    return res.status(200).json({
+      success: true,
+      data: {
+        skills: normalizedSkills,
+        licenses: normalizedLicenses,
+        certifications: normalizedCertifications,
+      },
+      meta: {
+        source: 'user-service',
+        hasProfile: true,
+        profileId: workerProfile._id?.toString() || null,
+      },
     });
   } catch (err) {
     console.error('Get credentials error:', err);
-    next(err);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to load user credentials',
+        code: 'USER_CREDENTIALS_ERROR',
+        details: err.message,
+      },
+    });
   }
 };
 
