@@ -242,10 +242,11 @@ shared/
 **Common Issues & Solutions:**
 
 #### Credential Management
-- **Test User**: `giftyafisa@gmail.com` with password `1221122Ga`
+- **Test User**: `giftyafisa@gmail.com` with password `11221122Tg` ⚠️ CORRECT PASSWORD
 - **Email Verification**: Must be set to `true` in database to avoid 403 errors
 - **Password Hashing**: Uses bcrypt with 12 salt rounds
 - **Setup Script**: Use `node create-gifty-user.js` to ensure test user exists
+- **Account Lockout**: 30-minute lockout after multiple failed attempts
 
 #### Authentication Testing
 - **Comprehensive Test**: Use `node test-auth-and-notifications.js` for full auth flow

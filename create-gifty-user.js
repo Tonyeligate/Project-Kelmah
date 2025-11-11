@@ -41,7 +41,7 @@ async function createOrUpdateGifty() {
 
         const testUser = {
             email: 'giftyafisa@gmail.com',
-            password: '1221122Ga',
+            password: '11221122Tg',
             firstName: 'Gifty',
             lastName: 'Afisa',
             role: 'worker',
@@ -87,7 +87,7 @@ async function createOrUpdateGifty() {
 
         // Verify the user can login (test password hash)
         console.log('\n🧪 Testing password verification...');
-        const isPasswordValid = await bcrypt.compare('1221122Ga', user.password);
+        const isPasswordValid = await bcrypt.compare('11221122Tg', user.password);
         
         if (isPasswordValid) {
             console.log('✅ Password verification successful!');

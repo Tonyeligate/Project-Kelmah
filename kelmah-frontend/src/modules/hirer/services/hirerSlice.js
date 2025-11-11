@@ -471,7 +471,11 @@ const hirerSlice = createSlice({
 
       // Delete Hirer Job
       .addCase(deleteHirerJob.fulfilled, (state, action) => {
-        const jobId = action.payload.data?.jobId || action.payload.jobId;
+        const payload = action.payload?.data || action.payload || {};
+        const jobId = payload.jobId;
+        if (!jobId) {
+          return;
+        }
         Object.keys(state.jobs).forEach((status) => {
           state.jobs[status] = state.jobs[status].filter(
             (job) => job.id !== jobId,
@@ -521,7 +525,7 @@ const hirerSlice = createSlice({
       .addCase(fetchPaymentSummary.fulfilled, (state, action) => {
         state.loading.payments = false;
         state.payments = action.payload?.data || action.payload || null;
-      });
+      })
       .addCase(fetchPaymentSummary.rejected, (state, action) => {
         state.loading.payments = false;
         state.error.payments = action.payload || 'Failed to fetch payments';
