@@ -3,9 +3,10 @@ alwaysApply: true
 ---
 # Kelmah Platform - AI Coding Agent Instructions
 
-**Last Updated**: September 21, 2025  
+**Last Updated**: November 11, 2025  
 **Architecture Status**: FULLY CONSOLIDATED ✅  
-**Critical Backend Fixes**: COMPLETED September 2025
+**Critical Backend Fixes**: COMPLETED September 2025  
+**API Standards**: PROFESSIONAL REST PRACTICES MANDATORY ⚠️
 
 ## Architecture Overview
 
@@ -63,6 +64,179 @@ Kelmah is a **freelance marketplace** with a **fully consolidated microservices 
 - **Backend Models**: `const { Model } = require('../models')` (service index)
 - **Backend Shared**: `require('../../shared/[type]/[utility]')` pattern
 - **Verification**: Consistent import patterns across all services
+
+### API Routing & Design Best Practices ⚠️ MANDATORY PROFESSIONAL STANDARDS
+
+#### RESTful API Design Principles
+All API routing, path design, and flow implementations MUST adhere to professional REST standards:
+
+**1. Resource Naming Conventions**
+- ✅ **CORRECT**: `/api/jobs`, `/api/users/:id/profile`, `/api/applications/:id`
+- ❌ **INCORRECT**: `/api/getJobs`, `/api/user_profile`, `/api/application-detail`
+- **Rules**:
+  - Use plural nouns for collections: `/jobs`, `/users`, `/applications`
+  - Use hyphens for multi-word resources: `/worker-profiles`, `/job-categories`
+  - Never use verbs in URLs (verbs = HTTP methods)
+  - Use nested resources for relationships: `/jobs/:jobId/applications`
+
+**2. HTTP Method Usage**
+- **GET**: Retrieve resources (never modify data)
+  - Collection: `GET /api/jobs` → List all jobs
+  - Single: `GET /api/jobs/:id` → Get specific job
+  - Filtered: `GET /api/jobs?category=plumbing&location=Accra`
+- **POST**: Create new resources
+  - `POST /api/jobs` → Create new job posting
+  - `POST /api/jobs/:id/apply` → Create application (action endpoint)
+- **PUT/PATCH**: Update existing resources
+  - `PUT /api/jobs/:id` → Replace entire job
+  - `PATCH /api/jobs/:id` → Partial update
+- **DELETE**: Remove resources
+  - `DELETE /api/jobs/:id` → Delete job posting
+
+**3. Route Organization & Specificity Order**
+Routes MUST be ordered from most specific to least specific to prevent path shadowing:
+
+```javascript
+// ✅ CORRECT ORDER
+router.get('/my-jobs', authenticate, getMyJobs);           // Specific literal
+router.get('/featured', getFeaturedJobs);                  // Specific literal
+router.get('/search', searchJobs);                         // Specific literal
+router.get('/:id/applications', authenticate, getJobApps); // Param with path
+router.get('/:id', getJobById);                           // Param only (LAST)
+
+// ❌ INCORRECT ORDER (/:id shadows everything)
+router.get('/:id', getJobById);                           // ❌ This catches ALL routes
+router.get('/my-jobs', authenticate, getMyJobs);          // ❌ Never reached!
+router.get('/featured', getFeaturedJobs);                 // ❌ Never reached!
+```
+
+**4. Authentication & Authorization Middleware**
+- **Gateway-Authenticated Endpoints**: Always use `verifyGatewayRequest` middleware for service endpoints expecting `req.user`
+- **Public Endpoints**: Clearly mark public routes (no auth required)
+- **Role-Based Access**: Apply role checks after authentication
+  
+```javascript
+// ✅ CORRECT: Gateway trust for personal endpoints
+router.get('/me/credentials', verifyGatewayRequest, getUserCredentials);
+router.get('/me/availability', verifyGatewayRequest, getUserAvailability);
+
+// ✅ CORRECT: Role-specific endpoints
+router.post('/jobs', authenticate, requireRole('hirer'), createJob);
+router.patch('/jobs/:id', authenticate, requireRole('hirer'), updateJob);
+
+// ✅ CORRECT: Public endpoints (no middleware)
+router.get('/jobs', getPublicJobs); // Public job listings
+router.get('/jobs/:id', getJobDetails); // Public job details
+```
+
+**5. Response Structure Standards**
+All API responses MUST follow consistent structure:
+
+```javascript
+// ✅ SUCCESS Response (200, 201)
+{
+  "success": true,
+  "data": { /* resource or array */ },
+  "message": "Operation completed successfully", // Optional
+  "meta": { // Optional pagination/metadata
+    "total": 150,
+    "page": 1,
+    "limit": 20
+  }
+}
+
+// ✅ ERROR Response (4xx, 5xx)
+{
+  "success": false,
+  "error": {
+    "message": "Resource not found",
+    "code": "RESOURCE_NOT_FOUND",
+    "details": { /* additional context */ }
+  }
+}
+
+// ❌ INCORRECT: Inconsistent structure
+{ "jobs": [...] } // Missing success flag
+{ "error": "Something went wrong" } // String instead of object
+```
+
+**6. Status Code Usage**
+- **200 OK**: Successful GET, PUT, PATCH, DELETE
+- **201 Created**: Successful POST (resource created)
+- **204 No Content**: Successful DELETE (no body returned)
+- **400 Bad Request**: Invalid input/validation errors
+- **401 Unauthorized**: Missing or invalid authentication
+- **403 Forbidden**: Valid auth but insufficient permissions
+- **404 Not Found**: Resource doesn't exist
+- **409 Conflict**: Duplicate resource (e.g., email already exists)
+- **422 Unprocessable Entity**: Valid syntax but semantic errors
+- **500 Internal Server Error**: Server-side errors
+- **503 Service Unavailable**: Service temporarily down
+
+**7. API Gateway Routing Patterns**
+- **Consistent Prefix**: All external APIs use `/api/*` prefix
+- **Service Proxying**: Gateway routes to microservices transparently
+- **Error Handling**: Gateway catches service failures and returns 503/504
+- **Rate Limiting**: Applied at gateway level for all routes
+- **CORS**: Configured once at gateway, not per service
+
+```javascript
+// ✅ API Gateway service registry pattern
+const SERVICES = {
+  auth: 'http://localhost:5001',
+  user: 'http://localhost:5002',
+  job: 'http://localhost:5003',
+  messaging: 'http://localhost:5005'
+};
+
+// ✅ Proxy with error handling
+app.use('/api/jobs', createProxyMiddleware({
+  target: SERVICES.job,
+  changeOrigin: true,
+  pathRewrite: { '^/api/jobs': '' },
+  onError: (err, req, res) => {
+    res.status(503).json({
+      success: false,
+      error: { message: 'Job service unavailable', code: 'SERVICE_UNAVAILABLE' }
+    });
+  }
+}));
+```
+
+**8. Query Parameter Standards**
+- **Filtering**: `?category=plumbing&status=active`
+- **Pagination**: `?page=2&limit=20` or `?offset=40&limit=20`
+- **Sorting**: `?sort=createdAt&order=desc` or `?sort=-createdAt`
+- **Searching**: `?search=carpenter&location=Accra`
+- **Field Selection**: `?fields=title,description,budget` (if supported)
+
+**9. Versioning Strategy**
+- **Current**: No versioning (v1 implicit)
+- **Future**: Use `/api/v2/` prefix for breaking changes
+- **Never**: Mix versions in same codebase without clear separation
+
+**10. Error Investigation Protocol for API Issues**
+When debugging API routing problems, ALWAYS:
+
+1. **Check Route Order**: Verify specific routes come before parameterized routes
+2. **Verify Middleware Chain**: Confirm auth/validation middleware attached correctly
+3. **Test via Gateway**: All frontend calls go through `/api/*`, never directly to services
+4. **Check Service Health**: Ensure target microservice is running and healthy
+5. **Validate Request Format**: Confirm payload/params match expected schema
+6. **Inspect Logs**: Check both gateway and service logs for routing/proxy errors
+7. **Confirm Deployment**: Local fixes must be deployed before testing via tunnel/production
+
+**⚠️ MANDATORY CHECKLIST for API Routing Fixes:**
+- [ ] Routes ordered from specific to generic (literals before params)
+- [ ] Authentication middleware applied to protected endpoints
+- [ ] Gateway trust middleware used for endpoints expecting `req.user` from gateway
+- [ ] Response structure follows success/error standards
+- [ ] Appropriate HTTP status codes returned
+- [ ] Error handling covers validation, auth, and server errors
+- [ ] Public vs protected routes clearly distinguished
+- [ ] RESTful naming conventions followed (plural nouns, no verbs)
+- [ ] Gateway proxy configuration tested via `/api/*` routes
+- [ ] Changes verified in deployed environment (not just local)
 
 ## Critical Development Workflows
 

@@ -175,7 +175,7 @@ function ApplicationManagementPage() {
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
       <Helmet>
-        <title>Application Management | Kelmah</title>
+        <title>Applications | Kelmah</title>
       </Helmet>
       <Typography variant="h4" gutterBottom>
         Job Applications
@@ -237,12 +237,21 @@ function ApplicationManagementPage() {
                 </Alert>
               )}
               {!loading && applications.length === 0 && !error && (
-                <Typography
-                  color="text.secondary"
-                  sx={{ textAlign: 'center', mt: 4 }}
-                >
-                  No applications found for this status.
-                </Typography>
+                <Box sx={{ textAlign: 'center', mt: 4 }}>
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    No applications yet.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Publish a detailed job post to start receiving proposals from verified workers.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate('/hirer/jobs/post')}
+                  >
+                    Post a Job
+                  </Button>
+                </Box>
               )}
               {!loading &&
                 applications.length > 0 &&

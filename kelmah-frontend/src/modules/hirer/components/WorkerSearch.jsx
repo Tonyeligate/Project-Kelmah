@@ -1095,12 +1095,19 @@ const WorkerSearch = () => {
                     </Typography>
 
                     {/* Action Buttons */}
-                    <Box display="flex" gap={1}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 1,
+                      }}
+                    >
                       <Button
                         variant="contained"
+                        color="primary"
                         size="small"
                         startIcon={<MessageIcon />}
-                        sx={{ flex: 1 }}
+                        sx={{ flexGrow: 1, minWidth: 110 }}
                         onClick={async () => {
                           try {
                             const convo =
@@ -1124,11 +1131,24 @@ const WorkerSearch = () => {
                       </Button>
                       <Button
                         variant="outlined"
+                        color="secondary"
+                        size="small"
+                        startIcon={<WorkIcon />}
+                        sx={{ flexGrow: 1, minWidth: 120 }}
+                        onClick={() =>
+                          navigate(`/hirer/jobs?inviteWorker=${worker.id}`)
+                        }
+                      >
+                        Invite to Job
+                      </Button>
+                      <Button
+                        variant="outlined"
                         size="small"
                         startIcon={<ViewIcon />}
+                        sx={{ flexGrow: 1, minWidth: 110 }}
                         onClick={() => handleDialogOpen(worker)}
                       >
-                        View
+                        View Profile
                       </Button>
                       <IconButton
                         size="small"

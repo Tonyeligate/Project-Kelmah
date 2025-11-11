@@ -413,6 +413,11 @@ const HirerDashboardPage = () => {
     activeWorkers: hirerProfile?.activeWorkers || [],
   };
 
+  const isNewHirer =
+    summaryData.activeJobs === 0 &&
+    (summaryData.activeWorkers?.length || 0) === 0 &&
+    (summaryData.totalSpent || 0) === 0;
+
   // Dashboard overview component
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
@@ -592,6 +597,64 @@ const HirerDashboardPage = () => {
             </Box>
           </Paper>
         </Grid>
+
+        {isNewHirer && (
+          <Grid item xs={12}>
+            <StyledPaper
+              elevation={4}
+              sx={{
+                p: { xs: 3, md: 4 },
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 3,
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,215,0,0.25)',
+              }}
+            >
+              <Box sx={{ maxWidth: 520 }}>
+                <Typography variant="h5" fontWeight={700} gutterBottom>
+                  Ready to make your first hire?
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Post a detailed job to attract skilled workers or browse the talent pool to invite top professionals.
+                </Typography>
+                <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
+                  <Chip
+                    label="Tip: Include timeline and budget for stronger matches"
+                    color="secondary"
+                    variant="outlined"
+                  />
+                </Stack>
+              </Box>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                sx={{ width: { xs: '100%', md: 'auto' } }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddCircleIcon />}
+                  onClick={() => navigate('/hirer/jobs/post')}
+                  sx={{ minWidth: 200 }}
+                >
+                  Post Your First Job
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<SearchIcon />}
+                  onClick={() => navigate('/hirer/find-talent')}
+                  sx={{ minWidth: 200 }}
+                >
+                  Find Talented Workers
+                </Button>
+              </Stack>
+            </StyledPaper>
+          </Grid>
+        )}
 
         {/* Summary cards */}
         <Grid item xs={12} md={8}>
@@ -926,39 +989,49 @@ const HirerDashboardPage = () => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '80vh',
-        }}
-      >
-        <CircularProgress sx={{ mb: 2, color: 'secondary.main' }} />
-        <Typography variant="body1" color="text.secondary" gutterBottom>
-          Loading your dashboard...
-        </Typography>
-        
-        {/* Show timeout warning after 10 seconds */}
-        {loadingTimeout && (
-          <Alert 
-            severity="warning" 
-            sx={{ mt: 3, maxWidth: 500 }}
-            action={
-              <Button 
-                color="inherit" 
-                size="small"
-                onClick={() => window.location.reload()}
-              >
-                Refresh
-              </Button>
-            }
-          >
-            Loading is taking longer than expected. Please check your connection or try refreshing the page.
-          </Alert>
-        )}
-      </Box>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <Helmet>
+          <title>Dashboard | Kelmah</title>
+        </Helmet>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
+          }}
+        >
+          <CircularProgress sx={{ color: 'secondary.main' }} />
+          <Box textAlign="center">
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              Fetching your jobs, applications, and recent activity...
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              This usually takes about 2-3 seconds.
+            </Typography>
+          </Box>
+          <Box sx={{ width: '100%' }}>
+            <LoadingOverviewSkeleton />
+          </Box>
+          {loadingTimeout && (
+            <Alert
+              severity="warning"
+              sx={{ mt: 1, maxWidth: 520 }}
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh
+                </Button>
+              }
+            >
+              Loading is taking longer than expected. Please check your connection or try refreshing the page.
+            </Alert>
+          )}
+        </Box>
+      </Container>
     );
   }
 
@@ -967,7 +1040,7 @@ const HirerDashboardPage = () => {
       <Box>
         {/* SEO & Document Title */}
         <Helmet>
-          <title>Hirer Dashboard | Kelmah</title>
+          <title>Dashboard | Kelmah</title>
         </Helmet>
         {/* Topbar */}
         <Box

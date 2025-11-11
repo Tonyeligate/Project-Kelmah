@@ -14,21 +14,13 @@ const WorkerSearchPage = () => {
     if (typeof window !== 'undefined' && window.history.length > 2) {
       navigate(-1);
     } else {
-      navigate('/dashboard');
+      navigate('/hirer/dashboard');
     }
   };
 
-  // Debug authentication state
-  console.log('WorkerSearchPage - isAuthenticated:', isAuthenticated);
-
   // Redirect to login if not authenticated
   useEffect(() => {
-    console.log(
-      'WorkerSearchPage useEffect - isAuthenticated:',
-      isAuthenticated,
-    );
     if (!isAuthenticated) {
-      console.log('WorkerSearchPage - redirecting to login');
       navigate('/login?redirect=/hirer/find-talent'); // ✅ FIXED: Use correct route
     }
   }, [isAuthenticated, navigate]);
@@ -38,7 +30,7 @@ const WorkerSearchPage = () => {
     return (
       <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
         <Helmet>
-          <title>Find Skilled Workers - Kelmah | Ghana's Top Talent Pool</title>
+          <title>Find Talent | Kelmah</title>
         </Helmet>
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <Typography
@@ -109,16 +101,11 @@ const WorkerSearchPage = () => {
   return (
     <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
       <Helmet>
-        <title>Find Skilled Workers - Kelmah | Ghana's Top Talent Pool</title>
+        <title>Find Talent | Kelmah</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Button variant="text" color="inherit" onClick={handleGoBack}>
-            ← Go Back
-          </Button>
-        </Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Button variant="outlined" color="inherit" onClick={handleGoBack}>
             ← Go Back
           </Button>
         </Box>

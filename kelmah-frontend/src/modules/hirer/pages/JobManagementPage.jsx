@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { Helmet } from 'react-helmet-async';
 import {
   Box,
   Container,
@@ -262,6 +263,9 @@ const JobManagementPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Helmet>
+        <title>Manage Jobs | Kelmah</title>
+      </Helmet>
       <Box sx={{ mb: 4 }}>
         <Box
           sx={{

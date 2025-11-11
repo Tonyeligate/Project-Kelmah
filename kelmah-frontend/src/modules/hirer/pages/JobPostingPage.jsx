@@ -21,6 +21,7 @@ import {
   RadioGroup,
   Radio,
   FormControlLabel,
+  FormHelperText,
   Autocomplete,
   IconButton,
   CircularProgress,
@@ -133,25 +134,214 @@ const JobPostingPage = () => {
     location: '',
   });
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
-  const handleNext = () => setActiveStep((prev) => prev + 1);
+  const getFieldError = (field, data = formData) => {
+    switch (field) {
+      case 'title':
+        return data.title.trim()
+          ? ''
+          : 'Job title is required.';
+      case 'category':
+        return data.category
+          ? ''
+          : 'Select a category to continue.';
+      case 'description':
+        return data.description.trim()
+          ? ''
+          : 'Add a short project description so workers know what to expect.';
+      case 'budget.min': {
+        if (data.paymentType !== 'hourly') return '';
+        const rawValue = String(data.budget.min ?? '').trim();
+        if (!rawValue) return 'Enter a minimum hourly rate.';
+        const value = Number(rawValue);
+        if (Number.isNaN(value) || value <= 0)
+          return 'Minimum rate must be greater than zero.';
+        return '';
+      }
+      case 'budget.max': {
+        if (data.paymentType !== 'hourly') return '';
+        const rawValue = String(data.budget.max ?? '').trim();
+        if (!rawValue) return 'Enter a maximum hourly rate.';
+        const value = Number(rawValue);
+        if (Number.isNaN(value) || value <= 0)
+          return 'Maximum rate must be greater than zero.';
+        const minValue = Number(data.budget.min ?? 0);
+        if (!Number.isNaN(minValue) && value < minValue)
+          return 'Maximum rate cannot be lower than the minimum rate.';
+        return '';
+      }
+      case 'budget.fixed': {
+        if (data.paymentType !== 'fixed') return '';
+        const rawValue = String(data.budget.fixed ?? '').trim();
+        if (!rawValue) return 'Enter a project budget.';
+        const value = Number(rawValue);
+        if (Number.isNaN(value) || value <= 0)
+          return 'Project budget must be greater than zero.';
+        return '';
+      }
+      case 'duration':
+        return String(data.duration ?? '').trim()
+          ? ''
+          : 'Share the expected duration so workers can plan.';
+      case 'location': {
+        const trimmed = data.location.trim();
+        if (trimmed) return '';
+        return data.locationType === 'remote'
+          ? 'Add the primary region or time zone for remote collaboration.'
+          : 'Tell workers where the job will take place.';
+      }
+      default:
+        return '';
+    }
+  };
+
+  const refreshFieldError = (field, data = formData) => {
+    const message = getFieldError(field, data);
+    setFieldErrors((prev) => {
+      const updated = { ...prev };
+      if (message) {
+        updated[field] = message;
+      } else {
+        delete updated[field];
+      }
+      return updated;
+    });
+  };
+
+  const markFieldTouched = (field) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+    refreshFieldError(field, formData);
+  };
+
+  const getStepFields = (step, data = formData) => {
+    switch (step) {
+      case 0:
+        return ['title', 'category'];
+      case 1:
+        return ['description'];
+      case 2:
+        return data.paymentType === 'hourly'
+          ? ['budget.min', 'budget.max', 'duration']
+          : ['budget.fixed', 'duration'];
+      case 3:
+        return ['location'];
+      default:
+        return [];
+    }
+  };
+
+  const validateStep = (step, data = formData) => {
+    const errors = {};
+    const fields = getStepFields(step, data);
+    fields.forEach((field) => {
+      const message = getFieldError(field, data);
+      if (message) {
+        errors[field] = message;
+      }
+    });
+    return errors;
+  };
+
+  const clearErrorsForFields = (fields) => {
+    if (!fields.length) return;
+    setFieldErrors((prev) => {
+      const updated = { ...prev };
+      fields.forEach((field) => {
+        delete updated[field];
+      });
+      return updated;
+    });
+  };
+
+  const handleNext = () => {
+    const fields = getStepFields(activeStep);
+    const errors = validateStep(activeStep);
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...errors }));
+      setTouchedFields((prev) => ({
+        ...prev,
+        ...fields.reduce(
+          (acc, field) => ({ ...acc, [field]: true }),
+          {},
+        ),
+      }));
+      return;
+    }
+
+    clearErrorsForFields(fields);
+    setActiveStep((prev) => prev + 1);
+  };
   const handleBack = () => setActiveStep((prev) => prev - 1);
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'paymentType') {
+      const nextData = {
+        ...formData,
+        paymentType: value,
+        budget:
+          value === 'hourly'
+            ? { ...formData.budget, fixed: '' }
+            : { ...formData.budget, min: '', max: '' },
+      };
+      setFormData(nextData);
+      setTouchedFields((prev) => ({ ...prev, [name]: true }));
+      ['budget.min', 'budget.max', 'budget.fixed'].forEach((field) =>
+        refreshFieldError(field, nextData),
+      );
+      return;
+    }
+
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: { ...prev[parent], [child]: value },
-      }));
+      const nextData = {
+        ...formData,
+        [parent]: { ...formData[parent], [child]: value },
+      };
+      setFormData(nextData);
+      setTouchedFields((prev) => ({ ...prev, [name]: true }));
+      refreshFieldError(name, nextData);
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      const nextData = { ...formData, [name]: value };
+      setFormData(nextData);
+      setTouchedFields((prev) => ({ ...prev, [name]: true }));
+      refreshFieldError(name, nextData);
     }
   };
   const handleSkillsChange = (event, newSkills) => {
-    setFormData((prev) => ({ ...prev, skills: newSkills }));
+    const nextData = { ...formData, skills: newSkills };
+    setFormData(nextData);
+    setTouchedFields((prev) => ({ ...prev, skills: true }));
   };
   const handleSubmit = (asDraft = false) => {
+    if (!asDraft) {
+      const requiredSteps = [0, 1, 2, 3];
+      const collectedErrors = requiredSteps.reduce((acc, step) => {
+        const stepErrors = validateStep(step);
+        return { ...acc, ...stepErrors };
+      }, {});
+
+      if (Object.keys(collectedErrors).length > 0) {
+        setFieldErrors((prev) => ({ ...prev, ...collectedErrors }));
+        setTouchedFields((prev) => ({
+          ...prev,
+          ...Object.keys(collectedErrors).reduce(
+            (acc, field) => ({ ...acc, [field]: true }),
+            {},
+          ),
+        }));
+        const firstInvalidStep = requiredSteps.find(
+          (step) => Object.keys(validateStep(step)).length > 0,
+        );
+        if (typeof firstInvalidStep === 'number') {
+          setActiveStep(firstInvalidStep);
+        }
+        return;
+      }
+    }
+
     // Map UI form to canonical API payload
     const payload = {
       title: formData.title,
@@ -190,25 +380,8 @@ const JobPostingPage = () => {
   };
 
   // Determine if Next button should be disabled
-  const isNextDisabled = () => {
-    switch (activeStep) {
-      case 0:
-        return !(formData.title && formData.category);
-      case 2:
-        if (formData.paymentType === 'hourly') {
-          return !(
-            formData.budget.min &&
-            formData.budget.max &&
-            formData.duration
-          );
-        }
-        return !(formData.budget.fixed && formData.duration);
-      case 3:
-        return !formData.location;
-      default:
-        return false;
-    }
-  };
+  const isNextDisabled = () =>
+    Object.keys(validateStep(activeStep)).length > 0;
 
   if (submitSuccess) {
     return (
@@ -261,14 +434,26 @@ const JobPostingPage = () => {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              required
+              onBlur={() => markFieldTouched('title')}
+              error={Boolean(touchedFields.title && fieldErrors.title)}
+              helperText={
+                (touchedFields.title && fieldErrors.title) ||
+                'Example: Senior Carpenter for custom kitchen cabinets'
+              }
             />
-            <FormControl fullWidth margin="normal">
+            <FormControl
+              fullWidth
+              margin="normal"
+              error={Boolean(touchedFields.category && fieldErrors.category)}
+            >
               <InputLabel>Category</InputLabel>
               <Select
                 name="category"
                 value={formData.category}
                 label="Category"
                 onChange={handleChange}
+                onBlur={() => markFieldTouched('category')}
               >
                 {[
                   'Plumbing',
@@ -288,6 +473,10 @@ const JobPostingPage = () => {
                   </MenuItem>
                 ))}
               </Select>
+              <FormHelperText>
+                {(touchedFields.category && fieldErrors.category) ||
+                  'Choose the trade that best matches this project'}
+              </FormHelperText>
             </FormControl>
           </>
         );
@@ -303,6 +492,13 @@ const JobPostingPage = () => {
               rows={6}
               fullWidth
               margin="normal"
+              required
+              onBlur={() => markFieldTouched('description')}
+              error={Boolean(touchedFields.description && fieldErrors.description)}
+              helperText={
+                (touchedFields.description && fieldErrors.description) ||
+                'Tip: Outline the scope, deliverables, and tools workers should bring'
+              }
             />
             <TextField
               name="requirements"
@@ -313,6 +509,7 @@ const JobPostingPage = () => {
               rows={4}
               fullWidth
               margin="normal"
+              helperText="Optional: certifications, safety gear, or permits"
             />
             <Autocomplete
               multiple
@@ -336,7 +533,12 @@ const JobPostingPage = () => {
                 ))
               }
               renderInput={(params) => (
-                <TextField {...params} label="Skills" placeholder="Add skill" />
+                <TextField
+                  {...params}
+                  label="Skills"
+                  placeholder="Add skill"
+                  helperText="Add up to five skills to help the right workers find this job"
+                />
               )}
               sx={{ mt: 2 }}
             />
@@ -375,6 +577,14 @@ const JobPostingPage = () => {
                     label="Min Rate"
                     value={formData.budget.min}
                     onChange={handleChange}
+                    onBlur={() => markFieldTouched('budget.min')}
+                    error={Boolean(
+                      touchedFields['budget.min'] && fieldErrors['budget.min'],
+                    )}
+                    helperText={
+                      (touchedFields['budget.min'] && fieldErrors['budget.min']) ||
+                      'Lowest hourly rate you are willing to pay'
+                    }
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">$</InputAdornment>
@@ -382,12 +592,22 @@ const JobPostingPage = () => {
                     }}
                     fullWidth
                     margin="normal"
+                    type="number"
+                    required
                   />
                   <TextField
                     name="budget.max"
                     label="Max Rate"
                     value={formData.budget.max}
                     onChange={handleChange}
+                    onBlur={() => markFieldTouched('budget.max')}
+                    error={Boolean(
+                      touchedFields['budget.max'] && fieldErrors['budget.max'],
+                    )}
+                    helperText={
+                      (touchedFields['budget.max'] && fieldErrors['budget.max']) ||
+                      'Highest hourly rate for this project'
+                    }
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">$</InputAdornment>
@@ -395,14 +615,24 @@ const JobPostingPage = () => {
                     }}
                     fullWidth
                     margin="normal"
+                    type="number"
+                    required
                   />
                 </>
               ) : (
                 <TextField
                   name="budget.fixed"
-                  label="Fixed Price"
+                  label="Project Budget"
                   value={formData.budget.fixed}
                   onChange={handleChange}
+                  onBlur={() => markFieldTouched('budget.fixed')}
+                  error={Boolean(
+                    touchedFields['budget.fixed'] && fieldErrors['budget.fixed'],
+                  )}
+                  helperText={
+                    (touchedFields['budget.fixed'] && fieldErrors['budget.fixed']) ||
+                    'Total amount you plan to spend on this job'
+                  }
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">$</InputAdornment>
@@ -410,6 +640,8 @@ const JobPostingPage = () => {
                   }}
                   fullWidth
                   margin="normal"
+                  type="number"
+                  required
                 />
               )}
               <TextField
@@ -417,9 +649,16 @@ const JobPostingPage = () => {
                 label="Expected Duration"
                 value={formData.duration}
                 onChange={handleChange}
+                onBlur={() => markFieldTouched('duration')}
+                error={Boolean(touchedFields.duration && fieldErrors.duration)}
+                helperText={
+                  (touchedFields.duration && fieldErrors.duration) ||
+                  'Example: 2 weeks, 5 days, or 40 hours'
+                }
                 placeholder="e.g. 2 weeks"
                 fullWidth
                 margin="normal"
+                required
               />
             </Box>
           </>
@@ -461,6 +700,15 @@ const JobPostingPage = () => {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              onBlur={() => markFieldTouched('location')}
+              error={Boolean(touchedFields.location && fieldErrors.location)}
+              helperText={
+                (touchedFields.location && fieldErrors.location) ||
+                (formData.locationType === 'remote'
+                  ? 'Share the city/region or time zone you prefer to work with'
+                  : 'Specify the site address or nearest landmark')
+              }
+              required
             />
           </>
         );

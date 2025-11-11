@@ -114,8 +114,8 @@ router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('defa
 router.get('/workers/:workerId/earnings', verifyGatewayRequest, getEarnings);
 
 // User profile routes
-router.get("/me/availability", getUserAvailability);
-router.get("/me/credentials", getUserCredentials);
+router.get("/me/availability", verifyGatewayRequest, getUserAvailability);
+router.get("/me/credentials", verifyGatewayRequest, getUserCredentials);
 
 // User bookmarks
 router.get('/bookmarks', verifyGatewayRequest, getBookmarks);

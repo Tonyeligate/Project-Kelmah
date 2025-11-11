@@ -12,6 +12,8 @@ import {
   useMediaQuery,
   Fade,
   Slide,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -22,6 +24,9 @@ import {
   TrendingUp as TrendingIcon,
   Bookmark as BookmarkIcon,
   Notifications as NotificationIcon,
+  InfoOutlined as InfoIcon,
+  PushPin as PushPinIcon,
+  PushPinOutlined as PushPinOutlinedIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
@@ -44,6 +49,9 @@ const SmartNavigation = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [hasSeenIntro, setHasSeenIntro] = useState(false);
 
   // Toggle visibility based on current path eligibility
   useEffect(() => {
@@ -52,8 +60,29 @@ const SmartNavigation = () => {
       pathname.startsWith(prefix),
     );
 
-    setShowSuggestions(isEligible);
-  }, [location.pathname]);
+    if (isEligible || isPinned) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [location.pathname, isPinned]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storedPinned = sessionStorage.getItem('kelmah-nav-pinned');
+    const storedIntro = sessionStorage.getItem('kelmah-nav-intro');
+
+    if (storedPinned === 'true') {
+      setIsPinned(true);
+      setShowSuggestions(true);
+    }
+
+    if (storedIntro === 'seen') {
+      setHasSeenIntro(true);
+    } else {
+      setShowInfo(true);
+    }
+  }, []);
 
   // Don't show on mobile or if user is not authenticated
   if (isMobile || !isAuthenticated || !user) {
@@ -150,12 +179,57 @@ const SmartNavigation = () => {
 
   const suggestions = getNavigationSuggestions();
 
+  const handleTogglePin = () => {
+    setIsPinned((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('kelmah-nav-pinned', next ? 'true' : 'false');
+      }
+
+      if (next) {
+        setShowSuggestions(true);
+      } else {
+        const isEligible = ELIGIBLE_PATH_PREFIXES.some((prefix) =>
+          location.pathname.startsWith(prefix),
+        );
+        setShowSuggestions(isEligible);
+      }
+
+      return next;
+    });
+  };
+
+  const handleInfoToggle = () => {
+    setShowInfo((prev) => {
+      const next = !prev;
+      if (!hasSeenIntro && typeof window !== 'undefined') {
+        sessionStorage.setItem('kelmah-nav-intro', 'seen');
+      }
+      setHasSeenIntro(true);
+      return next;
+    });
+  };
+
+  const handleHide = () => {
+    setIsPinned(false);
+    setShowSuggestions(false);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('kelmah-nav-pinned', 'false');
+    }
+  };
+
   if (suggestions.length === 0 || !showSuggestions) {
     return null;
   }
 
   return (
-    <Fade in={showSuggestions} timeout={1000}>
+    <Slide
+      direction="left"
+      in={showSuggestions}
+      mountOnEnter
+      unmountOnExit
+      timeout={400}
+    >
       <Paper
         elevation={8}
         sx={{
@@ -171,17 +245,67 @@ const SmartNavigation = () => {
           zIndex: 1000,
         }}
       >
-        <Typography
-          variant="h6"
+        <Box
           sx={{
-            color: '#D4AF37',
-            fontWeight: 'bold',
-            mb: 2,
-            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 1.5,
           }}
         >
-          Quick Navigation
-        </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography
+              variant="h6"
+              sx={{
+                color: '#D4AF37',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+              }}
+            >
+              Quick Navigation
+            </Typography>
+            {!hasSeenIntro && (
+              <Chip
+                label="New"
+                color="secondary"
+                size="small"
+                sx={{ height: 20 }}
+              />
+            )}
+          </Stack>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Tooltip title={isPinned ? 'Unpin shortcuts' : 'Pin shortcuts'}>
+              <IconButton size="small" onClick={handleTogglePin}>
+                {isPinned ? (
+                  <PushPinIcon fontSize="inherit" />
+                ) : (
+                  <PushPinOutlinedIcon fontSize="inherit" />
+                )}
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="What is this panel?">
+              <IconButton size="small" onClick={handleInfoToggle}>
+                <InfoIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Box>
+
+        <Fade in={showInfo} timeout={300} unmountOnExit>
+          <Box
+            sx={{
+              mb: 2,
+              p: 1.5,
+              borderRadius: 1.5,
+              bgcolor: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            <Typography variant="caption" color="rgba(255,255,255,0.75)">
+              Jump to your next action with one click. Pin the shortcuts to keep them handy across hirer pages.
+            </Typography>
+          </Box>
+        </Fade>
 
         <Stack spacing={1.5}>
           {suggestions.map((suggestion, index) => (
@@ -239,7 +363,7 @@ const SmartNavigation = () => {
 
         <Button
           size="small"
-          onClick={() => setShowSuggestions(false)}
+          onClick={handleHide}
           sx={{
             mt: 2,
             color: 'rgba(255,255,255,0.5)',
@@ -247,10 +371,10 @@ const SmartNavigation = () => {
             textTransform: 'none',
           }}
         >
-          Dismiss
+          Hide for now
         </Button>
       </Paper>
-    </Fade>
+    </Slide>
   );
 };
 
