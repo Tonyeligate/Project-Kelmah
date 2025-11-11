@@ -629,6 +629,36 @@ const { createEnhancedJobProxy } = require('./proxy/job.proxy');
 const { getRateLimiter } = require('./middlewares/rate-limiter');
 
 // Job routes (public listings, protected management)
+// First, enforce authentication for protected routes while allowing public browse endpoints
+const isPublicJobRoute = (req) => {
+  if ((req.method || 'GET').toUpperCase() !== 'GET') {
+    return false;
+  }
+
+  const path = req.path || '';
+  if (path === '' || path === '/') {
+    return true;
+  }
+
+  const normalizedPath = path.toLowerCase();
+  return (
+    normalizedPath.startsWith('/search') ||
+    normalizedPath.startsWith('/categories') ||
+    normalizedPath.startsWith('/suggestions') ||
+    normalizedPath.startsWith('/stats') ||
+    normalizedPath === '/contracts' ||
+    normalizedPath.startsWith('/contracts/')
+  );
+};
+
+app.use('/api/jobs', (req, res, next) => {
+  if (isPublicJobRoute(req)) {
+    return next();
+  }
+
+  return authenticate(req, res, next);
+});
+
 // Apply rate limiting based on endpoint type
 app.use('/api/jobs', (req, res, next) => {
   // Apply different rate limits based on the operation
