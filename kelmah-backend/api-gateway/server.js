@@ -95,6 +95,16 @@ const keepAliveManager = createKeepAliveManager({
   logger
 });
 
+// Initialize keep-alive system to prevent Render spin-down
+let internalKeepAlive;
+try {
+  const { initKeepAlive, keepAliveMiddleware, keepAliveTriggerHandler } = require('../shared/utils/keepAlive');
+  internalKeepAlive = initKeepAlive('api-gateway', { logger });
+  logger.info('✅ Internal keep-alive system initialized for API Gateway');
+} catch (error) {
+  logger.warn('⚠️ Internal keep-alive system not available:', error.message);
+}
+
 // Initialize services on startup
 const initializeServices = async () => {
   try {
@@ -284,9 +294,48 @@ const healthResponse = (req, res) => {
     services: Object.keys(services),
     serviceUrls: services,
     version: '2.0.0',
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    keepAlive: internalKeepAlive ? internalKeepAlive.getStatus() : { enabled: false }
   });
 };
+
+app.get('/health', healthResponse);
+app.get('/api/health', healthResponse);
+
+// Keep-alive status endpoint
+if (internalKeepAlive) {
+  app.get('/health/keepalive', (req, res) => {
+    res.json({
+      success: true,
+      data: internalKeepAlive.getStatus()
+    });
+  });
+  
+  app.get('/api/health/keepalive', (req, res) => {
+    res.json({
+      success: true,
+      data: internalKeepAlive.getStatus()
+    });
+  });
+  
+  // Manual trigger for keep-alive ping
+  app.post('/health/keepalive/trigger', async (req, res) => {
+    try {
+      const results = await internalKeepAlive.triggerPing();
+      res.json({
+        success: true,
+        message: 'Keep-alive ping triggered',
+        data: results
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to trigger keep-alive',
+        error: error.message
+      });
+    }
+  });
+}
 
 app.get('/health', healthResponse);
 app.get('/api/health', healthResponse);

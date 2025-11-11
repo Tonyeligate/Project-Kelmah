@@ -40,6 +40,16 @@ const app = express();
 // Optional tracing and error monitoring
 try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('auth-service'); monitoring.initTracing('auth-service'); } catch {}
 
+// Initialize keep-alive to prevent Render spin-down
+let keepAliveManager;
+try {
+  const { initKeepAlive, keepAliveMiddleware, keepAliveTriggerHandler } = require('../../shared/utils/keepAlive');
+  keepAliveManager = initKeepAlive('auth-service', { logger });
+  logger.info('✅ Keep-alive manager initialized for auth-service');
+} catch (error) {
+  logger.warn('⚠️ Keep-alive manager not available:', error.message);
+}
+
 // Env validation (fail-fast in production)
 try {
   const { requireEnv } = require('./utils/envValidator');
@@ -405,16 +415,29 @@ const healthResponse = (req, res) => {
     service: "Auth Service",
     status: "OK",
     timestamp: new Date().toISOString(),
-    endpoints: {
-      login: "/api/auth/login",
-      register: "/api/auth/register",
-      verify: "/api/auth/verify"
-    }
+    keepAlive: keepAliveManager ? keepAliveManager.getStatus() : { enabled: false }
   });
 };
 
 app.get("/health", healthResponse);
 app.get("/api/health", healthResponse); // API Gateway compatibility
+
+// Keep-alive endpoints
+if (keepAliveManager) {
+  app.get('/health/keepalive', (req, res) => {
+    res.json({ success: true, data: keepAliveManager.getStatus() });
+  });
+  
+  app.post('/health/keepalive/trigger', async (req, res) => {
+    try {
+      const results = await keepAliveManager.triggerPing();
+      res.json({ success: true, message: 'Keep-alive triggered', data: results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+}
+
 
 // Readiness and liveness endpoints
 app.get('/health/ready', (req, res) => {

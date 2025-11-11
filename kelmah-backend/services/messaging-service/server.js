@@ -35,6 +35,18 @@ try { require('./utils/tracing').initTracing('messaging-service'); } catch { }
 try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('messaging-service'); monitoring.initTracing('messaging-service'); } catch { }
 const server = http.createServer(app);
 
+// Initialize keep-alive to prevent Render spin-down
+let keepAliveManager;
+try {
+  const { createLogger } = require('./utils/logger');
+  const logger = createLogger('messaging-service');
+  const { initKeepAlive } = require('../../shared/utils/keepAlive');
+  keepAliveManager = initKeepAlive('messaging-service', { logger });
+  logger.info('✅ Keep-alive manager initialized for messaging-service');
+} catch (error) {
+  console.warn('⚠️ Keep-alive manager not available:', error.message);
+}
+
 // ✅ ADDED: Trust proxy for production deployment (Render, Heroku, etc.)
 // This fixes the "X-Forwarded-For header is set but trust proxy is false" error
 app.set('trust proxy', true);
@@ -211,42 +223,47 @@ const messageSocketHandler = new MessageSocketHandler(io);
 
 // Health check endpoint
 const healthCheck = (req, res) => {
-  const mongoState = mongoose.connection.readyState;
-  const mongoStates = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting'
-  };
+  const dbConnected = mongoose.connection.readyState === 1;
+  const socketConnected = io.engine.clientsCount >= 0;
 
-  const healthStatus = {
-    status: mongoState === 1 ? 'healthy' : 'degraded',
+  const status = {
     service: 'messaging-service',
+    status: dbConnected ? 'healthy' : 'degraded',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    version: process.env.APP_VERSION || '1.0.0',
     database: {
-      status: mongoStates[mongoState] || 'unknown',
-      connected: mongoState === 1,
-      host: mongoose.connection.host || 'not connected',
-      name: mongoose.connection.name || 'not connected'
+      connected: dbConnected,
+      state: mongoose.connection.readyState
     },
-    websocket: {
-      connected_users: messageSocketHandler.getOnlineUsersCount(),
-      status: 'operational'
+    socketio: {
+      status: 'active',
+      connectedClients: io.engine.clientsCount || 0
     },
-    memory: {
-      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
-      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB'
-    }
+    keepAlive: keepAliveManager ? keepAliveManager.getStatus() : { enabled: false },
+    uptime: process.uptime()
   };
 
-  const statusCode = mongoState === 1 ? 200 : 503;
-  res.status(statusCode).json(healthStatus);
+  res.status(dbConnected ? 200 : 503).json(status);
 };
 
 app.get('/health', healthCheck);
 app.get('/api/health', healthCheck); // API Gateway compatibility
+
+// Keep-alive endpoints
+if (keepAliveManager) {
+  app.get('/health/keepalive', (req, res) => {
+    res.json({ success: true, data: keepAliveManager.getStatus() });
+  });
+  
+  app.post('/health/keepalive/trigger', async (req, res) => {
+    try {
+      const results = await keepAliveManager.triggerPing();
+      res.json({ success: true, message: 'Keep-alive triggered', data: results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+}
+
 
 // Readiness and liveness
 app.get('/health/ready', (req, res) => {

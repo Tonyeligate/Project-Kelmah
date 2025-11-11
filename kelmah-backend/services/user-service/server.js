@@ -74,6 +74,17 @@ if (process.env.ENABLE_WORKER_SQL === 'true') {
 
 const app = express();
 app.set('trust proxy', 1);
+
+// Initialize keep-alive to prevent Render spin-down
+let keepAliveManager;
+try {
+  const { initKeepAlive } = require('../../shared/utils/keepAlive');
+  keepAliveManager = initKeepAlive('user-service', { logger });
+  logger.info('✅ Keep-alive manager initialized for user-service');
+} catch (error) {
+  logger.warn('⚠️ Keep-alive manager not available:', error.message);
+}
+
 // Optional tracing
 try { require('./utils/tracing').initTracing('user-service'); } catch { }
 try { const monitoring = require('./utils/monitoring'); monitoring.initErrorMonitoring('user-service'); monitoring.initTracing('user-service'); } catch { }
@@ -292,11 +303,29 @@ const healthResponse = (req, res) => {
     service: "User Service",
     status: "OK",
     timestamp: new Date().toISOString(),
+    keepAlive: keepAliveManager ? keepAliveManager.getStatus() : { enabled: false }
   });
 };
 
 app.get("/health", healthResponse);
 app.get("/api/health", healthResponse); // API Gateway compatibility
+
+// Keep-alive endpoints
+if (keepAliveManager) {
+  app.get('/health/keepalive', (req, res) => {
+    res.json({ success: true, data: keepAliveManager.getStatus() });
+  });
+  
+  app.post('/health/keepalive/trigger', async (req, res) => {
+    try {
+      const results = await keepAliveManager.triggerPing();
+      res.json({ success: true, message: 'Keep-alive triggered', data: results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+}
+
 
 app.get('/health/ready', (req, res) => {
   const ready = require('mongoose').connection?.readyState === 1;

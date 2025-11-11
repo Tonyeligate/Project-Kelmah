@@ -1,0 +1,74 @@
+name: Keep Microservices Alive
+
+# Run every 10 minutes to prevent Render services from spinning down
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Ping API Gateway
+        continue-on-error: true
+        run: |
+          echo "Pinging API Gateway..."
+          curl -f -s -o /dev/null -w "API Gateway: %{http_code}\n" \
+            "${{ secrets.API_GATEWAY_URL }}/health" || echo "API Gateway ping failed"
+      
+      - name: Ping Auth Service
+        continue-on-error: true
+        run: |
+          echo "Pinging Auth Service..."
+          curl -f -s -o /dev/null -w "Auth Service: %{http_code}\n" \
+            "${{ secrets.AUTH_SERVICE_URL }}/health" || echo "Auth Service ping failed"
+      
+      - name: Ping User Service
+        continue-on-error: true
+        run: |
+          echo "Pinging User Service..."
+          curl -f -s -o /dev/null -w "User Service: %{http_code}\n" \
+            "${{ secrets.USER_SERVICE_URL }}/health" || echo "User Service ping failed"
+      
+      - name: Ping Job Service
+        continue-on-error: true
+        run: |
+          echo "Pinging Job Service..."
+          curl -f -s -o /dev/null -w "Job Service: %{http_code}\n" \
+            "${{ secrets.JOB_SERVICE_URL }}/health" || echo "Job Service ping failed"
+      
+      - name: Ping Payment Service
+        continue-on-error: true
+        run: |
+          echo "Pinging Payment Service..."
+          curl -f -s -o /dev/null -w "Payment Service: %{http_code}\n" \
+            "${{ secrets.PAYMENT_SERVICE_URL }}/health" || echo "Payment Service ping failed"
+      
+      - name: Ping Messaging Service
+        continue-on-error: true
+        run: |
+          echo "Pinging Messaging Service..."
+          curl -f -s -o /dev/null -w "Messaging Service: %{http_code}\n" \
+            "${{ secrets.MESSAGING_SERVICE_URL }}/health" || echo "Messaging Service ping failed"
+      
+      - name: Ping Review Service
+        continue-on-error: true
+        run: |
+          echo "Pinging Review Service..."
+          curl -f -s -o /dev/null -w "Review Service: %{http_code}\n" \
+            "${{ secrets.REVIEW_SERVICE_URL }}/health" || echo "Review Service ping failed"
+      
+      - name: Comprehensive Health Check
+        continue-on-error: true
+        run: |
+          echo "Running comprehensive health check via API Gateway..."
+          curl -f -s "${{ secrets.API_GATEWAY_URL }}/api/health/aggregate" || echo "Aggregate health check failed"
+      
+      - name: Summary
+        run: |
+          echo "✅ Keep-alive ping cycle completed at $(date)"
+          echo "All Render services have been pinged to prevent spin-down"

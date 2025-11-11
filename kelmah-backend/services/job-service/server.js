@@ -51,6 +51,17 @@ const app = express();
 app.set('strict routing', false);
 // Trust proxy headers (required for correct client IP when behind Render/API Gateway)
 app.set('trust proxy', 1);
+
+// Initialize keep-alive to prevent Render spin-down
+let keepAliveManager;
+try {
+  const { initKeepAlive, keepAliveMiddleware, keepAliveTriggerHandler } = require('../../shared/utils/keepAlive');
+  keepAliveManager = initKeepAlive('job-service', { logger });
+  logger.info('✅ Keep-alive manager initialized for job-service');
+} catch (error) {
+  logger.warn('⚠️ Keep-alive manager not available:', error.message);
+}
+
 // Optional tracing and error monitoring (disabled for containerized deployment)
 // try { const monitoring = require('../../shared/utils/monitoring'); monitoring.initErrorMonitoring('job-service'); monitoring.initTracing('job-service'); } catch {}
 
@@ -118,11 +129,29 @@ const healthResponse = (req, res) => {
     service: "Job Service",
     status: "OK",
     timestamp: new Date().toISOString(),
+    keepAlive: keepAliveManager ? keepAliveManager.getStatus() : { enabled: false }
   });
 };
 
 app.get("/health", healthResponse);
 app.get("/api/health", healthResponse); // API Gateway compatibility
+
+// Keep-alive endpoints
+if (keepAliveManager) {
+  app.get('/health/keepalive', (req, res) => {
+    res.json({ success: true, data: keepAliveManager.getStatus() });
+  });
+  
+  app.post('/health/keepalive/trigger', async (req, res) => {
+    try {
+      const results = await keepAliveManager.triggerPing();
+      res.json({ success: true, message: 'Keep-alive triggered', data: results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+}
+
 
 // Readiness and liveness endpoints (also before limiter)
 app.get('/health/ready', (req, res) => {

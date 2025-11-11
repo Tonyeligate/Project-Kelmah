@@ -35,6 +35,16 @@ logger.info('review-service starting...', {
 const app = express();
 const PORT = process.env.REVIEW_SERVICE_PORT || 5006;
 
+// Initialize keep-alive to prevent Render spin-down
+let keepAliveManager;
+try {
+  const { initKeepAlive } = require('../../shared/utils/keepAlive');
+  keepAliveManager = initKeepAlive('review-service', { logger });
+  logger.info('✅ Keep-alive manager initialized for review-service');
+} catch (error) {
+  logger.warn('⚠️ Keep-alive manager not available:', error.message);
+}
+
 // Optional tracing and error monitoring
 try { const monitoring = require('../../shared/utils/monitoring'); monitoring.initErrorMonitoring('review-service'); monitoring.initTracing('review-service'); } catch {}
 
@@ -212,6 +222,22 @@ app.get('/', (req, res) => {
 
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
+
+// Keep-alive endpoints
+if (keepAliveManager) {
+  app.get('/health/keepalive', (req, res) => {
+    res.json({ success: true, data: keepAliveManager.getStatus() });
+  });
+  
+  app.post('/health/keepalive/trigger', async (req, res) => {
+    try {
+      const results = await keepAliveManager.triggerPing();
+      res.json({ success: true, message: 'Keep-alive triggered', data: results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+}
 
 // Review routes
 app.post('/api/reviews', reviewController.submitReview);
