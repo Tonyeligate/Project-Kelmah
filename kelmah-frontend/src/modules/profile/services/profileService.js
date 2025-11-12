@@ -8,18 +8,23 @@ class ProfileService {
       const response = await userServiceClient.get(
         API_ENDPOINTS.USER.PROFILE,
       );
-      return response.data?.data || response.data;
+      const payload = response.data || {};
+
+      if (payload.success === false) {
+        throw new Error(payload.error?.message || 'Failed to load profile');
+      }
+
+      if (payload.data) {
+        return {
+          ...(payload.data || {}),
+          meta: payload.meta || null,
+        };
+      }
+
+      return payload;
     } catch (error) {
       console.warn('Profile service unavailable:', { error: error.message });
-      // Fallback minimal profile to prevent UI crashes
-      return {
-        firstName: '',
-        lastName: '',
-        bio: '',
-        skills: [],
-        education: [],
-        languages: [],
-      };
+      throw error;
     }
   }
 

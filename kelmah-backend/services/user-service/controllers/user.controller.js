@@ -6,6 +6,61 @@ const { ensureConnection } = require('../config/db');
 const WorkerProfile = db.WorkerProfile; // Now points to MongoDB model
 const { User } = require('../models'); // Import User model at top level
 
+const normalizeDocument = (doc) => {
+  if (!doc) {
+    return {};
+  }
+
+  if (typeof doc.toObject === 'function') {
+    return doc.toObject();
+  }
+
+  return doc;
+};
+
+const formatProfilePayload = (userDoc, workerDoc) => {
+  const userData = normalizeDocument(userDoc);
+  const workerData = normalizeDocument(workerDoc);
+
+  const profile = {
+    id: userData._id?.toString() || userData.id || null,
+    firstName: userData.firstName || '',
+    lastName: userData.lastName || '',
+    email: userData.email || '',
+    phone: userData.phone || '',
+    role: userData.role || 'worker',
+    profilePicture: userData.profilePicture || workerData.profilePicture || null,
+    bio: workerData.bio ?? userData.bio ?? '',
+    location: workerData.location ?? userData.location ?? '',
+    address: userData.address || '',
+    city: userData.city || '',
+    state: userData.state || '',
+    country: userData.country || 'Ghana',
+    countryCode: userData.countryCode || 'GH',
+    profession: workerData.profession ?? userData.profession ?? '',
+    hourlyRate: workerData.hourlyRate ?? userData.hourlyRate ?? null,
+    currency: workerData.currency ?? userData.currency ?? 'GHS',
+    experienceLevel: workerData.experienceLevel ?? null,
+    yearsOfExperience: workerData.yearsOfExperience ?? userData.yearsOfExperience ?? null,
+    skills: Array.isArray(workerData.skills)
+      ? workerData.skills
+      : Array.isArray(userData.skills)
+        ? userData.skills
+        : [],
+    isEmailVerified: Boolean(userData.isEmailVerified),
+    isPhoneVerified: Boolean(userData.isPhoneVerified),
+    createdAt: userData.createdAt || null,
+    updatedAt: userData.updatedAt || null,
+  };
+
+  const meta = {
+    source: workerData && (workerData._id || workerData.id) ? 'user-service' : 'auth-service',
+    workerProfileId: workerData?._id?.toString() || workerData?.id || null,
+  };
+
+  return { profile, meta };
+};
+
 exports.toggleBookmark = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -636,6 +691,233 @@ exports.getUserCredentials = async (req, res) => {
         message: 'Failed to load user credentials',
         code: 'USER_CREDENTIALS_ERROR',
         details: err.message,
+      },
+    });
+  }
+};
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          message: 'Unauthorized - missing user context',
+          code: 'UNAUTHORIZED',
+        },
+      });
+    }
+
+    await ensureConnection({
+      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+    });
+
+    if (typeof db.loadModels === 'function') {
+      db.loadModels();
+    }
+
+    const UserModel = db.User || User;
+    const WorkerProfileModel = db.WorkerProfile || WorkerProfile;
+
+    if (!UserModel) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          message: 'User model not initialized',
+          code: 'MODEL_NOT_READY',
+        },
+      });
+    }
+
+    const userDoc = await UserModel.findById(userId)
+      .select(
+        'firstName lastName email phone role profilePicture bio address city state country countryCode profession hourlyRate currency isEmailVerified isPhoneVerified yearsOfExperience skills createdAt updatedAt',
+      )
+      .lean();
+
+    if (!userDoc) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'User profile not found',
+          code: 'PROFILE_NOT_FOUND',
+        },
+      });
+    }
+
+    let workerDoc = null;
+    if (WorkerProfileModel && typeof WorkerProfileModel.findOne === 'function') {
+      workerDoc = await WorkerProfileModel.findOne({ userId }).select(
+        'bio location profession hourlyRate currency experienceLevel yearsOfExperience skills profilePicture updatedAt createdAt',
+      ).lean();
+    }
+
+    const { profile, meta } = formatProfilePayload(userDoc, workerDoc);
+
+    return res.status(200).json({
+      success: true,
+      data: profile,
+      meta,
+    });
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to load account profile',
+        code: 'USER_PROFILE_ERROR',
+        details: error.message,
+      },
+    });
+  }
+};
+
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          message: 'Unauthorized - missing user context',
+          code: 'UNAUTHORIZED',
+        },
+      });
+    }
+
+    const payload = req.body || {};
+
+    await ensureConnection({
+      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+    });
+
+    if (typeof db.loadModels === 'function') {
+      db.loadModels();
+    }
+
+    const UserModel = db.User || User;
+    const WorkerProfileModel = db.WorkerProfile || WorkerProfile;
+
+    if (!UserModel) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          message: 'User model not initialized',
+          code: 'MODEL_NOT_READY',
+        },
+      });
+    }
+
+    const allowedUserFields = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'profilePicture',
+      'address',
+      'city',
+      'state',
+      'country',
+      'countryCode',
+    ];
+    const userUpdates = {};
+
+    allowedUserFields.forEach((field) => {
+      if (payload[field] !== undefined) {
+        userUpdates[field] = payload[field];
+      }
+    });
+
+    let updatedUser = await UserModel.findById(userId);
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'User profile not found',
+          code: 'PROFILE_NOT_FOUND',
+        },
+      });
+    }
+
+    Object.assign(updatedUser, userUpdates);
+    await updatedUser.save();
+
+    const workerFields = [
+      'bio',
+      'location',
+      'profession',
+      'hourlyRate',
+      'currency',
+      'experienceLevel',
+      'yearsOfExperience',
+      'skills',
+      'profilePicture',
+    ];
+
+    let updatedWorker = null;
+
+    if (WorkerProfileModel && typeof WorkerProfileModel.findOneAndUpdate === 'function') {
+      const workerUpdates = {};
+
+      workerFields.forEach((field) => {
+        if (payload[field] !== undefined) {
+          workerUpdates[field] = payload[field];
+        }
+      });
+
+      if (Object.keys(workerUpdates).length > 0) {
+        updatedWorker = await WorkerProfileModel.findOneAndUpdate(
+          { userId },
+          { $set: workerUpdates },
+          { new: true, upsert: true, setDefaultsOnInsert: true },
+        ).lean();
+      } else {
+        updatedWorker = await WorkerProfileModel.findOne({ userId }).lean();
+      }
+    }
+
+    const { profile, meta } = formatProfilePayload(updatedUser, updatedWorker);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Account profile updated successfully',
+      data: profile,
+      meta,
+    });
+  } catch (error) {
+    console.error('Update user profile error:', error);
+
+    if (error?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          message: 'Email already in use',
+          code: 'EMAIL_CONFLICT',
+        },
+      });
+    }
+
+    if (error?.name === 'ValidationError') {
+      return res.status(422).json({
+        success: false,
+        error: {
+          message: 'Invalid profile data',
+          code: 'VALIDATION_ERROR',
+          details: error.message,
+        },
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to update account profile',
+        code: 'USER_PROFILE_UPDATE_ERROR',
+        details: error.message,
       },
     });
   }

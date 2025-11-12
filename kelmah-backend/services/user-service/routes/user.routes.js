@@ -16,6 +16,8 @@ const {
   getDashboardAnalytics,
   getUserAvailability,
   getUserCredentials,
+  getUserProfile,
+  updateUserProfile,
   toggleBookmark,
   getEarnings,
   getBookmarks,
@@ -114,6 +116,8 @@ router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('defa
 router.get('/workers/:workerId/earnings', verifyGatewayRequest, getEarnings);
 
 // User profile routes
+router.get('/profile', verifyGatewayRequest, getUserProfile);
+router.put('/profile', verifyGatewayRequest, updateUserProfile);
 router.get("/me/availability", verifyGatewayRequest, getUserAvailability);
 router.get("/me/credentials", verifyGatewayRequest, getUserCredentials);
 
