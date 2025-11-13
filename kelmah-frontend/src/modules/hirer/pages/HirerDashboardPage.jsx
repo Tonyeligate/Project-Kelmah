@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Container,
@@ -26,8 +27,6 @@ import {
   Rating,
   useTheme,
   useMediaQuery,
-  CardActionArea,
-  alpha,
   Stack,
   Fade,
   Grow,
@@ -48,15 +47,12 @@ import {
   Refresh as RefreshIcon,
   Add as AddIcon,
   Search as SearchIcon,
-  Person as PersonIcon,
   ArrowForward as ArrowForwardIcon,
   Notifications as NotificationsIcon,
   CheckCircle as CheckCircleIcon,
   People as PeopleIcon,
   Message as MessageIcon,
   AddCircle as AddCircleIcon,
-  Business as BusinessIcon,
-  EmojiEvents as EmojiEventsIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -65,9 +61,7 @@ import {
   fetchHirerProfile,
   fetchHirerJobs,
   fetchJobApplications,
-  selectHirerProfile,
   selectHirerJobs,
-  selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
 import { selectUnreadCount } from '../../notifications/services/notificationSlice';
@@ -103,6 +97,11 @@ const StyledTab = ({ icon, label, ...props }) => (
   />
 );
 
+StyledTab.propTypes = {
+  icon: PropTypes.node,
+  label: PropTypes.node,
+};
+
 // TabPanel component for tabs
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -130,6 +129,12 @@ function TabPanel(props) {
   );
 }
 
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  value: PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
+};
+
 // Enhanced dashboard card component
 const DashboardCard = ({
   icon,
@@ -145,8 +150,6 @@ const DashboardCard = ({
   actionColor = 'primary',
   ...props
 }) => {
-  const theme = useTheme();
-
   return (
     <Card
       elevation={3}
@@ -224,39 +227,20 @@ const DashboardCard = ({
   );
 };
 
-const ActionButton = ({ icon, color, label, onClick, ...props }) => (
-  <Button
-    fullWidth
-    variant="contained"
-    color={color}
-    startIcon={icon}
-    onClick={onClick}
-    sx={{
-      py: 1.8,
-      fontSize: '1rem',
-      fontWeight: 600,
-      boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-      borderRadius: 2,
-      '&:hover': {
-        boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
-        transform: 'translateY(-2px)',
-      },
-      transition: 'all 0.3s ease',
-      ...(color === 'primary' && {
-        background: 'linear-gradient(45deg, #FFD700, #DAA520)',
-        '&:hover': {
-          background: 'linear-gradient(45deg, #DAA520, #FFD700)',
-          boxShadow: '0 6px 15px rgba(218,165,32,0.4)',
-          transform: 'translateY(-2px)',
-        },
-      }),
-      ...props.sx,
-    }}
-    {...props}
-  >
-    {label}
-  </Button>
-);
+DashboardCard.propTypes = {
+  icon: PropTypes.node,
+  iconColor: PropTypes.string,
+  title: PropTypes.node,
+  value: PropTypes.node,
+  secondaryLabel: PropTypes.node,
+  secondaryValue: PropTypes.node,
+  secondaryComponent: PropTypes.node,
+  actionText: PropTypes.node,
+  actionIcon: PropTypes.node,
+  actionHandler: PropTypes.func,
+  actionColor: PropTypes.string,
+  sx: PropTypes.object,
+};
 
 const StyledPaper = ({ children, elevation = 3, ...props }) => (
   <Paper
@@ -272,6 +256,14 @@ const StyledPaper = ({ children, elevation = 3, ...props }) => (
   </Paper>
 );
 
+StyledPaper.propTypes = {
+  children: PropTypes.node,
+  elevation: PropTypes.number,
+  sx: PropTypes.object,
+};
+
+const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
+
 const HirerDashboardPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -283,6 +275,11 @@ const HirerDashboardPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(Date.now());
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+
+  const timeoutRef = useRef(null);
+  const fetchPromiseRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   // Get data from Redux store using selectors
   const user = useSelector((state) => state.auth.user);
@@ -291,8 +288,8 @@ const HirerDashboardPage = () => {
   const completedJobs = useSelector(selectHirerJobs('completed'));
   const applications = useSelector((state) => state.hirer.applications);
   const payments = useSelector((state) => state.hirer.payments);
-  const loading = useSelector(selectHirerLoading('profile'));
   const storeError = useSelector(selectHirerError('profile'));
+  const jobsError = useSelector(selectHirerError('jobs'));
   const unreadNotifications = useSelector(selectUnreadCount);
 
   // Summary skeleton for overview while data loads
@@ -307,92 +304,152 @@ const HirerDashboardPage = () => {
   );
 
   // Fetch hirer data on component mount
-  useEffect(() => {
-    let timeoutId;
-    
-    const fetchHirerData = async () => {
+  const clearLoadingTimeout = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const fetchDashboardData = useCallback(
+    async (source = 'initial-load') => {
+      const isInitialHydration = source === 'initial-load';
       try {
+        if (isInitialHydration) {
+          setIsHydrating(true);
+        }
         setError(null);
         setLoadingTimeout(false);
-        
-        // Set 10-second timeout for loading state
-        timeoutId = setTimeout(() => {
+
+        clearLoadingTimeout();
+        timeoutRef.current = setTimeout(() => {
+          if (!isMountedRef.current) {
+            return;
+          }
+
+          const message = isInitialHydration
+            ? 'Loading is taking longer than expected. Please check your connection and try refreshing.'
+            : 'Updating your dashboard is taking longer than expected. Please try again.';
+
           setLoadingTimeout(true);
-          setError('Loading is taking longer than expected. Please check your connection and try refreshing.');
-        }, 10000);
-        
+          setError(message);
+
+          if (isInitialHydration) {
+            setIsHydrating(false);
+          }
+        }, DASHBOARD_LOADING_TIMEOUT_MS);
+
         // ⏱️ Add small delay to ensure auth token is stored and axios interceptors are ready
-        // This prevents race condition where API calls fire before token is attached
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Fetch hirer profile and jobs
-        await Promise.all([
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const fetchPromises = [
           dispatch(fetchHirerProfile()).unwrap(),
           dispatch(fetchHirerJobs('active')).unwrap(),
           dispatch(fetchHirerJobs('completed')).unwrap(),
-        ]);
+        ];
 
-        // Clear timeout if successful
-        clearTimeout(timeoutId);
+        fetchPromiseRef.current = Promise.all(fetchPromises);
+        const [, activePayload] = await fetchPromiseRef.current;
+
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        clearLoadingTimeout();
         setLoadingTimeout(false);
 
-        // Fetch applications for each active job
-        if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
-          const applicationPromises = activeJobs.map((job) =>
-            dispatch(
-              fetchJobApplications({ jobId: job.id, status: 'pending' }),
-            ).unwrap(),
+        const activeList = Array.isArray(activePayload?.jobs)
+          ? activePayload.jobs
+          : Array.isArray(activePayload)
+            ? activePayload
+            : [];
+
+        if (activeList.length > 0) {
+          await Promise.allSettled(
+            activeList.map((job) =>
+              dispatch(
+                fetchJobApplications({
+                  jobId: job.id || job._id,
+                  status: 'pending',
+                }),
+              ).unwrap(),
+            ),
           );
-          await Promise.all(applicationPromises);
         }
       } catch (err) {
         console.error('Error fetching hirer data:', err);
-        clearTimeout(timeoutId);
+        if (!isMountedRef.current) {
+          return;
+        }
+        clearLoadingTimeout();
         setLoadingTimeout(false);
         setError('Failed to load hirer data. Please try again.');
+      } finally {
+        if (isMountedRef.current && isInitialHydration) {
+          setIsHydrating(false);
+        }
+        fetchPromiseRef.current = null;
       }
-    };
+    },
+    [clearLoadingTimeout, dispatch],
+  );
 
-    fetchHirerData();
-    
+  useEffect(() => {
+    isMountedRef.current = true;
+    fetchDashboardData('initial-load');
+
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+      isMountedRef.current = false;
+      clearLoadingTimeout();
+      fetchPromiseRef.current = null;
     };
-  }, [dispatch, activeJobs]);
+  }, [clearLoadingTimeout, fetchDashboardData]);
+
+  useEffect(() => {
+    if (!storeError) {
+      return;
+    }
+    setError(
+      typeof storeError === 'string'
+        ? storeError
+        : 'Failed to load hirer data. Please try again.',
+    );
+  }, [storeError]);
+
+  useEffect(() => {
+    if (!jobsError) {
+      return;
+    }
+    setError((prev) => prev || 'Failed to load hirer jobs. Please try again.');
+  }, [jobsError]);
 
   // Handler for refreshing data
   const handleRefresh = async () => {
-    if (refreshing) return;
+    if (refreshing) {
+      return;
+    }
 
     setRefreshing(true);
     try {
-      await Promise.all([
-        dispatch(fetchHirerProfile()).unwrap(),
-        dispatch(fetchHirerJobs('active')).unwrap(),
-        dispatch(fetchHirerJobs('completed')).unwrap(),
-      ]);
-
-      // Refresh applications for each active job
-      if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
-        const applicationPromises = activeJobs.map((job) =>
-          dispatch(
-            fetchJobApplications({ jobId: job.id, status: 'pending' }),
-          ).unwrap(),
-        );
-        await Promise.all(applicationPromises);
-      }
+      await fetchDashboardData('manual-refresh');
+      setLastRefreshed(Date.now());
     } catch (err) {
       console.error('Error refreshing data:', err);
       setError('Failed to refresh data. Please try again.');
     } finally {
       setRefreshing(false);
-      setLastRefreshed(Date.now());
     }
   };
 
   // Handler for tab change
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+
+    if (newValue === 1) {
+      dispatch(fetchHirerJobs('active'));
+    } else if (newValue === 2) {
+      dispatch(fetchHirerJobs('completed'));
+    }
   };
 
   // Calculate total pending proposals
@@ -618,7 +675,8 @@ const HirerDashboardPage = () => {
                   Ready to make your first hire?
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Post a detailed job to attract skilled workers or browse the talent pool to invite top professionals.
+                  Post a detailed job to attract skilled workers or browse the
+                  talent pool to invite top professionals.
                 </Typography>
                 <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
                   <Chip
@@ -987,7 +1045,7 @@ const HirerDashboardPage = () => {
     </Fade>
   );
 
-  if (loading) {
+  if (isHydrating) {
     return (
       <Container maxWidth="lg" sx={{ py: 6 }}>
         <Helmet>
@@ -1027,7 +1085,8 @@ const HirerDashboardPage = () => {
                 </Button>
               }
             >
-              Loading is taking longer than expected. Please check your connection or try refreshing the page.
+              Loading is taking longer than expected. Please check your
+              connection or try refreshing the page.
             </Alert>
           )}
         </Box>
@@ -1073,7 +1132,7 @@ const HirerDashboardPage = () => {
                 Welcome back, {user?.firstName || user?.name || 'Hirer'}!
               </Typography>
               <Typography variant="body2" color="text.primary">
-                Here's your hirer dashboard. Manage your jobs and talent!
+                Here&apos;s your hirer dashboard. Manage your jobs and talent!
               </Typography>
             </Box>
           </Box>
@@ -1174,7 +1233,11 @@ const HirerDashboardPage = () => {
           </Box>
           {/* Tab Panels */}
           <TabPanel value={tabValue} index={0}>
-            {loading ? <LoadingOverviewSkeleton /> : renderDashboardOverview()}
+            {isHydrating ? (
+              <LoadingOverviewSkeleton />
+            ) : (
+              renderDashboardOverview()
+            )}
           </TabPanel>
           <TabPanel value={tabValue} index={1}>
             <HirerJobManagement />

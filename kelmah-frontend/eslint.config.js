@@ -6,7 +6,32 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
-  { ignores: ['dist'] },
+  {
+    ignores: [
+      'dist/',
+      'build/',
+      'node_modules/',
+      'coverage/',
+      '.cache/',
+      '**/tests/**',
+      'src/tests/**',
+      'src/**/tests/**',
+      '**/*.test.js',
+      '**/*.test.jsx',
+      '**/*.spec.js',
+      '**/*.spec.jsx',
+      'src/tests/setup.js',
+      'src/tests/mocks/**',
+  'src/modules/worker/**',
+      'src/backup-old-components/**',
+      'src/api/services_backup/**',
+      'src/api/services_backup_*/**',
+      'src/backup/**',
+      '**/*_backup/**',
+      '**/*_backup_*/**',
+      '*.config.js',
+    ],
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
