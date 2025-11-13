@@ -5,6 +5,7 @@ class ProfileService {
   // Get user profile
   async getProfile() {
     try {
+      console.debug('[ProfileService] Requesting /api/users/profile');
       const response = await userServiceClient.get(
         API_ENDPOINTS.USER.PROFILE,
       );
@@ -15,12 +16,14 @@ class ProfileService {
       }
 
       if (payload.data) {
+        console.debug('[ProfileService] Received profile payload', payload.meta || {});
         return {
           ...(payload.data || {}),
           meta: payload.meta || null,
         };
       }
 
+      console.debug('[ProfileService] Response missing data property, returning raw payload');
       return payload;
     } catch (error) {
       console.warn('Profile service unavailable:', { error: error.message });
@@ -35,6 +38,7 @@ class ProfileService {
         API_ENDPOINTS.USER.UPDATE,
         profileData,
       );
+      console.debug('[ProfileService] Profile update succeeded');
       return response.data.data;
     } catch (error) {
       console.error('Error updating profile:', error);

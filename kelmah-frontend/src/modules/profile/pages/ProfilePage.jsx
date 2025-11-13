@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Grid,
@@ -39,6 +39,7 @@ import {
   selectProfileLoading,
   selectProfileError,
 } from '../../../store/slices/profileSlice.js';
+import ErrorBoundary from '../../../components/common/ErrorBoundary';
 
 const ProfilePage = () => {
   const theme = useTheme();
@@ -116,8 +117,14 @@ const ProfilePage = () => {
     }));
   };
 
+  const handleRetryLoad = useCallback(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  let content;
+
   if (loading) {
-    return (
+    content = (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -135,30 +142,31 @@ const ProfilePage = () => {
         </Grid>
       </Container>
     );
-  }
-
-  // ✅ ADDED: Handle case when profile data is completely missing
-  if (!loading && !profile) {
-    return (
+  } else if (!profile) {
+    content = (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="info" sx={{ mb: 3 }}>
-          Profile data is not available. Please check your connection or try
-          refreshing the page.
-        </Alert>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
         <Paper sx={{ p: 3 }}>
           <Typography variant="h4" gutterBottom>
-            Profile Loading...
+            Profile Unavailable
           </Typography>
-          <Typography color="text.secondary">
-            We're setting up your profile. This should only take a moment.
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            We couldn't load your profile information. Please check your
+            connection and try again.
           </Typography>
+          <Button variant="contained" onClick={handleRetryLoad}>
+            Retry Loading Profile
+          </Button>
         </Paper>
       </Container>
     );
-  }
-
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+  } else {
+    content = (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
       <Grid container spacing={3}>
         {/* Profile Header */}
         <Grid item xs={12}>
@@ -314,7 +322,10 @@ const ProfilePage = () => {
                         key={index}
                         label={skill}
                         onDelete={() => {
-                          const newSkills = profile.skills.filter(
+                          const currentSkills = Array.isArray(profile.skills)
+                            ? profile.skills
+                            : [];
+                          const newSkills = currentSkills.filter(
                             (_, i) => i !== index,
                           );
                           updateSkills(newSkills);
@@ -327,7 +338,10 @@ const ProfilePage = () => {
                       onClick={() => {
                         const skill = prompt('Enter skill:');
                         if (skill) {
-                          updateSkills([...profile.skills, skill]);
+                          const currentSkills = Array.isArray(profile.skills)
+                            ? profile.skills
+                            : [];
+                          updateSkills([...currentSkills, skill]);
                         }
                       }}
                       color="primary"
@@ -352,7 +366,12 @@ const ProfilePage = () => {
                           />
                           <IconButton
                             onClick={() => {
-                              const newEducation = profile.education.filter(
+                              const currentEducation = Array.isArray(
+                                profile.education,
+                              )
+                                ? profile.education
+                                : [];
+                              const newEducation = currentEducation.filter(
                                 (_, i) => i !== index,
                               );
                               updateEducation(newEducation);
@@ -372,8 +391,13 @@ const ProfilePage = () => {
                       const institution = prompt('Enter institution:');
                       const year = prompt('Enter year:');
                       if (degree && institution && year) {
+                        const currentEducation = Array.isArray(
+                          profile.education,
+                        )
+                          ? profile.education
+                          : [];
                         updateEducation([
-                          ...profile.education,
+                          ...currentEducation,
                           { degree, institution, year },
                         ]);
                       }
@@ -399,7 +423,12 @@ const ProfilePage = () => {
                           />
                           <IconButton
                             onClick={() => {
-                              const newExperience = profile.experience.filter(
+                              const currentExperience = Array.isArray(
+                                profile.experience,
+                              )
+                                ? profile.experience
+                                : [];
+                              const newExperience = currentExperience.filter(
                                 (_, i) => i !== index,
                               );
                               updateExperience(newExperience);
@@ -419,8 +448,13 @@ const ProfilePage = () => {
                       const company = prompt('Enter company:');
                       const duration = prompt('Enter duration:');
                       if (title && company && duration) {
+                        const currentExperience = Array.isArray(
+                          profile.experience,
+                        )
+                          ? profile.experience
+                          : [];
                         updateExperience([
-                          ...profile.experience,
+                          ...currentExperience,
                           { title, company, duration },
                         ]);
                       }
@@ -541,7 +575,10 @@ const ProfilePage = () => {
         )}
       </Grid>
     </Container>
-  );
+    );
+  }
+
+  return <ErrorBoundary>{content}</ErrorBoundary>;
 };
 
 export default ProfilePage;

@@ -8,6 +8,8 @@ import {
 } from '../../../store/slices/profileSlice.js';
 import useAuth from '../../auth/hooks/useAuth';
 
+const PROFILE_REQUEST_TIMEOUT_MS = 5000;
+
 export const useProfile = () => {
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
@@ -15,18 +17,48 @@ export const useProfile = () => {
   const [activity, setActivity] = useState([]);
 
   const loadProfile = useCallback(async () => {
+    const startedAt = Date.now();
+    let timeoutId;
+    dispatch(setLoading(true));
+    console.debug('[ProfileHook] loadProfile() initiated');
+
     try {
-      dispatch(setLoading(true));
-      const profile = await profileService.getProfile();
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error('Profile request timed out')),
+          PROFILE_REQUEST_TIMEOUT_MS,
+        );
+      });
+
+      const profile = await Promise.race([
+        profileService.getProfile(),
+        timeoutPromise,
+      ]);
+
       dispatch(setProfile(profile));
       dispatch(setError(null)); // Clear any previous errors
+      console.debug(
+        '[ProfileHook] loadProfile() completed successfully',
+        { durationMs: Date.now() - startedAt },
+      );
       return profile;
     } catch (error) {
-      dispatch(setError(error.message));
+      const isTimeout = error?.message === 'Profile request timed out';
+      const friendlyMessage = isTimeout
+        ? 'Profile is taking too long to load. Please try again.'
+        : error?.message || 'Failed to load profile. Please try again later.';
+
+      dispatch(setError(friendlyMessage));
       console.warn('Profile loading error (with fallback):', error.message);
-      // Don't re-throw since profileService now provides fallback data
+      if (isTimeout) {
+        console.warn('[ProfileHook] loadProfile() timed out after 5s');
+      }
       return null;
     } finally {
+      clearTimeout(timeoutId);
+      console.debug('[ProfileHook] loadProfile() finished', {
+        durationMs: Date.now() - startedAt,
+      });
       dispatch(setLoading(false));
     }
   }, [dispatch]);
@@ -35,8 +67,11 @@ export const useProfile = () => {
     async (profileData) => {
       try {
         dispatch(setLoading(true));
+        console.debug('[ProfileHook] updateProfile() initiated');
         const updatedProfile = await profileService.updateProfile(profileData);
         dispatch(setProfile(updatedProfile));
+        dispatch(setError(null));
+        console.debug('[ProfileHook] updateProfile() completed');
         return updatedProfile;
       } catch (error) {
         dispatch(setError(error.message));
@@ -52,8 +87,10 @@ export const useProfile = () => {
     async (file) => {
       try {
         dispatch(setLoading(true));
+        console.debug('[ProfileHook] uploadProfilePicture() initiated');
         const result = await profileService.uploadProfilePicture(file);
         await loadProfile(); // Reload profile to get updated picture
+        console.debug('[ProfileHook] uploadProfilePicture() completed');
         return result;
       } catch (error) {
         dispatch(setError(error.message));

@@ -2,7 +2,9 @@
 const Bookmark = require('../models/Bookmark');
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
-const { ensureConnection } = require('../config/db');
+const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
+const mongooseInstance = connectionInstance || require('mongoose');
+const { Types } = mongooseInstance;
 const WorkerProfile = db.WorkerProfile; // Now points to MongoDB model
 const { User } = require('../models'); // Import User model at top level
 
@@ -17,6 +19,8 @@ const normalizeDocument = (doc) => {
 
   return doc;
 };
+
+const getActiveDb = () => mongooseInstance?.connection?.db || null;
 
 const formatProfilePayload = (userDoc, workerDoc) => {
   const userData = normalizeDocument(userDoc);
@@ -59,6 +63,117 @@ const formatProfilePayload = (userDoc, workerDoc) => {
   };
 
   return { profile, meta };
+};
+
+const USER_PROFILE_PROJECTION = {
+  firstName: 1,
+  lastName: 1,
+  email: 1,
+  phone: 1,
+  role: 1,
+  profilePicture: 1,
+  bio: 1,
+  address: 1,
+  city: 1,
+  state: 1,
+  country: 1,
+  countryCode: 1,
+  profession: 1,
+  hourlyRate: 1,
+  currency: 1,
+  isEmailVerified: 1,
+  isPhoneVerified: 1,
+  yearsOfExperience: 1,
+  skills: 1,
+  location: 1,
+  createdAt: 1,
+  updatedAt: 1,
+};
+
+const WORKER_PROFILE_PROJECTION = {
+  bio: 1,
+  location: 1,
+  profession: 1,
+  hourlyRate: 1,
+  currency: 1,
+  experienceLevel: 1,
+  yearsOfExperience: 1,
+  skills: 1,
+  profilePicture: 1,
+  updatedAt: 1,
+  createdAt: 1,
+  userId: 1,
+};
+
+const isBsonVersionMismatch = (error) =>
+  Boolean(error) &&
+  typeof error.message === 'string' &&
+  error.message.toLowerCase().includes('unsupported bson version');
+
+const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) => {
+  try {
+    const [userDoc, workerDoc] = await Promise.all([
+      UserModel.findById(userId)
+        .select(USER_PROFILE_PROJECTION)
+        .lean({ getters: true }),
+      WorkerProfileModel && typeof WorkerProfileModel.findOne === 'function'
+        ? WorkerProfileModel.findOne({ userId })
+            .select(WORKER_PROFILE_PROJECTION)
+            .lean({ getters: true })
+        : null,
+    ]);
+
+    return { userDoc, workerDoc };
+  } catch (error) {
+    if (!isBsonVersionMismatch(error)) {
+      throw error;
+    }
+
+    console.warn(
+      'Detected BSON version mismatch while loading profile, retrying with native driver',
+      { error: error.message },
+    );
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw error;
+    }
+
+    const nativeObjectId = new Types.ObjectId(userId);
+  const db = getActiveDb();
+
+    if (!db) {
+      throw error;
+    }
+
+    const userDoc = await db.collection('users').findOne(
+      { _id: nativeObjectId },
+      { projection: USER_PROFILE_PROJECTION },
+    );
+
+    let workerDoc = null;
+
+    if (WorkerProfileModel && WorkerProfileModel.collection) {
+      const workerCollectionName =
+        WorkerProfileModel.collection.collectionName ||
+        WorkerProfileModel.collection.name ||
+        'workerprofiles';
+
+      workerDoc = await db.collection(workerCollectionName).findOne(
+        { userId: nativeObjectId },
+        { projection: WORKER_PROFILE_PROJECTION },
+      );
+    } else {
+      workerDoc = await db
+        .collection('workerprofiles')
+        .findOne(
+          { userId: nativeObjectId },
+          { projection: WORKER_PROFILE_PROJECTION },
+        )
+        .catch(() => null);
+    }
+
+    return { userDoc, workerDoc };
+  }
 };
 
 exports.toggleBookmark = async (req, res) => {
@@ -731,11 +846,11 @@ exports.getUserProfile = async (req, res) => {
       });
     }
 
-    const userDoc = await UserModel.findById(userId)
-      .select(
-        'firstName lastName email phone role profilePicture bio address city state country countryCode profession hourlyRate currency isEmailVerified isPhoneVerified yearsOfExperience skills createdAt updatedAt',
-      )
-      .lean();
+    const { userDoc, workerDoc } = await fetchProfileDocuments({
+      UserModel,
+      WorkerProfileModel,
+      userId,
+    });
 
     if (!userDoc) {
       return res.status(404).json({
@@ -745,13 +860,6 @@ exports.getUserProfile = async (req, res) => {
           code: 'PROFILE_NOT_FOUND',
         },
       });
-    }
-
-    let workerDoc = null;
-    if (WorkerProfileModel && typeof WorkerProfileModel.findOne === 'function') {
-      workerDoc = await WorkerProfileModel.findOne({ userId }).select(
-        'bio location profession hourlyRate currency experienceLevel yearsOfExperience skills profilePicture updatedAt createdAt',
-      ).lean();
     }
 
     const { profile, meta } = formatProfilePayload(userDoc, workerDoc);
@@ -823,28 +931,6 @@ exports.updateUserProfile = async (req, res) => {
       'country',
       'countryCode',
     ];
-    const userUpdates = {};
-
-    allowedUserFields.forEach((field) => {
-      if (payload[field] !== undefined) {
-        userUpdates[field] = payload[field];
-      }
-    });
-
-    let updatedUser = await UserModel.findById(userId);
-
-    if (!updatedUser) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          message: 'User profile not found',
-          code: 'PROFILE_NOT_FOUND',
-        },
-      });
-    }
-
-    Object.assign(updatedUser, userUpdates);
-    await updatedUser.save();
 
     const workerFields = [
       'bio',
@@ -858,29 +944,142 @@ exports.updateUserProfile = async (req, res) => {
       'profilePicture',
     ];
 
-    let updatedWorker = null;
+    const userUpdates = {};
+    allowedUserFields.forEach((field) => {
+      if (payload[field] !== undefined) {
+        userUpdates[field] = payload[field];
+      }
+    });
 
-    if (WorkerProfileModel && typeof WorkerProfileModel.findOneAndUpdate === 'function') {
-      const workerUpdates = {};
+    const workerUpdates = {};
+    workerFields.forEach((field) => {
+      if (payload[field] !== undefined) {
+        workerUpdates[field] = payload[field];
+      }
+    });
 
-      workerFields.forEach((field) => {
-        if (payload[field] !== undefined) {
-          workerUpdates[field] = payload[field];
+    const hasUserUpdates = Object.keys(userUpdates).length > 0;
+    const hasWorkerUpdates = Object.keys(workerUpdates).length > 0;
+  const dbConn = getActiveDb();
+    const objectId = Types.ObjectId.isValid(userId)
+      ? new Types.ObjectId(userId)
+      : null;
+
+    if (hasUserUpdates) {
+      try {
+        const result = await UserModel.updateOne(
+          { _id: userId },
+          { $set: userUpdates },
+          { runValidators: true },
+        );
+
+        if (result?.matchedCount === 0) {
+          return res.status(404).json({
+            success: false,
+            error: {
+              message: 'User profile not found',
+              code: 'PROFILE_NOT_FOUND',
+            },
+          });
         }
-      });
+      } catch (error) {
+        if (!isBsonVersionMismatch(error)) {
+          throw error;
+        }
 
-      if (Object.keys(workerUpdates).length > 0) {
-        updatedWorker = await WorkerProfileModel.findOneAndUpdate(
-          { userId },
-          { $set: workerUpdates },
-          { new: true, upsert: true, setDefaultsOnInsert: true },
-        ).lean();
-      } else {
-        updatedWorker = await WorkerProfileModel.findOne({ userId }).lean();
+        if (!objectId || !dbConn) {
+          throw error;
+        }
+
+        const result = await dbConn.collection('users').updateOne(
+          { _id: objectId },
+          { $set: userUpdates, $currentDate: { updatedAt: true } },
+          { upsert: false },
+        );
+
+        if (result.matchedCount === 0) {
+          return res.status(404).json({
+            success: false,
+            error: {
+              message: 'User profile not found',
+              code: 'PROFILE_NOT_FOUND',
+            },
+          });
+        }
       }
     }
 
-    const { profile, meta } = formatProfilePayload(updatedUser, updatedWorker);
+    if (hasWorkerUpdates) {
+      const canUseMongooseWorker =
+        WorkerProfileModel &&
+        typeof WorkerProfileModel.findOneAndUpdate === 'function';
+
+      const upsertWorkerNative = async () => {
+        if (!objectId || !dbConn) {
+          throw new Error('Native MongoDB fallback unavailable for worker profile update');
+        }
+
+        const workerCollectionName =
+          (WorkerProfileModel && WorkerProfileModel.collection
+            ? WorkerProfileModel.collection.collectionName || WorkerProfileModel.collection.name
+            : null) || 'workerprofiles';
+
+        const now = new Date();
+
+        await dbConn.collection(workerCollectionName).updateOne(
+          { userId: objectId },
+          {
+            $set: { ...workerUpdates, updatedAt: now },
+            $setOnInsert: {
+              userId: objectId,
+              createdAt: now,
+            },
+          },
+          { upsert: true },
+        );
+      };
+
+      if (canUseMongooseWorker) {
+        try {
+          await WorkerProfileModel.findOneAndUpdate(
+            { userId },
+            { $set: workerUpdates },
+            {
+              new: true,
+              upsert: true,
+              setDefaultsOnInsert: true,
+              runValidators: true,
+            },
+          );
+        } catch (error) {
+          if (!isBsonVersionMismatch(error)) {
+            throw error;
+          }
+
+          await upsertWorkerNative();
+        }
+      } else {
+        await upsertWorkerNative();
+      }
+    }
+
+    const { userDoc, workerDoc } = await fetchProfileDocuments({
+      UserModel,
+      WorkerProfileModel,
+      userId,
+    });
+
+    if (!userDoc) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'User profile not found',
+          code: 'PROFILE_NOT_FOUND',
+        },
+      });
+    }
+
+    const { profile, meta } = formatProfilePayload(userDoc, workerDoc);
 
     return res.status(200).json({
       success: true,
