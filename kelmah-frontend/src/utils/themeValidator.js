@@ -138,17 +138,31 @@ export const checkThemeConsistency = (components) => {
     const colorErrors = validateColors(component, [
       '#D4AF37',
       '#FFD700',
-      '#B8941F', // Gold variations
+      '#B8941F',
+      '#FFE55C',
+      '#B8860B',
+      '#050507',
+      '#0E0F14',
+      '#161821',
+      '#1F2028',
+      '#F9F7ED',
+      '#FFFDF4',
+      '#F3E8CB',
+      '#EEE5CF',
       '#1a1a1a',
       '#2d2d2d',
-      '#0a0a0a', // Black variations
+      '#0a0a0a',
       '#ffffff',
+      '#FAFAFA',
+      '#F5F5F5',
+      'rgba(255,255,255,0.9)',
       'rgba(255,255,255,0.7)',
-      'rgba(255,255,255,0.5)', // White variations
+      'rgba(247,243,227,0.7)',
+      'rgba(31,31,37,0.6)',
       '#4CAF50',
       '#FF9800',
       '#F44336',
-      '#2196F3', // Status colors
+      '#2196F3',
     ]);
     componentErrors.push(...colorErrors);
 

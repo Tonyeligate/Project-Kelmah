@@ -5,6 +5,13 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import prettierPlugin from 'eslint-plugin-prettier';
 
+const sanitizedBrowserGlobals = Object.fromEntries(
+  Object.entries(globals.browser || {}).map(([key, value]) => [
+    key.trim(),
+    value,
+  ]),
+);
+
 export default [
   {
     ignores: [
@@ -36,7 +43,7 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: sanitizedBrowserGlobals,
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -67,7 +74,7 @@ export default [
     files: ['**/__tests__/**/*.{js,jsx}', '**/?(*.)+(spec|test).{js,jsx}'],
     languageOptions: {
       globals: {
-        ...globals.browser,
+        ...sanitizedBrowserGlobals,
         ...globals.jest,
       },
     },
