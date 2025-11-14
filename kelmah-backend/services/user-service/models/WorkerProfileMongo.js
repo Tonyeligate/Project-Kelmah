@@ -103,6 +103,61 @@ const workerProfileSchema = new mongoose.Schema({
         type: [String],
         default: ['English']
     },
+    skillEntries: [
+        {
+            _id: {
+                type: mongoose.Schema.Types.ObjectId,
+                default: () => new mongoose.Types.ObjectId()
+            },
+            name: {
+                type: String,
+                trim: true,
+                minlength: 1,
+                maxlength: 120,
+                required: true
+            },
+            level: {
+                type: String,
+                enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+                default: 'Intermediate'
+            },
+            category: {
+                type: String,
+                trim: true,
+                maxlength: 100
+            },
+            yearsOfExperience: {
+                type: Number,
+                min: 0,
+                max: 50
+            },
+            verified: {
+                type: Boolean,
+                default: false
+            },
+            description: {
+                type: String,
+                maxlength: 500
+            },
+            source: {
+                type: String,
+                default: 'worker-profile'
+            },
+            lastUsedAt: Date,
+            evidenceUrl: {
+                type: String,
+                trim: true
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            },
+            updatedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
     rating: {
         type: Number,
         min: [0, 'Rating cannot be negative'],
@@ -209,6 +264,30 @@ const workerProfileSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    skillHistory: {
+        type: Array,
+        default: []
+    },
+    successStats: {
+        jobsCompleted: {
+            type: Number,
+            default: 0
+        },
+        jobsInProgress: {
+            type: Number,
+            default: 0
+        },
+        rehireRate: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 100
+        },
+        averageJobValue: {
+            type: Number,
+            default: 0
+        }
+    },
     portfolioItems: [{
         title: { type: String, trim: true },
         description: { type: String, trim: true },
@@ -225,6 +304,79 @@ const workerProfileSchema = new mongoose.Schema({
         credentialId: String,
         verificationUrl: String
     }],
+    workHistoryStats: {
+        totalEntries: {
+            type: Number,
+            default: 0
+        },
+        industries: {
+            type: [String],
+            default: []
+        },
+        averageTenureMonths: {
+            type: Number,
+            default: 0
+        }
+    },
+    workHistory: [
+        {
+            _id: {
+                type: mongoose.Schema.Types.ObjectId,
+                default: () => new mongoose.Types.ObjectId()
+            },
+            role: {
+                type: String,
+                trim: true,
+                maxlength: 120,
+                required: true
+            },
+            company: {
+                type: String,
+                trim: true,
+                maxlength: 160
+            },
+            employmentType: {
+                type: String,
+                enum: ['full-time', 'part-time', 'contract', 'freelance', 'internship', 'temporary'],
+                default: 'contract'
+            },
+            location: {
+                type: String,
+                trim: true,
+                maxlength: 160
+            },
+            startDate: Date,
+            endDate: Date,
+            isCurrent: {
+                type: Boolean,
+                default: false
+            },
+            description: {
+                type: String,
+                maxlength: 2000
+            },
+            highlights: {
+                type: [String],
+                default: []
+            },
+            clientsServed: {
+                type: [String],
+                default: []
+            },
+            technologies: {
+                type: [String],
+                default: []
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            },
+            updatedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
     insuranceInfo: {
         hasInsurance: { type: Boolean, default: false },
         provider: String,

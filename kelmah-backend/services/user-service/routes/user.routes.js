@@ -24,6 +24,7 @@ const {
   cleanupDatabase,
 } = require("../controllers/user.controller");
 const WorkerController = require('../controllers/worker.controller');
+const workerDetailRouter = require('./worker-detail.routes');
 
 // User CRUD routes
 router.get("/", getAllUsers);
@@ -111,9 +112,64 @@ router.get("/workers/:id/completeness", verifyGatewayRequest, (req, res, next) =
   });
   next();
 }, WorkerController.getProfileCompletion);
+
+// Worker sub-resource routes (public reads, protected mutations)
+router.get('/workers/:workerId/skills', optionalGatewayVerification, WorkerController.getWorkerSkills);
+router.post('/workers/:workerId/skills', verifyGatewayRequest, createLimiter('default'), WorkerController.createWorkerSkill);
+router.put('/workers/:workerId/skills/:skillId', verifyGatewayRequest, createLimiter('default'), WorkerController.updateWorkerSkill);
+router.delete('/workers/:workerId/skills/:skillId', verifyGatewayRequest, createLimiter('default'), WorkerController.deleteWorkerSkill);
+
+router.get('/workers/:workerId/work-history', optionalGatewayVerification, WorkerController.getWorkerWorkHistory);
+router.post('/workers/:workerId/work-history', verifyGatewayRequest, createLimiter('default'), WorkerController.addWorkHistoryEntry);
+router.put('/workers/:workerId/work-history/:entryId', verifyGatewayRequest, createLimiter('default'), WorkerController.updateWorkHistoryEntry);
+router.delete('/workers/:workerId/work-history/:entryId', verifyGatewayRequest, createLimiter('default'), WorkerController.deleteWorkHistoryEntry);
+
+router.get('/workers/:workerId/portfolio', optionalGatewayVerification, WorkerController.getWorkerPortfolio);
+router.post(
+  '/workers/:workerId/portfolio',
+  verifyGatewayRequest,
+  createLimiter('default'),
+  WorkerController.createWorkerPortfolioItem,
+);
+router.put(
+  '/workers/:workerId/portfolio/:portfolioId',
+  verifyGatewayRequest,
+  createLimiter('default'),
+  WorkerController.updateWorkerPortfolioItem,
+);
+router.delete(
+  '/workers/:workerId/portfolio/:portfolioId',
+  verifyGatewayRequest,
+  createLimiter('default'),
+  WorkerController.deleteWorkerPortfolioItem,
+);
+
+router.get('/workers/:workerId/certificates', optionalGatewayVerification, WorkerController.getWorkerCertificates);
+router.post(
+  '/workers/:workerId/certificates',
+  verifyGatewayRequest,
+  createLimiter('default'),
+  WorkerController.addWorkerCertificate,
+);
+router.put(
+  '/workers/:workerId/certificates/:certificateId',
+  verifyGatewayRequest,
+  createLimiter('default'),
+  WorkerController.updateWorkerCertificate,
+);
+router.delete(
+  '/workers/:workerId/certificates/:certificateId',
+  verifyGatewayRequest,
+  createLimiter('default'),
+  WorkerController.deleteWorkerCertificate,
+);
+
 router.post('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
 router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
 router.get('/workers/:workerId/earnings', verifyGatewayRequest, getEarnings);
+
+// Worker nested resources (skills, certificates, work history, portfolio, analytics)
+router.use('/workers/:workerId', workerDetailRouter);
 
 // User profile routes
 router.get('/profile', verifyGatewayRequest, getUserProfile);

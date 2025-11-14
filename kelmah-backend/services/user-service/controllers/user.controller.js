@@ -22,6 +22,23 @@ const normalizeDocument = (doc) => {
 
 const getActiveDb = () => mongooseInstance?.connection?.db || null;
 
+const buildGraphFromTotal = (total) => {
+  const normalized = Math.max(Number(total) || 0, 0);
+  const monthlyAverage = normalized / 12 || 0;
+  return Array.from({ length: 12 }).map((_, index) => ({
+    month: index + 1,
+    amount: Number((monthlyAverage * (0.85 + (index % 4) * 0.05)).toFixed(2)),
+  }));
+};
+
+const buildEarningsFallback = (total, overrides = {}) => {
+  const normalized = Math.max(Number(total) || 0, 0);
+  const last30Days = overrides.last30Days ?? Number((normalized * 0.12).toFixed(2));
+  const last7Days = overrides.last7Days ?? Number((normalized * 0.04).toFixed(2));
+  const graph = overrides.graph || buildGraphFromTotal(normalized);
+  return { total: normalized, last30Days, last7Days, graph };
+};
+
 const formatProfilePayload = (userDoc, workerDoc) => {
   const userData = normalizeDocument(userDoc);
   const workerData = normalizeDocument(workerDoc);
@@ -217,48 +234,103 @@ exports.getEarnings = async (req, res) => {
     const worker = await WorkerProfile.findOne({ userId });
     if (!worker) return res.status(404).json({ success: false, message: 'Worker not found' });
 
-    // Try to aggregate real transactions from payment-service if available
-    let total = Number(worker.totalEarnings || 0);
-    let last30 = 0;
-    let last7 = 0;
-    let graph = [];
-    try {
-      const axios = require('axios');
-      const gateway = process.env.PAYMENT_SERVICE_URL || process.env.API_GATEWAY_URL || '';
-      if (gateway) {
-        const token = req.headers.authorization;
-        const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        const tx30 = await axios.get(`${gateway}/api/payments/transactions/history`, {
-          params: { recipient: userId, from: since30 },
-          headers: { Authorization: token }
-        }).catch(() => ({ data: { transactions: [] } }));
-        const tx7 = await axios.get(`${gateway}/api/payments/transactions/history`, {
-          params: { recipient: userId, from: since7 },
-          headers: { Authorization: token }
-        }).catch(() => ({ data: { transactions: [] } }));
-        last30 = (tx30.data.transactions || []).reduce((sum, t) => sum + (t.amount || 0), 0);
-        last7 = (tx7.data.transactions || []).reduce((sum, t) => sum + (t.amount || 0), 0);
-        // Approximate total as profile totalEarnings + last30 delta (if bigger)
-        total = Math.max(total, last30 * 3); // rough scale
-        // Build a simple monthly series from recent data
-        const months = Array.from({ length: 12 }).map((_, i) => i);
-        graph = months.map((m) => ({ month: m + 1, amount: Math.round((total / 12) * (0.8 + Math.random() * 0.4)) }));
-      }
-    } catch (_) {
-      // fallback stays as placeholder
-      last30 = Math.round(total * 0.1 * 100) / 100;
-      last7 = Math.round(total * 0.03 * 100) / 100;
-      graph = Array.from({ length: 12 }).map((_, i) => ({ month: i + 1, amount: Math.round((total / 12) * (0.8 + Math.random() * 0.4)) }));
+    const baseTotal = Number(worker.totalEarnings ?? worker.successStats?.lifetimeEarnings ?? 0);
+    const fallbackTotals = buildEarningsFallback(baseTotal);
+    const paymentServiceBase = process.env.PAYMENT_SERVICE_URL
+      ? process.env.PAYMENT_SERVICE_URL.replace(/\/$/, '')
+      : null;
+    const gatewayBase = process.env.API_GATEWAY_URL
+      ? process.env.API_GATEWAY_URL.replace(/\/$/, '')
+      : null;
+
+    const candidateEndpoints = [];
+    if (paymentServiceBase) {
+      candidateEndpoints.push(`${paymentServiceBase}/api/payments/transactions/history`);
+    }
+    if (gatewayBase) {
+      candidateEndpoints.push(`${gatewayBase}/api/payments/transactions/history`);
     }
 
-    return res.json({
+    const respondWith = (totals) => res.json({
       success: true,
       data: {
-        totals: { allTime: total, last30Days: last30, last7Days: last7, currency: worker.currency || 'GHS' },
-        breakdown: { byMonth: graph },
-      }
+        totals: {
+          allTime: totals.total,
+          last30Days: totals.last30Days,
+          last7Days: totals.last7Days,
+          currency: worker.currency || 'GHS',
+        },
+        breakdown: { byMonth: totals.graph },
+      },
     });
+
+    if (!candidateEndpoints.length) {
+      console.warn('getEarnings: payment service host missing, returning fallback totals');
+      return respondWith(fallbackTotals);
+    }
+
+    try {
+      const axios = require('axios');
+      const headers = {};
+      if (req.headers.authorization) headers.Authorization = req.headers.authorization;
+      const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const fetchTransactions = async (from) => {
+        for (const endpoint of candidateEndpoints) {
+          try {
+            const response = await axios.get(endpoint, {
+              params: { recipient: userId, from },
+              headers,
+              timeout: 8000,
+            });
+            if (Array.isArray(response?.data?.transactions)) {
+              return response.data.transactions;
+            }
+          } catch (error) {
+            console.warn('Payment history request failed', {
+              endpoint,
+              message: error?.message,
+            });
+          }
+        }
+        return null;
+      };
+
+      const [tx30, tx7] = await Promise.all([fetchTransactions(since30), fetchTransactions(since7)]);
+      if (!tx30 && !tx7) {
+        console.warn('getEarnings: payment service unreachable, using fallback values');
+        return respondWith(fallbackTotals);
+      }
+
+      const sumTransactions = (transactions = []) =>
+        transactions.reduce((sum, tx) => sum + Number(tx?.amount || 0), 0);
+
+      const last30 = tx30 ? Number(sumTransactions(tx30).toFixed(2)) : fallbackTotals.last30Days;
+      const last7 = tx7
+        ? Number(sumTransactions(tx7).toFixed(2))
+        : tx30
+          ? Number((last30 / 4).toFixed(2))
+          : fallbackTotals.last7Days;
+
+      const derivedTotal = Math.max(
+        fallbackTotals.total,
+        last30 * 3,
+        last7 * 6,
+      );
+
+      const responseTotals = {
+        total: derivedTotal,
+        last30Days: last30,
+        last7Days: last7,
+        graph: buildGraphFromTotal(derivedTotal),
+      };
+
+      return respondWith(responseTotals);
+    } catch (error) {
+      console.warn('getEarnings: unexpected error, using fallback totals', error?.message);
+      return respondWith(fallbackTotals);
+    }
   } catch (e) {
     console.error('getEarnings error:', e);
     return res.status(500).json({ success: false, message: 'Failed to get earnings' });

@@ -89,6 +89,7 @@ router.post('/:id/apply', authorizeRoles('worker'), createLimiter('default'), jo
 router.get('/:id/applications', authorizeRoles('hirer'), jobController.getJobApplications);
 router.put('/:id/applications/:applicationId', authorizeRoles('hirer'), jobController.updateApplicationStatus);
 router.delete('/:id/applications/:applicationId', authorizeRoles('worker'), jobController.withdrawApplication);
+router.get('/proposals', authorizeRoles('hirer'), jobController.getHirerProposals);
 
 // Saved jobs (require authentication)
 router.get('/saved', authorizeRoles('worker', 'hirer'), jobController.getSavedJobs);

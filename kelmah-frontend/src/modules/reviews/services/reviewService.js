@@ -59,7 +59,7 @@ class ReviewService {
     }
     try {
       const response = await reviewsServiceClient.get(
-        `/reviews/ratings/worker/${workerId}`,
+        `/ratings/worker/${workerId}`,
       );
       return unwrapData(response);
     } catch (error) {

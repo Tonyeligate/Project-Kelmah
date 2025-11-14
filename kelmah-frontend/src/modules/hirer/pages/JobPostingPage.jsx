@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -26,6 +26,7 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  LinearProgress,
 } from '@mui/material';
 import {
   Work,
@@ -55,6 +56,11 @@ const steps = [
   { label: 'Location & Visibility', icon: <LocationOn /> },
   { label: 'Review & Publish', icon: <Publish /> },
 ];
+
+const DESCRIPTION_MIN_CHARS = 120;
+const DESCRIPTION_MAX_CHARS = 1200;
+
+const normalizeDescription = (value = '') => value.replace(/\s+/g, ' ').trim();
 
 const JobPreview = ({ formData }) => {
   const theme = useTheme();
@@ -137,6 +143,18 @@ const JobPostingPage = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
 
+  const normalizedDescription = useMemo(
+    () => normalizeDescription(formData.description || ''),
+    [formData.description],
+  );
+  const descriptionLength = normalizedDescription.length;
+  const descriptionRemaining = Math.max(0, DESCRIPTION_MIN_CHARS - descriptionLength);
+  const descriptionTooLong = descriptionLength > DESCRIPTION_MAX_CHARS;
+  const descriptionProgress = Math.min(
+    100,
+    Math.round((descriptionLength / DESCRIPTION_MIN_CHARS) * 100),
+  );
+
   const getFieldError = (field, data = formData) => {
     switch (field) {
       case 'title':
@@ -148,9 +166,19 @@ const JobPostingPage = () => {
           ? ''
           : 'Select a category to continue.';
       case 'description':
-        return data.description.trim()
-          ? ''
-          : 'Add a short project description so workers know what to expect.';
+        {
+          const normalized = normalizeDescription(data.description || '');
+          if (!normalized) {
+            return 'Add a project description so workers know what to expect.';
+          }
+          if (normalized.length < DESCRIPTION_MIN_CHARS) {
+            return `Use at least ${DESCRIPTION_MIN_CHARS} characters (${DESCRIPTION_MIN_CHARS - normalized.length} more to go).`;
+          }
+          if (normalized.length > DESCRIPTION_MAX_CHARS) {
+            return `Keep the description under ${DESCRIPTION_MAX_CHARS} characters.`;
+          }
+          return '';
+        }
       case 'budget.min': {
         if (data.paymentType !== 'hourly') return '';
         const rawValue = String(data.budget.min ?? '').trim();
@@ -345,7 +373,7 @@ const JobPostingPage = () => {
     // Map UI form to canonical API payload
     const payload = {
       title: formData.title,
-      description: formData.description,
+      description: normalizedDescription,
       category: formData.category,
       skills: formData.skills,
       paymentType: formData.paymentType,
@@ -497,9 +525,38 @@ const JobPostingPage = () => {
               error={Boolean(touchedFields.description && fieldErrors.description)}
               helperText={
                 (touchedFields.description && fieldErrors.description) ||
-                'Tip: Outline the scope, deliverables, and tools workers should bring'
+                (descriptionTooLong
+                  ? `Trim ${descriptionLength - DESCRIPTION_MAX_CHARS} characters to stay within ${DESCRIPTION_MAX_CHARS}.`
+                  : descriptionRemaining > 0
+                    ? `${descriptionRemaining} more characters required (minimum ${DESCRIPTION_MIN_CHARS}).`
+                    : `Great! ${descriptionLength} characters captured (max ${DESCRIPTION_MAX_CHARS}).`)}
               }
             />
+            <Box mt={1}>
+              <LinearProgress
+                variant="determinate"
+                value={descriptionProgress}
+                color={
+                  descriptionTooLong
+                    ? 'error'
+                    : descriptionRemaining > 0
+                      ? 'secondary'
+                      : 'success'
+                }
+              />
+              <Typography
+                variant="caption"
+                color={
+                  descriptionTooLong || descriptionRemaining > 0
+                    ? 'error.main'
+                    : 'text.secondary'
+                }
+              >
+                {descriptionTooLong
+                  ? `Please remove ${descriptionLength - DESCRIPTION_MAX_CHARS} characters`
+                  : `${Math.min(descriptionLength, DESCRIPTION_MAX_CHARS)} / ${DESCRIPTION_MAX_CHARS} characters`}
+              </Typography>
+            </Box>
             <TextField
               name="requirements"
               label="Requirements"

@@ -1,11 +1,130 @@
 /**
  * Portfolio Controller
- * Handles portfolio management for workers
+ * Handles portfolio management for workers (MongoDB/Mongoose)
  */
 
-const { Portfolio, WorkerProfile, Skill, User } = require('../models');
+const mongoose = require('mongoose');
+const models = require('../models');
 const { validateInput, handleServiceError, generatePagination } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
+
+const { Portfolio, WorkerProfile } = models;
+
+const toObjectId = (value) => {
+  if (!value) return null;
+  try {
+    return new mongoose.Types.ObjectId(value);
+  } catch (error) {
+    return null;
+  }
+};
+
+const buildWorkerQuery = (workerId) => {
+  const objectId = toObjectId(workerId);
+  if (objectId) {
+    return { $or: [{ _id: objectId }, { userId: objectId }] };
+  }
+  return { userId: workerId };
+};
+
+const findWorkerProfileOrThrow = async (workerId) => {
+  if (!WorkerProfile) {
+    const error = new Error('WorkerProfile model unavailable');
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const profile = await WorkerProfile.findOne(buildWorkerQuery(workerId));
+  if (!profile) {
+    const error = new Error('Worker profile not found');
+    error.statusCode = 404;
+    throw error;
+  }
+  return profile;
+};
+
+const isOwnerRequest = (req, profile) => {
+  if (!req?.user?.id) return false;
+  return String(profile.userId) === String(req.user.id);
+};
+
+const workerPopulateOptions = {
+  path: 'workerProfileId',
+  select: 'userId profilePicture rating isVerified successStats location currency',
+  populate: { path: 'userId', select: 'firstName lastName profilePicture' },
+};
+
+const formatWorkerMeta = (doc) => {
+  if (!doc?.workerProfileId) return null;
+  const profile = doc.workerProfileId;
+  const user = profile.userId;
+  return {
+    id: String(profile._id),
+    profilePicture: profile.profilePicture,
+    rating: profile.rating,
+    isVerified: profile.isVerified,
+    location: profile.location,
+    currency: profile.currency || 'GHS',
+    successStats: profile.successStats || {},
+    name: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : null,
+  };
+};
+
+const formatPortfolioDocument = (doc = {}) => ({
+  id: String(doc._id),
+  title: doc.title,
+  description: doc.description,
+  projectType: doc.projectType,
+  primarySkillId: doc.primarySkillId,
+  mainImage: typeof doc.getMainImageUrl === 'function' ? doc.getMainImageUrl() : doc.mainImage,
+  images: typeof doc.getAllImageUrls === 'function' ? doc.getAllImageUrls() : doc.images || [],
+  videos: doc.videos || [],
+  documents: doc.documents || [],
+  projectValue: doc.projectValue,
+  currency: doc.currency || 'GHS',
+  startDate: doc.startDate,
+  endDate: doc.endDate,
+  duration: typeof doc.getDurationText === 'function' ? doc.getDurationText() : null,
+  location: doc.location,
+  skillsUsed: typeof doc.getSkillsUsed === 'function' ? doc.getSkillsUsed() : doc.skillsUsed || [],
+  clientName: doc.clientName,
+  clientCompany: doc.clientCompany,
+  clientRating: doc.clientRating,
+  clientTestimonial: doc.clientTestimonial,
+  challenges: doc.challenges,
+  solutions: doc.solutions,
+  outcomes: doc.outcomes,
+  lessonsLearned: doc.lessonsLearned,
+  toolsUsed: doc.toolsUsed || [],
+  teamSize: doc.teamSize,
+  role: doc.role,
+  responsibilities: doc.responsibilities || [],
+  achievements: doc.achievements || [],
+  externalLinks: doc.externalLinks || [],
+  tags: doc.tags || [],
+  keywords: doc.keywords || [],
+  status: doc.status,
+  isFeatured: doc.isFeatured,
+  isActive: doc.isActive,
+  viewCount: doc.viewCount || 0,
+  likeCount: doc.likeCount || 0,
+  shareCount: doc.shareCount || 0,
+  complexityScore: typeof doc.getComplexityScore === 'function' ? doc.getComplexityScore() : null,
+  metadata: doc.metadata || {},
+  createdAt: doc.createdAt,
+  updatedAt: doc.updatedAt,
+  worker: formatWorkerMeta(doc),
+});
+
+const formatPortfolioCollection = (docs = []) => docs.map((doc) => formatPortfolioDocument(doc));
+
+const ensurePortfolioModel = () => {
+  if (!Portfolio) {
+    const error = new Error('Portfolio model unavailable');
+    error.statusCode = 503;
+    throw error;
+  }
+};
 
 class PortfolioController {
   /**
@@ -13,96 +132,50 @@ class PortfolioController {
    */
   static async getWorkerPortfolio(req, res) {
     try {
+      ensurePortfolioModel();
       const { workerId } = req.params;
-      const { page = 1, limit = 12, status = 'published' } = req.query;
-      const offset = (page - 1) * limit;
+      const pageNumber = Math.max(1, parseInt(req.query.page, 10) || 1);
+      const limitNumber = Math.min(50, parseInt(req.query.limit, 10) || 12);
+      const workerProfile = await findWorkerProfileOrThrow(workerId);
+      const isOwner = isOwnerRequest(req, workerProfile);
 
-      // Verify worker exists
-      const worker = await WorkerProfile.findOne({
-        where: { 
-          [Op.or]: [{ id: workerId }, { userId: workerId }],
-          isActive: true 
-        }
-      });
-
-      if (!worker) {
-        return res.status(404).json({
-          success: false,
-          message: 'Worker not found'
-        });
-      }
-
-      const whereClause = {
-        workerProfileId: worker.id,
-        isActive: true
+      const query = {
+        workerProfileId: workerProfile._id,
+        isActive: true,
       };
 
-      // Filter by status for public viewing
-      if (!req.user || req.user.id !== worker.userId) {
-        whereClause.status = 'published';
-      } else if (status !== 'all') {
-        whereClause.status = status;
+      const requestedStatus = req.query.status || 'published';
+      if (!isOwner) {
+        query.status = 'published';
+      } else if (requestedStatus !== 'all') {
+        query.status = requestedStatus;
       }
 
-      const { count, rows: portfolioItems } = await Portfolio.findAndCountAll({
-        where: whereClause,
-        include: [
-          {
-            model: Skill,
-            as: 'primarySkill',
-            attributes: ['name', 'category']
-          }
-        ],
-        limit: parseInt(limit),
-        offset,
-        order: [
-          ['isFeatured', 'DESC'],
-          ['sortOrder', 'ASC'],
-          ['createdAt', 'DESC']
-        ]
-      });
+      const skip = (pageNumber - 1) * limitNumber;
 
-      const formattedItems = portfolioItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        projectType: item.projectType,
-        mainImage: item.getMainImageUrl(),
-        images: item.getAllImageUrls(),
-        projectValue: item.projectValue,
-        currency: item.currency,
-        duration: item.getDurationText(),
-        startDate: item.startDate,
-        endDate: item.endDate,
-        location: item.location,
-        skillsUsed: item.getSkillsUsed(),
-        clientRating: item.clientRating,
-        status: item.status,
-        isFeatured: item.isFeatured,
-        viewCount: item.viewCount,
-        likeCount: item.likeCount,
-        complexityScore: item.getComplexityScore(),
-        createdAt: item.createdAt
-      }));
+      const [total, items, publishedCount, featuredCount] = await Promise.all([
+        Portfolio.countDocuments(query),
+        Portfolio.find(query)
+          .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+          .skip(skip)
+          .limit(limitNumber)
+          .populate(workerPopulateOptions),
+        Portfolio.countDocuments({ workerProfileId: workerProfile._id, status: 'published', isActive: true }),
+        Portfolio.countDocuments({ workerProfileId: workerProfile._id, isFeatured: true, isActive: true }),
+      ]);
 
-      res.status(200).json({
+      return res.json({
         success: true,
-        message: 'Portfolio retrieved successfully',
         data: {
-          portfolioItems: formattedItems,
-          pagination: generatePagination(page, limit, count),
+          portfolioItems: formatPortfolioCollection(items),
+          pagination: generatePagination(pageNumber, limitNumber, total),
           stats: {
-            total: count,
-            published: await Portfolio.count({
-              where: { workerProfileId: worker.id, status: 'published', isActive: true }
-            }),
-            featured: await Portfolio.count({
-              where: { workerProfileId: worker.id, isFeatured: true, isActive: true }
-            })
-          }
-        }
+            total,
+            published: publishedCount,
+            featured: featuredCount,
+          },
+        },
       });
-
     } catch (error) {
       console.error('Get portfolio error:', error);
       return handleServiceError(res, error, 'Failed to retrieve portfolio');
@@ -114,20 +187,21 @@ class PortfolioController {
    */
   static async getPortfolioStats(req, res) {
     try {
+      ensurePortfolioModel();
       const { workerId } = req.params;
-      const worker = await WorkerProfile.findOne({
-        where: { [Op.or]: [{ id: workerId }, { userId: workerId }], isActive: true }
-      });
-      if (!worker) {
-        return res.status(404).json({ success: false, message: 'Worker not found' });
-      }
+      const workerProfile = await findWorkerProfileOrThrow(workerId);
+
       const [total, published, featured] = await Promise.all([
-        Portfolio.count({ where: { workerProfileId: worker.id, isActive: true } }),
-        Portfolio.count({ where: { workerProfileId: worker.id, status: 'published', isActive: true } }),
-        Portfolio.count({ where: { workerProfileId: worker.id, isFeatured: true, isActive: true } }),
+        Portfolio.countDocuments({ workerProfileId: workerProfile._id, isActive: true }),
+        Portfolio.countDocuments({ workerProfileId: workerProfile._id, status: 'published', isActive: true }),
+        Portfolio.countDocuments({ workerProfileId: workerProfile._id, isFeatured: true, isActive: true }),
       ]);
-      // simple trend stub
-      const monthly = Array.from({ length: 12 }).map((_, i) => ({ month: i + 1, items: Math.round((published / 12) * (0.6 + Math.random() * 0.8)) }));
+
+      const monthly = Array.from({ length: 12 }).map((_, index) => ({
+        month: index + 1,
+        items: Math.round((published / 12) * (0.6 + Math.random() * 0.8)),
+      }));
+
       return res.json({ success: true, data: { total, published, featured, monthly } });
     } catch (error) {
       console.error('Get portfolio stats error:', error);
@@ -140,112 +214,27 @@ class PortfolioController {
    */
   static async getPortfolioItem(req, res) {
     try {
+      ensurePortfolioModel();
       const { id } = req.params;
-
-      const item = await Portfolio.findOne({
-        where: { id, isActive: true },
-        include: [
-          {
-            model: WorkerProfile,
-            as: 'workerProfile',
-            include: [{
-              model: User,
-              as: 'user',
-              attributes: ['firstName', 'lastName']
-            }]
-          },
-          {
-            model: Skill,
-            as: 'primarySkill',
-            attributes: ['name', 'category', 'description']
-          }
-        ]
-      });
+      const item = await Portfolio.findOne({ _id: id, isActive: true }).populate(workerPopulateOptions);
 
       if (!item) {
-        return res.status(404).json({
-          success: false,
-          message: 'Portfolio item not found'
-        });
+        return res.status(404).json({ success: false, message: 'Portfolio item not found' });
       }
 
-      // Check if user can view this item
-      const canView = item.isVisible() || 
-        (req.user && req.user.id === item.workerProfile.userId);
-
+      const canView = item.status === 'published' || isOwnerRequest(req, item.workerProfileId || {});
       if (!canView) {
-        return res.status(403).json({
-          success: false,
-          message: 'Portfolio item not available'
-        });
+        return res.status(403).json({ success: false, message: 'Portfolio item not available' });
       }
 
-      // Increment view count for published items
       if (item.status === 'published') {
-        await Portfolio.incrementView(item.id);
+        await Portfolio.incrementView(item._id);
       }
 
-      const itemData = {
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        projectType: item.projectType,
-        primarySkill: item.primarySkill,
-        skillsUsed: item.getSkillsUsed(),
-        mainImage: item.getMainImageUrl(),
-        images: item.getAllImageUrls(),
-        videos: item.videos,
-        documents: item.documents,
-        projectValue: item.projectValue,
-        currency: item.currency,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        duration: item.getDurationText(),
-        location: item.location,
-        client: {
-          name: item.clientName,
-          company: item.clientCompany,
-          rating: item.clientRating,
-          testimonial: item.clientTestimonial
-        },
-        projectDetails: {
-          challenges: item.challenges,
-          solutions: item.solutions,
-          outcomes: item.outcomes,
-          lessonsLearned: item.lessonsLearned
-        },
-        team: {
-          size: item.teamSize,
-          role: item.role,
-          responsibilities: item.responsibilities
-        },
-        toolsUsed: item.toolsUsed,
-        achievements: item.achievements,
-        externalLinks: item.externalLinks,
-        tags: item.tags,
-        status: item.status,
-        isFeatured: item.isFeatured,
-        stats: {
-          viewCount: item.viewCount,
-          likeCount: item.likeCount,
-          shareCount: item.shareCount
-        },
-        complexityScore: item.getComplexityScore(),
-        worker: {
-          id: item.workerProfile.id,
-          name: `${item.workerProfile.user.firstName} ${item.workerProfile.user.lastName}`,
-          profilePicture: item.workerProfile.profilePicture
-        },
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt
-      };
-
-      res.status(200).json({
+      return res.json({
         success: true,
-        message: 'Portfolio item retrieved successfully',
-        data: { portfolioItem: itemData }
+        data: { portfolioItem: formatPortfolioDocument(item) },
       });
-
     } catch (error) {
       console.error('Get portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to retrieve portfolio item');
@@ -257,79 +246,64 @@ class PortfolioController {
    */
   static async createPortfolioItem(req, res) {
     try {
-      const userId = req.user.id;
-      const portfolioData = req.body;
-
-      // Find worker profile
-      const worker = await WorkerProfile.findOne({
-        where: { userId, isActive: true }
-      });
-
-      if (!worker) {
-        return res.status(404).json({
-          success: false,
-          message: 'Worker profile not found. Please create a worker profile first.'
-        });
+      ensurePortfolioModel();
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      // Validate required fields
-      const validation = validateInput(portfolioData, ['title', 'description']);
+      const workerProfile = await WorkerProfile.findOne({ userId });
+      if (!workerProfile) {
+        return res.status(404).json({ success: false, message: 'Worker profile not found. Please create a worker profile first.' });
+      }
+
+      const validation = validateInput(req.body || {}, ['title', 'description']);
       if (!validation.isValid) {
-        return res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: validation.errors
-        });
+        return res.status(400).json({ success: false, message: 'Validation failed', errors: validation.errors });
       }
 
-      // Create portfolio item
-      const item = await Portfolio.create({
-        workerProfileId: worker.id,
-        title: portfolioData.title,
-        description: portfolioData.description,
-        projectType: portfolioData.projectType || 'professional',
-        primarySkillId: portfolioData.primarySkillId,
-        skillsUsed: portfolioData.skillsUsed || [],
-        mainImage: portfolioData.mainImage,
-        images: portfolioData.images || [],
-        videos: portfolioData.videos || [],
-        documents: portfolioData.documents || [],
-        projectValue: portfolioData.projectValue,
-        currency: portfolioData.currency || 'GHS',
-        startDate: portfolioData.startDate,
-        endDate: portfolioData.endDate,
-        location: portfolioData.location,
-        clientName: portfolioData.clientName,
-        clientCompany: portfolioData.clientCompany,
-        clientRating: portfolioData.clientRating,
-        clientTestimonial: portfolioData.clientTestimonial,
-        challenges: portfolioData.challenges,
-        solutions: portfolioData.solutions,
-        outcomes: portfolioData.outcomes,
-        lessonsLearned: portfolioData.lessonsLearned,
-        toolsUsed: portfolioData.toolsUsed || [],
-        teamSize: portfolioData.teamSize,
-        role: portfolioData.role,
-        responsibilities: portfolioData.responsibilities || [],
-        achievements: portfolioData.achievements || [],
-        externalLinks: portfolioData.externalLinks || [],
-        status: portfolioData.status || 'draft',
-        tags: portfolioData.tags || [],
-        keywords: portfolioData.keywords || []
-      });
+      const payload = {
+        workerProfileId: workerProfile._id,
+        title: req.body.title,
+        description: req.body.description,
+        projectType: req.body.projectType || 'professional',
+        primarySkillId: req.body.primarySkillId || null,
+        skillsUsed: req.body.skillsUsed || [],
+        mainImage: req.body.mainImage || null,
+        images: req.body.images || [],
+        videos: req.body.videos || [],
+        documents: req.body.documents || [],
+        projectValue: req.body.projectValue || null,
+        currency: req.body.currency || workerProfile.currency || 'GHS',
+        startDate: req.body.startDate || null,
+        endDate: req.body.endDate || null,
+        location: req.body.location || workerProfile.location || null,
+        clientName: req.body.clientName || null,
+        clientCompany: req.body.clientCompany || null,
+        clientRating: req.body.clientRating || null,
+        clientTestimonial: req.body.clientTestimonial || null,
+        challenges: req.body.challenges || null,
+        solutions: req.body.solutions || null,
+        outcomes: req.body.outcomes || null,
+        lessonsLearned: req.body.lessonsLearned || null,
+        toolsUsed: req.body.toolsUsed || [],
+        teamSize: req.body.teamSize || null,
+        role: req.body.role || null,
+        responsibilities: req.body.responsibilities || [],
+        achievements: req.body.achievements || [],
+        externalLinks: req.body.externalLinks || [],
+        status: req.body.status || 'draft',
+        tags: req.body.tags || [],
+        keywords: req.body.keywords || [],
+        isFeatured: Boolean(req.body.isFeatured),
+      };
 
-      await auditLogger.log({
-        userId,
-        action: 'PORTFOLIO_ITEM_CREATED',
-        details: { portfolioItemId: item.id, workerId: worker.id }
-      });
+      const created = await Portfolio.create(payload);
+      await created.populate(workerPopulateOptions);
 
-      res.status(201).json({
-        success: true,
-        message: 'Portfolio item created successfully',
-        data: { portfolioItem: item }
-      });
+      await auditLogger.log({ userId, action: 'PORTFOLIO_ITEM_CREATED', details: { portfolioItemId: created._id, workerId: workerProfile._id } });
 
+      return res.status(201).json({ success: true, message: 'Portfolio item created successfully', data: { portfolioItem: formatPortfolioDocument(created) } });
     } catch (error) {
       console.error('Create portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to create portfolio item');
@@ -341,75 +315,36 @@ class PortfolioController {
    */
   static async updatePortfolioItem(req, res) {
     try {
+      ensurePortfolioModel();
       const { id } = req.params;
-      const userId = req.user.id;
-      const updateData = req.body;
-
-      // Find portfolio item
-      const item = await Portfolio.findOne({
-        where: { id, isActive: true },
-        include: [{
-          model: WorkerProfile,
-          as: 'workerProfile',
-          where: { userId }
-        }]
-      });
-
-      if (!item) {
-        return res.status(404).json({
-          success: false,
-          message: 'Portfolio item not found or access denied'
-        });
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      // Update the item
-      await item.update({
-        title: updateData.title || item.title,
-        description: updateData.description || item.description,
-        projectType: updateData.projectType || item.projectType,
-        primarySkillId: updateData.primarySkillId || item.primarySkillId,
-        skillsUsed: updateData.skillsUsed || item.skillsUsed,
-        mainImage: updateData.mainImage || item.mainImage,
-        images: updateData.images || item.images,
-        videos: updateData.videos || item.videos,
-        documents: updateData.documents || item.documents,
-        projectValue: updateData.projectValue !== undefined ? updateData.projectValue : item.projectValue,
-        currency: updateData.currency || item.currency,
-        startDate: updateData.startDate || item.startDate,
-        endDate: updateData.endDate || item.endDate,
-        location: updateData.location || item.location,
-        clientName: updateData.clientName || item.clientName,
-        clientCompany: updateData.clientCompany || item.clientCompany,
-        clientRating: updateData.clientRating !== undefined ? updateData.clientRating : item.clientRating,
-        clientTestimonial: updateData.clientTestimonial || item.clientTestimonial,
-        challenges: updateData.challenges || item.challenges,
-        solutions: updateData.solutions || item.solutions,
-        outcomes: updateData.outcomes || item.outcomes,
-        lessonsLearned: updateData.lessonsLearned || item.lessonsLearned,
-        toolsUsed: updateData.toolsUsed || item.toolsUsed,
-        teamSize: updateData.teamSize !== undefined ? updateData.teamSize : item.teamSize,
-        role: updateData.role || item.role,
-        responsibilities: updateData.responsibilities || item.responsibilities,
-        achievements: updateData.achievements || item.achievements,
-        externalLinks: updateData.externalLinks || item.externalLinks,
-        status: updateData.status || item.status,
-        isFeatured: updateData.isFeatured !== undefined ? updateData.isFeatured : item.isFeatured,
-        tags: updateData.tags || item.tags,
-        sortOrder: updateData.sortOrder !== undefined ? updateData.sortOrder : item.sortOrder
-      });
+      const workerProfile = await WorkerProfile.findOne({ userId });
+      if (!workerProfile) {
+        return res.status(404).json({ success: false, message: 'Worker profile not found' });
+      }
 
-      await auditLogger.log({
-        userId,
-        action: 'PORTFOLIO_ITEM_UPDATED',
-        details: { portfolioItemId: item.id }
-      });
+      const updatePayload = {
+        ...req.body,
+        updatedAt: new Date(),
+      };
 
-      res.status(200).json({
-        success: true,
-        message: 'Portfolio item updated successfully',
-        data: { portfolioItem: item }
-      });
+      const updated = await Portfolio.findOneAndUpdate(
+        { _id: id, workerProfileId: workerProfile._id, isActive: true },
+        updatePayload,
+        { new: true },
+      ).populate(workerPopulateOptions);
 
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found or access denied' });
+      }
+
+      await auditLogger.log({ userId, action: 'PORTFOLIO_ITEM_UPDATED', details: { portfolioItemId: updated._id } });
+
+      return res.json({ success: true, message: 'Portfolio item updated successfully', data: { portfolioItem: formatPortfolioDocument(updated) } });
     } catch (error) {
       console.error('Update portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to update portfolio item');
@@ -417,44 +352,35 @@ class PortfolioController {
   }
 
   /**
-   * Delete portfolio item
+   * Delete portfolio item (soft delete)
    */
   static async deletePortfolioItem(req, res) {
     try {
+      ensurePortfolioModel();
       const { id } = req.params;
-      const userId = req.user.id;
-
-      // Find portfolio item
-      const item = await Portfolio.findOne({
-        where: { id, isActive: true },
-        include: [{
-          model: WorkerProfile,
-          as: 'workerProfile',
-          where: { userId }
-        }]
-      });
-
-      if (!item) {
-        return res.status(404).json({
-          success: false,
-          message: 'Portfolio item not found or access denied'
-        });
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      // Soft delete
-      await item.update({ isActive: false });
+      const workerProfile = await WorkerProfile.findOne({ userId });
+      if (!workerProfile) {
+        return res.status(404).json({ success: false, message: 'Worker profile not found' });
+      }
 
-      await auditLogger.log({
-        userId,
-        action: 'PORTFOLIO_ITEM_DELETED',
-        details: { portfolioItemId: item.id }
-      });
+      const deleted = await Portfolio.findOneAndUpdate(
+        { _id: id, workerProfileId: workerProfile._id, isActive: true },
+        { isActive: false, updatedAt: new Date() },
+        { new: true },
+      );
 
-      res.status(200).json({
-        success: true,
-        message: 'Portfolio item deleted successfully'
-      });
+      if (!deleted) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found or access denied' });
+      }
 
+      await auditLogger.log({ userId, action: 'PORTFOLIO_ITEM_DELETED', details: { portfolioItemId: deleted._id } });
+
+      return res.json({ success: true, message: 'Portfolio item deleted successfully' });
     } catch (error) {
       console.error('Delete portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to delete portfolio item');
@@ -466,6 +392,7 @@ class PortfolioController {
    */
   static async searchPortfolio(req, res) {
     try {
+      ensurePortfolioModel();
       const {
         query = '',
         skills,
@@ -476,145 +403,72 @@ class PortfolioController {
         clientRating,
         page = 1,
         limit = 12,
-        sortBy = 'relevance'
+        sortBy = 'relevance',
       } = req.query;
 
-      const offset = (page - 1) * limit;
-      const whereClause = {
+      const pageNumber = Math.max(1, parseInt(page, 10) || 1);
+      const limitNumber = Math.min(50, parseInt(limit, 10) || 12);
+      const skip = (pageNumber - 1) * limitNumber;
+
+      const filters = {
         status: 'published',
-        isActive: true
+        isActive: true,
       };
 
-      // Text search
       if (query) {
-        whereClause[Op.or] = [
-          { title: { [Op.iLike]: `%${query}%` } },
-          { description: { [Op.iLike]: `%${query}%` } },
-          { keywords: { [Op.contains]: [query.toLowerCase()] } },
-          { tags: { [Op.contains]: [query.toLowerCase()] } }
+        const regex = new RegExp(query, 'i');
+        filters.$or = [
+          { title: regex },
+          { description: regex },
+          { keywords: query.toLowerCase() },
+          { tags: query.toLowerCase() },
         ];
       }
 
-      // Filters
-      if (projectType) {
-        whereClause.projectType = projectType;
-      }
+      if (projectType) filters.projectType = projectType;
+      if (location) filters.location = new RegExp(location, 'i');
+      if (skills) filters.skillsUsed = { $in: skills.split(',').map((skill) => skill.trim()).filter(Boolean) };
 
-      if (location) {
-        whereClause.location = { [Op.iLike]: `%${location}%` };
-      }
+      const valueFilters = {};
+      if (minValue) valueFilters.$gte = parseFloat(minValue);
+      if (maxValue) valueFilters.$lte = parseFloat(maxValue);
+      if (Object.keys(valueFilters).length) filters.projectValue = valueFilters;
 
-      if (minValue) {
-        whereClause.projectValue = { [Op.gte]: parseFloat(minValue) };
-      }
+      if (clientRating) filters.clientRating = { $gte: parseFloat(clientRating) };
 
-      if (maxValue) {
-        whereClause.projectValue = {
-          ...whereClause.projectValue,
-          [Op.lte]: parseFloat(maxValue)
-        };
-      }
+      const sortOptions = {
+        relevance: { isFeatured: -1, viewCount: -1, createdAt: -1 },
+        newest: { createdAt: -1 },
+        oldest: { createdAt: 1 },
+        value_high: { projectValue: -1 },
+        value_low: { projectValue: 1 },
+        rating: { clientRating: -1 },
+        popular: { viewCount: -1, likeCount: -1 },
+      };
 
-      if (clientRating) {
-        whereClause.clientRating = { [Op.gte]: parseFloat(clientRating) };
-      }
+      const sort = sortOptions[sortBy] || sortOptions.relevance;
 
-      if (skills) {
-        whereClause.skillsUsed = {
-          [Op.overlap]: skills.split(',')
-        };
-      }
+      const [total, items] = await Promise.all([
+        Portfolio.countDocuments(filters),
+        Portfolio.find(filters)
+          .sort(sort)
+          .skip(skip)
+          .limit(limitNumber)
+          .populate(workerPopulateOptions),
+      ]);
 
-      // Sort options
-      let orderClause;
-      switch (sortBy) {
-        case 'newest':
-          orderClause = [['createdAt', 'DESC']];
-          break;
-        case 'oldest':
-          orderClause = [['createdAt', 'ASC']];
-          break;
-        case 'value_high':
-          orderClause = [['projectValue', 'DESC']];
-          break;
-        case 'value_low':
-          orderClause = [['projectValue', 'ASC']];
-          break;
-        case 'rating':
-          orderClause = [['clientRating', 'DESC']];
-          break;
-        case 'popular':
-          orderClause = [['viewCount', 'DESC'], ['likeCount', 'DESC']];
-          break;
-        default: // relevance
-          orderClause = [
-            ['isFeatured', 'DESC'],
-            ['viewCount', 'DESC'],
-            ['createdAt', 'DESC']
-          ];
-      }
-
-      const { count, rows: portfolioItems } = await Portfolio.findAndCountAll({
-        where: whereClause,
-        include: [
-          {
-            model: WorkerProfile,
-            as: 'workerProfile',
-            attributes: ['id', 'profilePicture', 'rating', 'isVerified'],
-            include: [{
-              model: User,
-              as: 'user',
-              attributes: ['firstName', 'lastName']
-            }]
-          },
-          {
-            model: Skill,
-            as: 'primarySkill',
-            attributes: ['name', 'category']
-          }
-        ],
-        limit: parseInt(limit),
-        offset,
-        order: orderClause
-      });
-
-      const searchResults = portfolioItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description.substring(0, 150) + '...',
-        projectType: item.projectType,
-        mainImage: item.getMainImageUrl(),
-        projectValue: item.projectValue,
-        currency: item.currency,
-        duration: item.getDurationText(),
-        location: item.location,
-        skillsUsed: item.getSkillsUsed(),
-        clientRating: item.clientRating,
-        viewCount: item.viewCount,
-        likeCount: item.likeCount,
-        complexityScore: item.getComplexityScore(),
-        worker: {
-          id: item.workerProfile.id,
-          name: `${item.workerProfile.user.firstName} ${item.workerProfile.user.lastName}`,
-          profilePicture: item.workerProfile.profilePicture,
-          rating: item.workerProfile.rating,
-          isVerified: item.workerProfile.isVerified
-        },
-        createdAt: item.createdAt
-      }));
-
-      res.status(200).json({
+      return res.json({
         success: true,
         message: 'Portfolio search completed successfully',
         data: {
-          portfolioItems: searchResults,
-          pagination: generatePagination(page, limit, count),
-          searchParams: {
-            query, skills, location, projectType, minValue, maxValue, clientRating, sortBy
-          }
-        }
+          portfolioItems: formatPortfolioCollection(items).map((item) => ({
+            ...item,
+            description: item.description ? `${item.description.slice(0, 150)}${item.description.length > 150 ? '…' : ''}` : null,
+          })),
+          pagination: generatePagination(pageNumber, limitNumber, total),
+          searchParams: { query, skills, location, projectType, minValue, maxValue, clientRating, sortBy },
+        },
       });
-
     } catch (error) {
       console.error('Search portfolio error:', error);
       return handleServiceError(res, error, 'Portfolio search failed');
@@ -626,57 +480,18 @@ class PortfolioController {
    */
   static async getFeaturedPortfolio(req, res) {
     try {
-      const { limit = 12 } = req.query;
+      ensurePortfolioModel();
+      const limitNumber = Math.min(24, parseInt(req.query.limit, 10) || 12);
 
-      const portfolioItems = await Portfolio.findAll({
-        where: {
-          isFeatured: true,
-          status: 'published',
-          isActive: true
-        },
-        include: [
-          {
-            model: WorkerProfile,
-            as: 'workerProfile',
-            attributes: ['id', 'profilePicture', 'rating', 'isVerified'],
-            include: [{
-              model: User,
-              as: 'user',
-              attributes: ['firstName', 'lastName']
-            }]
-          }
-        ],
-        limit: parseInt(limit),
-        order: [
-          ['viewCount', 'DESC'],
-          ['likeCount', 'DESC'],
-          ['createdAt', 'DESC']
-        ]
-      });
+      const items = await Portfolio.find({ isFeatured: true, status: 'published', isActive: true })
+        .sort({ viewCount: -1, likeCount: -1, createdAt: -1 })
+        .limit(limitNumber)
+        .populate(workerPopulateOptions);
 
-      const featuredItems = portfolioItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        mainImage: item.getMainImageUrl(),
-        projectValue: item.projectValue,
-        currency: item.currency,
-        skillsUsed: item.getSkillsUsed().slice(0, 3),
-        viewCount: item.viewCount,
-        likeCount: item.likeCount,
-        worker: {
-          name: `${item.workerProfile.user.firstName} ${item.workerProfile.user.lastName}`,
-          profilePicture: item.workerProfile.profilePicture,
-          rating: item.workerProfile.rating,
-          isVerified: item.workerProfile.isVerified
-        }
-      }));
-
-      res.status(200).json({
+      return res.json({
         success: true,
-        message: 'Featured portfolio items retrieved successfully',
-        data: { portfolioItems: featuredItems }
+        data: { portfolioItems: formatPortfolioCollection(items) },
       });
-
     } catch (error) {
       console.error('Get featured portfolio error:', error);
       return handleServiceError(res, error, 'Failed to retrieve featured portfolio');
@@ -688,30 +503,15 @@ class PortfolioController {
    */
   static async toggleLike(req, res) {
     try {
+      ensurePortfolioModel();
       const { id } = req.params;
-      const userId = req.user.id;
 
-      const item = await Portfolio.findOne({
-        where: { id, status: 'published', isActive: true }
-      });
-
-      if (!item) {
-        return res.status(404).json({
-          success: false,
-          message: 'Portfolio item not found'
-        });
+      const updated = await Portfolio.incrementLike(id);
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found' });
       }
 
-      // This would typically involve a likes table to track who liked what
-      // For now, just increment the counter
-      await Portfolio.incrementLike(item.id);
-
-      res.status(200).json({
-        success: true,
-        message: 'Portfolio item liked successfully',
-        data: { likeCount: item.likeCount + 1 }
-      });
-
+      return res.json({ success: true, message: 'Portfolio item liked successfully', data: { likeCount: updated.likeCount } });
     } catch (error) {
       console.error('Toggle like error:', error);
       return handleServiceError(res, error, 'Failed to update like status');
@@ -723,36 +523,30 @@ class PortfolioController {
    */
   static async sharePortfolioItem(req, res) {
     try {
+      ensurePortfolioModel();
       const { id } = req.params;
-      const userId = req.user.id;
-
-      const item = await Portfolio.findOne({
-        where: { id, isActive: true },
-        include: [{
-          model: WorkerProfile,
-          as: 'workerProfile',
-          where: { userId }
-        }]
-      });
-
-      if (!item) {
-        return res.status(404).json({
-          success: false,
-          message: 'Portfolio item not found or access denied'
-        });
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      await Portfolio.incrementShare(item.id);
+      const workerProfile = await WorkerProfile.findOne({ userId });
+      if (!workerProfile) {
+        return res.status(404).json({ success: false, message: 'Worker profile not found' });
+      }
+
+      const item = await Portfolio.findOne({ _id: id, workerProfileId: workerProfile._id, isActive: true });
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found or access denied' });
+      }
+
+      await Portfolio.incrementShare(item._id);
       const baseUrl = process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app';
-      const shareUrl = `${baseUrl}/portfolio/${item.id}`;
+      const shareUrl = `${baseUrl}/portfolio/${item._id}`;
 
-      await auditLogger.log({
-        userId,
-        action: 'PORTFOLIO_ITEM_SHARED',
-        details: { portfolioItemId: item.id }
-      });
+      await auditLogger.log({ userId, action: 'PORTFOLIO_ITEM_SHARED', details: { portfolioItemId: item._id } });
 
-      return res.status(200).json({ success: true, data: { shareUrl } });
+      return res.json({ success: true, data: { shareUrl } });
     } catch (error) {
       console.error('Share portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to share portfolio item');

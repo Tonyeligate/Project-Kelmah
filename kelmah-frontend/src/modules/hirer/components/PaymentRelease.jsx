@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -29,6 +29,8 @@ import {
   Skeleton,
   useTheme,
   useMediaQuery,
+  Stack,
+  CircularProgress,
 } from '@mui/material';
 import {
   AttachMoney as MoneyIcon,
@@ -39,15 +41,25 @@ import {
   TrendingUp as TrendingUpIcon,
   AccountBalance as BankIcon,
   Visibility as ViewIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import {
   selectHirerJobs,
   selectHirerLoading,
   selectHirerPayments,
+  selectHirerError,
+  fetchPaymentSummary,
 } from '../services/hirerSlice';
 import paymentService from '../../payment/services/paymentService';
 
 // No mock data - using real API data only
+
+const PAYMENT_SUMMARY_TIMEOUT_MS = 8000;
+const PAYMENT_SUMMARY_TTL_MS = 60_000;
+const PAYMENT_SUMMARY_MAX_RETRIES = 3;
+const PAYMENT_SUMMARY_RETRY_BASE_DELAY_MS = 700;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PaymentRelease = () => {
   const theme = useTheme();
@@ -60,17 +72,98 @@ const PaymentRelease = () => {
   const [paymentMethod, setPaymentMethod] = useState('mobile_money');
   const [confirmationCode, setConfirmationCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [manualRefreshPending, setManualRefreshPending] = useState(false);
+  const [summaryTimeout, setSummaryTimeout] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
+
+  const lastFetchRef = useRef(0);
+  const summaryTimeoutRef = useRef(null);
 
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
   const jobsLoading = useSelector(selectHirerLoading('jobs'));
+  const paymentsLoading = useSelector(selectHirerLoading('payments'));
   const paymentSummary = useSelector(selectHirerPayments);
+  const paymentsError = useSelector(selectHirerError('payments'));
   const pendingPayments = Array.isArray(paymentSummary?.pending)
     ? paymentSummary.pending
     : [];
   const paymentHistory = Array.isArray(paymentSummary?.history)
     ? paymentSummary.history
     : [];
+  const refreshButtonLoading = manualRefreshPending || paymentsLoading;
+  const showInitialLoading = (jobsLoading || paymentsLoading) && !paymentSummary;
+  const formattedLastSynced = lastSyncedAt
+    ? new Date(lastSyncedAt).toLocaleString('en-GH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        month: 'short',
+        day: 'numeric',
+      })
+    : 'Never';
+
+  const ensurePaymentSummary = useCallback(
+    (force = false) => {
+      const now = Date.now();
+      if (!force && paymentSummary && now - lastFetchRef.current < PAYMENT_SUMMARY_TTL_MS) {
+        return;
+      }
+
+      lastFetchRef.current = now;
+      setSummaryTimeout(false);
+      if (summaryTimeoutRef.current) {
+        clearTimeout(summaryTimeoutRef.current);
+      }
+      summaryTimeoutRef.current = setTimeout(() => {
+        setSummaryTimeout(true);
+      }, PAYMENT_SUMMARY_TIMEOUT_MS);
+
+      let attempts = 0;
+      const attemptFetch = async () => {
+        attempts += 1;
+        try {
+          await dispatch(fetchPaymentSummary()).unwrap();
+        } catch (err) {
+          console.warn(`Failed to fetch payment summary (attempt ${attempts}):`, err);
+          if (attempts < PAYMENT_SUMMARY_MAX_RETRIES) {
+            const delay = PAYMENT_SUMMARY_RETRY_BASE_DELAY_MS * 2 ** (attempts - 1);
+            await sleep(delay);
+            return attemptFetch();
+          }
+        } finally {
+          if (summaryTimeoutRef.current) {
+            clearTimeout(summaryTimeoutRef.current);
+            summaryTimeoutRef.current = null;
+          }
+          setSummaryTimeout(false);
+          setManualRefreshPending(false);
+        }
+      };
+
+      attemptFetch();
+    },
+    [dispatch, paymentSummary],
+  );
+
+  useEffect(() => {
+    ensurePaymentSummary();
+    return () => {
+      if (summaryTimeoutRef.current) {
+        clearTimeout(summaryTimeoutRef.current);
+      }
+    };
+  }, [ensurePaymentSummary]);
+
+  useEffect(() => {
+    if (paymentSummary) {
+      setLastSyncedAt(Date.now());
+    }
+  }, [paymentSummary]);
+
+  const handleRefreshSummary = () => {
+    setManualRefreshPending(true);
+    ensurePaymentSummary(true);
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-GH', {
@@ -282,7 +375,7 @@ const PaymentRelease = () => {
     </Grid>
   );
 
-  if (jobsLoading) {
+  if (showInitialLoading) {
     return (
       <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -306,6 +399,52 @@ const PaymentRelease = () => {
 
   return (
     <Box>
+      {(paymentsError || summaryTimeout) && (
+        <Alert
+          severity={paymentsError ? 'error' : 'warning'}
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleRefreshSummary}
+              disabled={refreshButtonLoading}
+            >
+              Retry
+            </Button>
+          }
+        >
+          {paymentsError ||
+            'Fetching your payment summary is taking longer than expected. Please try again.'}
+        </Alert>
+      )}
+
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={1.5}
+        alignItems={{ xs: 'flex-start', md: 'center' }}
+        justifyContent="space-between"
+        sx={{ mb: 3 }}
+      >
+        <Typography variant="caption" color="text.secondary">
+          Last synced: {formattedLastSynced}
+        </Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={
+            refreshButtonLoading ? <CircularProgress size={16} /> : <RefreshIcon />
+          }
+          onClick={handleRefreshSummary}
+          disabled={refreshButtonLoading}
+          sx={{ textTransform: 'none' }}
+        >
+          Refresh Summary
+        </Button>
+      </Stack>
+
+      {paymentsLoading && paymentSummary && <LinearProgress sx={{ mb: 2 }} />}
+
       {/* Payment Summary */}
       <PaymentSummaryCards />
 

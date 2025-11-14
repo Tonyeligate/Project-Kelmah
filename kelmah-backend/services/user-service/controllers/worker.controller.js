@@ -8,7 +8,7 @@ const modelsModule = require('../models');
 // DO NOT destructure models at module load time - use modelsModule.ModelName or local variables
 // Models are loaded AFTER database connection, so they're undefined at module load time
 const { ensureConnection } = require('../config/db');
-const { validateInput, handleServiceError } = require('../utils/helpers');
+const { validateInput, handleServiceError, generatePagination } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
 const { verifyAccessToken, decodeUserFromClaims } = require('../../../shared/utils/jwt');
 
@@ -399,6 +399,216 @@ const normalizeSkill = (skill, source = 'user') => {
       }
     : null;
 };
+
+const toObjectIdOrNull = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    if (mongoose.Types.ObjectId.isValid(value)) {
+      return new mongoose.Types.ObjectId(value);
+    }
+  } catch (error) {
+    return null;
+  }
+
+  return null;
+};
+
+const ensureWorkerDocuments = async ({ workerId, lean = true }) => {
+  if (!workerId) {
+    return { userDoc: null, workerProfile: null };
+  }
+
+  await ensureConnection({
+    timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+  });
+
+  if (typeof modelsModule.loadModels === 'function') {
+    try {
+      modelsModule.loadModels();
+    } catch (error) {
+      console.warn('loadModels failed while fetching worker documents:', error.message);
+    }
+  }
+
+  const MongoUser = modelsModule.User;
+  const WorkerProfileModel = modelsModule.WorkerProfile;
+
+  if (!MongoUser) {
+    throw new Error('User model not initialized');
+  }
+
+  const objectId = toObjectIdOrNull(workerId);
+  const findUser = (query) =>
+    lean ? MongoUser.findOne(query).lean({ getters: true }) : MongoUser.findOne(query);
+  const findProfile = (query) =>
+    WorkerProfileModel
+      ? lean
+        ? WorkerProfileModel.findOne(query).lean({ getters: true })
+        : WorkerProfileModel.findOne(query)
+      : null;
+
+  let userDoc = objectId
+    ? await findUser({ _id: objectId })
+    : await findUser({ _id: workerId });
+
+  let workerProfile = null;
+
+  if (userDoc) {
+    workerProfile = WorkerProfileModel
+      ? await findProfile({ userId: userDoc._id })
+      : null;
+  } else if (WorkerProfileModel && objectId) {
+    workerProfile = await findProfile({ _id: objectId });
+    if (workerProfile) {
+      userDoc = await findUser({ _id: workerProfile.userId });
+    }
+  }
+
+  return { userDoc, workerProfile };
+};
+
+const getMutableWorkerProfile = async (userDoc) => {
+  const WorkerProfileModel = modelsModule.WorkerProfile;
+  if (!WorkerProfileModel) {
+    throw new Error('WorkerProfile model not initialized');
+  }
+
+  let profile = await WorkerProfileModel.findOne({ userId: userDoc._id });
+  if (!profile) {
+    profile = new WorkerProfileModel({
+      userId: userDoc._id,
+      location: userDoc.location,
+      bio: userDoc.bio,
+      skills: userDoc.skills || [],
+      hourlyRate: userDoc.hourlyRate,
+      currency: userDoc.currency,
+    });
+  }
+  return profile;
+};
+
+const canMutateWorkerResource = (reqUser, targetUserId) => {
+  if (!reqUser || !targetUserId) {
+    return false;
+  }
+
+  if (['admin', 'staff'].includes(reqUser.role)) {
+    return true;
+  }
+
+  return String(reqUser.id) === String(targetUserId);
+};
+
+const normalizeSkillEntries = (skillEntries = [], fallbackSkills = []) => {
+  const structuredEntries = (skillEntries || []).map((entry = {}) => ({
+    id: entry._id ? entry._id.toString() : undefined,
+    name: entry.name || 'Untitled Skill',
+    level: entry.level || 'Intermediate',
+    category: entry.category || null,
+    yearsOfExperience: Number.isFinite(entry.yearsOfExperience)
+      ? entry.yearsOfExperience
+      : null,
+    verified: Boolean(entry.verified),
+    description: entry.description || null,
+    source: entry.source || 'worker-profile',
+    lastUsedAt: entry.lastUsedAt || null,
+    evidenceUrl: entry.evidenceUrl || null,
+    createdAt: entry.createdAt || null,
+    updatedAt: entry.updatedAt || null,
+  }));
+
+  const legacyEntries = (fallbackSkills || []).map((skill) => {
+    if (typeof skill === 'string') {
+      return {
+        id: `legacy_${skill}`,
+        name: skill,
+        level: 'Intermediate',
+        source: 'legacy-user-skills',
+        verified: false,
+      };
+    }
+
+    if (typeof skill === 'object' && skill !== null) {
+      return {
+        id: skill._id ? `legacy_${skill._id}` : undefined,
+        name: skill.name || skill.skillName || 'Untitled Skill',
+        level: skill.level || skill.skillLevel || 'Intermediate',
+        source: 'legacy-user-skills',
+        verified: Boolean(skill.verified),
+      };
+    }
+
+    return null;
+  }).filter(Boolean);
+
+  return uniqBy([...structuredEntries, ...legacyEntries], (entry) =>
+    entry.name ? entry.name.toLowerCase() : entry.id,
+  );
+};
+
+const normalizeWorkHistoryEntries = (workHistory = []) =>
+  (workHistory || []).map((entry = {}) => ({
+    id: entry._id ? entry._id.toString() : undefined,
+    role: entry.role || 'Professional',
+    company: entry.company || null,
+    employmentType: entry.employmentType || 'contract',
+    location: entry.location || null,
+    startDate: entry.startDate || null,
+    endDate: entry.endDate || null,
+    isCurrent: Boolean(entry.isCurrent),
+    description: entry.description || null,
+    highlights: Array.isArray(entry.highlights) ? entry.highlights : [],
+    clientsServed: Array.isArray(entry.clientsServed) ? entry.clientsServed : [],
+    technologies: Array.isArray(entry.technologies) ? entry.technologies : [],
+    createdAt: entry.createdAt || null,
+    updatedAt: entry.updatedAt || null,
+  }));
+
+const formatPortfolioDocument = (doc = {}) => ({
+  id: doc._id ? doc._id.toString() : undefined,
+  workerProfileId: doc.workerProfileId ? doc.workerProfileId.toString() : undefined,
+  title: doc.title,
+  description: doc.description,
+  projectType: doc.projectType || 'professional',
+  primarySkillId: doc.primarySkillId ? doc.primarySkillId.toString() : null,
+  skillsUsed: doc.skillsUsed || [],
+  mainImage: doc.getMainImageUrl ? doc.getMainImageUrl() : doc.mainImage,
+  images: doc.getAllImageUrls ? doc.getAllImageUrls() : doc.images || [],
+  videos: doc.videos || [],
+  documents: doc.documents || [],
+  projectValue: doc.projectValue || null,
+  currency: doc.currency || 'GHS',
+  startDate: doc.startDate || null,
+  endDate: doc.endDate || null,
+  location: doc.location || null,
+  clientRating: doc.clientRating || null,
+  status: doc.status || 'draft',
+  isFeatured: Boolean(doc.isFeatured),
+  viewCount: doc.viewCount || 0,
+  likeCount: doc.likeCount || 0,
+  sortOrder: doc.sortOrder || null,
+  tags: doc.tags || [],
+  createdAt: doc.createdAt || null,
+  updatedAt: doc.updatedAt || null,
+});
+
+const formatCertificateDocument = (doc = {}) => ({
+  id: doc._id ? doc._id.toString() : undefined,
+  name: doc.name,
+  issuer: doc.issuer,
+  credentialId: doc.credentialId || null,
+  url: doc.url || null,
+  issuedAt: doc.issuedAt || null,
+  expiresAt: doc.expiresAt || null,
+  status: doc.status || 'draft',
+  verification: doc.verification || null,
+  metadata: doc.metadata || {},
+  createdAt: doc.createdAt || null,
+  updatedAt: doc.updatedAt || null,
+});
 
 const mapAvailableHours = (availableHours) => {
   if (!availableHours) {
@@ -1808,6 +2018,796 @@ class WorkerController {
     } catch (error) {
       console.error('Get recent jobs error:', error);
       return handleServiceError(res, error, 'Failed to get recent jobs');
+    }
+  }
+
+  /**
+   * Get structured skill entries for a worker profile
+   */
+  static async getWorkerSkills(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    try {
+      const { userDoc, workerProfile } = await ensureWorkerDocuments({ workerId, lean: true });
+      if (!userDoc && !workerProfile) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      const normalized = normalizeSkillEntries(
+        workerProfile?.skillEntries,
+        workerProfile?.skills || userDoc?.skills || [],
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          skills: normalized,
+          totals: {
+            count: normalized.length,
+            verified: normalized.filter((entry) => entry.verified).length,
+          },
+          source: {
+            workerProfile: Boolean(workerProfile),
+            user: Boolean(userDoc),
+          },
+        },
+      });
+    } catch (error) {
+      console.error('getWorkerSkills error:', error);
+      return handleServiceError(res, error, 'Failed to load worker skills');
+    }
+  }
+
+  /**
+   * Create a new worker skill entry
+   */
+  static async createWorkerSkill(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    const payload = req.body || {};
+    if (!payload.name || !payload.name.trim()) {
+      return res.status(400).json({ success: false, message: 'Skill name is required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to manage skills for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.skillEntries = profile.skillEntries || [];
+
+      const now = new Date();
+      profile.skillEntries.push({
+        name: payload.name.trim(),
+        level: payload.level || 'Intermediate',
+        category: payload.category || null,
+        yearsOfExperience: Number.isFinite(payload.yearsOfExperience)
+          ? payload.yearsOfExperience
+          : null,
+        verified: Boolean(payload.verified && ['admin', 'staff'].includes(req.user?.role)),
+        description: payload.description || null,
+        source: payload.source || 'worker-self',
+        lastUsedAt: payload.lastUsedAt || null,
+        evidenceUrl: payload.evidenceUrl || null,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      await profile.save();
+      const created = profile.skillEntries[profile.skillEntries.length - 1];
+      const normalized = normalizeSkillEntries([
+        created?.toObject ? created.toObject() : created,
+      ])[0];
+
+      return res.status(201).json({ success: true, data: { skill: normalized } });
+    } catch (error) {
+      console.error('createWorkerSkill error:', error);
+      return handleServiceError(res, error, 'Failed to create worker skill');
+    }
+  }
+
+  /**
+   * Update an existing worker skill entry
+   */
+  static async updateWorkerSkill(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const skillId = req.params.skillId;
+    if (!workerId || !skillId) {
+      return res.status(400).json({ success: false, message: 'workerId and skillId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to update skills for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.skillEntries = profile.skillEntries || [];
+      const entry = profile.skillEntries.id(skillId);
+
+      if (!entry) {
+        return res.status(404).json({ success: false, message: 'Skill not found' });
+      }
+
+      const payload = req.body || {};
+      if (payload.name) entry.name = payload.name.trim();
+      if (payload.level) entry.level = payload.level;
+      if (payload.category !== undefined) entry.category = payload.category;
+      if (payload.description !== undefined) entry.description = payload.description;
+      if (payload.yearsOfExperience !== undefined) entry.yearsOfExperience = Number.isFinite(payload.yearsOfExperience)
+        ? payload.yearsOfExperience
+        : entry.yearsOfExperience;
+      if (payload.lastUsedAt !== undefined) entry.lastUsedAt = payload.lastUsedAt;
+      if (payload.evidenceUrl !== undefined) entry.evidenceUrl = payload.evidenceUrl;
+      if (payload.source) entry.source = payload.source;
+      if (payload.verified !== undefined && ['admin', 'staff'].includes(req.user?.role)) {
+        entry.verified = Boolean(payload.verified);
+      }
+      entry.updatedAt = new Date();
+
+      await profile.save();
+      const normalized = normalizeSkillEntries([
+        entry?.toObject ? entry.toObject() : entry,
+      ])[0];
+
+      return res.json({ success: true, data: { skill: normalized } });
+    } catch (error) {
+      console.error('updateWorkerSkill error:', error);
+      return handleServiceError(res, error, 'Failed to update worker skill');
+    }
+  }
+
+  /**
+   * Delete a worker skill entry
+   */
+  static async deleteWorkerSkill(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const skillId = req.params.skillId;
+    if (!workerId || !skillId) {
+      return res.status(400).json({ success: false, message: 'workerId and skillId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete skills for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.skillEntries = profile.skillEntries || [];
+      const entry = profile.skillEntries.id(skillId);
+      if (!entry) {
+        return res.status(404).json({ success: false, message: 'Skill not found' });
+      }
+
+      entry.remove();
+      await profile.save();
+
+      return res.status(204).send();
+    } catch (error) {
+      console.error('deleteWorkerSkill error:', error);
+      return handleServiceError(res, error, 'Failed to delete worker skill');
+    }
+  }
+
+  /**
+   * Get worker work history entries
+   */
+  static async getWorkerWorkHistory(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    try {
+      const { userDoc, workerProfile } = await ensureWorkerDocuments({ workerId, lean: true });
+      if (!userDoc && !workerProfile) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      const entries = normalizeWorkHistoryEntries(workerProfile?.workHistory || []);
+      return res.json({
+        success: true,
+        data: {
+          workHistory: entries,
+          totals: { count: entries.length },
+          source: {
+            workerProfile: Boolean(workerProfile),
+          },
+        },
+      });
+    } catch (error) {
+      console.error('getWorkerWorkHistory error:', error);
+      return handleServiceError(res, error, 'Failed to load worker work history');
+    }
+  }
+
+  /**
+   * Add a work history entry for a worker
+   */
+  static async addWorkHistoryEntry(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    const payload = req.body || {};
+    if (!payload.role || !payload.role.trim()) {
+      return res.status(400).json({ success: false, message: 'Role is required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to modify work history for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.workHistory = profile.workHistory || [];
+      const now = new Date();
+      profile.workHistory.push({
+        role: payload.role.trim(),
+        company: payload.company || null,
+        employmentType: payload.employmentType || 'contract',
+        location: payload.location || null,
+        startDate: payload.startDate || null,
+        endDate: payload.endDate || null,
+        isCurrent: Boolean(payload.isCurrent),
+        description: payload.description || null,
+        highlights: Array.isArray(payload.highlights) ? payload.highlights : [],
+        clientsServed: Array.isArray(payload.clientsServed) ? payload.clientsServed : [],
+        technologies: Array.isArray(payload.technologies) ? payload.technologies : [],
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      await profile.save();
+      const normalized = normalizeWorkHistoryEntries(profile.workHistory);
+      return res.status(201).json({ success: true, data: { workHistory: normalized } });
+    } catch (error) {
+      console.error('addWorkHistoryEntry error:', error);
+      return handleServiceError(res, error, 'Failed to add work history entry');
+    }
+  }
+
+  /**
+   * Update an existing work history entry
+   */
+  static async updateWorkHistoryEntry(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const entryId = req.params.entryId;
+    if (!workerId || !entryId) {
+      return res.status(400).json({ success: false, message: 'workerId and entryId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to modify work history for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.workHistory = profile.workHistory || [];
+      const entry = profile.workHistory.id(entryId);
+
+      if (!entry) {
+        return res.status(404).json({ success: false, message: 'Work history entry not found' });
+      }
+
+      const payload = req.body || {};
+      if (payload.role) entry.role = payload.role.trim();
+      if (payload.company !== undefined) entry.company = payload.company;
+      if (payload.employmentType) entry.employmentType = payload.employmentType;
+      if (payload.location !== undefined) entry.location = payload.location;
+      if (payload.startDate !== undefined) entry.startDate = payload.startDate;
+      if (payload.endDate !== undefined) entry.endDate = payload.endDate;
+      if (payload.isCurrent !== undefined) entry.isCurrent = Boolean(payload.isCurrent);
+      if (payload.description !== undefined) entry.description = payload.description;
+      if (payload.highlights) entry.highlights = Array.isArray(payload.highlights) ? payload.highlights : entry.highlights;
+      if (payload.clientsServed) entry.clientsServed = Array.isArray(payload.clientsServed) ? payload.clientsServed : entry.clientsServed;
+      if (payload.technologies) entry.technologies = Array.isArray(payload.technologies) ? payload.technologies : entry.technologies;
+      entry.updatedAt = new Date();
+
+      await profile.save();
+      const normalized = normalizeWorkHistoryEntries([
+        entry?.toObject ? entry.toObject() : entry,
+      ])[0];
+
+      return res.json({ success: true, data: { workHistory: normalized } });
+    } catch (error) {
+      console.error('updateWorkHistoryEntry error:', error);
+      return handleServiceError(res, error, 'Failed to update work history entry');
+    }
+  }
+
+  /**
+   * Delete a work history entry
+   */
+  static async deleteWorkHistoryEntry(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const entryId = req.params.entryId;
+    if (!workerId || !entryId) {
+      return res.status(400).json({ success: false, message: 'workerId and entryId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete work history for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.workHistory = profile.workHistory || [];
+      const entry = profile.workHistory.id(entryId);
+      if (!entry) {
+        return res.status(404).json({ success: false, message: 'Work history entry not found' });
+      }
+
+      entry.remove();
+      await profile.save();
+
+      return res.status(204).send();
+    } catch (error) {
+      console.error('deleteWorkHistoryEntry error:', error);
+      return handleServiceError(res, error, 'Failed to delete work history entry');
+    }
+  }
+
+  /**
+   * Public portfolio feed for worker profiles
+   */
+  static async getWorkerPortfolio(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    try {
+      const { userDoc, workerProfile } = await ensureWorkerDocuments({ workerId, lean: true });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!workerProfile) {
+        return res.json({ success: true, data: { portfolioItems: [], pagination: generatePagination(1, 1, 0) } });
+      }
+
+      const PortfolioModel = modelsModule.Portfolio;
+      if (!PortfolioModel) {
+        return res.status(503).json({ success: false, message: 'Portfolio model unavailable' });
+      }
+
+      const page = Math.max(1, parseInt(req.query.page || '1', 10));
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit || '12', 10)));
+      const offset = (page - 1) * limit;
+      const isOwner = canMutateWorkerResource(req.user, userDoc._id);
+
+      const filter = {
+        workerProfileId: workerProfile._id,
+        isActive: true,
+      };
+
+      if (req.query.status) {
+        filter.status = req.query.status;
+      } else if (!isOwner) {
+        filter.status = 'published';
+      }
+
+      const [items, total] = await Promise.all([
+        PortfolioModel.find(filter)
+          .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+          .skip(offset)
+          .limit(limit),
+        PortfolioModel.countDocuments(filter),
+      ]);
+
+      const formatted = items.map((doc) => formatPortfolioDocument(doc));
+      return res.json({
+        success: true,
+        data: {
+          portfolioItems: formatted,
+          pagination: generatePagination(page, limit, total),
+          stats: {
+            total,
+            published: await PortfolioModel.countDocuments({
+              workerProfileId: workerProfile._id,
+              isActive: true,
+              status: 'published',
+            }),
+          },
+        },
+        meta: {
+          ownerView: isOwner,
+        },
+      });
+    } catch (error) {
+      console.error('getWorkerPortfolio error:', error);
+      return handleServiceError(res, error, 'Failed to load worker portfolio');
+    }
+  }
+
+  /**
+   * Public certificate feed for worker profiles
+   */
+  static async getWorkerCertificates(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: true });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      const CertificateModel = modelsModule.Certificate;
+      if (!CertificateModel) {
+        return res.status(503).json({ success: false, message: 'Certificate model unavailable' });
+      }
+
+      const isOwner = canMutateWorkerResource(req.user, userDoc._id);
+      const filter = { workerId: userDoc._id };
+
+      if (req.query.status) {
+        filter.status = req.query.status;
+      } else if (!isOwner) {
+        filter.status = { $in: ['verified', 'pending'] };
+      }
+
+      const certificates = await CertificateModel.find(filter)
+        .sort({ issuedAt: -1, createdAt: -1 })
+        .limit(Math.min(parseInt(req.query.limit || '50', 10), 50));
+
+      const formatted = certificates.map((doc) => formatCertificateDocument(doc));
+      return res.json({
+        success: true,
+        data: {
+          certificates: formatted,
+          totals: {
+            count: formatted.length,
+            verified: formatted.filter((cert) => cert.status === 'verified').length,
+          },
+        },
+        meta: { ownerView: isOwner },
+      });
+    } catch (error) {
+      console.error('getWorkerCertificates error:', error);
+      return handleServiceError(res, error, 'Failed to load worker certificates');
+    }
+  }
+
+  /**
+   * Create a portfolio item for a worker (authenticated)
+   */
+  static async createWorkerPortfolioItem(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    const payload = req.body || {};
+    const validation = validateInput(payload, ['title', 'description']);
+    if (!validation.isValid) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: validation.errors });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to add portfolio items for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      await profile.save();
+
+      const PortfolioModel = modelsModule.Portfolio;
+      if (!PortfolioModel) {
+        return res.status(503).json({ success: false, message: 'Portfolio model unavailable' });
+      }
+
+      const item = await PortfolioModel.create({
+        workerProfileId: profile._id,
+        title: payload.title,
+        description: payload.description,
+        projectType: payload.projectType || 'professional',
+        primarySkillId: payload.primarySkillId || null,
+        skillsUsed: payload.skillsUsed || [],
+        mainImage: payload.mainImage || null,
+        images: payload.images || [],
+        videos: payload.videos || [],
+        documents: payload.documents || [],
+        projectValue: payload.projectValue,
+        currency: payload.currency || profile.currency || 'GHS',
+        startDate: payload.startDate || null,
+        endDate: payload.endDate || null,
+        location: payload.location || profile.location || null,
+        clientName: payload.clientName || null,
+        clientCompany: payload.clientCompany || null,
+        clientRating: payload.clientRating || null,
+        clientTestimonial: payload.clientTestimonial || null,
+        challenges: payload.challenges || null,
+        solutions: payload.solutions || null,
+        outcomes: payload.outcomes || null,
+        lessonsLearned: payload.lessonsLearned || null,
+        toolsUsed: payload.toolsUsed || [],
+        teamSize: payload.teamSize || null,
+        role: payload.role || null,
+        responsibilities: payload.responsibilities || [],
+        achievements: payload.achievements || [],
+        externalLinks: payload.externalLinks || [],
+        status: payload.status || 'draft',
+        tags: payload.tags || [],
+        keywords: payload.keywords || [],
+        isFeatured: Boolean(payload.isFeatured),
+        isActive: true,
+      });
+
+      return res.status(201).json({ success: true, data: { portfolioItem: formatPortfolioDocument(item) } });
+    } catch (error) {
+      console.error('createWorkerPortfolioItem error:', error);
+      return handleServiceError(res, error, 'Failed to create portfolio item');
+    }
+  }
+
+  /**
+   * Update a worker portfolio item
+   */
+  static async updateWorkerPortfolioItem(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const portfolioId = req.params.portfolioId;
+    if (!workerId || !portfolioId) {
+      return res.status(400).json({ success: false, message: 'workerId and portfolioId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to update portfolio items for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      await profile.save();
+
+      const PortfolioModel = modelsModule.Portfolio;
+      if (!PortfolioModel) {
+        return res.status(503).json({ success: false, message: 'Portfolio model unavailable' });
+      }
+
+      const item = await PortfolioModel.findOne({
+        _id: portfolioId,
+        workerProfileId: profile._id,
+      });
+
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found' });
+      }
+
+      Object.assign(item, req.body || {}, { updatedAt: new Date() });
+      await item.save();
+
+      return res.json({ success: true, data: { portfolioItem: formatPortfolioDocument(item) } });
+    } catch (error) {
+      console.error('updateWorkerPortfolioItem error:', error);
+      return handleServiceError(res, error, 'Failed to update portfolio item');
+    }
+  }
+
+  /**
+   * Delete a worker portfolio item
+   */
+  static async deleteWorkerPortfolioItem(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const portfolioId = req.params.portfolioId;
+    if (!workerId || !portfolioId) {
+      return res.status(400).json({ success: false, message: 'workerId and portfolioId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete portfolio items for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      await profile.save();
+
+      const PortfolioModel = modelsModule.Portfolio;
+      if (!PortfolioModel) {
+        return res.status(503).json({ success: false, message: 'Portfolio model unavailable' });
+      }
+
+      const deleted = await PortfolioModel.findOneAndDelete({
+        _id: portfolioId,
+        workerProfileId: profile._id,
+      });
+
+      if (!deleted) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found' });
+      }
+
+      return res.status(204).send();
+    } catch (error) {
+      console.error('deleteWorkerPortfolioItem error:', error);
+      return handleServiceError(res, error, 'Failed to delete portfolio item');
+    }
+  }
+
+  /**
+   * Create a worker certificate (authenticated)
+   */
+  static async addWorkerCertificate(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    const payload = req.body || {};
+    const validation = validateInput(payload, ['name', 'issuer', 'issuedAt']);
+    if (!validation.isValid) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: validation.errors });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to add certificates for this worker' });
+      }
+
+      const CertificateModel = modelsModule.Certificate;
+      if (!CertificateModel) {
+        return res.status(503).json({ success: false, message: 'Certificate model unavailable' });
+      }
+
+      const certificate = await CertificateModel.create({
+        workerId: userDoc._id,
+        name: payload.name,
+        issuer: payload.issuer,
+        credentialId: payload.credentialId || null,
+        url: payload.url || null,
+        issuedAt: payload.issuedAt,
+        expiresAt: payload.expiresAt || null,
+        status: payload.status || 'draft',
+        verification: payload.verification || { result: 'pending' },
+        metadata: payload.metadata || {},
+      });
+
+      return res.status(201).json({ success: true, data: { certificate: formatCertificateDocument(certificate) } });
+    } catch (error) {
+      console.error('addWorkerCertificate error:', error);
+      return handleServiceError(res, error, 'Failed to add certificate');
+    }
+  }
+
+  /**
+   * Update a worker certificate
+   */
+  static async updateWorkerCertificate(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const certificateId = req.params.certificateId;
+    if (!workerId || !certificateId) {
+      return res.status(400).json({ success: false, message: 'workerId and certificateId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to update certificates for this worker' });
+      }
+
+      const CertificateModel = modelsModule.Certificate;
+      if (!CertificateModel) {
+        return res.status(503).json({ success: false, message: 'Certificate model unavailable' });
+      }
+
+      const updated = await CertificateModel.findOneAndUpdate(
+        { _id: certificateId, workerId: userDoc._id },
+        { ...req.body, updatedAt: new Date() },
+        { new: true },
+      );
+
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'Certificate not found' });
+      }
+
+      return res.json({ success: true, data: { certificate: formatCertificateDocument(updated) } });
+    } catch (error) {
+      console.error('updateWorkerCertificate error:', error);
+      return handleServiceError(res, error, 'Failed to update certificate');
+    }
+  }
+
+  /**
+   * Delete a worker certificate
+   */
+  static async deleteWorkerCertificate(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    const certificateId = req.params.certificateId;
+    if (!workerId || !certificateId) {
+      return res.status(400).json({ success: false, message: 'workerId and certificateId are required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete certificates for this worker' });
+      }
+
+      const CertificateModel = modelsModule.Certificate;
+      if (!CertificateModel) {
+        return res.status(503).json({ success: false, message: 'Certificate model unavailable' });
+      }
+
+      const deleted = await CertificateModel.findOneAndDelete({
+        _id: certificateId,
+        workerId: userDoc._id,
+      });
+
+      if (!deleted) {
+        return res.status(404).json({ success: false, message: 'Certificate not found' });
+      }
+
+      return res.status(204).send();
+    } catch (error) {
+      console.error('deleteWorkerCertificate error:', error);
+      return handleServiceError(res, error, 'Failed to delete certificate');
     }
   }
 

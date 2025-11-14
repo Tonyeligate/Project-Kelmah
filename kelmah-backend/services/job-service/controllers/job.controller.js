@@ -1918,6 +1918,193 @@ const getJobApplications = async (req, res, next) => {
 };
 
 /**
+ * Get proposals across all jobs for the authenticated hirer
+ * @route GET /api/jobs/proposals
+ * @access Private (Hirer only)
+ */
+const getHirerProposals = async (req, res, next) => {
+  try {
+    const hirerId = req.user.id;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, parseInt(req.query.limit, 10) || 10);
+    const statusFilter = (req.query.status || 'all').toLowerCase();
+    const jobStatusFilter = (req.query.jobStatus || 'all').toLowerCase();
+    const searchTerm = (req.query.search || '').trim();
+
+    const jobCriteria = { hirer: hirerId };
+    if (jobStatusFilter !== 'all') {
+      jobCriteria.status = jobStatusFilter;
+    }
+
+    const jobs = await Job.find(jobCriteria).select(
+      'title category status budget currency paymentType location locationDetails duration createdAt',
+    );
+
+    if (jobs.length === 0) {
+      return paginatedResponse(
+        res,
+        200,
+        'No proposals available for this hirer',
+        [],
+        page,
+        limit,
+        0,
+        {
+          aggregates: {
+            statusCounts: {},
+            total: 0,
+            jobCount: 0,
+            averageRate: 0,
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      );
+    }
+
+    const jobIds = jobs.map((job) => job._id);
+    const jobLookup = new Map(jobs.map((job) => [job._id.toString(), job]));
+
+    const baseMatch = { job: { $in: jobIds } };
+    const filteredMatch = { ...baseMatch };
+    if (statusFilter !== 'all') {
+      filteredMatch.status = statusFilter;
+    }
+    if (searchTerm) {
+      const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'i');
+      filteredMatch.$or = [
+        { coverLetter: regex },
+        { 'questionResponses.answer': regex },
+      ];
+    }
+
+    const [total, proposals, statusBuckets, averageRateBucket] = await Promise.all([
+      Application.countDocuments(filteredMatch),
+      Application.find(filteredMatch)
+        .populate('worker', 'firstName lastName profileImage rating location city country experienceLevel profession totalJobs completedJobs')
+        .populate('job', 'title category status budget currency paymentType location locationDetails duration createdAt')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Application.aggregate([
+        { $match: baseMatch },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Application.aggregate([
+        { $match: baseMatch },
+        { $group: { _id: null, averageRate: { $avg: '$proposedRate' } } },
+      ]),
+    ]);
+
+    const statusCounts = statusBuckets.reduce((acc, bucket) => {
+      if (!bucket?._id) return acc;
+      acc[bucket._id] = bucket.count;
+      return acc;
+    }, {});
+
+    const averageRate = Number(averageRateBucket?.[0]?.averageRate || 0);
+
+    const formatLocationLabel = (location = {}) => {
+      if (!location) return 'Location not specified';
+      if (typeof location === 'string') return location;
+      const { city, region, country, address } = location;
+      const parts = [city, region, address, country]
+        .map((part) => (typeof part === 'string' ? part.trim() : ''))
+        .filter(Boolean);
+      return parts.length ? parts.join(', ') : 'Location not specified';
+    };
+
+    const trimCoverLetter = (text = '') => {
+      if (!text) return '';
+      const normalized = String(text).trim();
+      return normalized.length > 280
+        ? `${normalized.slice(0, 277)}...`
+        : normalized;
+    };
+
+    const normalizedProposals = proposals.map((application) => {
+      const jobDoc = application.job || jobLookup.get(String(application.job));
+      const workerDoc = application.worker || {};
+      const workerName = [workerDoc.firstName, workerDoc.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
+        || workerDoc.displayName
+        || 'Worker';
+
+      return {
+        id: application._id,
+        status: application.status,
+        submittedAt: application.createdAt,
+        proposedRate: application.proposedRate,
+        currency: jobDoc?.currency || 'GHS',
+        availability: {
+          startDate: application.availabilityStartDate,
+          duration: application.estimatedDuration,
+        },
+        coverLetterPreview: trimCoverLetter(application.coverLetter),
+        job: jobDoc
+          ? {
+              id: jobDoc._id,
+              title: jobDoc.title,
+              category: jobDoc.category,
+              status: jobDoc.status,
+              budget: jobDoc.budget,
+              paymentType: jobDoc.paymentType,
+              duration: jobDoc.duration,
+              location: formatLocationLabel(
+                jobDoc.location || jobDoc.locationDetails,
+              ),
+            }
+          : null,
+        worker: {
+          id: workerDoc?._id,
+          name: workerName,
+          avatar: workerDoc?.profileImage || null,
+          rating: Number(workerDoc?.rating || 0),
+          location: formatLocationLabel(
+            workerDoc?.location || {
+              city: workerDoc?.city,
+              country: workerDoc?.country,
+            },
+          ),
+          experience:
+            workerDoc?.experienceLevel ||
+            workerDoc?.profession ||
+            'Experience not specified',
+          completedJobs: workerDoc?.completedJobs || workerDoc?.totalJobs || 0,
+        },
+      };
+    });
+
+    return paginatedResponse(
+      res,
+      200,
+      'Proposals retrieved successfully',
+      normalizedProposals,
+      page,
+      limit,
+      total,
+      {
+        aggregates: {
+          statusCounts,
+          total,
+          jobCount: jobs.length,
+          averageRate,
+          filters: {
+            status: statusFilter,
+            jobStatus: jobStatusFilter,
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Update application status (hirer)
  * @route PUT /api/jobs/:id/applications/:applicationId
  * @access Private (Hirer only)
@@ -2408,6 +2595,7 @@ module.exports = {
   getJobAnalytics,
   applyToJob,
   getJobApplications,
+  getHirerProposals,
   updateApplicationStatus,
   withdrawApplication,
   getSavedJobs,
