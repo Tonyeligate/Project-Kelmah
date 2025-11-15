@@ -6,9 +6,7 @@ class ProfileService {
   async getProfile() {
     try {
       console.debug('[ProfileService] Requesting /api/users/profile');
-      const response = await userServiceClient.get(
-        API_ENDPOINTS.USER.PROFILE,
-      );
+      const response = await userServiceClient.get(API_ENDPOINTS.USER.PROFILE);
       const payload = response.data || {};
 
       if (payload.success === false) {
@@ -16,14 +14,19 @@ class ProfileService {
       }
 
       if (payload.data) {
-        console.debug('[ProfileService] Received profile payload', payload.meta || {});
+        console.debug(
+          '[ProfileService] Received profile payload',
+          payload.meta || {},
+        );
         return {
           ...(payload.data || {}),
           meta: payload.meta || null,
         };
       }
 
-      console.debug('[ProfileService] Response missing data property, returning raw payload');
+      console.debug(
+        '[ProfileService] Response missing data property, returning raw payload',
+      );
       return payload;
     } catch (error) {
       console.warn('Profile service unavailable:', { error: error.message });

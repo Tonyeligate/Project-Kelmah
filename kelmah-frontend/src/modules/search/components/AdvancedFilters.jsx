@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -11,35 +12,26 @@ import {
   InputLabel,
   Chip,
   Button,
-  IconButton,
   Accordion,
   AccordionSummary,
   AccordionDetails,
   Switch,
   FormControlLabel,
   Slider,
-  Stack,
   Divider,
-  Collapse,
   Alert,
   Autocomplete,
   Rating,
-  useTheme,
-  alpha,
 } from '@mui/material';
 import {
   ExpandMore as ExpandIcon,
   Clear as ClearIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
-  LocationOn as LocationIcon,
-  Work as CategoryIcon,
   AttachMoney as BudgetIcon,
   Schedule as TimeIcon,
   Star as RatingIcon,
   Verified as VerifiedIcon,
-  TrendingUp as PopularIcon,
-  AccessTime as RecentIcon,
   LocalOffer as FeaturedIcon,
 } from '@mui/icons-material';
 import { formatCurrency } from '../../../utils/formatters';
@@ -50,8 +42,6 @@ const AdvancedFilters = ({
   showHeader = true,
   compact = false,
 }) => {
-  const theme = useTheme();
-
   // Filter state
   const [filters, setFilters] = useState({
     // Basic filters
@@ -644,6 +634,7 @@ const AdvancedFilters = ({
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
+                    key={option}
                     variant="outlined"
                     label={option}
                     {...getTagProps({ index })}
@@ -769,6 +760,33 @@ const AdvancedFilters = ({
       )}
     </Paper>
   );
+};
+
+AdvancedFilters.propTypes = {
+  onFiltersChange: PropTypes.func,
+  initialFilters: PropTypes.shape({
+    query: PropTypes.string,
+    category: PropTypes.string,
+    location: PropTypes.string,
+    budgetMin: PropTypes.number,
+    budgetMax: PropTypes.number,
+    budgetType: PropTypes.string,
+    duration: PropTypes.string,
+    urgency: PropTypes.string,
+    postedWithin: PropTypes.string,
+    availability: PropTypes.string,
+    minRating: PropTypes.number,
+    verifiedOnly: PropTypes.bool,
+    featuredOnly: PropTypes.bool,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    experience: PropTypes.string,
+    jobType: PropTypes.string,
+    workLocation: PropTypes.string,
+    sortBy: PropTypes.string,
+    sortOrder: PropTypes.string,
+  }),
+  showHeader: PropTypes.bool,
+  compact: PropTypes.bool,
 };
 
 export default AdvancedFilters;

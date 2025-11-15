@@ -1,5 +1,7 @@
 import { reviewsServiceClient } from '../../common/services/axios';
 
+const withApi = (path) => `/api${path}`;
+
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
 
@@ -13,7 +15,7 @@ class ReviewService {
     }
     try {
       const response = await reviewsServiceClient.get(
-        `/reviews/worker/${workerId}`,
+        withApi(`/reviews/worker/${workerId}`),
         { params },
       );
       return unwrapData(response);
@@ -28,9 +30,12 @@ class ReviewService {
       throw new Error('userId is required to fetch user reviews');
     }
     try {
-      const response = await reviewsServiceClient.get(`/reviews/user/${userId}`, {
-        params: { page, limit, ...filters },
-      });
+      const response = await reviewsServiceClient.get(
+        withApi(`/reviews/user/${userId}`),
+        {
+          params: { page, limit, ...filters },
+        },
+      );
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching user reviews:', error);
@@ -43,9 +48,12 @@ class ReviewService {
       throw new Error('jobId is required to fetch job reviews');
     }
     try {
-      const response = await reviewsServiceClient.get(`/reviews/job/${jobId}`, {
-        params: { page, limit, ...filters },
-      });
+      const response = await reviewsServiceClient.get(
+        withApi(`/reviews/job/${jobId}`),
+        {
+          params: { page, limit, ...filters },
+        },
+      );
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching job reviews:', error);
@@ -59,7 +67,7 @@ class ReviewService {
     }
     try {
       const response = await reviewsServiceClient.get(
-        `/ratings/worker/${workerId}`,
+        withApi(`/ratings/worker/${workerId}`),
       );
       return unwrapData(response);
     } catch (error) {
@@ -72,8 +80,7 @@ class ReviewService {
     try {
       const rating = await this.getWorkerRating(workerId);
       return {
-        averageRating:
-          rating?.averageRating ?? rating?.ratings?.overall ?? 0,
+        averageRating: rating?.averageRating ?? rating?.ratings?.overall ?? 0,
         totalReviews: rating?.totalReviews ?? 0,
         ratingDistribution: rating?.ratingDistribution ?? {},
         categoryRatings: rating?.categoryRatings ?? [],
@@ -93,7 +100,7 @@ class ReviewService {
     }
     try {
       const response = await reviewsServiceClient.get(
-        `/reviews/worker/${workerId}/eligibility`,
+        withApi(`/reviews/worker/${workerId}/eligibility`),
         { params: jobId ? { jobId } : undefined },
       );
       const data = unwrapData(response);
@@ -119,7 +126,10 @@ class ReviewService {
 
   async submitReview(reviewData) {
     try {
-      const response = await reviewsServiceClient.post('/reviews', reviewData);
+      const response = await reviewsServiceClient.post(
+        withApi('/reviews'),
+        reviewData,
+      );
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -134,7 +144,7 @@ class ReviewService {
   async updateReview(reviewId, reviewData) {
     try {
       const response = await reviewsServiceClient.put(
-        `/reviews/${reviewId}`,
+        withApi(`/reviews/${reviewId}`),
         reviewData,
       );
       return unwrapResponse(response);
@@ -146,7 +156,9 @@ class ReviewService {
 
   async deleteReview(reviewId) {
     try {
-      const response = await reviewsServiceClient.delete(`/reviews/${reviewId}`);
+      const response = await reviewsServiceClient.delete(
+        withApi(`/reviews/${reviewId}`),
+      );
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error deleting review:', error);
@@ -156,7 +168,9 @@ class ReviewService {
 
   async getReview(reviewId) {
     try {
-      const response = await reviewsServiceClient.get(`/reviews/${reviewId}`);
+      const response = await reviewsServiceClient.get(
+        withApi(`/reviews/${reviewId}`),
+      );
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching review:', error);
@@ -167,7 +181,7 @@ class ReviewService {
   async addWorkerResponse(reviewId, comment) {
     try {
       const response = await reviewsServiceClient.put(
-        `/reviews/${reviewId}/response`,
+        withApi(`/reviews/${reviewId}/response`),
         { comment },
       );
       return unwrapResponse(response);
@@ -180,7 +194,7 @@ class ReviewService {
   async voteHelpful(reviewId) {
     try {
       const response = await reviewsServiceClient.post(
-        `/reviews/${reviewId}/helpful`,
+        withApi(`/reviews/${reviewId}/helpful`),
       );
       return unwrapResponse(response);
     } catch (error) {
@@ -192,7 +206,7 @@ class ReviewService {
   async reportReview(reviewId, reason) {
     try {
       const response = await reviewsServiceClient.post(
-        `/reviews/${reviewId}/report`,
+        withApi(`/reviews/${reviewId}/report`),
         { reason },
       );
       return unwrapResponse(response);
@@ -204,9 +218,12 @@ class ReviewService {
 
   async getReviewAnalytics(timeRange = '30d') {
     try {
-      const response = await reviewsServiceClient.get('/reviews/analytics', {
-        params: { timeRange },
-      });
+      const response = await reviewsServiceClient.get(
+        withApi('/reviews/analytics'),
+        {
+          params: { timeRange },
+        },
+      );
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching review analytics:', error);
@@ -217,7 +234,7 @@ class ReviewService {
   async getModerationQueue(params = {}) {
     try {
       const response = await reviewsServiceClient.get(
-        '/admin/reviews/queue',
+        withApi('/admin/reviews/queue'),
         { params },
       );
       return unwrapData(response);
@@ -230,7 +247,7 @@ class ReviewService {
   async moderateReview(reviewId, status, note = '') {
     try {
       const response = await reviewsServiceClient.post(
-        `/admin/reviews/${reviewId}/moderate`,
+        withApi(`/admin/reviews/${reviewId}/moderate`),
         { status, note },
       );
       return unwrapResponse(response);

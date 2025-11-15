@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Grid,
@@ -12,7 +11,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
   Skeleton,
   Alert,
   Stack,
@@ -26,6 +24,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 import WorkerCard from '../../../worker/components/WorkerCard';
 
 const WorkerSearchResults = ({
@@ -224,7 +223,8 @@ const WorkerSearchResults = ({
           textAlign: 'center',
           py: 8,
           px: { xs: 2, md: 6 },
-          background: 'linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(45,45,45,0.95) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(45,45,45,0.95) 100%)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 3,
         }}
@@ -253,11 +253,19 @@ const WorkerSearchResults = ({
           </Box>
         </Box>
 
-        <Typography variant="h5" sx={{ color: '#fff', fontWeight: 'bold' }} gutterBottom>
+        <Typography
+          variant="h5"
+          sx={{ color: '#fff', fontWeight: 'bold' }}
+          gutterBottom
+        >
           We couldn’t find any workers that match… yet
         </Typography>
-        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.75)', mb: 4 }}>
-          Adjust your filters or explore other talent pools to uncover more professionals.
+        <Typography
+          variant="body1"
+          sx={{ color: 'rgba(255,255,255,0.75)', mb: 4 }}
+        >
+          Adjust your filters or explore other talent pools to uncover more
+          professionals.
         </Typography>
 
         <Stack
@@ -270,9 +278,17 @@ const WorkerSearchResults = ({
           }}
         >
           {tips.map((tip) => (
-            <Stack direction="row" spacing={1.5} alignItems="flex-start" key={tip}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="flex-start"
+              key={tip}
+            >
               <LightbulbIcon sx={{ color: '#FFC107', mt: 0.5, fontSize: 20 }} />
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255,255,255,0.8)' }}
+              >
                 {tip}
               </Typography>
             </Stack>
@@ -387,7 +403,9 @@ const WorkerSearchResults = ({
         })()}
       </Typography>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}
+      >
         <FormControl
           size="small"
           sx={{
@@ -413,8 +431,7 @@ const WorkerSearchResults = ({
           </Select>
         </FormControl>
 
-        {/* Map View button - Hidden for now (non-functional) */}
-        {onToggleView && false && (
+        {onToggleView && (
           <Button
             variant="outlined"
             startIcon={<MapIcon />}
@@ -422,7 +439,7 @@ const WorkerSearchResults = ({
             size="small"
             sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
-            {showMap ? 'List' : 'Map'}
+            {showMap ? 'List view' : 'Map view'}
           </Button>
         )}
       </Box>
@@ -466,3 +483,36 @@ const WorkerSearchResults = ({
 };
 
 export default WorkerSearchResults;
+
+WorkerSearchResults.propTypes = {
+  workers: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      userId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string,
+      title: PropTypes.string,
+      location: PropTypes.string,
+      rating: PropTypes.number,
+      reviewCount: PropTypes.number,
+      hourlyRate: PropTypes.number,
+      skills: PropTypes.arrayOf(PropTypes.string),
+      isSaved: PropTypes.bool,
+    }),
+  ),
+  loading: PropTypes.bool,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  filters: PropTypes.object,
+  onRemoveFilter: PropTypes.func,
+  onSortChange: PropTypes.func,
+  pagination: PropTypes.shape({
+    page: PropTypes.number,
+    totalPages: PropTypes.number,
+    total: PropTypes.number,
+    totalItems: PropTypes.number,
+    totalWorkers: PropTypes.number,
+  }),
+  onPageChange: PropTypes.func,
+  showMap: PropTypes.bool,
+  onToggleView: PropTypes.func,
+  onSaveWorker: PropTypes.func,
+};

@@ -1,6 +1,9 @@
 import axios from '../../common/services/axios';
 import { userServiceClient } from '../../common/services/axios';
 
+const PROFILE_BASE = '/api/profile';
+const profilePath = (suffix = '') => `${PROFILE_BASE}${suffix}`;
+
 /**
  * Unified Portfolio Service
  * 
@@ -19,7 +22,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Portfolio data
    */
   async getMyPortfolio(params = {}) {
-    const { data } = await axios.get('/profile/portfolio/search', { params });
+    const { data } = await axios.get(profilePath('/portfolio/search'), { params });
     return data?.data || data;
   },
 
@@ -30,7 +33,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Worker's portfolio data
    */
   async getWorkerPortfolio(workerId, params = {}) {
-    const { data } = await axios.get(`/profile/workers/${workerId}/portfolio`, { params });
+    const { data } = await axios.get(profilePath(`/workers/${workerId}/portfolio`), { params });
     return data?.data || data;
   },
 
@@ -40,7 +43,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Portfolio item data
    */
   async getPortfolioItem(id) {
-    const { data } = await axios.get(`/profile/portfolio/${id}`);
+    const { data } = await axios.get(profilePath(`/portfolio/${id}`));
     return data?.data || data;
   },
 
@@ -50,7 +53,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Created portfolio item
    */
   async createPortfolioItem(portfolioData) {
-    const response = await userServiceClient.post('/profile/portfolio', portfolioData);
+    const response = await userServiceClient.post(profilePath('/portfolio'), portfolioData);
     return response.data?.data || response.data;
   },
 
@@ -61,7 +64,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   async updatePortfolioItem(itemId, portfolioData) {
-    const response = await userServiceClient.put(`/profile/portfolio/${itemId}`, portfolioData);
+    const response = await userServiceClient.put(profilePath(`/portfolio/${itemId}`), portfolioData);
     return response.data?.data || response.data;
   },
 
@@ -71,7 +74,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Deletion confirmation
    */
   async deletePortfolioItem(itemId) {
-    const response = await userServiceClient.delete(`/profile/portfolio/${itemId}`);
+    const response = await userServiceClient.delete(profilePath(`/portfolio/${itemId}`));
     return response.data?.data || response.data;
   },
 
@@ -83,7 +86,7 @@ const portfolioService = {
   async uploadWorkSamples(files = []) {
     const form = new FormData();
     files.forEach((f) => form.append('files', f));
-    const { data } = await axios.post('/profile/portfolio/upload', form, {
+    const { data } = await axios.post(profilePath('/portfolio/upload'), form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data?.data || data;
@@ -97,7 +100,7 @@ const portfolioService = {
   async uploadCertificates(files = []) {
     const form = new FormData();
     files.forEach((f) => form.append('files', f));
-    const { data } = await axios.post('/profile/certificates/upload', form, {
+    const { data } = await axios.post(profilePath('/certificates/upload'), form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data?.data || data;
@@ -109,7 +112,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   async uploadPortfolioImage(file) {
-    const response = await userServiceClient.post('/profile/uploads/presign', {
+    const response = await userServiceClient.post(profilePath('/uploads/presign'), {
       folder: 'portfolio',
       filename: file.name,
       contentType: file.type,
@@ -123,7 +126,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Portfolio statistics
    */
   async getPortfolioStats(workerId) {
-    const response = await userServiceClient.get(`/profile/workers/${workerId}/portfolio/stats`);
+    const response = await userServiceClient.get(profilePath(`/workers/${workerId}/portfolio/stats`));
     return response.data?.data || response.data;
   },
 
@@ -134,7 +137,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   async toggleFeatured(itemId, featured) {
-    const response = await userServiceClient.patch(`/profile/portfolio/${itemId}`, { featured });
+    const response = await userServiceClient.patch(profilePath(`/portfolio/${itemId}`), { featured });
     return response.data?.data || response.data;
   },
 
@@ -144,7 +147,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Shareable link data
    */
   async sharePortfolioItem(itemId) {
-    const response = await userServiceClient.post(`/profile/portfolio/${itemId}/share`);
+    const response = await userServiceClient.post(profilePath(`/portfolio/${itemId}/share`));
     return response.data?.data || response.data;
   },
 
@@ -154,7 +157,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Filtered portfolio items
    */
   async searchPortfolio(filters = {}) {
-    const response = await userServiceClient.get('/profile/portfolio/search', { 
+    const response = await userServiceClient.get(profilePath('/portfolio/search'), { 
       params: filters 
     });
     return response.data?.data || response.data;

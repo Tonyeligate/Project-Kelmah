@@ -1,5 +1,8 @@
 import { userServiceClient } from '../../common/services/axios';
 
+const SETTINGS_BASE = '/api/settings';
+const settingsPath = (suffix = '') => `${SETTINGS_BASE}${suffix}`;
+
 class SettingsService {
   // Get user settings
   async getSettings() {
@@ -47,20 +50,22 @@ class SettingsService {
   }
   // Get notification preferences from backend (supported endpoint)
   async getNotificationPreferences() {
-    const response = await userServiceClient.get('/settings/notifications');
+    const response = await userServiceClient.get(
+      settingsPath('/notifications'),
+    );
     return response.data.data;
   }
 
   // Update user settings
   async updateSettings(settings) {
-    const response = await userServiceClient.put('/settings', settings);
+    const response = await userServiceClient.put(settingsPath(), settings);
     return response.data.data;
   }
 
   // Update notification preferences
   async updateNotificationPreferences(preferences) {
     const response = await userServiceClient.put(
-      '/settings/notifications',
+      settingsPath('/notifications'),
       preferences,
     );
     return response.data.data;
@@ -69,7 +74,7 @@ class SettingsService {
   // Update privacy settings
   async updatePrivacySettings(settings) {
     const response = await userServiceClient.put(
-      '/settings/privacy',
+      settingsPath('/privacy'),
       settings,
     );
     return response.data.data;
@@ -77,7 +82,7 @@ class SettingsService {
 
   // Update language preference
   async updateLanguage(language) {
-    const response = await userServiceClient.put('/settings/language', {
+    const response = await userServiceClient.put(settingsPath('/language'), {
       language,
     });
     return response.data.data;
@@ -85,7 +90,7 @@ class SettingsService {
 
   // Update theme preference
   async updateTheme(theme) {
-    const response = await userServiceClient.put('/settings/theme', {
+    const response = await userServiceClient.put(settingsPath('/theme'), {
       theme,
     });
     return response.data.data;
@@ -94,7 +99,7 @@ class SettingsService {
   // Get available languages
   async getLanguages() {
     try {
-      const response = await userServiceClient.get('/settings/languages');
+      const response = await userServiceClient.get(settingsPath('/languages'));
       return response.data.data;
     } catch (error) {
       console.warn(
@@ -113,7 +118,7 @@ class SettingsService {
   // Get available themes
   async getThemes() {
     try {
-      const response = await userServiceClient.get('/settings/themes');
+      const response = await userServiceClient.get(settingsPath('/themes'));
       return response.data.data;
     } catch (error) {
       console.warn(
@@ -134,7 +139,7 @@ class SettingsService {
 
   // Reset settings to default
   async resetSettings() {
-    const response = await userServiceClient.post('/api/settings/reset');
+    const response = await userServiceClient.post(settingsPath('/reset'));
     return response.data.data;
   }
 }

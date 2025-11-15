@@ -48,6 +48,7 @@ import {
   Group as GroupIcon,
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
+import { API_ENDPOINTS } from '../../../config/environment';
 import { userServiceClient } from '../../common/services/axios';
 import messagingService from '../../messaging/services/messagingService';
 
@@ -242,7 +243,7 @@ const WorkerSearch = () => {
     (async () => {
       try {
         console.log('WorkerSearch - fetching bookmarks');
-        const res = await userServiceClient.get('/users/bookmarks');
+        const res = await userServiceClient.get(API_ENDPOINTS.USER.BOOKMARKS);
         const ids = res?.data?.data?.workerIds || [];
         setSavedWorkers(ids);
       } catch (err) {

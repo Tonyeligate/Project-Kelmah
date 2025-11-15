@@ -344,7 +344,30 @@ exports.getEarnings = async (req, res) => {
   try {
     const userId = req.params.workerId || req.user?.id;
     if (!userId) return res.status(400).json({ success: false, message: 'workerId required' });
-    const worker = await WorkerProfile.findOne({ userId });
+
+    const workerModel = WorkerProfile && typeof WorkerProfile.findOne === 'function'
+      ? WorkerProfile
+      : null;
+
+    if (!workerModel) {
+      console.warn('getEarnings: WorkerProfile model unavailable, returning defaults');
+      const fallbackTotals = buildEarningsFallback(0);
+      return res.json({
+        success: true,
+        data: {
+          totals: {
+            allTime: fallbackTotals.total,
+            last30Days: fallbackTotals.last30Days,
+            last7Days: fallbackTotals.last7Days,
+            currency: 'GHS',
+          },
+          breakdown: { byMonth: fallbackTotals.graph },
+          source: 'fallback-no-model',
+        },
+      });
+    }
+
+    const worker = await workerModel.findOne({ userId });
     if (!worker) return res.status(404).json({ success: false, message: 'Worker not found' });
 
     const baseTotal = Number(worker.totalEarnings ?? worker.successStats?.lifetimeEarnings ?? 0);

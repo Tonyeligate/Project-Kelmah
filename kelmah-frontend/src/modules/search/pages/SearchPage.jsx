@@ -1,40 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Container,
-  Typography,
   Box,
-  Divider,
-  Paper,
   Grid,
   Button,
-  CircularProgress,
   Alert,
   useMediaQuery,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import axios from '../../common/services/axios';
-import {
-  saveJobToServer,
-  unsaveJobFromServer,
-  selectSavedJobs,
-  fetchSavedJobs,
-} from '../../jobs/services/jobSlice';
 
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
 import CompactSearchBar from '../components/common/CompactSearchBar';
 import MobileFilterDrawer from '../components/common/MobileFilterDrawer';
 import CollapsibleHeroSection from '../components/common/CollapsibleHeroSection';
-import SearchResults from '../components/results/SearchResults';
 import WorkerSearchResults from '../components/results/WorkerSearchResults';
 import JobMapView from '../components/map/JobMapView';
 import SearchSuggestions from '../components/suggestions/SearchSuggestions';
 import SmartJobRecommendations from '../components/SmartJobRecommendations';
 import AdvancedFilters from '../components/AdvancedFilters';
 import LocationBasedSearch from '../components/LocationBasedSearch';
-import SavedSearches from '../components/SavedSearches';
 import SEO from '../../common/components/common/SEO';
 
 // Styled components
@@ -56,11 +44,7 @@ const extractLocationString = (location) => {
 
   if (typeof location === 'object') {
     return (
-      location.address ||
-      location.city ||
-      location.name ||
-      location.label ||
-      ''
+      location.address || location.city || location.name || location.label || ''
     );
   }
 
@@ -80,8 +64,8 @@ const normalizeWorkerRecord = (worker = {}) => {
           : skill?.name || skill?.skillName || skill?.label || String(skill),
       )
     : Array.isArray(worker.specializations)
-    ? worker.specializations.filter(Boolean)
-    : [];
+      ? worker.specializations.filter(Boolean)
+      : [];
 
   return {
     id: id || `worker-${Date.now()}-${Math.random()}`,
@@ -105,8 +89,10 @@ const normalizeWorkerRecord = (worker = {}) => {
       worker.bio ||
       'Experienced professional delivering quality craftsmanship and reliable service.',
     skills: skillsArray,
-    availabilityStatus: worker.availabilityStatus || worker.availability || 'available',
-    profileImage: worker.profilePicture || worker.avatar || worker.profileImage || null,
+    availabilityStatus:
+      worker.availabilityStatus || worker.availability || 'available',
+    profileImage:
+      worker.profilePicture || worker.avatar || worker.profileImage || null,
     createdAt: worker.createdAt || null,
     updatedAt: worker.updatedAt || null,
     rankScore: Number(worker.rankScore ?? 0),
@@ -119,7 +105,9 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance') => {
   switch (sortOption) {
     case 'rating':
       return list.sort(
-        (a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0),
+        (a, b) =>
+          (b.rating || 0) - (a.rating || 0) ||
+          (b.reviewCount || 0) - (a.reviewCount || 0),
       );
     case 'price':
       return list.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
@@ -220,12 +208,10 @@ const SearchPage = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Get user authentication state
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const savedJobs = useSelector(selectSavedJobs) || [];
   const isHirer = user?.role === 'hirer' || user?.userType === 'hirer';
 
   // Search state
@@ -245,7 +231,6 @@ const SearchPage = () => {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
-  const [showSavedSearches, setShowSavedSearches] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
@@ -267,10 +252,15 @@ const SearchPage = () => {
         params[key] = value.split(',').filter(Boolean);
       } else if (key === 'location') {
         const decodedValue = value?.trim?.() ?? value;
-        if (decodedValue && decodedValue.startsWith('{') && decodedValue.endsWith('}')) {
+        if (
+          decodedValue &&
+          decodedValue.startsWith('{') &&
+          decodedValue.endsWith('}')
+        ) {
           try {
             params.location = JSON.parse(decodedValue);
-          } catch (err) {
+          } catch (error) {
+            console.error('Failed to parse location from URL:', error);
             params.location = decodedValue;
           }
         } else {
@@ -289,15 +279,12 @@ const SearchPage = () => {
 
     setSearchParams(params);
 
-    // Perform initial search for all users to show workers
     if (Object.keys(params).length === 0) {
-      // No URL params - show all workers by default
       performSearch({ page: 1, limit: 12 });
-    } else if (params.page !== pagination.page) {
-      // URL params exist - perform search with those params
+    } else {
       performSearch(params);
     }
-  }, [location.search, isAuthenticated]);
+  }, [location.search, isAuthenticated, performSearch]);
 
   // Fetch search suggestions when user types
   const fetchSearchSuggestions = async (query) => {
@@ -339,73 +326,84 @@ const SearchPage = () => {
     };
   }, [searchParams.keyword]);
 
-  const executeWorkerSearch = async (params = {}, { sortOption } = {}) => {
-    const apiEndpoint = '/api/workers';
-    const apiParams = buildWorkerQueryParams(params);
+  const executeWorkerSearch = useCallback(
+    async (params = {}, { sortOption } = {}) => {
+      const apiEndpoint = '/api/workers';
+      const apiParams = buildWorkerQueryParams(params);
 
-    console.log('🔍 executeWorkerSearch - params:', params);
-    console.log('🔍 executeWorkerSearch - query:', apiParams);
+      console.log('🔍 executeWorkerSearch - params:', params);
+      console.log('🔍 executeWorkerSearch - query:', apiParams);
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await axios.get(apiEndpoint, { params: apiParams });
-      console.log('🔍 API response:', response.data);
+      try {
+        const response = await axios.get(apiEndpoint, { params: apiParams });
+        console.log('🔍 API response:', response.data);
 
-      if (!response.data || !response.data.success) {
-        const message =
-          response.data?.message || 'Failed to fetch worker search results';
-        throw new Error(message);
+        if (!response.data || !response.data.success) {
+          const message =
+            response.data?.message || 'Failed to fetch worker search results';
+          throw new Error(message);
+        }
+
+        const payload = response.data.data || response.data;
+        const rawWorkers = Array.isArray(payload)
+          ? payload
+          : payload?.workers || payload?.results || [];
+
+        const normalizedWorkers = rawWorkers.map((worker) =>
+          normalizeWorkerRecord(worker),
+        );
+
+        const activeSort =
+          sortOption || params.sort || sortOrder || 'relevance';
+        const sortedWorkers = sortWorkerResults(normalizedWorkers, activeSort);
+
+        setSearchResults(sortedWorkers);
+
+        const paginationData =
+          payload?.pagination || response.data.meta?.pagination || {};
+        const totalItems =
+          paginationData.totalWorkers ||
+          paginationData.totalItems ||
+          paginationData.total ||
+          sortedWorkers.length;
+        const perPage = paginationData.limit || apiParams.limit || 12;
+        const totalPages =
+          paginationData.totalPages ||
+          paginationData.pages ||
+          Math.max(1, Math.ceil(totalItems / perPage));
+
+        setPagination({
+          page:
+            paginationData.currentPage ||
+            paginationData.page ||
+            apiParams.page ||
+            1,
+          limit: perPage,
+          totalItems,
+          totalPages,
+          total: totalItems,
+        });
+      } catch (error) {
+        console.error('Error searching:', error);
+        setError(error.message || 'An error occurred while searching');
+        setSearchResults([]);
+      } finally {
+        setLoading(false);
       }
-
-      const payload = response.data.data || response.data;
-      const rawWorkers = Array.isArray(payload)
-        ? payload
-        : payload?.workers || payload?.results || [];
-
-      const normalizedWorkers = rawWorkers.map((worker) =>
-        normalizeWorkerRecord(worker),
-      );
-
-      const activeSort = sortOption || params.sort || sortOrder || 'relevance';
-      const sortedWorkers = sortWorkerResults(normalizedWorkers, activeSort);
-
-      setSearchResults(sortedWorkers);
-
-      const paginationData =
-        payload?.pagination || response.data.meta?.pagination || {};
-      const totalItems =
-        paginationData.totalWorkers ||
-        paginationData.totalItems ||
-        paginationData.total ||
-        sortedWorkers.length;
-      const perPage = paginationData.limit || apiParams.limit || 12;
-      const totalPages =
-        paginationData.totalPages ||
-        paginationData.pages ||
-        Math.max(1, Math.ceil(totalItems / perPage));
-
-      setPagination({
-        page: paginationData.currentPage || paginationData.page || apiParams.page || 1,
-        limit: perPage,
-        totalItems,
-        totalPages,
-        total: totalItems,
-      });
-    } catch (error) {
-      console.error('Error searching:', error);
-      setError(error.message || 'An error occurred while searching');
-      setSearchResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [sortOrder],
+  );
 
   // Perform search with provided parameters
-  const performSearch = async (params = searchParams) => {
-    await executeWorkerSearch(params, {});
-  };
+  const performSearch = useCallback(
+    async (params) => {
+      await executeWorkerSearch(params, {});
+    },
+    [executeWorkerSearch],
+  );
 
   // Handle search form submission
   const handleSearch = (filters) => {
@@ -414,7 +412,13 @@ const SearchPage = () => {
     const normalizedParams = {
       ...searchParams,
       ...filters,
-      trade: filters.trade || filters.category || searchParams.trade || searchParams.category || filters.primaryTrade || '',
+      trade:
+        filters.trade ||
+        filters.category ||
+        searchParams.trade ||
+        searchParams.category ||
+        filters.primaryTrade ||
+        '',
       category: filters.category || filters.trade || filters.primaryTrade || '',
     };
 
@@ -435,31 +439,34 @@ const SearchPage = () => {
       setSortOrder(nextSort);
     }
 
-    const sanitizedParams = Object.entries(newParams).reduce((acc, [key, value]) => {
-      if (value === null || value === undefined) {
-        return acc;
-      }
-
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === '') {
+    const sanitizedParams = Object.entries(newParams).reduce(
+      (acc, [key, value]) => {
+        if (value === null || value === undefined) {
           return acc;
         }
-        acc[key] = trimmed;
-        return acc;
-      }
 
-      if (Array.isArray(value)) {
-        if (value.length === 0) {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed === '') {
+            return acc;
+          }
+          acc[key] = trimmed;
           return acc;
         }
+
+        if (Array.isArray(value)) {
+          if (value.length === 0) {
+            return acc;
+          }
+          acc[key] = value;
+          return acc;
+        }
+
         acc[key] = value;
         return acc;
-      }
-
-      acc[key] = value;
-      return acc;
-    }, {});
+      },
+      {},
+    );
 
     // Preserve explicit sort order even if "relevance"
     sanitizedParams.sort = nextSort;
@@ -504,7 +511,8 @@ const SearchPage = () => {
     // Update URL with new search parameters only when we are on a search route.
     const currentPath = location.pathname || '';
     const isSearchContext =
-      currentPath.startsWith('/find-talents') || currentPath.startsWith('/search');
+      currentPath.startsWith('/find-talents') ||
+      currentPath.startsWith('/search');
 
     if (!isSearchContext) {
       // Guard against in-flight search effects forcing navigation when the
@@ -515,8 +523,8 @@ const SearchPage = () => {
     const targetPath = currentPath.startsWith('/find-talents')
       ? currentPath
       : currentPath.startsWith('/search')
-      ? currentPath
-      : '/find-talents';
+        ? currentPath
+        : '/find-talents';
 
     const nextSearch = queryParams.toString();
     const currentSearch = (location.search || '').replace(/^[?]/, '');
@@ -562,7 +570,12 @@ const SearchPage = () => {
 
   // Helper function to perform search with explicit sort order
   const performSearchWithSort = async (params, sort) => {
-    console.log('🔍 performSearchWithSort called with params:', params, 'sort:', sort);
+    console.log(
+      '🔍 performSearchWithSort called with params:',
+      params,
+      'sort:',
+      sort,
+    );
     await executeWorkerSearch(params, { sortOption: sort });
   };
 
@@ -632,31 +645,6 @@ const SearchPage = () => {
     setShowMap(!showMap);
   };
 
-  // Handle job saving
-  const handleSaveJob = async (jobId) => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: location.pathname } });
-      return;
-    }
-
-    try {
-      const isCurrentlySaved = savedJobs.some(
-        (saved) => saved.id === jobId || saved._id === jobId,
-      );
-
-      if (isCurrentlySaved) {
-        await dispatch(unsaveJobFromServer(jobId));
-      } else {
-        await dispatch(saveJobToServer(jobId));
-      }
-
-      // Refresh saved jobs list
-      await dispatch(fetchSavedJobs());
-    } catch (error) {
-      console.error('Error saving job:', error);
-    }
-  };
-
   // Handle worker saving
   const handleSaveWorker = async (worker) => {
     try {
@@ -723,7 +711,10 @@ const SearchPage = () => {
             />
           </>
         ) : (
-          <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
+          <JobSearchForm
+            onSearch={handleSearch}
+            initialFilters={searchParams}
+          />
         )}
 
         {/* Quick Actions - Show only for authenticated hirers */}

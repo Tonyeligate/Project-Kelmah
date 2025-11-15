@@ -22,9 +22,6 @@ const {
   getUserProfile,
   updateUserProfile,
   toggleBookmark,
-router.get('/profile/statistics', verifyGatewayRequest, getProfileStatistics);
-router.get('/profile/activity', verifyGatewayRequest, getProfileActivity);
-router.get('/profile/preferences', verifyGatewayRequest, getProfilePreferences);
   getEarnings,
   getBookmarks,
   cleanupDatabase,
@@ -180,6 +177,9 @@ router.use('/workers/:workerId', workerDetailRouter);
 // User profile routes
 router.get('/profile', verifyGatewayRequest, getUserProfile);
 router.put('/profile', verifyGatewayRequest, updateUserProfile);
+router.get('/profile/statistics', verifyGatewayRequest, getProfileStatistics);
+router.get('/profile/activity', verifyGatewayRequest, getProfileActivity);
+router.get('/profile/preferences', verifyGatewayRequest, getProfilePreferences);
 router.get("/me/availability", verifyGatewayRequest, getUserAvailability);
 router.get("/me/credentials", verifyGatewayRequest, getUserCredentials);
 

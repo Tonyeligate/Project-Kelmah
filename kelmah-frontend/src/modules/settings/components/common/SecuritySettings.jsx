@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../../utils/userUtils';
 import {
@@ -83,7 +83,7 @@ const SecuritySettings = () => {
     }
     setLoading(true);
     try {
-      await authApi.changePassword({
+      await authService.changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });

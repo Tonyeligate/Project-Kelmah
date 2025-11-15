@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -13,18 +13,11 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemButton,
-  Divider,
-  Switch,
-  FormControlLabel,
   Slider,
   Card,
   CardContent,
   Alert,
   CircularProgress,
-  Tooltip,
-  Badge,
-  useTheme,
-  alpha,
   Autocomplete,
   InputAdornment,
 } from '@mui/material';
@@ -39,22 +32,20 @@ import {
   Place as PlaceIcon,
   TravelExplore as TravelIcon,
   LocationCity as CityIcon,
-  Home as HomeIcon,
   Business as BusinessIcon,
   DirectionsCar as TransportIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
 import locationService from '../services/locationService';
 
 const LocationBasedSearch = ({
   onLocationSelect,
   initialLocation = null,
   radius = 10,
-  showMap = true,
   compact = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const theme = useTheme();
 
   // State management
   const [currentLocation, setCurrentLocation] = useState(initialLocation);
@@ -64,7 +55,6 @@ const LocationBasedSearch = ({
   const [popularLocations, setPopularLocations] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
 
   // Ghana regions and major cities
@@ -282,8 +272,28 @@ const LocationBasedSearch = ({
     }
   };
 
+  // Load nearby locations
+  const loadNearbyLocations = useCallback(
+    async (lat, lng) => {
+      try {
+        setLoading(true);
+        const response = await locationService.getNearbyLocations(
+          lat,
+          lng,
+          searchRadius,
+        );
+        setNearbyLocations(response.data || []);
+      } catch (error) {
+        console.error('Failed to load nearby locations:', error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [searchRadius],
+  );
+
   // Get current location
-  const getCurrentLocation = useCallback(async () => {
+  const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
       enqueueSnackbar('Geolocation is not supported by this browser', {
         variant: 'error',
@@ -326,6 +336,7 @@ const LocationBasedSearch = ({
             variant: 'success',
           });
         } catch (error) {
+          console.error('Failed to process detected location:', error);
           enqueueSnackbar('Failed to get location details', {
             variant: 'error',
           });
@@ -357,24 +368,7 @@ const LocationBasedSearch = ({
         maximumAge: 300000, // 5 minutes
       },
     );
-  }, [enqueueSnackbar, onLocationSelect, searchRadius]);
-
-  // Load nearby locations
-  const loadNearbyLocations = async (lat, lng) => {
-    try {
-      setLoading(true);
-      const response = await locationService.getNearbyLocations(
-        lat,
-        lng,
-        searchRadius,
-      );
-      setNearbyLocations(response.data || []);
-    } catch (error) {
-      console.error('Failed to load nearby locations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [enqueueSnackbar, loadNearbyLocations, onLocationSelect, searchRadius]);
 
   // Handle location selection
   const handleLocationSelect = async (location) => {
@@ -420,8 +414,12 @@ const LocationBasedSearch = ({
       // Handle search results
       if (response.data && response.data.length > 0) {
         handleLocationSelect(response.data[0]);
+        setSearchQuery('');
+      } else {
+        enqueueSnackbar('No matching locations found', { variant: 'info' });
       }
     } catch (error) {
+      console.error('Location search failed:', error);
       enqueueSnackbar('Search failed', { variant: 'error' });
     } finally {
       setLoading(false);
@@ -472,6 +470,13 @@ const LocationBasedSearch = ({
       </ListItemButton>
     </ListItem>
   );
+
+  const popularLocationsToDisplay = (
+    popularLocations.length > 0 ? popularLocations : allCities
+  )
+    .slice()
+    .sort((a, b) => (b.jobs || 0) - (a.jobs || 0))
+    .slice(0, 6);
 
   return (
     <Box>
@@ -568,25 +573,45 @@ const LocationBasedSearch = ({
           options={allCities}
           getOptionLabel={(option) => option.label || option.name}
           value={null}
+          inputValue={searchQuery}
           onChange={(event, newValue) => {
             if (newValue) {
               handleLocationSelect(newValue);
+              setSearchQuery('');
             }
           }}
           onInputChange={(event, newInputValue) => {
-            setSearchQuery(newInputValue);
+            setSearchQuery(newInputValue || '');
           }}
           renderInput={(params) => (
             <TextField
               {...params}
               label="Search Locations"
               placeholder="e.g., Accra, Kumasi, East Legon"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  handleSearch(searchQuery);
+                }
+              }}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <LocationIcon color="primary" />
                   </InputAdornment>
+                ),
+                endAdornment: (
+                  <>
+                    {params.InputProps.endAdornment}
+                    <IconButton
+                      size="small"
+                      onClick={() => handleSearch(searchQuery)}
+                      disabled={!searchQuery.trim() || loading}
+                    >
+                      <SearchIcon fontSize="small" />
+                    </IconButton>
+                  </>
                 ),
               }}
             />
@@ -634,10 +659,9 @@ const LocationBasedSearch = ({
                 Popular Locations
               </Typography>
               <List dense>
-                {allCities
-                  .sort((a, b) => (b.jobs || 0) - (a.jobs || 0))
-                  .slice(0, 6)
-                  .map((location) => renderLocationItem(location))}
+                {popularLocationsToDisplay.map((location) =>
+                  renderLocationItem(location),
+                )}
               </List>
             </CardContent>
           </Card>
@@ -807,6 +831,19 @@ const LocationBasedSearch = ({
       )}
     </Box>
   );
+};
+
+LocationBasedSearch.propTypes = {
+  onLocationSelect: PropTypes.func,
+  initialLocation: PropTypes.shape({
+    name: PropTypes.string,
+    region: PropTypes.string,
+    city: PropTypes.string,
+    type: PropTypes.string,
+    coordinates: PropTypes.arrayOf(PropTypes.number),
+  }),
+  radius: PropTypes.number,
+  compact: PropTypes.bool,
 };
 
 export default LocationBasedSearch;
