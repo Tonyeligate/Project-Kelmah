@@ -202,6 +202,11 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  preferences: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
   
   // Security
   failedLoginAttempts: {

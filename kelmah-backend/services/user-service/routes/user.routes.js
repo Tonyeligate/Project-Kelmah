@@ -14,11 +14,17 @@ const {
   getDashboardMetrics,
   getDashboardWorkers,
   getDashboardAnalytics,
+  getProfileStatistics,
+  getProfileActivity,
+  getProfilePreferences,
   getUserAvailability,
   getUserCredentials,
   getUserProfile,
   updateUserProfile,
   toggleBookmark,
+router.get('/profile/statistics', verifyGatewayRequest, getProfileStatistics);
+router.get('/profile/activity', verifyGatewayRequest, getProfileActivity);
+router.get('/profile/preferences', verifyGatewayRequest, getProfilePreferences);
   getEarnings,
   getBookmarks,
   cleanupDatabase,

@@ -193,6 +193,56 @@ const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) 
   }
 };
 
+const normalizePreferences = (preferences) => {
+  if (!preferences || typeof preferences !== 'object') return {};
+  return Object.entries(preferences).reduce((acc, [key, value]) => {
+    acc[key] = value === undefined ? null : value;
+    return acc;
+  }, {});
+};
+
+const buildProfileStatistics = (workerDoc) => {
+  if (!workerDoc) return {};
+
+  const createdAt = workerDoc.createdAt ? new Date(workerDoc.createdAt) : null;
+  const yearsActive = createdAt ? new Date().getFullYear() - createdAt.getFullYear() : 0;
+
+  return {
+    completedJobs: workerDoc.successStats?.completedJobs ?? 0,
+    ratings: workerDoc.successStats?.ratings ?? {},
+    responseRate: workerDoc.successStats?.responseRate ?? 0,
+    onTimeRate: workerDoc.successStats?.onTimeRate ?? 0,
+    yearsActive,
+    hourlyRate: workerDoc.hourlyRate ?? null,
+  };
+};
+
+const buildProfileActivity = (workerDoc, userDoc) => {
+  const timeline = [];
+
+  if (workerDoc?.activity?.recentJobs) {
+    timeline.push(...workerDoc.activity.recentJobs.map((job) => ({
+      type: 'job_update',
+      timestamp: job.updatedAt ? job.updatedAt.toISOString() : null,
+      summary: job.title || 'Job updated',
+      details: { status: job.status, jobId: job._id?.toString() || job.id },
+    })));
+  }
+
+  if (userDoc?.activity?.logins) {
+    timeline.push(...userDoc.activity.logins.map((entry) => ({
+      type: 'login',
+      timestamp: entry.timestamp ? new Date(entry.timestamp).toISOString() : null,
+      summary: entry.device || 'Login activity',
+      details: { ip: entry.ip },
+    })));
+  }
+
+  return timeline
+    .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
+    .slice(0, 20);
+};
+
 exports.toggleBookmark = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -224,6 +274,69 @@ exports.getBookmarks = async (req, res) => {
   } catch (e) {
     console.error('getBookmarks error:', e);
     return res.status(500).json({ success: false, message: 'Failed to load bookmarks' });
+  }
+};
+
+exports.getProfileStatistics = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const { workerDoc } = await fetchProfileDocuments({
+      UserModel: User,
+      WorkerProfileModel: WorkerProfile,
+      userId,
+    });
+
+    return res.json({
+      success: true,
+      data: buildProfileStatistics(workerDoc),
+    });
+  } catch (error) {
+    console.error('getProfileStatistics error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch profile statistics' });
+  }
+};
+
+exports.getProfileActivity = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const { workerDoc, userDoc } = await fetchProfileDocuments({
+      UserModel: User,
+      WorkerProfileModel: WorkerProfile,
+      userId,
+    });
+
+    return res.json({
+      success: true,
+      data: { entries: buildProfileActivity(workerDoc, userDoc) },
+    });
+  } catch (error) {
+    console.error('getProfileActivity error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch profile activity' });
+  }
+};
+
+exports.getProfilePreferences = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const { userDoc } = await fetchProfileDocuments({
+      UserModel: User,
+      WorkerProfileModel: WorkerProfile,
+      userId,
+    });
+
+    return res.json({
+      success: true,
+      data: { preferences: normalizePreferences(userDoc?.preferences) },
+    });
+  } catch (error) {
+    console.error('getProfilePreferences error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch preferences' });
   }
 };
 
