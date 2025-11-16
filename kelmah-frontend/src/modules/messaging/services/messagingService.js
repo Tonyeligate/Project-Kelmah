@@ -128,10 +128,9 @@ export const messagingService = {
   async searchMessages(query, { attachments = false, period, sender } = {}) {
     try {
       const params = { q: query, attachments, period, sender };
-      const response = await messagingServiceClient.get(
-        '/messages/search',
-        { params },
-      );
+      const response = await messagingServiceClient.get('/messages/search', {
+        params,
+      });
       const payload = response.data;
       if (payload?.data?.messages) return payload.data;
       if (Array.isArray(payload?.messages))

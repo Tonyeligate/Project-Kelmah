@@ -368,7 +368,23 @@ exports.getEarnings = async (req, res) => {
     }
 
     const worker = await workerModel.findOne({ userId });
-    if (!worker) return res.status(404).json({ success: false, message: 'Worker not found' });
+    if (!worker) {
+      console.warn('getEarnings: worker profile missing, returning synthesized totals');
+      const fallbackTotals = buildEarningsFallback(0);
+      return res.json({
+        success: true,
+        data: {
+          totals: {
+            allTime: fallbackTotals.total,
+            last30Days: fallbackTotals.last30Days,
+            last7Days: fallbackTotals.last7Days,
+            currency: 'GHS',
+          },
+          breakdown: { byMonth: fallbackTotals.graph },
+          source: 'fallback-no-profile',
+        },
+      });
+    }
 
     const baseTotal = Number(worker.totalEarnings ?? worker.successStats?.lifetimeEarnings ?? 0);
     const fallbackTotals = buildEarningsFallback(baseTotal);
@@ -387,7 +403,7 @@ exports.getEarnings = async (req, res) => {
       candidateEndpoints.push(`${gatewayBase}/api/payments/transactions/history`);
     }
 
-    const respondWith = (totals) => res.json({
+    const respondWith = (totals, source = 'fallback') => res.json({
       success: true,
       data: {
         totals: {
@@ -397,12 +413,13 @@ exports.getEarnings = async (req, res) => {
           currency: worker.currency || 'GHS',
         },
         breakdown: { byMonth: totals.graph },
+        source,
       },
     });
 
     if (!candidateEndpoints.length) {
       console.warn('getEarnings: payment service host missing, returning fallback totals');
-      return respondWith(fallbackTotals);
+      return respondWith(fallbackTotals, 'fallback-missing-payment-host');
     }
 
     try {
@@ -436,7 +453,7 @@ exports.getEarnings = async (req, res) => {
       const [tx30, tx7] = await Promise.all([fetchTransactions(since30), fetchTransactions(since7)]);
       if (!tx30 && !tx7) {
         console.warn('getEarnings: payment service unreachable, using fallback values');
-        return respondWith(fallbackTotals);
+        return respondWith(fallbackTotals, 'fallback-payment-timeout');
       }
 
       const sumTransactions = (transactions = []) =>
@@ -462,10 +479,10 @@ exports.getEarnings = async (req, res) => {
         graph: buildGraphFromTotal(derivedTotal),
       };
 
-      return respondWith(responseTotals);
+      return respondWith(responseTotals, 'payment-service-derived');
     } catch (error) {
       console.warn('getEarnings: unexpected error, using fallback totals', error?.message);
-      return respondWith(fallbackTotals);
+      return respondWith(fallbackTotals, 'fallback-unexpected-error');
     }
   } catch (e) {
     console.error('getEarnings error:', e);

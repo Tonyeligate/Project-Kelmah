@@ -1,13 +1,13 @@
 /**
  * JobsPage - Main Jobs Listing Page
- * 
+ *
  * DATA FLOW MAP:
  * ================================================================================
- * 
+ *
  * 1. JOB LISTINGS FETCH
  *    UI Component: JobsPage.jsx (this file)
  *    ↓
- *    Service: jobsService.getJobs() 
+ *    Service: jobsService.getJobs()
  *    Location: kelmah-frontend/src/modules/jobs/services/jobsService.js
  *    ↓
  *    API Call: GET /api/jobs?status=open&category={}&location={}&search={}
@@ -20,7 +20,7 @@
  *    State Update: setJobs(transformedData)
  *    ↓
  *    UI Render: Job cards displayed with employer info, badges, filters
- * 
+ *
  * 2. SEARCH/FILTER FLOW
  *    User Input: SearchFilters component (search bar, dropdowns)
  *    ↓
@@ -29,14 +29,14 @@
  *    useEffect: Triggers API refetch when filters change
  *    ↓
  *    Re-renders: filteredJobs → uniqueJobs (deduplicated) → UI
- * 
+ *
  * 3. JOB CARD CLICK
  *    User Action: Click on job card
  *    ↓
  *    Navigation: navigate(`/jobs/${job._id}`)
  *    ↓
  *    Route: /jobs/:id → JobDetailsPage.jsx
- * 
+ *
  * 4. APPLY BUTTON CLICK
  *    User Action: Click "Apply Now"
  *    ↓
@@ -46,7 +46,7 @@
  *    If authenticated: navigate(`/jobs/${job.id}/apply`)
  *    ↓
  *    Route: /jobs/:id/apply → JobApplicationForm.jsx
- * 
+ *
  * EMPLOYER DATA ISSUE TRACKING:
  * ================================================================================
  * Issue: API returns "hirer": null and "hirer_name": "Unknown"
@@ -56,7 +56,7 @@
  *   2. hirer_name string
  *   3. company/companyName fields
  *   4. Fallback: "Employer Name Pending" with _isFallback + _needsAdminReview flags
- * 
+ *
  * Backend TODO: Add .populate('hirer') in job-service jobController.js
  * Location: kelmah-backend/services/job-service/controllers/jobController.js
  * Action: Add .populate('hirer', 'name logo verified rating') to Job.find()
@@ -321,18 +321,18 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
     <Paper
       ref={ref}
       sx={{
-        p: { xs: 2, sm: 2.5, md: 3 },  // ✅ Responsive padding
+        p: { xs: 2, sm: 2.5, md: 3 }, // ✅ Responsive padding
         textAlign: 'center',
         bgcolor: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(212,175,55,0.2)',
-        minHeight: { xs: '120px', sm: '140px', md: '160px' },  // ✅ Responsive min-height
-        display: 'flex',  // ✅ Better centering
+        minHeight: { xs: '120px', sm: '140px', md: '160px' }, // ✅ Responsive min-height
+        display: 'flex', // ✅ Better centering
         flexDirection: 'column',
         justifyContent: 'center',
         '&:hover': {
           border: '1px solid #D4AF37',
           boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
-          transform: { xs: 'none', sm: 'translateY(-4px)' },  // ✅ Desktop-only hover
+          transform: { xs: 'none', sm: 'translateY(-4px)' }, // ✅ Desktop-only hover
         },
         transition: 'all 0.3s ease-in-out',
         position: 'relative',
@@ -347,21 +347,22 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
           left: '-100%',
           width: '100%',
           height: '100%',
-          background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent)',
+          background:
+            'linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent)',
           transition: 'left 0.5s ease-in-out',
           '.MuiPaper-root:hover &': {
             left: '100%',
           },
         }}
       />
-      
+
       <Typography
         variant="h3"
         sx={{
           color: '#D4AF37',
           fontWeight: 'bold',
-          mb: { xs: 0.5, sm: 0.75, md: 1 },  // ✅ Responsive margin
-          fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' },  // ✅ Responsive font size
+          mb: { xs: 0.5, sm: 0.75, md: 1 }, // ✅ Responsive margin
+          fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' }, // ✅ Responsive font size
           position: 'relative',
           zIndex: 1,
         }}
@@ -378,20 +379,20 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
           '0'
         )}
       </Typography>
-      
+
       <Typography
         variant="body1"
         sx={{
           color: 'rgba(255,255,255,0.8)',
           fontWeight: 'medium',
-          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },  // ✅ Responsive font size
+          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, // ✅ Responsive font size
           position: 'relative',
           zIndex: 1,
         }}
       >
         {label}
       </Typography>
-      
+
       {/* Live indicator for real-time stats */}
       {isLive && (
         <Box
@@ -611,7 +612,7 @@ const JobsPage = () => {
     activeEmployers: 0,
     skilledWorkers: 0,
     successRate: 0,
-    loading: true
+    loading: true,
   });
   // Ghana-aware helpers for better UX and ranking
   const GHANA_REGIONS = [
@@ -714,7 +715,7 @@ const JobsPage = () => {
         console.log('📊 Fetching platform statistics...');
         const response = await fetch('/api/jobs/stats');
         const data = await response.json();
-        
+
         if (data.success && data.data) {
           console.log('✅ Platform stats loaded:', data.data);
           setPlatformStats({
@@ -722,7 +723,7 @@ const JobsPage = () => {
             activeEmployers: data.data.activeEmployers || 0,
             skilledWorkers: data.data.skilledWorkers || 0,
             successRate: data.data.successRate || 0,
-            loading: false
+            loading: false,
           });
         } else {
           throw new Error('Invalid stats response format');
@@ -735,13 +736,13 @@ const JobsPage = () => {
           activeEmployers: 0,
           skilledWorkers: 0,
           successRate: 0,
-          loading: false
+          loading: false,
         });
       }
     };
 
     fetchStats();
-    
+
     // Refresh stats every 5 minutes
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
     return () => clearInterval(interval);
@@ -830,14 +831,15 @@ const JobsPage = () => {
     const matchesLocation =
       !selectedLocation ||
       (job.location?.city && job.location.city.includes(selectedLocation)) ||
-      (typeof job.location === 'string' && job.location.includes(selectedLocation));
+      (typeof job.location === 'string' &&
+        job.location.includes(selectedLocation));
 
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
   // Deduplicate jobs by ID to prevent showing same job multiple times
   const uniqueJobs = Array.from(
-    new Map(filteredJobs.map(job => [job.id, job])).values()
+    new Map(filteredJobs.map((job) => [job.id, job])).values(),
   );
 
   return (
@@ -845,7 +847,7 @@ const JobsPage = () => {
       <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
         {/* Breadcrumb Navigation */}
         <BreadcrumbNavigation />
-        
+
         <Container maxWidth="xl" sx={{ py: 0, pt: 1 }}>
           <Helmet>
             <title>
@@ -863,15 +865,23 @@ const JobsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Box sx={{ mb: { xs: 2, md: 4 }, mt: { xs: 1, md: 0 }, px: { xs: 1, sm: 0 } }}>
+            <Box
+              sx={{
+                mb: { xs: 2, md: 4 },
+                mt: { xs: 1, md: 0 },
+                px: { xs: 1, sm: 0 },
+              }}
+            >
               {/* Mobile-optimized hero section */}
               <Grid container spacing={{ xs: 2, md: 3 }} alignItems="center">
                 {/* Left Side - Hero Text */}
                 <Grid item xs={12} md={4}>
-                  <Box sx={{ 
-                    textAlign: { xs: 'center', md: 'left' },
-                    px: { xs: 1, sm: 0 }
-                  }}>
+                  <Box
+                    sx={{
+                      textAlign: { xs: 'center', md: 'left' },
+                      px: { xs: 1, sm: 0 },
+                    }}
+                  >
                     <Typography
                       variant="h4"
                       component="h1"
@@ -884,13 +894,13 @@ const JobsPage = () => {
                         WebkitTextFillColor: 'transparent',
                         mb: { xs: 0.5, md: 1 },
                         fontSize: {
-                          xs: '1.35rem',  // ✅ Increased from 1.25rem for better mobile readability
-                          sm: '1.65rem',   // ✅ Increased from 1.5rem
+                          xs: '1.35rem', // ✅ Increased from 1.25rem for better mobile readability
+                          sm: '1.65rem', // ✅ Increased from 1.5rem
                           md: '2rem',
                           lg: '2.25rem',
                         },
-                        lineHeight: { xs: 1.3, md: 1.3 },  // ✅ Better line spacing on mobile
-                        wordWrap: 'break-word',  // ✅ Prevent text overflow
+                        lineHeight: { xs: 1.3, md: 1.3 }, // ✅ Better line spacing on mobile
+                        wordWrap: 'break-word', // ✅ Prevent text overflow
                       }}
                     >
                       {isSmallMobile
@@ -901,10 +911,10 @@ const JobsPage = () => {
                       variant="h6"
                       sx={{
                         color: 'rgba(255,255,255,0.8)',
-                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },  // ✅ Improved readability
-                        lineHeight: { xs: 1.5, md: 1.5 },  // ✅ Better line spacing
+                        fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' }, // ✅ Improved readability
+                        lineHeight: { xs: 1.5, md: 1.5 }, // ✅ Better line spacing
                         maxWidth: { xs: '100%', md: '90%' },
-                        wordWrap: 'break-word',  // ✅ Prevent overflow
+                        wordWrap: 'break-word', // ✅ Prevent overflow
                       }}
                     >
                       {isSmallMobile
@@ -919,12 +929,12 @@ const JobsPage = () => {
                   <Paper
                     elevation={8}
                     sx={{
-                      p: { xs: 1.5, sm: 2 },  // ✅ Reduced padding on mobile
+                      p: { xs: 1.5, sm: 2 }, // ✅ Reduced padding on mobile
                       bgcolor: 'rgba(255,255,255,0.05)',
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(212,175,55,0.2)',
                       borderRadius: { xs: 2, sm: 2 },
-                      mx: { xs: 1, sm: 0 },  // ✅ Add horizontal margin on mobile
+                      mx: { xs: 1, sm: 0 }, // ✅ Add horizontal margin on mobile
                     }}
                   >
                     <Grid
@@ -940,7 +950,7 @@ const JobsPage = () => {
                       <Grid item xs={12} sm={5}>
                         <TextField
                           fullWidth
-                          size="small"  // ✅ Changed from conditional to always "small" for consistency
+                          size="small" // ✅ Changed from conditional to always "small" for consistency
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           onKeyPress={(e) => {
@@ -955,12 +965,13 @@ const JobsPage = () => {
                               : 'Search jobs, skills, companies...'
                           }
                           inputProps={{
-                            'aria-label': 'Search for jobs, skills, or companies',
+                            'aria-label':
+                              'Search for jobs, skills, or companies',
                           }}
                           sx={{
                             '& .MuiOutlinedInput-root': {
                               color: 'white',
-                              height: { xs: '44px', sm: '40px' },  // ✅ Larger touch target on mobile (44px is Apple's recommended minimum)
+                              height: { xs: '44px', sm: '40px' }, // ✅ Larger touch target on mobile (44px is Apple's recommended minimum)
                               '& fieldset': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -972,8 +983,8 @@ const JobsPage = () => {
                               },
                             },
                             '& .MuiInputBase-input': {
-                              fontSize: { xs: '0.95rem', sm: '0.875rem' },  // ✅ Larger text on mobile
-                              padding: { xs: '10px 14px', sm: '8.5px 14px' },  // ✅ Comfortable padding
+                              fontSize: { xs: '0.95rem', sm: '0.875rem' }, // ✅ Larger text on mobile
+                              padding: { xs: '10px 14px', sm: '8.5px 14px' }, // ✅ Comfortable padding
                               '&::placeholder': {
                                 color: 'rgba(255,255,255,0.6)',
                                 opacity: 1,
@@ -1000,7 +1011,7 @@ const JobsPage = () => {
                             shrink
                             sx={{
                               color: 'rgba(255,255,255,0.7)',
-                              fontSize: { xs: '0.8rem', sm: '0.75rem' },  // ✅ Slightly larger on mobile
+                              fontSize: { xs: '0.8rem', sm: '0.75rem' }, // ✅ Slightly larger on mobile
                               transform: 'translate(14px, -9px) scale(0.85)',
                               '&.Mui-focused': {
                                 color: '#D4AF37',
@@ -1020,8 +1031,8 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: 'white',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Larger text on mobile
-                              height: { xs: '44px', sm: '40px' },  // ✅ Match TextField height
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Larger text on mobile
+                              height: { xs: '44px', sm: '40px' }, // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -1035,7 +1046,8 @@ const JobsPage = () => {
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
                               },
-                              '& .MuiSelect-select': {  // ✅ Proper padding for mobile touch
+                              '& .MuiSelect-select': {
+                                // ✅ Proper padding for mobile touch
                                 padding: { xs: '10px 14px', sm: '8.5px 14px' },
                               },
                             }}
@@ -1070,7 +1082,7 @@ const JobsPage = () => {
                             shrink
                             sx={{
                               color: 'rgba(255,255,255,0.7)',
-                              fontSize: { xs: '0.8rem', sm: '0.75rem' },  // ✅ Slightly larger on mobile
+                              fontSize: { xs: '0.8rem', sm: '0.75rem' }, // ✅ Slightly larger on mobile
                               transform: 'translate(14px, -9px) scale(0.85)',
                               '&.Mui-focused': {
                                 color: '#D4AF37',
@@ -1090,8 +1102,8 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: 'white',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Larger text on mobile
-                              height: { xs: '44px', sm: '40px' },  // ✅ Match TextField height
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Larger text on mobile
+                              height: { xs: '44px', sm: '40px' }, // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
                               },
@@ -1105,7 +1117,8 @@ const JobsPage = () => {
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
                               },
-                              '& .MuiSelect-select': {  // ✅ Proper padding for mobile touch
+                              '& .MuiSelect-select': {
+                                // ✅ Proper padding for mobile touch
                                 padding: { xs: '10px 14px', sm: '8.5px 14px' },
                               },
                             }}
@@ -1123,9 +1136,9 @@ const JobsPage = () => {
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid 
-                        item 
-                        xs={12} 
+                      <Grid
+                        item
+                        xs={12}
                         sm={2}
                         sx={{
                           display: 'flex',
@@ -1147,16 +1160,19 @@ const JobsPage = () => {
                               bgcolor: '#D4AF37',
                               color: 'black',
                               fontWeight: 'bold',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Slightly larger on mobile
-                              height: { xs: '44px', sm: '40px' },  // ✅ Match other elements (44px for mobile touch)
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
+                              height: { xs: '44px', sm: '40px' }, // ✅ Match other elements (44px for mobile touch)
                               minWidth: { xs: '100%', sm: 'auto' },
-                              padding: { xs: '10px 20px', sm: '8px 12px' },  // ✅ More comfortable mobile padding
+                              padding: { xs: '10px 20px', sm: '8px 12px' }, // ✅ More comfortable mobile padding
                               boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
                               whiteSpace: 'nowrap',
                               '&:hover': {
                                 bgcolor: '#B8941F',
                                 boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
-                                transform: { xs: 'none', sm: 'translateY(-2px)' },  // ✅ Disable transform on mobile
+                                transform: {
+                                  xs: 'none',
+                                  sm: 'translateY(-2px)',
+                                }, // ✅ Disable transform on mobile
                               },
                               transition: 'all 0.3s ease',
                               // Ensure button stays within bounds
@@ -1182,9 +1198,9 @@ const JobsPage = () => {
                         size="small"
                         sx={{
                           color: '#D4AF37',
-                          fontSize: { xs: '0.8rem', sm: '0.75rem' },  // ✅ Responsive font size
-                          padding: { xs: '6px 12px', sm: '4px 8px' },  // ✅ Better mobile padding
-                          minHeight: { xs: '36px', sm: 'auto' },  // ✅ Minimum touch target
+                          fontSize: { xs: '0.8rem', sm: '0.75rem' }, // ✅ Responsive font size
+                          padding: { xs: '6px 12px', sm: '4px 8px' }, // ✅ Better mobile padding
+                          minHeight: { xs: '36px', sm: 'auto' }, // ✅ Minimum touch target
                           '&:hover': {
                             bgcolor: 'rgba(212,175,55,0.1)',
                           },
@@ -1365,7 +1381,10 @@ const JobsPage = () => {
                 </Typography>
                 {(searchQuery || selectedCategory || selectedLocation) && (
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
                       Active filters:
                     </Typography>
                     {searchQuery && (
@@ -1438,20 +1457,74 @@ const JobsPage = () => {
                       >
                         <CardContent sx={{ p: 3 }}>
                           <Box sx={{ display: 'flex', mb: 2, gap: 2 }}>
-                            <Skeleton variant="circular" width={40} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            <Skeleton
+                              variant="circular"
+                              width={40}
+                              height={40}
+                              sx={{ bgcolor: 'rgba(255,255,255,0.1)' }}
+                            />
                             <Box sx={{ flex: 1 }}>
-                              <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }} />
-                              <Skeleton variant="text" width="50%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                              <Skeleton
+                                variant="text"
+                                width="80%"
+                                sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }}
+                              />
+                              <Skeleton
+                                variant="text"
+                                width="50%"
+                                sx={{ bgcolor: 'rgba(255,255,255,0.1)' }}
+                              />
                             </Box>
                           </Box>
-                          <Skeleton variant="text" width="100%" sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }} />
-                          <Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 2 }} />
+                          <Skeleton
+                            variant="text"
+                            width="100%"
+                            sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }}
+                          />
+                          <Skeleton
+                            variant="text"
+                            width="90%"
+                            sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 2 }}
+                          />
                           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                            <Skeleton variant="rectangular" width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
-                            <Skeleton variant="rectangular" width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
-                            <Skeleton variant="rectangular" width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
+                            <Skeleton
+                              variant="rectangular"
+                              width={70}
+                              height={24}
+                              sx={{
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 1,
+                              }}
+                            />
+                            <Skeleton
+                              variant="rectangular"
+                              width={70}
+                              height={24}
+                              sx={{
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 1,
+                              }}
+                            />
+                            <Skeleton
+                              variant="rectangular"
+                              width={70}
+                              height={24}
+                              sx={{
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 1,
+                              }}
+                            />
                           </Box>
-                          <Skeleton variant="rectangular" width="100%" height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1, mt: 2 }} />
+                          <Skeleton
+                            variant="rectangular"
+                            width="100%"
+                            height={40}
+                            sx={{
+                              bgcolor: 'rgba(255,255,255,0.1)',
+                              borderRadius: 1,
+                              mt: 2,
+                            }}
+                          />
                         </CardContent>
                       </Card>
                     </Grid>
@@ -1486,10 +1559,16 @@ const JobsPage = () => {
                   >
                     <Typography sx={{ fontSize: 48 }}>⚠️</Typography>
                   </Box>
-                  <Typography variant="h6" sx={{ color: '#ff6b6b', mb: 2, fontWeight: 'bold' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: '#ff6b6b', mb: 2, fontWeight: 'bold' }}
+                  >
                     Unable to Load Jobs
                   </Typography>
-                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+                  >
                     {error}
                   </Typography>
                   <Button
@@ -1520,16 +1599,31 @@ const JobsPage = () => {
                     mx: 'auto',
                   }}
                 >
-                  <SearchIcon sx={{ fontSize: 80, color: '#D4AF37', mb: 2, opacity: 0.5 }} />
-                  <Typography variant="h5" sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}>
+                  <SearchIcon
+                    sx={{ fontSize: 80, color: '#D4AF37', mb: 2, opacity: 0.5 }}
+                  />
+                  <Typography
+                    variant="h5"
+                    sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}
+                  >
                     No Jobs Found
                   </Typography>
-                  <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+                  >
                     {searchQuery || selectedCategory || selectedLocation
                       ? "We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms."
-                      : "No jobs are currently available. Check back soon for new opportunities!"}
+                      : 'No jobs are currently available. Check back soon for new opportunities!'}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 2,
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     {(searchQuery || selectedCategory || selectedLocation) && (
                       <Button
                         variant="contained"
@@ -1576,7 +1670,7 @@ const JobsPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ scale: isSmallMobile ? 1 : 1.02 }}  // ✅ Disable scale on mobile
+                      whileHover={{ scale: isSmallMobile ? 1 : 1.02 }} // ✅ Disable scale on mobile
                     >
                       <Card
                         sx={{
@@ -1585,12 +1679,12 @@ const JobsPage = () => {
                           flexDirection: 'column',
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(212,175,55,0.2)',
-                          borderRadius: { xs: 2, sm: 2 },  // ✅ Consistent border radius
-                          minHeight: { xs: '300px', sm: '320px' },  // ✅ Better mobile min-height
+                          borderRadius: { xs: 2, sm: 2 }, // ✅ Consistent border radius
+                          minHeight: { xs: '300px', sm: '320px' }, // ✅ Better mobile min-height
                           cursor: 'pointer',
                           position: 'relative',
                           overflow: 'hidden',
-                          mx: { xs: 1, sm: 0 },  // ✅ Add horizontal margin on mobile for better spacing
+                          mx: { xs: 1, sm: 0 }, // ✅ Add horizontal margin on mobile for better spacing
                           '&::before': {
                             content: '""',
                             position: 'absolute',
@@ -1598,7 +1692,8 @@ const JobsPage = () => {
                             left: 0,
                             right: 0,
                             height: '4px',
-                            background: 'linear-gradient(90deg, #D4AF37, #FFD700)',
+                            background:
+                              'linear-gradient(90deg, #D4AF37, #FFD700)',
                             transform: 'scaleX(0)',
                             transformOrigin: 'left',
                             transition: 'transform 0.3s ease',
@@ -1606,14 +1701,17 @@ const JobsPage = () => {
                           '&:hover': {
                             border: '1px solid #D4AF37',
                             boxShadow: '0 12px 40px rgba(212,175,55,0.4)',
-                            transform: { xs: 'none', sm: 'translateY(-4px)' },  // ✅ Disable transform on mobile
+                            transform: { xs: 'none', sm: 'translateY(-4px)' }, // ✅ Disable transform on mobile
                             '&::before': {
                               transform: 'scaleX(1)',
                             },
                           },
                           // ✅ Mobile active state for better feedback
                           '&:active': {
-                            transform: { xs: 'scale(0.98)', sm: 'translateY(-4px)' },
+                            transform: {
+                              xs: 'scale(0.98)',
+                              sm: 'translateY(-4px)',
+                            },
                           },
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
@@ -1621,7 +1719,11 @@ const JobsPage = () => {
                         role="article"
                         aria-label={`Job posting: ${job.title}`}
                       >
-                        <CardContent sx={{ flexGrow: 1, p: { xs: 2.5, sm: 3 } }}>  {/* ✅ Better mobile padding */}
+                        <CardContent
+                          sx={{ flexGrow: 1, p: { xs: 2.5, sm: 3 } }}
+                        >
+                          {' '}
+                          {/* ✅ Better mobile padding */}
                           {/* Job Header */}
                           <Box
                             sx={{
@@ -1695,9 +1797,16 @@ const JobsPage = () => {
                                       }}
                                     />
                                   )}
-                                  {job.employer?.name || 'Employer Name Pending'}
+                                  {job.employer?.name ||
+                                    'Employer Name Pending'}
                                   {job.employer?.verified && (
-                                    <Verified sx={{ fontSize: 12, color: '#4CAF50', ml: 0.5 }} />
+                                    <Verified
+                                      sx={{
+                                        fontSize: 12,
+                                        color: '#4CAF50',
+                                        ml: 0.5,
+                                      }}
+                                    />
                                   )}
                                 </Typography>
                               </Box>
@@ -1711,17 +1820,29 @@ const JobsPage = () => {
                               }}
                             >
                               {(job.urgent || job.proposalCount > 10) && (
-                                <Tooltip 
-                                  title={job.urgent ? "This job needs immediate attention" : "High competition - many applicants"}
+                                <Tooltip
+                                  title={
+                                    job.urgent
+                                      ? 'This job needs immediate attention'
+                                      : 'High competition - many applicants'
+                                  }
                                   arrow
                                   placement="left"
                                 >
                                   <Chip
-                                    label={job.urgent ? "URGENT" : "HOT"}
+                                    label={job.urgent ? 'URGENT' : 'HOT'}
                                     size="small"
-                                    icon={job.urgent ? <FlashOnIcon sx={{ fontSize: 16 }} /> : <FireIcon sx={{ fontSize: 16 }} />}
+                                    icon={
+                                      job.urgent ? (
+                                        <FlashOnIcon sx={{ fontSize: 16 }} />
+                                      ) : (
+                                        <FireIcon sx={{ fontSize: 16 }} />
+                                      )
+                                    }
                                     sx={{
-                                      bgcolor: job.urgent ? '#ff4444' : '#ff9800',
+                                      bgcolor: job.urgent
+                                        ? '#ff4444'
+                                        : '#ff9800',
                                       color: 'white',
                                       fontWeight: 'bold',
                                       fontSize: '0.7rem',
@@ -1736,7 +1857,7 @@ const JobsPage = () => {
                                 </Tooltip>
                               )}
                               {job.verified && (
-                                <Tooltip 
+                                <Tooltip
                                   title="This employer has been verified by Kelmah"
                                   arrow
                                   placement="left"
@@ -1757,7 +1878,6 @@ const JobsPage = () => {
                               )}
                             </Box>
                           </Box>
-
                           {/* Job Details */}
                           <Box sx={{ mb: 2 }}>
                             <Box
@@ -1773,13 +1893,16 @@ const JobsPage = () => {
                               />
                               <Typography
                                 variant="body2"
-                                sx={{ color: 'white', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                                sx={{
+                                  color: 'white',
+                                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                                }}
                               >
                                 {job.location?.city
                                   ? `${job.location.city}${job.location.country ? ', ' + job.location.country : ''}`
                                   : typeof job.location === 'string'
-                                  ? job.location
-                                  : 'Remote/Flexible'}
+                                    ? job.location
+                                    : 'Remote/Flexible'}
                               </Typography>
                             </Box>
 
@@ -1797,11 +1920,15 @@ const JobsPage = () => {
                               <Typography
                                 variant="body2"
                                 fontWeight="bold"
-                                sx={{ color: '#D4AF37', fontSize: { xs: '0.875rem', sm: '0.95rem' } }}
+                                sx={{
+                                  color: '#D4AF37',
+                                  fontSize: { xs: '0.875rem', sm: '0.95rem' },
+                                }}
                               >
                                 {job?.budget
                                   ? typeof job?.budget === 'object'
-                                    ? job.budget.min === job.budget.max || !job.budget.max
+                                    ? job.budget.min === job.budget.max ||
+                                      !job.budget.max
                                       ? `GHS ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
                                       : `GHS ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
                                     : `GHS ${job?.budget?.toLocaleString()}`
@@ -1838,14 +1965,12 @@ const JobsPage = () => {
                               </Typography>
                             </Box>
                           </Box>
-
                           <Typography
                             variant="body2"
                             sx={{ mb: 2, color: 'rgba(255,255,255,0.8)' }}
                           >
                             {job.description}
                           </Typography>
-
                           {/* Skills */}
                           <Box sx={{ mb: 2 }}>
                             <Typography
@@ -1889,7 +2014,6 @@ const JobsPage = () => {
                               )}
                             </Box>
                           </Box>
-
                           {/* Deadlines */}
                           <Box
                             sx={{
@@ -1916,12 +2040,14 @@ const JobsPage = () => {
                           </Box>
                         </CardContent>
 
-                        <CardActions sx={{ 
-                          p: { xs: 2, sm: 3 },  // ✅ Better mobile padding
-                          pt: 0,
-                          gap: { xs: 1, sm: 0 },  // ✅ Add gap between buttons on mobile
-                          flexWrap: { xs: 'wrap', sm: 'nowrap' },  // ✅ Allow wrapping on very small screens
-                        }}>
+                        <CardActions
+                          sx={{
+                            p: { xs: 2, sm: 3 }, // ✅ Better mobile padding
+                            pt: 0,
+                            gap: { xs: 1, sm: 0 }, // ✅ Add gap between buttons on mobile
+                            flexWrap: { xs: 'wrap', sm: 'nowrap' }, // ✅ Allow wrapping on very small screens
+                          }}
+                        >
                           <Button
                             variant="contained"
                             fullWidth
@@ -1960,9 +2086,9 @@ const JobsPage = () => {
                               bgcolor: '#D4AF37',
                               color: 'black',
                               fontWeight: 'bold',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' },  // ✅ Slightly larger on mobile
-                              padding: { xs: '10px 16px', sm: '8px 16px' },  // ✅ Better mobile padding
-                              minHeight: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly height
+                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
+                              padding: { xs: '10px 16px', sm: '8px 16px' }, // ✅ Better mobile padding
+                              minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly height
                               '&:hover': {
                                 bgcolor: '#B8941F',
                               },
@@ -1991,10 +2117,10 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: '#D4AF37',
-                              minWidth: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
-                              minHeight: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
+                              minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
+                              minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
-                              '&:active': { transform: 'scale(0.95)' },  // ✅ Active feedback
+                              '&:active': { transform: 'scale(0.95)' }, // ✅ Active feedback
                             }}
                           >
                             <Visibility />
@@ -2021,10 +2147,10 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: '#D4AF37',
-                              minWidth: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
-                              minHeight: { xs: '44px', sm: '40px' },  // ✅ Touch-friendly size
+                              minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
+                              minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
-                              '&:active': { transform: 'scale(0.95)' },  // ✅ Active feedback
+                              '&:active': { transform: 'scale(0.95)' }, // ✅ Active feedback
                             }}
                           >
                             <BookmarkBorder />
@@ -2075,7 +2201,10 @@ const JobsPage = () => {
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <Box sx={{ textAlign: 'center', mt: 6 }}>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
+                >
                   Showing {uniqueJobs.length} of 12 total opportunities
                 </Typography>
                 <Button
@@ -2109,52 +2238,74 @@ const JobsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <Box sx={{ 
-              mt: { xs: 6, md: 8 },  // ✅ Reduced top margin on mobile
-              mb: { xs: 4, md: 6 },  // ✅ Reduced bottom margin on mobile
-              px: { xs: 1, sm: 0 },  // ✅ Add horizontal padding on mobile
-            }}>
+            <Box
+              sx={{
+                mt: { xs: 6, md: 8 }, // ✅ Reduced top margin on mobile
+                mb: { xs: 4, md: 6 }, // ✅ Reduced bottom margin on mobile
+                px: { xs: 1, sm: 0 }, // ✅ Add horizontal padding on mobile
+              }}
+            >
               <Typography
                 variant="h4"
                 sx={{
                   color: '#D4AF37',
                   fontWeight: 'bold',
                   textAlign: 'center',
-                  mb: { xs: 3, md: 4 },  // ✅ Responsive margin
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },  // ✅ Responsive font size
+                  mb: { xs: 3, md: 4 }, // ✅ Responsive margin
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // ✅ Responsive font size
                 }}
               >
                 Platform Statistics
               </Typography>
-              <Grid container spacing={{ xs: 2, sm: 3 }}>  {/* ✅ Responsive spacing */}
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
+                {' '}
+                {/* ✅ Responsive spacing */}
                 {/* Available Jobs Stat */}
-                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                <Grid item xs={6} sm={6} md={3}>
+                  {' '}
+                  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={platformStats.loading ? uniqueJobs.length : platformStats.availableJobs}
+                    value={
+                      platformStats.loading
+                        ? uniqueJobs.length
+                        : platformStats.availableJobs
+                    }
                     label="Available Jobs"
                     isLive={true}
                   />
                 </Grid>
                 {/* Active Employers Stat */}
-                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                <Grid item xs={6} sm={6} md={3}>
+                  {' '}
+                  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={platformStats.loading ? 0 : platformStats.activeEmployers}
+                    value={
+                      platformStats.loading ? 0 : platformStats.activeEmployers
+                    }
                     suffix="+"
                     label="Active Employers"
                   />
                 </Grid>
                 {/* Skilled Workers Stat */}
-                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                <Grid item xs={6} sm={6} md={3}>
+                  {' '}
+                  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={platformStats.loading ? 0 : platformStats.skilledWorkers}
+                    value={
+                      platformStats.loading ? 0 : platformStats.skilledWorkers
+                    }
                     suffix="+"
                     label="Skilled Workers"
                   />
                 </Grid>
                 {/* Success Rate Stat */}
-                <Grid item xs={6} sm={6} md={3}>  {/* ✅ 2 columns on mobile, 4 on desktop */}
+                <Grid item xs={6} sm={6} md={3}>
+                  {' '}
+                  {/* ✅ 2 columns on mobile, 4 on desktop */}
                   <AnimatedStatCard
-                    value={platformStats.loading ? 0 : platformStats.successRate}
+                    value={
+                      platformStats.loading ? 0 : platformStats.successRate
+                    }
                     suffix="%"
                     label="Success Rate"
                   />
@@ -2171,9 +2322,9 @@ const JobsPage = () => {
           >
             <Paper
               sx={{
-                mt: { xs: 3, md: 4 },  // ✅ Reduced mobile margin
-                p: { xs: 2.5, sm: 3, md: 4 },  // ✅ Responsive padding
-                mx: { xs: 1, sm: 0 },  // ✅ Mobile horizontal spacing
+                mt: { xs: 3, md: 4 }, // ✅ Reduced mobile margin
+                p: { xs: 2.5, sm: 3, md: 4 }, // ✅ Responsive padding
+                mx: { xs: 1, sm: 0 }, // ✅ Mobile horizontal spacing
                 textAlign: 'center',
                 bgcolor: 'rgba(212,175,55,0.1)',
                 border: '1px solid rgba(212,175,55,0.3)',
@@ -2181,12 +2332,12 @@ const JobsPage = () => {
             >
               <Typography
                 variant="h4"
-                sx={{ 
-                  color: '#D4AF37', 
-                  fontWeight: 'bold', 
-                  mb: { xs: 1.5, md: 2 },  // ✅ Responsive margin
-                  fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' },  // ✅ Responsive font
-                  px: { xs: 1, sm: 0 },  // ✅ Mobile padding
+                sx={{
+                  color: '#D4AF37',
+                  fontWeight: 'bold',
+                  mb: { xs: 1.5, md: 2 }, // ✅ Responsive margin
+                  fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // ✅ Responsive font
+                  px: { xs: 1, sm: 0 }, // ✅ Mobile padding
                 }}
               >
                 Ready to Take Your Career to the Next Level?
@@ -2195,12 +2346,12 @@ const JobsPage = () => {
                 variant="body1"
                 sx={{
                   color: 'rgba(255,255,255,0.8)',
-                  mb: { xs: 2.5, md: 3 },  // ✅ Responsive margin
-                  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },  // ✅ Responsive font
-                  lineHeight: { xs: 1.5, md: 1.6 },  // ✅ Better readability
+                  mb: { xs: 2.5, md: 3 }, // ✅ Responsive margin
+                  fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
+                  lineHeight: { xs: 1.5, md: 1.6 }, // ✅ Better readability
                   maxWidth: 600,
                   mx: 'auto',
-                  px: { xs: 1, sm: 0 },  // ✅ Mobile padding
+                  px: { xs: 1, sm: 0 }, // ✅ Mobile padding
                 }}
               >
                 Join thousands of skilled professionals who've found their dream
@@ -2210,10 +2361,10 @@ const JobsPage = () => {
               <Box
                 sx={{
                   display: 'flex',
-                  gap: { xs: 1.5, sm: 2 },  // ✅ Responsive gap
+                  gap: { xs: 1.5, sm: 2 }, // ✅ Responsive gap
                   justifyContent: 'center',
                   flexWrap: 'wrap',
-                  px: { xs: 1, sm: 0 },  // ✅ Mobile padding
+                  px: { xs: 1, sm: 0 }, // ✅ Mobile padding
                 }}
               >
                 <Button
@@ -2222,7 +2373,10 @@ const JobsPage = () => {
                   onClick={() => {
                     if (!authState.isAuthenticated) {
                       navigate('/login', {
-                        state: { from: '/jobs', message: 'Sign in to create job alerts' }
+                        state: {
+                          from: '/jobs',
+                          message: 'Sign in to create job alerts',
+                        },
                       });
                       return;
                     }
@@ -2233,14 +2387,14 @@ const JobsPage = () => {
                     bgcolor: '#D4AF37',
                     color: 'black',
                     fontWeight: 'bold',
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },  // ✅ Responsive font
-                    px: { xs: 3, sm: 3.5, md: 4 },  // ✅ Responsive padding
-                    minHeight: { xs: '44px', sm: '48px' },  // ✅ Touch target
+                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
+                    px: { xs: 3, sm: 3.5, md: 4 }, // ✅ Responsive padding
+                    minHeight: { xs: '44px', sm: '48px' }, // ✅ Touch target
                     '&:hover': {
                       bgcolor: '#B8941F',
                     },
                     '&:active': {
-                      transform: 'scale(0.98)',  // ✅ Touch feedback
+                      transform: 'scale(0.98)', // ✅ Touch feedback
                     },
                   }}
                 >
@@ -2252,7 +2406,10 @@ const JobsPage = () => {
                   onClick={() => {
                     if (!authState.isAuthenticated) {
                       navigate('/login', {
-                        state: { from: '/profile/upload-cv', message: 'Sign in to upload your CV' }
+                        state: {
+                          from: '/profile/upload-cv',
+                          message: 'Sign in to upload your CV',
+                        },
                       });
                       return;
                     }
@@ -2261,15 +2418,15 @@ const JobsPage = () => {
                   sx={{
                     borderColor: '#D4AF37',
                     color: '#D4AF37',
-                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' },  // ✅ Responsive font
-                    px: { xs: 3, sm: 3.5, md: 4 },  // ✅ Responsive padding
-                    minHeight: { xs: '44px', sm: '48px' },  // ✅ Touch target
+                    fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
+                    px: { xs: 3, sm: 3.5, md: 4 }, // ✅ Responsive padding
+                    minHeight: { xs: '44px', sm: '48px' }, // ✅ Touch target
                     '&:hover': {
                       borderColor: '#B8941F',
                       bgcolor: 'rgba(212,175,55,0.1)',
                     },
                     '&:active': {
-                      transform: 'scale(0.98)',  // ✅ Touch feedback
+                      transform: 'scale(0.98)', // ✅ Touch feedback
                     },
                   }}
                 >

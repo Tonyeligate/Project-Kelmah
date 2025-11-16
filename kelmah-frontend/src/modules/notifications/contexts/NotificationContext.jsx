@@ -57,7 +57,9 @@ export const NotificationProvider = ({ children }) => {
       // Rate limiting check - prevent rapid re-fetches
       const now = Date.now();
       if (now - lastFetchRef.current < MIN_FETCH_INTERVAL) {
-        console.log('⏱️ Skipping notification fetch - too soon since last fetch');
+        console.log(
+          '⏱️ Skipping notification fetch - too soon since last fetch',
+        );
         return;
       }
 
@@ -87,7 +89,9 @@ export const NotificationProvider = ({ children }) => {
         // Check if it's a 429 Too Many Requests error
         if (err?.response?.status === 429) {
           // Rate limited - back off significantly
-          console.warn('⚠️ Rate limited on notifications endpoint - backing off 2 minutes');
+          console.warn(
+            '⚠️ Rate limited on notifications endpoint - backing off 2 minutes',
+          );
           lastFetchRef.current = now + 120000; // Block fetches for 2 minutes
           setError(
             'Too many requests. Please wait a moment before refreshing.',
@@ -143,7 +147,6 @@ export const NotificationProvider = ({ children }) => {
       }
     };
   }, [fetchNotifications, userId]); // ⚠️ CRITICAL: Depend on userId, not user object
-
 
   const markAsRead = async (id) => {
     try {

@@ -71,10 +71,10 @@ export const fetchDashboardData = createAsyncThunk(
         workersResponse,
         analyticsResponse,
       ] = await Promise.allSettled([
-  userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_METRICS),
-  jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD),
-  userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_WORKERS),
-  userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_ANALYTICS),
+        userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_METRICS),
+        jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD),
+        userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_WORKERS),
+        userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_ANALYTICS),
       ]);
 
       // Extract successful responses or use enhanced mock data

@@ -543,8 +543,9 @@ const getJobs = async (req, res, next) => {
       .find(query)
       .sort({ [sortKey]: sortOrder })
       .skip(startIndex)
-      .limit(limit);
-    
+      .limit(limit)
+      .maxTimeMS(20000);
+
     const jobs = await jobsCursor.toArray();
     console.log('[GET JOBS] Direct driver query executed successfully');
     console.log('[GET JOBS] Jobs found:', jobs.length);
@@ -576,9 +577,28 @@ const getJobs = async (req, res, next) => {
     const transformedJobs = transformJobsForFrontend(jobs);
 
     // Get total count using direct driver
-    console.log('[GET JOBS] Getting total count...');
-    const total = await jobsCollection.countDocuments(query);
-    console.log('[GET JOBS] Total jobs:', total);
+    let total = startIndex + jobs.length;
+    const shouldGetTotal = jobs.length === limit || page > 1;
+    if (shouldGetTotal) {
+      console.log('[GET JOBS] Getting total count...');
+      const countOptions = {};
+      if (!req.query.search && !req.query.location && !req.query.skills) {
+        countOptions.hint = { status: 1, visibility: 1, createdAt: -1 };
+      }
+
+      try {
+        total = await jobsCollection.countDocuments(query, {
+          ...countOptions,
+          maxTimeMS: 5000,
+        });
+        console.log('[GET JOBS] Total jobs:', total);
+      } catch (countError) {
+        console.warn('[GET JOBS] countDocuments timed out, using fallback total:', countError.message);
+        total = startIndex + jobs.length + (jobs.length === limit ? limit : 0);
+      }
+    } else {
+      console.log('[GET JOBS] Skipping total count lookup; derived total:', total);
+    }
 
     console.log('[GET JOBS] Sending response...');
     return paginatedResponse(

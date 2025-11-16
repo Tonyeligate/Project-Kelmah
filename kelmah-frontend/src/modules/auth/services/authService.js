@@ -121,7 +121,7 @@ const authService = {
   // Verify authentication
   verifyAuth: async () => {
     try {
-  const response = await authServiceClient.get(AUTH_ENDPOINTS.VERIFY);
+      const response = await authServiceClient.get(AUTH_ENDPOINTS.VERIFY);
       const { user } = response.data.data || response.data;
 
       if (user) {
@@ -147,7 +147,7 @@ const authService = {
       const refreshToken = secureStorage.getRefreshToken();
       const logoutData = refreshToken ? { refreshToken } : {};
 
-  await authServiceClient.post(AUTH_ENDPOINTS.LOGOUT, logoutData);
+      await authServiceClient.post(AUTH_ENDPOINTS.LOGOUT, logoutData);
     } catch (error) {
       console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
@@ -363,9 +363,7 @@ const authService = {
   // MFA Setup (placeholder for future implementation)
   setupMFA: async () => {
     try {
-      const response = await authServiceClient.post(
-        AUTH_ENDPOINTS.MFA_SETUP,
-      );
+      const response = await authServiceClient.post(AUTH_ENDPOINTS.MFA_SETUP);
       // Expect { success, data: { secret, otpauthUrl, qrCode? } }
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
@@ -380,12 +378,9 @@ const authService = {
   // Verify MFA (placeholder for future implementation)
   verifyMFA: async (token) => {
     try {
-      const response = await authServiceClient.post(
-        AUTH_ENDPOINTS.MFA_VERIFY,
-        {
+      const response = await authServiceClient.post(AUTH_ENDPOINTS.MFA_VERIFY, {
         token,
-        },
-      );
+      });
       const payload = response.data?.data || response.data;
       return { success: true, ...payload };
     } catch (error) {

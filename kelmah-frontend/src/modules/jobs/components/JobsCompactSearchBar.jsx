@@ -5,13 +5,7 @@
  */
 
 import React from 'react';
-import {
-  Paper,
-  TextField,
-  Button,
-  Box,
-  InputAdornment,
-} from '@mui/material';
+import { Paper, TextField, Button, Box, InputAdornment } from '@mui/material';
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,

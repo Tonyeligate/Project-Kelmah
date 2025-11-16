@@ -10,13 +10,13 @@ try {
   // Install dependencies
   console.log('📦 Installing dependencies...');
   execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
-  
+
   // Run the build
   console.log('🏗️ Building application...');
   execSync('npm run build', { stdio: 'inherit' });
-  
+
   console.log('✅ Vercel build completed successfully!');
 } catch (error) {
   console.error('❌ Build failed:', error.message);
   process.exit(1);
-} 
+}

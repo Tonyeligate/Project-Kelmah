@@ -208,7 +208,7 @@ function ApplicationManagementPage() {
             <Tabs
               value={activeTab}
               onChange={(e, newValue) => setActiveTab(newValue)}
-              sx={{ 
+              sx={{
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 '& .MuiTab-root': {
                   minWidth: 120,
@@ -241,8 +241,13 @@ function ApplicationManagementPage() {
                   <Typography variant="h6" color="text.secondary" gutterBottom>
                     No applications yet.
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Publish a detailed job post to start receiving proposals from verified workers.
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
+                    Publish a detailed job post to start receiving proposals
+                    from verified workers.
                   </Typography>
                   <Button
                     variant="contained"

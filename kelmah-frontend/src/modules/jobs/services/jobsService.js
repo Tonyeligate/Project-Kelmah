@@ -19,7 +19,7 @@ const transformJobListItem = (job) => {
         _source: 'hirer_object',
       };
     }
-    
+
     // Priority 2: Hirer name as string (ObjectId reference)
     if (job.hirer_name && job.hirer_name !== 'Unknown') {
       return {
@@ -31,7 +31,7 @@ const transformJobListItem = (job) => {
         _source: 'hirer_name_string',
       };
     }
-    
+
     // Priority 3: Company name field
     if (job.company || job.companyName) {
       return {
@@ -43,9 +43,11 @@ const transformJobListItem = (job) => {
         _source: 'company_field',
       };
     }
-    
+
     // Fallback: Flag for admin review
-    console.warn(`⚠️ Job ${job._id || job.id} missing employer data - flagged for admin review`);
+    console.warn(
+      `⚠️ Job ${job._id || job.id} missing employer data - flagged for admin review`,
+    );
     return {
       name: 'Employer Name Pending',
       logo: null,
@@ -64,7 +66,9 @@ const transformJobListItem = (job) => {
   return {
     id: job._id || job.id, // Handle MongoDB _id or regular id
     title: job.title,
-    description: job.description?.substring(0, 150) + (job.description?.length > 150 ? '...' : ''),
+    description:
+      job.description?.substring(0, 150) +
+      (job.description?.length > 150 ? '...' : ''),
     fullDescription: job.description, // Keep full description for detail view
     category: job.category,
     subcategory: job.subcategory,
@@ -157,7 +161,10 @@ const jobsApi = {
 
       // Log jobs needing admin review
       if (jobsNeedingReview.length > 0) {
-        console.warn(`⚠️ ${jobsNeedingReview.length} jobs missing employer data:`, jobsNeedingReview);
+        console.warn(
+          `⚠️ ${jobsNeedingReview.length} jobs missing employer data:`,
+          jobsNeedingReview,
+        );
         // TODO: Send notification to admin dashboard
         // adminNotificationService.flagJobsForReview(jobsNeedingReview);
       }

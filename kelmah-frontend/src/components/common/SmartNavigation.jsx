@@ -302,7 +302,8 @@ const SmartNavigation = () => {
             }}
           >
             <Typography variant="caption" color="rgba(255,255,255,0.75)">
-              Jump to your next action with one click. Pin the shortcuts to keep them handy across hirer pages.
+              Jump to your next action with one click. Pin the shortcuts to keep
+              them handy across hirer pages.
             </Typography>
           </Box>
         </Fade>

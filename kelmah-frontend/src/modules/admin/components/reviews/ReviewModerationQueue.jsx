@@ -214,7 +214,11 @@ const ReviewModerationQueue = () => {
 
     async moderateReview(reviewId, status, note = '') {
       try {
-        const result = await reviewService.moderateReview(reviewId, status, note);
+        const result = await reviewService.moderateReview(
+          reviewId,
+          status,
+          note,
+        );
         return result;
       } catch (e) {
         if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {

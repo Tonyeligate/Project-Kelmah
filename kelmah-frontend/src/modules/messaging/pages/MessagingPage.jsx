@@ -87,6 +87,7 @@ const EnhancedMessagingPage = () => {
     conversations,
     selectedConversation,
     selectConversation,
+    clearConversation,
     typingUsers,
   } = useMessages();
 
@@ -115,6 +116,7 @@ const EnhancedMessagingPage = () => {
   // Refs
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Mock data for fallback
   const mockConversations = [];
@@ -827,7 +829,7 @@ const EnhancedMessagingPage = () => {
               <IconButton
                 edge="start"
                 color="inherit"
-                onClick={() => setSelectedConversation(null)}
+                onClick={() => clearConversation()}
                 sx={{ mr: 2, color: '#FFD700' }}
               >
                 <ArrowBackIcon />
@@ -1811,134 +1813,135 @@ const EnhancedMessagingPage = () => {
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         }}
       >
-      <Grid container spacing={2} sx={{ height: '100%' }}>
-        {isMobile ? (
-          selectedConversation ? (
-            <Grid item xs={12}>
-              <EnhancedChatArea />
-            </Grid>
+        <Grid container spacing={2} sx={{ height: '100%' }}>
+          {isMobile ? (
+            selectedConversation ? (
+              <Grid item xs={12}>
+                <EnhancedChatArea />
+              </Grid>
+            ) : (
+              <Grid item xs={12}>
+                <EnhancedConversationList />
+              </Grid>
+            )
           ) : (
-            <Grid item xs={12}>
-              <EnhancedConversationList />
-            </Grid>
-          )
-        ) : (
-          <>
-            <Grid item md={4} lg={3}>
-              <EnhancedConversationList />
-            </Grid>
-            <Grid item md={8} lg={9}>
-              <EnhancedChatArea />
-            </Grid>
-          </>
-        )}
-      </Grid>
+            <>
+              <Grid item md={4} lg={3}>
+                <EnhancedConversationList />
+              </Grid>
+              <Grid item md={8} lg={9}>
+                <EnhancedChatArea />
+              </Grid>
+            </>
+          )}
+        </Grid>
 
-      {/* More Menu */}
-      <Menu
-        anchorEl={moreMenuAnchor}
-        open={Boolean(moreMenuAnchor)}
-        onClose={() => setMoreMenuAnchor(null)}
-      >
-        <MenuItem onClick={() => setMoreMenuAnchor(null)}>
-          <ListItemIcon>
-            <InfoIcon />
-          </ListItemIcon>
-          <ListItemText>Conversation Info</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => setMoreMenuAnchor(null)}>
-          <ListItemIcon>
-            <ArchiveIcon />
-          </ListItemIcon>
-          <ListItemText>Archive</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => setMoreMenuAnchor(null)}>
-          <ListItemIcon>
-            <BlockIcon />
-          </ListItemIcon>
-          <ListItemText>Block User</ListItemText>
-        </MenuItem>
-        <Divider />
-        <MenuItem
-          onClick={() => setMoreMenuAnchor(null)}
-          sx={{ color: '#F44336' }}
+        {/* More Menu */}
+        <Menu
+          anchorEl={moreMenuAnchor}
+          open={Boolean(moreMenuAnchor)}
+          onClose={() => setMoreMenuAnchor(null)}
         >
-          <ListItemIcon>
-            <DeleteIcon sx={{ color: '#F44336' }} />
-          </ListItemIcon>
-          <ListItemText>Delete Conversation</ListItemText>
-        </MenuItem>
-      </Menu>
-
-      {/* New Chat Dialog */}
-      <Dialog
-        open={newChatDialog}
-        onClose={() => setNewChatDialog(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background:
-              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
-            border: '1px solid rgba(255,215,0,0.2)',
-          },
-        }}
-      >
-        <DialogTitle sx={{ color: '#FFD700' }}>
-          Start New Conversation
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Search users..."
-            fullWidth
-            variant="outlined"
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                '& fieldset': {
-                  borderColor: 'rgba(255,215,0,0.3)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(255,215,0,0.5)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#FFD700',
-                },
-              },
-              '& .MuiInputBase-input': {
-                color: '#fff',
-              },
-              '& .MuiInputLabel-root': {
-                color: 'rgba(255,255,255,0.7)',
-              },
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setNewChatDialog(false)}
-            sx={{ color: 'rgba(255,255,255,0.7)' }}
+          <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+            <ListItemIcon>
+              <InfoIcon />
+            </ListItemIcon>
+            <ListItemText>Conversation Info</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+            <ListItemIcon>
+              <ArchiveIcon />
+            </ListItemIcon>
+            <ListItemText>Archive</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+            <ListItemIcon>
+              <BlockIcon />
+            </ListItemIcon>
+            <ListItemText>Block User</ListItemText>
+          </MenuItem>
+          <Divider />
+          <MenuItem
+            onClick={() => setMoreMenuAnchor(null)}
+            sx={{ color: '#F44336' }}
           >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => setNewChatDialog(false)}
-            sx={{
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-              color: '#000',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
-              },
-            }}
-          >
-            Start Chat
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <ListItemIcon>
+              <DeleteIcon sx={{ color: '#F44336' }} />
+            </ListItemIcon>
+            <ListItemText>Delete Conversation</ListItemText>
+          </MenuItem>
+        </Menu>
 
-      {/* Feedback Snackbar */}
+        {/* New Chat Dialog */}
+        <Dialog
+          open={newChatDialog}
+          onClose={() => setNewChatDialog(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              background:
+                'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+              border: '1px solid rgba(255,215,0,0.2)',
+            },
+          }}
+        >
+          <DialogTitle sx={{ color: '#FFD700' }}>
+            Start New Conversation
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Search users..."
+              fullWidth
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  '& fieldset': {
+                    borderColor: 'rgba(255,215,0,0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255,215,0,0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#FFD700',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: '#fff',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                },
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setNewChatDialog(false)}
+              sx={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => setNewChatDialog(false)}
+              sx={{
+                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                color: '#000',
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                },
+              }}
+            >
+              Start Chat
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Feedback Snackbar */}
         <Snackbar
           open={feedback.open}
           autoHideDuration={4000}

@@ -104,7 +104,6 @@ const JobSearchForm = ({
     if (submitHandler) {
       emitSearch();
     } else {
-      // eslint-disable-next-line no-console
       console.warn('JobSearchForm submitted without handler');
     }
   };

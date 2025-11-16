@@ -932,7 +932,9 @@ const ReviewSystem = ({
           setSelectedReview(null);
         }}
       >
-        <MenuItem onClick={() => reviewService.voteHelpful(selectedReview?._id)}>
+        <MenuItem
+          onClick={() => reviewService.voteHelpful(selectedReview?._id)}
+        >
           <ThumbUpIcon sx={{ mr: 1 }} /> Mark Helpful
         </MenuItem>
         <MenuItem

@@ -141,7 +141,7 @@ class NotificationService {
   async getNotifications(params = {}) {
     try {
       // Add retry-control header to prevent excessive retries on rate limit
-      const response = await this.client.get('/notifications', { 
+      const response = await this.client.get('/notifications', {
         params,
         headers: {
           'X-Retry-Limit': '2', // Limit retries for this endpoint
@@ -157,8 +157,8 @@ class NotificationService {
               return status === 408 || status === 503; // Only retry timeouts and service unavailable
             }
             return false;
-          }
-        }
+          },
+        },
       });
       // Normalize to { notifications, pagination }
       const data = response.data;

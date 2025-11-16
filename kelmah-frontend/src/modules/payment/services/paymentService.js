@@ -258,18 +258,20 @@ const paymentService = {
 
   // Wallet fund operations
   withdrawFunds: async (amount, methodId) => {
-    const { data } = await paymentServiceClient.post(
-      '/payments/transactions',
-      { amount, type: 'withdrawal', paymentMethodId: methodId },
-    );
+    const { data } = await paymentServiceClient.post('/payments/transactions', {
+      amount,
+      type: 'withdrawal',
+      paymentMethodId: methodId,
+    });
     return data;
   },
 
   addFunds: async (amount, methodId) => {
-    const { data } = await paymentServiceClient.post(
-      '/payments/transactions',
-      { amount, type: 'deposit', paymentMethodId: methodId },
-    );
+    const { data } = await paymentServiceClient.post('/payments/transactions', {
+      amount,
+      type: 'deposit',
+      paymentMethodId: methodId,
+    });
     return data;
   },
 
@@ -437,9 +439,7 @@ const paymentService = {
 
   // Get available Ghana payment methods
   getGhanaPaymentMethods: async () => {
-    const { data } = await paymentServiceClient.get(
-      '/payments/ghana/methods',
-    );
+    const { data } = await paymentServiceClient.get('/payments/ghana/methods');
     return data;
   },
 

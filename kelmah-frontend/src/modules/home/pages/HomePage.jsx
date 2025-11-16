@@ -156,11 +156,12 @@ const ServiceCard = styled(Card)(({ theme }) => ({
   '@media (max-width: 600px)': {
     borderRadius: theme.spacing(1.5),
     '&:hover': {
-      transform: 'none',  // ✅ Disable transform on mobile
+      transform: 'none', // ✅ Disable transform on mobile
       boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
       border: '2px solid rgba(255, 215, 0, 0.4)',
     },
-    '&:active': {  // ✅ Active state for mobile touch feedback
+    '&:active': {
+      // ✅ Active state for mobile touch feedback
       transform: 'scale(0.98)',
       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)',
     },
@@ -179,24 +180,24 @@ const ServiceCard = styled(Card)(({ theme }) => ({
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: { xs: 200, sm: 200, md: 220 },  // ✅ Updated to 200px max per user request
+  height: { xs: 200, sm: 200, md: 220 }, // ✅ Updated to 200px max per user request
   transition: 'transform 0.4s ease',
   position: 'relative',
-  objectFit: 'cover',  // ✅ Better image scaling
-  
+  objectFit: 'cover', // ✅ Better image scaling
+
   /* ✅ PERFORMANCE OPTIMIZATIONS FOR MOBILE SCROLL */
-  willChange: 'transform',  // Hint browser for GPU acceleration
-  backfaceVisibility: 'hidden',  // Reduce repaints
-  transform: 'translateZ(0)',  // Force GPU acceleration
-  
+  willChange: 'transform', // Hint browser for GPU acceleration
+  backfaceVisibility: 'hidden', // Reduce repaints
+  transform: 'translateZ(0)', // Force GPU acceleration
+
   // Mobile-specific optimizations
   '@media (max-width: 600px)': {
-    height: 200,  // ✅ Updated to 200px max per user request
-    contain: 'layout style paint',  // Isolate paint operations
+    height: 200, // ✅ Updated to 200px max per user request
+    contain: 'layout style paint', // Isolate paint operations
   },
   // ✅ Ensure images load efficiently
   '@media (max-width: 360px)': {
-    height: 180,  // ✅ Smaller screens get appropriate sizing
+    height: 180, // ✅ Smaller screens get appropriate sizing
   },
 }));
 
@@ -204,13 +205,13 @@ const ServiceCardContent = styled(CardContent)(({ theme }) => ({
   background:
     'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(44,44,44,0.6) 100%)',
   padding: {
-    xs: theme.spacing(2),  // ✅ Increased from 1.5
+    xs: theme.spacing(2), // ✅ Increased from 1.5
     sm: theme.spacing(2.5),
     md: theme.spacing(3),
   },
   // Mobile-specific optimizations
   '@media (max-width: 600px)': {
-    padding: theme.spacing(2),  // ✅ Consistent spacing
+    padding: theme.spacing(2), // ✅ Consistent spacing
   },
 }));
 
@@ -240,9 +241,9 @@ const HomePage = () => {
     checking: false,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);  // ✅ NEW: Error state
+  const [error, setError] = useState(null); // ✅ NEW: Error state
   const [bgIndex, setBgIndex] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);  // ✅ NEW: Scroll progress tracking
+  const [scrollProgress, setScrollProgress] = useState(0); // ✅ NEW: Scroll progress tracking
 
   // Enhanced services with proper vocational trade focus
   const services = [
@@ -308,7 +309,7 @@ const HomePage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-      setError(null);  // ✅ Clear any initialization errors
+      setError(null); // ✅ Clear any initialization errors
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -324,11 +325,11 @@ const HomePage = () => {
           }
           return prev;
         });
-        setError(null);  // ✅ Clear errors on successful API check
+        setError(null); // ✅ Clear errors on successful API check
       } catch (error) {
         console.warn('API check failed, continuing anyway:', error);
         setApiStatus({ isReachable: false, checking: false });
-        setError('Unable to connect to server. Some features may be limited.');  // ✅ Set error message
+        setError('Unable to connect to server. Some features may be limited.'); // ✅ Set error message
       }
     };
     checkApiStatus();
@@ -340,22 +341,23 @@ const HomePage = () => {
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      
+
       // Calculate scroll progress (0-100)
       const scrollableHeight = documentHeight - windowHeight;
-      const progress = scrollableHeight > 0 
-        ? Math.min(100, Math.max(0, (scrollTop / scrollableHeight) * 100))
-        : 0;
-      
+      const progress =
+        scrollableHeight > 0
+          ? Math.min(100, Math.max(0, (scrollTop / scrollableHeight) * 100))
+          : 0;
+
       setScrollProgress(progress);
     };
 
     // Add scroll listener with passive flag for better performance
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     // Initial calculation
     handleScroll();
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -370,7 +372,7 @@ const HomePage = () => {
   return (
     <>
       <LoadingScreen isLoading={isLoading} />
-      
+
       {/* ✅ NEW: Error Message Display */}
       {error && !isLoading && (
         <Box
@@ -398,7 +400,10 @@ const HomePage = () => {
               gap: 2,
             }}
           >
-            <Typography variant="body2" sx={{ flex: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            <Typography
+              variant="body2"
+              sx={{ flex: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
               {error}
             </Typography>
             <IconButton
@@ -406,12 +411,14 @@ const HomePage = () => {
               onClick={() => setError(null)}
               sx={{ color: 'white', minWidth: '44px', minHeight: '44px' }}
             >
-              <Box component="span" sx={{ fontSize: '1.5rem' }}>×</Box>
+              <Box component="span" sx={{ fontSize: '1.5rem' }}>
+                ×
+              </Box>
             </IconButton>
           </Box>
         </Box>
       )}
-      
+
       {/* ✅ NEW: Scroll Progress Indicator - Mobile Only */}
       <Box
         sx={{
@@ -421,7 +428,7 @@ const HomePage = () => {
           right: 0,
           height: '4px',
           zIndex: 1300,
-          display: { xs: 'block', md: 'none' },  // Mobile only
+          display: { xs: 'block', md: 'none' }, // Mobile only
           backgroundColor: 'rgba(0, 0, 0, 0.1)',
         }}
       >
@@ -435,7 +442,7 @@ const HomePage = () => {
           }}
         />
       </Box>
-      
+
       <GestureControl>
         <Box sx={{ position: 'relative' }}>
           {/* Enhanced platform status badge */}
@@ -445,11 +452,11 @@ const HomePage = () => {
             size="small"
             sx={{
               position: 'absolute',
-              top: { xs: 12, sm: 16 },  // ✅ Adjusted position
-              right: { xs: 12, sm: 16 },  // ✅ Adjusted position
+              top: { xs: 12, sm: 16 }, // ✅ Adjusted position
+              right: { xs: 12, sm: 16 }, // ✅ Adjusted position
               zIndex: 2,
               fontWeight: 'bold',
-              fontSize: { xs: '0.7rem', sm: '0.75rem' },  // ✅ Responsive font
+              fontSize: { xs: '0.7rem', sm: '0.75rem' }, // ✅ Responsive font
               boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
               // ✅ Hide on very small screens to prevent overlap
               '@media (max-width: 320px)': {
@@ -457,7 +464,7 @@ const HomePage = () => {
                 right: 8,
                 fontSize: '0.65rem',
                 '& .MuiChip-label': {
-                  padding: '0 6px',  // ✅ Reduced padding
+                  padding: '0 6px', // ✅ Reduced padding
                 },
               },
             }}
@@ -520,18 +527,18 @@ const HomePage = () => {
                         },
                         fontWeight: 800,
                         color: '#FFFFFF',
-                        mb: { xs: 2.5, sm: 3, md: 3 },  // ✅ Increased mobile spacing
+                        mb: { xs: 2.5, sm: 3, md: 3 }, // ✅ Increased mobile spacing
                         textShadow:
                           '2px 2px 4px rgba(0,0,0,0.9), 1px 1px 2px rgba(0,0,0,0.8)',
-                        lineHeight: { xs: 1.2, sm: 1.2, md: 1.1 },  // ✅ Better mobile line height
+                        lineHeight: { xs: 1.2, sm: 1.2, md: 1.1 }, // ✅ Better mobile line height
                         textAlign: { xs: 'center', md: 'left' },
-                        px: { xs: 1, sm: 0 },  // ✅ Added mobile horizontal padding
-                        wordBreak: 'break-word',  // ✅ Prevent text overflow
+                        px: { xs: 1, sm: 0 }, // ✅ Added mobile horizontal padding
+                        wordBreak: 'break-word', // ✅ Prevent text overflow
                         // Mobile-specific optimizations
                         '@media (max-width: 600px)': {
                           fontSize: '1.75rem',
-                          lineHeight: 1.2,  // ✅ Improved from 1.1
-                          mb: 2,  // ✅ Increased from 1
+                          lineHeight: 1.2, // ✅ Improved from 1.1
+                          mb: 2, // ✅ Increased from 1
                         },
                       }}
                     >
@@ -557,10 +564,10 @@ const HomePage = () => {
                       variant={isMobile ? 'h6' : 'h5'}
                       sx={{
                         color: '#FFFFFF',
-                        mb: { xs: 3, sm: 3.5, md: 4 },  // ✅ Increased mobile spacing
+                        mb: { xs: 3, sm: 3.5, md: 4 }, // ✅ Increased mobile spacing
                         fontWeight: 500,
                         maxWidth: { xs: '100%', md: '85%' },
-                        lineHeight: { xs: 1.5, sm: 1.5, md: 1.6 },  // ✅ Better mobile readability
+                        lineHeight: { xs: 1.5, sm: 1.5, md: 1.6 }, // ✅ Better mobile readability
                         fontSize: {
                           xs: '1rem',
                           sm: '1.1rem',
@@ -568,20 +575,22 @@ const HomePage = () => {
                           lg: '1.4rem',
                         },
                         textAlign: { xs: 'center', md: 'left' },
-                        px: { xs: 1.5, sm: 0 },  // ✅ Increased mobile padding
+                        px: { xs: 1.5, sm: 0 }, // ✅ Increased mobile padding
                         textShadow:
                           '1px 1px 3px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
                         // Mobile-specific optimizations
                         '@media (max-width: 600px)': {
                           fontSize: '0.95rem',
-                          lineHeight: 1.5,  // ✅ Improved from 1.3
-                          mb: 2.5,  // ✅ Increased from 1.5
+                          lineHeight: 1.5, // ✅ Improved from 1.3
+                          mb: 2.5, // ✅ Increased from 1.5
                         },
                       }}
                     >
-                      Find skilled trade jobs or hire verified workers. Thousands of opportunities in plumbing, electrical, carpentry, and construction across Ghana.
+                      Find skilled trade jobs or hire verified workers.
+                      Thousands of opportunities in plumbing, electrical,
+                      carpentry, and construction across Ghana.
                     </Typography>
-                    
+
                     {/* ✅ JOB STATISTICS - Show Proof of Opportunities */}
                     <Box
                       sx={{
@@ -656,7 +665,7 @@ const HomePage = () => {
                         </Typography>
                       </Box>
                     </Box>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -666,15 +675,15 @@ const HomePage = () => {
                         sx={{
                           display: 'flex',
                           flexDirection: { xs: 'column', md: 'row' },
-                          gap: { xs: 2, sm: 2, md: 3 },  // ✅ Increased mobile gap
-                          mt: { xs: 3, sm: 3.5, md: 4 },  // ✅ Increased mobile margin
+                          gap: { xs: 2, sm: 2, md: 3 }, // ✅ Increased mobile gap
+                          mt: { xs: 3, sm: 3.5, md: 4 }, // ✅ Increased mobile margin
                           alignItems: { xs: 'center', md: 'flex-start' },
                           justifyContent: { xs: 'center', md: 'flex-start' },
                           width: '100%',
                           // Mobile-optimized button layout
                           '@media (max-width: 600px)': {
-                            gap: 1.5,  // ✅ Increased from 1
-                            mt: 2.5,  // ✅ Increased from 1.5
+                            gap: 1.5, // ✅ Increased from 1
+                            mt: 2.5, // ✅ Increased from 1.5
                           },
                         }}
                       >
@@ -720,7 +729,7 @@ const HomePage = () => {
                             >
                               💼 Find Jobs Now
                             </StyledButton>
-                            
+
                             {/* ✅ SECONDARY CTA: Find Talent (For Employers) */}
                             <StyledButton
                               variant="outlined"
@@ -916,7 +925,7 @@ const HomePage = () => {
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: 1,
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },  // ✅ Responsive font
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' }, // ✅ Responsive font
                 }}
               >
                 Explore Services
@@ -946,7 +955,8 @@ const HomePage = () => {
             sx={{
               width: '100%',
               height: { xs: '4px', sm: '6px' },
-              background: 'linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%)',
+              background:
+                'linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%)',
               boxShadow: '0 2px 15px rgba(255, 215, 0, 0.5)',
             }}
           />
@@ -956,7 +966,7 @@ const HomePage = () => {
             id="services"
             sx={{
               minHeight: 'auto',
-              py: { xs: 6, sm: 10, md: 16 },  // ✅ Reduced top padding on mobile
+              py: { xs: 6, sm: 10, md: 16 }, // ✅ Reduced top padding on mobile
               background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)',
               alignItems: 'flex-start',
               overflow: 'visible',
@@ -966,11 +976,11 @@ const HomePage = () => {
               sx={{
                 width: '100%',
                 maxWidth: '100vw',
-                px: { xs: 2, sm: 3, md: 4, lg: 6 },  // ✅ Increased mobile padding
+                px: { xs: 2, sm: 3, md: 4, lg: 6 }, // ✅ Increased mobile padding
                 boxSizing: 'border-box',
                 // Mobile-specific optimizations
                 '@media (max-width: 600px)': {
-                  px: 1.5,  // ✅ Increased from 1
+                  px: 1.5, // ✅ Increased from 1
                 },
               }}
             >
@@ -984,11 +994,11 @@ const HomePage = () => {
                   variant={isMobile ? 'h4' : 'h2'}
                   sx={{
                     textAlign: 'center',
-                    mb: { xs: 2.5, sm: 3 },  // ✅ Increased mobile spacing
+                    mb: { xs: 2.5, sm: 3 }, // ✅ Increased mobile spacing
                     color: theme.palette.secondary.main,
                     fontWeight: 800,
                     fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.5rem' },
-                    px: { xs: 1, sm: 0 },  // ✅ Added mobile padding
+                    px: { xs: 1, sm: 0 }, // ✅ Added mobile padding
                   }}
                 >
                   Opportunities by Trade
@@ -997,17 +1007,18 @@ const HomePage = () => {
                   variant={isMobile ? 'body1' : 'h6'}
                   sx={{
                     textAlign: 'center',
-                    mb: { xs: 4, sm: 6, md: 10 },  // ✅ Reduced mobile margin
+                    mb: { xs: 4, sm: 6, md: 10 }, // ✅ Reduced mobile margin
                     color: 'rgba(255,255,255,0.8)',
                     maxWidth: { xs: '100%', sm: 600 },
                     mx: 'auto',
                     fontWeight: 400,
                     fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
-                    lineHeight: { xs: 1.5, sm: 1.5 },  // ✅ Improved mobile readability
+                    lineHeight: { xs: 1.5, sm: 1.5 }, // ✅ Improved mobile readability
                     px: { xs: 2, sm: 0 },
                   }}
                 >
-                  Find jobs or hire skilled workers in these trade categories. Browse opportunities or post your requirements today.
+                  Find jobs or hire skilled workers in these trade categories.
+                  Browse opportunities or post your requirements today.
                 </Typography>
               </motion.div>
 
@@ -1088,8 +1099,8 @@ const HomePage = () => {
                           <Box
                             sx={{
                               display: 'flex',
-                              gap: { xs: 1.5, sm: 1 },  // ✅ Increased mobile gap
-                              mt: { xs: 2, sm: 2 },  // ✅ Increased mobile margin
+                              gap: { xs: 1.5, sm: 1 }, // ✅ Increased mobile gap
+                              mt: { xs: 2, sm: 2 }, // ✅ Increased mobile margin
                               flexDirection: { xs: 'column', sm: 'row' },
                             }}
                           >
@@ -1097,33 +1108,34 @@ const HomePage = () => {
                               variant="contained"
                               size={isMobile ? 'small' : 'small'}
                               sx={{
-                                fontSize: { xs: '0.85rem', sm: '0.8rem' },  // ✅ Larger mobile font
-                                py: { xs: 1.2, sm: 0.8 },  // ✅ More padding
-                                px: { xs: 2, sm: 2 },  // ✅ More horizontal padding
-                                minHeight: { xs: '44px', sm: '36px' },  // ✅ TOUCH TARGET
+                                fontSize: { xs: '0.85rem', sm: '0.8rem' }, // ✅ Larger mobile font
+                                py: { xs: 1.2, sm: 0.8 }, // ✅ More padding
+                                px: { xs: 2, sm: 2 }, // ✅ More horizontal padding
+                                minHeight: { xs: '44px', sm: '36px' }, // ✅ TOUCH TARGET
                                 width: { xs: '100%', sm: 'auto' },
-                                fontWeight: 600,  // ✅ Better readability
-                                '&:active': { transform: 'scale(0.98)' },  // ✅ Mobile feedback
+                                fontWeight: 600, // ✅ Better readability
+                                '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 goToCategorySearch(service.title);
                               }}
                             >
-                              {isMobile ? 'Find Workers' : 'Find Workers'}  {/* ✅ Full text on mobile */}
+                              {isMobile ? 'Find Workers' : 'Find Workers'}{' '}
+                              {/* ✅ Full text on mobile */}
                             </StyledButton>
                             <StyledButton
                               variant="outlined"
                               size={isMobile ? 'small' : 'small'}
                               sx={{
-                                fontSize: { xs: '0.85rem', sm: '0.8rem' },  // ✅ Larger mobile font
-                                py: { xs: 1.2, sm: 0.8 },  // ✅ More padding
-                                px: { xs: 2, sm: 2 },  // ✅ More horizontal padding
-                                minHeight: { xs: '44px', sm: '36px' },  // ✅ TOUCH TARGET
+                                fontSize: { xs: '0.85rem', sm: '0.8rem' }, // ✅ Larger mobile font
+                                py: { xs: 1.2, sm: 0.8 }, // ✅ More padding
+                                px: { xs: 2, sm: 2 }, // ✅ More horizontal padding
+                                minHeight: { xs: '44px', sm: '36px' }, // ✅ TOUCH TARGET
                                 width: { xs: '100%', sm: 'auto' },
-                                borderWidth: { xs: 2, sm: 2 },  // ✅ Consistent border
-                                fontWeight: 600,  // ✅ Better readability
-                                '&:active': { transform: 'scale(0.98)' },  // ✅ Mobile feedback
+                                borderWidth: { xs: 2, sm: 2 }, // ✅ Consistent border
+                                fontWeight: 600, // ✅ Better readability
+                                '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1136,7 +1148,8 @@ const HomePage = () => {
                                 }
                               }}
                             >
-                              {isMobile ? 'Post a Job' : 'Post Job'}  {/* ✅ Full text on mobile */}
+                              {isMobile ? 'Post a Job' : 'Post Job'}{' '}
+                              {/* ✅ Full text on mobile */}
                             </StyledButton>
                           </Box>
                         </ServiceCardContent>
@@ -1156,24 +1169,25 @@ const HomePage = () => {
                 <Box
                   sx={{
                     textAlign: 'center',
-                    mt: { xs: 5, sm: 8, md: 12 },  // ✅ Reduced mobile margin
-                    px: { xs: 2.5, sm: 0 },  // ✅ Increased mobile padding
-                    py: { xs: 4, sm: 5, md: 6 },  // ✅ Added vertical padding
-                    background: 'linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.1) 100%)',  // ✅ Better contrast
-                    borderRadius: { xs: 2, sm: 3 },  // ✅ Rounded corners
-                    border: '2px solid rgba(255, 215, 0, 0.2)',  // ✅ Visible border
-                    boxShadow: '0 8px 32px rgba(255, 215, 0, 0.15)',  // ✅ Subtle glow
+                    mt: { xs: 5, sm: 8, md: 12 }, // ✅ Reduced mobile margin
+                    px: { xs: 2.5, sm: 0 }, // ✅ Increased mobile padding
+                    py: { xs: 4, sm: 5, md: 6 }, // ✅ Added vertical padding
+                    background:
+                      'linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.1) 100%)', // ✅ Better contrast
+                    borderRadius: { xs: 2, sm: 3 }, // ✅ Rounded corners
+                    border: '2px solid rgba(255, 215, 0, 0.2)', // ✅ Visible border
+                    boxShadow: '0 8px 32px rgba(255, 215, 0, 0.15)', // ✅ Subtle glow
                   }}
                 >
                   <Typography
                     variant={isMobile ? 'h5' : 'h4'}
                     sx={{
-                      color: '#FFD700',  // ✅ Gold color for prominence
-                      mb: { xs: 2.5, sm: 3 },  // ✅ Increased spacing
-                      fontWeight: 800,  // ✅ Bolder
-                      fontSize: { xs: '1.6rem', sm: '2rem', md: '2.125rem' },  // ✅ Larger mobile
-                      textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)',  // ✅ Text glow
-                      px: { xs: 1, sm: 0 },  // ✅ Mobile padding
+                      color: '#FFD700', // ✅ Gold color for prominence
+                      mb: { xs: 2.5, sm: 3 }, // ✅ Increased spacing
+                      fontWeight: 800, // ✅ Bolder
+                      fontSize: { xs: '1.6rem', sm: '2rem', md: '2.125rem' }, // ✅ Larger mobile
+                      textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)', // ✅ Text glow
+                      px: { xs: 1, sm: 0 }, // ✅ Mobile padding
                     }}
                   >
                     Ready to Get Started?
@@ -1181,13 +1195,13 @@ const HomePage = () => {
                   <Typography
                     variant={isMobile ? 'body1' : 'h6'}
                     sx={{
-                      color: 'rgba(255,255,255,0.9)',  // ✅ Better contrast
-                      mb: { xs: 3.5, sm: 4 },  // ✅ Increased spacing
+                      color: 'rgba(255,255,255,0.9)', // ✅ Better contrast
+                      mb: { xs: 3.5, sm: 4 }, // ✅ Increased spacing
                       maxWidth: { xs: '100%', sm: 500 },
                       mx: 'auto',
-                      fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },  // ✅ Larger mobile
-                      lineHeight: { xs: 1.6, sm: 1.5 },  // ✅ Better readability
-                      px: { xs: 1, sm: 0 },  // ✅ Mobile padding
+                      fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }, // ✅ Larger mobile
+                      lineHeight: { xs: 1.6, sm: 1.5 }, // ✅ Better readability
+                      px: { xs: 1, sm: 0 }, // ✅ Mobile padding
                     }}
                   >
                     Join thousands of skilled workers and satisfied customers on
@@ -1211,19 +1225,19 @@ const HomePage = () => {
                           'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         color: '#000',
                         fontWeight: 800,
-                        fontSize: { xs: '1.05rem', sm: '1.1rem' },  // ✅ Larger mobile font
-                        px: { xs: 4, sm: 4 },  // ✅ More padding
-                        py: { xs: 1.5, sm: 1.5 },  // ✅ More vertical padding
-                        minHeight: { xs: '50px', sm: '52px' },  // ✅ Larger touch target
+                        fontSize: { xs: '1.05rem', sm: '1.1rem' }, // ✅ Larger mobile font
+                        px: { xs: 4, sm: 4 }, // ✅ More padding
+                        py: { xs: 1.5, sm: 1.5 }, // ✅ More vertical padding
+                        minHeight: { xs: '50px', sm: '52px' }, // ✅ Larger touch target
                         width: { xs: '100%', sm: 'auto' },
-                        maxWidth: { xs: '300px', sm: 'none' },  // ✅ Wider mobile
-                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)',  // ✅ Prominent shadow
+                        maxWidth: { xs: '300px', sm: 'none' }, // ✅ Wider mobile
+                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)', // ✅ Prominent shadow
                         '&:hover': {
                           background:
                             'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                          boxShadow: '0 6px 25px rgba(255, 215, 0, 0.5)',  // ✅ Enhanced hover
+                          boxShadow: '0 6px 25px rgba(255, 215, 0, 0.5)', // ✅ Enhanced hover
                         },
-                        '&:active': { transform: 'scale(0.98)' },  // ✅ Mobile feedback
+                        '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
                       }}
                       fullWidth={isMobile}
                       onClick={() => navigate('/register')}
@@ -1236,23 +1250,23 @@ const HomePage = () => {
                       sx={{
                         borderColor: '#FFD700',
                         color: '#FFD700',
-                        borderWidth: { xs: 2.5, sm: 2 },  // ✅ Thicker mobile border
+                        borderWidth: { xs: 2.5, sm: 2 }, // ✅ Thicker mobile border
                         fontWeight: 700,
-                        fontSize: { xs: '1.05rem', sm: '1.1rem' },  // ✅ Larger mobile font
-                        px: { xs: 4, sm: 4 },  // ✅ More padding
-                        py: { xs: 1.5, sm: 1.5 },  // ✅ More vertical padding
-                        minHeight: { xs: '50px', sm: '52px' },  // ✅ Larger touch target
+                        fontSize: { xs: '1.05rem', sm: '1.1rem' }, // ✅ Larger mobile font
+                        px: { xs: 4, sm: 4 }, // ✅ More padding
+                        py: { xs: 1.5, sm: 1.5 }, // ✅ More vertical padding
+                        minHeight: { xs: '50px', sm: '52px' }, // ✅ Larger touch target
                         width: { xs: '100%', sm: 'auto' },
-                        maxWidth: { xs: '300px', sm: 'none' },  // ✅ Wider mobile
-                        background: 'rgba(255, 215, 0, 0.08)',  // ✅ Better visibility
-                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)',  // ✅ Prominent shadow
+                        maxWidth: { xs: '300px', sm: 'none' }, // ✅ Wider mobile
+                        background: 'rgba(255, 215, 0, 0.08)', // ✅ Better visibility
+                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)', // ✅ Prominent shadow
                         '&:hover': {
-                          background: alpha('#FFD700', 0.15),  // ✅ Better hover
+                          background: alpha('#FFD700', 0.15), // ✅ Better hover
                           borderWidth: { xs: 2.5, sm: 2 },
                           borderColor: '#FFC000',
                           boxShadow: '0 6px 25px rgba(255, 215, 0, 0.3)',
                         },
-                        '&:active': { transform: 'scale(0.98)' },  // ✅ Mobile feedback
+                        '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
                       }}
                       fullWidth={isMobile}
                       onClick={() => navigate('/hirer/find-talent')}
@@ -1266,7 +1280,7 @@ const HomePage = () => {
           </Section>
         </Box>
       </GestureControl>
-      
+
       {/* ✅ NEW: Sticky Footer Navigation for Mobile */}
       <Box
         sx={{
@@ -1274,7 +1288,7 @@ const HomePage = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          display: { xs: 'flex', md: 'none' },  // Only mobile
+          display: { xs: 'flex', md: 'none' }, // Only mobile
           gap: 1,
           p: 1.5,
           backgroundColor: 'rgba(0, 0, 0, 0.95)',

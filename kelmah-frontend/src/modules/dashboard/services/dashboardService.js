@@ -213,12 +213,9 @@ class DashboardService {
   // Get recent activity
   async getRecentActivity(page = 1, limit = 10) {
     try {
-      const response = await jobServiceClient.get(
-        API_ENDPOINTS.JOB.DASHBOARD,
-        {
-          params: { page, limit },
-        },
-      );
+      const response = await jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD, {
+        params: { page, limit },
+      });
       const data = response.data?.data || response.data || {};
       const activities = Array.isArray(data.recentJobs) ? data.recentJobs : [];
       return {

@@ -104,7 +104,12 @@ const WorkerSearchPage = () => {
         <title>Find Talent | Kelmah</title>
       </Helmet>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
           <Button variant="text" color="inherit" onClick={handleGoBack}>
             ← Go Back
           </Button>

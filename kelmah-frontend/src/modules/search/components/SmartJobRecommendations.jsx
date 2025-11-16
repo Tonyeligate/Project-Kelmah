@@ -164,13 +164,7 @@ const SmartJobRecommendations = ({
         setRefreshing(false);
       }
     },
-    [
-      user?.id,
-      isWorker,
-      maxRecommendations,
-      filterCriteria,
-      enqueueSnackbar,
-    ],
+    [user?.id, isWorker, maxRecommendations, filterCriteria, enqueueSnackbar],
   );
 
   useEffect(() => {

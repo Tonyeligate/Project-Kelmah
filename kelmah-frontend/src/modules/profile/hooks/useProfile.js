@@ -37,10 +37,9 @@ export const useProfile = () => {
 
       dispatch(setProfile(profile));
       dispatch(setError(null)); // Clear any previous errors
-      console.debug(
-        '[ProfileHook] loadProfile() completed successfully',
-        { durationMs: Date.now() - startedAt },
-      );
+      console.debug('[ProfileHook] loadProfile() completed successfully', {
+        durationMs: Date.now() - startedAt,
+      });
       return profile;
     } catch (error) {
       const isTimeout = error?.message === 'Profile request timed out';

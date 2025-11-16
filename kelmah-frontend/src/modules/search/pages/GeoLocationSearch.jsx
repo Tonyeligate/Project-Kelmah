@@ -687,13 +687,30 @@ const GeoLocationSearch = () => {
           </Box>
         ) : searched && searchResults.length === 0 ? (
           <TabPanel value={searchType} index={searchType}>
-            <EmptySearchState
-              searchType={searchType}
-              location={location}
-              onGetStarted={() =>
-                navigate(searchType === 0 ? '/jobs' : '/hirer/find-talent')
-              }
-            />
+            <Box
+              sx={{
+                textAlign: 'center',
+                py: 8,
+                px: 3,
+              }}
+            >
+              <Typography variant="h5" gutterBottom color="text.secondary">
+                No {searchType === 0 ? 'jobs' : 'workers'} found
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                {location ? `No results found for "${location}"` : 'Try adjusting your search criteria'}
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() =>
+                  navigate(searchType === 0 ? '/jobs' : '/hirer/find-talent')
+                }
+                startIcon={<SearchIcon />}
+              >
+                {searchType === 0 ? 'Browse All Jobs' : 'Find Talent'}
+              </Button>
+            </Box>
           </TabPanel>
         ) : searchResults.length > 0 ? (
           <TabPanel value={searchType} index={searchType}>

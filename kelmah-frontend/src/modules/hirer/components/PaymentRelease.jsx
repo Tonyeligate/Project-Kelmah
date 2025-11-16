@@ -92,7 +92,8 @@ const PaymentRelease = () => {
     ? paymentSummary.history
     : [];
   const refreshButtonLoading = manualRefreshPending || paymentsLoading;
-  const showInitialLoading = (jobsLoading || paymentsLoading) && !paymentSummary;
+  const showInitialLoading =
+    (jobsLoading || paymentsLoading) && !paymentSummary;
   const formattedLastSynced = lastSyncedAt
     ? new Date(lastSyncedAt).toLocaleString('en-GH', {
         hour: '2-digit',
@@ -105,7 +106,11 @@ const PaymentRelease = () => {
   const ensurePaymentSummary = useCallback(
     (force = false) => {
       const now = Date.now();
-      if (!force && paymentSummary && now - lastFetchRef.current < PAYMENT_SUMMARY_TTL_MS) {
+      if (
+        !force &&
+        paymentSummary &&
+        now - lastFetchRef.current < PAYMENT_SUMMARY_TTL_MS
+      ) {
         return;
       }
 
@@ -124,9 +129,13 @@ const PaymentRelease = () => {
         try {
           await dispatch(fetchPaymentSummary()).unwrap();
         } catch (err) {
-          console.warn(`Failed to fetch payment summary (attempt ${attempts}):`, err);
+          console.warn(
+            `Failed to fetch payment summary (attempt ${attempts}):`,
+            err,
+          );
           if (attempts < PAYMENT_SUMMARY_MAX_RETRIES) {
-            const delay = PAYMENT_SUMMARY_RETRY_BASE_DELAY_MS * 2 ** (attempts - 1);
+            const delay =
+              PAYMENT_SUMMARY_RETRY_BASE_DELAY_MS * 2 ** (attempts - 1);
             await sleep(delay);
             return attemptFetch();
           }
@@ -433,7 +442,11 @@ const PaymentRelease = () => {
           variant="outlined"
           size="small"
           startIcon={
-            refreshButtonLoading ? <CircularProgress size={16} /> : <RefreshIcon />
+            refreshButtonLoading ? (
+              <CircularProgress size={16} />
+            ) : (
+              <RefreshIcon />
+            )
           }
           onClick={handleRefreshSummary}
           disabled={refreshButtonLoading}

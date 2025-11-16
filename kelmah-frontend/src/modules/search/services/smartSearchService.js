@@ -15,12 +15,15 @@ const smartSearchService = {
    */
   getSmartJobRecommendations: async (userId, options = {}) => {
     try {
-      const response = await userServiceClient.get(JOB_RECOMMENDATIONS_ENDPOINT, {
-        params: {
-          userId,
-          ...options,
+      const response = await userServiceClient.get(
+        JOB_RECOMMENDATIONS_ENDPOINT,
+        {
+          params: {
+            userId,
+            ...options,
+          },
         },
-      });
+      );
       return response.data;
     } catch (error) {
       if (error?.response?.status === 403) {

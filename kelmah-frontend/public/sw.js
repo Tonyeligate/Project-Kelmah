@@ -16,7 +16,7 @@ const PRECACHE_URLS = [
   '/hirer/dashboard',
   '/jobs',
   '/messages',
-  '/payments'
+  '/payments',
 ];
 
 // API endpoints to cache for offline
@@ -25,7 +25,7 @@ const CACHE_API_PATTERNS = [
   '/api/workers',
   '/api/users/profile',
   '/api/messages/conversations',
-  '/api/payments/wallet'
+  '/api/payments/wallet',
 ];
 
 // Resources that should always be fetched fresh
@@ -33,15 +33,16 @@ const NETWORK_FIRST_PATTERNS = [
   '/api/auth/',
   '/api/payments/transactions',
   '/api/messages/send',
-  '/api/jobs/apply'
+  '/api/jobs/apply',
 ];
 
 // Install event - cache critical resources
 self.addEventListener('install', (event) => {
   console.log('🔧 Service Worker installing...');
-  
+
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches
+      .open(CACHE_NAME)
       .then((cache) => {
         console.log('📦 Caching core resources for offline access');
         return cache.addAll(PRECACHE_URLS);
@@ -52,16 +53,17 @@ self.addEventListener('install', (event) => {
       })
       .catch((error) => {
         console.error('❌ Service Worker installation failed:', error);
-      })
+      }),
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('🚀 Service Worker activating...');
-  
+
   event.waitUntil(
-    caches.keys()
+    caches
+      .keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
@@ -69,13 +71,13 @@ self.addEventListener('activate', (event) => {
               console.log('🗑️ Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
-          })
+          }),
         );
       })
       .then(() => {
         console.log('✅ Service Worker activated');
         return self.clients.claim();
-      })
+      }),
   );
 });
 
@@ -95,15 +97,17 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Skip development files and hot reload requests
-  if (url.pathname.includes('/src/') || 
-      url.pathname.includes('/@vite/') ||
-      url.pathname.includes('/.vite/') ||
-      url.pathname.includes('/__vite_ping') ||
-      url.pathname.includes('?import') ||
-      url.searchParams.has('import') ||
-      url.searchParams.has('t') ||
-      request.url.includes('main.jsx') ||
-      request.url.includes('vite/client')) {
+  if (
+    url.pathname.includes('/src/') ||
+    url.pathname.includes('/@vite/') ||
+    url.pathname.includes('/.vite/') ||
+    url.pathname.includes('/__vite_ping') ||
+    url.pathname.includes('?import') ||
+    url.searchParams.has('import') ||
+    url.searchParams.has('t') ||
+    request.url.includes('main.jsx') ||
+    request.url.includes('vite/client')
+  ) {
     return;
   }
 
@@ -128,23 +132,23 @@ async function handleDocumentRequest(request) {
   try {
     // Try network first
     const response = await fetch(request);
-    
+
     // Cache successful responses
     if (response.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
-    
+
     return response;
   } catch (error) {
     console.log('📱 Network failed, serving from cache:', request.url);
-    
+
     // Fallback to cache
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Final fallback to offline page
     return caches.match(OFFLINE_URL);
   }
@@ -153,17 +157,17 @@ async function handleDocumentRequest(request) {
 // Handle API requests with smart caching
 async function handleAPIRequest(request) {
   const url = request.url;
-  
+
   // Authentication requests - always network
-  if (NETWORK_FIRST_PATTERNS.some(pattern => url.includes(pattern))) {
+  if (NETWORK_FIRST_PATTERNS.some((pattern) => url.includes(pattern))) {
     return handleNetworkOnlyRequest(request);
   }
-  
+
   // Cacheable API requests - stale while revalidate
-  if (CACHE_API_PATTERNS.some(pattern => url.includes(pattern))) {
+  if (CACHE_API_PATTERNS.some((pattern) => url.includes(pattern))) {
     return handleStaleWhileRevalidate(request);
   }
-  
+
   // Default: network first with cache fallback
   return handleNetworkFirstRequest(request);
 }
@@ -171,22 +175,22 @@ async function handleAPIRequest(request) {
 // Handle static assets (JS, CSS, images)
 async function handleStaticAssetRequest(request) {
   const cachedResponse = await caches.match(request);
-  
+
   if (cachedResponse) {
     // Update cache in background
     updateCacheInBackground(request);
     return cachedResponse;
   }
-  
+
   // Not in cache, fetch from network
   try {
     const response = await fetch(request);
-    
+
     if (response.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
-    
+
     return response;
   } catch (error) {
     console.error('Failed to fetch static asset:', request.url);
@@ -201,35 +205,35 @@ async function handleNetworkFirstRequest(request) {
   const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
   try {
     // Create timeout promise for Ghana's network conditions
-    
+
     const response = await fetch(request, {
-      signal: controller.signal
+      signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     // Cache successful responses
     if (response.status === 200) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
-    
+
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     // Handle timeout and network errors gracefully
     if (error.name === 'AbortError') {
       console.log('⏰ Request timeout, checking cache:', request.url);
     } else {
       console.log('🌐 Network failed, checking cache:', request.url);
     }
-    
+
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     throw error;
   }
 }
@@ -237,11 +241,14 @@ async function handleNetworkFirstRequest(request) {
 // Network only strategy (for critical real-time data)
 async function handleNetworkOnlyRequest(request) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort('Request timeout'), 15000); // Increased timeout for cold starts
-  
+  const timeoutId = setTimeout(
+    () => controller.abort('Request timeout'),
+    15000,
+  ); // Increased timeout for cold starts
+
   try {
     const response = await fetch(request, {
-      signal: controller.signal
+      signal: controller.signal,
     });
     clearTimeout(timeoutId);
     return response;
@@ -254,7 +261,7 @@ async function handleNetworkOnlyRequest(request) {
 // Stale while revalidate strategy
 async function handleStaleWhileRevalidate(request) {
   const cachedResponse = await caches.match(request);
-  
+
   const networkResponsePromise = (async () => {
     try {
       const response = await fetch(request);
@@ -268,14 +275,14 @@ async function handleStaleWhileRevalidate(request) {
       return null;
     }
   })();
-  
+
   // Return cached version immediately if available
   if (cachedResponse) {
     // Kick off background update without awaiting to avoid double-consuming body
     networkResponsePromise;
     return cachedResponse;
   }
-  
+
   // No cache, wait for network
   return networkResponsePromise;
 }
@@ -299,15 +306,17 @@ function isAPIRequest(url) {
 }
 
 function isStaticAsset(url) {
-  return url.includes('/static/') || 
-         url.includes('/assets/') ||
-         url.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|ico)$/);
+  return (
+    url.includes('/static/') ||
+    url.includes('/assets/') ||
+    url.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|ico)$/)
+  );
 }
 
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
   console.log('🔄 Background sync event:', event.tag);
-  
+
   if (event.tag === 'sync-job-applications') {
     event.waitUntil(syncJobApplications());
   } else if (event.tag === 'sync-messages') {
@@ -322,18 +331,18 @@ async function syncJobApplications() {
   try {
     // Get offline job applications from IndexedDB
     const offlineApplications = await getOfflineJobApplications();
-    
+
     for (const application of offlineApplications) {
       try {
         const response = await fetch('/api/jobs/apply', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${application.token}`
+            Authorization: `Bearer ${application.token}`,
           },
-          body: JSON.stringify(application.data)
+          body: JSON.stringify(application.data),
         });
-        
+
         if (response.ok) {
           await removeOfflineJobApplication(application.id);
           console.log('✅ Synced job application:', application.id);
@@ -351,18 +360,18 @@ async function syncJobApplications() {
 async function syncMessages() {
   try {
     const offlineMessages = await getOfflineMessages();
-    
+
     for (const message of offlineMessages) {
       try {
         const response = await fetch('/api/messages/send', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${message.token}`
+            Authorization: `Bearer ${message.token}`,
           },
-          body: JSON.stringify(message.data)
+          body: JSON.stringify(message.data),
         });
-        
+
         if (response.ok) {
           await removeOfflineMessage(message.id);
           console.log('✅ Synced message:', message.id);
@@ -380,18 +389,18 @@ async function syncMessages() {
 async function syncPayments() {
   try {
     const offlinePayments = await getOfflinePayments();
-    
+
     for (const payment of offlinePayments) {
       try {
         const response = await fetch('/api/payments/process', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${payment.token}`
+            Authorization: `Bearer ${payment.token}`,
           },
-          body: JSON.stringify(payment.data)
+          body: JSON.stringify(payment.data),
         });
-        
+
         if (response.ok) {
           await removeOfflinePayment(payment.id);
           console.log('✅ Synced payment:', payment.id);
@@ -408,7 +417,7 @@ async function syncPayments() {
 // Push notification handling
 self.addEventListener('push', (event) => {
   console.log('📲 Push notification received:', event);
-  
+
   const options = {
     body: 'You have new updates on Kelmah',
     icon: '/vite.svg',
@@ -416,54 +425,56 @@ self.addEventListener('push', (event) => {
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
-      primaryKey: 1
+      primaryKey: 1,
     },
     tag: 'kelmah-notification',
     actions: [
       {
         action: 'explore',
-        title: 'Open Kelmah'
+        title: 'Open Kelmah',
       },
       {
         action: 'close',
-        title: 'Close'
-      }
-    ]
+        title: 'Close',
+      },
+    ],
   };
-  
+
   if (event.data) {
     const payload = event.data.json();
     options.body = payload.body || options.body;
     options.data = { ...options.data, ...payload.data };
   }
-  
-  event.waitUntil(
-    self.registration.showNotification('Kelmah', options)
-  );
+
+  event.waitUntil(self.registration.showNotification('Kelmah', options));
 });
 
 // Notification click handling
 self.addEventListener('notificationclick', (event) => {
   console.log('🔔 Notification clicked:', event);
-  
+
   event.notification.close();
-  
+
   if (event.action === 'close') {
     return;
   }
-  
-  event.waitUntil(
-    clients.openWindow('/')
-  );
+
+  event.waitUntil(clients.openWindow('/'));
 });
 
 // Placeholder functions for IndexedDB operations
 // These would be implemented with a proper IndexedDB wrapper
-async function getOfflineJobApplications() { return []; }
-async function removeOfflineJobApplication(id) { }
-async function getOfflineMessages() { return []; }
-async function removeOfflineMessage(id) { }
-async function getOfflinePayments() { return []; }
-async function removeOfflinePayment(id) { }
+async function getOfflineJobApplications() {
+  return [];
+}
+async function removeOfflineJobApplication(id) {}
+async function getOfflineMessages() {
+  return [];
+}
+async function removeOfflineMessage(id) {}
+async function getOfflinePayments() {
+  return [];
+}
+async function removeOfflinePayment(id) {}
 
 console.log('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market');

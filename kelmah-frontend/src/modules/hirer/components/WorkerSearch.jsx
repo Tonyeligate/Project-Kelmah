@@ -143,8 +143,8 @@ const WorkerSearch = () => {
           })
           .filter(Boolean)
       : Array.isArray(worker.specializations)
-      ? worker.specializations.filter(Boolean)
-      : [];
+        ? worker.specializations.filter(Boolean)
+        : [];
 
     const experienceYears =
       worker.yearsOfExperience ?? worker.experienceYears ?? null;
@@ -162,7 +162,9 @@ const WorkerSearch = () => {
     const safeIdValue =
       worker.id ||
       worker.userId ||
-      (worker._id && worker._id.toString ? worker._id.toString() : worker._id) ||
+      (worker._id && worker._id.toString
+        ? worker._id.toString()
+        : worker._id) ||
       worker.workerId ||
       worker.email ||
       null;
@@ -320,7 +322,12 @@ const WorkerSearch = () => {
         const sortedWorkers = sortWorkerList(normalizedWorkers, sortOption);
 
         setWorkers(sortedWorkers);
-        setTotalPages(pagination.totalPages || pagination.pages || response.data.totalPages || 1);
+        setTotalPages(
+          pagination.totalPages ||
+            pagination.pages ||
+            response.data.totalPages ||
+            1,
+        );
 
         try {
           localStorage.setItem(
@@ -364,19 +371,17 @@ const WorkerSearch = () => {
       }
 
       if (filters.skills.length > 0 && filteredWorkers.length) {
-        filteredWorkers = filteredWorkers.filter(
-          (worker) => {
-            if (!Array.isArray(worker.skills)) return false;
-            const normalizedSkills = worker.skills.map((skill) =>
-              typeof skill === 'string'
-                ? skill
-                : skill?.name || skill?.skillName || skill,
-            );
-            return filters.skills.some((skill) =>
-              normalizedSkills.includes(skill),
-            );
-          },
-        );
+        filteredWorkers = filteredWorkers.filter((worker) => {
+          if (!Array.isArray(worker.skills)) return false;
+          const normalizedSkills = worker.skills.map((skill) =>
+            typeof skill === 'string'
+              ? skill
+              : skill?.name || skill?.skillName || skill,
+          );
+          return filters.skills.some((skill) =>
+            normalizedSkills.includes(skill),
+          );
+        });
       }
 
       if (filters.location && filteredWorkers.length) {
@@ -1027,25 +1032,23 @@ const WorkerSearch = () => {
                     </Typography>
                     <Box display="flex" gap={0.5} flexWrap="wrap" mb={2}>
                       {Array.isArray(worker.skills) &&
-                        worker.skills
-                          .slice(0, 3)
-                          .map((skill, index) => {
-                            const label =
-                              typeof skill === 'string'
-                                ? skill
-                                : skill?.name ||
-                                  skill?.skillName ||
-                                  skill?.label ||
-                                  String(skill || 'Skill');
-                            return (
-                              <Chip
-                                key={index}
-                                label={label}
-                                size="small"
-                                variant="outlined"
-                              />
-                            );
-                          })}
+                        worker.skills.slice(0, 3).map((skill, index) => {
+                          const label =
+                            typeof skill === 'string'
+                              ? skill
+                              : skill?.name ||
+                                skill?.skillName ||
+                                skill?.label ||
+                                String(skill || 'Skill');
+                          return (
+                            <Chip
+                              key={index}
+                              label={label}
+                              size="small"
+                              variant="outlined"
+                            />
+                          );
+                        })}
                       {Array.isArray(worker.skills) &&
                         worker.skills.length > 3 && (
                           <Chip
@@ -1087,8 +1090,9 @@ const WorkerSearch = () => {
                       color="text.secondary"
                       sx={{ mb: 2 }}
                     >
-                      {(
-                        typeof worker.bio === 'string' ? worker.bio : ''
+                      {(typeof worker.bio === 'string'
+                        ? worker.bio
+                        : ''
                       ).substring(0, 120)}
                       {typeof worker.bio === 'string' && worker.bio.length > 120
                         ? '...'

@@ -524,12 +524,13 @@ const JobPostingPage = () => {
               onBlur={() => markFieldTouched('description')}
               error={Boolean(touchedFields.description && fieldErrors.description)}
               helperText={
-                (touchedFields.description && fieldErrors.description) ||
-                (descriptionTooLong
-                  ? `Trim ${descriptionLength - DESCRIPTION_MAX_CHARS} characters to stay within ${DESCRIPTION_MAX_CHARS}.`
-                  : descriptionRemaining > 0
-                    ? `${descriptionRemaining} more characters required (minimum ${DESCRIPTION_MIN_CHARS}).`
-                    : `Great! ${descriptionLength} characters captured (max ${DESCRIPTION_MAX_CHARS}).`)}
+                touchedFields.description && fieldErrors.description
+                  ? fieldErrors.description
+                  : descriptionTooLong
+                    ? `Description too long (${descriptionLength}/${DESCRIPTION_MAX_CHARS})`
+                    : descriptionRemaining > 0
+                      ? `Need ${descriptionRemaining} more characters`
+                      : `${descriptionLength} characters`
               }
             />
             <Box mt={1}>

@@ -1,128 +1,196 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
+  Alert,
+  Avatar,
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   Grid,
-  Button,
+  IconButton,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  Pagination,
+  Skeleton,
+  Stack,
   Table,
-        <DialogContent>
-          {selectedProposal && (
-            <Box>
-              {(() => {
-                const worker = selectedProposal.worker || {};
-                const workerName = worker.name || 'Unknown worker';
-                const workerLocation = formatLocationBadge(worker.location);
-                const job = selectedProposal.job || {};
-                const jobLocation = formatLocationBadge(
-                  job.location || job.locationDetails || selectedProposal.jobLocation,
-                );
-                const coverLetter =
-                  selectedProposal.coverLetterPreview ||
-                  'No cover letter provided.';
-                const durationLabel = formatDurationLabel(
-                  selectedProposal.availability?.duration,
-                );
-                const startLabel = selectedProposal.availability?.startDate
-                  ? formatDate(selectedProposal.availability.startDate)
-                  : null;
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
+import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import StarIcon from '@mui/icons-material/Star';
+import { jobServiceClient } from '../../common/services/axios';
 
-                return (
-                  <>
-                    <Box display="flex" alignItems="center" gap={2} mb={3}>
-                      <Avatar src={worker.avatar} sx={{ width: 64, height: 64 }}>
-                        {workerName.charAt(0)}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h6">{workerName}</Typography>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
-                          <Typography variant="body2">
-                            {Number(worker.rating || 0).toFixed(1)} ({worker.completedJobs || 0} jobs)
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          {workerLocation}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {worker.experience || 'Experience not specified'}
-                        </Typography>
-                      </Box>
-                    </Box>
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_RETRY_ATTEMPTS = 2;
+const REQUEST_TIMEOUT_MS = 15000;
+const CACHE_TTL_MS = 60 * 1000;
 
-                    <Divider sx={{ my: 2 }} />
+const STATUS_FILTERS = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Under Review', value: 'under_review' },
+  { label: 'Accepted', value: 'accepted' },
+  { label: 'Rejected', value: 'rejected' },
+];
 
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          Job: {job.title || selectedProposal.jobTitle || 'Untitled job'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Category: {job.category || 'Not specified'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Location: {jobLocation}
-                        </Typography>
-                        {typeof job.budget === 'number' && !Number.isNaN(job.budget) && (
-                          <Typography variant="body2" color="text.secondary">
-                            Budget: {formatCurrency(job.budget)}
-                          </Typography>
-                        )}
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight="bold"
-                          color="primary.main"
-                          gutterBottom
-                        >
-                          Proposed Rate: {formatCurrency(selectedProposal.proposedRate)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Duration: {durationLabel}
-                        </Typography>
-                        {startLabel && (
-                          <Typography variant="body2" color="text.secondary">
-                            Earliest Start: {startLabel}
-                          </Typography>
-                        )}
-                        <Typography variant="body2" color="text.secondary">
-                          Submitted: {formatDate(selectedProposal.submittedAt)}
-                        </Typography>
-                      </Grid>
-                    </Grid>
+const formatCurrency = (value) => {
+  const amount = Number(value ?? 0);
+  if (Number.isNaN(amount)) {
+    return 'GHS\u00a00';
+  }
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
+};
 
-                    <Divider sx={{ my: 2 }} />
+const formatDate = (value) => {
+  if (!value) {
+    return 'Not specified';
+  }
+  try {
+    return new Intl.DateTimeFormat('en-GH', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(new Date(value));
+  } catch (err) {
+    return 'Not specified';
+  }
+};
 
-                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                      Cover Letter
-                    </Typography>
-                    <Typography variant="body2" paragraph>
-                      {coverLetter}
-                    </Typography>
-                  </>
-                );
-              })()}
-            </Box>
-          )}
-        </DialogContent>
+const formatDurationLabel = (duration) => {
+  if (!duration) {
+    return 'Not specified';
+  }
+  if (typeof duration === 'string') {
+    return duration;
+  }
+  const amount = duration.value ?? duration.amount;
+  const unit = duration.unit;
+  if (!amount || !unit) {
+    return 'Not specified';
+  }
+  const normalizedUnit = amount > 1 && !unit.endsWith('s') ? `${unit}s` : unit;
+  return `${amount} ${normalizedUnit}`;
+};
+
+const formatLocationBadge = (location) => {
+  if (!location) {
+    return 'Location not specified';
+  }
+  if (typeof location === 'string') {
+    return location;
+  }
+  const { city, region, address, country } = location;
+  const parts = [city, region, address, country]
+    .map((part) => (typeof part === 'string' ? part.trim() : ''))
+    .filter(Boolean);
+  return parts.length ? parts.join(', ') : 'Location not specified';
+};
+
+const formatStatusLabel = (status) => {
+  if (!status) {
+    return 'Unknown';
+  }
+  return status
+    .split('_')
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ');
+};
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'pending':
+      return 'warning';
+    case 'under_review':
+      return 'info';
+    case 'accepted':
+      return 'success';
+    case 'rejected':
+      return 'error';
+    default:
+      return 'default';
+  }
+};
+
+const toArray = (value) => (Array.isArray(value) ? value : []);
+
+const ProposalReview = () => {
+  const [proposals, setProposals] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [selectedProposal, setSelectedProposal] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ feedback: '' });
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [actionInProgress, setActionInProgress] = useState(false);
+
+  const cacheRef = useRef(new Map());
+  const requestControllerRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const timedOutRequestRef = useRef(false);
+
+  const clearInFlightRequest = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (requestControllerRef.current) {
+      requestControllerRef.current.abort();
       requestControllerRef.current = null;
     }
     timedOutRequestRef.current = false;
   }, []);
 
   const fetchProposals = useCallback(
-    async ({ status = statusFilter, page: requestedPage = page, useCache = true } = {}) => {
+    async (options = {}) => {
+      const status = options.status ?? statusFilter;
+      const requestedPage = options.page ?? page;
+      const useCache = options.useCache ?? true;
+
       const cacheKey = `${status}:${requestedPage}`;
       const cachedEntry = cacheRef.current.get(cacheKey);
 
       if (cachedEntry) {
-        setProposals(cachedEntry.data.items);
-        setMeta(cachedEntry.data.meta);
-        setLastUpdated(
-          cachedEntry.data.meta?.aggregates?.updatedAt || cachedEntry.timestamp,
-        );
+        setProposals(cachedEntry.items);
+        setMeta(cachedEntry.meta);
+        setLastUpdated(cachedEntry.updatedAt);
         setError(null);
       }
 
@@ -137,18 +205,18 @@ import {
       }
 
       const hadWarmData = Boolean(cachedEntry);
-      setIsRefreshing(hadWarmData);
       setLoading(!hadWarmData);
+      setIsRefreshing(hadWarmData);
       setHasTimedOut(false);
 
-      let lastError = null;
-      let completed = false;
-      let aborted = false;
+      let finalError = null;
 
       for (let attempt = 0; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
         clearInFlightRequest();
+
         const controller = new AbortController();
         requestControllerRef.current = controller;
+
         timeoutRef.current = setTimeout(() => {
           timedOutRequestRef.current = true;
           setHasTimedOut(true);
@@ -156,54 +224,65 @@ import {
         }, REQUEST_TIMEOUT_MS);
 
         try {
+          const params = {
+            page: requestedPage,
+            limit: DEFAULT_PAGE_SIZE,
+          };
+          if (status && status !== 'all') {
+            params.status = status;
+          }
+
           const response = await jobServiceClient.get('/jobs/proposals', {
-            params: { status, page: requestedPage, limit: DEFAULT_PAGE_SIZE },
+            params,
             signal: controller.signal,
           });
 
-          const payload = response.data?.data || {};
+          const payload = response.data?.data ?? response.data ?? {};
           const items = Array.isArray(payload.items) ? payload.items : [];
-          const pagination = payload.pagination || {
-            page: requestedPage,
-            totalPages: 1,
-          };
-          const aggregates = response.data?.meta?.aggregates || {};
+          const paginationData =
+            payload.pagination ??
+            response.data?.meta?.pagination ?? {
+              page: requestedPage,
+              totalPages: 1,
+            };
+          const aggregates =
+            response.data?.meta?.aggregates ?? payload.aggregates ?? {};
 
           setProposals(items);
-          setMeta({ pagination, aggregates });
+          setMeta({ pagination: paginationData, aggregates });
           setError(null);
           setHasTimedOut(false);
-          const resolvedUpdatedAt =
-            aggregates.updatedAt || new Date().toISOString();
-          setLastUpdated(resolvedUpdatedAt);
+          setLoading(false);
+          setIsRefreshing(false);
+
+          const updatedAt = aggregates.updatedAt ?? new Date().toISOString();
+          setLastUpdated(updatedAt);
 
           cacheRef.current.set(cacheKey, {
+            items,
+            meta: { pagination: paginationData, aggregates },
+            updatedAt,
             timestamp: Date.now(),
-            data: {
-              items,
-              meta: { pagination, aggregates },
-            },
           });
 
-          completed = true;
-          break;
+          return;
         } catch (err) {
-          lastError = err;
-          if (err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED') {
-            aborted = true;
-            if (timedOutRequestRef.current) {
-              setError(
-                'Loading proposals is taking longer than expected. Please retry.',
-              );
+          finalError = err;
+          if (err?.name === 'AbortError') {
+            if (!timedOutRequestRef.current) {
+              setLoading(false);
+              setIsRefreshing(false);
+              return;
             }
+          }
+
+          if (attempt === MAX_RETRY_ATTEMPTS) {
             break;
           }
 
-          if (attempt < MAX_RETRY_ATTEMPTS) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, 400 * 2 ** attempt),
-            );
-          }
+          await new Promise((resolve) =>
+            setTimeout(resolve, 400 * 2 ** attempt),
+          );
         } finally {
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -217,13 +296,13 @@ import {
       setLoading(false);
       setIsRefreshing(false);
 
-      if (completed || aborted) {
-        return;
-      }
-
-      if (lastError) {
-        console.error('Unable to fetch proposals:', lastError);
-        setError('Unable to fetch proposals. Please try again later.');
+      if (finalError) {
+        console.error('Unable to fetch proposals:', finalError);
+        setError(
+          timedOutRequestRef.current
+            ? 'Loading proposals is taking longer than expected. Please retry.'
+            : 'Unable to fetch proposals. Please try again later.',
+        );
       }
     },
     [statusFilter, page, clearInFlightRequest],
@@ -234,49 +313,38 @@ import {
     return () => clearInFlightRequest();
   }, [fetchProposals, clearInFlightRequest]);
 
-  const handleStatusChange = useCallback(
-    (nextStatus) => {
-      if (nextStatus === statusFilter) {
-        return;
-      }
-      setStatusFilter(nextStatus);
-      setPage(1);
-    },
-    [statusFilter],
-  );
-
-  const handlePageChange = useCallback(
-    (_event, value) => {
-      if (value === page) {
-        return;
-      }
-      setPage(value);
-    },
-    [page],
-  );
-
-  const handleRetry = useCallback(() => {
-    fetchProposals({ status: statusFilter, page, useCache: false });
-  }, [fetchProposals, statusFilter, page]);
-
-  const pagination = meta?.pagination || { page: 1, totalPages: 1 };
-  const statusCounts = meta?.aggregates?.statusCounts || {};
+  const statusCounts = meta?.aggregates?.statusCounts ?? {};
+  const paginationData = meta?.pagination ?? { page, totalPages: 1 };
+  const currentPage = paginationData.page ?? page;
+  const totalPages = paginationData.totalPages ?? 1;
+  const totalItems =
+    paginationData.totalItems ?? meta?.aggregates?.total ?? proposals.length;
+  const pageSize = paginationData.limit ?? DEFAULT_PAGE_SIZE;
+  const rangeStart = proposals.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd = proposals.length === 0 ? 0 : rangeStart + proposals.length - 1;
+  const safePage = currentPage > 0 ? currentPage : 1;
 
   const proposalStats = useMemo(() => {
-    const fallbackAverage =
-      proposals.length > 0
+    const aggregates = meta?.aggregates ?? {};
+    const total = aggregates.total ?? proposals.length;
+    const pending = statusCounts.pending ?? 0;
+    const accepted = statusCounts.accepted ?? 0;
+    const rejected = statusCounts.rejected ?? 0;
+    const averageRate =
+      aggregates.averageRate ??
+      (proposals.length
         ? proposals.reduce(
-            (sum, proposal) => sum + (proposal.proposedRate || 0),
+            (sum, proposal) => sum + Number(proposal.proposedRate || 0),
             0,
           ) / proposals.length
-        : 0;
+        : 0);
 
     return {
-      total: meta?.aggregates?.total ?? proposals.length,
-      pending: statusCounts.pending || 0,
-      accepted: statusCounts.accepted || 0,
-      rejected: statusCounts.rejected || 0,
-      averageRate: meta?.aggregates?.averageRate ?? fallbackAverage,
+      total,
+      pending,
+      accepted,
+      rejected,
+      averageRate,
     };
   }, [meta, proposals, statusCounts]);
 
@@ -284,183 +352,327 @@ import {
     if (!lastUpdated) {
       return 'Never';
     }
-    return new Date(lastUpdated).toLocaleString('en-GH', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    try {
+      return new Intl.DateTimeFormat('en-GH', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(lastUpdated));
+    } catch (err) {
+      return 'Never';
+    }
   }, [lastUpdated]);
 
   const showInitialLoading = loading && proposals.length === 0;
   const isEmptyState = !loading && proposals.length === 0;
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const handleStatusChange = useCallback(
+    (nextStatus) => {
+      if (nextStatus === statusFilter) {
+        return;
+      }
+      cacheRef.current.clear();
+      setStatusFilter(nextStatus);
+      setPage(1);
+    },
+    [statusFilter],
+  );
 
-  const formatDate = (date) => {
-    if (!date) {
-      return 'Not specified';
+  const handlePageChange = useCallback((_, value) => {
+    if (value !== page) {
+      setPage(value);
     }
-    return new Date(date).toLocaleDateString('en-GH', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+  }, [page]);
 
-  const formatDurationLabel = (duration) => {
-    if (!duration) {
-      return 'Not specified';
-    }
-    if (typeof duration === 'string') {
-      return duration;
-    }
-    const value = duration.value || duration.amount;
-    const unit = duration.unit;
-    if (!value || !unit) {
-      return 'Not specified';
-    }
-    const normalizedUnit = value > 1 && !unit.endsWith('s') ? `${unit}s` : unit;
-    return `${value} ${normalizedUnit}`;
-  };
-
-  const formatLocationBadge = (location) => {
-    if (!location) {
-      return 'Location not specified';
-    }
-    if (typeof location === 'string') {
-      return location;
-    }
-    const { city, region, country, address } = location;
-    const parts = [city, region, address, country]
-      .map((part) => (typeof part === 'string' ? part.trim() : ''))
-      .filter(Boolean);
-    return parts.length ? parts.join(', ') : 'Location not specified';
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'warning';
-      case 'under_review':
-        return 'info';
-      case 'accepted':
-        return 'success';
-      case 'rejected':
-        return 'error';
-      case 'withdrawn':
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatStatusLabel = (status) => {
-    if (!status) {
-      return 'Unknown';
-    }
-    return status
-      .split('_')
-      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(' ');
-  };
+  const handleRetry = useCallback(() => {
+    fetchProposals({ status: statusFilter, page, useCache: false });
+  }, [fetchProposals, statusFilter, page]);
 
   const handleMenuOpen = (event, proposal) => {
     setAnchorEl(event.currentTarget);
     setSelectedProposal(proposal);
   };
 
-  const handleMenuClose = () => {
+  const handleMenuClose = useCallback((resetSelection = false) => {
     setAnchorEl(null);
-    setSelectedProposal(null);
-  };
+    if (resetSelection) {
+      setSelectedProposal(null);
+    }
+  }, []);
 
-  const handleDialogOpen = (type) => {
+  const handleDialogOpen = useCallback((type) => {
     setDialogType(type);
     setDialogOpen(true);
-    handleMenuClose();
-  };
+    setAnchorEl(null);
+  }, []);
 
-  const handleDialogClose = () => {
+  const handleDialogClose = useCallback(() => {
     setDialogOpen(false);
     setDialogType(null);
     setSelectedProposal(null);
-    setReviewForm({
-      rating: 5,
-      feedback: '',
-      decision: '',
-    });
-  };
+    setReviewForm({ feedback: '' });
+  }, []);
 
-  const handleProposalAction = async (action) => {
-    if (selectedProposal) {
+  const handleProposalAction = useCallback(
+    async (action, additionalData = {}) => {
+      if (!selectedProposal) {
+        return;
+      }
+
+      const proposalId =
+        selectedProposal.id ??
+        selectedProposal._id ??
+        selectedProposal.proposalId ??
+        selectedProposal.proposalID;
+
+      if (!proposalId) {
+        setError('Missing proposal identifier. Please refresh and try again.');
+        return;
+      }
+
       try {
-        // Mock proposal action
-        console.log(`${action} proposal ${selectedProposal.id}`);
+        setActionInProgress(true);
+        setError(null);
 
-        // Update local state
-        setProposals((prev) =>
-          prev.map((p) =>
-            p.id === selectedProposal.id ? { ...p, status: action } : p,
-          ),
-        );
+        await jobServiceClient.patch(`/jobs/proposals/${proposalId}`, {
+          status: action,
+          ...additionalData,
+        });
 
         handleDialogClose();
-      } catch (error) {
-        console.error(`Error ${action} proposal:`, error);
-        setError(`Failed to ${action} proposal`);
+        await fetchProposals({ status: statusFilter, page, useCache: false });
+      } catch (err) {
+        console.error(`Failed to update proposal ${proposalId}:`, err);
+        setError('Failed to update proposal. Please try again.');
+      } finally {
+        setActionInProgress(false);
       }
+    },
+    [selectedProposal, fetchProposals, statusFilter, page, handleDialogClose],
+  );
+
+  const handleReviewInputChange = useCallback((event) => {
+    const { value } = event.target;
+    setReviewForm((prev) => ({ ...prev, feedback: value }));
+  }, []);
+
+  const renderProposalDetails = () => {
+    if (!selectedProposal) {
+      return null;
     }
-  };
 
-  // Summary Statistics derived from API metadata
+    const worker = selectedProposal.worker ?? {};
+    const job = selectedProposal.job ?? {};
+    const attachments = toArray(selectedProposal.attachments);
+    const timeline = toArray(selectedProposal.timeline);
+    const skills = toArray(worker.skills);
 
-  if (showInitialLoading) {
     return (
       <Box>
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {[...Array(4)].map((_, i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Skeleton variant="rounded" height={120} animation="wave" />
-            </Grid>
-          ))}
+        <Box display="flex" alignItems="center" gap={2} mb={3}>
+          <Avatar src={worker.avatar} sx={{ width: 64, height: 64 }}>
+            {(worker.name ?? 'U').charAt(0)}
+          </Avatar>
+          <Box>
+            <Typography variant="h6">{worker.name ?? 'Unknown worker'}</Typography>
+            <Box display="flex" alignItems="center" gap={1}>
+              <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
+              <Typography variant="body2">
+                {Number(worker.rating ?? 0).toFixed(1)} ({worker.completedJobs ?? 0} jobs)
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              {formatLocationBadge(worker.location)}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Job Details
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Title: {job.title ?? selectedProposal.jobTitle ?? 'Untitled job'}
+            </Typography>
+            {job.category && (
+              <Typography variant="body2" color="text.secondary">
+                Category: {job.category}
+              </Typography>
+            )}
+            {typeof job.budget === 'number' && (
+              <Typography variant="body2" color="text.secondary">
+                Budget: {formatCurrency(job.budget)}
+              </Typography>
+            )}
+            <Typography variant="body2" color="text.secondary">
+              Location: {formatLocationBadge(
+                job.location ?? job.locationDetails ?? selectedProposal.jobLocation,
+              )}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Proposal Summary
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Proposed Rate: {formatCurrency(selectedProposal.proposedRate)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Duration: {formatDurationLabel(selectedProposal.availability?.duration)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Earliest Start: {formatDate(selectedProposal.availability?.startDate)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Submitted: {formatDate(selectedProposal.submittedAt)}
+            </Typography>
+          </Grid>
         </Grid>
-        <Card>
-          <CardContent>
-            <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
-            ))}
-          </CardContent>
-        </Card>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+          Cover Letter
+        </Typography>
+        <Typography variant="body2" paragraph>
+          {selectedProposal.coverLetterPreview ??
+            selectedProposal.proposalText ??
+            'No cover letter provided.'}
+        </Typography>
+
+        {skills.length > 0 && (
+          <>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Skills
+            </Typography>
+            <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
+              {skills.map((skill) => (
+                <Chip key={skill} label={skill} size="small" variant="outlined" />
+              ))}
+            </Box>
+          </>
+        )}
+
+        {timeline.length > 0 && (
+          <>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Proposed Timeline
+            </Typography>
+            <Box mb={2}>
+              {timeline.map((phase, index) => (
+                <Box
+                  key={phase.id ?? index}
+                  display="flex"
+                  justifyContent="space-between"
+                  py={0.5}
+                >
+                  <Typography variant="body2">
+                    {phase.phase ?? `Phase ${index + 1}`}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {phase.duration ?? '-'}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
+
+        {attachments.length > 0 && (
+          <>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Attachments
+            </Typography>
+            <Box>
+              {attachments.map((attachment, index) => (
+                <Box
+                  key={attachment.id ?? attachment.name ?? index}
+                  display="flex"
+                  justifyContent="space-between"
+                  py={0.5}
+                >
+                  <Typography variant="body2">
+                    {attachment.name ?? `Attachment ${index + 1}`}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {attachment.size ?? ''}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
       </Box>
     );
+  };
+
+  const renderLoadingState = () => (
+    <Box>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Skeleton variant="rounded" height={120} animation="wave" />
+          </Grid>
+        ))}
+      </Grid>
+      <Card>
+        <CardContent>
+          <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} variant="text" height={60} sx={{ mb: 1 }} />
+          ))}
+        </CardContent>
+      </Card>
+    </Box>
+  );
+
+  const renderEmptyState = () => (
+    <Card>
+      <CardContent>
+        <Box textAlign="center" py={6} px={2}>
+          <Typography variant="h6" gutterBottom>
+            No proposals match your filters
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Adjust the status filters or refresh to check for new submissions.
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={handleRetry}
+            startIcon={<RefreshIcon />}
+            sx={{ textTransform: 'none' }}
+          >
+            Refresh proposals
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+  if (showInitialLoading) {
+    return renderLoadingState();
   }
+
+  const menuOpen = Boolean(anchorEl);
+  const skeletonRowCount = Math.max(Math.min(pageSize, 5), 1);
 
   return (
     <Box>
       {(error || hasTimedOut) && (
         <Alert
-          severity={error ? 'error' : 'warning'}
-          sx={{ mb: 3 }}
+          severity="error"
           action={
             <Button color="inherit" size="small" onClick={handleRetry}>
               Retry
             </Button>
           }
-          onClose={() => {
-            setError(null);
-            setHasTimedOut(false);
-          }}
+          sx={{ mb: 2 }}
         >
-          {error ||
-            'Loading proposals is taking longer than expected. Please try again.'}
+          {error || 'Loading proposals is taking longer than expected. Please try again.'}
         </Alert>
       )}
 
@@ -483,11 +695,7 @@ import {
             >
               {label}
               {value !== 'all' && (
-                <Chip
-                  label={statusCounts[value] || 0}
-                  size="small"
-                  sx={{ ml: 1 }}
-                />
+                <Chip label={statusCounts[value] ?? 0} size="small" sx={{ ml: 1 }} />
               )}
             </Button>
           ))}
@@ -514,7 +722,6 @@ import {
 
       {isRefreshing && <LinearProgress sx={{ mb: 2 }} />}
 
-      {/* Proposal Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card
@@ -525,11 +732,7 @@ import {
             }}
           >
             <CardContent>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.total}
@@ -538,7 +741,7 @@ import {
                     Total Proposals
                   </Typography>
                 </Box>
-                <PersonIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <PersonOutlinedIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
@@ -553,11 +756,7 @@ import {
             }}
           >
             <CardContent>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.pending}
@@ -566,7 +765,7 @@ import {
                     Pending Review
                   </Typography>
                 </Box>
-                <ScheduleIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <ScheduleOutlinedIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
@@ -581,11 +780,7 @@ import {
             }}
           >
             <CardContent>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {formatCurrency(proposalStats.averageRate)}
@@ -594,7 +789,7 @@ import {
                     Average Rate
                   </Typography>
                 </Box>
-                <MoneyIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <MonetizationOnOutlinedIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
@@ -609,11 +804,7 @@ import {
             }}
           >
             <CardContent>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.accepted}
@@ -622,407 +813,224 @@ import {
                     Accepted
                   </Typography>
                 </Box>
-                <AcceptIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <CheckCircleOutlineIcon sx={{ fontSize: 40, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
-      {/* Proposals Table */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Job Proposals ({proposals.length})
-          </Typography>
-
-          {isEmptyState ? (
-            <Box textAlign="center" py={4}>
-              <PersonIcon
-                sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
-              />
-              <Typography variant="h6" color="text.secondary">
-                No proposals found
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Adjust your filters or check back later for new activity.
-              </Typography>
-            </Box>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <strong>Worker & Job</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Proposed Rate</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Duration</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Rating</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Status</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Submitted</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>Actions</strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {proposals.map((proposal) => {
-                    const workerName = proposal.worker?.name || 'Unknown worker';
-                    const workerAvatar = proposal.worker?.avatar || '';
-                    const workerExperience = proposal.worker?.experience || 'Experience not specified';
-                    const workerLocation = formatLocationBadge(
-                      proposal.worker?.location,
-                    );
-                    const completedJobs = proposal.worker?.completedJobs || 0;
-                    const jobTitle = proposal.job?.title || proposal.jobTitle || 'Untitled job';
-                    const jobLocation = formatLocationBadge(
-                      proposal.job?.location ||
-                        proposal.job?.locationDetails ||
-                        proposal.jobLocation,
-                    );
-                    const jobBudget = proposal.job?.budget;
-                    const durationLabel = formatDurationLabel(
-                      proposal.availability?.duration,
-                    );
-                    const startDateLabel = proposal.availability?.startDate
-                      ? formatDate(proposal.availability.startDate)
-                      : null;
-                    const submittedLabel = formatDate(proposal.submittedAt);
-
-                    return (
-                      <TableRow key={proposal.id} hover>
-                        <TableCell>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Avatar src={workerAvatar} sx={{ width: 40, height: 40 }}>
-                              {workerName.charAt(0)}
-                            </Avatar>
-                            <Box>
-                              <Typography variant="subtitle2" fontWeight="bold">
-                                {workerName}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" noWrap>
-                                {jobTitle}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {workerLocation} • {workerExperience}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary" display="block">
-                                {jobLocation}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="subtitle2" fontWeight="bold" color="primary.main">
-                            {formatCurrency(proposal.proposedRate)}
-                          </Typography>
-                          {typeof jobBudget === 'number' && !Number.isNaN(jobBudget) && (
-                            <Typography variant="caption" color="text.secondary">
-                              Budget: {formatCurrency(jobBudget)}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{durationLabel}</Typography>
-                          {startDateLabel && (
-                            <Typography variant="caption" color="text.secondary">
-                              Starts {startDateLabel}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Box display="flex" alignItems="center" gap={0.5}>
-                            <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
-                            <Typography variant="body2">
-                              {Number(proposal.worker?.rating || 0).toFixed(1)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              ({completedJobs} jobs)
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={formatStatusLabel(proposal.status)}
-                            color={getStatusColor(proposal.status)}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{submittedLabel}</Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuOpen(e, proposal)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
+      {isEmptyState ? (
+        renderEmptyState()
+      ) : (
+        <Card>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Worker</TableCell>
+                  <TableCell>Job</TableCell>
+                  <TableCell>Rate & Duration</TableCell>
+                  <TableCell>Submitted</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading
+                  ? Array.from({ length: skeletonRowCount }).map((_, index) => (
+                      <TableRow key={`loading-${index}`}>
+                        <TableCell colSpan={6}>
+                          <Skeleton height={48} />
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
+                    ))
+                  : proposals.map((proposal, index) => {
+                      const proposalId =
+                        proposal.id ??
+                        proposal._id ??
+                        proposal.proposalId ??
+                        proposal.proposalID ??
+                        `proposal-${index}`;
+                      const workerName = proposal.worker?.name ?? proposal.workerName ?? 'Unknown worker';
+                      const locationLabel = formatLocationBadge(
+                        proposal.worker?.location ?? proposal.workerLocation,
+                      );
+                      const jobTitle = proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
+                      const jobCategory = proposal.job?.category ?? proposal.jobCategory ?? 'General';
+                      const statusLabel = proposal.status ?? 'pending';
 
-          {pagination.totalPages > 1 && (
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-              <Pagination
-                count={pagination.totalPages}
-                page={pagination.page}
-                color="primary"
-                shape="rounded"
-                onChange={handlePageChange}
+                      return (
+                        <TableRow hover key={proposalId}>
+                          <TableCell>
+                            <Typography variant="subtitle2">{workerName}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {locationLabel}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="subtitle2">{jobTitle}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {jobCategory}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="subtitle2">
+                              {formatCurrency(proposal.proposedRate ?? proposal.rate)}
+                            </Typography>
+                            {proposal.availability?.duration && (
+                              <Typography variant="caption" color="text.secondary">
+                                {formatDurationLabel(proposal.availability.duration)}
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {formatDate(proposal.submittedAt ?? proposal.createdAt)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={formatStatusLabel(statusLabel)}
+                              color={getStatusColor(statusLabel)}
+                              size="small"
+                              variant={statusLabel === 'accepted' ? 'filled' : 'outlined'}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <IconButton
+                              size="small"
+                              onClick={(event) => handleMenuOpen(event, proposal)}
+                              aria-label="Proposal actions"
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box
+            display="flex"
+            flexDirection={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'flex-start', md: 'center' }}
+            justifyContent="space-between"
+            gap={1.5}
+            px={2}
+            py={2}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {totalItems === 0
+                ? 'No proposals to display.'
+                : `Showing ${rangeStart}-${rangeEnd} of ${totalItems} proposals`}
+            </Typography>
+            <Pagination
+              count={Math.max(totalPages, 1)}
+              page={safePage}
+              onChange={handlePageChange}
+              color="primary"
+              shape="rounded"
+              size="small"
+            />
+          </Box>
+        </Card>
+      )}
+
+      <Menu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={() => handleMenuClose(true)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={() => handleDialogOpen('view')}>
+          <VisibilityOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+          View details
+        </MenuItem>
+        <MenuItem
+          onClick={() => handleDialogOpen('accept')}
+          disabled={selectedProposal?.status === 'accepted'}
+        >
+          <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
+          Mark as accepted
+        </MenuItem>
+        <MenuItem
+          onClick={() => handleDialogOpen('reject')}
+          disabled={selectedProposal?.status === 'rejected'}
+        >
+          <HighlightOffIcon fontSize="small" sx={{ mr: 1 }} />
+          Mark as rejected
+        </MenuItem>
+      </Menu>
+
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        fullWidth
+        maxWidth={dialogType === 'view' ? 'md' : 'sm'}
+      >
+        <DialogTitle>
+          {dialogType === 'view' && 'Proposal Details'}
+          {dialogType === 'accept' && 'Confirm acceptance'}
+          {dialogType === 'reject' && 'Reject proposal'}
+        </DialogTitle>
+        <DialogContent dividers>
+          {dialogType === 'view' && renderProposalDetails()}
+          {dialogType === 'accept' && (
+            <Typography variant="body2">
+              This will move the proposal to the accepted list and notify the worker. Do you
+              want to continue?
+            </Typography>
+          )}
+          {dialogType === 'reject' && (
+            <Box display="flex" flexDirection="column" gap={2} mt={1}>
+              <Typography variant="body2">
+                Optionally share feedback to help the worker understand your decision.
+              </Typography>
+              <TextField
+                label="Feedback (optional)"
+                value={reviewForm.feedback}
+                onChange={handleReviewInputChange}
+                multiline
+                minRows={3}
+                fullWidth
               />
             </Box>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => handleDialogOpen('view')}>
-          <ViewIcon sx={{ mr: 1 }} />
-          View Details
-        </MenuItem>
-        {selectedProposal?.status === 'pending' && [
-          <MenuItem key="accept" onClick={() => handleDialogOpen('accept')}>
-            <AcceptIcon sx={{ mr: 1, color: 'success.main' }} />
-            Accept Proposal
-          </MenuItem>,
-          <MenuItem key="reject" onClick={() => handleDialogOpen('reject')}>
-            <RejectIcon sx={{ mr: 1, color: 'error.main' }} />
-            Reject Proposal
-          </MenuItem>,
-        ]}
-      </Menu>
-
-      {/* Proposal Details Dialog */}
-      <Dialog
-        open={dialogOpen && dialogType === 'view'}
-        onClose={handleDialogClose}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Proposal Details</DialogTitle>
-        <DialogContent>
-          {selectedProposal && (
-            <Box>
-              {/* Worker Info */}
-              <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <Avatar
-                  src={selectedProposal.worker.avatar}
-                  sx={{ width: 64, height: 64 }}
-                >
-                  {selectedProposal.worker.name.charAt(0)}
-                </Avatar>
-                <Box>
-                  <Typography variant="h6">
-                    {selectedProposal.worker.name}
-                  </Typography>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
-                    <Typography variant="body2">
-                      {selectedProposal.worker.rating} (
-                      {selectedProposal.worker.completedJobs} jobs)
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {selectedProposal.worker.location}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Divider sx={{ my: 2 }} />
-
-              {/* Job & Rate Info */}
-              <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={6}>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Job: {selectedProposal.jobTitle}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Budget: {formatCurrency(selectedProposal.jobBudget)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    color="primary.main"
-                  >
-                    Proposed Rate:{' '}
-                    {formatCurrency(selectedProposal.proposedRate)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Duration: {selectedProposal.estimatedDuration}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Divider sx={{ my: 2 }} />
-
-              {/* Proposal Text */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Proposal
-              </Typography>
-              <Typography variant="body2" paragraph>
-                {selectedProposal.proposalText}
-              </Typography>
-
-              {/* Skills */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Skills
-              </Typography>
-              <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
-                {selectedProposal.worker.skills.map((skill, index) => (
-                  <Chip
-                    key={index}
-                    label={skill}
-                    size="small"
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
-
-              {/* Timeline */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Proposed Timeline
-              </Typography>
-              <Box mb={2}>
-                {selectedProposal.timeline.map((phase, index) => (
-                  <Box
-                    key={index}
-                    display="flex"
-                    justifyContent="space-between"
-                    py={0.5}
-                  >
-                    <Typography variant="body2">{phase.phase}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {phase.duration}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-
-              {/* Attachments */}
-              {selectedProposal.attachments.length > 0 && (
-                <>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Attachments
-                  </Typography>
-                  <Box>
-                    {selectedProposal.attachments.map((attachment, index) => (
-                      <Box
-                        key={index}
-                        display="flex"
-                        justifyContent="space-between"
-                        py={0.5}
-                      >
-                        <Typography variant="body2">
-                          {attachment.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {attachment.size}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                </>
-              )}
-            </Box>
-          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose}>Close</Button>
-          {selectedProposal?.status === 'pending' && (
-            <>
-              <Button
-                onClick={() => handleProposalAction('rejected')}
-                color="error"
-                variant="outlined"
-              >
-                Reject
-              </Button>
-              <Button
-                onClick={() => handleProposalAction('accepted')}
-                color="success"
-                variant="contained"
-              >
-                Accept
-              </Button>
-            </>
-          )}
-        </DialogActions>
-      </Dialog>
-
-      {/* Accept/Reject Confirmation Dialogs */}
-      <Dialog
-        open={
-          dialogOpen && (dialogType === 'accept' || dialogType === 'reject')
-        }
-        onClose={handleDialogClose}
-      >
-        <DialogTitle>
-          {dialogType === 'accept' ? 'Accept Proposal' : 'Reject Proposal'}
-        </DialogTitle>
-        <DialogContent>
-          <Typography gutterBottom>
-            Are you sure you want to {dialogType} this proposal from{' '}
-            {selectedProposal?.worker?.name}?
-          </Typography>
-          {dialogType === 'reject' && (
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Reason for rejection (optional)"
-              value={reviewForm.feedback}
-              onChange={(e) =>
-                setReviewForm({ ...reviewForm, feedback: e.target.value })
-              }
-              sx={{ mt: 2 }}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button
-            onClick={() =>
-              handleProposalAction(
-                dialogType === 'accept' ? 'accepted' : 'rejected',
-              )
-            }
-            color={dialogType === 'accept' ? 'success' : 'error'}
-            variant="contained"
-          >
-            {dialogType === 'accept' ? 'Accept' : 'Reject'}
+          <Button onClick={handleDialogClose} disabled={actionInProgress}>
+            Cancel
           </Button>
+          {dialogType === 'view' && (
+            <Button onClick={handleDialogClose}>Close</Button>
+          )}
+          {dialogType === 'accept' && (
+            <Button
+              onClick={() => handleProposalAction('accepted')}
+              variant="contained"
+              color="primary"
+              disabled={actionInProgress}
+            >
+              {actionInProgress ? 'Processing...' : 'Accept proposal'}
+            </Button>
+          )}
+          {dialogType === 'reject' && (
+            <Button
+              onClick={() =>
+                handleProposalAction('rejected', {
+                  feedback: reviewForm.feedback?.trim() || undefined,
+                })
+              }
+              variant="contained"
+              color="error"
+              disabled={actionInProgress}
+            >
+              {actionInProgress ? 'Processing...' : 'Reject proposal'}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

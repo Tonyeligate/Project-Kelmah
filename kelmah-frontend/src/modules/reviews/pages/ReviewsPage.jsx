@@ -165,12 +165,13 @@ const EnhancedReviewsPage = () => {
       case '4-star':
         filtered = filtered.filter((review) => review.rating === 4);
         break;
-      case 'recent':
+      case 'recent': {
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         filtered = filtered.filter(
           (review) => new Date(review.createdAt) > weekAgo,
         );
         break;
+      }
       case 'verified':
         filtered = filtered.filter((review) => review.reviewer.isVerified);
         break;

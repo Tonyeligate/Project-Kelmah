@@ -8,16 +8,16 @@ console.log('🔧 Fixing malformed UTF-8 decryption error...');
 // List of keys that might contain encrypted data
 const keysToCheck = [
   'kelmah_secure_storage',
-  'kelmah_auth_token', 
+  'kelmah_auth_token',
   'kelmah_user_data',
   'user',
   'token',
   'authToken',
-  'refreshToken'
+  'refreshToken',
 ];
 
 // Clear potentially corrupted keys
-keysToCheck.forEach(key => {
+keysToCheck.forEach((key) => {
   if (localStorage.getItem(key)) {
     console.log(`📦 Clearing potentially corrupted key: ${key}`);
     localStorage.removeItem(key);
@@ -25,7 +25,7 @@ keysToCheck.forEach(key => {
 });
 
 // Also clear session storage
-keysToCheck.forEach(key => {
+keysToCheck.forEach((key) => {
   if (sessionStorage.getItem(key)) {
     console.log(`📦 Clearing session storage key: ${key}`);
     sessionStorage.removeItem(key);

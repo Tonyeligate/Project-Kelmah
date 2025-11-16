@@ -40,9 +40,14 @@ const SEO = ({
       />
       <meta property="og:type" content={openGraph.type || 'website'} />
       {resolvedUrl && <meta property="og:url" content={resolvedUrl} />}
-      {openGraph.image && <meta property="og:image" content={openGraph.image} />}
+      {openGraph.image && (
+        <meta property="og:image" content={openGraph.image} />
+      )}
 
-      <meta name="twitter:card" content={twitter.card || 'summary_large_image'} />
+      <meta
+        name="twitter:card"
+        content={twitter.card || 'summary_large_image'}
+      />
       <meta name="twitter:title" content={twitter.title || normalizedTitle} />
       <meta
         name="twitter:description"

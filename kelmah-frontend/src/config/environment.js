@@ -47,7 +47,10 @@ const getStoredApiBase = () => {
   try {
     return window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY) || null;
   } catch (error) {
-    console.warn('⚠️ Unable to read cached API base from storage:', error?.message || error);
+    console.warn(
+      '⚠️ Unable to read cached API base from storage:',
+      error?.message || error,
+    );
     return null;
   }
 };
@@ -57,7 +60,10 @@ const storeApiBase = (baseUrl) => {
   try {
     window.localStorage?.setItem(LAST_HEALTHY_BASE_KEY, baseUrl);
   } catch (error) {
-    console.warn('⚠️ Unable to persist API base selection:', error?.message || error);
+    console.warn(
+      '⚠️ Unable to persist API base selection:',
+      error?.message || error,
+    );
   }
 };
 
@@ -67,7 +73,8 @@ const buildHealthCheckUrl = (baseUrl) => {
   }
 
   // Ensure trailing slash consistency
-  const trimmedBase = baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
+  const trimmedBase =
+    baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
 
   if (trimmedBase === '') {
     return '/api' + HEALTH_CHECK_PATH;
@@ -92,7 +99,10 @@ const probeApiBase = async (baseUrl) => {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      HEALTH_CHECK_TIMEOUT_MS,
+    );
     const response = await fetch(healthUrl, {
       method: 'GET',
       credentials: 'omit',
@@ -106,7 +116,10 @@ const probeApiBase = async (baseUrl) => {
     return response.ok;
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn(`⚠️ API base probe failed for ${baseUrl}:`, error?.message || error);
+      console.warn(
+        `⚠️ API base probe failed for ${baseUrl}:`,
+        error?.message || error,
+      );
     }
     return false;
   }
@@ -163,7 +176,9 @@ const selectHealthyBase = async (candidates) => {
   // Nothing was reachable; fall back to the first provided candidate
   const fallback = candidates[0];
   if (fallback && import.meta.env.DEV) {
-    console.warn(`⚠️ Using fallback API base despite failed probes: ${fallback}`);
+    console.warn(
+      `⚠️ Using fallback API base despite failed probes: ${fallback}`,
+    );
   }
   return fallback || '/api';
 };
@@ -191,7 +206,9 @@ const computeApiBase = async () => {
     // Prevent mixed content issues up front
     let sanitizedEnvUrl = envUrl;
     if (envUrl && isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn('⚠️ Rejecting http URL on https page, using relative /api instead');
+      console.warn(
+        '⚠️ Rejecting http URL on https page, using relative /api instead',
+      );
       sanitizedEnvUrl = null;
     }
 
@@ -376,10 +393,7 @@ export const API_ENDPOINTS = {
       '/auth/resend-verification-email',
     ),
     VERIFY_EMAIL_TOKEN: (token) =>
-      buildEndpoint(
-        SERVICES.AUTH_SERVICE,
-        `/auth/verify-email/${token}`,
-      ),
+      buildEndpoint(SERVICES.AUTH_SERVICE, `/auth/verify-email/${token}`),
     PROFILE: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/profile'),
     VALIDATE: buildEndpoint(SERVICES.AUTH_SERVICE, '/auth/validate'),
     FORGOT_PASSWORD: buildEndpoint(
@@ -494,10 +508,7 @@ export const API_ENDPOINTS = {
   PAYMENT: {
     BASE: buildEndpoint(SERVICES.PAYMENT_SERVICE, ''),
     METHODS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/methods'),
-    PROCESS: buildEndpoint(
-      SERVICES.PAYMENT_SERVICE,
-      '/payments/transactions',
-    ),
+    PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions'),
     HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/history'),
     WALLET: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/wallet'),
     ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrows'),

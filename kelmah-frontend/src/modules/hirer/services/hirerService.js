@@ -36,10 +36,7 @@ export const hirerService = {
 
   async updateProfile(profileData) {
     try {
-      const response = await userServiceClient.put(
-        USER.UPDATE,
-        profileData,
-      );
+      const response = await userServiceClient.put(USER.UPDATE, profileData);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -78,7 +75,7 @@ export const hirerService = {
 
       const metrics =
         metricsResult.status === 'fulfilled'
-          ? metricsResult.value?.data ?? metricsResult.value
+          ? (metricsResult.value?.data ?? metricsResult.value)
           : {};
       const workers =
         workersResult.status === 'fulfilled'
@@ -88,7 +85,7 @@ export const hirerService = {
           : [];
       const analytics =
         analyticsResult.status === 'fulfilled'
-          ? analyticsResult.value?.data ?? analyticsResult.value
+          ? (analyticsResult.value?.data ?? analyticsResult.value)
           : {};
       const activeJobs =
         jobsResult.status === 'fulfilled'
@@ -105,7 +102,10 @@ export const hirerService = {
         featuredWorkers: Array.isArray(workers) ? workers : [],
       };
     } catch (error) {
-      console.warn('Dashboard data unavailable, using fallback:', error.message);
+      console.warn(
+        'Dashboard data unavailable, using fallback:',
+        error.message,
+      );
       // Return fallback dashboard data structure
       return {
         metrics: {
@@ -123,12 +123,9 @@ export const hirerService = {
 
   async getStats(timeframe = '30d') {
     try {
-      const response = await userServiceClient.get(
-        USER.DASHBOARD_ANALYTICS,
-        {
-          params: { timeframe },
-        },
-      );
+      const response = await userServiceClient.get(USER.DASHBOARD_ANALYTICS, {
+        params: { timeframe },
+      });
       return response.data ?? response;
     } catch (error) {
       console.warn('Metrics unavailable, using fallback:', error.message);

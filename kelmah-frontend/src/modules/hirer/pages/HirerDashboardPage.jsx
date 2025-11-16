@@ -311,6 +311,30 @@ const HirerDashboardPage = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isHydrating) {
+      return;
+    }
+
+    const hasRenderableSnapshot = Boolean(
+      (Array.isArray(activeJobs) && activeJobs.length > 0) ||
+        hirerProfile ||
+        (Array.isArray(completedJobs) && completedJobs.length > 0),
+    );
+
+    if (hasRenderableSnapshot) {
+      clearLoadingTimeout();
+      setIsHydrating(false);
+      setLoadingTimeout(false);
+    }
+  }, [
+    activeJobs,
+    completedJobs,
+    hirerProfile,
+    isHydrating,
+    clearLoadingTimeout,
+  ]);
+
   const fetchDashboardData = useCallback(
     async (source = 'initial-load') => {
       const isInitialHydration = source === 'initial-load';

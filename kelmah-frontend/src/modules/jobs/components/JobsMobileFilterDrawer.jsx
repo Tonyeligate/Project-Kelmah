@@ -20,10 +20,7 @@ import {
   Slider,
   useTheme,
 } from '@mui/material';
-import {
-  Close as CloseIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
 const JobsMobileFilterDrawer = ({
@@ -287,13 +284,13 @@ JobsMobileFilterDrawer.propTypes = {
       value: PropTypes.string,
       label: PropTypes.string,
       icon: PropTypes.elementType,
-    })
+    }),
   ),
   locations: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.string,
       label: PropTypes.string,
-    })
+    }),
   ),
 };
 

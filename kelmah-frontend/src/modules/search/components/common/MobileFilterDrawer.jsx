@@ -14,17 +14,19 @@ import {
   Stack,
   useTheme,
 } from '@mui/material';
-import {
-  Close as CloseIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
+import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
 /**
  * MobileFilterDrawer - Bottom sheet for mobile filter controls
  * Reduces mobile filter height from 350-400px to ~100px
  */
-const MobileFilterDrawer = ({ open, onClose, onSearch, initialFilters = {} }) => {
+const MobileFilterDrawer = ({
+  open,
+  onClose,
+  onSearch,
+  initialFilters = {},
+}) => {
   const theme = useTheme();
   const [keyword, setKeyword] = useState(initialFilters.keyword || '');
   const [location, setLocation] = useState(initialFilters.location || '');
@@ -206,7 +208,8 @@ const MobileFilterDrawer = ({ open, onClose, onSearch, initialFilters = {} }) =>
                 bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#000000',
                 color: theme.palette.mode === 'dark' ? '#000000' : '#FFD700',
                 '&:hover': {
-                  bgcolor: theme.palette.mode === 'dark' ? '#FFC700' : '#1a1a1a',
+                  bgcolor:
+                    theme.palette.mode === 'dark' ? '#FFC700' : '#1a1a1a',
                 },
               }}
             >

@@ -6,6 +6,7 @@
 const mongoose = require('mongoose');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+const { ensureJobIndexes } = require('../utils/indexManager');
 
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
@@ -102,6 +103,11 @@ const connectDB = async () => {
       console.log('✅ MongoDB reconnected');
     });
     
+    // Ensure high-traffic indexes exist; fire-and-forget so connection isn't blocked
+    ensureJobIndexes(conn).catch((indexError) => {
+      console.warn('[JOB SERVICE] Failed to ensure indexes:', indexError.message);
+    });
+
     return conn;
   } catch (error) {
     connectPromise = null;

@@ -24,13 +24,16 @@ const HEALTH_ENDPOINTS = {
 const DEFAULT_HEALTH_ENDPOINT = '/health';
 
 const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const normalizedEndpoint = endpoint.startsWith('/')
+    ? endpoint
+    : `/${endpoint}`;
 
   if (!baseUrl) {
     return `/api${normalizedEndpoint}`;
   }
 
-  const trimmedBase = baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
+  const trimmedBase =
+    baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
 
   if (trimmedBase === '') {
     return `/api${normalizedEndpoint}`;
@@ -47,7 +50,8 @@ const buildHealthUrl = (baseUrl, endpoint = DEFAULT_HEALTH_ENDPOINT) => {
  * Check if a service is healthy
  */
 export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
-  const healthEndpoint = HEALTH_ENDPOINTS[serviceUrl] || DEFAULT_HEALTH_ENDPOINT;
+  const healthEndpoint =
+    HEALTH_ENDPOINTS[serviceUrl] || DEFAULT_HEALTH_ENDPOINT;
 
   let base;
 
@@ -117,7 +121,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       healthy: isHealthy,
       status: response.status,
       responseTime: `${duration}ms`,
-      url: fullUrl
+      url: fullUrl,
     });
 
     return isHealthy;

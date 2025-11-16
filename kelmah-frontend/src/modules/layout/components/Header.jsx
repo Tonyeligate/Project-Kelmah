@@ -515,11 +515,11 @@ const Header = ({
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       // Show header when scrolling up or at top
       if (currentScrollY < lastScrollY || currentScrollY < 50) {
         setIsHeaderVisible(true);
-      } 
+      }
       // Hide header when scrolling down beyond 50px
       else if (currentScrollY > 50 && currentScrollY > lastScrollY) {
         setIsHeaderVisible(false);
@@ -542,7 +542,7 @@ const Header = ({
     const onScroll = () => requestTick();
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    
+
     return () => window.removeEventListener('scroll', onScroll);
   }, [isMobile]);
 
@@ -1064,12 +1064,12 @@ const Header = ({
         zIndex: theme.zIndex.appBar + 1,
         // Fixed positioning for auto-hide mode and mobile
         ...((autoShowMode || isMobile) && {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            width: '100%',
-          }),
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          width: '100%',
+        }),
       }}
     >
       <Toolbar

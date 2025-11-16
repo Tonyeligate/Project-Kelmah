@@ -82,11 +82,12 @@ const normalizeUrlForGateway = (config) => {
   try {
     const base = typeof config.baseURL === 'string' ? config.baseURL : '';
     const url = typeof config.url === 'string' ? config.url : '';
-    
+
     // Check if baseURL is a RELATIVE path starting with /api (not an absolute URL)
     // Absolute URLs (https://...) should NOT trigger normalization
     const isRelativeBase = base.startsWith('/');
-    const baseHasApi = isRelativeBase && (base === '/api' || base.startsWith('/api/'));
+    const baseHasApi =
+      isRelativeBase && (base === '/api' || base.startsWith('/api/'));
     const urlStartsWithApi = url === '/api' || url.startsWith('/api/');
 
     if (baseHasApi && urlStartsWithApi) {
@@ -496,7 +497,7 @@ const getClientBaseUrl = async (serviceUrl) => {
   // 🔥 FIX: Always call getApiBaseUrl() to get the absolute URL from runtime-config.json
   // This ensures the double-faced logic works correctly (LocalTunnel or Render)
   // Even when serviceUrl is '/api', we need the absolute URL to prevent normalization issues
-  
+
   const isHttps =
     typeof window !== 'undefined' &&
     window.location &&
@@ -507,7 +508,11 @@ const getClientBaseUrl = async (serviceUrl) => {
     const baseURL = await getApiBaseUrl();
     if (baseURL && baseURL !== '/api') {
       // Avoid mixed-content by preferring relative /api over http:// base when on https
-      if (isHttps && typeof baseURL === 'string' && baseURL.startsWith('http:')) {
+      if (
+        isHttps &&
+        typeof baseURL === 'string' &&
+        baseURL.startsWith('http:')
+      ) {
         return '/api';
       }
       return baseURL; // Returns absolute URL like 'https://kelmah-api-gateway-qlyk.onrender.com'
@@ -549,12 +554,15 @@ const createServiceClient = async (serviceUrl, extraHeaders = {}) => {
           config.baseURL = currentBaseURL;
         }
       } catch (error) {
-        console.warn('⚠️ Failed to update service client baseURL:', error.message);
+        console.warn(
+          '⚠️ Failed to update service client baseURL:',
+          error.message,
+        );
       }
 
       // Normalize URL to prevent /api/jobs/api/jobs duplication
       config = normalizeUrlForGateway(config);
-      
+
       // Add auth token securely
       const token = secureStorage.getAuthToken();
       if (token) {

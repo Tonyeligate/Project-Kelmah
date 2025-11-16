@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, TextField, Button, CircularProgress, Snackbar, Alert, Typography, Skeleton } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Typography,
+  Skeleton,
+} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useProfile } from '../../../profile/hooks/useProfile';
 import {
@@ -31,7 +40,10 @@ const AccountSettings = () => {
   });
   const [isHydrated, setIsHydrated] = useState(false);
 
-  const showSkeleton = useMemo(() => !isHydrated && loading, [isHydrated, loading]);
+  const showSkeleton = useMemo(
+    () => !isHydrated && loading,
+    [isHydrated, loading],
+  );
 
   useEffect(() => {
     if (!profile) {
@@ -51,7 +63,8 @@ const AccountSettings = () => {
     const profileData = profile || user;
     if (profileData) {
       setFormData({
-        firstName: profileData.firstName || profileData.name?.split(' ')[0] || '',
+        firstName:
+          profileData.firstName || profileData.name?.split(' ')[0] || '',
         lastName: profileData.lastName || profileData.name?.split(' ')[1] || '',
         email: profileData.email || '',
         phone: profileData.phone || profileData.phoneNumber || '',
@@ -162,7 +175,11 @@ const AccountSettings = () => {
           <Skeleton variant="text" height={56} />
           <Skeleton variant="text" height={56} />
           <Skeleton variant="text" height={56} />
-          <Skeleton variant="rectangular" height={44} sx={{ borderRadius: 1 }} />
+          <Skeleton
+            variant="rectangular"
+            height={44}
+            sx={{ borderRadius: 1 }}
+          />
         </Box>
       ) : (
         <Box
@@ -208,7 +225,7 @@ const AccountSettings = () => {
             value={formData.phone}
             onChange={handleChange}
             error={Boolean(formErrors.phone)}
-            helperText={formErrors.phone || 'Include country code e.g. +233...' }
+            helperText={formErrors.phone || 'Include country code e.g. +233...'}
             fullWidth
             disabled={isSaving}
           />

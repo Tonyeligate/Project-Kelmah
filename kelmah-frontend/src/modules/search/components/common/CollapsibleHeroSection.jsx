@@ -34,7 +34,8 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
           textAlign: 'center',
           py: 3,
           px: 2,
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(0,0,0,0.05) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(0,0,0,0.05) 100%)',
           borderRadius: 2,
           border: '1px solid rgba(212,175,55,0.2)',
         }}
@@ -59,8 +60,8 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
           color="text.secondary"
           sx={{ mb: 2, maxWidth: '800px', mx: 'auto' }}
         >
-          Browse available carpenters, plumbers, electricians, masons,
-          and other skilled professionals ready to help with your projects
+          Browse available carpenters, plumbers, electricians, masons, and other
+          skilled professionals ready to help with your projects
         </Typography>
         {!isAuthenticated && (
           <Typography variant="body2" color="text.secondary">
@@ -79,7 +80,8 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
         textAlign: 'center',
         py: 1.5,
         px: 2,
-        background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(0,0,0,0.03) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(0,0,0,0.03) 100%)',
         borderRadius: 2,
         border: '1px solid rgba(212,175,55,0.15)',
       }}
@@ -131,8 +133,8 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
             color="text.secondary"
             sx={{ mb: 1.5, lineHeight: 1.6 }}
           >
-            Browse available carpenters, plumbers, electricians, masons,
-            and other skilled professionals ready to help with your projects
+            Browse available carpenters, plumbers, electricians, masons, and
+            other skilled professionals ready to help with your projects
           </Typography>
           {!isAuthenticated && (
             <Typography

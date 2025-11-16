@@ -26,12 +26,12 @@ const useNavLinks = () => {
 
     // Add pricing for all users
     links.push({ label: 'Pricing', to: '/premium' });
-    
+
     // Add Messages for authenticated users
     if (isAuthenticated) {
       links.push({ label: 'Messages', to: '/messages' });
     }
-    
+
     return links;
   }, [isInitialized, isAuthenticated, hasRole]);
 

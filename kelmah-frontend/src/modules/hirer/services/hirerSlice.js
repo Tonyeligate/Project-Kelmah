@@ -67,10 +67,7 @@ export const updateHirerProfile = createAsyncThunk(
   'hirer/updateProfile',
   async (profileData) => {
     try {
-      const response = await userServiceClient.put(
-        USER.UPDATE,
-        profileData,
-      );
+      const response = await userServiceClient.put(USER.UPDATE, profileData);
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -178,12 +175,9 @@ export const fetchJobApplications = createAsyncThunk(
   'hirer/fetchJobApplications',
   async ({ jobId, status }, { rejectWithValue }) => {
     try {
-      const response = await jobServiceClient.get(
-        JOB.APPLICATIONS(jobId),
-        {
-          params: { status },
-        },
-      );
+      const response = await jobServiceClient.get(JOB.APPLICATIONS(jobId), {
+        params: { status },
+      });
       return { jobId, applications: response.data };
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -452,7 +446,7 @@ const hirerSlice = createSlice({
         const payload = action.payload?.data || action.payload || {};
         const { jobId, status } = payload;
         if (!jobId || !status) return;
-        
+
         // Move job between status lists
         let movedJob = null;
         Object.keys(state.jobs).forEach((currentStatus) => {

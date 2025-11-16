@@ -7,10 +7,7 @@ import {
   InputAdornment,
   useTheme,
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Tune as FilterIcon,
-} from '@mui/icons-material';
+import { Search as SearchIcon, Tune as FilterIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
 /**
@@ -18,7 +15,11 @@ import PropTypes from 'prop-types';
  * Height: ~56px (search) + button = ~60px total
  * Replaces 350-400px filter form on mobile
  */
-const CompactSearchBar = ({ onSearchClick, onFilterClick, placeholder = "Search workers..." }) => {
+const CompactSearchBar = ({
+  onSearchClick,
+  onFilterClick,
+  placeholder = 'Search workers...',
+}) => {
   const theme = useTheme();
 
   return (
