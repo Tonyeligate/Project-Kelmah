@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import authService from '../modules/auth/services/authService';
+import { io } from 'socket.io-client';
 
 // Socket.IO based WebSocket compatibility hook
 export const useWebSocket = () => {
@@ -33,7 +34,6 @@ export const useWebSocket = () => {
         );
       }
 
-      const { io } = await import('socket.io-client');
       // Connect to backend server - Socket.IO handles /socket.io path automatically
       const socket = io(wsUrl, {
         auth: { token },

@@ -7,6 +7,7 @@ import {
   setError,
 } from '../../../store/slices/chatSlice';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { secureStorage } from '../../../utils/secureStorage';
 
 export const useChat = () => {
   const dispatch = useDispatch();
@@ -19,13 +20,10 @@ export const useChat = () => {
 
   // Initialize chat service with token from localStorage
   useEffect(() => {
-    (async () => {
-      try {
-        const { secureStorage } = await import('../../../utils/secureStorage');
-        const token = secureStorage.getAuthToken();
-        if (token) chatService.initialize(token);
-      } catch {}
-    })();
+    try {
+      const token = secureStorage.getAuthToken();
+      if (token) chatService.initialize(token);
+    } catch {}
   }, []);
 
   const loadConversations = useCallback(async () => {

@@ -6,6 +6,7 @@
  */
 
 import { SERVICES, getApiBaseUrl } from '../config/environment';
+import axiosInstance from '../modules/common/services/axios';
 
 // Service health status cache
 const serviceHealthCache = new Map();
@@ -154,15 +155,9 @@ export const warmUpService = async (serviceUrl) => {
   console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
 
   try {
-    // Import axios dynamically to avoid circular dependency
-    const { default: axios } = await import(
-      '../modules/common/services/axios.js'
-    );
-
-    // Warm up via axios with proper base URL configuration
-    // Changed from '/api/health' to '/health' to avoid /api duplication
-    // baseURL='/api' is provided by axios instance on Vercel
-    const response = await axios.get('/health', {
+    // Use the shared axios instance (proxy) to warm up services
+    // baseURL='/api' is provided by the axios instance
+    const response = await axiosInstance.get('/health', {
       timeout: 5000,
       headers: {
         'Content-Type': 'application/json',

@@ -24,6 +24,10 @@ import {
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  saveJobToServer,
+  unsaveJobFromServer,
+} from '@/modules/jobs/services/jobSlice';
 
 /**
  * Unified JobCard Component
@@ -99,15 +103,8 @@ const JobCard = ({
 
     try {
       if (isSaved) {
-        // Import dynamically to avoid loading Redux actions when not needed
-        const { unsaveJobFromServer } = await import(
-          '../../../jobs/services/jobSlice'
-        );
         await dispatch(unsaveJobFromServer(id));
       } else {
-        const { saveJobToServer } = await import(
-          '../../../jobs/services/jobSlice'
-        );
         await dispatch(saveJobToServer(id));
       }
     } catch (error) {

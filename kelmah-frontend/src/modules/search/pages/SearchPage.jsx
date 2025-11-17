@@ -11,6 +11,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from '../../common/services/axios';
+import { secureStorage } from '../../../utils/secureStorage';
 
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
@@ -652,11 +653,8 @@ const SearchPage = () => {
         `/api/workers/${worker.id}/save`,
         {},
         {
-          headers: await (async () => {
+          headers: (() => {
             try {
-              const { secureStorage } = await import(
-                '../../../utils/secureStorage'
-              );
               const token = secureStorage.getAuthToken();
               return token ? { Authorization: `Bearer ${token}` } : {};
             } catch {

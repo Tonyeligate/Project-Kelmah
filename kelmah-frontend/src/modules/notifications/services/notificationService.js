@@ -4,6 +4,7 @@
  */
 
 import { messagingServiceClient } from '../../common/services/axios';
+import { io } from 'socket.io-client';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { WS_CONFIG } from '../../../config/environment';
 
@@ -103,7 +104,6 @@ class NotificationService {
 
       console.log('📡 Notifications WebSocket connecting to:', wsUrl);
 
-      const { io } = await import('socket.io-client');
       // Connect to backend messaging service via API Gateway
       this.socket = io(wsUrl, {
         auth: { token },

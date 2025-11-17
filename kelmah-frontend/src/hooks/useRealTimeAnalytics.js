@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
+import { io } from 'socket.io-client';
 
 export function useRealTimeAnalytics() {
   const [metrics, setMetrics] = useState(null);
@@ -24,7 +25,6 @@ export function useRealTimeAnalytics() {
         );
       }
 
-      const { io } = await import('socket.io-client');
       // Connect to backend server for analytics
       const socket = io(wsUrl, {
         transports: ['websocket', 'polling'],

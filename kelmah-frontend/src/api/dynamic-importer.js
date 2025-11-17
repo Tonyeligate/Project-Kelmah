@@ -3,7 +3,10 @@
  * This file handles dynamic imports for modules that need to be loaded conditionally
  */
 
-// Store for dynamically loaded modules
+import mockWorkersApi from './services/mockWorkersApi';
+import workersApi from './services/workersApi';
+
+// Store for lazily resolved modules
 let moduleCache = {};
 
 /**
@@ -20,14 +23,11 @@ export const loadWorkersApi = async (useMock = true) => {
   }
 
   try {
-    // Dynamic import based on mode
-    const module = useMock
-      ? await import('./services/mockWorkersApi')
-      : await import('./services/workersApi');
+    const module = useMock ? mockWorkersApi : workersApi;
 
     // Cache the module
-    moduleCache[cacheKey] = module.default;
-    return module.default;
+    moduleCache[cacheKey] = module;
+    return module;
   } catch (error) {
     console.error(`Failed to load workers API (mock: ${useMock}):`, error);
     throw error;

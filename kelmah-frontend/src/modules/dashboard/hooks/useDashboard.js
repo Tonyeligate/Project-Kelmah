@@ -7,6 +7,7 @@ import {
   setError,
 } from '../../../store/slices/dashboardSlice';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { secureStorage } from '../../../utils/secureStorage';
 
 export const useDashboard = () => {
   const dispatch = useDispatch();
@@ -18,15 +19,12 @@ export const useDashboard = () => {
 
   // Initialize dashboard service with token from localStorage
   useEffect(() => {
-    (async () => {
-      try {
-        const { secureStorage } = await import('../../../utils/secureStorage');
-        const token = secureStorage.getAuthToken();
-        if (token) {
-          dashboardService.initialize(token);
-        }
-      } catch {}
-    })();
+    try {
+      const token = secureStorage.getAuthToken();
+      if (token) {
+        dashboardService.initialize(token);
+      }
+    } catch {}
   }, []);
 
   // Initialize socket connection and listeners when authenticated
