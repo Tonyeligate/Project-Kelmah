@@ -5,7 +5,7 @@ export const DEFAULT_PROPOSAL_PAGE_SIZE = 10;
 const MAX_RETRY_ATTEMPTS = 2;
 const REQUEST_TIMEOUT_MS = 10000;
 const CACHE_TTL_MS = 60 * 1000;
-const PROPOSAL_ENDPOINT = '/api/v1/hirer/proposals';
+const PROPOSAL_ENDPOINT = '/api/jobs/proposals';
 
 const buildCacheKey = (status, page, limit) => `${status}:${page}:${limit}`;
 

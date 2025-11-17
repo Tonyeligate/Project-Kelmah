@@ -301,16 +301,32 @@ const ProposalReview = () => {
         return;
       }
 
+      const jobId =
+        selectedProposal.job?.id ??
+        selectedProposal.job?._id ??
+        selectedProposal.jobId ??
+        selectedProposal.job?._doc?._id;
+
+      if (!jobId) {
+        const message = 'Missing job identifier for this proposal. Please refresh and try again.';
+        setActionError(message);
+        enqueueSnackbar(message, { variant: 'error' });
+        return;
+      }
+
       const requestId = `proposal_action_${proposalId}_${Date.now()}`;
 
       try {
         setActionInProgress(true);
         setActionError(null);
 
-        await jobServiceClient.patch(`/api/v1/hirer/proposals/${proposalId}`, {
-          status: action,
-          ...additionalData,
-        });
+        await jobServiceClient.put(
+          `/api/jobs/${jobId}/applications/${proposalId}`,
+          {
+            status: action,
+            notes: additionalData.feedback || additionalData.notes,
+          },
+        );
 
         enqueueSnackbar('Proposal updated successfully.', { variant: 'success' });
         handleDialogClose();
@@ -722,6 +738,31 @@ const ProposalReview = () => {
           {combinedError ||
             'Loading proposals is taking longer than expected. Please try again.'}
         </Alert>
+      )}
+
+      {combinedError && (
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          sx={{ mb: 2 }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleRetry}
+            startIcon={<RefreshIcon />}
+          >
+            Retry loading
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleRefresh}
+            startIcon={<RefreshIcon />}
+          >
+            Force refresh
+          </Button>
+        </Stack>
       )}
 
       <Stack

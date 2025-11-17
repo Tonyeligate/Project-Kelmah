@@ -233,14 +233,29 @@ const HirerJobManagement = () => {
           <CardContent>
             <Box
               display="flex"
-              alignItems="center"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
               justifyContent="space-between"
+              sx={{
+                gap: 2,
+                flexDirection: { xs: 'column', sm: 'row' },
+              }}
             >
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    lineHeight: 1.2,
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {mockAnalytics.summary.totalJobs}
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                >
                   Total Jobs Posted
                 </Typography>
               </Box>
@@ -261,14 +276,29 @@ const HirerJobManagement = () => {
           <CardContent>
             <Box
               display="flex"
-              alignItems="center"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
               justifyContent="space-between"
+              sx={{
+                gap: 2,
+                flexDirection: { xs: 'column', sm: 'row' },
+              }}
             >
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    lineHeight: 1.2,
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {formatCurrency(mockAnalytics.summary.totalSpent)}
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                >
                   Total Amount Spent
                 </Typography>
               </Box>
@@ -289,14 +319,29 @@ const HirerJobManagement = () => {
           <CardContent>
             <Box
               display="flex"
-              alignItems="center"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
               justifyContent="space-between"
+              sx={{
+                gap: 2,
+                flexDirection: { xs: 'column', sm: 'row' },
+              }}
             >
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    lineHeight: 1.2,
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {mockAnalytics.summary.totalApplications}
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                >
                   Total Applications
                 </Typography>
               </Box>
@@ -317,14 +362,29 @@ const HirerJobManagement = () => {
           <CardContent>
             <Box
               display="flex"
-              alignItems="center"
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
               justifyContent="space-between"
+              sx={{
+                gap: 2,
+                flexDirection: { xs: 'column', sm: 'row' },
+              }}
             >
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    lineHeight: 1.2,
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {mockAnalytics.summary.hireSuccessRate}%
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                >
                   Success Rate
                 </Typography>
               </Box>
