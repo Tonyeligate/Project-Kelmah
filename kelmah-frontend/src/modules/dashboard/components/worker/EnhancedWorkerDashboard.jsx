@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +44,29 @@ import VocationalJobCategories from './VocationalJobCategories';
 import VisualQuickActions from './VisualQuickActions';
 import ErrorBoundary from '../../../../components/common/ErrorBoundary';
 import DepthContainer from '../../../../components/common/DepthContainer';
+
+const RECENT_JOB_REFRESH_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
+const RECENT_JOB_FALLBACK_RETRY_MS = 45 * 1000; // 45 seconds for degraded state retries
+
+const formatFallbackLabel = (reason) =>
+  reason
+    ? reason
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+    : null;
+
+const getJobServiceErrorMessage = (error) => {
+  if (!error) {
+    return 'We could not reach the job service. Please try again.';
+  }
+
+  return (
+    error?.response?.data?.error?.message ||
+    error?.response?.data?.message ||
+    error?.message ||
+    'We could not reach the job service. Please try again.'
+  );
+};
 
 // Memoized components to prevent unnecessary re-renders
 const StatsCard = React.memo(function StatsCard({
@@ -153,8 +176,17 @@ const EnhancedWorkerDashboard = () => {
     fallback: false,
     fallbackReason: null,
     metadata: null,
+    status: 'idle',
+    error: null,
+    loading: true,
   });
   const [refreshing, setRefreshing] = useState(false);
+
+  const recentJobsRef = useRef(recentJobsState);
+
+  useEffect(() => {
+    recentJobsRef.current = recentJobsState;
+  }, [recentJobsState]);
 
   // Stable user ID using normalized user data
   const userId = useMemo(() => user?.id, [user?.id]);
@@ -194,45 +226,86 @@ const EnhancedWorkerDashboard = () => {
     };
   }, [userId, profileCompletion]);
 
-  // Load recent jobs - with guard to prevent infinite calls
-  useEffect(() => {
-    let isMounted = true;
+  const loadRecentJobs = useCallback(
+    async ({ force = false } = {}) => {
+      if (!userId) return;
 
-    const loadRecentJobs = async () => {
-      if (!userId || recentJobsState.jobs.length > 0) return;
+      const current = recentJobsRef.current;
+      const receivedAt = current?.metadata?.receivedAt
+        ? new Date(current.metadata.receivedAt).getTime()
+        : 0;
+      const ttl = current?.fallback
+        ? RECENT_JOB_FALLBACK_RETRY_MS
+        : RECENT_JOB_REFRESH_INTERVAL_MS;
+
+      if (!force && receivedAt && Date.now() - receivedAt < ttl) {
+        return;
+      }
+
+      setRecentJobsState((prev) => ({
+        ...prev,
+        loading: true,
+        error: null,
+        status: prev.status === 'idle' ? 'loading' : prev.status,
+      }));
 
       try {
         const result = await workerService.getWorkerJobs({ limit: 6 });
-        if (isMounted) {
-          setRecentJobsState({
-            jobs: Array.isArray(result?.jobs) ? result.jobs : [],
-            fallback: Boolean(result?.metadata?.fallback ?? result?.fallback),
-            fallbackReason:
-              result?.metadata?.fallbackReason ||
-              result?.fallbackReason ||
-              null,
-            metadata: result?.metadata || null,
-          });
-        }
+        const metadata = result?.metadata || {};
+        const receivedTimestamp =
+          metadata?.receivedAt || new Date().toISOString();
+        const fallback = Boolean(result?.fallback || metadata?.fallback);
+
+        setRecentJobsState({
+          jobs: Array.isArray(result?.jobs) ? result.jobs : [],
+          fallback,
+          fallbackReason:
+            result?.fallbackReason || metadata?.fallbackReason || null,
+          metadata: { ...metadata, receivedAt: receivedTimestamp },
+          status: fallback ? 'degraded' : 'ok',
+          error: null,
+          loading: false,
+        });
       } catch (error) {
         console.warn('Failed to load recent jobs:', error);
-        if (isMounted) {
-          setRecentJobsState({
-            jobs: [],
-            fallback: false,
-            fallbackReason: null,
-            metadata: null,
-          });
-        }
+        setRecentJobsState((prev) => ({
+          ...prev,
+          loading: false,
+          status: 'error',
+          error: getJobServiceErrorMessage(error),
+        }));
       }
-    };
+    },
+    [userId],
+  );
 
-    loadRecentJobs();
+  // Initial load + periodic refresh
+  useEffect(() => {
+    loadRecentJobs({ force: true });
+  }, [loadRecentJobs]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [userId, recentJobsState.jobs.length]);
+  useEffect(() => {
+    if (!userId) return () => {};
+
+    const interval = setInterval(() => {
+      loadRecentJobs();
+    }, RECENT_JOB_REFRESH_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [userId, loadRecentJobs]);
+
+  // When we are in fallback mode, retry more aggressively
+  useEffect(() => {
+    if (!recentJobsState.fallback || !userId) {
+      return () => {};
+    }
+
+    const retryTimer = setTimeout(() => {
+      loadRecentJobs({ force: true });
+    }, RECENT_JOB_FALLBACK_RETRY_MS);
+
+    return () => clearTimeout(retryTimer);
+  }, [recentJobsState.fallback, userId, loadRecentJobs]);
 
   // Memoized statistics to prevent recalculation on every render
   const statistics = useMemo(() => {
@@ -297,18 +370,17 @@ const EnhancedWorkerDashboard = () => {
       await dispatch(fetchDashboardData());
       // Reset data to force reload
       setProfileCompletion(null);
-      setRecentJobsState({
-        jobs: [],
-        fallback: false,
-        fallbackReason: null,
-        metadata: null,
-      });
+      await loadRecentJobs({ force: true });
     } catch (error) {
       console.error('Refresh failed:', error);
     } finally {
       setTimeout(() => setRefreshing(false), 1000); // Visual feedback
     }
-  }, [dispatch]);
+  }, [dispatch, loadRecentJobs]);
+
+  const handleRecentJobsRetry = useCallback(() => {
+    loadRecentJobs({ force: true });
+  }, [loadRecentJobs]);
 
   if (!user) {
     return (
@@ -480,7 +552,8 @@ const EnhancedWorkerDashboard = () => {
                           View All
                         </Button>
                       </Box>
-                      {loading ? (
+                      {recentJobsState.loading &&
+                      recentJobsState.jobs.length === 0 ? (
                         <Stack spacing={1}>
                           {[...Array(3)].map((_, i) => (
                             <Box
@@ -503,29 +576,69 @@ const EnhancedWorkerDashboard = () => {
                         </Stack>
                       ) : recentJobsState.jobs.length > 0 ? (
                         <>
-                          {recentJobsState.fallback && (
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                              Showing sample jobs while we reconnect to the job
-                              service
-                              {recentJobsState.fallbackReason
-                                ? ` (${recentJobsState.fallbackReason.replace(/_/g, ' ').toLowerCase()})`
-                                : ''}
-                              .
-                              {recentJobsState.metadata?.receivedAt && (
+                          {(recentJobsState.fallback ||
+                            recentJobsState.status === 'error') && (
+                            <Alert
+                              severity={
+                                recentJobsState.status === 'error'
+                                  ? 'error'
+                                  : 'warning'
+                              }
+                              sx={{ mb: 2 }}
+                              action={
+                                <Button
+                                  color="inherit"
+                                  size="small"
+                                  onClick={handleRecentJobsRetry}
+                                  disabled={recentJobsState.loading}
+                                >
+                                  {recentJobsState.loading
+                                    ? 'Trying...'
+                                    : 'Retry'}
+                                </Button>
+                              }
+                            >
+                              {recentJobsState.status === 'error'
+                                ? 'We can’t reach the job service right now. Live matches will resume automatically once the service recovers.'
+                                : 'Job service is reconnecting, so these matches may be out of date.'}
+                              {recentJobsState.fallbackReason && (
                                 <Typography
                                   variant="caption"
                                   display="block"
                                   sx={{ mt: 0.5 }}
                                 >
-                                  Updated{' '}
+                                  Reason:{' '}
+                                  {formatFallbackLabel(
+                                    recentJobsState.fallbackReason,
+                                  )}
+                                </Typography>
+                              )}
+                              {recentJobsState.metadata?.receivedAt && (
+                                <Typography
+                                  variant="caption"
+                                  display="block"
+                                >
+                                  Last checked at{' '}
                                   {new Date(
                                     recentJobsState.metadata.receivedAt,
                                   ).toLocaleTimeString()}
                                   .
                                 </Typography>
                               )}
+                              {recentJobsState.error && (
+                                <Typography
+                                  variant="caption"
+                                  display="block"
+                                >
+                                  {recentJobsState.error}
+                                </Typography>
+                              )}
                             </Alert>
                           )}
+                          {recentJobsState.loading &&
+                            recentJobsState.jobs.length > 0 && (
+                              <LinearProgress sx={{ mb: 2 }} />
+                            )}
                           <List dense>
                             {recentJobsState.jobs
                               .slice(0, 3)
@@ -556,15 +669,43 @@ const EnhancedWorkerDashboard = () => {
                               ))}
                           </List>
                         </>
-                      ) : (
+                      ) : recentJobsState.status === 'error' ? (
                         <Box textAlign="center" py={4}>
                           <WorkIcon
                             sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }}
                           />
                           <Typography variant="body2" color="text.secondary">
+                            We couldn’t load job matches right now. Please try
+                            again.
+                          </Typography>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{ mt: 2 }}
+                            onClick={handleRecentJobsRetry}
+                            disabled={recentJobsState.loading}
+                          >
+                            {recentJobsState.loading ? 'Retrying…' : 'Retry now'}
+                          </Button>
+                        </Box>
+                      ) : (
+                        <Box textAlign="center" py={4}>
+                          <WorkIcon
+                            sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }}
+                          />
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                             No recent job matches. Update your skills to see
                             more opportunities!
                           </Typography>
+                          {recentJobsState.metadata?.receivedAt && (
+                            <Typography variant="caption" color="text.secondary">
+                              Last checked at{' '}
+                              {new Date(
+                                recentJobsState.metadata.receivedAt,
+                              ).toLocaleTimeString()}
+                              . We refresh automatically every few minutes.
+                            </Typography>
+                          )}
                         </Box>
                       )}
                     </CardContent>

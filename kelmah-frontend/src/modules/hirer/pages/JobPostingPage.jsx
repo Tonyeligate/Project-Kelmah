@@ -62,8 +62,41 @@ const DESCRIPTION_MAX_CHARS = 1200;
 
 const normalizeDescription = (value = '') => value.replace(/\s+/g, ' ').trim();
 
+const formatCurrency = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 'GH₵0';
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+    maximumFractionDigits: 0,
+  }).format(numeric);
+};
+
+const getBudgetPreview = (formData) => {
+  if (formData.paymentType === 'hourly') {
+    const min = Number(formData.budget.min);
+    const max = Number(formData.budget.max);
+    if (Number.isFinite(min) && Number.isFinite(max) && min && max) {
+      return `${formatCurrency(min)} – ${formatCurrency(max)} / hr`;
+    }
+    if (Number.isFinite(min) && min) {
+      return `From ${formatCurrency(min)} / hr`;
+    }
+    if (Number.isFinite(max) && max) {
+      return `Up to ${formatCurrency(max)} / hr`;
+    }
+    return 'GH₵0 / hr';
+  }
+  const fixed = Number(formData.budget.fixed);
+  return Number.isFinite(fixed) && fixed
+    ? `${formatCurrency(fixed)} total`
+    : 'GH₵0 total';
+};
+
 const JobPreview = ({ formData }) => {
   const theme = useTheme();
+  const budgetPreview = useMemo(() => getBudgetPreview(formData), [formData]);
+  const durationPreview = formData.duration || 'N/A';
   return (
     <Paper
       elevation={3}
@@ -92,15 +125,12 @@ const JobPreview = ({ formData }) => {
         ))}
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2">
-            <strong>Budget:</strong>{' '}
-            {formData.paymentType === 'hourly'
-              ? `${formData.budget.min || 0} - ${formData.budget.max || 0} /hr`
-              : `${formData.budget.fixed || 0}`}
+            <strong>Budget:</strong> {budgetPreview}
           </Typography>
         </Box>
         <Box sx={{ mt: 1 }}>
           <Typography variant="body2">
-            <strong>Expected Duration:</strong> {formData.duration || 'N/A'}
+            <strong>Expected Duration:</strong> {durationPreview}
           </Typography>
         </Box>
         <Box sx={{ mt: 1 }}>
@@ -119,6 +149,18 @@ const JobPreview = ({ formData }) => {
       </Box>
     </Paper>
   );
+};
+
+const REQUIRED_LABEL_SX = {
+  '& .MuiInputLabel-root': {
+    color: (theme) => theme.palette.text.primary,
+    '& .MuiInputLabel-asterisk': {
+      color: (theme) => theme.palette.error.main,
+    },
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: (theme) => theme.palette.text.primary,
+  },
 };
 
 const JobPostingPage = () => {
@@ -408,8 +450,10 @@ const JobPostingPage = () => {
   };
 
   // Determine if Next button should be disabled
-  const isNextDisabled = () =>
-    Object.keys(validateStep(activeStep)).length > 0;
+  const stepErrorKeys = (step) => Object.keys(validateStep(step));
+  const budgetStepHasErrors =
+    activeStep === 2 && stepErrorKeys(2).length > 0;
+  const isFinalStep = activeStep === steps.length - 1;
 
   if (submitSuccess) {
     return (
@@ -463,6 +507,7 @@ const JobPostingPage = () => {
               fullWidth
               margin="normal"
               required
+              sx={REQUIRED_LABEL_SX}
               onBlur={() => markFieldTouched('title')}
               error={Boolean(touchedFields.title && fieldErrors.title)}
               helperText={
@@ -474,6 +519,7 @@ const JobPostingPage = () => {
               fullWidth
               margin="normal"
               error={Boolean(touchedFields.category && fieldErrors.category)}
+              sx={REQUIRED_LABEL_SX}
             >
               <InputLabel>Category</InputLabel>
               <Select
@@ -482,7 +528,22 @@ const JobPostingPage = () => {
                 label="Category"
                 onChange={handleChange}
                 onBlur={() => markFieldTouched('category')}
+                displayEmpty
+                renderValue={(selected) =>
+                  selected ? selected : 'Select a category'
+                }
+                sx={{
+                  '& .MuiSelect-select.Mui-disabled': {
+                    color: 'text.disabled',
+                  },
+                  '& .MuiSelect-select': {
+                    color: formData.category ? 'text.primary' : 'text.secondary',
+                  },
+                }}
               >
+                <MenuItem value="" disabled>
+                  Select a category
+                </MenuItem>
                 {[
                   'Plumbing',
                   'Electrical',
@@ -521,6 +582,7 @@ const JobPostingPage = () => {
               fullWidth
               margin="normal"
               required
+              sx={REQUIRED_LABEL_SX}
               onBlur={() => markFieldTouched('description')}
               error={Boolean(touchedFields.description && fieldErrors.description)}
               helperText={
@@ -605,7 +667,7 @@ const JobPostingPage = () => {
       case 2:
         return (
           <>
-            <FormControl component="fieldset">
+            <FormControl component="fieldset" sx={REQUIRED_LABEL_SX}>
               <Typography variant="subtitle1" gutterBottom>
                 Payment Type
               </Typography>
@@ -645,13 +707,14 @@ const JobPostingPage = () => {
                     }
                     InputProps={{
                       startAdornment: (
-                        <InputAdornment position="start">$</InputAdornment>
+                        <InputAdornment position="start">GH₵</InputAdornment>
                       ),
                     }}
                     fullWidth
                     margin="normal"
                     type="number"
                     required
+                    sx={REQUIRED_LABEL_SX}
                   />
                   <TextField
                     name="budget.max"
@@ -668,13 +731,14 @@ const JobPostingPage = () => {
                     }
                     InputProps={{
                       startAdornment: (
-                        <InputAdornment position="start">$</InputAdornment>
+                        <InputAdornment position="start">GH₵</InputAdornment>
                       ),
                     }}
                     fullWidth
                     margin="normal"
                     type="number"
                     required
+                    sx={REQUIRED_LABEL_SX}
                   />
                 </>
               ) : (
@@ -693,13 +757,14 @@ const JobPostingPage = () => {
                   }
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">$</InputAdornment>
+                      <InputAdornment position="start">GH₵</InputAdornment>
                     ),
                   }}
                   fullWidth
                   margin="normal"
                   type="number"
                   required
+                  sx={REQUIRED_LABEL_SX}
                 />
               )}
               <TextField
@@ -717,6 +782,7 @@ const JobPostingPage = () => {
                 fullWidth
                 margin="normal"
                 required
+                sx={REQUIRED_LABEL_SX}
               />
             </Box>
           </>
@@ -724,7 +790,7 @@ const JobPostingPage = () => {
       case 3:
         return (
           <>
-            <FormControl component="fieldset">
+            <FormControl component="fieldset" sx={REQUIRED_LABEL_SX}>
               <Typography variant="subtitle1" gutterBottom>
                 Location Type
               </Typography>
@@ -767,6 +833,7 @@ const JobPostingPage = () => {
                   : 'Specify the site address or nearest landmark')
               }
               required
+              sx={REQUIRED_LABEL_SX}
             />
           </>
         );
@@ -817,7 +884,14 @@ const JobPostingPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 3 }}>{getStepContent(activeStep)}</Paper>
+          <Paper sx={{ p: 3, mb: 3 }}>
+            {budgetStepHasErrors && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Fill in the highlighted budget fields to continue.
+              </Alert>
+            )}
+            {getStepContent(activeStep)}
+          </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
           <JobPreview formData={formData} />
@@ -862,7 +936,7 @@ const JobPostingPage = () => {
                 variant="contained"
                 onClick={handleNext}
                 endIcon={<ArrowForward />}
-                disabled={isNextDisabled()}
+                disabled={isFinalStep && isLoading}
               >
                 Next
               </Button>

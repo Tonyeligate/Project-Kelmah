@@ -22,7 +22,18 @@ import {
   Verified as VerifiedIcon,
 } from '@mui/icons-material';
 
-const cartoonImages = [goodJobClip, plannerClip];
+const cartoonScenes = [
+  {
+    image: goodJobClip,
+    label: 'Worker spotlight',
+    description: 'See how verified artisans deliver quality craftsmanship.',
+  },
+  {
+    image: plannerClip,
+    label: 'Hirer planning',
+    description: 'Plan projects confidently with trusted Kelmah professionals.',
+  },
+];
 
 const AuthWrapper = ({ children }) => {
   const theme = useTheme();
@@ -32,7 +43,7 @@ const AuthWrapper = ({ children }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % cartoonImages.length);
+      setCurrentImage((prev) => (prev + 1) % cartoonScenes.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -369,10 +380,10 @@ const AuthWrapper = ({ children }) => {
                         }}
                       />
 
-                      {cartoonImages.map((img, idx) => (
+                      {cartoonScenes.map(({ image }, idx) => (
                         <motion.img
-                          key={img}
-                          src={img}
+                          key={image}
+                          src={image}
                           alt="Professional worker"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: currentImage === idx ? 1 : 0 }}
@@ -386,6 +397,61 @@ const AuthWrapper = ({ children }) => {
                           }}
                         />
                       ))}
+
+                      {/* Illustration indicator overlay */}
+                      <motion.div
+                        key={cartoonScenes[currentImage].label}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        style={{
+                          position: 'absolute',
+                          bottom: -20,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: '100%',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        <Stack
+                          spacing={0.5}
+                          alignItems="center"
+                          sx={{
+                            backgroundColor: 'rgba(0,0,0,0.65)',
+                            borderRadius: 3,
+                            px: 2,
+                            py: 1.2,
+                            border: '1px solid rgba(255,215,0,0.4)',
+                            mx: 'auto',
+                            maxWidth: '85%',
+                          }}
+                          aria-live="polite"
+                        >
+                          <Chip
+                            label={cartoonScenes[currentImage].label}
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(255,215,0,0.2)',
+                              color: '#FFD700',
+                              fontWeight: 700,
+                              fontSize: '0.7rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.5,
+                            }}
+                          />
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#FFFFFF',
+                              textAlign: 'center',
+                              fontSize: { xs: '0.7rem', md: '0.75rem' },
+                              lineHeight: 1.3,
+                            }}
+                          >
+                            {cartoonScenes[currentImage].description}
+                          </Typography>
+                        </Stack>
+                      </motion.div>
                     </Box>
                   </Box>
                 </motion.div>

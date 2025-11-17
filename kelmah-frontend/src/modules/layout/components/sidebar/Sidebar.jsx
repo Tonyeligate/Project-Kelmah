@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Drawer,
   List,
@@ -39,6 +39,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import Badge from '@mui/material/Badge';
 import { Star } from '@mui/icons-material';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import { getProfileCompletion } from '../../../../utils/userUtils';
 
 const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   const user = useSelector((state) => state.auth.user);
@@ -57,7 +58,20 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         ? 'worker'
         : null;
   const isVerified = true; // Mock data
-  const profileCompletion = 75; // Mock data as a percentage
+  const completionInfo = useMemo(() => getProfileCompletion(user), [user]);
+  const profileCompletion = completionInfo.percentage || 0;
+  const missingFields = completionInfo.missing?.slice(0, 3) || [];
+  const completionLabels = {
+    firstName: 'Add first name',
+    lastName: 'Add last name',
+    email: 'Verify email',
+    bio: 'Write a short bio',
+    location: 'Set your location',
+    phone: 'Add phone number',
+    profileImage: 'Upload a profile photo',
+    skills: 'List your skills',
+    experience: 'Detail experience',
+  };
   const [openSubMenus, setOpenSubMenus] = useState({});
 
   const handleSubMenuToggle = (itemText) => {
@@ -234,7 +248,51 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         >
           Profile Completion
         </Typography>
-        <LinearProgress variant="determinate" value={profileCompletion} />
+        <LinearProgress
+          variant="determinate"
+          value={profileCompletion}
+          sx={{ height: 8, borderRadius: 999 }}
+        />
+        <Typography
+          variant="caption"
+          sx={{ color: 'rgba(255,255,255,0.7)', display: 'block', mt: 0.5 }}
+        >
+          {profileCompletion}% complete
+        </Typography>
+        {profileCompletion < 100 && missingFields.length > 0 && (
+          <Box sx={{ mt: 1.5 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'rgba(255,255,255,0.7)', display: 'block', mb: 0.5 }}
+            >
+              Next steps
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {missingFields.map((field) => (
+                <Chip
+                  key={field}
+                  label={completionLabels[field] || field}
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    borderColor: 'rgba(212,175,55,0.5)',
+                    color: '#FFD700',
+                    '& .MuiChip-label': { px: 1 },
+                  }}
+                />
+              ))}
+            </Box>
+            <Button
+              component={RouterLink}
+              to={navRole === 'hirer' ? '/hirer/profile/edit' : '/worker/profile/edit'}
+              variant="text"
+              size="small"
+              sx={{ mt: 1, color: '#FFD700', textTransform: 'none' }}
+            >
+              Complete profile
+            </Button>
+          </Box>
+        )}
       </Box>
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
       <List sx={{ flexGrow: 1 }}>
