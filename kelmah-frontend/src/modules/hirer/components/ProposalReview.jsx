@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Avatar,
@@ -45,12 +39,12 @@ import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import StarIcon from '@mui/icons-material/Star';
+import { useSnackbar } from 'notistack';
 import { jobServiceClient } from '../../common/services/axios';
-
-const DEFAULT_PAGE_SIZE = 10;
-const MAX_RETRY_ATTEMPTS = 2;
-const REQUEST_TIMEOUT_MS = 15000;
-const CACHE_TTL_MS = 60 * 1000;
+import {
+  DEFAULT_PROPOSAL_PAGE_SIZE,
+  useProposals,
+} from '../../../hooks/useProposals';
 
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
@@ -145,181 +139,43 @@ const getStatusColor = (status) => {
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const ProposalReview = () => {
-  const [proposals, setProposals] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasTimedOut, setHasTimedOut] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [reviewForm, setReviewForm] = useState({ feedback: '' });
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [actionInProgress, setActionInProgress] = useState(false);
+  const [actionError, setActionError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { enqueueSnackbar } = useSnackbar();
 
-  const cacheRef = useRef(new Map());
-  const requestControllerRef = useRef(null);
-  const timeoutRef = useRef(null);
-  const timedOutRequestRef = useRef(false);
-
-  const clearInFlightRequest = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    if (requestControllerRef.current) {
-      requestControllerRef.current.abort();
-      requestControllerRef.current = null;
-    }
-    timedOutRequestRef.current = false;
-  }, []);
-
-  const fetchProposals = useCallback(
-    async (options = {}) => {
-      const status = options.status ?? statusFilter;
-      const requestedPage = options.page ?? page;
-      const useCache = options.useCache ?? true;
-
-      const cacheKey = `${status}:${requestedPage}`;
-      const cachedEntry = cacheRef.current.get(cacheKey);
-
-      if (cachedEntry) {
-        setProposals(cachedEntry.items);
-        setMeta(cachedEntry.meta);
-        setLastUpdated(cachedEntry.updatedAt);
-        setError(null);
-      }
-
-      const cacheIsFresh =
-        cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS;
-
-      if (useCache && cacheIsFresh) {
-        setLoading(false);
-        setIsRefreshing(false);
-        setHasTimedOut(false);
-        return;
-      }
-
-      const hadWarmData = Boolean(cachedEntry);
-      setLoading(!hadWarmData);
-      setIsRefreshing(hadWarmData);
-      setHasTimedOut(false);
-
-      let finalError = null;
-
-      for (let attempt = 0; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
-        clearInFlightRequest();
-
-        const controller = new AbortController();
-        requestControllerRef.current = controller;
-
-        timeoutRef.current = setTimeout(() => {
-          timedOutRequestRef.current = true;
-          setHasTimedOut(true);
-          controller.abort();
-        }, REQUEST_TIMEOUT_MS);
-
-        try {
-          const params = {
-            page: requestedPage,
-            limit: DEFAULT_PAGE_SIZE,
-          };
-          if (status && status !== 'all') {
-            params.status = status;
-          }
-
-          const response = await jobServiceClient.get('/jobs/proposals', {
-            params,
-            signal: controller.signal,
-          });
-
-          const payload = response.data?.data ?? response.data ?? {};
-          const items = Array.isArray(payload.items) ? payload.items : [];
-          const paginationData =
-            payload.pagination ??
-            response.data?.meta?.pagination ?? {
-              page: requestedPage,
-              totalPages: 1,
-            };
-          const aggregates =
-            response.data?.meta?.aggregates ?? payload.aggregates ?? {};
-
-          setProposals(items);
-          setMeta({ pagination: paginationData, aggregates });
-          setError(null);
-          setHasTimedOut(false);
-          setLoading(false);
-          setIsRefreshing(false);
-
-          const updatedAt = aggregates.updatedAt ?? new Date().toISOString();
-          setLastUpdated(updatedAt);
-
-          cacheRef.current.set(cacheKey, {
-            items,
-            meta: { pagination: paginationData, aggregates },
-            updatedAt,
-            timestamp: Date.now(),
-          });
-
-          return;
-        } catch (err) {
-          finalError = err;
-          if (err?.name === 'AbortError') {
-            if (!timedOutRequestRef.current) {
-              setLoading(false);
-              setIsRefreshing(false);
-              return;
-            }
-          }
-
-          if (attempt === MAX_RETRY_ATTEMPTS) {
-            break;
-          }
-
-          await new Promise((resolve) =>
-            setTimeout(resolve, 400 * 2 ** attempt),
-          );
-        } finally {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-          requestControllerRef.current = null;
-          timedOutRequestRef.current = false;
-        }
-      }
-
-      setLoading(false);
-      setIsRefreshing(false);
-
-      if (finalError) {
-        console.error('Unable to fetch proposals:', finalError);
-        setError(
-          timedOutRequestRef.current
-            ? 'Loading proposals is taking longer than expected. Please retry.'
-            : 'Unable to fetch proposals. Please try again later.',
-        );
-      }
-    },
-    [statusFilter, page, clearInFlightRequest],
-  );
-
-  useEffect(() => {
-    fetchProposals();
-    return () => clearInFlightRequest();
-  }, [fetchProposals, clearInFlightRequest]);
+  const {
+    proposals,
+    meta,
+    loading,
+    isRefreshing,
+    error,
+    hasTimedOut,
+    lastUpdated,
+    refresh,
+    retry,
+    invalidateCache,
+  } = useProposals({
+    status: statusFilter,
+    page: currentPage,
+    limit: DEFAULT_PROPOSAL_PAGE_SIZE,
+  });
 
   const statusCounts = meta?.aggregates?.statusCounts ?? {};
-  const paginationData = meta?.pagination ?? { page, totalPages: 1 };
-  const currentPage = paginationData.page ?? page;
+  const paginationData = meta?.pagination ?? {
+    page: currentPage,
+    totalPages: 1,
+  };
   const totalPages = paginationData.totalPages ?? 1;
   const totalItems =
     paginationData.totalItems ?? meta?.aggregates?.total ?? proposals.length;
-  const pageSize = paginationData.limit ?? DEFAULT_PAGE_SIZE;
+  const pageSize = paginationData.limit ?? DEFAULT_PROPOSAL_PAGE_SIZE;
   const rangeStart = proposals.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const rangeEnd = proposals.length === 0 ? 0 : rangeStart + proposals.length - 1;
   const safePage = currentPage > 0 ? currentPage : 1;
@@ -366,28 +222,40 @@ const ProposalReview = () => {
 
   const showInitialLoading = loading && proposals.length === 0;
   const isEmptyState = !loading && proposals.length === 0;
+  const combinedError = actionError || error;
 
   const handleStatusChange = useCallback(
     (nextStatus) => {
       if (nextStatus === statusFilter) {
         return;
       }
-      cacheRef.current.clear();
+      invalidateCache();
+      setActionError(null);
       setStatusFilter(nextStatus);
-      setPage(1);
+      setCurrentPage(1);
     },
-    [statusFilter],
+    [statusFilter, invalidateCache],
   );
 
-  const handlePageChange = useCallback((_, value) => {
-    if (value !== page) {
-      setPage(value);
-    }
-  }, [page]);
+  const handlePageChange = useCallback(
+    (_, value) => {
+      if (value !== currentPage) {
+        setActionError(null);
+        setCurrentPage(value);
+      }
+    },
+    [currentPage],
+  );
 
   const handleRetry = useCallback(() => {
-    fetchProposals({ status: statusFilter, page, useCache: false });
-  }, [fetchProposals, statusFilter, page]);
+    setActionError(null);
+    retry();
+  }, [retry]);
+
+  const handleRefresh = useCallback(() => {
+    setActionError(null);
+    refresh();
+  }, [refresh]);
 
   const handleMenuOpen = (event, proposal) => {
     setAnchorEl(event.currentTarget);
@@ -427,29 +295,39 @@ const ProposalReview = () => {
         selectedProposal.proposalID;
 
       if (!proposalId) {
-        setError('Missing proposal identifier. Please refresh and try again.');
+        const message = 'Missing proposal identifier. Please refresh and try again.';
+        setActionError(message);
+        enqueueSnackbar(message, { variant: 'error' });
         return;
       }
 
+      const requestId = `proposal_action_${proposalId}_${Date.now()}`;
+
       try {
         setActionInProgress(true);
-        setError(null);
+        setActionError(null);
 
-        await jobServiceClient.patch(`/jobs/proposals/${proposalId}`, {
+        await jobServiceClient.patch(`/api/v1/hirer/proposals/${proposalId}`, {
           status: action,
           ...additionalData,
         });
 
+        enqueueSnackbar('Proposal updated successfully.', { variant: 'success' });
         handleDialogClose();
-        await fetchProposals({ status: statusFilter, page, useCache: false });
+        await refresh();
       } catch (err) {
-        console.error(`Failed to update proposal ${proposalId}:`, err);
-        setError('Failed to update proposal. Please try again.');
+        console.error(`Failed to update proposal ${proposalId}`, {
+          requestId,
+          error: err,
+        });
+        const message = 'Failed to update proposal. Please try again.';
+        setActionError(message);
+        enqueueSnackbar(message, { variant: 'error' });
       } finally {
         setActionInProgress(false);
       }
     },
-    [selectedProposal, fetchProposals, statusFilter, page, handleDialogClose],
+    [selectedProposal, enqueueSnackbar, handleDialogClose, refresh],
   );
 
   const handleReviewInputChange = useCallback((event) => {
@@ -653,6 +531,175 @@ const ProposalReview = () => {
     </Card>
   );
 
+  const renderErrorState = () => (
+    <Card>
+      <CardContent>
+        <Box textAlign="center" py={6} px={2}>
+          <Typography variant="h6" gutterBottom color="error">
+            {combinedError ?? 'Unable to load proposals right now.'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            {hasTimedOut
+              ? 'The request is taking longer than expected. Retry or refresh to try again.'
+              : 'Please retry the request or refresh the page. If the issue persists, contact support.'}
+          </Typography>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<RefreshIcon />}
+              onClick={handleRetry}
+              sx={{ textTransform: 'none', minWidth: 160 }}
+              disabled={loading}
+            >
+              Retry loading
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleRefresh}
+              sx={{ textTransform: 'none', minWidth: 160 }}
+              disabled={loading}
+            >
+              Force refresh
+            </Button>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+  const renderTableSection = () => {
+    if (combinedError && proposals.length === 0) {
+      return renderErrorState();
+    }
+    if (isEmptyState) {
+      return renderEmptyState();
+    }
+    return (
+      <Card>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Worker</TableCell>
+                <TableCell>Job</TableCell>
+                <TableCell>Rate & Duration</TableCell>
+                <TableCell>Submitted</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading
+                ? Array.from({ length: skeletonRowCount }).map((_, index) => (
+                    <TableRow key={`loading-${index}`}>
+                      <TableCell colSpan={6}>
+                        <Skeleton height={48} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : proposals.map((proposal, index) => {
+                    const proposalId =
+                      proposal.id ??
+                      proposal._id ??
+                      proposal.proposalId ??
+                      proposal.proposalID ??
+                      `proposal-${index}`;
+                    const workerName =
+                      proposal.worker?.name ?? proposal.workerName ?? 'Unknown worker';
+                    const locationLabel = formatLocationBadge(
+                      proposal.worker?.location ?? proposal.workerLocation,
+                    );
+                    const jobTitle =
+                      proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
+                    const jobCategory =
+                      proposal.job?.category ?? proposal.jobCategory ?? 'General';
+                    const statusLabel = proposal.status ?? 'pending';
+
+                    return (
+                      <TableRow hover key={proposalId}>
+                        <TableCell>
+                          <Typography variant="subtitle2">{workerName}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {locationLabel}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="subtitle2">{jobTitle}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {jobCategory}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="subtitle2">
+                            {formatCurrency(proposal.proposedRate ?? proposal.rate)}
+                          </Typography>
+                          {proposal.availability?.duration && (
+                            <Typography variant="caption" color="text.secondary">
+                              {formatDurationLabel(proposal.availability.duration)}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {formatDate(proposal.submittedAt ?? proposal.createdAt)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={formatStatusLabel(statusLabel)}
+                            color={getStatusColor(statusLabel)}
+                            size="small"
+                            variant={statusLabel === 'accepted' ? 'filled' : 'outlined'}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            size="small"
+                            onClick={(event) => handleMenuOpen(event, proposal)}
+                            aria-label="Proposal actions"
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Box
+          display="flex"
+          flexDirection={{ xs: 'column', md: 'row' }}
+          alignItems={{ xs: 'flex-start', md: 'center' }}
+          justifyContent="space-between"
+          gap={1.5}
+          px={2}
+          py={2}
+        >
+          <Typography variant="body2" color="text.secondary">
+            {totalItems === 0
+              ? 'No proposals to display.'
+              : `Showing ${rangeStart}-${rangeEnd} of ${totalItems} proposals`}
+          </Typography>
+          <Pagination
+            count={Math.max(totalPages, 1)}
+            page={safePage}
+            onChange={handlePageChange}
+            color="primary"
+            shape="rounded"
+            size="small"
+          />
+        </Box>
+      </Card>
+    );
+  };
+
   if (showInitialLoading) {
     return renderLoadingState();
   }
@@ -662,7 +709,7 @@ const ProposalReview = () => {
 
   return (
     <Box>
-      {(error || hasTimedOut) && (
+      {(combinedError || hasTimedOut) && (
         <Alert
           severity="error"
           action={
@@ -672,7 +719,8 @@ const ProposalReview = () => {
           }
           sx={{ mb: 2 }}
         >
-          {error || 'Loading proposals is taking longer than expected. Please try again.'}
+          {combinedError ||
+            'Loading proposals is taking longer than expected. Please try again.'}
         </Alert>
       )}
 
@@ -820,123 +868,7 @@ const ProposalReview = () => {
         </Grid>
       </Grid>
 
-      {isEmptyState ? (
-        renderEmptyState()
-      ) : (
-        <Card>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Worker</TableCell>
-                  <TableCell>Job</TableCell>
-                  <TableCell>Rate & Duration</TableCell>
-                  <TableCell>Submitted</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {loading
-                  ? Array.from({ length: skeletonRowCount }).map((_, index) => (
-                      <TableRow key={`loading-${index}`}>
-                        <TableCell colSpan={6}>
-                          <Skeleton height={48} />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  : proposals.map((proposal, index) => {
-                      const proposalId =
-                        proposal.id ??
-                        proposal._id ??
-                        proposal.proposalId ??
-                        proposal.proposalID ??
-                        `proposal-${index}`;
-                      const workerName = proposal.worker?.name ?? proposal.workerName ?? 'Unknown worker';
-                      const locationLabel = formatLocationBadge(
-                        proposal.worker?.location ?? proposal.workerLocation,
-                      );
-                      const jobTitle = proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
-                      const jobCategory = proposal.job?.category ?? proposal.jobCategory ?? 'General';
-                      const statusLabel = proposal.status ?? 'pending';
-
-                      return (
-                        <TableRow hover key={proposalId}>
-                          <TableCell>
-                            <Typography variant="subtitle2">{workerName}</Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {locationLabel}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="subtitle2">{jobTitle}</Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {jobCategory}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="subtitle2">
-                              {formatCurrency(proposal.proposedRate ?? proposal.rate)}
-                            </Typography>
-                            {proposal.availability?.duration && (
-                              <Typography variant="caption" color="text.secondary">
-                                {formatDurationLabel(proposal.availability.duration)}
-                              </Typography>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">
-                              {formatDate(proposal.submittedAt ?? proposal.createdAt)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={formatStatusLabel(statusLabel)}
-                              color={getStatusColor(statusLabel)}
-                              size="small"
-                              variant={statusLabel === 'accepted' ? 'filled' : 'outlined'}
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            <IconButton
-                              size="small"
-                              onClick={(event) => handleMenuOpen(event, proposal)}
-                              aria-label="Proposal actions"
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Box
-            display="flex"
-            flexDirection={{ xs: 'column', md: 'row' }}
-            alignItems={{ xs: 'flex-start', md: 'center' }}
-            justifyContent="space-between"
-            gap={1.5}
-            px={2}
-            py={2}
-          >
-            <Typography variant="body2" color="text.secondary">
-              {totalItems === 0
-                ? 'No proposals to display.'
-                : `Showing ${rangeStart}-${rangeEnd} of ${totalItems} proposals`}
-            </Typography>
-            <Pagination
-              count={Math.max(totalPages, 1)}
-              page={safePage}
-              onChange={handlePageChange}
-              color="primary"
-              shape="rounded"
-              size="small"
-            />
-          </Box>
-        </Card>
-      )}
+      {renderTableSection()}
 
       <Menu
         anchorEl={anchorEl}

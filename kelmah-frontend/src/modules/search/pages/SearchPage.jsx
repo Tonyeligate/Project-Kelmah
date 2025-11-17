@@ -235,58 +235,6 @@ const SearchPage = () => {
   const [showRecommendations, setShowRecommendations] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Parse search parameters from URL on component mount
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const params = {};
-
-    // Extract search parameters from URL
-    for (const [key, value] of queryParams.entries()) {
-      if (key === 'page') {
-        params.page = parseInt(value, 10) || 1;
-      } else if (key === 'limit') {
-        params.limit = parseInt(value, 10) || 10;
-      } else if (key === 'sort') {
-        setSortOrder(value);
-        params.sort = value;
-      } else if (key === 'categories' || key === 'skills') {
-        params[key] = value.split(',').filter(Boolean);
-      } else if (key === 'location') {
-        const decodedValue = value?.trim?.() ?? value;
-        if (
-          decodedValue &&
-          decodedValue.startsWith('{') &&
-          decodedValue.endsWith('}')
-        ) {
-          try {
-            params.location = JSON.parse(decodedValue);
-          } catch (error) {
-            console.error('Failed to parse location from URL:', error);
-            params.location = decodedValue;
-          }
-        } else {
-          params.location = decodedValue;
-        }
-      } else if (
-        key === 'budgetMin' ||
-        key === 'budgetMax' ||
-        key === 'distance'
-      ) {
-        params[key] = parseFloat(value);
-      } else {
-        params[key] = value;
-      }
-    }
-
-    setSearchParams(params);
-
-    if (Object.keys(params).length === 0) {
-      performSearch({ page: 1, limit: 12 });
-    } else {
-      performSearch(params);
-    }
-  }, [location.search, isAuthenticated, performSearch]);
-
   // Fetch search suggestions when user types
   const fetchSearchSuggestions = async (query) => {
     if (!query || query.length < 2) {
@@ -405,6 +353,58 @@ const SearchPage = () => {
     },
     [executeWorkerSearch],
   );
+
+  // Parse search parameters from URL on component mount
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const params = {};
+
+    // Extract search parameters from URL
+    for (const [key, value] of queryParams.entries()) {
+      if (key === 'page') {
+        params.page = parseInt(value, 10) || 1;
+      } else if (key === 'limit') {
+        params.limit = parseInt(value, 10) || 10;
+      } else if (key === 'sort') {
+        setSortOrder(value);
+        params.sort = value;
+      } else if (key === 'categories' || key === 'skills') {
+        params[key] = value.split(',').filter(Boolean);
+      } else if (key === 'location') {
+        const decodedValue = value?.trim?.() ?? value;
+        if (
+          decodedValue &&
+          decodedValue.startsWith('{') &&
+          decodedValue.endsWith('}')
+        ) {
+          try {
+            params.location = JSON.parse(decodedValue);
+          } catch (error) {
+            console.error('Failed to parse location from URL:', error);
+            params.location = decodedValue;
+          }
+        } else {
+          params.location = decodedValue;
+        }
+      } else if (
+        key === 'budgetMin' ||
+        key === 'budgetMax' ||
+        key === 'distance'
+      ) {
+        params[key] = parseFloat(value);
+      } else {
+        params[key] = value;
+      }
+    }
+
+    setSearchParams(params);
+
+    if (Object.keys(params).length === 0) {
+      performSearch({ page: 1, limit: 12 });
+    } else {
+      performSearch(params);
+    }
+  }, [location.search, isAuthenticated, performSearch]);
 
   // Handle search form submission
   const handleSearch = (filters) => {
