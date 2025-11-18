@@ -142,6 +142,14 @@ import {
   LocationOn,
   MonetizationOn,
   Verified,
+  ElectricalServices as ElectricalIcon,
+  Plumbing as PlumbingIcon,
+  Construction as ConstructionIcon,
+  Thermostat as HvacIcon,
+  Handyman as CarpenterIcon,
+  Home as HomeIcon,
+  LocalFireDepartment as WhatshotIcon,
+  Psychology as PsychologyIcon,
 } from '@mui/icons-material';
 
 // Lazy-load non-critical icons to reduce initial bundle
