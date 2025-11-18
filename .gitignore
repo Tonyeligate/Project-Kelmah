@@ -115,7 +115,7 @@ backups/
 mock-services/
 render-cli/
 temp/
-data/
+/data/
 .vercel/
 
 # Allow runtime configuration files

@@ -1,0 +1,11 @@
+[
+  { "value": "", "label": "All Locations" },
+  { "value": "Accra", "label": "Accra, Greater Accra" },
+  { "value": "Kumasi", "label": "Kumasi, Ashanti Region" },
+  { "value": "Tema", "label": "Tema, Greater Accra" },
+  { "value": "Takoradi", "label": "Takoradi, Western Region" },
+  { "value": "Cape Coast", "label": "Cape Coast, Central Region" },
+  { "value": "Tamale", "label": "Tamale, Northern Region" },
+  { "value": "Ho", "label": "Ho, Volta Region" },
+  { "value": "Koforidua", "label": "Koforidua, Eastern Region" }
+]
