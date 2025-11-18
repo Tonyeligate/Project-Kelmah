@@ -3,7 +3,6 @@
  * Provides methods for communicating with other microservices
  */
 const axios = require("axios");
-const { handleError } = require("../utils/errorHandler");
 
 // Get service URLs from environment variables or use defaults
 const serviceUrls = {

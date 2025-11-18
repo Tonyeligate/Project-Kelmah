@@ -6,6 +6,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const { randomUUID } = require("crypto");
 // removed morgan; using shared JSON logger
 const cookieParser = require("cookie-parser");
 const config = require("./config");
@@ -51,6 +52,15 @@ const app = express();
 app.set('strict routing', false);
 // Trust proxy headers (required for correct client IP when behind Render/API Gateway)
 app.set('trust proxy', 1);
+
+// Attach a request ID for tracing across logs and responses
+app.use((req, res, next) => {
+  const headerId = req.headers['x-request-id'] || req.headers['x-requestid'];
+  const requestId = headerId || req.id || randomUUID();
+  req.id = requestId;
+  res.locals.requestId = requestId;
+  next();
+});
 
 // Initialize keep-alive to prevent Render spin-down
 let keepAliveManager;

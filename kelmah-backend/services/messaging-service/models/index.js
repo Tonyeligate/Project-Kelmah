@@ -5,19 +5,19 @@
  */
 
 // Import User from shared (truly cross-service model)
-const { User } = require('../../../shared/models');
+const { User } = require("../../../shared/models");
 
 // Import LOCAL service-specific models
-const Conversation = require('./Conversation');
-const Message = require('./Message');
-const Notification = require('./Notification');
-const NotificationPreference = require('./NotificationPreference');
+const Conversation = require("./Conversation");
+const Message = require("./Message");
+const Notification = require("./Notification");
+const NotificationPreference = require("./NotificationPreference");
 
 // Export models
 module.exports = {
-  User,          // ✅ Shared (used by all services)
-  Conversation,  // ✅ Local (only messaging-service)
-  Message,       // ✅ Local (only messaging-service)
-  Notification,  // ✅ Local (only messaging-service)
-  NotificationPreference  // ✅ Local (only messaging-service)
+  User, // ✅ Shared (used by all services)
+  Conversation, // ✅ Local (only messaging-service)
+  Message, // ✅ Local (only messaging-service)
+  Notification, // ✅ Local (only messaging-service)
+  NotificationPreference, // ✅ Local (only messaging-service)
 };

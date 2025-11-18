@@ -6,7 +6,6 @@
  */
 
 import { SERVICES, getApiBaseUrl } from '../config/environment';
-import axiosInstance from '../modules/common/services/axios';
 
 // Service health status cache
 const serviceHealthCache = new Map();
@@ -155,20 +154,26 @@ export const warmUpService = async (serviceUrl) => {
   console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
 
   try {
-    // Use the shared axios instance (proxy) to warm up services
-    // baseURL='/api' is provided by the axios instance
-    const response = await axiosInstance.get('/health', {
-      timeout: 5000,
+    const base = await getApiBaseUrl().catch(() => '/api');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const warmupUrl = buildHealthUrl(base, '/health');
+
+    const response = await fetch(warmupUrl, {
+      method: 'GET',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true',
       },
     });
 
+    clearTimeout(timeoutId);
+
     console.log(
       `🔥 Service warmed up - ${serviceUrl || 'gateway'}: ${response.status}`,
     );
-    return response.status === 200;
+    return response.ok;
   } catch (error) {
     console.warn(
       `🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`,

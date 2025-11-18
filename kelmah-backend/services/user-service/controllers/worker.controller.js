@@ -1935,6 +1935,7 @@ class WorkerController {
       };
 
       const buildRecentJobsFallback = (reason = 'RECENT_JOBS_FALLBACK') => {
+        const receivedAt = new Date().toISOString();
         const mockJobs = [
           {
             id: 'job_123',
@@ -1975,10 +1976,14 @@ class WorkerController {
         return {
           success: true,
           data: {
-            jobs: mockJobs.slice(0, parseInt(limit)),
+            jobs: mockJobs.slice(0, parseInt(limit, 10)),
             total: mockJobs.length,
             fallback: true,
-            fallbackReason: reason
+            fallbackReason: reason,
+            metadata: {
+              source: 'user-service-fallback',
+              receivedAt,
+            }
           }
         };
       };
@@ -1992,29 +1997,76 @@ class WorkerController {
       }
 
       // Try to get real job data from job service
-      let jobs = [];
       try {
         const axios = require('axios');
         const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
-        const response = await axios.get(`${jobServiceUrl}/api/jobs/worker/recent`, {
-          params: { workerId: userId, limit },
-          headers: { Authorization: req.headers.authorization },
-          timeout: 5000
+
+        const normalizedUserForHeaders = {
+          id: userId,
+          role: userContext?.role || 'worker',
+          email: userContext?.email || null,
+          firstName: userContext?.firstName || null,
+          lastName: userContext?.lastName || null,
+        };
+
+        const internalKey = process.env.INTERNAL_API_KEY;
+        const headers = {
+          'x-authenticated-user': JSON.stringify(normalizedUserForHeaders),
+          'x-auth-source': 'api-gateway',
+        };
+
+        if (req.headers.authorization) {
+          headers.Authorization = req.headers.authorization;
+        }
+
+        if (internalKey) {
+          headers['x-internal-key'] = internalKey;
+          headers['x-internal-request'] = internalKey;
+        }
+
+        const response = await axios.get(`${jobServiceUrl}/api/jobs/recommendations`, {
+          params: {
+            limit: Math.min(parseInt(limit, 10) || 10, 12),
+            includeInsights: false,
+            includeBreakdown: false,
+            includeReasons: false,
+            minScore: 20,
+          },
+          headers,
+          timeout: 8000,
         });
-        jobs = response.data?.jobs || [];
+
+        const payload = response.data?.data || response.data || {};
+        const jobs = Array.isArray(payload?.jobs)
+          ? payload.jobs
+          : Array.isArray(payload)
+            ? payload
+            : [];
+
+        const metadata = {
+          source: payload?.source || 'job-service',
+          receivedAt: new Date().toISOString(),
+          totalRecommendations: payload?.totalRecommendations,
+        };
+
+        return res.json({
+          success: true,
+          data: {
+            jobs: jobs.slice(0, parseInt(limit, 10)),
+            total: jobs.length,
+            metadata,
+          }
+        });
       } catch (error) {
         console.warn('Could not fetch recent jobs from job service:', error.message);
         const fallback = buildRecentJobsFallback('JOB_SERVICE_UNAVAILABLE');
+        fallback.data.metadata = {
+          ...(fallback.data.metadata || {}),
+          error: error.message,
+          source: 'user-service-fallback',
+        };
         return res.status(200).json(fallback);
       }
-
-      res.json({
-        success: true,
-        data: {
-          jobs: jobs.slice(0, parseInt(limit)),
-          total: jobs.length
-        }
-      });
     } catch (error) {
       console.error('Get recent jobs error:', error);
       return handleServiceError(res, error, 'Failed to get recent jobs');

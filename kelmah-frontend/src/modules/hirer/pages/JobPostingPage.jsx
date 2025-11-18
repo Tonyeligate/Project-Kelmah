@@ -93,10 +93,10 @@ const getBudgetPreview = (formData) => {
     : 'GH₵0 total';
 };
 
-const JobPreview = ({ formData }) => {
+const JobPreview = ({ snapshot }) => {
   const theme = useTheme();
-  const budgetPreview = useMemo(() => getBudgetPreview(formData), [formData]);
-  const durationPreview = formData.duration || 'N/A';
+  const budgetPreview = useMemo(() => getBudgetPreview(snapshot), [snapshot]);
+  const durationPreview = snapshot.duration || 'N/A';
   return (
     <Paper
       elevation={3}
@@ -111,18 +111,28 @@ const JobPreview = ({ formData }) => {
       <Typography variant="h5" gutterBottom>
         Job Preview
       </Typography>
-      <Typography variant="h6">{formData.title || 'Job Title'}</Typography>
+      <Typography variant="h6">{snapshot.title}</Typography>
       <Typography variant="subtitle1" color="text.secondary">
-        {formData.location || 'Location'}
+        {snapshot.location}
       </Typography>
-      <Chip label={formData.category || 'Category'} sx={{ my: 1 }} />
+      <Chip label={snapshot.category} sx={{ my: 1 }} />
       <Typography variant="body1" sx={{ mt: 2 }}>
-        {formData.description || 'Job description will appear here.'}
+        {snapshot.description}
       </Typography>
       <Box sx={{ mt: 2 }}>
-        {formData.skills.map((skill) => (
-          <Chip key={skill} label={skill} sx={{ mr: 1, mb: 1 }} />
-        ))}
+        {snapshot.skills.length > 0 ? (
+          snapshot.skills.map((skill, index) => (
+            <Chip
+              key={`${skill}-${index}`}
+              label={skill}
+              sx={{ mr: 1, mb: 1 }}
+            />
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            Add skills so qualified workers can find this job faster.
+          </Typography>
+        )}
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2">
             <strong>Budget:</strong> {budgetPreview}
@@ -135,15 +145,15 @@ const JobPreview = ({ formData }) => {
         </Box>
         <Box sx={{ mt: 1 }}>
           <Typography variant="body2">
-            <strong>Location:</strong> {formData.locationType}
-            {formData.locationType !== 'remote'
-              ? ` (${formData.location || ''})`
+            <strong>Location:</strong> {snapshot.locationType}
+            {snapshot.locationType !== 'remote'
+              ? ` (${snapshot.location || ''})`
               : ''}
           </Typography>
         </Box>
         <Box sx={{ mt: 1 }}>
           <Typography variant="body2">
-            <strong>Requirements:</strong> {formData.requirements || 'N/A'}
+            <strong>Requirements:</strong> {snapshot.requirements}
           </Typography>
         </Box>
       </Box>
@@ -184,6 +194,38 @@ const JobPostingPage = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
+  const [stepAttempts, setStepAttempts] = useState({});
+  const previewSnapshot = useMemo(() => {
+    const normalized = normalizeDescription(formData.description || '');
+    const cleanSkills = Array.isArray(formData.skills)
+      ? formData.skills
+          .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
+          .filter(Boolean)
+          .slice(0, 8)
+      : [];
+    const safeRequirements = formData.requirements?.trim();
+    const safeLocation = (formData.location || '').trim();
+
+    return {
+      title: formData.title?.trim() || 'Job Title',
+      category: formData.category || 'Category',
+      description: normalized || 'Job description will appear here.',
+      requirements:
+        safeRequirements ||
+        (cleanSkills.length
+          ? `Explain why ${cleanSkills[0]} experience matters for this job.`
+          : 'Share certifications, tools, or safety expectations.'),
+      skills: cleanSkills,
+      paymentType: formData.paymentType,
+      budget: formData.budget,
+      duration: formData.duration?.trim?.() ? formData.duration : '',
+      locationType: formData.locationType,
+      location:
+        formData.locationType === 'remote'
+          ? safeLocation || 'Remote collaboration'
+          : safeLocation || 'Add the job site or landmark',
+    };
+  }, [formData]);
 
   const normalizedDescription = useMemo(
     () => normalizeDescription(formData.description || ''),
@@ -338,6 +380,7 @@ const JobPostingPage = () => {
           {},
         ),
       }));
+      setStepAttempts((prev) => ({ ...prev, [activeStep]: true }));
       return;
     }
 
@@ -402,6 +445,11 @@ const JobPostingPage = () => {
             {},
           ),
         }));
+        const attempted = requiredSteps.reduce(
+          (acc, step) => ({ ...acc, [step]: true }),
+          {},
+        );
+        setStepAttempts((prev) => ({ ...prev, ...attempted }));
         const firstInvalidStep = requiredSteps.find(
           (step) => Object.keys(validateStep(step)).length > 0,
         );
@@ -450,10 +498,14 @@ const JobPostingPage = () => {
   };
 
   // Determine if Next button should be disabled
-  const stepErrorKeys = (step) => Object.keys(validateStep(step));
-  const budgetStepHasErrors =
-    activeStep === 2 && stepErrorKeys(2).length > 0;
-  const isFinalStep = activeStep === steps.length - 1;
+  const currentStepFields = getStepFields(activeStep);
+  const currentStepErrors = validateStep(activeStep);
+  const hasCurrentStepErrors = Object.keys(currentStepErrors).length > 0;
+  const stepHasTouchedField = currentStepFields.some(
+    (field) => touchedFields[field],
+  );
+  const showStepErrors =
+    (stepAttempts[activeStep] || stepHasTouchedField) && hasCurrentStepErrors;
 
   if (submitSuccess) {
     return (
@@ -843,7 +895,7 @@ const JobPostingPage = () => {
             <Typography variant="h6" gutterBottom>
               Review & Publish
             </Typography>
-            <JobPreview formData={formData} />
+            <JobPreview snapshot={previewSnapshot} />
           </>
         );
       default:
@@ -885,16 +937,27 @@ const JobPostingPage = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 3, mb: 3 }}>
-            {budgetStepHasErrors && (
+            {showStepErrors && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                Fill in the highlighted budget fields to continue.
+                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                  Complete these before continuing
+                </Typography>
+                <Box component="ul" sx={{ pl: 3, mb: 0 }}>
+                  {Object.entries(currentStepErrors).map(
+                    ([field, message]) => (
+                      <Typography component="li" variant="body2" key={field}>
+                        {message}
+                      </Typography>
+                    ),
+                  )}
+                </Box>
               </Alert>
             )}
             {getStepContent(activeStep)}
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
-          <JobPreview formData={formData} />
+          <JobPreview snapshot={previewSnapshot} />
         </Grid>
       </Grid>
 
@@ -936,7 +999,7 @@ const JobPostingPage = () => {
                 variant="contained"
                 onClick={handleNext}
                 endIcon={<ArrowForward />}
-                disabled={isFinalStep && isLoading}
+                disabled={isLoading}
               >
                 Next
               </Button>

@@ -3,9 +3,12 @@
  * Handles WebSocket connections for real-time messaging
  */
 
-const { verifyAccessToken } = require('../../../shared/utils/jwt');
-const { Conversation, Message, User } = require('../models');
-const auditLogger = require('../utils/audit-logger');
+const { verifyAccessToken } = require("../../../shared/utils/jwt");
+const { Conversation, Message, User } = require("../models");
+const {
+  ensureAttachmentScanStateList,
+} = require("../utils/virusScanState");
+const auditLogger = require("../utils/audit-logger");
 
 class MessageSocketHandler {
   constructor(io) {
@@ -13,7 +16,7 @@ class MessageSocketHandler {
     this.connectedUsers = new Map(); // userId -> socketId mapping
     this.userSockets = new Map(); // socketId -> user info mapping
     this.typingUsers = new Map(); // conversationId -> Set of userIds typing
-    
+
     this.setupMiddleware();
     this.setupEventHandlers();
   }
@@ -25,10 +28,11 @@ class MessageSocketHandler {
     // Authentication middleware
     this.io.use(async (socket, next) => {
       try {
-        const token = socket.handshake.auth.token || socket.handshake.query.token;
-        
+        const token =
+          socket.handshake.auth.token || socket.handshake.query.token;
+
         if (!token) {
-          return next(new Error('Authentication token required'));
+          return next(new Error("Authentication token required"));
         }
 
         // Verify JWT token using shared utility
@@ -36,47 +40,48 @@ class MessageSocketHandler {
         const claims = {
           id: decoded.id || decoded.sub,
           email: decoded.email,
-          role: decoded.role
+          role: decoded.role,
         };
-        
+
         // Get user details
-        const user = await User.findById(claims.id).select('firstName lastName email role isActive');
+        const user = await User.findById(claims.id).select(
+          "firstName lastName email role isActive",
+        );
 
         if (!user || !user.isActive) {
-          return next(new Error('Invalid or inactive user'));
+          return next(new Error("Invalid or inactive user"));
         }
 
         socket.userId = user.id;
         socket.user = user;
         socket.tokenVersion = claims.version;
-        
+
         next();
       } catch (error) {
-        console.error('Socket authentication error:', error);
-        next(new Error('Authentication failed'));
+        console.error("Socket authentication error:", error);
+        next(new Error("Authentication failed"));
       }
     });
 
     // Rate limiting middleware
     this.io.use((socket, next) => {
-      const userId = socket.userId;
       const now = Date.now();
-      
+
       if (!socket.rateLimitData) {
         socket.rateLimitData = {
           messages: [],
-          connections: []
+          connections: [],
         };
       }
 
       // Clean old entries (last 1 minute)
       socket.rateLimitData.messages = socket.rateLimitData.messages.filter(
-        timestamp => now - timestamp < 60000
+        (timestamp) => now - timestamp < 60000,
       );
 
       // Check message rate limit (60 messages per minute)
       if (socket.rateLimitData.messages.length >= 60) {
-        return next(new Error('Rate limit exceeded'));
+        return next(new Error("Rate limit exceeded"));
       }
 
       next();
@@ -87,31 +92,43 @@ class MessageSocketHandler {
    * Setup event handlers
    */
   setupEventHandlers() {
-    this.io.on('connection', (socket) => {
+    this.io.on("connection", (socket) => {
       this.handleConnection(socket);
-      
+
       // Message events
       // Support acknowledgements from client emit
-      socket.on('send_message', (data, ack) => this.handleSendMessage(socket, data, ack));
-      socket.on('send_encrypted', (data, ack) => this.handleSendEncrypted(socket, data, ack));
-      socket.on('mark_read', (data) => this.handleMarkRead(socket, data));
-      socket.on('typing_start', (data) => this.handleTypingStart(socket, data));
-      socket.on('typing_stop', (data) => this.handleTypingStop(socket, data));
-      
+      socket.on("send_message", (data, ack) =>
+        this.handleSendMessage(socket, data, ack),
+      );
+      socket.on("send_encrypted", (data, ack) =>
+        this.handleSendEncrypted(socket, data, ack),
+      );
+      socket.on("mark_read", (data) => this.handleMarkRead(socket, data));
+      socket.on("typing_start", (data) => this.handleTypingStart(socket, data));
+      socket.on("typing_stop", (data) => this.handleTypingStop(socket, data));
+
       // Conversation events
-      socket.on('join_conversation', (data) => this.handleJoinConversation(socket, data));
-      socket.on('leave_conversation', (data) => this.handleLeaveConversation(socket, data));
-      
+      socket.on("join_conversation", (data) =>
+        this.handleJoinConversation(socket, data),
+      );
+      socket.on("leave_conversation", (data) =>
+        this.handleLeaveConversation(socket, data),
+      );
+
       // File sharing events
-      socket.on('file_upload_progress', (data) => this.handleFileUploadProgress(socket, data));
-      socket.on('file_shared', (data) => this.handleFileShared(socket, data));
-      
+      socket.on("file_upload_progress", (data) =>
+        this.handleFileUploadProgress(socket, data),
+      );
+      socket.on("file_shared", (data) => this.handleFileShared(socket, data));
+
       // Connection events
-      socket.on('disconnect', () => this.handleDisconnection(socket));
-      socket.on('reconnect', () => this.handleReconnection(socket));
-      
+      socket.on("disconnect", () => this.handleDisconnection(socket));
+      socket.on("reconnect", () => this.handleReconnection(socket));
+
       // Presence events
-      socket.on('update_status', (data) => this.handleUpdateStatus(socket, data));
+      socket.on("update_status", (data) =>
+        this.handleUpdateStatus(socket, data),
+      );
     });
   }
 
@@ -129,7 +146,7 @@ class MessageSocketHandler {
         userId,
         user,
         connectedAt: new Date(),
-        status: 'online'
+        status: "online",
       });
 
       // Join user to their personal room
@@ -137,44 +154,43 @@ class MessageSocketHandler {
 
       // Get user's conversations and join them
       const conversations = await Conversation.find({
-        participants: { $in: [userId] }
+        participants: { $in: [userId] },
       });
 
-      conversations.forEach(conversation => {
+      conversations.forEach((conversation) => {
         socket.join(`conversation_${conversation.id}`);
       });
 
       // Notify other users that this user is online
-      this.broadcastUserStatus(userId, 'online');
+      this.broadcastUserStatus(userId, "online");
 
       // Send welcome message with user's conversations
-      socket.emit('connected', {
-        message: 'Successfully connected to messaging service',
+      socket.emit("connected", {
+        message: "Successfully connected to messaging service",
         userId,
-        conversations: conversations.map(conv => ({
+        conversations: conversations.map((conv) => ({
           id: conv._id,
           participants: conv.participants,
           status: conv.status,
-          updatedAt: conv.updatedAt
-        }))
+          updatedAt: conv.updatedAt,
+        })),
       });
 
       // Log connection
       await auditLogger.log({
         userId,
-        action: 'SOCKET_CONNECTED',
+        action: "SOCKET_CONNECTED",
         details: {
           socketId: socket.id,
-          userAgent: socket.handshake.headers['user-agent'],
-          ip: socket.handshake.address
-        }
+          userAgent: socket.handshake.headers["user-agent"],
+          ip: socket.handshake.address,
+        },
       });
 
       console.log(`User ${userId} connected with socket ${socket.id}`);
-
     } catch (error) {
-      console.error('Handle connection error:', error);
-      socket.emit('error', { message: 'Connection setup failed' });
+      console.error("Handle connection error:", error);
+      socket.emit("error", { message: "Connection setup failed" });
     }
   }
 
@@ -183,7 +199,13 @@ class MessageSocketHandler {
    */
   async handleSendMessage(socket, data, ack) {
     try {
-      const { conversationId, content, messageType = 'text', attachments = [], clientId } = data || {};
+      const {
+        conversationId,
+        content,
+        messageType = "text",
+        attachments = [],
+        clientId,
+      } = data || {};
       const userId = socket.userId;
 
       // Rate limiting check
@@ -191,51 +213,67 @@ class MessageSocketHandler {
       if (!socket.rateLimitData.messages) {
         socket.rateLimitData.messages = [];
       }
-      
+
       socket.rateLimitData.messages.push(now);
-      
+
       if (socket.rateLimitData.messages.length > 60) {
-        socket.emit('error', { message: 'Too many messages. Please slow down.' });
-        if (typeof ack === 'function') ack({ ok: false, error: 'rate_limited' });
+        socket.emit("error", {
+          message: "Too many messages. Please slow down.",
+        });
+        if (typeof ack === "function")
+          ack({ ok: false, error: "rate_limited" });
         return;
       }
 
       // Validate input
-      if (!conversationId || (!content && (!Array.isArray(attachments) || attachments.length === 0))) {
-        socket.emit('error', { message: 'Invalid message data' });
-        if (typeof ack === 'function') ack({ ok: false, error: 'invalid' });
+      if (
+        !conversationId ||
+        (!content && (!Array.isArray(attachments) || attachments.length === 0))
+      ) {
+        socket.emit("error", { message: "Invalid message data" });
+        if (typeof ack === "function") ack({ ok: false, error: "invalid" });
         return;
       }
 
       // Check if user is participant in conversation
       const conversation = await Conversation.findOne({
         _id: conversationId,
-        participants: { $in: [userId] }
+        participants: { $in: [userId] },
       });
 
       if (!conversation) {
-        socket.emit('error', { message: 'Conversation not found or access denied' });
-        if (typeof ack === 'function') ack({ ok: false, error: 'not_found' });
+        socket.emit("error", {
+          message: "Conversation not found or access denied",
+        });
+        if (typeof ack === "function") ack({ ok: false, error: "not_found" });
         return;
       }
 
       // Create message
+      const attachmentsArray = Array.isArray(attachments)
+        ? attachments
+        : [];
+      const attachmentsArray = Array.isArray(attachments)
+        ? attachments
+        : [];
       const message = new Message({
         sender: userId,
-        recipient: conversation.participants.find(p => p.toString() !== userId.toString()),
-        content: typeof content === 'string' ? content : '',
+        recipient: conversation.participants.find(
+          (p) => p.toString() !== userId.toString(),
+        ),
+        content: typeof content === "string" ? content : "",
         messageType,
-        attachments: Array.isArray(attachments) && attachments.length > 0 ? attachments : [],
-        readStatus: { isRead: false }
+        attachments: ensureAttachmentScanStateList(attachmentsArray),
+        readStatus: { isRead: false },
       });
       await message.save();
 
-      // Update conversation's last message timestamp  
+      // Update conversation's last message timestamp
       conversation.lastMessage = message._id;
       await conversation.save();
 
       // Populate sender details
-      await message.populate('sender', 'firstName lastName profilePicture');
+      await message.populate("sender", "firstName lastName profilePicture");
 
       // Prepare message data for broadcast
       const messageData = {
@@ -245,45 +283,50 @@ class MessageSocketHandler {
         sender: {
           id: message.sender._id,
           name: `${message.sender.firstName} ${message.sender.lastName}`,
-          profilePicture: message.sender.profilePicture
+          profilePicture: message.sender.profilePicture,
         },
         content: message.content,
         messageType: message.messageType,
         attachments: message.attachments,
         createdAt: message.createdAt,
         isRead: message.readStatus.isRead,
-        status: 'sent',
-        clientId: clientId || null
+        status: "sent",
+        clientId: clientId || null,
       };
 
       // Broadcast message to all conversation participants
-      this.io.to(`conversation_${conversationId}`).emit('new_message', messageData);
+      this.io
+        .to(`conversation_${conversationId}`)
+        .emit("new_message", messageData);
 
       // Acknowledge to sender
-      if (typeof ack === 'function') ack({ ok: true, message: messageData });
+      if (typeof ack === "function") ack({ ok: true, message: messageData });
 
       // Send push notifications to offline users
       const offlineParticipants = conversation.participants.filter(
-        participantId => participantId !== userId && !this.connectedUsers.has(participantId)
+        (participantId) =>
+          participantId !== userId && !this.connectedUsers.has(participantId),
       );
 
       if (offlineParticipants.length > 0) {
         // Queue push notifications and persist lightweight in-app notifications
         this.queuePushNotifications(offlineParticipants, messageData);
         try {
-          const Notification = require('../models/Notification');
+          const Notification = require("../models/Notification");
           const docs = offlineParticipants.map((uid) => ({
             recipient: uid,
-            type: 'message_received',
-            title: `New message from ${messageData.sender?.name || 'Contact'}`,
-            content: messageData.content || 'Sent an attachment',
+            type: "message_received",
+            title: `New message from ${messageData.sender?.name || "Contact"}`,
+            content: messageData.content || "Sent an attachment",
             actionUrl: `/messages/${conversationId}`,
-            relatedEntity: { type: 'message', id: messageData.id },
-            priority: 'low',
-            metadata: { icon: 'message', color: 'info' }
+            relatedEntity: { type: "message", id: messageData.id },
+            priority: "low",
+            metadata: { icon: "message", color: "info" },
           }));
           if (docs.length > 0) await Notification.insertMany(docs);
-        } catch (_) {}
+        } catch (error) {
+          console.warn("Failed to queue notification docs:", error.message);
+        }
       }
 
       // Stop typing indicator for sender
@@ -292,19 +335,18 @@ class MessageSocketHandler {
       // Log message sent
       await auditLogger.log({
         userId,
-        action: 'MESSAGE_SENT',
+        action: "MESSAGE_SENT",
         details: {
           messageId: message.id,
           conversationId,
           messageType,
-          hasAttachments: attachments.length > 0
-        }
+          hasAttachments: attachments.length > 0,
+        },
       });
-
     } catch (error) {
-      console.error('Handle send message error:', error);
-      socket.emit('error', { message: 'Failed to send message' });
-      if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
+      console.error("Handle send message error:", error);
+      socket.emit("error", { message: "Failed to send message" });
+      if (typeof ack === "function") ack({ ok: false, error: "server_error" });
     }
   }
 
@@ -313,26 +355,39 @@ class MessageSocketHandler {
    */
   async handleSendEncrypted(socket, data, ack) {
     try {
-      if ((process.env.ENABLE_E2E_ENVELOPE || 'false') !== 'true') {
+      if ((process.env.ENABLE_E2E_ENVELOPE || "false") !== "true") {
         return this.handleSendMessage(socket, data, ack);
       }
-      const { conversationId, encryptedBody, encryption, messageType = 'text', attachments = [], clientId } = data || {};
+      const {
+        conversationId,
+        encryptedBody,
+        encryption,
+        messageType = "text",
+        attachments = [],
+        clientId,
+      } = data || {};
       const userId = socket.userId;
       if (!conversationId || !encryptedBody || !encryption) {
-        if (typeof ack === 'function') ack({ ok: false, error: 'invalid_envelope' });
+        if (typeof ack === "function")
+          ack({ ok: false, error: "invalid_envelope" });
         return;
       }
-      const conversation = await Conversation.findOne({ _id: conversationId, participants: { $in: [userId] } });
+      const conversation = await Conversation.findOne({
+        _id: conversationId,
+        participants: { $in: [userId] },
+      });
       if (!conversation) {
-        if (typeof ack === 'function') ack({ ok: false, error: 'not_found' });
+        if (typeof ack === "function") ack({ ok: false, error: "not_found" });
         return;
       }
       const message = new Message({
         sender: userId,
-        recipient: conversation.participants.find(p => p.toString() !== userId.toString()),
-        content: '',
+        recipient: conversation.participants.find(
+          (p) => p.toString() !== userId.toString(),
+        ),
+        content: "",
         messageType,
-        attachments: attachments.length > 0 ? attachments : [],
+        attachments: ensureAttachmentScanStateList(attachmentsArray),
         readStatus: { isRead: false },
         encryptedBody,
         encryption,
@@ -340,26 +395,32 @@ class MessageSocketHandler {
       await message.save();
       conversation.lastMessage = message._id;
       await conversation.save();
-      await message.populate('sender', 'firstName lastName profilePicture');
+      await message.populate("sender", "firstName lastName profilePicture");
       const messageData = {
         id: message._id,
         conversationId,
         senderId: message.sender._id,
-        sender: { id: message.sender._id, name: `${message.sender.firstName} ${message.sender.lastName}`, profilePicture: message.sender.profilePicture },
-        content: '',
+        sender: {
+          id: message.sender._id,
+          name: `${message.sender.firstName} ${message.sender.lastName}`,
+          profilePicture: message.sender.profilePicture,
+        },
+        content: "",
         encrypted: true,
         messageType,
         attachments: message.attachments,
         createdAt: message.createdAt,
         isRead: message.readStatus.isRead,
-        status: 'sent',
-        clientId: clientId || null
+        status: "sent",
+        clientId: clientId || null,
       };
-      this.io.to(`conversation_${conversationId}`).emit('new_message', messageData);
-      if (typeof ack === 'function') ack({ ok: true, message: messageData });
+      this.io
+        .to(`conversation_${conversationId}`)
+        .emit("new_message", messageData);
+      if (typeof ack === "function") ack({ ok: true, message: messageData });
     } catch (error) {
-      console.error('Handle send encrypted error:', error);
-      if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
+      console.error("Handle send encrypted error:", error);
+      if (typeof ack === "function") ack({ ok: false, error: "server_error" });
     }
   }
 
@@ -372,39 +433,36 @@ class MessageSocketHandler {
       const userId = socket.userId;
 
       if (!conversationId) {
-        socket.emit('error', { message: 'Conversation ID required' });
+        socket.emit("error", { message: "Conversation ID required" });
         return;
       }
 
       // Update messages as read
       const query = {
         sender: { $ne: userId }, // Don't mark own messages as read
-        'readStatus.isRead': false
+        "readStatus.isRead": false,
       };
 
       if (messageIds && messageIds.length > 0) {
         query._id = { $in: messageIds };
       }
 
-      const updatedMessages = await Message.updateMany(
-        query,
-        { 
-          'readStatus.isRead': true, 
-          'readStatus.readAt': new Date() 
-        }
-      );
-
-      // Broadcast read receipt to conversation participants
-      this.io.to(`conversation_${conversationId}`).emit('messages_read', {
-        conversationId,
-        readByUserId: userId,
-        messageIds: messageIds || 'all_unread',
-        readAt: new Date()
+      const updateResult = await Message.updateMany(query, {
+        "readStatus.isRead": true,
+        "readStatus.readAt": new Date(),
       });
 
+      // Broadcast read receipt to conversation participants
+      this.io.to(`conversation_${conversationId}`).emit("messages_read", {
+        conversationId,
+        readByUserId: userId,
+        messageIds: messageIds || "all_unread",
+        readAt: new Date(),
+        updatedCount: updateResult.modifiedCount || 0,
+      });
     } catch (error) {
-      console.error('Handle mark read error:', error);
-      socket.emit('error', { message: 'Failed to mark messages as read' });
+      console.error("Handle mark read error:", error);
+      socket.emit("error", { message: "Failed to mark messages as read" });
     }
   }
 
@@ -422,27 +480,26 @@ class MessageSocketHandler {
       if (!this.typingUsers.has(conversationId)) {
         this.typingUsers.set(conversationId, new Set());
       }
-      
+
       this.typingUsers.get(conversationId).add(userId);
 
       // Broadcast typing indicator to other participants
-      socket.to(`conversation_${conversationId}`).emit('user_typing', {
+      socket.to(`conversation_${conversationId}`).emit("user_typing", {
         conversationId,
         userId,
         user: {
           id: socket.user.id,
-          name: `${socket.user.firstName} ${socket.user.lastName}`
+          name: `${socket.user.firstName} ${socket.user.lastName}`,
         },
-        isTyping: true
+        isTyping: true,
       });
 
       // Auto-stop typing after 10 seconds
       setTimeout(() => {
         this.handleTypingStop(socket, { conversationId });
       }, 10000);
-
     } catch (error) {
-      console.error('Handle typing start error:', error);
+      console.error("Handle typing start error:", error);
     }
   }
 
@@ -458,24 +515,23 @@ class MessageSocketHandler {
 
       // Remove user from typing users
       this.typingUsers.get(conversationId).delete(userId);
-      
+
       if (this.typingUsers.get(conversationId).size === 0) {
         this.typingUsers.delete(conversationId);
       }
 
       // Broadcast stop typing to other participants
-      socket.to(`conversation_${conversationId}`).emit('user_typing', {
+      socket.to(`conversation_${conversationId}`).emit("user_typing", {
         conversationId,
         userId,
         user: {
           id: socket.user.id,
-          name: `${socket.user.firstName} ${socket.user.lastName}`
+          name: `${socket.user.firstName} ${socket.user.lastName}`,
         },
-        isTyping: false
+        isTyping: false,
       });
-
     } catch (error) {
-      console.error('Handle typing stop error:', error);
+      console.error("Handle typing stop error:", error);
     }
   }
 
@@ -490,11 +546,13 @@ class MessageSocketHandler {
       // Verify user has access to conversation
       const conversation = await Conversation.findOne({
         _id: conversationId,
-        participants: { $in: [userId] }
+        participants: { $in: [userId] },
       });
 
       if (!conversation) {
-        socket.emit('error', { message: 'Conversation not found or access denied' });
+        socket.emit("error", {
+          message: "Conversation not found or access denied",
+        });
         return;
       }
 
@@ -505,45 +563,46 @@ class MessageSocketHandler {
       const messages = await Message.find({
         $or: [
           { sender: userId, recipient: { $in: conversation.participants } },
-          { recipient: userId, sender: { $in: conversation.participants } }
-        ]
+          { recipient: userId, sender: { $in: conversation.participants } },
+        ],
       })
-      .populate('sender', 'firstName lastName profilePicture')
-      .sort({ createdAt: -1 })
-      .limit(50);
+        .populate("sender", "firstName lastName profilePicture")
+        .sort({ createdAt: -1 })
+        .limit(50);
 
       // Send conversation data to user
-      socket.emit('conversation_joined', {
+      socket.emit("conversation_joined", {
         conversationId,
-        messages: messages.reverse().map(msg => ({
+        messages: messages.reverse().map((msg) => ({
           id: msg._id,
           senderId: msg.sender._id,
           sender: {
             id: msg.sender._id,
             name: `${msg.sender.firstName} ${msg.sender.lastName}`,
-            profilePicture: msg.sender.profilePicture
+            profilePicture: msg.sender.profilePicture,
           },
           content: msg.content,
           messageType: msg.messageType,
           attachments: msg.attachments,
           isRead: msg.readStatus.isRead,
-          createdAt: msg.createdAt
-        }))
+          createdAt: msg.createdAt,
+        })),
       });
 
       // Notify other participants that user joined
-      socket.to(`conversation_${conversationId}`).emit('user_joined_conversation', {
-        conversationId,
-        userId,
-        user: {
-          id: socket.user.id,
-          name: `${socket.user.firstName} ${socket.user.lastName}`
-        }
-      });
-
+      socket
+        .to(`conversation_${conversationId}`)
+        .emit("user_joined_conversation", {
+          conversationId,
+          userId,
+          user: {
+            id: socket.user.id,
+            name: `${socket.user.firstName} ${socket.user.lastName}`,
+          },
+        });
     } catch (error) {
-      console.error('Handle join conversation error:', error);
-      socket.emit('error', { message: 'Failed to join conversation' });
+      console.error("Handle join conversation error:", error);
+      socket.emit("error", { message: "Failed to join conversation" });
     }
   }
 
@@ -562,17 +621,18 @@ class MessageSocketHandler {
       this.handleTypingStop(socket, { conversationId });
 
       // Notify other participants that user left
-      socket.to(`conversation_${conversationId}`).emit('user_left_conversation', {
-        conversationId,
-        userId,
-        user: {
-          id: socket.user.id,
-          name: `${socket.user.firstName} ${socket.user.lastName}`
-        }
-      });
-
+      socket
+        .to(`conversation_${conversationId}`)
+        .emit("user_left_conversation", {
+          conversationId,
+          userId,
+          user: {
+            id: socket.user.id,
+            name: `${socket.user.firstName} ${socket.user.lastName}`,
+          },
+        });
     } catch (error) {
-      console.error('Handle leave conversation error:', error);
+      console.error("Handle leave conversation error:", error);
     }
   }
 
@@ -584,16 +644,15 @@ class MessageSocketHandler {
       const { conversationId, fileId, progress, fileName } = data;
 
       // Broadcast upload progress to conversation participants
-      socket.to(`conversation_${conversationId}`).emit('file_upload_progress', {
+      socket.to(`conversation_${conversationId}`).emit("file_upload_progress", {
         conversationId,
         fileId,
         progress,
         fileName,
-        uploadedBy: socket.userId
+        uploadedBy: socket.userId,
       });
-
     } catch (error) {
-      console.error('Handle file upload progress error:', error);
+      console.error("Handle file upload progress error:", error);
     }
   }
 
@@ -603,19 +662,17 @@ class MessageSocketHandler {
   async handleFileShared(socket, data) {
     try {
       const { conversationId, fileData } = data;
-      const userId = socket.userId;
 
       // Send message with file attachment
       await this.handleSendMessage(socket, {
         conversationId,
         content: `Shared a file: ${fileData.fileName}`,
-        messageType: 'file',
-        attachments: [fileData]
+        messageType: "file",
+        attachments: [fileData],
       });
-
     } catch (error) {
-      console.error('Handle file shared error:', error);
-      socket.emit('error', { message: 'Failed to share file' });
+      console.error("Handle file shared error:", error);
+      socket.emit("error", { message: "Failed to share file" });
     }
   }
 
@@ -627,8 +684,8 @@ class MessageSocketHandler {
       const { status } = data; // 'online', 'away', 'busy', 'offline'
       const userId = socket.userId;
 
-      if (!['online', 'away', 'busy', 'offline'].includes(status)) {
-        socket.emit('error', { message: 'Invalid status' });
+      if (!["online", "away", "busy", "offline"].includes(status)) {
+        socket.emit("error", { message: "Invalid status" });
         return;
       }
 
@@ -641,9 +698,8 @@ class MessageSocketHandler {
 
       // Broadcast status update
       this.broadcastUserStatus(userId, status);
-
     } catch (error) {
-      console.error('Handle update status error:', error);
+      console.error("Handle update status error:", error);
     }
   }
 
@@ -661,29 +717,34 @@ class MessageSocketHandler {
       this.userSockets.delete(socket.id);
 
       // Clean up typing indicators
-      for (const [conversationId, typingUsersSet] of this.typingUsers.entries()) {
+      for (const [
+        conversationId,
+        typingUsersSet,
+      ] of this.typingUsers.entries()) {
         if (typingUsersSet.has(userId)) {
           this.handleTypingStop(socket, { conversationId });
         }
       }
 
       // Broadcast user offline status
-      this.broadcastUserStatus(userId, 'offline');
+      this.broadcastUserStatus(userId, "offline");
 
       // Log disconnection
       await auditLogger.log({
         userId,
-        action: 'SOCKET_DISCONNECTED',
+        action: "SOCKET_DISCONNECTED",
         details: {
           socketId: socket.id,
-          duration: Date.now() - (this.userSockets.get(socket.id)?.connectedAt?.getTime() || Date.now())
-        }
+          duration:
+            Date.now() -
+            (this.userSockets.get(socket.id)?.connectedAt?.getTime() ||
+              Date.now()),
+        },
       });
 
       console.log(`User ${userId} disconnected from socket ${socket.id}`);
-
     } catch (error) {
-      console.error('Handle disconnection error:', error);
+      console.error("Handle disconnection error:", error);
     }
   }
 
@@ -695,12 +756,11 @@ class MessageSocketHandler {
       const userId = socket.userId;
 
       // Broadcast user online status
-      this.broadcastUserStatus(userId, 'online');
+      this.broadcastUserStatus(userId, "online");
 
       console.log(`User ${userId} reconnected with socket ${socket.id}`);
-
     } catch (error) {
-      console.error('Handle reconnection error:', error);
+      console.error("Handle reconnection error:", error);
     }
   }
 
@@ -711,35 +771,39 @@ class MessageSocketHandler {
     try {
       // Get user's conversations to determine who should receive the status update
       Conversation.find({
-        participants: { $in: [userId] }
-      }).then(conversations => {
-        const notifyUsers = new Set();
-        
-        conversations.forEach(conv => {
-          conv.participants.forEach(participantId => {
-            if (participantId !== userId && this.connectedUsers.has(participantId)) {
-              notifyUsers.add(participantId);
+        participants: { $in: [userId] },
+      })
+        .then((conversations) => {
+          const notifyUsers = new Set();
+
+          conversations.forEach((conv) => {
+            conv.participants.forEach((participantId) => {
+              if (
+                participantId !== userId &&
+                this.connectedUsers.has(participantId)
+              ) {
+                notifyUsers.add(participantId);
+              }
+            });
+          });
+
+          // Send status update to relevant users
+          notifyUsers.forEach((notifyUserId) => {
+            const socketId = this.connectedUsers.get(notifyUserId);
+            if (socketId) {
+              this.io.to(socketId).emit("user_status_changed", {
+                userId,
+                status,
+                timestamp: new Date(),
+              });
             }
           });
+        })
+        .catch((error) => {
+          console.error("Error broadcasting user status:", error);
         });
-
-        // Send status update to relevant users
-        notifyUsers.forEach(notifyUserId => {
-          const socketId = this.connectedUsers.get(notifyUserId);
-          if (socketId) {
-            this.io.to(socketId).emit('user_status_changed', {
-              userId,
-              status,
-              timestamp: new Date()
-            });
-          }
-        });
-      }).catch(error => {
-        console.error('Error broadcasting user status:', error);
-      });
-
     } catch (error) {
-      console.error('Broadcast user status error:', error);
+      console.error("Broadcast user status error:", error);
     }
   }
 
@@ -750,8 +814,13 @@ class MessageSocketHandler {
     try {
       // This would integrate with your notification service
       // For now, just log the notification request
-      console.log('Queuing push notifications for users:', userIds, 'Message:', messageData.content?.substring(0, 50));
-      
+      console.log(
+        "Queuing push notifications for users:",
+        userIds,
+        "Message:",
+        messageData.content?.substring(0, 50),
+      );
+
       // Implementation would send to notification service
       // notificationService.sendPushNotifications(userIds, {
       //   title: `New message from ${messageData.sender.name}`,
@@ -761,19 +830,18 @@ class MessageSocketHandler {
 
       // Minimal in-app notification emitter to user_{id} rooms
       userIds.forEach((uid) => {
-        this.io.to(`user_${uid}`).emit('notification', {
+        this.io.to(`user_${uid}`).emit("notification", {
           id: `msg_${messageData.id}`,
-          type: 'message',
-          title: `New message from ${messageData.sender?.name || 'Contact'}`,
-          body: messageData.content || 'Sent an attachment',
+          type: "message",
+          title: `New message from ${messageData.sender?.name || "Contact"}`,
+          body: messageData.content || "Sent an attachment",
           data: { conversationId: messageData.conversationId },
           timestamp: new Date().toISOString(),
           read: false,
         });
       });
-
     } catch (error) {
-      console.error('Queue push notifications error:', error);
+      console.error("Queue push notifications error:", error);
     }
   }
 
@@ -789,10 +857,10 @@ class MessageSocketHandler {
    */
   getUserStatus(userId) {
     const socketId = this.connectedUsers.get(userId);
-    if (!socketId) return 'offline';
-    
+    if (!socketId) return "offline";
+
     const socketData = this.userSockets.get(socketId);
-    return socketData?.status || 'online';
+    return socketData?.status || "online";
   }
 
   /**

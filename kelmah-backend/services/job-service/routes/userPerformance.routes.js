@@ -5,16 +5,17 @@
 const express = require("express");
 const { validate } = require("../middlewares/validator");
 const { verifyGatewayRequest, optionalGatewayVerification } = require("../../../shared/middlewares/serviceTrust");
+const { errorResponse } = require("../utils/response");
 
 const userPerformanceController = require("../controllers/userPerformance.controller");
 
 // Authorization helper function
 const authorizeRoles = (...roles) => (req, res, next) => {
   if (!req.user || !req.user.role) {
-    return res.status(401).json({ message: "Not authenticated" });
+    return errorResponse(res, 401, "Not authenticated", "NOT_AUTHENTICATED");
   }
   if (!roles.includes(req.user.role)) {
-    return res.status(403).json({ message: "Forbidden: insufficient role" });
+    return errorResponse(res, 403, "Forbidden: insufficient role", "FORBIDDEN");
   }
   next();
 };

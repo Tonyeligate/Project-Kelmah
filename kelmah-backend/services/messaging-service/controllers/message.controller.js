@@ -1,6 +1,9 @@
-const { Message, Conversation, Notification } = require('../models');
+const { Message, Conversation, Notification } = require("../models");
 const { validateMessage } = require("../utils/validation");
 const { handleError } = require("../utils/errorHandler");
+const {
+  ensureAttachmentScanStateList,
+} = require("../utils/virusScanState");
 
 // Create a new message
 exports.createMessage = async (req, res) => {
@@ -18,8 +21,10 @@ exports.createMessage = async (req, res) => {
       relatedJob,
       relatedContract,
       encryptedBody,
-      encryption
+      encryption,
     } = req.body;
+
+    const sender = req.user?._id || req.user?.id;
 
     // Create the message
     const message = new Message({
@@ -28,14 +33,16 @@ exports.createMessage = async (req, res) => {
       recipient,
       content,
       messageType,
-      attachments,
+      attachments: ensureAttachmentScanStateList(attachments),
       relatedJob,
       relatedContract,
       metadata: {
         deviceInfo: req.headers["user-agent"],
         ipAddress: req.ip,
       },
-      ...(process.env.ENABLE_E2E_ENVELOPE === 'true' && encryptedBody ? { encryptedBody, encryption } : {}),
+      ...(process.env.ENABLE_E2E_ENVELOPE === "true" && encryptedBody
+        ? { encryptedBody, encryption }
+        : {}),
     });
 
     await message.save();
@@ -85,7 +92,7 @@ exports.createMessage = async (req, res) => {
 exports.getConversationMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
-    const { page = 1, limit = 20, before } = req.query;
+    const { limit = 20, before } = req.query;
 
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
@@ -112,17 +119,23 @@ exports.getConversationMessages = async (req, res) => {
     await Message.updateMany(
       {
         recipient: req.user._id,
-        'readStatus.isRead': false,
+        "readStatus.isRead": false,
         // Scope only to this conversation participants
         $or: [
-          { sender: { $in: conversation.participants }, recipient: req.user._id },
-          { recipient: { $in: conversation.participants }, sender: req.user._id },
+          {
+            sender: { $in: conversation.participants },
+            recipient: req.user._id,
+          },
+          {
+            recipient: { $in: conversation.participants },
+            sender: req.user._id,
+          },
         ],
       },
       {
         $set: {
-          'readStatus.isRead': true,
-          'readStatus.readAt': new Date(),
+          "readStatus.isRead": true,
+          "readStatus.readAt": new Date(),
         },
       },
     );
@@ -130,7 +143,8 @@ exports.getConversationMessages = async (req, res) => {
     // Reset unread count
     await conversation.resetUnreadCount(req.user._id);
 
-    const nextCursor = messages.length > 0 ? messages[messages.length - 1].createdAt : null;
+    const nextCursor =
+      messages.length > 0 ? messages[messages.length - 1].createdAt : null;
     res.json({
       success: true,
       data: {
@@ -139,8 +153,8 @@ exports.getConversationMessages = async (req, res) => {
           limit: Math.min(100, Math.max(1, parseInt(limit))),
           returned: messages.length,
           nextCursor,
-        }
-      }
+        },
+      },
     });
   } catch (error) {
     handleError(res, error);
@@ -176,18 +190,27 @@ exports.editMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
     const { content } = req.body || {};
-    if (!content || typeof content !== 'string' || !content.trim()) {
-      return res.status(400).json({ message: 'Content is required' });
+    if (!content || typeof content !== "string" || !content.trim()) {
+      return res.status(400).json({ message: "Content is required" });
     }
     const message = await Message.findById(messageId);
-    if (!message) return res.status(404).json({ message: 'Message not found' });
+    if (!message) return res.status(404).json({ message: "Message not found" });
     if (String(message.sender) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Not authorized to edit this message' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to edit this message" });
     }
     message.content = content.trim();
     message.editedAt = new Date();
     await message.save();
-    return res.json({ success: true, data: { id: message._id, content: message.content, editedAt: message.editedAt } });
+    return res.json({
+      success: true,
+      data: {
+        id: message._id,
+        content: message.content,
+        editedAt: message.editedAt,
+      },
+    });
   } catch (error) {
     return handleError(res, error);
   }
@@ -198,16 +221,26 @@ exports.addReaction = async (req, res) => {
   try {
     const { messageId } = req.params;
     const { emoji } = req.body || {};
-    if (!emoji || typeof emoji !== 'string') return res.status(400).json({ message: 'emoji required' });
+    if (!emoji || typeof emoji !== "string")
+      return res.status(400).json({ message: "emoji required" });
     const message = await Message.findById(messageId);
-    if (!message) return res.status(404).json({ message: 'Message not found' });
+    if (!message) return res.status(404).json({ message: "Message not found" });
     message.reactions = message.reactions || [];
-    const existing = message.reactions.find((r) => r.emoji === emoji && String(r.user) === String(req.user._id));
+    const existing = message.reactions.find(
+      (r) => r.emoji === emoji && String(r.user) === String(req.user._id),
+    );
     if (!existing) {
-      message.reactions.push({ emoji, user: req.user._id, addedAt: new Date() });
+      message.reactions.push({
+        emoji,
+        user: req.user._id,
+        addedAt: new Date(),
+      });
       await message.save();
     }
-    return res.json({ success: true, data: { id: message._id, reactions: message.reactions } });
+    return res.json({
+      success: true,
+      data: { id: message._id, reactions: message.reactions },
+    });
   } catch (error) {
     return handleError(res, error);
   }
@@ -218,10 +251,15 @@ exports.removeReaction = async (req, res) => {
   try {
     const { messageId, emoji } = req.params;
     const message = await Message.findById(messageId);
-    if (!message) return res.status(404).json({ message: 'Message not found' });
-    message.reactions = (message.reactions || []).filter((r) => !(r.emoji === emoji && String(r.user) === String(req.user._id)));
+    if (!message) return res.status(404).json({ message: "Message not found" });
+    message.reactions = (message.reactions || []).filter(
+      (r) => !(r.emoji === emoji && String(r.user) === String(req.user._id)),
+    );
     await message.save();
-    return res.json({ success: true, data: { id: message._id, reactions: message.reactions } });
+    return res.json({
+      success: true,
+      data: { id: message._id, reactions: message.reactions },
+    });
   } catch (error) {
     return handleError(res, error);
   }
@@ -253,35 +291,37 @@ exports.searchMessages = async (req, res) => {
     const { q, attachments, period, sender } = req.query;
 
     // Scope: only messages involving the current user
-    const baseScope = { $or: [ { sender: req.user._id }, { recipient: req.user._id } ] };
+    const baseScope = {
+      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+    };
 
     const andFilters = [];
 
-    if (q && typeof q === 'string') {
-      andFilters.push({ content: { $regex: q, $options: 'i' } });
+    if (q && typeof q === "string") {
+      andFilters.push({ content: { $regex: q, $options: "i" } });
     }
 
-    if (attachments === 'true') {
+    if (attachments === "true") {
       // Check if at least one attachment exists
-      andFilters.push({ 'attachments.0': { $exists: true } });
+      andFilters.push({ "attachments.0": { $exists: true } });
     }
 
     if (sender) {
       andFilters.push({ sender });
     }
 
-    if (period && ['today', 'week', 'month'].includes(period)) {
+    if (period && ["today", "week", "month"].includes(period)) {
       const now = new Date();
       let start;
       switch (period) {
-        case 'today':
+        case "today":
           start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           break;
-        case 'week':
+        case "week":
           start = new Date(now);
           start.setDate(start.getDate() - 7);
           break;
-        case 'month':
+        case "month":
           start = new Date(now);
           start.setMonth(start.getMonth() - 1);
           break;
@@ -289,15 +329,18 @@ exports.searchMessages = async (req, res) => {
       andFilters.push({ createdAt: { $gte: start } });
     }
 
-    const query = andFilters.length > 0 ? { $and: [baseScope, ...andFilters] } : baseScope;
+    const query =
+      andFilters.length > 0 ? { $and: [baseScope, ...andFilters] } : baseScope;
 
     const [messages, conversations] = await Promise.all([
       Message.find(query)
         .sort({ createdAt: -1 })
         .limit(100)
-        .populate('sender', 'name profilePicture')
-        .populate('recipient', 'name profilePicture'),
-      Conversation.find({ participants: req.user._id }).select('_id participants title'),
+        .populate("sender", "name profilePicture")
+        .populate("recipient", "name profilePicture"),
+      Conversation.find({ participants: req.user._id }).select(
+        "_id participants title",
+      ),
     ]);
 
     // Build a quick lookup map by participant pair "a:b"
@@ -312,11 +355,13 @@ exports.searchMessages = async (req, res) => {
     const results = messages.map((m) => {
       const a = m.sender?._id?.toString?.() || m.sender.toString();
       const b = m.recipient?._id?.toString?.() || m.recipient.toString();
-      const key = [a, b].sort().join(':');
+      const key = [a, b].sort().join(":");
       const conv = convByPair.get(key);
       return {
         id: m._id,
-        conversation: conv ? { id: conv._id, title: conv.title || 'Conversation' } : { id: null, title: 'Conversation' },
+        conversation: conv
+          ? { id: conv._id, title: conv.title || "Conversation" }
+          : { id: null, title: "Conversation" },
         sender: m.sender,
         recipient: m.recipient,
         content: m.content,

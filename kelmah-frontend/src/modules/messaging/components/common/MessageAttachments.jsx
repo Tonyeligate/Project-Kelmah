@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Paper,
@@ -8,8 +9,8 @@ import {
   Dialog,
   DialogContent,
   Tooltip,
-  Card,
   CardMedia,
+  Chip,
 } from '@mui/material';
 import {
   Description,
@@ -21,6 +22,7 @@ import {
   Visibility,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import { getVirusScanDisplay } from '../../utils/virusScanUtils';
 
 const AttachmentContainer = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1),
@@ -58,7 +60,7 @@ const ImagePreview = styled(Box)(({ theme }) => ({
   },
 }));
 
-const ImageOverlay = styled(Box)(({ theme }) => ({
+const ImageOverlay = styled(Box)(() => ({
   position: 'absolute',
   top: 0,
   left: 0,
@@ -154,72 +156,137 @@ const MessageAttachments = ({
           )}
 
           {/* Render attachments */}
-          {attachments.map((attachment, index) => (
-            <React.Fragment key={attachment.id || index}>
-              {attachment.type && attachment.type.startsWith('image/') ? (
-                <ImagePreview
-                  onClick={() =>
-                    handleOpenPreview(
-                      attachment.url || URL.createObjectURL(attachment),
-                    )
+          {attachments.map((attachment, index) => {
+            const {
+              label,
+              color,
+              icon: StatusIcon,
+              tooltip,
+              allowDownload,
+            } = getVirusScanDisplay(attachment?.virusScan);
+            const canInteract = !readonly || allowDownload;
+            const fileType =
+              attachment.type ||
+              attachment.mimeType ||
+              attachment?.virusScan?.metadata?.mimeType ||
+              'application/octet-stream';
+            const displayName =
+              attachment.name ||
+              attachment.fileName ||
+              attachment.filename ||
+              attachment?.virusScan?.metadata?.filename ||
+              `File ${index + 1}`;
+            const renderStatusChip = (
+              <Tooltip title={tooltip} placement="top">
+                <Chip
+                  size="small"
+                  icon={
+                    StatusIcon ? <StatusIcon fontSize="inherit" /> : undefined
                   }
-                >
-                  <CardMedia
-                    component="img"
-                    height="100"
-                    image={attachment.url || URL.createObjectURL(attachment)}
-                    alt={attachment.name || 'Image attachment'}
-                  />
-                  <ImageOverlay className="overlay">
-                    <Tooltip title="View image">
-                      <IconButton size="small" color="primary">
-                        <Visibility />
-                      </IconButton>
-                    </Tooltip>
-                  </ImageOverlay>
-                </ImagePreview>
-              ) : (
-                <AttachmentItem>
-                  {getFileIcon(attachment.type || 'application/octet-stream')}
-                  <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-                    <FileName variant="body2">
-                      {attachment.name || `File ${index + 1}`}
-                    </FileName>
-                    {attachment.size && (
-                      <Typography variant="caption" color="text.secondary">
-                        {formatFileSize(attachment.size)}
-                      </Typography>
-                    )}
+                  label={label}
+                  color={color === 'default' ? 'default' : color}
+                  variant={color === 'default' ? 'outlined' : 'filled'}
+                  sx={{ alignSelf: 'flex-start', fontWeight: 500 }}
+                />
+              </Tooltip>
+            );
+
+            return (
+              <React.Fragment key={attachment.id || index}>
+                {fileType.startsWith('image/') ? (
+                  <Box display="flex" flexDirection="column" gap={0.5}>
+                    <ImagePreview
+                      onClick={
+                        canInteract
+                          ? () =>
+                              handleOpenPreview(
+                                attachment.url ||
+                                  URL.createObjectURL(attachment),
+                              )
+                          : undefined
+                      }
+                      sx={{
+                        cursor: canInteract ? 'pointer' : 'not-allowed',
+                        opacity: canInteract ? 1 : 0.7,
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        height="100"
+                        image={
+                          attachment.url || URL.createObjectURL(attachment)
+                        }
+                        alt={displayName}
+                      />
+                      <ImageOverlay
+                        className="overlay"
+                        sx={{
+                          opacity: canInteract ? undefined : 1,
+                          background: canInteract
+                            ? 'rgba(0, 0, 0, 0.5)'
+                            : 'rgba(0, 0, 0, 0.7)',
+                        }}
+                      >
+                        {canInteract ? (
+                          <Tooltip title="View image">
+                            <IconButton size="small" color="primary">
+                              <Visibility />
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          <Typography variant="caption">{label}</Typography>
+                        )}
+                      </ImageOverlay>
+                    </ImagePreview>
+                    {renderStatusChip}
                   </Box>
-                  {!readonly && (
-                    <Tooltip title="Remove">
-                      <IconButton
-                        size="small"
-                        onClick={() => onRemove && onRemove(index)}
-                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                      >
-                        <Close fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {readonly && attachment.url && (
-                    <Tooltip title="Download">
-                      <IconButton
-                        size="small"
-                        href={attachment.url}
-                        download={attachment.name}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <Download fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </AttachmentItem>
-              )}
-            </React.Fragment>
-          ))}
+                ) : (
+                  <AttachmentItem>
+                    {getFileIcon(fileType)}
+                    <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                      <FileName variant="body2">{displayName}</FileName>
+                      {attachment.size && (
+                        <Typography variant="caption" color="text.secondary">
+                          {formatFileSize(attachment.size)}
+                        </Typography>
+                      )}
+                    </Box>
+                    {renderStatusChip}
+                    {!readonly && (
+                      <Tooltip title="Remove">
+                        <IconButton
+                          size="small"
+                          onClick={() => onRemove && onRemove(index)}
+                          sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                        >
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {readonly && attachment.url && (
+                      <Tooltip title={tooltip}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            href={allowDownload ? attachment.url : undefined}
+                            download={allowDownload ? displayName : undefined}
+                            target={allowDownload ? '_blank' : undefined}
+                            rel={
+                              allowDownload ? 'noopener noreferrer' : undefined
+                            }
+                            sx={{ color: 'primary.main' }}
+                            disabled={!allowDownload}
+                          >
+                            <Download fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
+                  </AttachmentItem>
+                )}
+              </React.Fragment>
+            );
+          })}
         </AttachmentContainer>
       )}
 
@@ -250,6 +317,32 @@ const MessageAttachments = ({
       </Dialog>
     </>
   );
+};
+
+MessageAttachments.propTypes = {
+  attachments: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      url: PropTypes.string,
+      type: PropTypes.string,
+      mimeType: PropTypes.string,
+      size: PropTypes.number,
+      name: PropTypes.string,
+      fileName: PropTypes.string,
+      filename: PropTypes.string,
+      virusScan: PropTypes.shape({
+        status: PropTypes.string,
+        metadata: PropTypes.shape({
+          mimeType: PropTypes.string,
+          filename: PropTypes.string,
+        }),
+      }),
+    }),
+  ),
+  isUploading: PropTypes.bool,
+  uploadProgress: PropTypes.number,
+  onRemove: PropTypes.func,
+  readonly: PropTypes.bool,
 };
 
 export default MessageAttachments;

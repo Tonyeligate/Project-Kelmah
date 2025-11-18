@@ -291,7 +291,7 @@ const Message = ({
 
           {/* Attachments */}
           {message.attachments?.length > 0 && (
-            <MessageAttachments attachments={message.attachments} />
+            <MessageAttachments attachments={message.attachments} readonly />
           )}
 
           {/* Encrypted message indicator */}

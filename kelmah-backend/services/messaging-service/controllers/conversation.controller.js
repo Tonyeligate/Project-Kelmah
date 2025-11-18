@@ -3,9 +3,9 @@
  * Handles conversation management and operations (Mongoose)
  */
 
-const { Conversation, Message, User } = require('../models');
-const auditLogger = require('../utils/audit-logger');
-const mongoose = require('mongoose');
+const { Conversation, Message, User } = require("../models");
+const auditLogger = require("../utils/audit-logger");
+const mongoose = require("mongoose");
 
 class ConversationController {
   /**
@@ -14,32 +14,41 @@ class ConversationController {
   static async getUserConversations(req, res) {
     try {
       const userId = req.user.id || req.user._id;
-      const { page = 1, limit = 20, type = 'all' } = req.query;
+      const { page = 1, limit = 20, type = "all" } = req.query;
 
       const pageNum = Math.max(1, parseInt(page));
       const pageSize = Math.min(50, Math.max(1, parseInt(limit)));
       const skip = (pageNum - 1) * pageSize;
 
-      const query = { participants: { $in: [new mongoose.Types.ObjectId(userId)] } };
-      if (type && type !== 'all') {
+      const query = {
+        participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      };
+      if (type && type !== "all") {
         // Map optional filter to status if provided
         query.status = type;
       }
 
       const conversations = await Conversation.find(query)
-        .populate('participants', 'firstName lastName profilePicture isActive')
-        .populate({ path: 'lastMessage', populate: { path: 'sender', select: 'firstName lastName' } })
+        .populate("participants", "firstName lastName profilePicture isActive")
+        .populate({
+          path: "lastMessage",
+          populate: { path: "sender", select: "firstName lastName" },
+        })
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(pageSize)
         .lean();
 
       const formattedConversations = conversations.map((conv) => {
-        const otherParticipant = (conv.participants || []).find((p) => String(p._id) !== String(userId));
-        const unreadCountObj = (conv.unreadCounts || []).find((c) => String(c.user) === String(userId));
+        const otherParticipant = (conv.participants || []).find(
+          (p) => String(p._id) !== String(userId),
+        );
+        const unreadCountObj = (conv.unreadCounts || []).find(
+          (c) => String(c.user) === String(userId),
+        );
         return {
           id: conv._id,
-          type: (conv.participants || []).length > 2 ? 'group' : 'direct',
+          type: (conv.participants || []).length > 2 ? "group" : "direct",
           participants: (conv.participants || []).map((p) => ({
             id: p._id,
             name: `${p.firstName} ${p.lastName}`,
@@ -74,19 +83,22 @@ class ConversationController {
 
       res.status(200).json({
         success: true,
-        message: 'Conversations retrieved successfully',
+        message: "Conversations retrieved successfully",
         data: {
           conversations: formattedConversations,
-          pagination: { page: pageNum, limit: pageSize, total: formattedConversations.length }
-        }
+          pagination: {
+            page: pageNum,
+            limit: pageSize,
+            total: formattedConversations.length,
+          },
+        },
       });
-
     } catch (error) {
-      console.error('Get user conversations error:', error);
+      console.error("Get user conversations error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to retrieve conversations',
-        code: 'CONVERSATIONS_RETRIEVAL_ERROR'
+        message: "Failed to retrieve conversations",
+        code: "CONVERSATIONS_RETRIEVAL_ERROR",
       });
     }
   }
@@ -96,44 +108,51 @@ class ConversationController {
    */
   static async createConversation(req, res) {
     try {
-      const { participantIds, type = 'direct', title } = req.body;
+      const { participantIds, type = "direct", title } = req.body;
       const userId = req.user.id || req.user._id;
 
       // Validate participants
-      if (!participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
+      if (
+        !participantIds ||
+        !Array.isArray(participantIds) ||
+        participantIds.length === 0
+      ) {
         return res.status(400).json({
           success: false,
-          message: 'Participant IDs are required',
-          code: 'MISSING_PARTICIPANTS'
+          message: "Participant IDs are required",
+          code: "MISSING_PARTICIPANTS",
         });
       }
 
       // Add current user to participants if not included
-      const allParticipants = [...new Set([String(userId), ...participantIds.map(String)])].map(
-        (id) => new mongoose.Types.ObjectId(id)
-      );
+      const allParticipants = [
+        ...new Set([String(userId), ...participantIds.map(String)]),
+      ].map((id) => new mongoose.Types.ObjectId(id));
 
       // Validate that all participants exist
-      const existingUsers = await User.find({ _id: { $in: allParticipants }, isActive: true }).select('_id');
+      const existingUsers = await User.find({
+        _id: { $in: allParticipants },
+        isActive: true,
+      }).select("_id");
 
       if (existingUsers.length !== allParticipants.length) {
         return res.status(400).json({
           success: false,
-          message: 'One or more participants not found or inactive',
-          code: 'INVALID_PARTICIPANTS'
+          message: "One or more participants not found or inactive",
+          code: "INVALID_PARTICIPANTS",
         });
       }
 
       // For direct conversations, check if conversation already exists
-      if (type === 'direct' && allParticipants.length === 2) {
+      if (type === "direct" && allParticipants.length === 2) {
         const existingConversation = await Conversation.findOne({
           participants: { $all: allParticipants },
-          status: { $ne: 'deleted' },
+          status: { $ne: "deleted" },
         });
         if (existingConversation) {
           return res.status(200).json({
             success: true,
-            message: 'Conversation already exists',
+            message: "Conversation already exists",
             data: { conversation: { id: existingConversation._id } },
           });
         }
@@ -142,51 +161,51 @@ class ConversationController {
       // Create conversation
       const conversation = await Conversation.create({
         participants: allParticipants,
-        status: 'active',
-        metadata: type === 'group' && title ? { title } : undefined,
+        status: "active",
+        metadata: type === "group" && title ? { title } : undefined,
       });
 
       // Get participant details for response
-      const participants = await User.find({ _id: { $in: allParticipants } }).select(
-        'firstName lastName profilePicture'
-      );
+      const participants = await User.find({
+        _id: { $in: allParticipants },
+      }).select("firstName lastName profilePicture");
 
       // Log conversation creation
       await auditLogger.log({
         userId,
-        action: 'CONVERSATION_CREATED',
+        action: "CONVERSATION_CREATED",
         details: {
           conversationId: conversation._id,
           type,
-          participantCount: allParticipants.length
-        }
+          participantCount: allParticipants.length,
+        },
       });
 
       res.status(201).json({
         success: true,
-        message: 'Conversation created successfully',
+        message: "Conversation created successfully",
         data: {
           conversation: {
             id: conversation._id,
-            type: (conversation.participants || []).length > 2 ? 'group' : 'direct',
+            type:
+              (conversation.participants || []).length > 2 ? "group" : "direct",
             title: conversation.metadata?.title || null,
-            participants: participants.map(p => ({
+            participants: participants.map((p) => ({
               id: p._id,
               name: `${p.firstName} ${p.lastName}`,
-              profilePicture: p.profilePicture
+              profilePicture: p.profilePicture,
             })),
             createdAt: conversation.createdAt,
-            lastMessageAt: conversation.updatedAt
-          }
-        }
+            lastMessageAt: conversation.updatedAt,
+          },
+        },
       });
-
     } catch (error) {
-      console.error('Create conversation error:', error);
+      console.error("Create conversation error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to create conversation',
-        code: 'CONVERSATION_CREATION_ERROR'
+        message: "Failed to create conversation",
+        code: "CONVERSATION_CREATION_ERROR",
       });
     }
   }
@@ -201,71 +220,78 @@ class ConversationController {
 
       const conversation = await Conversation.findOne({
         _id: id,
-        participants: { $in: [new mongoose.Types.ObjectId(userId)] }
+        participants: { $in: [new mongoose.Types.ObjectId(userId)] },
       })
-        .populate('participants', 'firstName lastName profilePicture isActive')
+        .populate("participants", "firstName lastName profilePicture isActive")
         .lean();
 
       if (!conversation) {
         return res.status(404).json({
           success: false,
-          message: 'Conversation not found or access denied',
-          code: 'CONVERSATION_NOT_FOUND'
+          message: "Conversation not found or access denied",
+          code: "CONVERSATION_NOT_FOUND",
         });
       }
 
       // Get participant details
-      const participantIds = (conversation.participants || []).map((p) => p._id);
+      const participantIds = (conversation.participants || []).map(
+        (p) => p._id,
+      );
       const messages = await Message.find({
         $or: [
-          { sender: { $in: participantIds }, recipient: { $in: participantIds } }
-        ]
+          {
+            sender: { $in: participantIds },
+            recipient: { $in: participantIds },
+          },
+        ],
       })
-        .populate('sender', 'firstName lastName profilePicture')
+        .populate("sender", "firstName lastName profilePicture")
         .sort({ createdAt: -1 })
         .limit(50)
         .lean();
 
       res.status(200).json({
         success: true,
-        message: 'Conversation retrieved successfully',
+        message: "Conversation retrieved successfully",
         data: {
           conversation: {
             id: conversation._id,
-            type: (conversation.participants || []).length > 2 ? 'group' : 'direct',
+            type:
+              (conversation.participants || []).length > 2 ? "group" : "direct",
             title: conversation.metadata?.title || null,
-            participants: (conversation.participants || []).map(p => ({
+            participants: (conversation.participants || []).map((p) => ({
               id: p._id,
               name: `${p.firstName} ${p.lastName}`,
               profilePicture: p.profilePicture,
-              isActive: p.isActive
+              isActive: p.isActive,
             })),
-            messages: messages.reverse().map(msg => ({
+            messages: messages.reverse().map((msg) => ({
               id: msg._id,
               senderId: msg.sender?._id,
               sender: {
                 id: msg.sender?._id,
-                name: msg.sender ? `${msg.sender.firstName} ${msg.sender.lastName}` : undefined,
-                profilePicture: msg.sender?.profilePicture
+                name: msg.sender
+                  ? `${msg.sender.firstName} ${msg.sender.lastName}`
+                  : undefined,
+                profilePicture: msg.sender?.profilePicture,
               },
               content: msg.content,
               messageType: msg.messageType,
               attachments: msg.attachments,
               isRead: msg.readStatus?.isRead,
-              createdAt: msg.createdAt
+              createdAt: msg.createdAt,
             })),
             createdAt: conversation.createdAt,
-            lastMessageAt: conversation.updatedAt
-          }
-        }
+            lastMessageAt: conversation.updatedAt,
+          },
+        },
       });
-
-  } catch (error) {
-      console.error('Get conversation error:', error);
+    } catch (error) {
+      console.error("Get conversation error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to retrieve conversation',
-        code: 'CONVERSATION_RETRIEVAL_ERROR'
+        message: "Failed to retrieve conversation",
+        code: "CONVERSATION_RETRIEVAL_ERROR",
       });
     }
   }
@@ -281,14 +307,14 @@ class ConversationController {
 
       const conversation = await Conversation.findOne({
         _id: id,
-        participants: { $in: [new mongoose.Types.ObjectId(userId)] }
+        participants: { $in: [new mongoose.Types.ObjectId(userId)] },
       });
 
-    if (!conversation) {
+      if (!conversation) {
         return res.status(404).json({
           success: false,
-          message: 'Conversation not found or access denied',
-          code: 'CONVERSATION_NOT_FOUND'
+          message: "Conversation not found or access denied",
+          code: "CONVERSATION_NOT_FOUND",
         });
       }
 
@@ -296,52 +322,59 @@ class ConversationController {
       if (!isGroup && title) {
         return res.status(400).json({
           success: false,
-          message: 'Only group conversations can be updated',
-          code: 'INVALID_CONVERSATION_TYPE'
+          message: "Only group conversations can be updated",
+          code: "INVALID_CONVERSATION_TYPE",
         });
       }
 
       // Update fields
       const updateData = {};
-      if (title !== undefined) updateData['metadata.title'] = title;
+      if (title !== undefined) updateData["metadata.title"] = title;
       if (participants && Array.isArray(participants)) {
-        const normalized = participants.map((id) => new mongoose.Types.ObjectId(id));
-        const existingUsers = await User.find({ _id: { $in: normalized }, isActive: true }).select('_id');
+        const normalized = participants.map(
+          (id) => new mongoose.Types.ObjectId(id),
+        );
+        const existingUsers = await User.find({
+          _id: { $in: normalized },
+          isActive: true,
+        }).select("_id");
         if (existingUsers.length !== normalized.length) {
           return res.status(400).json({
             success: false,
-            message: 'One or more participants not found or inactive',
-            code: 'INVALID_PARTICIPANTS'
+            message: "One or more participants not found or inactive",
+            code: "INVALID_PARTICIPANTS",
           });
         }
 
         updateData.participants = normalized;
       }
 
-      await Conversation.updateOne({ _id: conversation._id }, { $set: updateData });
+      await Conversation.updateOne(
+        { _id: conversation._id },
+        { $set: updateData },
+      );
 
       // Log conversation update
       await auditLogger.log({
         userId,
-        action: 'CONVERSATION_UPDATED',
+        action: "CONVERSATION_UPDATED",
         details: {
           conversationId: id,
-          changes: Object.keys(updateData)
-        }
+          changes: Object.keys(updateData),
+        },
       });
 
       res.status(200).json({
         success: true,
-        message: 'Conversation updated successfully',
-        data: { conversation: { id } }
+        message: "Conversation updated successfully",
+        data: { conversation: { id } },
       });
-
-  } catch (error) {
-      console.error('Update conversation error:', error);
+    } catch (error) {
+      console.error("Update conversation error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to update conversation',
-        code: 'CONVERSATION_UPDATE_ERROR'
+        message: "Failed to update conversation",
+        code: "CONVERSATION_UPDATE_ERROR",
       });
     }
   }
@@ -356,47 +389,50 @@ class ConversationController {
 
       const conversation = await Conversation.findOne({
         _id: id,
-        participants: { $in: [new mongoose.Types.ObjectId(userId)] }
+        participants: { $in: [new mongoose.Types.ObjectId(userId)] },
       });
 
-    if (!conversation) {
+      if (!conversation) {
         return res.status(404).json({
           success: false,
-          message: 'Conversation not found or access denied',
-          code: 'CONVERSATION_NOT_FOUND'
+          message: "Conversation not found or access denied",
+          code: "CONVERSATION_NOT_FOUND",
         });
       }
 
       const updatedParticipants = (conversation.participants || []).filter(
-        (p) => String(p) !== String(userId)
+        (p) => String(p) !== String(userId),
       );
       if (updatedParticipants.length < 2) {
         await Conversation.deleteOne({ _id: conversation._id });
       } else {
-        await Conversation.updateOne({ _id: conversation._id }, { $set: { participants: updatedParticipants } });
+        await Conversation.updateOne(
+          { _id: conversation._id },
+          { $set: { participants: updatedParticipants } },
+        );
       }
 
       // Log conversation deletion/leave
       await auditLogger.log({
         userId,
-        action: 'CONVERSATION_LEFT',
+        action: "CONVERSATION_LEFT",
         details: {
           conversationId: id,
-          type: (conversation.participants || []).length > 2 ? 'group' : 'direct'
-        }
+          type:
+            (conversation.participants || []).length > 2 ? "group" : "direct",
+        },
       });
 
       res.status(200).json({
         success: true,
-        message: 'Successfully left conversation'
+        message: "Successfully left conversation",
       });
-
-  } catch (error) {
-      console.error('Delete conversation error:', error);
+    } catch (error) {
+      console.error("Delete conversation error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to leave conversation',
-        code: 'CONVERSATION_DELETION_ERROR'
+        message: "Failed to leave conversation",
+        code: "CONVERSATION_DELETION_ERROR",
       });
     }
   }
@@ -411,43 +447,47 @@ class ConversationController {
 
       const conversation = await Conversation.findOne({
         _id: id,
-        participants: { $in: [new mongoose.Types.ObjectId(userId)] }
+        participants: { $in: [new mongoose.Types.ObjectId(userId)] },
       });
 
-    if (!conversation) {
+      if (!conversation) {
         return res.status(404).json({
           success: false,
-          message: 'Conversation not found or access denied',
-          code: 'CONVERSATION_NOT_FOUND'
+          message: "Conversation not found or access denied",
+          code: "CONVERSATION_NOT_FOUND",
         });
       }
 
       await Message.updateMany(
         {
           recipient: new mongoose.Types.ObjectId(userId),
-          'readStatus.isRead': false
+          "readStatus.isRead": false,
         },
-        { $set: { 'readStatus.isRead': true, 'readStatus.readAt': new Date() } }
+        {
+          $set: { "readStatus.isRead": true, "readStatus.readAt": new Date() },
+        },
       );
       await Conversation.updateOne(
-        { _id: conversation._id, 'unreadCounts.user': new mongoose.Types.ObjectId(userId) },
-        { $set: { 'unreadCounts.$.count': 0 } }
+        {
+          _id: conversation._id,
+          "unreadCounts.user": new mongoose.Types.ObjectId(userId),
+        },
+        { $set: { "unreadCounts.$.count": 0 } },
       );
 
       res.status(200).json({
         success: true,
-        message: 'Conversation marked as read',
+        message: "Conversation marked as read",
         data: {
-          conversationId: id
-        }
+          conversationId: id,
+        },
       });
-
     } catch (error) {
-      console.error('Mark conversation as read error:', error);
+      console.error("Mark conversation as read error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to mark conversation as read',
-        code: 'MARK_READ_ERROR'
+        message: "Failed to mark conversation as read",
+        code: "MARK_READ_ERROR",
       });
     }
   }
@@ -463,8 +503,8 @@ class ConversationController {
       if (!query || query.trim().length < 2) {
         return res.status(400).json({
           success: false,
-          message: 'Search query must be at least 2 characters',
-          code: 'INVALID_SEARCH_QUERY'
+          message: "Search query must be at least 2 characters",
+          code: "INVALID_SEARCH_QUERY",
         });
       }
 
@@ -472,8 +512,10 @@ class ConversationController {
       const pageSize = Math.min(50, Math.max(1, parseInt(limit)));
       const skip = (pageNum - 1) * pageSize;
 
-      const convQuery = { participants: { $in: [new mongoose.Types.ObjectId(userId)] } };
-      if (type && type !== 'all') convQuery.status = type;
+      const convQuery = {
+        participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      };
+      if (type && type !== "all") convQuery.status = type;
 
       const conversations = await Conversation.find(convQuery)
         .sort({ updatedAt: -1 })
@@ -481,40 +523,39 @@ class ConversationController {
         .limit(pageSize)
         .lean();
 
-      const regex = new RegExp(query, 'i');
+      const regex = new RegExp(query, "i");
       const matched = [];
       for (const conv of conversations) {
         const found = await Message.findOne({
           content: { $regex: regex },
           $or: [
             { sender: { $in: conv.participants } },
-            { recipient: { $in: conv.participants } }
-          ]
+            { recipient: { $in: conv.participants } },
+          ],
         }).lean();
         if (found) matched.push(conv);
       }
 
       res.status(200).json({
         success: true,
-        message: 'Conversation search completed',
+        message: "Conversation search completed",
         data: {
-          conversations: matched.map(conv => ({
+          conversations: matched.map((conv) => ({
             id: conv._id,
-            type: (conv.participants || []).length > 2 ? 'group' : 'direct',
+            type: (conv.participants || []).length > 2 ? "group" : "direct",
             title: conv.metadata?.title || null,
-            lastMessageAt: conv.updatedAt
+            lastMessageAt: conv.updatedAt,
           })),
           pagination: { page: pageNum, limit: pageSize, total: matched.length },
-          searchQuery: query
-        }
+          searchQuery: query,
+        },
       });
-
-  } catch (error) {
-      console.error('Search conversations error:', error);
+    } catch (error) {
+      console.error("Search conversations error:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to search conversations',
-        code: 'CONVERSATION_SEARCH_ERROR'
+        message: "Failed to search conversations",
+        code: "CONVERSATION_SEARCH_ERROR",
       });
     }
   }

@@ -1,4 +1,4 @@
-const { Notification, NotificationPreference } = require('../models');
+const { Notification, NotificationPreference } = require("../models");
 const { handleError } = require("../utils/errorHandler");
 
 // Get user notifications
@@ -13,15 +13,21 @@ exports.getUserNotifications = async (req, res) => {
     if (unreadOnly === "true") {
       query["readStatus.isRead"] = false;
     }
-    if (type && typeof type === 'string' && type !== 'all') {
+    if (type && typeof type === "string" && type !== "all") {
       query.type = type;
     }
 
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
-      .skip((Math.max(1, parseInt(page)) - 1) * Math.min(100, Math.max(1, parseInt(limit))))
+      .skip(
+        (Math.max(1, parseInt(page)) - 1) *
+          Math.min(100, Math.max(1, parseInt(limit))),
+      )
       .limit(Math.min(100, Math.max(1, parseInt(limit))))
-      .populate({ path: 'relatedEntity.id', select: 'firstName lastName profilePicture title' });
+      .populate({
+        path: "relatedEntity.id",
+        select: "firstName lastName profilePicture title",
+      });
 
     const totalNotifications = await Notification.countDocuments(query);
 
@@ -31,8 +37,10 @@ exports.getUserNotifications = async (req, res) => {
         page: Math.max(1, parseInt(page)),
         limit: Math.min(100, Math.max(1, parseInt(limit))),
         total: totalNotifications,
-        pages: Math.ceil(totalNotifications / Math.min(100, Math.max(1, parseInt(limit))))
-      }
+        pages: Math.ceil(
+          totalNotifications / Math.min(100, Math.max(1, parseInt(limit))),
+        ),
+      },
     });
   } catch (error) {
     handleError(res, error);
@@ -152,7 +160,7 @@ exports.updatePreferences = async (req, res) => {
     const prefs = await NotificationPreference.findOneAndUpdate(
       { user: req.user._id },
       { $set: updates },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
     res.json({ success: true, data: prefs });
   } catch (error) {

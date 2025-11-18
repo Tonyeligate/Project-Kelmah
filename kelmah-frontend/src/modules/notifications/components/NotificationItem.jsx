@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import PropTypes from 'prop-types';
 import {
   ListItem,
   ListItemText,
@@ -39,31 +40,36 @@ const getNotificationIcon = (type) => {
 
 const NotificationItem = ({ notification, sx = {} }) => {
   const { markAsRead, deleteNotification } = useNotifications();
+  const hasNotification = Boolean(notification);
 
-  if (!notification) return null;
-
-  const id = notification.id || notification._id;
+  const id = notification?.id || notification?._id || '';
   const title =
-    notification.title || notification.content || notification.message;
-  const message = notification.content || notification.message || '';
-  const createdAt = notification.createdAt || notification.date || Date.now();
-  const read = notification.read ?? notification.readStatus?.isRead ?? false;
-  const type = notification.type;
-
+    notification?.title || notification?.content || notification?.message;
+  const message = notification?.content || notification?.message || '';
+  const createdAt = notification?.createdAt || notification?.date || Date.now();
+  const read = notification?.read ?? notification?.readStatus?.isRead ?? false;
+  const type = notification?.type;
   const handleItemClick = useCallback(() => {
-    if (!read) {
-      markAsRead(id);
+    if (!hasNotification || read) {
+      return;
     }
-  }, [id, read, markAsRead]);
+    markAsRead(id);
+  }, [hasNotification, read, markAsRead, id]);
 
   const handleDelete = useCallback(
     (e) => {
-      e.stopPropagation(); // Prevent item click from firing
+      if (!hasNotification) {
+        return;
+      }
+      e.stopPropagation();
       deleteNotification(id);
     },
-    [id, deleteNotification],
+    [hasNotification, id, deleteNotification],
   );
 
+  if (!hasNotification) {
+    return null;
+  }
   return (
     <ListItem
       button
@@ -122,6 +128,32 @@ const NotificationItem = ({ notification, sx = {} }) => {
       </Box>
     </ListItem>
   );
+};
+
+NotificationItem.propTypes = {
+  notification: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    content: PropTypes.string,
+    message: PropTypes.string,
+    createdAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.instanceOf(Date),
+    ]),
+    date: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.instanceOf(Date),
+    ]),
+    read: PropTypes.bool,
+    readStatus: PropTypes.shape({
+      isRead: PropTypes.bool,
+    }),
+    type: PropTypes.string,
+  }),
+  sx: PropTypes.object,
 };
 
 export default NotificationItem;

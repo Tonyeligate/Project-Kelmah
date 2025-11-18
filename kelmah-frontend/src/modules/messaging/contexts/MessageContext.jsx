@@ -5,12 +5,21 @@ import React, {
   useContext,
   useCallback,
 } from 'react';
+import PropTypes from 'prop-types';
 import { messagingService } from '../services/messagingService';
 import { useAuth } from '../../auth/contexts/AuthContext';
 import io from 'socket.io-client';
-import { API_ENDPOINTS } from '../../../config/services';
+import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
 
 const MessageContext = createContext(null);
+
+const normalizeMessageAttachments = (message = {}) => ({
+  ...message,
+  attachments: normalizeAttachmentListVirusScan(message.attachments || []),
+});
+
+const normalizeMessageList = (list = []) =>
+  list.map((message) => normalizeMessageAttachments(message || {}));
 
 export const useMessages = () => {
   const context = useContext(MessageContext);
@@ -129,6 +138,7 @@ export const MessageProvider = ({ children }) => {
     // Real-time message events
     newSocket.on('new_message', (messageData) => {
       console.log('📨 New message received:', messageData);
+      const hydratedMessage = normalizeMessageAttachments(messageData);
 
       // Add to messages if it's for the current conversation
       if (
@@ -137,27 +147,27 @@ export const MessageProvider = ({ children }) => {
       ) {
         setMessages((prev) => {
           // If an optimistic message exists with the same clientId, replace it
-          const clientId = messageData.clientId;
+          const clientId = hydratedMessage.clientId;
           if (clientId) {
             const index = prev.findIndex((m) => m.id === clientId);
             if (index !== -1) {
               const updated = [...prev];
-              updated[index] = { ...messageData, status: 'sent' };
+              updated[index] = { ...hydratedMessage, status: 'sent' };
               return updated;
             }
           }
-          return [...prev, messageData];
+          return [...prev, hydratedMessage];
         });
       }
 
       // Update conversation's last message
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.id === messageData.conversationId
+          conv.id === hydratedMessage.conversationId
             ? {
                 ...conv,
-                lastMessage: messageData,
-                updatedAt: messageData.createdAt,
+                lastMessage: hydratedMessage,
+                updatedAt: hydratedMessage.createdAt,
               }
             : conv,
         ),
@@ -233,7 +243,12 @@ export const MessageProvider = ({ children }) => {
       console.log('🔌 Disconnecting WebSocket');
       try {
         socket.removeAllListeners && socket.removeAllListeners();
-      } catch {}
+      } catch (error) {
+        console.warn(
+          'Failed to remove socket listeners before disconnect',
+          error,
+        );
+      }
       socket.disconnect();
       setSocket(null);
       setIsConnected(false);
@@ -274,7 +289,7 @@ export const MessageProvider = ({ children }) => {
           // Listen for conversation joined event
           socket.once('conversation_joined', (data) => {
             console.log('🏠 Joined conversation:', data);
-            setMessages(data.messages || []);
+            setMessages(normalizeMessageList(data.messages || []));
             setLoadingMessages(false);
           });
 
@@ -289,7 +304,7 @@ export const MessageProvider = ({ children }) => {
           const loadedMessages = await messagingService.getMessages(
             conversation.id,
           );
-          setMessages(loadedMessages);
+          setMessages(normalizeMessageList(loadedMessages));
           setLoadingMessages(false);
         }
       } catch (error) {
@@ -307,6 +322,7 @@ export const MessageProvider = ({ children }) => {
   const sendMessage = useCallback(
     async (content, messageType = 'text', attachments = []) => {
       if (!selectedConversation || !content.trim() || !user) return;
+      const safeAttachments = normalizeAttachmentListVirusScan(attachments);
 
       setSendingMessage(true);
       try {
@@ -325,7 +341,7 @@ export const MessageProvider = ({ children }) => {
             },
             content: content.trim(),
             messageType,
-            attachments,
+            attachments: safeAttachments,
             createdAt: new Date().toISOString(),
             isRead: false,
             status: 'sending',
@@ -350,14 +366,14 @@ export const MessageProvider = ({ children }) => {
                 encryptedBody: content.trim(),
                 encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
                 messageType,
-                attachments,
+                attachments: safeAttachments,
                 clientId,
               }
             : {
                 conversationId: selectedConversation.id,
                 content: content.trim(),
                 messageType,
-                attachments,
+                attachments: safeAttachments,
                 clientId,
               };
 
@@ -372,19 +388,22 @@ export const MessageProvider = ({ children }) => {
                   user.id,
                   recipient.id,
                   content,
+                  messageType,
+                  safeAttachments,
                 );
+                const normalized = normalizeMessageAttachments(newMessage);
                 // Mark optimistic message as failed and append REST message
                 setMessages((prev) => {
                   const idx = prev.findIndex((m) => m.id === clientId);
                   const copy = [...prev];
                   if (idx !== -1)
                     copy[idx] = { ...copy[idx], status: 'failed' };
-                  return [...copy, newMessage];
+                  return [...copy, normalized];
                 });
                 setConversations((prev) =>
                   prev.map((c) =>
                     c.id === selectedConversation.id
-                      ? { ...c, lastMessage: newMessage }
+                      ? { ...c, lastMessage: normalized }
                       : c,
                   ),
                 );
@@ -412,12 +431,15 @@ export const MessageProvider = ({ children }) => {
             user.id,
             recipient.id,
             content,
+            messageType,
+            safeAttachments,
           );
-          setMessages((prev) => [...prev, newMessage]);
+          const normalized = normalizeMessageAttachments(newMessage);
+          setMessages((prev) => [...prev, normalized]);
           setConversations((prev) =>
             prev.map((c) =>
               c.id === selectedConversation.id
-                ? { ...c, lastMessage: newMessage }
+                ? { ...c, lastMessage: normalized }
                 : c,
             ),
           );
@@ -428,7 +450,7 @@ export const MessageProvider = ({ children }) => {
         setSendingMessage(false);
       }
     },
-    [selectedConversation, conversations, user, socket, isConnected],
+    [selectedConversation, user, socket, isConnected],
   );
 
   const createConversation = useCallback(
@@ -498,9 +520,7 @@ export const MessageProvider = ({ children }) => {
 
   // Check if user is online
   const isUserOnline = useCallback(
-    (userId) => {
-      return onlineUsers.has(userId);
-    },
+    (userId) => onlineUsers.has(userId),
     [onlineUsers],
   );
 
@@ -537,6 +557,10 @@ export const MessageProvider = ({ children }) => {
   return (
     <MessageContext.Provider value={value}>{children}</MessageContext.Provider>
   );
+};
+
+MessageProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export default MessageContext;

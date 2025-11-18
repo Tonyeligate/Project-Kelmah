@@ -10,6 +10,7 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "backfill:virus-scan": "node scripts/backfill-virus-scan-metadata.js",
     "health": "curl http://localhost:$npm_package_config_port/health || echo 'Service not running'",
     "logs": "tail -f logs/*.log || echo 'No logs found'",
     "clean": "rm -rf node_modules logs coverage .nyc_output",

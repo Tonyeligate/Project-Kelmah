@@ -32,7 +32,11 @@ const MessageSchema = new Schema(
         fileSize: Number,
         uploadDate: Date,
         virusScan: {
-          status: { type: String, enum: ['pending','clean','infected','failed'], default: 'pending' },
+          status: {
+            type: String,
+            enum: ["pending", "clean", "infected", "failed"],
+            default: "pending",
+          },
           scannedAt: Date,
           engine: String,
           details: String,
@@ -71,7 +75,7 @@ const MessageSchema = new Schema(
     reactions: [
       {
         emoji: String,
-        user: { type: Schema.Types.ObjectId, ref: 'User' },
+        user: { type: Schema.Types.ObjectId, ref: "User" },
         addedAt: { type: Date, default: Date.now },
       },
     ],

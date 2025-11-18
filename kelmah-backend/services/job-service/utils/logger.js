@@ -92,16 +92,17 @@ const createLogger = (serviceName = 'job-service') => {
 /**
  * Create HTTP request logger middleware
  */
-const createHttpLogger = () => {
+const createHttpLogger = (serviceLogger = logger) => {
   return (req, res, next) => {
     const start = Date.now();
     
     // Log request
-    logger.info('HTTP Request', {
+    serviceLogger.info('HTTP Request', {
       method: req.method,
       url: req.url,
       userAgent: req.get('user-agent'),
-      ip: req.ip
+      ip: req.ip,
+      requestId: req.id || req.headers['x-request-id']
     });
     
     // Override res.end to log response
@@ -109,11 +110,12 @@ const createHttpLogger = () => {
     res.end = function(...args) {
       const duration = Date.now() - start;
       
-      logger.info('HTTP Response', {
+      serviceLogger.info('HTTP Response', {
         method: req.method,
         url: req.url,
         statusCode: res.statusCode,
-        duration: `${duration}ms`
+        duration: `${duration}ms`,
+        requestId: req.id || req.headers['x-request-id']
       });
       
       originalEnd.apply(this, args);
@@ -133,7 +135,8 @@ const createErrorLogger = () => {
       stack: err.stack,
       method: req.method,
       url: req.url,
-      ip: req.ip
+      ip: req.ip,
+      requestId: req.id || req.headers['x-request-id']
     });
     
     next(err);

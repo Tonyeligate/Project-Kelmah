@@ -3,18 +3,18 @@ const router = express.Router();
 const notificationController = require("../controllers/notification.controller");
 
 // Import rate limiter for notifications
-const { createLimiter } = require('../utils/rateLimiter');
+const { createLimiter } = require("../utils/rateLimiter");
 
 // Apply notification-specific rate limiting
-router.use(createLimiter('notifications'));
+router.use(createLimiter("notifications"));
 
 // Authentication middleware is applied in server.js
 
 // Notification routes
 router.get("/", notificationController.getUserNotifications);
 router.get("/unread/count", notificationController.getUnreadCount);
-router.get('/preferences', notificationController.getPreferences);
-router.put('/preferences', notificationController.updatePreferences);
+router.get("/preferences", notificationController.getPreferences);
+router.put("/preferences", notificationController.updatePreferences);
 router.patch(
   "/:notificationId/read",
   notificationController.markNotificationAsRead,

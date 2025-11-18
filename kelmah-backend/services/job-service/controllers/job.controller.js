@@ -22,6 +22,9 @@ const {
 } = require("../utils/response");
 const { ensureConnection } = require('../config/db');
 const { transformJobsForFrontend, transformJobForFrontend } = require('../utils/jobTransform');
+const { createLogger } = require('../utils/logger');
+
+const jobLogger = createLogger('job-controller');
 
 /**
  * Create a new job
@@ -33,6 +36,7 @@ const createJob = async (req, res, next) => {
     // Normalize incoming payload from legacy UI fields
     const body = { ...req.body };
     body.hirer = req.user.id;
+    const requestId = req.id || req.headers['x-request-id'];
 
     // Map legacy fields to canonical model
     // paymentType + budget.{min,max,fixed} → budget (number) + currency
@@ -135,11 +139,37 @@ const createJob = async (req, res, next) => {
       };
     }
 
+    jobLogger.info('job.create.request', {
+      requestId,
+      userId: req.user?.id,
+      summary: {
+        paymentType: body.paymentType,
+        locationType: body.location?.type,
+        skills: Array.isArray(body.skills) ? body.skills.length : 0,
+        status: body.status || 'open',
+      },
+    });
+
     // Create job
     const job = await Job.create(body);
 
+    jobLogger.info('job.create.success', {
+      requestId,
+      userId: req.user?.id,
+      jobId: job?._id?.toString?.() || job?.id,
+      paymentType: body.paymentType,
+      budget: body.budget,
+      status: job.status,
+    });
+
     return successResponse(res, 201, "Job created successfully", job);
   } catch (error) {
+    const requestId = req.id || req.headers['x-request-id'];
+    jobLogger.error('job.create.failed', {
+      requestId,
+      userId: req.user?.id,
+      error: error.message,
+    });
     next(error);
   }
 };
