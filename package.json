@@ -44,6 +44,7 @@
     "health:frontend": "curl -f http://localhost:3001 || echo 'Frontend not healthy'",
     "db:migrate": "cd migrations-mongodb && npm run migrate",
     "db:seed": "for dir in kelmah-backend/services/*/; do (cd \"$dir\" && npm run seed 2>/dev/null || true); done",
+    "db:seed:reference": "node scripts/seed-core-reference-data.js",
     "build:all": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd kelmah-frontend && npm run build",
     "build:backend": "echo 'Backend requires no build'",

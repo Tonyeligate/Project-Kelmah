@@ -27,6 +27,8 @@ import {
   Work as WorkIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import tradeCategories from '../data/tradeCategories.json';
+import ghanaLocations from '../data/ghanaLocations.json';
 
 const CATEGORY_ICONS = {
   Electrical: ElectricalIcon,
@@ -57,26 +59,8 @@ const HeroFiltersSection = ({
   ]);
 
   useEffect(() => {
-    let active = true;
-    const loadFilterData = async () => {
-      try {
-        const [categoriesModule, locationsModule] = await Promise.all([
-          import('../data/tradeCategories.json'),
-          import('../data/ghanaLocations.json'),
-        ]);
-        if (active) {
-          setCategoryOptions(categoriesModule.default || []);
-          setLocationOptions(locationsModule.default || []);
-        }
-      } catch (error) {
-        console.warn('Failed to load jobs filter metadata', error);
-      }
-    };
-
-    loadFilterData();
-    return () => {
-      active = false;
-    };
+    setCategoryOptions(tradeCategories || []);
+    setLocationOptions(ghanaLocations || []);
   }, []);
 
   const renderCategoryIcon = (value) => {
