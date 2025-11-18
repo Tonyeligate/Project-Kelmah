@@ -873,6 +873,11 @@ const getSocketIoProxy = () => {
 const socketIoProxyHandler = (req, res, next) => {
   const proxy = getSocketIoProxy();
   if (proxy) {
+    // Express strips the mount path (/socket.io) from req.url when using app.use('/socket.io', ...)
+    // Socket.IO on the messaging service expects the full /socket.io prefix, so restore it before proxying
+    if (typeof req.originalUrl === 'string' && req.originalUrl.startsWith('/socket.io')) {
+      req.url = req.originalUrl;
+    }
     return proxy(req, res, next);
   } else {
     console.warn('⚠️ Socket.IO proxy unavailable, messaging service not ready');
