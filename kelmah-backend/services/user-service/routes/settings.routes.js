@@ -40,14 +40,24 @@ const AVAILABLE_THEMES = [
   { id: 'auto', name: 'Auto', description: 'Follows system preference' },
 ];
 
-const getUserId = (req) => req.user?.id || req.headers['x-user-id'] || 'unknown';
+const getUserId = (req) => req.user?.id || req.headers['x-user-id'] || null;
 
-const getUserSettings = (userId) => {
+const clone = (v) => JSON.parse(JSON.stringify(v));
+
+// Retrieve user settings. If `createIfMissing` is false and the userId
+// is not present, return a non-persistent clone of defaults instead
+// of creating an in-memory entry for anonymous requests.
+const getUserSettings = (userId, createIfMissing = true) => {
+  if (!userId) {
+    return clone(DEFAULT_SETTINGS);
+  }
+
   if (!userPrefs.has(userId)) {
+    if (!createIfMissing) return clone(DEFAULT_SETTINGS);
     userPrefs.set(userId, {
-      ...DEFAULT_SETTINGS,
-      notifications: { ...DEFAULT_NOTIFICATIONS },
-      privacy: { ...DEFAULT_PRIVACY },
+      ...clone(DEFAULT_SETTINGS),
+      notifications: clone(DEFAULT_NOTIFICATIONS),
+      privacy: clone(DEFAULT_PRIVACY),
     });
   }
   return userPrefs.get(userId);
@@ -56,8 +66,10 @@ const getUserSettings = (userId) => {
 const respond = (res, data) => res.json({ success: true, data });
 
 // Base settings endpoints
-router.get('/', verifyGatewayRequest, (req, res) => {
-  const settings = getUserSettings(getUserId(req));
+// Public: return user settings when authenticated, otherwise return defaults
+router.get('/', (req, res) => {
+  const userId = getUserId(req);
+  const settings = getUserSettings(userId, !!userId);
   respond(res, settings);
 });
 
@@ -81,9 +93,12 @@ router.put('/', verifyGatewayRequest, (req, res) => {
 });
 
 // Notification preferences
-router.get('/notifications', verifyGatewayRequest, (req, res) => {
-  const settings = getUserSettings(getUserId(req));
-  respond(res, settings.notifications);
+// Public-safe notifications read: returns user-specific prefs when authenticated,
+// otherwise returns default notification settings without creating persistent entries.
+router.get('/notifications', (req, res) => {
+  const userId = getUserId(req);
+  const settings = getUserSettings(userId, !!userId);
+  respond(res, settings.notifications || DEFAULT_NOTIFICATIONS);
 });
 
 router.put('/notifications', verifyGatewayRequest, (req, res) => {
@@ -99,9 +114,11 @@ router.put('/notifications', verifyGatewayRequest, (req, res) => {
 });
 
 // Privacy settings
-router.get('/privacy', verifyGatewayRequest, (req, res) => {
-  const settings = getUserSettings(getUserId(req));
-  respond(res, settings.privacy);
+// Public-safe privacy read
+router.get('/privacy', (req, res) => {
+  const userId = getUserId(req);
+  const settings = getUserSettings(userId, !!userId);
+  respond(res, settings.privacy || DEFAULT_PRIVACY);
 });
 
 router.put('/privacy', verifyGatewayRequest, (req, res) => {
@@ -135,11 +152,12 @@ router.put('/theme', verifyGatewayRequest, (req, res) => {
   respond(res, { theme });
 });
 
-router.get('/languages', verifyGatewayRequest, (req, res) => {
+// Public metadata endpoints
+router.get('/languages', (req, res) => {
   respond(res, AVAILABLE_LANGUAGES);
 });
 
-router.get('/themes', verifyGatewayRequest, (req, res) => {
+router.get('/themes', (req, res) => {
   respond(res, AVAILABLE_THEMES);
 });
 

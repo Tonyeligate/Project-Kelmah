@@ -42,6 +42,7 @@ const HEALTH_CHECK_PATH = '/health/aggregate';
 const HEALTH_CHECK_TIMEOUT_MS = 4000;
 const LAST_HEALTHY_BASE_KEY = 'kelmah:lastHealthyApiBase';
 const BOOTSTRAP_GATEWAY_SESSION_KEY = 'kelmah:bootstrapGateway';
+const BOOTSTRAP_GATEWAY_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 const notifyServiceWorkerOfGateway = (baseUrl) => {
   if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
@@ -75,10 +76,42 @@ const getStoredApiBase = () => {
   }
 };
 
+const storeBootstrapGatewayHint = (origin) => {
+  if (typeof window === 'undefined' || !origin) return;
+  try {
+    window.sessionStorage?.setItem(
+      BOOTSTRAP_GATEWAY_SESSION_KEY,
+      JSON.stringify({ origin, updatedAt: Date.now() }),
+    );
+  } catch (error) {
+    console.warn(
+      '⚠️ Unable to persist bootstrap gateway hint:',
+      error?.message || error,
+    );
+  }
+};
+
+const removeStoredApiBase = (baseUrl) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY);
+    if (!current) return;
+    if (!baseUrl || current === baseUrl) {
+      window.localStorage?.removeItem(LAST_HEALTHY_BASE_KEY);
+    }
+  } catch (error) {
+    console.warn(
+      '⚠️ Unable to clear cached API base:',
+      error?.message || error,
+    );
+  }
+};
+
 const storeApiBase = (baseUrl) => {
   if (typeof window === 'undefined' || !baseUrl) return;
   try {
     window.localStorage?.setItem(LAST_HEALTHY_BASE_KEY, baseUrl);
+    storeBootstrapGatewayHint(baseUrl);
     notifyServiceWorkerOfGateway(baseUrl);
   } catch (error) {
     console.warn(
@@ -97,6 +130,13 @@ const getBootstrapGatewayHint = () => {
     }
     const parsed = JSON.parse(raw);
     if (parsed?.origin) {
+      if (
+        parsed.updatedAt &&
+        Date.now() - Number(parsed.updatedAt) > BOOTSTRAP_GATEWAY_TTL_MS
+      ) {
+        window.sessionStorage?.removeItem(BOOTSTRAP_GATEWAY_SESSION_KEY);
+        return null;
+      }
       return parsed.origin;
     }
     if (typeof parsed === 'string') {
@@ -211,6 +251,10 @@ const gatherCandidateBases = (config, envUrl) => {
 
 const selectHealthyBase = async (candidates) => {
   // Parallel probing: race all candidates, return first healthy one
+  const cachedStoredBase =
+    typeof window !== 'undefined'
+      ? window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY)
+      : null;
   const probePromises = candidates.map(async (base) => {
     const healthy = await probeApiBase(base);
     return { base, healthy };
@@ -219,6 +263,14 @@ const selectHealthyBase = async (candidates) => {
   try {
     // Wait for all probes to complete or first success
     const results = await Promise.all(probePromises);
+    if (cachedStoredBase) {
+      const storedResult = results.find(
+        (result) => result.base === cachedStoredBase,
+      );
+      if (storedResult && !storedResult.healthy) {
+        removeStoredApiBase(cachedStoredBase);
+      }
+    }
     const firstHealthy = results.find((r) => r.healthy);
 
     if (firstHealthy) {

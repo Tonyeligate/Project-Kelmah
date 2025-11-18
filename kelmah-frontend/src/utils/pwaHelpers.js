@@ -6,6 +6,8 @@
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
 const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
+const BOOTSTRAP_GATEWAY_SESSION_KEY = 'kelmah:bootstrapGateway';
+const BOOTSTRAP_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 const openGatewayDb = () => {
   if (typeof indexedDB === 'undefined') {
@@ -153,6 +155,16 @@ const fetchRuntimeHints = async () => {
       const config = await response.json();
       if (config?.apiGatewayUrl) {
         await saveHealthyGateway(config.apiGatewayUrl);
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          try {
+            window.sessionStorage.setItem(
+              BOOTSTRAP_GATEWAY_SESSION_KEY,
+              JSON.stringify({ origin: config.apiGatewayUrl, updatedAt: Date.now() }),
+            );
+          } catch (error) {
+            console.warn('[PWA] Failed to cache bootstrap gateway hint:', error);
+          }
+        }
         navigator.serviceWorker?.controller?.postMessage({
           type: 'CACHE_HEALTHY_GATEWAY',
           payload: config.apiGatewayUrl,
@@ -642,10 +654,26 @@ export const initializePWA = async () => {
     readHealthyGateway(),
   ]).catch(() => null);
   if (cachedGateway?.origin) {
-    sessionStorage.setItem(
-      'kelmah:bootstrapGateway',
-      JSON.stringify(cachedGateway),
-    );
+    const isFresh = !cachedGateway.updatedAt
+      ? true
+      : Date.now() - Number(cachedGateway.updatedAt) <= BOOTSTRAP_TTL_MS;
+    if (
+      isFresh &&
+      typeof window !== 'undefined' &&
+      window.sessionStorage
+    ) {
+      try {
+        window.sessionStorage.setItem(
+          BOOTSTRAP_GATEWAY_SESSION_KEY,
+          JSON.stringify({
+            origin: cachedGateway.origin,
+            updatedAt: cachedGateway.updatedAt || Date.now(),
+          }),
+        );
+      } catch (error) {
+        console.warn('[PWA] Failed to prime bootstrap gateway hint:', error);
+      }
+    }
   }
   fetchRuntimeHints();
 
