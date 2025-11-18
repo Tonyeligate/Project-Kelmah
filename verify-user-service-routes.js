@@ -6,7 +6,7 @@
 const https = require('https');
 
 const USER_SERVICE_URL = 'https://kelmah-user-service-47ot.onrender.com';
-const API_GATEWAY_URL = 'https://kelmah-api-gateway-nhxc.onrender.com';
+const API_GATEWAY_URL = 'https://kelmah-api-gateway-kubd.onrender.com';
 
 // Test user credentials (from spec-kit)
 const TEST_CREDENTIALS = {

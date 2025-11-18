@@ -7,11 +7,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://kelmah-api-gateway-nhxc.onrender.com/api/$1"
+      "destination": "https://kelmah-api-gateway-kubd.onrender.com/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://kelmah-api-gateway-nhxc.onrender.com/socket.io/$1"
+      "destination": "https://kelmah-api-gateway-kubd.onrender.com/socket.io/$1"
     },
     {
       "source": "/(.*)",

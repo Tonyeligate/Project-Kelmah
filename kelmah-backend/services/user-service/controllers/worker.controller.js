@@ -2184,12 +2184,6 @@ class WorkerController {
             ? payload
             : [];
 
-        const metadata = {
-          source: payload?.source || 'job-service',
-          receivedAt: new Date().toISOString(),
-          totalRecommendations: payload?.totalRecommendations,
-        };
-
         const normalizedJobs = jobs.slice(0, normalizedLimit);
         const metadata = {
           source: payload?.source || 'job-service',

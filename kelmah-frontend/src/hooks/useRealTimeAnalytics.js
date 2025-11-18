@@ -11,7 +11,7 @@ export function useRealTimeAnalytics() {
   const connect = useCallback(async () => {
     try {
       // Get backend WebSocket URL from runtime config
-      let wsUrl = 'https://kelmah-api-gateway-nhxc.onrender.com'; // Production fallback
+      let wsUrl = 'https://kelmah-api-gateway-kubd.onrender.com'; // Production fallback
       try {
         const response = await fetch('/runtime-config.json');
         if (response.ok) {
