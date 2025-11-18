@@ -3,7 +3,83 @@
 
 const CACHE_NAME = 'kelmah-v1.0.1';
 const OFFLINE_URL = '/offline.html';
+const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
+const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
+const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
 
+async function openGatewayDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(HEALTHY_GATEWAY_DB, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(HEALTHY_GATEWAY_STORE)) {
+        db.createObjectStore(HEALTHY_GATEWAY_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveHealthyGateway(origin) {
+  try {
+    const db = await openGatewayDb();
+    const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readwrite');
+    tx.objectStore(HEALTHY_GATEWAY_STORE).put(
+      {
+        origin,
+        updatedAt: Date.now(),
+      },
+      HEALTHY_GATEWAY_KEY,
+    );
+    return tx.complete;
+  } catch (error) {
+    console.warn('[SW] Failed to persist healthy gateway:', error);
+    return null;
+  }
+}
+
+async function readHealthyGateway() {
+  try {
+    const db = await openGatewayDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readonly');
+      const request = tx.objectStore(HEALTHY_GATEWAY_STORE).get(
+        HEALTHY_GATEWAY_KEY,
+      );
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('[SW] Failed to read healthy gateway cache:', error);
+    return null;
+  }
+}
+
+async function fetchAndCacheGatewayStatus() {
+  try {
+    const [runtimeConfig, healthResponse] = await Promise.all([
+      fetch('/runtime-config.json', { credentials: 'omit' }).then((res) =>
+        res.ok ? res.json() : null,
+      ),
+      fetch('/api/health/aggregate', {
+        credentials: 'omit',
+        headers: { 'X-SW-Gateway-Probe': 'kelmah' },
+      }).then((res) => (res.ok ? res.clone() : null)),
+    ]);
+
+    if (runtimeConfig?.apiGatewayUrl) {
+      await saveHealthyGateway(runtimeConfig.apiGatewayUrl);
+    }
+
+    if (healthResponse) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put('/api/health/aggregate', healthResponse);
+    }
+  } catch (error) {
+    console.warn('[SW] Gateway status fetch failed:', error);
+  }
+}
 // Critical resources to cache immediately (avoid CRA-specific paths)
 const PRECACHE_URLS = [
   '/',
@@ -47,6 +123,7 @@ self.addEventListener('install', (event) => {
         console.log('📦 Caching core resources for offline access');
         return cache.addAll(PRECACHE_URLS);
       })
+      .then(() => fetchAndCacheGatewayStatus())
       .then(() => {
         console.log('✅ Service Worker installation complete');
         return self.skipWaiting();
@@ -77,8 +154,35 @@ self.addEventListener('activate', (event) => {
       .then(() => {
         console.log('✅ Service Worker activated');
         return self.clients.claim();
+      })
+      .then(() => fetchAndCacheGatewayStatus())
+      .then(() => {
+        self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) =>
+            client.postMessage({ type: 'GATEWAY_CACHE_READY' }),
+          );
+        });
       }),
   );
+});
+
+self.addEventListener('message', (event) => {
+  const { data } = event;
+  if (!data || typeof data !== 'object') return;
+
+  if (data.type === 'GET_CACHED_GATEWAY') {
+    event.waitUntil(
+      (async () => {
+        const cached = await readHealthyGateway();
+        event.source?.postMessage({
+          type: 'CACHED_GATEWAY_RESULT',
+          payload: cached,
+        });
+      })(),
+    );
+  } else if (data.type === 'CACHE_HEALTHY_GATEWAY' && data.payload) {
+    event.waitUntil(saveHealthyGateway(data.payload));
+  }
 });
 
 // Fetch event - handle network requests with caching strategies

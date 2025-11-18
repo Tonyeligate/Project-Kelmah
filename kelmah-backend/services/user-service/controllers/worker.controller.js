@@ -400,6 +400,182 @@ const normalizeSkill = (skill, source = 'user') => {
     : null;
 };
 
+// Circuit breaker to prevent hammering the job service when it's unhealthy
+const jobServiceCircuitBreaker = {
+  state: 'closed',
+  failureCount: 0,
+  maxFailures: Number(process.env.JOB_SERVICE_CIRCUIT_MAX_FAILURES || 3),
+  cooldownMs: Number(process.env.JOB_SERVICE_CIRCUIT_COOLDOWN_MS || 60_000),
+  openedAt: null,
+  lastFailureAt: null,
+  lastSuccessAt: null,
+  lastSuccessPayload: null,
+};
+
+const getCircuitBreakerSnapshot = () => ({
+  state: jobServiceCircuitBreaker.state,
+  failureCount: jobServiceCircuitBreaker.failureCount,
+  maxFailures: jobServiceCircuitBreaker.maxFailures,
+  cooldownMs: jobServiceCircuitBreaker.cooldownMs,
+  openedAt: jobServiceCircuitBreaker.openedAt,
+  lastFailureAt: jobServiceCircuitBreaker.lastFailureAt,
+  lastSuccessAt: jobServiceCircuitBreaker.lastSuccessAt,
+});
+
+const resetCircuitBreaker = () => {
+  jobServiceCircuitBreaker.state = 'closed';
+  jobServiceCircuitBreaker.failureCount = 0;
+  jobServiceCircuitBreaker.openedAt = null;
+  jobServiceCircuitBreaker.lastFailureAt = null;
+};
+
+const recordCircuitSuccess = (payloadForCache = {}) => {
+  resetCircuitBreaker();
+  jobServiceCircuitBreaker.lastSuccessAt = Date.now();
+  jobServiceCircuitBreaker.lastSuccessPayload = {
+    jobs: Array.isArray(payloadForCache.jobs) ? payloadForCache.jobs : [],
+    total: Number.isFinite(payloadForCache.total)
+      ? payloadForCache.total
+      : Array.isArray(payloadForCache.jobs)
+        ? payloadForCache.jobs.length
+        : 0,
+    metadata: {
+      ...(payloadForCache.metadata || {}),
+    },
+  };
+};
+
+const openCircuit = () => {
+  jobServiceCircuitBreaker.state = 'open';
+  jobServiceCircuitBreaker.openedAt = Date.now();
+};
+
+const recordCircuitFailure = () => {
+  jobServiceCircuitBreaker.failureCount += 1;
+  jobServiceCircuitBreaker.lastFailureAt = Date.now();
+
+  if (jobServiceCircuitBreaker.state === 'half-open') {
+    jobServiceCircuitBreaker.failureCount = jobServiceCircuitBreaker.maxFailures;
+  }
+
+  if (jobServiceCircuitBreaker.failureCount >= jobServiceCircuitBreaker.maxFailures) {
+    if (jobServiceCircuitBreaker.state !== 'open') {
+      console.warn('⚠️ Job service circuit opened after repeated failures');
+    }
+    openCircuit();
+  }
+};
+
+const circuitShouldBlockRequest = () => {
+  if (jobServiceCircuitBreaker.state !== 'open') {
+    return false;
+  }
+
+  if (!jobServiceCircuitBreaker.openedAt) {
+    return false;
+  }
+
+  const elapsed = Date.now() - jobServiceCircuitBreaker.openedAt;
+  if (elapsed >= jobServiceCircuitBreaker.cooldownMs) {
+    // Allow a test request (half-open) to see if service recovered
+    jobServiceCircuitBreaker.state = 'half-open';
+    return false;
+  }
+
+  return true;
+};
+
+const respondWithCachedJobs = (res, reason, note, options = {}) => {
+  const cachedPayload = jobServiceCircuitBreaker.lastSuccessPayload;
+  if (cachedPayload && Array.isArray(cachedPayload.jobs)) {
+    return res.status(200).json({
+      success: true,
+      data: {
+        jobs: cachedPayload.jobs,
+        total: cachedPayload.total,
+        fallback: true,
+        fallbackReason: reason,
+        metadata: {
+          ...(cachedPayload.metadata || {}),
+          cached: true,
+          cacheTimestamp: jobServiceCircuitBreaker.lastSuccessAt
+            ? new Date(jobServiceCircuitBreaker.lastSuccessAt).toISOString()
+            : null,
+          source: 'job-service-cache',
+          note: note || 'Using cached job matches while job service recovers.',
+          circuitBreaker: getCircuitBreakerSnapshot(),
+        },
+      },
+    });
+  }
+
+  const fallback = buildRecentJobsFallback({
+    limit: options.limit,
+    reason,
+  });
+  fallback.data.metadata = {
+    ...(fallback.data.metadata || {}),
+    note: note || 'Job service unavailable; fallback matches provided.',
+    circuitBreaker: getCircuitBreakerSnapshot(),
+  };
+
+  return res.status(200).json(fallback);
+};
+
+const buildRecentJobsFallback = ({ limit = 10, reason = 'RECENT_JOBS_FALLBACK' } = {}) => {
+  const receivedAt = new Date().toISOString();
+  const mockJobs = [
+    {
+      id: 'job_123',
+      title: 'Kitchen Cabinet Installation',
+      client: 'Sarah Johnson',
+      clientId: 'user_456',
+      status: 'completed',
+      budget: 2500,
+      currency: 'GHS',
+      completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      rating: 5,
+      location: 'East Legon, Accra',
+    },
+    {
+      id: 'job_124',
+      title: 'Plumbing Repair',
+      client: 'Michael Brown',
+      clientId: 'user_789',
+      status: 'in-progress',
+      budget: 800,
+      currency: 'GHS',
+      startedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      location: 'Tema, Accra',
+    },
+    {
+      id: 'job_125',
+      title: 'Electrical Wiring',
+      client: 'Jennifer Wilson',
+      clientId: 'user_321',
+      status: 'pending',
+      budget: 1500,
+      currency: 'GHS',
+      appliedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      location: 'Airport Residential, Accra',
+    },
+  ];
+
+  return {
+    success: true,
+    data: {
+      jobs: mockJobs.slice(0, parseInt(limit, 10) || 10),
+      total: mockJobs.length,
+      fallback: true,
+      fallbackReason: reason,
+      metadata: {
+        source: 'user-service-fallback',
+        receivedAt,
+      },
+    },
+  };
+};
+
 const toObjectIdOrNull = (value) => {
   if (!value) {
     return null;
@@ -1900,6 +2076,7 @@ class WorkerController {
   static async getRecentJobs(req, res) {
     try {
       const { limit = 10 } = req.query;
+      const normalizedLimit = Math.min(parseInt(limit, 10) || 10, 12);
       const parseGatewayUser = () => {
         if (req.user?.id) {
           return req.user;
@@ -1934,66 +2111,30 @@ class WorkerController {
         return null;
       };
 
-      const buildRecentJobsFallback = (reason = 'RECENT_JOBS_FALLBACK') => {
-        const receivedAt = new Date().toISOString();
-        const mockJobs = [
-          {
-            id: 'job_123',
-            title: 'Kitchen Cabinet Installation',
-            client: 'Sarah Johnson',
-            clientId: 'user_456',
-            status: 'completed',
-            budget: 2500,
-            currency: 'GHS',
-            completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            rating: 5,
-            location: 'East Legon, Accra'
-          },
-          {
-            id: 'job_124',
-            title: 'Plumbing Repair',
-            client: 'Michael Brown',
-            clientId: 'user_789',
-            status: 'in-progress',
-            budget: 800,
-            currency: 'GHS',
-            startedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-            location: 'Tema, Accra'
-          },
-          {
-            id: 'job_125',
-            title: 'Electrical Wiring',
-            client: 'Jennifer Wilson',
-            clientId: 'user_321',
-            status: 'pending',
-            budget: 1500,
-            currency: 'GHS',
-            appliedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-            location: 'Airport Residential, Accra'
-          }
-        ];
-
-        return {
-          success: true,
-          data: {
-            jobs: mockJobs.slice(0, parseInt(limit, 10)),
-            total: mockJobs.length,
-            fallback: true,
-            fallbackReason: reason,
-            metadata: {
-              source: 'user-service-fallback',
-              receivedAt,
-            }
-          }
-        };
-      };
-
       const userContext = parseGatewayUser();
       const userId = userContext?.id;
 
       if (!userId) {
         console.warn('Recent jobs request missing authenticated user context; returning fallback data');
-        return res.status(200).json(buildRecentJobsFallback('MISSING_AUTH_CONTEXT'));
+        const fallback = buildRecentJobsFallback({
+          limit: normalizedLimit,
+          reason: 'MISSING_AUTH_CONTEXT',
+        });
+        fallback.data.metadata = {
+          ...(fallback.data.metadata || {}),
+          circuitBreaker: getCircuitBreakerSnapshot(),
+        };
+        return res.status(200).json(fallback);
+      }
+
+      if (circuitShouldBlockRequest()) {
+        console.warn('Job service circuit open; serving cached job matches');
+        return respondWithCachedJobs(
+          res,
+          'JOB_SERVICE_CIRCUIT_OPEN',
+          'Job service marked unhealthy; serving cached/fallback matches.',
+          { limit: normalizedLimit },
+        );
       }
 
       // Try to get real job data from job service
@@ -2026,7 +2167,7 @@ class WorkerController {
 
         const response = await axios.get(`${jobServiceUrl}/api/jobs/recommendations`, {
           params: {
-            limit: Math.min(parseInt(limit, 10) || 10, 12),
+            limit: normalizedLimit,
             includeInsights: false,
             includeBreakdown: false,
             includeReasons: false,
@@ -2049,21 +2190,54 @@ class WorkerController {
           totalRecommendations: payload?.totalRecommendations,
         };
 
+        const normalizedJobs = jobs.slice(0, normalizedLimit);
+        const metadata = {
+          source: payload?.source || 'job-service',
+          receivedAt: new Date().toISOString(),
+          totalRecommendations: payload?.totalRecommendations,
+        };
+
+        recordCircuitSuccess({
+          jobs: normalizedJobs,
+          total: normalizedJobs.length,
+          metadata,
+        });
+
+        const responseMetadata = {
+          ...metadata,
+          circuitBreaker: getCircuitBreakerSnapshot(),
+        };
+
         return res.json({
           success: true,
           data: {
-            jobs: jobs.slice(0, parseInt(limit, 10)),
-            total: jobs.length,
-            metadata,
+            jobs: normalizedJobs,
+            total: normalizedJobs.length,
+            metadata: responseMetadata,
           }
         });
       } catch (error) {
         console.warn('Could not fetch recent jobs from job service:', error.message);
-        const fallback = buildRecentJobsFallback('JOB_SERVICE_UNAVAILABLE');
+        recordCircuitFailure();
+
+        if (jobServiceCircuitBreaker.state === 'open') {
+          return respondWithCachedJobs(
+            res,
+            'JOB_SERVICE_CIRCUIT_OPEN',
+            'Circuit breaker open after job service failures.',
+            { limit: normalizedLimit },
+          );
+        }
+
+        const fallback = buildRecentJobsFallback({
+          limit: normalizedLimit,
+          reason: 'JOB_SERVICE_UNAVAILABLE',
+        });
         fallback.data.metadata = {
           ...(fallback.data.metadata || {}),
           error: error.message,
           source: 'user-service-fallback',
+          circuitBreaker: getCircuitBreakerSnapshot(),
         };
         return res.status(200).json(fallback);
       }

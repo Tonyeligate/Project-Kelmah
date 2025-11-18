@@ -41,6 +41,26 @@ const loadRuntimeConfig = async () => {
 const HEALTH_CHECK_PATH = '/health/aggregate';
 const HEALTH_CHECK_TIMEOUT_MS = 4000;
 const LAST_HEALTHY_BASE_KEY = 'kelmah:lastHealthyApiBase';
+const BOOTSTRAP_GATEWAY_SESSION_KEY = 'kelmah:bootstrapGateway';
+
+const notifyServiceWorkerOfGateway = (baseUrl) => {
+  if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
+    return;
+  }
+
+  const message = {
+    type: 'CACHE_HEALTHY_GATEWAY',
+    payload: baseUrl,
+  };
+
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage(message);
+  } else {
+    navigator.serviceWorker.ready
+      .then((registration) => registration?.active?.postMessage(message))
+      .catch(() => {});
+  }
+};
 
 const getStoredApiBase = () => {
   if (typeof window === 'undefined') return null;
@@ -59,12 +79,36 @@ const storeApiBase = (baseUrl) => {
   if (typeof window === 'undefined' || !baseUrl) return;
   try {
     window.localStorage?.setItem(LAST_HEALTHY_BASE_KEY, baseUrl);
+    notifyServiceWorkerOfGateway(baseUrl);
   } catch (error) {
     console.warn(
       '⚠️ Unable to persist API base selection:',
       error?.message || error,
     );
   }
+};
+
+const getBootstrapGatewayHint = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage?.getItem(BOOTSTRAP_GATEWAY_SESSION_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (parsed?.origin) {
+      return parsed.origin;
+    }
+    if (typeof parsed === 'string') {
+      return parsed;
+    }
+  } catch (error) {
+    console.warn(
+      '⚠️ Unable to read bootstrap gateway hint:',
+      error?.message || error,
+    );
+  }
+  return null;
 };
 
 const buildHealthCheckUrl = (baseUrl) => {
@@ -127,6 +171,10 @@ const probeApiBase = async (baseUrl) => {
 
 const gatherCandidateBases = (config, envUrl) => {
   const candidates = [];
+  const bootstrappedGateway = getBootstrapGatewayHint();
+  if (bootstrappedGateway) {
+    candidates.push(bootstrappedGateway);
+  }
   const stored = getStoredApiBase();
   if (stored) {
     candidates.push(stored);
@@ -162,15 +210,27 @@ const gatherCandidateBases = (config, envUrl) => {
 };
 
 const selectHealthyBase = async (candidates) => {
-  for (const base of candidates) {
+  // Parallel probing: race all candidates, return first healthy one
+  const probePromises = candidates.map(async (base) => {
     const healthy = await probeApiBase(base);
-    if (healthy) {
-      storeApiBase(base);
+    return { base, healthy };
+  });
+
+  try {
+    // Wait for all probes to complete or first success
+    const results = await Promise.all(probePromises);
+    const firstHealthy = results.find((r) => r.healthy);
+
+    if (firstHealthy) {
+      storeApiBase(firstHealthy.base);
+      notifyServiceWorkerOfGateway(firstHealthy.base);
       if (import.meta.env.DEV) {
-        console.log(`✅ Selected healthy API base: ${base}`);
+        console.log(`✅ Selected healthy API base: ${firstHealthy.base}`);
       }
-      return base;
+      return firstHealthy.base;
     }
+  } catch (error) {
+    console.warn('⚠️ API base probing error:', error?.message || error);
   }
 
   // Nothing was reachable; fall back to the first provided candidate
@@ -521,7 +581,7 @@ export const API_ENDPOINTS = {
 
 export const VALIDATION = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  phone: /^[\+]?[1-9][\d]{0,15}$/,
+  phone: /^\+?[1-9]\d{0,15}$/,
   password: {
     minLength: 8,
     pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,

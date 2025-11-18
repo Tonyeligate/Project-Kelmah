@@ -8,7 +8,10 @@
     "build": "vite build",
     "vercel-build": "npm run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lhci:collect": "lhci collect --config lighthouserc.json",
+    "lhci:assert": "lhci assert --config lighthouserc.json",
+    "lhci": "npm run lhci:collect && npm run lhci:assert"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -48,6 +51,7 @@
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
     "@eslint/js": "^9.13.0",
+    "@lhci/cli": "^0.15.1",
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/jest-dom": "^6.6.3",
@@ -66,6 +70,7 @@
     "globals": "^15.11.0",
     "postcss": "^8.4.49",
     "rollup-plugin-visualizer": "^6.0.3",
+    "serve": "^14.2.5",
     "tailwindcss": "^3.4.15",
     "terser": "^5.43.1",
     "vite": "^5.4.19"

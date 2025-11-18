@@ -5,8 +5,42 @@ const db = require('../models');
 const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
 const mongooseInstance = connectionInstance || require('mongoose');
 const { Types } = mongooseInstance;
-const WorkerProfile = db.WorkerProfile; // Now points to MongoDB model
-const { User } = require('../models'); // Import User model at top level
+
+const ensureModelsLoaded = () => {
+  if (typeof db.loadModels === 'function' && (!db.User || !db.WorkerProfile)) {
+    try {
+      db.loadModels();
+    } catch (error) {
+      console.warn('user.controller: loadModels failed', error.message);
+    }
+  }
+};
+
+const getUserModel = () => {
+  ensureModelsLoaded();
+  return db.User;
+};
+
+const getWorkerProfileModel = () => {
+  ensureModelsLoaded();
+  return db.WorkerProfile;
+};
+
+const requireUserModel = () => {
+  const model = getUserModel();
+  if (!model) {
+    throw new Error('User model not initialized');
+  }
+  return model;
+};
+
+const requireWorkerProfileModel = () => {
+  const model = getWorkerProfileModel();
+  if (!model) {
+    throw new Error('WorkerProfile model not initialized');
+  }
+  return model;
+};
 
 const normalizeDocument = (doc) => {
   if (!doc) {
@@ -128,13 +162,21 @@ const isBsonVersionMismatch = (error) =>
   error.message.toLowerCase().includes('unsupported bson version');
 
 const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) => {
+  ensureModelsLoaded();
+  const resolvedUserModel = UserModel && typeof UserModel.findById === 'function'
+    ? UserModel
+    : getUserModel();
+  const resolvedWorkerModel = WorkerProfileModel && typeof WorkerProfileModel.findOne === 'function'
+    ? WorkerProfileModel
+    : getWorkerProfileModel();
+
   try {
     const [userDoc, workerDoc] = await Promise.all([
-      UserModel.findById(userId)
+      resolvedUserModel?.findById(userId)
         .select(USER_PROFILE_PROJECTION)
         .lean({ getters: true }),
-      WorkerProfileModel && typeof WorkerProfileModel.findOne === 'function'
-        ? WorkerProfileModel.findOne({ userId })
+      resolvedWorkerModel && typeof resolvedWorkerModel.findOne === 'function'
+        ? resolvedWorkerModel.findOne({ userId })
             .select(WORKER_PROFILE_PROJECTION)
             .lean({ getters: true })
         : null,
@@ -156,7 +198,7 @@ const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) 
     }
 
     const nativeObjectId = new Types.ObjectId(userId);
-  const db = getActiveDb();
+    const db = getActiveDb();
 
     if (!db) {
       throw error;
@@ -169,10 +211,10 @@ const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) 
 
     let workerDoc = null;
 
-    if (WorkerProfileModel && WorkerProfileModel.collection) {
+    if (resolvedWorkerModel && resolvedWorkerModel.collection) {
       const workerCollectionName =
-        WorkerProfileModel.collection.collectionName ||
-        WorkerProfileModel.collection.name ||
+        resolvedWorkerModel.collection.collectionName ||
+        resolvedWorkerModel.collection.name ||
         'workerprofiles';
 
       workerDoc = await db.collection(workerCollectionName).findOne(
@@ -282,11 +324,7 @@ exports.getProfileStatistics = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-    const { workerDoc } = await fetchProfileDocuments({
-      UserModel: User,
-      WorkerProfileModel: WorkerProfile,
-      userId,
-    });
+    const { workerDoc } = await fetchProfileDocuments({ userId });
 
     return res.json({
       success: true,
@@ -303,11 +341,7 @@ exports.getProfileActivity = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-    const { workerDoc, userDoc } = await fetchProfileDocuments({
-      UserModel: User,
-      WorkerProfileModel: WorkerProfile,
-      userId,
-    });
+    const { workerDoc, userDoc } = await fetchProfileDocuments({ userId });
 
     return res.json({
       success: true,
@@ -324,11 +358,7 @@ exports.getProfilePreferences = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-    const { userDoc } = await fetchProfileDocuments({
-      UserModel: User,
-      WorkerProfileModel: WorkerProfile,
-      userId,
-    });
+    const { userDoc } = await fetchProfileDocuments({ userId });
 
     return res.json({
       success: true,
@@ -345,9 +375,7 @@ exports.getEarnings = async (req, res) => {
     const userId = req.params.workerId || req.user?.id;
     if (!userId) return res.status(400).json({ success: false, message: 'workerId required' });
 
-    const workerModel = WorkerProfile && typeof WorkerProfile.findOne === 'function'
-      ? WorkerProfile
-      : null;
+    const workerModel = getWorkerProfileModel();
 
     if (!workerModel) {
       console.warn('getEarnings: WorkerProfile model unavailable, returning defaults');
@@ -495,7 +523,8 @@ exports.getEarnings = async (req, res) => {
  */
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find({}).select('-password -refreshToken');
+    const UserModel = requireUserModel();
+    const users = await UserModel.find({}).select('-password -refreshToken');
     res.json(users);
   } catch (err) {
     next(err);
@@ -507,7 +536,8 @@ exports.getAllUsers = async (req, res, next) => {
  */
 exports.createUser = async (req, res, next) => {
   try {
-    const user = await User.create(req.body);
+    const UserModel = requireUserModel();
+    const user = await UserModel.create(req.body);
     // Remove sensitive data before sending response
     const userResponse = user.toObject();
     delete userResponse.password;
@@ -700,15 +730,15 @@ exports.getDashboardAnalytics = async (req, res) => {
       timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
     });
 
-    let MongoUser = User;
-    let MongoWorkerProfile = WorkerProfile;
+    let MongoUser = getUserModel();
+    let MongoWorkerProfile = getWorkerProfileModel();
 
     if (!MongoUser || !MongoWorkerProfile) {
       if (typeof db.loadModels === 'function') {
         db.loadModels();
       }
-      MongoUser = db.User;
-      MongoWorkerProfile = db.WorkerProfile;
+      MongoUser = getUserModel();
+      MongoWorkerProfile = getWorkerProfileModel();
     }
 
     if (!MongoUser || !MongoWorkerProfile) {
@@ -898,7 +928,7 @@ exports.getUserCredentials = async (req, res) => {
       db.loadModels();
     }
 
-  const WorkerProfileModel = db.WorkerProfile;
+  const WorkerProfileModel = getWorkerProfileModel();
     const Certificate = require('../models/Certificate');
 
     if (!WorkerProfileModel) {
@@ -1058,8 +1088,8 @@ exports.getUserProfile = async (req, res) => {
       db.loadModels();
     }
 
-    const UserModel = db.User || User;
-    const WorkerProfileModel = db.WorkerProfile || WorkerProfile;
+    const UserModel = getUserModel();
+    const WorkerProfileModel = getWorkerProfileModel();
 
     if (!UserModel) {
       return res.status(503).json({
@@ -1131,8 +1161,8 @@ exports.updateUserProfile = async (req, res) => {
       db.loadModels();
     }
 
-    const UserModel = db.User || User;
-    const WorkerProfileModel = db.WorkerProfile || WorkerProfile;
+    const UserModel = getUserModel();
+    const WorkerProfileModel = getWorkerProfileModel();
 
     if (!UserModel) {
       return res.status(503).json({
@@ -1352,20 +1382,20 @@ exports.updateUserProfile = async (req, res) => {
  */
 exports.cleanupDatabase = async (req, res) => {
   try {
-    // Use shared models from top import
-    const { WorkerProfile } = require('../models');
+    const UserModel = requireUserModel();
+    const WorkerProfileModel = requireWorkerProfileModel();
 
     console.log('🔧 Starting database cleanup...');
 
     // Get current counts
-    const userCount = await User.countDocuments();
-    const workerProfileCount = await WorkerProfile.countDocuments();
+    const userCount = await UserModel.countDocuments();
+    const workerProfileCount = await WorkerProfileModel.countDocuments();
 
     console.log(`📊 Current state: ${userCount} users, ${workerProfileCount} worker profiles`);
 
     // Find users without matching worker profiles (for workers)
-    const workerUsers = await User.find({ role: 'worker' }).select('_id firstName lastName email');
-    const existingProfiles = await WorkerProfile.find().select('userId');
+    const workerUsers = await UserModel.find({ role: 'worker' }).select('_id firstName lastName email');
+    const existingProfiles = await WorkerProfileModel.find().select('userId');
     const existingUserIds = existingProfiles.map(p => p.userId.toString());
 
     const usersWithoutProfiles = workerUsers.filter(user =>
@@ -1375,7 +1405,7 @@ exports.cleanupDatabase = async (req, res) => {
     console.log(`👤 Found ${workerUsers.length} worker users, ${usersWithoutProfiles.length} need profiles`);
 
     // Remove duplicate or orphaned worker profiles
-    const duplicateProfiles = await WorkerProfile.aggregate([
+    const duplicateProfiles = await WorkerProfileModel.aggregate([
       { $group: { _id: '$userId', count: { $sum: 1 }, profiles: { $push: '$_id' } } },
       { $match: { count: { $gt: 1 } } }
     ]);
@@ -1384,7 +1414,7 @@ exports.cleanupDatabase = async (req, res) => {
     for (const dup of duplicateProfiles) {
       // Keep the first profile, remove others
       const toRemove = dup.profiles.slice(1);
-      await WorkerProfile.deleteMany({ _id: { $in: toRemove } });
+      await WorkerProfileModel.deleteMany({ _id: { $in: toRemove } });
       removedDuplicates += toRemove.length;
       console.log(`🗑️  Removed ${toRemove.length} duplicate profiles for user ${dup._id}`);
     }
@@ -1428,14 +1458,14 @@ exports.cleanupDatabase = async (req, res) => {
         };
       });
 
-      await WorkerProfile.insertMany(newProfiles);
+      await WorkerProfileModel.insertMany(newProfiles);
       console.log(`✅ Created ${newProfiles.length} new worker profiles`);
     }
 
     // Final counts
-    const finalUserCount = await User.countDocuments();
-    const finalWorkerProfileCount = await WorkerProfile.countDocuments();
-    const activeWorkers = await WorkerProfile.countDocuments({ isAvailable: true });
+    const finalUserCount = await UserModel.countDocuments();
+    const finalWorkerProfileCount = await WorkerProfileModel.countDocuments();
+    const activeWorkers = await WorkerProfileModel.countDocuments({ isAvailable: true });
 
     const result = {
       success: true,

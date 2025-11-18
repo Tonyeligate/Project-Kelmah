@@ -3,7 +3,57 @@
  * Handles rating summary and analytics operations
  */
 
+const mongoose = require('mongoose');
 const { Review } = require('../models');
+
+const { Types } = mongoose;
+
+const DEFAULT_RATING_RESPONSE = {
+  ratings: { overall: 0, quality: 0, communication: 0, timeliness: 0, professionalism: 0 },
+  ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+  categoryRatings: [],
+  recommendationRate: 0,
+  verifiedReviewsCount: 0,
+  responseRate: 0,
+};
+
+const buildWorkerFilter = (workerId) => {
+  if (!workerId) {
+    return {};
+  }
+
+  return {
+    reviewee: Types.ObjectId.isValid(workerId)
+      ? new Types.ObjectId(workerId)
+      : workerId,
+  };
+};
+
+const buildRatingDistribution = (reviews) => {
+  return reviews.reduce(
+    (acc, review) => {
+      const rating = Math.min(Math.max(Math.round(review.rating || 0), 1), 5);
+      if (rating >= 1 && rating <= 5) {
+        acc[rating] = acc[rating] + 1;
+      }
+      return acc;
+    },
+    { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+  );
+};
+
+const roundRating = (value) => Number.isFinite(value) ? parseFloat(value.toFixed(1)) : 0;
+
+const buildRatingsBreakdown = (averageRating) => {
+  const rounded = roundRating(averageRating);
+  return {
+    overall: rounded,
+    quality: rounded,
+    communication: rounded,
+    timeliness: rounded,
+    professionalism: rounded,
+  };
+};
 
 /**
  * Get worker rating summary
@@ -15,10 +65,7 @@ exports.getWorkerRating = async (req, res) => {
     // For now, return a basic structure - full implementation would require WorkerRating model
     // This is a simplified version until the WorkerRating model is extracted
 
-    const reviews = await Review.find({
-      workerId,
-      status: 'approved'
-    }).lean();
+    const reviews = await Review.find(buildWorkerFilter(workerId)).lean();
 
     if (!reviews || reviews.length === 0) {
       return res.json({
@@ -27,51 +74,32 @@ exports.getWorkerRating = async (req, res) => {
           workerId,
           totalReviews: 0,
           averageRating: 0,
-          ratings: { overall: 0, quality: 0, communication: 0, timeliness: 0, professionalism: 0 },
-          ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
-          categoryRatings: [],
-          recommendationRate: 0,
-          verifiedReviewsCount: 0,
-          responseRate: 0
+          ...DEFAULT_RATING_RESPONSE,
         }
       });
     }
 
     // Calculate basic stats
     const totalReviews = reviews.length;
-    const averageRating = reviews.reduce((sum, r) => sum + r.ratings.overall, 0) / totalReviews;
-
-    // Rating distribution
-    const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    reviews.forEach(review => {
-      const roundedRating = Math.round(review.ratings.overall);
-      ratingDistribution[roundedRating] = (ratingDistribution[roundedRating] || 0) + 1;
-    });
-
-    // Recommendation rate
-    const recommendationRate = (reviews.filter(r => r.wouldRecommend).length / totalReviews) * 100;
-
-    // Response rate
-    const responseRate = (reviews.filter(r => r.response && r.response.comment).length / totalReviews) * 100;
+    const ratingSum = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+    const averageRating = totalReviews > 0 ? ratingSum / totalReviews : 0;
+    const ratingDistribution = buildRatingDistribution(reviews);
+    const recommendationRate = totalReviews > 0
+      ? Math.round((reviews.filter(r => (Number(r.rating) || 0) >= 4).length / totalReviews) * 100)
+      : 0;
 
     res.json({
       success: true,
       data: {
         workerId,
         totalReviews,
-        averageRating: parseFloat(averageRating.toFixed(1)),
-        ratings: {
-          overall: parseFloat(averageRating.toFixed(1)),
-          quality: parseFloat((reviews.reduce((sum, r) => sum + r.ratings.quality, 0) / totalReviews).toFixed(1)),
-          communication: parseFloat((reviews.reduce((sum, r) => sum + r.ratings.communication, 0) / totalReviews).toFixed(1)),
-          timeliness: parseFloat((reviews.reduce((sum, r) => sum + r.ratings.timeliness, 0) / totalReviews).toFixed(1)),
-          professionalism: parseFloat((reviews.reduce((sum, r) => sum + r.ratings.professionalism, 0) / totalReviews).toFixed(1))
-        },
+        averageRating: roundRating(averageRating),
+        ratings: buildRatingsBreakdown(averageRating),
         ratingDistribution,
-        categoryRatings: [], // Simplified for now
-        recommendationRate: Math.round(recommendationRate),
-        verifiedReviewsCount: reviews.filter(r => r.isVerified).length,
-        responseRate: Math.round(responseRate)
+        categoryRatings: [],
+        recommendationRate,
+        verifiedReviewsCount: 0,
+        responseRate: 0,
       }
     });
 
@@ -90,10 +118,7 @@ exports.getWorkerRankSignals = async (req, res) => {
   try {
     const { workerId } = req.params;
 
-    const reviews = await Review.find({
-      workerId,
-      status: 'approved'
-    }).lean();
+    const reviews = await Review.find(buildWorkerFilter(workerId)).lean();
 
     if (!reviews || reviews.length === 0) {
       return res.json({
@@ -113,23 +138,29 @@ exports.getWorkerRankSignals = async (req, res) => {
     }
 
     const totalReviews = reviews.length;
-    const averageRating = reviews.reduce((sum, r) => sum + r.ratings.overall, 0) / totalReviews;
-    const recommendationRate = (reviews.filter(r => r.wouldRecommend).length / totalReviews) * 100;
-    const verifiedReviewsCount = reviews.filter(r => r.isVerified).length;
-    const responseRate = (reviews.filter(r => r.response && r.response.comment).length / totalReviews) * 100;
+    const ratingValues = reviews.map((r) => Number(r.rating) || 0);
+    const averageRating = totalReviews > 0
+      ? ratingValues.reduce((sum, rating) => sum + rating, 0) / totalReviews
+      : 0;
+    const recommendationRate = totalReviews > 0
+      ? Math.round((ratingValues.filter((rating) => rating >= 4).length / totalReviews) * 100)
+      : 0;
+    const responseRate = 0;
 
-    // Recent rating (last 10 reviews)
-    const recentReviews = reviews.slice(0, 10);
-    const recentRating = recentReviews.length > 0 ?
-      (recentReviews.reduce((sum, r) => sum + r.ratings.overall, 0) / recentReviews.length) : 0;
+    const recentReviews = reviews
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 10);
+    const recentRating = recentReviews.length > 0
+      ? recentReviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0) / recentReviews.length
+      : 0;
 
     const signals = {
       totalReviews,
-      averageRating: parseFloat(averageRating.toFixed(1)),
-      recommendationRate: Math.round(recommendationRate),
-      verifiedReviewsCount,
-      responseRate: Math.round(responseRate),
-      recentRating: parseFloat(recentRating.toFixed(1))
+      averageRating: roundRating(averageRating),
+      recommendationRate,
+      verifiedReviewsCount: 0,
+      responseRate,
+      recentRating: roundRating(recentRating)
     };
 
     return res.json({

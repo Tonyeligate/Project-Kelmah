@@ -1,0 +1,43 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: kelmah-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: kelmah-frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: kelmah-frontend
+        run: npm run build
+
+      - name: Run Lighthouse CI collect
+        working-directory: kelmah-frontend
+        run: npm run lhci:collect
+
+      - name: Run Lighthouse CI assert
+        working-directory: kelmah-frontend
+        run: npm run lhci:assert
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lhci-reports
+          path: kelmah-frontend/lhci-reports

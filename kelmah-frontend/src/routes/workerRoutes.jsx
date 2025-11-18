@@ -1,8 +1,11 @@
-import React, { useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
+import RouteSkeleton from './RouteSkeleton';
+import { workerRoutesConfig } from './workerRoutesConfig';
 
 // Error fallback component for route-level errors
 const RouteErrorFallback = ({ error, resetErrorBoundary }) => (
@@ -37,26 +40,17 @@ const RouteErrorFallback = ({ error, resetErrorBoundary }) => (
     </button>
   </div>
 );
-import WorkerDashboardPage from '../modules/worker/pages/WorkerDashboardPage';
-import PortfolioPage from '../modules/worker/pages/PortfolioPage';
-import PortfolioManager from '../modules/worker/components/PortfolioManager';
-import CertificateUploader from '../modules/worker/components/CertificateUploader';
-import EarningsAnalytics from '../modules/worker/components/EarningsAnalytics';
-import AvailabilityCalendar from '../modules/worker/components/AvailabilityCalendar';
-import SkillsAssessmentPage from '../modules/worker/pages/SkillsAssessmentPage';
-import MyApplicationsPage from '../modules/worker/pages/MyApplicationsPage';
-import SchedulingPage from '../modules/scheduling/pages/SchedulingPage';
-import WorkerReviewsPage from '../modules/reviews/pages/WorkerReviewsPage';
-import WorkerProfileEditPage from '../modules/worker/pages/WorkerProfileEditPage';
-import WorkerProfile from '../modules/worker/components/WorkerProfile';
-import JobSearchPage from '../modules/worker/pages/JobSearchPage';
-import ContractManagementPage from '../modules/contracts/pages/ContractManagementPage';
-import PaymentCenterPage from '../modules/payment/pages/PaymentCenterPage';
-import WalletPage from '../modules/payment/pages/WalletPage';
-import EscrowManager from '../modules/payment/components/EscrowManager';
-import SavedJobs from '../modules/jobs/components/common/SavedJobs';
-import JobAlertsPage from '../modules/jobs/pages/JobAlertsPage';
 
+RouteErrorFallback.propTypes = {
+  error: PropTypes.shape({
+    message: PropTypes.string,
+  }),
+  resetErrorBoundary: PropTypes.func.isRequired,
+};
+
+RouteErrorFallback.defaultProps = {
+  error: { message: 'Something went wrong' },
+};
 const WorkerRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
   const hasRole = (user, role) =>
@@ -95,254 +89,45 @@ const WorkerRoutes = () => {
     return false;
   }, [isAuthenticated, user, loading]);
 
+  const renderRouteElement = (Component, requiresAuth, withBoundary) => {
+    const protectedContent = requiresAuth ? (
+      <ProtectedRoute
+        isAllowed={isWorkerAllowed}
+        redirectPath="/login"
+        loading={loading}
+      >
+        <Component />
+      </ProtectedRoute>
+    ) : (
+      <Component />
+    );
+
+    const suspenseWrapped = (
+      <Suspense fallback={<RouteSkeleton />}>{protectedContent}</Suspense>
+    );
+
+    if (withBoundary) {
+      return (
+        <ErrorBoundary FallbackComponent={RouteErrorFallback}>
+          {suspenseWrapped}
+        </ErrorBoundary>
+      );
+    }
+
+    return suspenseWrapped;
+  };
+
   return (
     <>
-      <Route
-        path="/worker/dashboard"
-        element={
-          <ErrorBoundary FallbackComponent={RouteErrorFallback}>
-            <ProtectedRoute
-              isAllowed={isWorkerAllowed}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <WorkerDashboardPage />
-            </ProtectedRoute>
-          </ErrorBoundary>
-        }
-      />
-      <Route
-        path="/worker/skills"
-        element={
-          <ErrorBoundary FallbackComponent={RouteErrorFallback}>
-            <ProtectedRoute
-              isAllowed={isWorkerAllowed}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <SkillsAssessmentPage />
-            </ProtectedRoute>
-          </ErrorBoundary>
-        }
-      />
-      <Route
-        path="/worker/skills/test/:testId"
-        element={
-          <ErrorBoundary FallbackComponent={RouteErrorFallback}>
-            <ProtectedRoute
-              isAllowed={isWorkerAllowed}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <SkillsAssessmentPage />
-            </ProtectedRoute>
-          </ErrorBoundary>
-        }
-      />
-      <Route
-        path="/worker/applications"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <MyApplicationsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/schedule"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <SchedulingPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/reviews"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <WorkerReviewsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/profile/edit"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <WorkerProfileEditPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/profile"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <WorkerProfile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/portfolio"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <PortfolioPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/portfolio/manage"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <PortfolioManager />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/certificates"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <CertificateUploader />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/earnings"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <EarningsAnalytics />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/availability"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <AvailabilityCalendar />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/find-work"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <JobSearchPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/contracts"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <ContractManagementPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/payment"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <PaymentCenterPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/payment/escrows"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <EscrowManager />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/wallet"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <WalletPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/saved-jobs"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <SavedJobs />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/worker/job-alerts"
-        element={
-          <ProtectedRoute
-            isAllowed={isWorkerAllowed}
-            redirectPath="/login"
-            loading={loading}
-          >
-            <JobAlertsPage />
-          </ProtectedRoute>
-        }
-      />
+      {workerRoutesConfig.map(
+        ({ path, component: Component, requiresAuth = true, withBoundary }) => (
+          <Route
+            key={path}
+            path={path}
+            element={renderRouteElement(Component, requiresAuth, withBoundary)}
+          />
+        ),
+      )}
     </>
   );
 };

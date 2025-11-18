@@ -206,6 +206,7 @@ const corsOriginHandler = (origin, callback) => {
     return callback(null, true);
   }
 
+  logger.info('Allowed origins:', allowedOrigins);
   logger.warn(`🚨 API Gateway CORS blocked origin: ${origin}`);
   callback(new Error('Not allowed by CORS'));
 };

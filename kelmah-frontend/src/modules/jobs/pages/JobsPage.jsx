@@ -63,7 +63,10 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import prefetchLazyIcons from '@/utils/prefetchLazyIcons';
 import jobsService from '../services/jobsService';
+import HeroFiltersSection from '../components/HeroFiltersSection';
+import JobResultsSection from '../components/JobResultsSection';
 import {
   Container,
   Grid,
@@ -128,84 +131,36 @@ import {
   Breadcrumbs,
   Link,
 } from '@mui/material';
+// Core icons loaded immediately for first paint
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
+  Work as WorkIcon,
   CheckCircle,
   Group,
-  WorkspacePremium,
-  LocationOn,
-  Schedule,
-  MonetizationOn,
-  Business,
   Star,
+  LocationOn,
+  MonetizationOn,
   Verified,
-  AccessTime,
-  ExpandMore,
-  ExpandLess,
-  Tune,
-  Clear,
-  BookmarkBorder,
-  Bookmark,
-  Share,
-  Visibility,
-  Work as WorkIcon,
-  Apartment as ApartmentIcon,
-  FlashOn as FlashOnIcon,
-  TrendingUp as TrendingIcon,
-  LocalOffer as LocalOfferIcon,
-  FilterAlt as FilterAltIcon,
-  Sort as SortIcon,
-  ViewModule as ViewModuleIcon,
-  ViewList as ViewListIcon,
-  ViewQuilt as ViewQuiltIcon,
-  Map as MapIcon,
-  MyLocation as MyLocationIcon,
-  Refresh as RefreshIcon,
-  SaveAlt as SaveAltIcon,
-  NotificationsActive as NotificationsActiveIcon,
-  TrendingDown as TrendingDownIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  Whatshot as WhatshotIcon,
-  Speed as SpeedIcon,
-  Security as SecurityIcon,
-  Handshake as HandshakeIcon,
-  EmojiEvents as EmojiEventsIcon,
-  ShowChart as TimelineIcon,
-  Analytics as AnalyticsIcon,
-  Dashboard as DashboardIcon,
-  Close as CloseIcon,
-  Add as AddIcon,
-  Remove as RemoveIcon,
-  CenterFocusStrong as CenterFocusStrongIcon,
-  Layers as LayersIcon,
-  Psychology as PsychologyIcon,
-  Engineering as EngineeringIcon,
-  Construction as ConstructionIcon,
-  ElectricalServices as ElectricalIcon,
-  Plumbing as PlumbingIcon,
-  Build as BuildIcon,
-  Home as HomeIcon,
-  Handyman as CarpenterIcon,
-  Thermostat as HvacIcon,
-  RoofingSharp as RoofingIcon,
-  FormatPaint as PaintIcon,
-  AttachMoney as AttachMoneyIcon,
-  TrendingUp as TrendingUpIcon,
-  StarBorder as StarBorderIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
-  Language as LanguageIcon,
-  Public as PublicIcon,
-  Explore as ExploreIcon,
-  Rocket as RocketIcon,
-  Diamond as DiamondIcon,
-  LocalFireDepartment as FireIcon,
-  Bolt as BoltIcon,
-  AutoGraph as GraphIcon,
-  Psychology as BrainIcon,
-  Architecture as ArchitectureIcon,
 } from '@mui/icons-material';
+
+// Lazy-load non-critical icons to reduce initial bundle
+const LazyIcons = {
+  ElectricalServices: React.lazy(() => import('@mui/icons-material/ElectricalServices')),
+  Plumbing: React.lazy(() => import('@mui/icons-material/Plumbing')),
+  Handyman: React.lazy(() => import('@mui/icons-material/Handyman')),
+  Construction: React.lazy(() => import('@mui/icons-material/Construction')),
+  Thermostat: React.lazy(() => import('@mui/icons-material/Thermostat')),
+  RoofingSharp: React.lazy(() => import('@mui/icons-material/RoofingSharp')),
+  FormatPaint: React.lazy(() => import('@mui/icons-material/FormatPaint')),
+  Build: React.lazy(() => import('@mui/icons-material/Build')),
+  Refresh: React.lazy(() => import('@mui/icons-material/Refresh')),
+  FlashOn: React.lazy(() => import('@mui/icons-material/FlashOn')),
+  LocalFireDepartment: React.lazy(() => import('@mui/icons-material/LocalFireDepartment')),
+  Visibility: React.lazy(() => import('@mui/icons-material/Visibility')),
+  BookmarkBorder: React.lazy(() => import('@mui/icons-material/BookmarkBorder')),
+  Share: React.lazy(() => import('@mui/icons-material/Share')),
+};
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -614,6 +569,7 @@ const JobsPage = () => {
     successRate: 0,
     loading: true,
   });
+  const hasPrefetchedLazyIcons = useRef(false);
   // Ghana-aware helpers for better UX and ranking
   const GHANA_REGIONS = [
     'Greater Accra',
@@ -646,18 +602,11 @@ const JobsPage = () => {
     location: 30,
   };
 
-  // Helper function to get category icon
+  // Helper function to get category icon (using WorkIcon as universal fallback for now)
+  // Lazy-loaded icons are handled by JobResultsSection component
   const getCategoryIcon = (category) => {
-    const iconMap = {
-      Electrical: ElectricalIcon,
-      Plumbing: PlumbingIcon,
-      Carpentry: CarpenterIcon,
-      HVAC: HvacIcon,
-      Construction: ConstructionIcon,
-      Painting: PaintIcon,
-      General: WorkIcon,
-    };
-    return iconMap[category] || WorkIcon;
+    // Use WorkIcon as default to ensure fast first paint
+    return WorkIcon;
   };
 
   // Fetch jobs from API (real backend)
@@ -707,6 +656,17 @@ const JobsPage = () => {
 
     fetchFn();
   }, [searchQuery, selectedCategory, selectedLocation, budgetRange]);
+
+  // Warm non-critical icon bundles once hero content settles to avoid accordion flashes later
+  useEffect(() => {
+    if (hasPrefetchedLazyIcons.current || loading) {
+      return undefined;
+    }
+
+    const cancelPrefetch = prefetchLazyIcons(LazyIcons);
+    hasPrefetchedLazyIcons.current = true;
+    return () => cancelPrefetch?.();
+  }, [loading]);
 
   // Fetch platform statistics
   useEffect(() => {
@@ -787,33 +747,7 @@ const JobsPage = () => {
     return children;
   };
 
-  const tradeCategories = [
-    { value: '', label: 'All Trades', icon: WorkIcon },
-    { value: 'Electrical', label: 'Electrical Work', icon: ElectricalIcon },
-    { value: 'Plumbing', label: 'Plumbing Services', icon: PlumbingIcon },
-    { value: 'Carpentry', label: 'Carpentry & Woodwork', icon: CarpenterIcon },
-    { value: 'HVAC', label: 'HVAC & Climate Control', icon: HvacIcon },
-    {
-      value: 'Construction',
-      label: 'Construction & Building',
-      icon: ConstructionIcon,
-    },
-    { value: 'Painting', label: 'Painting & Decoration', icon: PaintIcon },
-    { value: 'Roofing', label: 'Roofing Services', icon: RoofingIcon },
-    { value: 'Masonry', label: 'Masonry & Stonework', icon: BuildIcon },
-  ];
 
-  const ghanaLocations = [
-    { value: '', label: 'All Locations' },
-    { value: 'Accra', label: 'Accra, Greater Accra' },
-    { value: 'Kumasi', label: 'Kumasi, Ashanti Region' },
-    { value: 'Tema', label: 'Tema, Greater Accra' },
-    { value: 'Takoradi', label: 'Takoradi, Western Region' },
-    { value: 'Cape Coast', label: 'Cape Coast, Central Region' },
-    { value: 'Tamale', label: 'Tamale, Northern Region' },
-    { value: 'Ho', label: 'Ho, Volta Region' },
-    { value: 'Koforidua', label: 'Koforidua, Eastern Region' },
-  ];
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =

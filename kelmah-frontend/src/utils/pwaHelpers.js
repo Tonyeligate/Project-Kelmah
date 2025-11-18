@@ -3,6 +3,88 @@
  * Optimized for Ghana's mobile market and network conditions
  */
 
+const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
+const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
+const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
+
+const openGatewayDb = () => {
+  if (typeof indexedDB === 'undefined') {
+    return Promise.reject(new Error('IndexedDB unavailable in this context'));
+  }
+
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(HEALTHY_GATEWAY_DB, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(HEALTHY_GATEWAY_STORE)) {
+        db.createObjectStore(HEALTHY_GATEWAY_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const saveHealthyGateway = async (origin) => {
+  if (!origin) return;
+  try {
+    const db = await openGatewayDb();
+    const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readwrite');
+    tx.objectStore(HEALTHY_GATEWAY_STORE).put(
+      {
+        origin,
+        updatedAt: Date.now(),
+      },
+      HEALTHY_GATEWAY_KEY,
+    );
+  } catch (error) {
+    console.warn('[PWA] Failed to persist healthy gateway:', error);
+  }
+};
+
+const readHealthyGateway = async () => {
+  try {
+    const db = await openGatewayDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readonly');
+      const store = tx.objectStore(HEALTHY_GATEWAY_STORE);
+      const request = store.get(HEALTHY_GATEWAY_KEY);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('[PWA] Failed to read healthy gateway cache:', error);
+    return null;
+  }
+};
+
+const requestCachedGatewayFromSW = () => {
+  if (
+    typeof navigator === 'undefined' ||
+    !navigator.serviceWorker?.controller
+  ) {
+    return null;
+  }
+  return new Promise((resolve) => {
+    const listener = (event) => {
+      if (event.data?.type === 'CACHED_GATEWAY_RESULT') {
+        navigator.serviceWorker.removeEventListener('message', listener);
+        resolve(event.data.payload || null);
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', listener);
+    navigator.serviceWorker.controller.postMessage({
+      type: 'GET_CACHED_GATEWAY',
+    });
+
+    // Timeout fallback after 1.5s
+    setTimeout(() => {
+      navigator.serviceWorker.removeEventListener('message', listener);
+      resolve(null);
+    }, 1500);
+  });
+};
+
 // Service Worker Registration with Ghana-specific optimizations
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
@@ -57,6 +139,29 @@ export const registerServiceWorker = async () => {
       console.error('ServiceWorker registration failed:', error);
       return null;
     }
+  }
+  return null;
+};
+
+const fetchRuntimeHints = async () => {
+  try {
+    const response = await fetch('/runtime-config.json', {
+      method: 'GET',
+      credentials: 'omit',
+    });
+    if (response.ok) {
+      const config = await response.json();
+      if (config?.apiGatewayUrl) {
+        await saveHealthyGateway(config.apiGatewayUrl);
+        navigator.serviceWorker?.controller?.postMessage({
+          type: 'CACHE_HEALTHY_GATEWAY',
+          payload: config.apiGatewayUrl,
+        });
+      }
+      return config;
+    }
+  } catch (error) {
+    console.warn('[PWA] Runtime config fetch failed:', error);
   }
   return null;
 };
@@ -530,6 +635,19 @@ const checkForUpdates = async () => {
 // Initialize PWA features
 export const initializePWA = async () => {
   console.log('Initializing PWA features for Ghana 🇬🇭');
+
+  // Prime runtime config + cached gateway before app boot
+  const cachedGateway = await Promise.race([
+    requestCachedGatewayFromSW(),
+    readHealthyGateway(),
+  ]).catch(() => null);
+  if (cachedGateway?.origin) {
+    sessionStorage.setItem(
+      'kelmah:bootstrapGateway',
+      JSON.stringify(cachedGateway),
+    );
+  }
+  fetchRuntimeHints();
 
   // Register service worker
   await registerServiceWorker();
