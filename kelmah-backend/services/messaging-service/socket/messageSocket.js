@@ -253,9 +253,6 @@ class MessageSocketHandler {
       const attachmentsArray = Array.isArray(attachments)
         ? attachments
         : [];
-      const attachmentsArray = Array.isArray(attachments)
-        ? attachments
-        : [];
       const message = new Message({
         sender: userId,
         recipient: conversation.participants.find(
@@ -366,6 +363,9 @@ class MessageSocketHandler {
         attachments = [],
         clientId,
       } = data || {};
+      const attachmentsArray = Array.isArray(attachments)
+        ? attachments
+        : [];
       const userId = socket.userId;
       if (!conversationId || !encryptedBody || !encryption) {
         if (typeof ack === "function")

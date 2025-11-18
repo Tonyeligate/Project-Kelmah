@@ -190,6 +190,7 @@ const corsOriginHandler = (origin, callback) => {
   if (!origin) return callback(null, true); // Allow no origin (mobile apps, etc.)
 
   if (allowedOrigins.includes(origin)) {
+    logger.info(`✅ API Gateway CORS allowed exact match: ${origin}`);
     return callback(null, true);
   }
 
@@ -343,6 +344,7 @@ app.get('/api/health', healthResponse);
 // Aggregated health (services + providers) - Both /health/aggregate and /api/health/aggregate
 const aggregatedHealthHandler = async (req, res) => {
   try {
+    logger.info('Starting aggregated health check for /api/health/aggregate');
     const axios = require('axios');
     const token = req.headers.authorization;
     const headers = {
@@ -396,8 +398,10 @@ const aggregatedHealthHandler = async (req, res) => {
     } catch (e) {
       providers = { success: false, error: e?.message };
     }
+    logger.info('Aggregated health check completed successfully');
     res.json({ success: true, services: servicesObj, providers });
   } catch (e) {
+    logger.error('Aggregated health check failed', { error: e.message });
     res.status(500).json({ success: false, error: e?.message });
   }
 };
