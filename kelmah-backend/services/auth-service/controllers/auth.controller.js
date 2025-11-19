@@ -33,26 +33,26 @@ exports.register = async (req, res, next) => {
   logger.info('Register attempt', { email: req.body?.email });
   try {
     const { firstName, lastName, email, phone, password, role } = req.body;
-    
+
     // Validate required fields
     const missing = [];
     if (!firstName) missing.push('firstName');
     if (!lastName) missing.push('lastName');
     if (!email) missing.push('email');
     if (!password) missing.push('password');
-    
+
     if (missing.length > 0) {
       return next(new AppError(`Missing required fields: ${missing.join(', ')}`, 400));
     }
-    
+
     const userRole = ["worker", "hirer"].includes(role) ? role : "worker";
-    
+
     // Check if user exists
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return next(new AppError("Email already in use", 400));
     }
-    
+
     // Create user with improved error handling
     const newUser = await User.create({
       firstName,
@@ -62,21 +62,21 @@ exports.register = async (req, res, next) => {
       password,
       role: userRole,
     });
-    
+
     // Generate a verification token (raw) and store hashed version on user
     const rawToken = newUser.generateVerificationToken();
     await newUser.save();
-    
+
     // Use the raw token in the URL so it can be properly verified
-    const frontendUrl = config.frontendUrl || 
-                       config.FRONTEND_URL || 
-                       process.env.FRONTEND_URL || 
-                       'https://kelmah-frontend-cyan.vercel.app';
-    
+    const frontendUrl = config.frontendUrl ||
+      config.FRONTEND_URL ||
+      process.env.FRONTEND_URL ||
+      'https://kelmah-frontend-cyan.vercel.app';
+
     const verificationUrl = `${frontendUrl}/verify-email/${rawToken}`;
-    
+
     logger.info('Email verification link generated', { frontendUrl });
-    
+
     // Send verification email (don't fail registration if email fails)
     try {
       await emailService.sendVerificationEmail({
@@ -88,26 +88,26 @@ exports.register = async (req, res, next) => {
       logger.warn('Verification email failed', { error: mailErr.message });
       // Continue with registration even if email fails
     }
-    
+
     return res.status(201).json({
       success: true,
       message: "Registration successful, please check your email to verify your account.",
     });
   } catch (error) {
     logger.error('Registration failed', { error: error.message, stack: error.stack });
-    
+
     // Handle specific Mongoose validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.values(error.errors).map(err => err.message);
       return next(new AppError(`Validation failed: ${validationErrors.join(', ')}`, 400));
     }
-    
+
     // Handle unique constraint errors (MongoDB duplicate key)
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       return next(new AppError(`${field} already exists`, 400));
     }
-    
+
     return next(new AppError(`Registration failed: ${error.message}`, 500));
   }
 };
@@ -124,27 +124,27 @@ exports.login = async (req, res, next) => {
     }
 
     const { email, password, rememberMe = false } = req.body;
-    
+
     // Input validation
     if (!email || !password) {
       return next(new AppError("Email and password are required", 400));
     }
 
     const sanitizedEmail = email.trim().toLowerCase();
-    
+
     // Simple rate limiting check using in-memory store (for now)
     const rateLimitKey = `login:${req.ip}:${sanitizedEmail}`;
     // TODO: Implement proper rate limiting with Redis
-    
+
     // Find user using direct MongoDB driver (bypass disconnected Mongoose model)
     const client = mongoose.connection.getClient();
     const db = client.db();
     const usersCollection = db.collection('users');
-    
-    let user = await usersCollection.findOne({ 
-      email: sanitizedEmail 
+
+    let user = await usersCollection.findOne({
+      email: sanitizedEmail
     });
-    
+
     // Generic error message to prevent user enumeration
     if (!user) {
       // Simulate password verification time to prevent timing attacks
@@ -164,27 +164,27 @@ exports.login = async (req, res, next) => {
     // Verify password using bcrypt directly
     const bcrypt = require('bcryptjs');
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       // Increment failed login attempts
       const failedAttempts = (user.failedLoginAttempts || 0) + 1;
-      
+
       // Lock account after 5 failed attempts
       if (failedAttempts >= 5) {
         const accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
         await usersCollection.updateOne(
           { _id: user._id },
-          { 
-            $set: { 
+          {
+            $set: {
               failedLoginAttempts: failedAttempts,
               accountLockedUntil: accountLockedUntil
-            } 
+            }
           }
         );
-        
+
         return next(new AppError("Account locked due to too many failed login attempts. Try again in 30 minutes.", 423));
       }
-      
+
       await usersCollection.updateOne(
         { _id: user._id },
         { $set: { failedLoginAttempts: failedAttempts } }
@@ -201,13 +201,13 @@ exports.login = async (req, res, next) => {
     // Reset failed login attempts and unlock account (direct update)
     await usersCollection.updateOne(
       { _id: user._id },
-      { 
-        $set: { 
+      {
+        $set: {
           failedLoginAttempts: 0,
           accountLockedUntil: null,
           lastLogin: new Date(),
           lastLoginIp: req.ip
-        } 
+        }
       }
     );
 
@@ -250,9 +250,9 @@ exports.login = async (req, res, next) => {
     } catch (dbError) {
       // Handle duplicate key errors gracefully
       if (dbError.code === 11000) {
-        logger.warn('Duplicate refresh token detected, continuing with login', { 
-          userId: user._id.toString(), 
-          tokenId: refreshData.tokenId 
+        logger.warn('Duplicate refresh token detected, continuing with login', {
+          userId: user._id.toString(),
+          tokenId: refreshData.tokenId
         });
         // Continue with login even if refresh token creation fails
       } else {
@@ -372,13 +372,13 @@ exports.resendVerificationEmail = async (req, res, next) => {
     await user.save();
 
     // Send verification email - use same URL logic as registration
-    const frontendUrl = config.frontendUrl || 
-                       config.FRONTEND_URL || 
-                       process.env.FRONTEND_URL || 
-                       'https://kelmah-frontend-cyan.vercel.app';
-    
+    const frontendUrl = config.frontendUrl ||
+      config.FRONTEND_URL ||
+      process.env.FRONTEND_URL ||
+      'https://kelmah-frontend-cyan.vercel.app';
+
     const verificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
-    
+
     logger.info('Resent verification email', { frontendUrl });
 
     await emailService.sendVerificationEmail({
@@ -577,7 +577,7 @@ exports.refreshToken = async (req, res, next) => {
     const tokenStr = refreshToken;
     const parts = tokenStr.split('.');
     if (parts.length !== 4) return next(new AppError('Invalid refresh token format', 400));
-    const signedPart = parts.slice(0,3).join('.');
+    const signedPart = parts.slice(0, 3).join('.');
     let parsed;
     try {
       parsed = jwtUtils.verifyRefreshToken(signedPart);
@@ -635,13 +635,13 @@ exports.refreshToken = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Token refresh error', { error: error.message, stack: error.stack });
-    
+
     // Clean up invalid refresh token if it exists
     if (req.body.refreshToken) {
       await RefreshToken.deleteMany({ token: req.body.refreshToken })
         .catch(err => logger.warn('Error cleaning up refresh token', { error: err?.message }));
     }
-    
+
     return next(new AppError(`Token refresh failed: ${error.message}`, 500));
   }
 };
@@ -665,7 +665,7 @@ exports.logout = async (req, res, next) => {
       // Revoke specific refresh token by tokenId (from composite)
       try {
         const parts = refreshToken.split('.');
-        const signed = parts.slice(0,3).join('.');
+        const signed = parts.slice(0, 3).join('.');
         const parsed = jwtUtils.verifyRefreshToken(signed);
         const result = await RefreshToken.deleteMany({ tokenId: parsed.jti });
         revokedCount = result?.deletedCount || 0;
@@ -1178,6 +1178,10 @@ exports.reactivateAccount = async (req, res, next) => {
  */
 exports.verifyAuth = async (req, res, next) => {
   try {
+    if (!req.user || !req.user.id) {
+      return next(new AppError("Authenticated user context required", 401));
+    }
+
     const userId = req.user.id;
 
     // Find user in database with fresh data
@@ -1232,7 +1236,7 @@ exports.cleanupExpiredTokens = async () => {
     const result = await RefreshToken.deleteMany({
       expiresAt: { $lt: new Date() }
     });
-    
+
     logger.info('Cleaned up expired refresh tokens', { result });
     return { success: true, cleaned: result };
   } catch (error) {

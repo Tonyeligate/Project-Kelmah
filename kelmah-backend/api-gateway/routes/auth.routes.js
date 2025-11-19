@@ -44,13 +44,13 @@ router.post('/login', async (req, res) => {
     // Use resolved service URL from service discovery (supports cloud + local)
     const upstream = getServiceUrl(req);
     const url = `${upstream}/api/auth/login`;
-    
+
     console.log(`[LOGIN] Attempting login to: ${url}`);
     console.log(`[LOGIN] Body:`, JSON.stringify(req.body));
-    
+
     const r = await axios.post(url, req.body, {
-      headers: { 
-        'Content-Type': 'application/json', 
+      headers: {
+        'Content-Type': 'application/json',
         'X-Request-ID': req.id || '',
         'User-Agent': 'kelmah-api-gateway',
         'ngrok-skip-browser-warning': 'true'
@@ -58,16 +58,16 @@ router.post('/login', async (req, res) => {
       timeout: 30000,
       validateStatus: () => true,
     });
-    
+
     console.log(`[LOGIN] Response status: ${r.status}`);
     res.status(r.status).json(r.data);
   } catch (e) {
     console.error(`[LOGIN] Error:`, e.message);
     console.error(`[LOGIN] Stack:`, e.stack);
-    res.status(504).json({ 
-      success: false, 
-      message: 'Authentication service temporarily unavailable', 
-      debug: e.message 
+    res.status(504).json({
+      success: false,
+      message: 'Authentication service temporarily unavailable',
+      debug: e.message
     });
   }
 });
@@ -94,7 +94,7 @@ router.get('/verify-email/:token', publicAuthProxy);
 router.post('/refresh', publicAuthProxy);
 router.post('/refresh-token', publicAuthProxy);
 // Verify auth (returns current user)
-router.get('/verify', publicAuthProxy);
+router.get('/verify', authenticate, protectedAuthProxy);
 // Resend verification email
 router.post('/resend-verification-email', publicAuthProxy);
 
