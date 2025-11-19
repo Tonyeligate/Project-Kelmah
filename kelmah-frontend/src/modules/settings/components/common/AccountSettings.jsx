@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   TextField,
@@ -8,8 +8,10 @@ import {
   Alert,
   Typography,
   Skeleton,
+  Stack,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../../../profile/hooks/useProfile';
 import {
   selectProfile,
@@ -17,6 +19,8 @@ import {
   selectProfileError,
 } from '../../../../store/slices/profileSlice';
 import { VALIDATION } from '../../../../config/environment';
+import { logoutUser } from '../../../auth/services/authSlice';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const AccountSettings = () => {
   const dispatch = useDispatch();
@@ -25,6 +29,7 @@ const AccountSettings = () => {
   const error = useSelector(selectProfileError);
   const { user } = useSelector((state) => state.auth);
   const { updateProfile, loadProfile } = useProfile();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -39,6 +44,7 @@ const AccountSettings = () => {
     severity: 'success',
   });
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const showSkeleton = useMemo(
     () => !isHydrated && loading,
@@ -159,6 +165,25 @@ const AccountSettings = () => {
 
   const isSaving = loading && isHydrated;
 
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/login');
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message:
+          err?.message ||
+          'We could not sign you out. Please try again shortly.',
+        severity: 'error',
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <Box component="section" sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
@@ -229,11 +254,32 @@ const AccountSettings = () => {
             fullWidth
             disabled={isSaving}
           />
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button type="submit" variant="contained" disabled={isSaving}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            sx={{ pt: 1 }}
+          >
+            <Button
+              type="button"
+              variant="outlined"
+              color="error"
+              onClick={handleLogout}
+              startIcon={<LogoutIcon />}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? 'Signing out…' : 'Logout of Kelmah'}
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isSaving}
+              sx={{ minWidth: 180 }}
+            >
               {isSaving ? <CircularProgress size={24} /> : 'Save Changes'}
             </Button>
-          </Box>
+          </Stack>
         </Box>
       )}
       <Snackbar

@@ -238,11 +238,12 @@ class SecureStorage {
   /**
    * Set a specific key in secure storage
    */
-  setItem(key, value) {
+  setItem(key, value, ttl = this.maxAge) {
     const currentData = this.getSecureData();
     currentData[key] = {
       value,
       timestamp: Date.now(),
+      ttl,
     };
     return this.setSecureData(currentData);
   }
@@ -250,16 +251,25 @@ class SecureStorage {
   /**
    * Get a specific key from secure storage
    */
-  getItem(key, maxAge = this.maxAge) {
+  getItem(key, maxAge) {
     const data = this.getSecureData();
     const item = data[key];
 
     if (!item) {
       return null;
     }
+    const storedTtl =
+      typeof item.ttl === 'number' ? item.ttl : this.maxAge;
+    const effectiveTtl =
+      maxAge === undefined
+        ? storedTtl
+        : Math.min(storedTtl, maxAge ?? storedTtl);
 
     // Check if item has expired
-    if (Date.now() - item.timestamp > maxAge) {
+    if (
+      effectiveTtl !== Infinity &&
+      Date.now() - item.timestamp > effectiveTtl
+    ) {
       this.removeItem(key);
       return null;
     }
@@ -302,10 +312,13 @@ class SecureStorage {
         if (key.startsWith('_')) return; // Skip metadata
 
         const item = data[key];
+        const storedTtl =
+          item && typeof item.ttl === 'number' ? item.ttl : this.maxAge;
         if (
           item &&
           item.timestamp &&
-          Date.now() - item.timestamp > this.maxAge
+          storedTtl !== Infinity &&
+          Date.now() - item.timestamp > storedTtl
         ) {
           delete data[key];
           hasChanges = true;

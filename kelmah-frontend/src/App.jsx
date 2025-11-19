@@ -3,7 +3,7 @@
  * Unified theme system with consistent branding
  * Last updated: January 2025
  */
-import { useEffect, Suspense, useRef } from 'react';
+import { useEffect, Suspense, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -168,12 +168,24 @@ const SuspenseFallback = () => (
   </Box>
 );
 
+const VERIFY_COOLDOWN_MS = 60 * 1000; // Prevent hammering auth service
+
 const AppShell = () => {
   const authBootstrapRef = useRef(false);
+  const lastVerifyRef = useRef(0);
   const { mode, toggleTheme, setThemeMode } = useThemeMode();
   const dispatch = useDispatch();
   const location = useLocation();
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
+  const [verifyTick, setVerifyTick] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setVerifyTick(Date.now());
+    }, VERIFY_COOLDOWN_MS);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     initializePWA().catch((error) => {
@@ -247,14 +259,22 @@ const AppShell = () => {
         return;
       }
 
-      if (!authBootstrapRef.current || !isAuthenticated) {
+      const now = Date.now();
+      const isCoolingDown = now - lastVerifyRef.current < VERIFY_COOLDOWN_MS;
+
+      if (isCoolingDown && isAuthenticated) {
+        return;
+      }
+
+      if (!authBootstrapRef.current || !isAuthenticated || !isCoolingDown) {
         authBootstrapRef.current = true;
+        lastVerifyRef.current = now;
         dispatch(verifyAuth());
       }
     } catch (error) {
       console.warn('Auth verification skipped due to storage error:', error);
     }
-  }, [dispatch, isAuthenticated, loading, location.pathname]);
+  }, [dispatch, isAuthenticated, loading, location.pathname, verifyTick]);
 
   return (
     <GlobalErrorBoundary resetKey={location.pathname}>

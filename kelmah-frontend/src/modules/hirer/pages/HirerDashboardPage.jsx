@@ -36,6 +36,9 @@ import {
   Breadcrumbs,
   Link as MUILink,
   Skeleton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -53,6 +56,9 @@ import {
   People as PeopleIcon,
   Message as MessageIcon,
   AddCircle as AddCircleIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -65,6 +71,7 @@ import {
   selectHirerError,
 } from '../services/hirerSlice';
 import { selectUnreadCount } from '../../notifications/services/notificationSlice';
+import { logoutUser } from '../../auth/services/authSlice';
 
 // Import all hirer components
 import HirerJobManagement from '../components/HirerJobManagement';
@@ -276,6 +283,7 @@ const HirerDashboardPage = () => {
   const [lastRefreshed, setLastRefreshed] = useState(Date.now());
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true);
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
 
   const timeoutRef = useRef(null);
   const fetchPromiseRef = useRef(null);
@@ -291,6 +299,26 @@ const HirerDashboardPage = () => {
   const storeError = useSelector(selectHirerError('profile'));
   const jobsError = useSelector(selectHirerError('jobs'));
   const unreadNotifications = useSelector(selectUnreadCount);
+  const isProfileMenuOpen = Boolean(profileMenuAnchor);
+
+  const handleProfileMenuOpen = (event) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  const handleProfileMenuNavigate = (path) => {
+    handleProfileMenuClose();
+    navigate(path);
+  };
+
+  const handleLogout = async () => {
+    handleProfileMenuClose();
+    await dispatch(logoutUser());
+    navigate('/login');
+  };
 
   // Summary skeleton for overview while data loads
   const LoadingOverviewSkeleton = () => (
@@ -1147,7 +1175,9 @@ const HirerDashboardPage = () => {
                 bgcolor: 'primary.main',
                 fontWeight: 700,
                 boxShadow: 3,
+                cursor: 'pointer',
               }}
+              onClick={handleProfileMenuOpen}
             >
               {user?.firstName?.[0] || 'U'}
             </Avatar>
@@ -1185,6 +1215,48 @@ const HirerDashboardPage = () => {
             </Tooltip>
           </Box>
         </Box>
+        <Menu
+          anchorEl={profileMenuAnchor}
+          open={isProfileMenuOpen}
+          onClose={handleProfileMenuClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <MenuItem disabled sx={{ opacity: 1, cursor: 'default' }}>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600}>
+                {user?.fullName ||
+                  `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
+                  'Account'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {user?.email}
+              </Typography>
+            </Box>
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem onClick={() => handleProfileMenuNavigate('/profile')}>
+            <ListItemIcon>
+              <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            View Profile
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleProfileMenuNavigate('/settings/account')}
+          >
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            Account Settings
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
         {/* Breadcrumbs */}
         <Breadcrumbs
           aria-label="breadcrumb"

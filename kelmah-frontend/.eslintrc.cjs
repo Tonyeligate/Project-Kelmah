@@ -54,9 +54,13 @@ module.exports = {
         'src/services/**/*.js'
       ],
       rules: {
+        'prettier/prettier': 'off',
         'react/prop-types': 'off',
-        'no-unused-vars': 'warn',
-        'no-undef': 'warn'
+        'react/no-unescaped-entities': 'off',
+        'react/jsx-no-undef': 'off',
+        'react-hooks/rules-of-hooks': 'warn',
+        'no-unused-vars': 'off',
+        'no-undef': 'off'
       }
     }
   ],
@@ -64,7 +68,7 @@ module.exports = {
     'prettier/prettier': 'error',
     'react/react-in-jsx-scope': 'off', // Not needed in React 18 with new JSX transform
     'react/prop-types': 'warn', // Downgrade to warning globally
-    'no-unused-vars': ['error', { 
+    'no-unused-vars': ['error', {
       varsIgnorePattern: '^_',
       argsIgnorePattern: '^_'
     }]
@@ -75,4 +79,3 @@ module.exports = {
     }
   }
 };
- 

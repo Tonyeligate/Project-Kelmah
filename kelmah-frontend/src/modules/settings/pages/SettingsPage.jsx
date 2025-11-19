@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Container,
   Box,
@@ -8,6 +8,8 @@ import {
   Tab,
   Grid,
   alpha,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -26,6 +28,8 @@ const SettingsPage = () => {
   const { settings, loading, error, updateNotificationPreferences } =
     useSettings();
   const [tabValue, setTabValue] = useState(0);
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -76,33 +80,47 @@ const SettingsPage = () => {
                 alpha(theme.palette.background.paper, 0.7),
               backdropFilter: 'blur(10px)',
               borderRadius: 2,
+              position: isMdUp ? 'sticky' : 'relative',
+              top: isMdUp ? theme.spacing(2) : 'auto',
+              maxHeight: isMdUp ? 'calc(100vh - 140px)' : 'none',
+              overflow: isMdUp ? 'auto' : 'visible',
             }}
           >
             <Tabs
-              orientation="vertical"
+              orientation={isMdUp ? 'vertical' : 'horizontal'}
               variant="scrollable"
               value={tabValue}
               onChange={handleTabChange}
-              aria-label="Vertical settings tabs"
+              aria-label={
+                isMdUp ? 'Vertical settings tabs' : 'Horizontal settings tabs'
+              }
               sx={{
-                borderRight: 1,
+                borderRight: isMdUp ? 1 : 0,
+                borderBottom: isMdUp ? 0 : 1,
                 borderColor: 'divider',
                 '& .MuiTab-root': {
                   justifyContent: 'flex-start',
                   fontWeight: '600',
                   textTransform: 'none',
+                  minHeight: isMdUp ? 64 : 48,
+                },
+                '& .MuiTabs-flexContainer': {
+                  flexWrap: isMdUp ? 'nowrap' : 'wrap',
+                  rowGap: isMdUp ? 0 : 1,
                 },
                 '& .Mui-selected': {
                   color: 'primary.main',
                 },
               }}
+              allowScrollButtonsMobile
+              scrollButtons="auto"
             >
-              {settingsPanels.map((panel, index) => (
+              {settingsPanels.map((panel) => (
                 <Tab
                   key={panel.label}
                   label={panel.label}
                   icon={panel.icon}
-                  iconPosition="start"
+                  iconPosition={isMdUp ? 'start' : 'top'}
                 />
               ))}
             </Tabs>

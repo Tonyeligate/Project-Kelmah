@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -29,6 +29,15 @@ import {
   PushPinOutlined as PushPinOutlinedIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import secureStorage from '../../utils/secureStorage';
+
+const QUICK_NAV_STORAGE_KEY = 'quick_nav_preferences';
+const QUICK_NAV_PREF_TTL = 180 * 24 * 60 * 60 * 1000; // 6 months
+
+const getPreferenceKey = (user) => {
+  if (!user) return null;
+  return user.id || user._id || user.userId || user.email || null;
+};
 
 const ELIGIBLE_PATH_PREFIXES = [
   '/jobs',
@@ -52,6 +61,38 @@ const SmartNavigation = () => {
   const [isPinned, setIsPinned] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [hasSeenIntro, setHasSeenIntro] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+  const preferenceKey = useMemo(() => getPreferenceKey(user), [user]);
+
+  const persistPreference = useCallback(
+    (updates) => {
+      if (!preferenceKey) return;
+      try {
+        const existing =
+          secureStorage.getItem(QUICK_NAV_STORAGE_KEY, QUICK_NAV_PREF_TTL) ||
+          {};
+        const next = {
+          ...existing,
+          [preferenceKey]: {
+            ...existing[preferenceKey],
+            ...updates,
+            updatedAt: Date.now(),
+          },
+        };
+        secureStorage.setItem(
+          QUICK_NAV_STORAGE_KEY,
+          next,
+          QUICK_NAV_PREF_TTL,
+        );
+      } catch (error) {
+        console.warn(
+          'Quick navigation preference persistence failed:',
+          error.message,
+        );
+      }
+    },
+    [preferenceKey],
+  );
 
   // Toggle visibility based on current path eligibility
   useEffect(() => {
@@ -60,15 +101,28 @@ const SmartNavigation = () => {
       pathname.startsWith(prefix),
     );
 
+    if (isDismissed) {
+      setShowSuggestions(false);
+      return;
+    }
+
     if (isEligible || isPinned) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
     }
-  }, [location.pathname, isPinned]);
+  }, [location.pathname, isPinned, isDismissed]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (
+      typeof window === 'undefined' ||
+      !isAuthenticated ||
+      !user ||
+      !preferenceKey
+    ) {
+      return;
+    }
+
     const storedPinned = sessionStorage.getItem('kelmah-nav-pinned');
     const storedIntro = sessionStorage.getItem('kelmah-nav-intro');
 
@@ -82,7 +136,42 @@ const SmartNavigation = () => {
     } else {
       setShowInfo(true);
     }
-  }, []);
+
+    try {
+      const storedPreferences =
+        secureStorage.getItem(QUICK_NAV_STORAGE_KEY, QUICK_NAV_PREF_TTL) || {};
+      const userPreferences = storedPreferences[preferenceKey] || null;
+
+      if (userPreferences) {
+        if (typeof userPreferences.pinned === 'boolean') {
+          setIsPinned(userPreferences.pinned);
+          sessionStorage.setItem(
+            'kelmah-nav-pinned',
+            userPreferences.pinned ? 'true' : 'false',
+          );
+          if (userPreferences.pinned) {
+            setShowSuggestions(true);
+          }
+        }
+
+        if (userPreferences.hidden) {
+          setIsDismissed(true);
+          setShowSuggestions(false);
+        }
+
+        if (userPreferences.introSeen) {
+          setHasSeenIntro(true);
+          setShowInfo(false);
+          sessionStorage.setItem('kelmah-nav-intro', 'seen');
+        }
+      }
+    } catch (error) {
+      console.warn(
+        'Quick navigation preference hydrate failed:',
+        error.message,
+      );
+    }
+  }, [isAuthenticated, user, preferenceKey]);
 
   // Don't show on mobile or if user is not authenticated
   if (isMobile || !isAuthenticated || !user) {
@@ -185,6 +274,7 @@ const SmartNavigation = () => {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('kelmah-nav-pinned', next ? 'true' : 'false');
       }
+      persistPreference({ pinned: next, hidden: false });
 
       if (next) {
         setShowSuggestions(true);
@@ -197,6 +287,7 @@ const SmartNavigation = () => {
 
       return next;
     });
+    setIsDismissed(false);
   };
 
   const handleInfoToggle = () => {
@@ -206,6 +297,7 @@ const SmartNavigation = () => {
         sessionStorage.setItem('kelmah-nav-intro', 'seen');
       }
       setHasSeenIntro(true);
+      persistPreference({ introSeen: true });
       return next;
     });
   };
@@ -213,12 +305,53 @@ const SmartNavigation = () => {
   const handleHide = () => {
     setIsPinned(false);
     setShowSuggestions(false);
+    setIsDismissed(true);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('kelmah-nav-pinned', 'false');
     }
+    persistPreference({ hidden: true, pinned: false });
+  };
+
+  const handleRestore = () => {
+    setIsDismissed(false);
+    persistPreference({ hidden: false });
+    const isEligible = ELIGIBLE_PATH_PREFIXES.some((prefix) =>
+      location.pathname.startsWith(prefix),
+    );
+    setShowSuggestions(isEligible || isPinned);
   };
 
   if (suggestions.length === 0 || !showSuggestions) {
+    if (isDismissed) {
+      return (
+        <Fade in timeout={300}>
+          <Box
+            sx={{
+              position: 'fixed',
+              top: '80px',
+              right: '20px',
+              zIndex: 1000,
+            }}
+          >
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleRestore}
+              sx={{
+                borderColor: 'rgba(212,175,55,0.5)',
+                color: '#D4AF37',
+                backgroundColor: 'rgba(26,26,26,0.85)',
+                textTransform: 'none',
+                fontSize: '0.75rem',
+              }}
+            >
+              Show Quick Navigation
+            </Button>
+          </Box>
+        </Fade>
+      );
+    }
+
     return null;
   }
 
@@ -302,9 +435,9 @@ const SmartNavigation = () => {
             }}
           >
             <Typography variant="caption" color="rgba(255,255,255,0.75)">
-                {userRole === 'hirer'
-                  ? 'Jump to your next action with one click. Pin shortcuts to keep them handy across your hirer pages.'
-                  : 'Jump to your next action with one click. Pin shortcuts to keep them handy across your worker tools.'}
+              {userRole === 'hirer'
+                ? 'Jump to your next action with one click. Pin shortcuts to keep them handy across your hirer pages.'
+                : 'Jump to your next action with one click. Pin shortcuts to keep them handy across your worker tools.'}
             </Typography>
           </Box>
         </Fade>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Drawer,
   List,
@@ -16,7 +16,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
 
@@ -40,25 +40,86 @@ import Badge from '@mui/material/Badge';
 import { Star } from '@mui/icons-material';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { getProfileCompletion } from '../../../../utils/userUtils';
+import profileService from '../../../profile/services/profileService';
+import {
+  selectProfile,
+  selectProfileLoading,
+  setProfile,
+  setError as setProfileError,
+} from '../../../../store/slices/profileSlice';
 
 const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
+  const profile = useSelector(selectProfile);
+  const profileLoading = useSelector(selectProfileLoading);
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
   const location = useLocation();
+  const [profileRequested, setProfileRequested] = useState(false);
+  const userIdentifier =
+    user?.id || user?._id || user?.userId || user?.email || null;
+
+  useEffect(() => {
+    setProfileRequested(false);
+  }, [userIdentifier]);
+
+  useEffect(() => {
+    if (!userIdentifier || profileRequested || profileLoading || profile) {
+      return;
+    }
+
+    let isMounted = true;
+    setProfileRequested(true);
+
+    const fetchProfile = async () => {
+      try {
+        const profileData = await profileService.getProfile();
+        if (isMounted && profileData) {
+          dispatch(setProfile(profileData));
+          dispatch(setProfileError(null));
+        }
+      } catch (error) {
+        console.warn('Sidebar profile prefetch failed:', error.message);
+        if (isMounted) {
+          dispatch(
+            setProfileError(
+              error?.message || 'Unable to load profile information',
+            ),
+          );
+          setProfileRequested(false);
+        }
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    dispatch,
+    userIdentifier,
+    profile,
+    profileLoading,
+    profileRequested,
+  ]);
   // Determine role for navigation strictly from authenticated user
   const navRole =
     user?.role === 'hirer' ||
-    user?.userType === 'hirer' ||
-    user?.userRole === 'hirer'
+      user?.userType === 'hirer' ||
+      user?.userRole === 'hirer'
       ? 'hirer'
       : user?.role === 'worker' ||
-          user?.userType === 'worker' ||
-          user?.userRole === 'worker'
+        user?.userType === 'worker' ||
+        user?.userRole === 'worker'
         ? 'worker'
         : null;
   const isVerified = true; // Mock data
-  const completionInfo = useMemo(() => getProfileCompletion(user), [user]);
+  const completionInfo = useMemo(
+    () => getProfileCompletion(user, profile),
+    [user, profile],
+  );
   const profileCompletion = completionInfo.percentage || 0;
   const missingFields = completionInfo.missing?.slice(0, 3) || [];
   const completionLabels = {
@@ -85,56 +146,56 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   const roleNavItems =
     navRole === 'worker'
       ? [
-          { text: 'Dashboard', icon: <HomeIcon />, path: '/worker/dashboard' },
-          {
-            text: 'My Schedule',
-            icon: <CalendarTodayIcon />,
-            path: '/worker/schedule',
-          },
-          {
-            text: 'Find Work',
-            icon: <FindInPageIcon />,
-            path: '/worker/find-work',
-          },
-          {
-            text: 'My Applications',
-            icon: <AssignmentTurnedInIcon />,
-            path: '/worker/applications',
-          },
-          {
-            text: 'Active Contracts',
-            icon: <GavelIcon />,
-            path: '/worker/contracts',
-          },
-          { text: 'My Reviews', icon: <StarIcon />, path: '/worker/reviews' },
-          {
-            text: 'Payment Center',
-            icon: <PaymentIcon />,
-            path: '/worker/payment',
-          },
-          { text: 'Wallet', icon: <CreditCardIcon />, path: '/worker/wallet' },
-          { text: 'Bills', icon: <ReceiptIcon />, path: '/payment/bill' },
-        ]
+        { text: 'Dashboard', icon: <HomeIcon />, path: '/worker/dashboard' },
+        {
+          text: 'My Schedule',
+          icon: <CalendarTodayIcon />,
+          path: '/worker/schedule',
+        },
+        {
+          text: 'Find Work',
+          icon: <FindInPageIcon />,
+          path: '/worker/find-work',
+        },
+        {
+          text: 'My Applications',
+          icon: <AssignmentTurnedInIcon />,
+          path: '/worker/applications',
+        },
+        {
+          text: 'Active Contracts',
+          icon: <GavelIcon />,
+          path: '/worker/contracts',
+        },
+        { text: 'My Reviews', icon: <StarIcon />, path: '/worker/reviews' },
+        {
+          text: 'Payment Center',
+          icon: <PaymentIcon />,
+          path: '/worker/payment',
+        },
+        { text: 'Wallet', icon: <CreditCardIcon />, path: '/worker/wallet' },
+        { text: 'Bills', icon: <ReceiptIcon />, path: '/payment/bill' },
+      ]
       : navRole === 'hirer'
         ? [
-            { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
-            {
-              text: 'Post a Job',
-              icon: <PaymentIcon />,
-              path: '/hirer/jobs/post',
-            },
-            { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
-            {
-              text: 'Applications',
-              icon: <AssignmentTurnedInIcon />,
-              path: '/hirer/applications',
-            },
-            {
-              text: 'Find Talent',
-              icon: <FindInPageIcon />,
-              path: '/hirer/find-talent',
-            },
-          ]
+          { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
+          {
+            text: 'Post a Job',
+            icon: <PaymentIcon />,
+            path: '/hirer/jobs/post',
+          },
+          { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
+          {
+            text: 'Applications',
+            icon: <AssignmentTurnedInIcon />,
+            path: '/hirer/applications',
+          },
+          {
+            text: 'Find Talent',
+            icon: <FindInPageIcon />,
+            path: '/hirer/find-talent',
+          },
+        ]
         : [];
 
   // Define common navigation items for all roles

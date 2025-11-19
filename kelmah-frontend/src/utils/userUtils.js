@@ -253,8 +253,53 @@ export const getUserInitials = (user) => {
  * @param {Object} user - User data object
  * @returns {Object} Profile completion status
  */
-export const getProfileCompletion = (user) => {
-  if (!user) return { percentage: 0, missing: [] };
+const mergeProfileSources = (user, profile) => {
+  if (!user && !profile) {
+    return null;
+  }
+
+  const normalizedUser = user ? normalizeUser(user) : null;
+  const normalizedProfile = profile
+    ? profile.__isNormalized
+      ? profile
+      : normalizeUser(profile)
+    : null;
+
+  const combined = {
+    ...(normalizedUser?._raw || {}),
+    ...normalizedUser,
+  };
+
+  if (normalizedProfile) {
+    Object.assign(combined, normalizedProfile._raw || {}, normalizedProfile);
+  }
+
+  return combined;
+};
+
+const hasMeaningfulValue = (value) => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  if (typeof value === 'string') {
+    return value.trim().length > 0;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  if (typeof value === 'object') {
+    return Object.keys(value).length > 0;
+  }
+
+  return Boolean(value);
+};
+
+export const getProfileCompletion = (user, profile = null) => {
+  const mergedSource = mergeProfileSources(user, profile);
+  if (!mergedSource) return { percentage: 0, missing: [] };
 
   const requiredFields = ['firstName', 'lastName', 'email'];
   const optionalFields = ['bio', 'location', 'phone', 'profileImage'];
@@ -266,7 +311,7 @@ export const getProfileCompletion = (user) => {
     requiredFields.length + optionalFields.length + skillsFields.length;
 
   requiredFields.forEach((field) => {
-    if (user[field] && user[field].trim()) {
+    if (hasMeaningfulValue(mergedSource[field])) {
       completed += 1;
     } else {
       missing.push(field);
@@ -274,22 +319,35 @@ export const getProfileCompletion = (user) => {
   });
 
   optionalFields.forEach((field) => {
-    if (field === 'profileImage' && user.profileImage) {
-      completed += 1;
-    } else if (field !== 'profileImage' && user[field] && user[field].trim()) {
+    const value = mergedSource[field];
+    if (hasMeaningfulValue(value)) {
       completed += 1;
     } else {
       missing.push(field);
     }
   });
 
-  if (user.skills && Array.isArray(user.skills) && user.skills.length > 0) {
+  if (
+    mergedSource.skills &&
+    Array.isArray(mergedSource.skills) &&
+    mergedSource.skills.length > 0
+  ) {
     completed += 1;
   } else {
     missing.push('skills');
   }
 
-  if (user.experience && user.experience !== 'entry') {
+  if (
+    mergedSource.experience &&
+    typeof mergedSource.experience === 'string' &&
+    mergedSource.experience !== 'entry'
+  ) {
+    completed += 1;
+  } else if (
+    mergedSource.experience &&
+    typeof mergedSource.experience === 'object' &&
+    Object.keys(mergedSource.experience).length > 0
+  ) {
     completed += 1;
   } else {
     missing.push('experience');
