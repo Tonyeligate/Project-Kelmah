@@ -3,6 +3,7 @@
  * Handles authentication-related operations for the Kelmah platform
  */
 
+const mongoose = require('mongoose');
 const models = require("../models");
 const { User, RefreshToken, RevokedToken } = models;
 const { AppError } = require("../utils/errorTypes");
@@ -1182,20 +1183,51 @@ exports.verifyAuth = async (req, res, next) => {
       return next(new AppError("Authenticated user context required", 401));
     }
 
-    const userId = req.user.id;
+    if (!mongoose?.connection || mongoose.connection.readyState !== 1) {
+      logger.warn('verifyAuth attempted while DB not ready', {
+        readyState: mongoose?.connection?.readyState,
+      });
+      return next(
+        new AppError('Service temporarily unavailable. Please try again shortly.', 503),
+      );
+    }
 
-    // Find user in database with fresh data
-    const user = await User.findById(userId);
+    let userObjectId;
+    try {
+      userObjectId = new mongoose.Types.ObjectId(req.user.id);
+    } catch (idError) {
+      logger.warn('verifyAuth received invalid user id', {
+        userId: req.user.id,
+        error: idError.message,
+      });
+      return next(new AppError('Invalid user identifier', 400));
+    }
+
+    const client = mongoose.connection.getClient();
+    const db = client.db();
+    const usersCollection = db.collection('users');
+
+    const user = await usersCollection.findOne(
+      { _id: userObjectId },
+      {
+        projection: {
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          role: 1,
+          isEmailVerified: 1,
+        },
+      },
+    );
 
     if (!user) {
       return next(new AppError("User not found", 404));
     }
 
-    // Return user data (excluding sensitive information)
     return res.status(200).json({
       success: true,
       user: {
-        id: user.id,
+        id: user._id.toString(),
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
@@ -1204,6 +1236,11 @@ exports.verifyAuth = async (req, res, next) => {
       },
     });
   } catch (error) {
+    logger.error('verifyAuth failed', {
+      error: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     return next(
       new AppError(`Authentication verification failed: ${error.message}`, 500),
     );
