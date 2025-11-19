@@ -388,6 +388,7 @@ const Header = ({
   const {
     isAuthenticated,
     isInitialized,
+    isLoading,
     user,
     hasUser,
     canShowUserFeatures,
@@ -400,19 +401,23 @@ const Header = ({
     if (isOnAuthPage) return false;
 
     // Only show if properly authenticated with user data
-    if (!isInitialized || !isAuthenticated || !hasUser) return false;
+    if (!isInitialized || isLoading || !isAuthenticated || !hasUser)
+      return false;
 
     // Show user features on dashboard pages and other authenticated areas
     return canShowUserFeatures;
   }, [
     isOnAuthPage,
     isInitialized,
+    isLoading,
     isAuthenticated,
     hasUser,
     canShowUserFeatures,
   ]);
 
   const showAuthButtons = React.useMemo(() => {
+    if (isLoading) return false;
+
     // Show auth buttons on auth pages for clear UX
     if (isOnAuthPage && isInitialized) return true;
 
@@ -430,8 +435,11 @@ const Header = ({
     isOnHomePage,
     isOnDashboardPage,
     isInitialized,
+    isLoading,
     isAuthenticated,
   ]);
+
+  const showAuthSpinner = !showUserFeatures && !showAuthButtons && isLoading;
 
   // 🎯 AUTO-HIDE HEADER FUNCTIONALITY
   React.useEffect(() => {
@@ -1405,6 +1413,10 @@ const Header = ({
                 Get Started
               </AuthButton>
             </Stack>
+          ) : showAuthSpinner ? (
+            <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
+              <CircularProgress color="inherit" size={24} thickness={5} />
+            </Box>
           ) : null}
         </Box>
       </Toolbar>

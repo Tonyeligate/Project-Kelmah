@@ -3,7 +3,7 @@
  * Unified theme system with consistent branding
  * Last updated: January 2025
  */
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -168,6 +168,7 @@ const SuspenseFallback = () => (
 );
 
 const AppShell = () => {
+  const authBootstrapRef = useRef(false);
   const { mode, toggleTheme } = useThemeMode();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -238,8 +239,15 @@ const AppShell = () => {
         secureStorage.getAuthToken() ||
         localStorage.getItem(AUTH_CONFIG.tokenKey);
       const refreshToken = secureStorage.getRefreshToken();
+      const hasTokens = Boolean(token || refreshToken);
 
-      if (!isAuthenticated && (token || refreshToken)) {
+      if (!hasTokens) {
+        authBootstrapRef.current = false;
+        return;
+      }
+
+      if (!authBootstrapRef.current || !isAuthenticated) {
+        authBootstrapRef.current = true;
         dispatch(verifyAuth());
       }
     } catch (error) {

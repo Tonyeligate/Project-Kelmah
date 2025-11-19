@@ -10,6 +10,99 @@
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="background-color" content="#1a1a1a" />
     <meta name="color-scheme" content="dark light" />
+
+    <!-- Pre-paint theme bootstrap to avoid flash-of-wrong-theme -->
+    <script>
+      (function () {
+        var STORAGE_KEY = 'kelmah-theme-mode';
+        var DARK_COLOR = '#050507';
+        var LIGHT_COLOR = '#F9F7ED';
+        var MEDIA_QUERY = '(prefers-color-scheme: dark)';
+
+        var isValidMode = function (value) {
+          return value === 'dark' || value === 'light';
+        };
+
+        var parsePreference = function (rawValue) {
+          if (!rawValue) {
+            return null;
+          }
+
+          if (isValidMode(rawValue)) {
+            return { mode: rawValue, updatedAt: 0 };
+          }
+
+          try {
+            var parsed = JSON.parse(rawValue);
+            if (!isValidMode(parsed && parsed.mode)) {
+              return null;
+            }
+            return {
+              mode: parsed.mode,
+              updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : 0,
+            };
+          } catch (error) {
+            return null;
+          }
+        };
+
+        var collectPreference = function () {
+          var candidates = [];
+
+          try {
+            var localValue = window.localStorage.getItem(STORAGE_KEY);
+            var localPreference = parsePreference(localValue);
+            if (localPreference) {
+              candidates.push(localPreference);
+            }
+          } catch (error) {}
+
+          try {
+            var sessionValue = window.sessionStorage.getItem(STORAGE_KEY);
+            var sessionPreference = parsePreference(sessionValue);
+            if (sessionPreference) {
+              candidates.push(sessionPreference);
+            }
+          } catch (error) {}
+
+          var domTheme = document.documentElement.getAttribute('data-theme');
+          if (isValidMode(domTheme)) {
+            candidates.push({ mode: domTheme, updatedAt: Number.MAX_SAFE_INTEGER });
+          }
+
+          if (!candidates.length) {
+            return null;
+          }
+
+          candidates.sort(function (a, b) {
+            return (b.updatedAt || 0) - (a.updatedAt || 0);
+          });
+
+          return candidates[0].mode;
+        };
+
+        var applyTheme = function (mode) {
+          if (!isValidMode(mode)) {
+            return;
+          }
+
+          document.documentElement.setAttribute('data-theme', mode);
+          var themeMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeMeta) {
+            themeMeta.setAttribute('content', mode === 'dark' ? DARK_COLOR : LIGHT_COLOR);
+          }
+        };
+
+        var resolvedMode = collectPreference();
+        if (resolvedMode) {
+          applyTheme(resolvedMode);
+          return;
+        }
+
+        var prefersDark = window.matchMedia && window.matchMedia(MEDIA_QUERY).matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+      })();
+    </script>
     
     <!-- Mobile App Configuration -->
     <meta name="mobile-web-app-capable" content="yes" />

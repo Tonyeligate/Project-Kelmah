@@ -67,6 +67,7 @@ import prefetchLazyIcons from '@/utils/prefetchLazyIcons';
 import jobsService from '../services/jobsService';
 import HeroFiltersSection from '../components/HeroFiltersSection';
 import JobResultsSection from '../components/JobResultsSection';
+import tradeCategoriesData from '../data/tradeCategories.json';
 import {
   Container,
   Grid,
@@ -497,6 +498,23 @@ const categoryData = [
     demandLevel: 'High',
   },
 ];
+
+const CATEGORY_ICON_MAP = {
+  Electrical: ElectricalIcon,
+  Plumbing: PlumbingIcon,
+  Carpentry: CarpenterIcon,
+  HVAC: HvacIcon,
+  Construction: ConstructionIcon,
+  Painting: WorkIcon,
+  Roofing: WorkIcon,
+  Masonry: WorkIcon,
+  '': WorkIcon,
+};
+
+const tradeCategories = tradeCategoriesData.map((category) => ({
+  ...category,
+  icon: CATEGORY_ICON_MAP[category.value] || WorkIcon,
+}));
 
 const platformMetrics = [
   {

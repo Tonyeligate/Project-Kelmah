@@ -39,8 +39,9 @@ export const useAuthCheck = () => {
       user: userData,
 
       // Convenience flags
-      canShowUserFeatures: isInitialized && isUserAuthenticated && userData,
-      shouldShowAuthButtons: isInitialized && !isUserAuthenticated,
+      canShowUserFeatures:
+        isInitialized && !loading && isUserAuthenticated && userData,
+      shouldShowAuthButtons: isInitialized && !loading && !isUserAuthenticated,
       isReady: isInitialized && !loading,
     }),
     [isUserAuthenticated, isInitialized, loading, userData],

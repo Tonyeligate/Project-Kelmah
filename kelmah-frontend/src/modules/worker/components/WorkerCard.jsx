@@ -21,6 +21,10 @@ import {
   Star as StarIcon,
   Message as MessageIcon,
   Visibility as VisibilityIcon,
+  Verified as VerifiedIcon,
+  Bolt as BoltIcon,
+  Schedule as ScheduleIcon,
+  WorkspacePremium as WorkspacePremiumIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -31,15 +35,251 @@ const WorkerCard = ({ worker }) => {
   const location = useLocation();
   const { isAuthenticated, user } = useAuthCheck();
 
-  const normalizedRole = (user?.role || user?.userType || '')
-    .toString()
-    .toLowerCase();
-  const isHirer = ['hirer', 'client', 'employer', 'business'].includes(
-    normalizedRole,
-  );
-  const workerId = worker.id || worker._id || worker.userId;
-  const viewerId = user?.id || user?._id || user?.userId;
+  const resolvedWorkerId = worker.id || worker._id || worker.userId;
+  const resolvedViewerId = user?.id || user?._id || user?.userId;
+
+  const normalizedRoles = useMemo(() => {
+    const normalizeRoleValue = (value) =>
+      value
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/-+/g, '_');
+
+    const roleSources = [
+      user?.role,
+      user?.userType,
+      user?.accountType,
+      user?.account_type,
+    ];
+
+    const aggregate = [
+      ...roleSources,
+      ...(Array.isArray(user?.roles) ? user.roles : []),
+      ...(Array.isArray(user?.permissions) ? user.permissions : []),
+    ]
+      .filter(Boolean)
+      .map((role) => normalizeRoleValue(role));
+
+    return aggregate.length ? aggregate : ['guest'];
+  }, [
+    user?.accountType,
+    user?.account_type,
+    user?.permissions,
+    user?.role,
+    user?.roles,
+    user?.userType,
+  ]);
+
+  const isHirer = useMemo(() => {
+    const allowedRoles = new Set([
+      'hirer',
+      'client',
+      'employer',
+      'business',
+      'business_owner',
+      'company',
+      'organization',
+      'businessowner',
+    ]);
+    return normalizedRoles.some((role) => allowedRoles.has(role));
+  }, [normalizedRoles]);
+
+  const workerId = resolvedWorkerId;
+  const viewerId = resolvedViewerId;
   const isViewingSelf = Boolean(viewerId && workerId && viewerId === workerId);
+
+  const isVerifiedWorker = useMemo(() => {
+    const badgeList = Array.isArray(worker.badges) ? worker.badges : [];
+    return Boolean(
+      worker.isVerified ||
+        worker.verified ||
+        worker.verificationStatus === 'verified' ||
+        worker.status === 'verified' ||
+        worker.trustLevel === 'verified' ||
+        badgeList.some((badge) =>
+          badge?.toString()?.toLowerCase().includes('verified'),
+        ),
+    );
+  }, [
+    worker.badges,
+    worker.isVerified,
+    worker.status,
+    worker.trustLevel,
+    worker.verificationStatus,
+    worker.verified,
+  ]);
+
+  const availabilityDisplay = useMemo(() => {
+    const status = worker.availabilityStatus || worker.status;
+    if (typeof status === 'string') {
+      const normalized = status.trim().toLowerCase();
+      if (['available', 'active', 'open'].includes(normalized)) {
+        return 'Available now';
+      }
+      if (['booked', 'busy', 'unavailable'].includes(normalized)) {
+        return 'Currently booked';
+      }
+    }
+
+    if (typeof worker.availability === 'string' && worker.availability.trim()) {
+      return worker.availability.trim();
+    }
+
+    if (worker.availableNow) {
+      return 'Available now';
+    }
+
+    if (worker.availabilityMessage) {
+      return worker.availabilityMessage;
+    }
+
+    return null;
+  }, [
+    worker.availability,
+    worker.availabilityMessage,
+    worker.availabilityStatus,
+    worker.availableNow,
+    worker.status,
+  ]);
+
+  const responseTimeLabel = useMemo(() => {
+    const responseSources = [
+      worker.responseTime,
+      worker.avgResponseTime,
+      worker.averageResponseTime,
+      worker.metrics?.responseTime,
+      worker.metrics?.avgResponseTime,
+      worker.performance?.responseTime,
+    ];
+
+    const stringValue = responseSources.find(
+      (value) => typeof value === 'string' && value.trim().length > 0,
+    );
+    if (stringValue) {
+      return stringValue.trim();
+    }
+
+    const numericValue = responseSources.find((value) =>
+      Number.isFinite(Number(value)),
+    );
+    if (Number.isFinite(Number(numericValue))) {
+      return `${Number(numericValue)} hr${Number(numericValue) === 1 ? '' : 's'}`;
+    }
+
+    return null;
+  }, [
+    worker.avgResponseTime,
+    worker.averageResponseTime,
+    worker.metrics,
+    worker.performance,
+    worker.responseTime,
+  ]);
+
+  const completedJobs = Number(
+    worker.totalJobsCompleted ??
+      worker.completedJobs ??
+      worker.projectsCompleted ??
+      0,
+  );
+
+  const jobSuccessValue = useMemo(() => {
+    const candidates = [
+      worker.jobSuccess,
+      worker.successRate,
+      worker.metrics?.jobSuccess,
+      worker.performance?.successRate,
+      worker.stats?.successRate,
+    ];
+
+    const match = candidates.find((value) => Number.isFinite(Number(value)));
+
+    const numeric = Number(match);
+    return Number.isFinite(numeric) ? Math.round(numeric) : null;
+  }, [
+    worker.jobSuccess,
+    worker.metrics,
+    worker.performance,
+    worker.stats,
+    worker.successRate,
+  ]);
+
+  const trustBadges = useMemo(() => {
+    const badges = [];
+
+    if (isVerifiedWorker) {
+      badges.push({
+        key: 'verified',
+        label: 'Kelmah Verified',
+        color: 'success',
+        icon: VerifiedIcon,
+        variant: 'filled',
+        sx: {
+          backgroundColor: 'success.light',
+          color: 'success.dark',
+        },
+      });
+    }
+
+    if (availabilityDisplay) {
+      badges.push({
+        key: 'availability',
+        label: availabilityDisplay,
+        color: 'info',
+        icon: ScheduleIcon,
+        variant: 'outlined',
+      });
+    }
+
+    if (responseTimeLabel) {
+      badges.push({
+        key: 'response-time',
+        label: `Responds in ${responseTimeLabel}`,
+        color: 'default',
+        icon: BoltIcon,
+        variant: 'outlined',
+        sx: {
+          borderColor: 'warning.light',
+          color: 'warning.dark',
+        },
+      });
+    }
+
+    if (jobSuccessValue && jobSuccessValue >= 95) {
+      badges.push({
+        key: 'top-performer',
+        label: `${jobSuccessValue}% success`,
+        color: 'secondary',
+        icon: WorkspacePremiumIcon,
+        variant: 'outlined',
+        sx: {
+          borderColor: 'secondary.light',
+          color: 'secondary.main',
+        },
+      });
+    } else if (!jobSuccessValue && completedJobs >= 40) {
+      badges.push({
+        key: 'experienced',
+        label: 'Experienced',
+        color: 'secondary',
+        icon: WorkspacePremiumIcon,
+        variant: 'outlined',
+        sx: {
+          borderColor: 'secondary.light',
+          color: 'secondary.main',
+        },
+      });
+    }
+
+    return badges;
+  }, [
+    availabilityDisplay,
+    completedJobs,
+    isVerifiedWorker,
+    jobSuccessValue,
+    responseTimeLabel,
+  ]);
 
   // Handle view profile
   const handleViewProfile = (e) => {
@@ -56,9 +296,10 @@ const WorkerCard = ({ worker }) => {
       e.stopPropagation();
 
       if (!isAuthenticated) {
+        const redirectTo = `${location.pathname || '/find-talents'}${location.search || ''}`;
         navigate('/login', {
           state: {
-            from: location.pathname || '/find-talents',
+            from: redirectTo,
             message: 'Please sign in to message workers',
           },
         });
@@ -73,6 +314,7 @@ const WorkerCard = ({ worker }) => {
     [
       isAuthenticated,
       location.pathname,
+      location.search,
       navigate,
       worker._id,
       worker.id,
@@ -165,6 +407,32 @@ const WorkerCard = ({ worker }) => {
                 ({worker.reviewCount || 0})
               </Typography>
             </Box>
+            {trustBadges.length > 0 && (
+              <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{ flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}
+              >
+                {trustBadges.map((badge) => {
+                  const IconComponent = badge.icon;
+                  return (
+                    <Chip
+                      key={badge.key}
+                      label={badge.label}
+                      size="small"
+                      variant={badge.variant}
+                      color={badge.color}
+                      icon={
+                        IconComponent ? (
+                          <IconComponent sx={{ fontSize: 16 }} />
+                        ) : undefined
+                      }
+                      sx={{ fontWeight: 500, ...(badge.sx || {}) }}
+                    />
+                  );
+                })}
+              </Stack>
+            )}
           </Box>
         </Box>
 
@@ -324,6 +592,43 @@ WorkerCard.propTypes = {
     jobSuccess: PropTypes.number,
     location: PropTypes.string,
     skills: PropTypes.arrayOf(PropTypes.string),
+    badges: PropTypes.arrayOf(
+      PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    ),
+    isVerified: PropTypes.bool,
+    verified: PropTypes.bool,
+    verificationStatus: PropTypes.string,
+    trustLevel: PropTypes.string,
+    status: PropTypes.string,
+    availabilityStatus: PropTypes.string,
+    availability: PropTypes.string,
+    availabilityMessage: PropTypes.string,
+    availableNow: PropTypes.bool,
+    responseTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    avgResponseTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    averageResponseTime: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+    metrics: PropTypes.shape({
+      responseTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      avgResponseTime: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+      ]),
+      jobSuccess: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    performance: PropTypes.shape({
+      responseTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      successRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    stats: PropTypes.shape({
+      successRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    successRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    totalJobsCompleted: PropTypes.number,
+    completedJobs: PropTypes.number,
+    projectsCompleted: PropTypes.number,
   }).isRequired,
 };
 
