@@ -6,6 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
 import RouteSkeleton from './RouteSkeleton';
 import { workerRoutesConfig } from './workerRoutesConfig';
+import { hasRole as userHasRole } from '../utils/userUtils';
 
 // Error fallback component for route-level errors
 const RouteErrorFallback = ({ error, resetErrorBoundary }) => (
@@ -53,8 +54,6 @@ RouteErrorFallback.defaultProps = {
 };
 const WorkerRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
-  const hasRole = (user, role) =>
-    user?.role === role || user?.userType === role || user?.userRole === role;
 
   // Memoized role checking to prevent infinite re-renders
   const isWorkerAllowed = useMemo(() => {
@@ -73,7 +72,7 @@ const WorkerRoutes = () => {
     }
     // If authenticated and user exists, check role
     if (isAuthenticated && user) {
-      const allowed = hasRole(user, 'worker');
+      const allowed = userHasRole(user, 'worker');
       console.log('Worker route: Role check result:', allowed);
       return allowed;
     }

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
+import { hasRole as userHasRole } from '../utils/userUtils';
 import HirerDashboardPage from '../modules/hirer/pages/HirerDashboardPage';
 import ApplicationManagementPage from '../modules/hirer/pages/ApplicationManagementPage';
 import JobPostingPage from '../modules/hirer/pages/JobPostingPage';
@@ -11,8 +12,10 @@ import HirerToolsPage from '../modules/hirer/pages/HirerToolsPage';
 
 const HirerRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
-  const hasRole = (user, role) =>
-    user?.role === role || user?.userType === role || user?.userRole === role;
+  const canAccessHirerRoutes = useMemo(
+    () => userHasRole(user, 'hirer'),
+    [user],
+  );
 
   return (
     <>
@@ -20,7 +23,7 @@ const HirerRoutes = () => {
         path="/hirer/dashboard"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            isAllowed={isAuthenticated && canAccessHirerRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -32,7 +35,7 @@ const HirerRoutes = () => {
         path="/hirer/applications"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            isAllowed={isAuthenticated && canAccessHirerRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -44,7 +47,7 @@ const HirerRoutes = () => {
         path="/hirer/jobs/post"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            isAllowed={isAuthenticated && canAccessHirerRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -56,7 +59,7 @@ const HirerRoutes = () => {
         path="/hirer/jobs"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            isAllowed={isAuthenticated && canAccessHirerRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -68,7 +71,7 @@ const HirerRoutes = () => {
         path="/hirer/find-talent"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            isAllowed={isAuthenticated && canAccessHirerRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -80,7 +83,7 @@ const HirerRoutes = () => {
         path="/hirer/tools"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+            isAllowed={isAuthenticated && canAccessHirerRoutes}
             redirectPath="/login"
             loading={loading}
           >

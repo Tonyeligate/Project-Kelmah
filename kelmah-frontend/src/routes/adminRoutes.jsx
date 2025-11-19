@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Route } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
+import { hasRole as userHasRole } from '../utils/userUtils';
 
 // Admin pages
 import SkillsAssessmentManagement from '../modules/admin/pages/SkillsAssessmentManagement';
@@ -18,8 +19,10 @@ import GhanaJobCategoriesManagement from '../modules/admin/components/common/Gha
 
 const AdminRoutes = () => {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
-  const hasRole = (user, role) =>
-    user?.role === role || user?.userType === role || user?.userRole === role;
+  const canAccessAdminRoutes = useMemo(
+    () => userHasRole(user, 'admin'),
+    [user],
+  );
 
   return (
     <>
@@ -28,7 +31,7 @@ const AdminRoutes = () => {
         path="/admin/dashboard"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -42,7 +45,7 @@ const AdminRoutes = () => {
         path="/admin/users"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -56,7 +59,7 @@ const AdminRoutes = () => {
         path="/admin/skills"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -70,7 +73,7 @@ const AdminRoutes = () => {
         path="/admin/categories"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -84,7 +87,7 @@ const AdminRoutes = () => {
         path="/admin/reviews"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -98,7 +101,7 @@ const AdminRoutes = () => {
         path="/admin/payments"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -112,7 +115,7 @@ const AdminRoutes = () => {
         path="/admin/payouts"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -126,7 +129,7 @@ const AdminRoutes = () => {
         path="/admin/disputes"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >
@@ -140,7 +143,7 @@ const AdminRoutes = () => {
         path="/admin/settings"
         element={
           <ProtectedRoute
-            isAllowed={isAuthenticated && hasRole(user, 'admin')}
+            isAllowed={isAuthenticated && canAccessAdminRoutes}
             redirectPath="/login"
             loading={loading}
           >

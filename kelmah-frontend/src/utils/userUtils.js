@@ -5,6 +5,52 @@
  * to eliminate inconsistencies and prevent undefined access errors.
  */
 
+const normalizeRoleValue = (role) => {
+  if (role === undefined || role === null) {
+    return null;
+  }
+
+  const value = String(role).trim();
+  if (!value) {
+    return null;
+  }
+
+  return value.toLowerCase();
+};
+
+export const getUserRoles = (rawUser) => {
+  if (!rawUser) {
+    return [];
+  }
+
+  const collected = [];
+  const addRole = (role) => {
+    const normalized = normalizeRoleValue(role);
+    if (normalized) {
+      collected.push(normalized);
+    }
+  };
+
+  addRole(rawUser.role);
+  addRole(rawUser.userType);
+  addRole(rawUser.userRole);
+
+  if (Array.isArray(rawUser.roles)) {
+    rawUser.roles.forEach(addRole);
+  }
+
+  if (rawUser._raw) {
+    addRole(rawUser._raw.role);
+    addRole(rawUser._raw.userType);
+    addRole(rawUser._raw.userRole);
+    if (Array.isArray(rawUser._raw.roles)) {
+      rawUser._raw.roles.forEach(addRole);
+    }
+  }
+
+  return [...new Set(collected)];
+};
+
 /**
  * Normalize user data from various sources into a consistent structure
  * @param {Object} rawUser - Raw user data from API/Redux/Context
@@ -14,6 +60,15 @@ export const normalizeUser = (rawUser) => {
   if (!rawUser) return null;
 
   const splitName = rawUser.name?.split(' ') ?? [];
+  const normalizedRoles = getUserRoles(rawUser);
+  const primaryRole = normalizedRoles[0] || 'user';
+  const displayRole =
+    rawUser.role ||
+    rawUser.userType ||
+    rawUser.userRole ||
+    (Array.isArray(rawUser.roles) && rawUser.roles.length > 0
+      ? rawUser.roles[0]
+      : primaryRole);
 
   return {
     // Primary identification
@@ -27,7 +82,9 @@ export const normalizeUser = (rawUser) => {
     displayName: getDisplayName(rawUser),
 
     // Role and permissions
-    role: rawUser.role || rawUser.userType || rawUser.userRole || 'user',
+    role: primaryRole,
+    roleDisplay: displayRole,
+    roles: normalizedRoles,
     permissions: rawUser.permissions || [],
 
     // Profile information
@@ -65,7 +122,8 @@ export const normalizeUser = (rawUser) => {
       rawUser.isTwoFactorEnabled || rawUser.mfaEnabled,
     ),
 
-    // Raw data for fallback access
+    // Flags + raw data for downstream consumers
+    __isNormalized: true,
     _raw: rawUser,
   };
 };
@@ -120,16 +178,26 @@ export const getDisplayName = (user) => {
  * @returns {boolean} Whether user has the role(s)
  */
 export const hasRole = (user, roles) => {
-  if (!user) return false;
+  if (!user || !roles) return false;
 
-  const userRole = user.role || user.userType || user.userRole;
-  if (!userRole) return false;
-
-  if (Array.isArray(roles)) {
-    return roles.includes(userRole);
+  const userRoles = getUserRoles(user);
+  if (!userRoles.length && user._raw) {
+    userRoles.push(...getUserRoles(user._raw));
   }
 
-  return userRole === roles;
+  if (!userRoles.length) {
+    return false;
+  }
+
+  const rolesToMatch = (Array.isArray(roles) ? roles : [roles])
+    .map((role) => normalizeRoleValue(role))
+    .filter(Boolean);
+
+  if (!rolesToMatch.length) {
+    return false;
+  }
+
+  return rolesToMatch.some((role) => userRoles.includes(role));
 };
 
 /**
@@ -287,6 +355,7 @@ export default {
   normalizeUser,
   getFullName,
   getDisplayName,
+  getUserRoles,
   hasRole,
   hasPermission,
   getUserInitials,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -14,6 +14,7 @@ import {
   useMediaQuery,
   IconButton,
   Avatar,
+  Tooltip,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
@@ -21,7 +22,10 @@ import LoadingScreen from '../../common/components/loading/LoadingScreen';
 import GestureControl from '../../common/components/controls/GestureControl';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { checkApiHealth } from '../../common/utils/apiUtils';
+import {
+  checkServiceHealth,
+  getServiceStatusMessage,
+} from '../../../utils/serviceHealthCheck';
 import {
   useResponsive,
   useResponsiveTypography,
@@ -236,9 +240,11 @@ const HomePage = () => {
   const responsiveTypography = useResponsiveTypography();
   const responsiveLayout = useResponsiveLayout();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const [apiStatus, setApiStatus] = useState({
-    isReachable: true,
-    checking: false,
+  const [platformStatus, setPlatformStatus] = useState({
+    indicator: 'checking',
+    label: 'Checking status',
+    message: 'Verifying live services...',
+    action: 'Connecting to gateway',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null); // ✅ NEW: Error state
@@ -314,26 +320,57 @@ const HomePage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    const checkApiStatus = async () => {
-      try {
-        const isReachable =
-          import.meta.env.DEV || (await checkApiHealth(false));
-        setApiStatus((prev) => {
-          if (prev.isReachable !== isReachable) {
-            return { isReachable, checking: false };
-          }
-          return prev;
-        });
-        setError(null); // ✅ Clear errors on successful API check
-      } catch (error) {
-        console.warn('API check failed, continuing anyway:', error);
-        setApiStatus({ isReachable: false, checking: false });
-        setError('Unable to connect to server. Some features may be limited.'); // ✅ Set error message
+  const refreshPlatformStatus = useCallback(async () => {
+    setPlatformStatus((prev) => ({
+      ...prev,
+      indicator: 'checking',
+    }));
+
+    try {
+      await checkServiceHealth('aggregate', 12000);
+      const statusInfo = getServiceStatusMessage('aggregate');
+      const indicator = statusInfo.status || 'unknown';
+      const labelMap = {
+        healthy: 'Platform Online',
+        cold: 'Platform Warming Up',
+        error: 'Platform Offline',
+        unknown: 'Status Unknown',
+        checking: 'Checking Status',
+      };
+
+      setPlatformStatus({
+        indicator,
+        label: labelMap[indicator] || 'Status Unknown',
+        message: statusInfo.message,
+        action: statusInfo.action,
+      });
+
+      if (indicator === 'error') {
+        setError(statusInfo.message || 'Platform is unavailable right now.');
+      } else if (indicator === 'healthy') {
+        setError(null);
       }
-    };
-    checkApiStatus();
+    } catch (error) {
+      console.warn('Aggregate health check failed:', error);
+      setPlatformStatus({
+        indicator: 'error',
+        label: 'Platform Offline',
+        message: 'Unable to reach the platform services.',
+        action: 'Retrying shortly...',
+      });
+      setError('Unable to connect to server. Some features may be limited.');
+    }
   }, []);
+
+  useEffect(() => {
+    refreshPlatformStatus();
+
+    const interval = setInterval(() => {
+      refreshPlatformStatus();
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [refreshPlatformStatus]);
 
   // ✅ NEW: Scroll Progress Tracking for Mobile
   useEffect(() => {
@@ -446,29 +483,43 @@ const HomePage = () => {
       <GestureControl>
         <Box sx={{ position: 'relative' }}>
           {/* Enhanced platform status badge */}
-          <Chip
-            label={`Platform ${apiStatus.isReachable ? 'Online' : 'Offline'}`}
-            color={apiStatus.isReachable ? 'success' : 'error'}
-            size="small"
-            sx={{
-              position: 'absolute',
-              top: { xs: 12, sm: 16 }, // ✅ Adjusted position
-              right: { xs: 12, sm: 16 }, // ✅ Adjusted position
-              zIndex: 2,
-              fontWeight: 'bold',
-              fontSize: { xs: '0.7rem', sm: '0.75rem' }, // ✅ Responsive font
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-              // ✅ Hide on very small screens to prevent overlap
-              '@media (max-width: 320px)': {
-                top: 8,
-                right: 8,
-                fontSize: '0.65rem',
-                '& .MuiChip-label': {
-                  padding: '0 6px', // ✅ Reduced padding
+          <Tooltip
+            title={platformStatus.message || 'Checking platform status'}
+            arrow
+            placement="left"
+          >
+            <Chip
+              label={platformStatus.label}
+              color={
+                {
+                  healthy: 'success',
+                  cold: 'warning',
+                  error: 'error',
+                  checking: 'info',
+                  unknown: 'default',
+                }[platformStatus.indicator] || 'default'
+              }
+              size="small"
+              sx={{
+                position: 'absolute',
+                top: { xs: 12, sm: 16 },
+                right: { xs: 12, sm: 16 },
+                zIndex: 2,
+                fontWeight: 'bold',
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                cursor: 'default',
+                '@media (max-width: 320px)': {
+                  top: 8,
+                  right: 8,
+                  fontSize: '0.65rem',
+                  '& .MuiChip-label': {
+                    padding: '0 6px',
+                  },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </Tooltip>
 
           <Section>
             <HeroBackgroundImage
@@ -497,7 +548,7 @@ const HomePage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: 'easeOut' }}
                   >
-                    {user && (
+                    {user && isAuthenticated && (
                       <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}

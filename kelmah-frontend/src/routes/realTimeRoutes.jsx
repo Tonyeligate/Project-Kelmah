@@ -3,27 +3,34 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../modules/auth/contexts/AuthContext';
 import { useSelector } from 'react-redux';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 // Real-time Components
-const RealTimeChat = React.lazy(
+const RealTimeChat = lazyWithRetry(
   () => import('../modules/messaging/components/RealTimeChat'),
+  { retryKey: 'real-time-chat' },
 );
-const NotificationCenter = React.lazy(
+const NotificationCenter = lazyWithRetry(
   () => import('../components/common/NotificationCenter'),
+  { retryKey: 'notification-center' },
 );
-const RealTimeJobAlerts = React.lazy(
+const RealTimeJobAlerts = lazyWithRetry(
   () => import('../modules/jobs/components/RealTimeJobAlerts'),
+  { retryKey: 'real-time-job-alerts' },
 );
 
 // Pages that use real-time features
-const MessagingPage = React.lazy(
+const MessagingPage = lazyWithRetry(
   () => import('../modules/messaging/pages/MessagingPage'),
+  { retryKey: 'real-time-messaging-page' },
 );
-const NotificationsPage = React.lazy(
+const NotificationsPage = lazyWithRetry(
   () => import('../pages/NotificationsPage'),
+  { retryKey: 'notifications-page' },
 );
-const JobAlertsPage = React.lazy(
+const JobAlertsPage = lazyWithRetry(
   () => import('../modules/jobs/pages/JobAlertsPage'),
+  { retryKey: 'alerts-job-page' },
 );
 
 /**

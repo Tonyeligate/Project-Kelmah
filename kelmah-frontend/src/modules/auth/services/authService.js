@@ -8,6 +8,7 @@
 import { AUTH_CONFIG, API_ENDPOINTS } from '../../../config/environment';
 import { authServiceClient } from '../../common/services/axios';
 import { secureStorage } from '../../../utils/secureStorage';
+import { normalizeUser } from '../../../utils/userUtils';
 
 // Use centralized authServiceClient with standard interceptors
 
@@ -18,6 +19,19 @@ import { secureStorage } from '../../../utils/secureStorage';
 let tokenRefreshTimeout = null;
 
 const { AUTH: AUTH_ENDPOINTS } = API_ENDPOINTS;
+
+const persistNormalizedUser = (user) => {
+  if (!user) {
+    return null;
+  }
+
+  const normalizedUser = normalizeUser(user._raw || user);
+  if (normalizedUser) {
+    secureStorage.setUserData(normalizedUser);
+  }
+
+  return normalizedUser;
+};
 
 const authService = {
   // Login user
@@ -31,6 +45,7 @@ const authService = {
       // Extract data from response (handle different response structures)
       const responseData = response.data.data || response.data;
       const { token, refreshToken, user } = responseData;
+      const normalizedUser = persistNormalizedUser(user);
 
       if (!token || !user) {
         throw new Error(
@@ -43,13 +58,20 @@ const authService = {
       if (refreshToken) {
         secureStorage.setRefreshToken(refreshToken);
       }
-      secureStorage.setUserData(user);
 
       // Setup automatic token refresh
       authService.setupTokenRefresh(token);
 
-      console.log('Login successful for user:', user.email);
-      return { token, refreshToken, user, success: true };
+      console.log(
+        'Login successful for user:',
+        normalizedUser?.email || user.email,
+      );
+      return {
+        token,
+        refreshToken,
+        user: normalizedUser || user,
+        success: true,
+      };
     } catch (error) {
       console.error('Login failed:', error);
 
@@ -103,15 +125,13 @@ const authService = {
         userData,
       );
       const { token, user } = response.data.data || response.data;
+      const normalizedUser = persistNormalizedUser(user);
 
       if (token) {
         secureStorage.setAuthToken(token);
       }
-      if (user) {
-        secureStorage.setUserData(user);
-      }
 
-      return { token, user, success: true };
+      return { token, user: normalizedUser || user, success: true };
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -123,10 +143,10 @@ const authService = {
     try {
       const response = await authServiceClient.get(AUTH_ENDPOINTS.VERIFY);
       const { user } = response.data.data || response.data;
+      const normalizedUser = persistNormalizedUser(user);
 
-      if (user) {
-        secureStorage.setUserData(user);
-        return { user, success: true };
+      if (normalizedUser) {
+        return { user: normalizedUser, success: true };
       } else {
         // API returned success but no user data - don't clear storage, just return success
         // This allows the stored user data to be used
@@ -134,8 +154,6 @@ const authService = {
       }
     } catch (error) {
       console.warn('Auth verification failed:', error.message);
-      // Only clear storage on actual API errors, not when user data is missing
-      secureStorage.clear();
       return { success: false, error: error.message };
     }
   },
@@ -183,43 +201,89 @@ const authService = {
 
   // Refresh token
   refreshToken: async () => {
-    try {
-      const refreshToken = secureStorage.getRefreshToken();
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
+    const refreshToken = secureStorage.getRefreshToken();
 
+    if (!refreshToken) {
+      return {
+        success: false,
+        error: 'No refresh token available',
+        shouldReset: true,
+      };
+    }
+
+    try {
       const response = await authServiceClient.post(AUTH_ENDPOINTS.REFRESH, {
         refreshToken,
       });
 
       const responseData = response.data.data || response.data;
-      const { token: newAccessToken, refreshToken: newRefreshToken } =
-        responseData;
+      const {
+        token: newAccessToken,
+        refreshToken: newRefreshToken,
+        user,
+      } = responseData;
 
-      if (newAccessToken) {
-        secureStorage.setAuthToken(newAccessToken);
-
-        // Setup next automatic refresh
-        authService.setupTokenRefresh(newAccessToken);
+      if (!newAccessToken) {
+        return {
+          success: false,
+          error: 'Refresh response did not include a new token',
+          shouldReset: true,
+        };
       }
+
+      secureStorage.setAuthToken(newAccessToken);
+      authService.setupTokenRefresh(newAccessToken);
 
       if (newRefreshToken) {
         secureStorage.setRefreshToken(newRefreshToken);
       }
 
+      const normalizedUser = persistNormalizedUser(user);
+
       console.log('Token refreshed successfully');
-      return { token: newAccessToken, success: true };
+      return {
+        token: newAccessToken,
+        refreshToken: newRefreshToken,
+        success: true,
+      };
     } catch (error) {
       console.error('Token refresh failed:', error);
 
-      // If refresh fails, clear auth data and force re-login
-      secureStorage.clear();
+      const status = error.response?.status;
+      const isNetworkError =
+        error.code === 'ECONNABORTED' ||
+        error.message?.toLowerCase().includes('timeout') ||
+        !error.response;
 
-      // Dispatch custom event for components to handle re-login
-      window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to refresh session';
 
-      return { success: false, error: error.message };
+      const shouldReset =
+        !isNetworkError && (status === 400 || status === 401 || status === 403);
+
+      if (shouldReset) {
+        secureStorage.clear();
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+          } catch (dispatchError) {
+            console.warn(
+              'Failed to dispatch tokenExpired event:',
+              dispatchError,
+            );
+          }
+        }
+      }
+
+      return {
+        success: false,
+        error: message,
+        status,
+        shouldReset,
+        isNetworkError,
+      };
     }
   },
 
@@ -259,9 +323,10 @@ const authService = {
         profileData,
       );
       const { user } = response.data.data || response.data;
+      const normalizedUser = persistNormalizedUser(user);
 
-      if (user) {
-        secureStorage.setUserData(user);
+      if (normalizedUser) {
+        return { user: normalizedUser, success: true };
       }
 
       return { user, success: true };
@@ -480,7 +545,7 @@ const authService = {
 
             // Sync to secureStorage for future use
             secureStorage.setAuthToken(token);
-            secureStorage.setUserData(userData);
+            userData = persistNormalizedUser(userData) || userData;
             console.log('Synced localStorage data to secureStorage');
           } catch (e) {
             console.warn('Failed to parse user data from localStorage:', e);
@@ -496,7 +561,8 @@ const authService = {
         // If we have user data from storage, use it directly (avoid API call)
         if (userData && userData.email) {
           console.log('Using stored user data for quick initialization');
-          return { authenticated: true, user: userData };
+          const normalized = persistNormalizedUser(userData) || userData;
+          return { authenticated: true, user: normalized };
         }
 
         // Otherwise verify the token with API
@@ -516,7 +582,8 @@ const authService = {
           // (handles offline scenarios or API temporarily unavailable)
           if (userData && userData.email) {
             console.log('API verification failed, but using cached user data');
-            return { authenticated: true, user: userData };
+            const normalized = persistNormalizedUser(userData) || userData;
+            return { authenticated: true, user: normalized };
           }
 
           throw verifyError;

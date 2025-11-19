@@ -1,4 +1,4 @@
-import React from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -23,13 +23,23 @@ import {
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
-const WorkerCard = ({ worker, isPublicView = false }) => {
+const WorkerCard = ({ worker }) => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const isHirer = user?.role === 'hirer' || user?.userType === 'hirer';
+  const location = useLocation();
+  const { isAuthenticated, user } = useAuthCheck();
+
+  const normalizedRole = (user?.role || user?.userType || '')
+    .toString()
+    .toLowerCase();
+  const isHirer = ['hirer', 'client', 'employer', 'business'].includes(
+    normalizedRole,
+  );
+  const workerId = worker.id || worker._id || worker.userId;
+  const viewerId = user?.id || user?._id || user?.userId;
+  const isViewingSelf = Boolean(viewerId && workerId && viewerId === workerId);
 
   // Handle view profile
   const handleViewProfile = (e) => {
@@ -41,25 +51,70 @@ const WorkerCard = ({ worker, isPublicView = false }) => {
   };
 
   // Handle message worker
-  const handleMessage = (e) => {
-    e.stopPropagation();
-    
-    if (!isAuthenticated) {
-      navigate('/login', {
-        state: {
-          from: `/workers/${worker.id}`,
-          message: 'Please sign in to message workers',
-        },
-      });
-      return;
+  const handleMessage = useCallback(
+    (e) => {
+      e.stopPropagation();
+
+      if (!isAuthenticated) {
+        navigate('/login', {
+          state: {
+            from: location.pathname || '/find-talents',
+            message: 'Please sign in to message workers',
+          },
+        });
+        return;
+      }
+
+      const targetUserId = worker.userId || worker.id || worker._id;
+      if (targetUserId) {
+        navigate(`/messages?recipient=${encodeURIComponent(targetUserId)}`);
+      }
+    },
+    [
+      isAuthenticated,
+      location.pathname,
+      navigate,
+      worker._id,
+      worker.id,
+      worker.userId,
+    ],
+  );
+
+  const messageCta = useMemo(() => {
+    if (isViewingSelf) {
+      return {
+        label: 'This is you',
+        tooltip: 'You cannot message your own profile',
+        disabled: true,
+        handler: (e) => e.stopPropagation(),
+      };
     }
 
-    // Navigate to messaging page with worker ID
-    navigate(`/messages?userId=${worker.userId || worker.id}`);
-  };
+    if (!isAuthenticated) {
+      return {
+        label: 'Sign in to message',
+        tooltip: 'Sign in as a hirer to contact workers',
+        disabled: false,
+        handler: handleMessage,
+      };
+    }
 
-  // Determine if user can message (authenticated and is hirer)
-  const canMessage = isAuthenticated && isHirer;
+    if (!isHirer) {
+      return {
+        label: 'Hirer access required',
+        tooltip: 'Switch to a hirer account to message workers',
+        disabled: true,
+        handler: (e) => e.stopPropagation(),
+      };
+    }
+
+    return {
+      label: 'Message',
+      tooltip: 'Start a conversation with this worker',
+      disabled: false,
+      handler: handleMessage,
+    };
+  }, [handleMessage, isAuthenticated, isHirer, isViewingSelf]);
 
   return (
     <Card
@@ -75,128 +130,133 @@ const WorkerCard = ({ worker, isPublicView = false }) => {
         },
       }}
     >
-      <CardContent sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={handleViewProfile}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Avatar
-              src={worker.profileImage}
-              alt={worker.name}
-              sx={{ width: 56, height: 56, mr: 2 }}
-            />
-            <Box>
-              <Typography variant="h6" component="h2" noWrap>
-                {worker.name}
+      <CardContent
+        sx={{ flexGrow: 1, cursor: 'pointer' }}
+        onClick={handleViewProfile}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar
+            src={worker.profileImage}
+            alt={worker.name}
+            sx={{ width: 56, height: 56, mr: 2 }}
+          />
+          <Box>
+            <Typography variant="h6" component="h2" noWrap>
+              {worker.name}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {worker.title || 'Freelancer'}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+              <Rating
+                value={worker.rating || 0}
+                precision={0.5}
+                size="small"
+                readOnly
+                emptyIcon={
+                  <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                }
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 0.5 }}
+              >
+                ({worker.reviewCount || 0})
               </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {worker.title || 'Freelancer'}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                <Rating
-                  value={worker.rating || 0}
-                  precision={0.5}
-                  size="small"
-                  readOnly
-                  emptyIcon={
-                    <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
-                  }
-                />
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ ml: 0.5 }}
-                >
-                  ({worker.reviewCount || 0})
-                </Typography>
-              </Box>
             </Box>
           </Box>
+        </Box>
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              minHeight: '3em',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              mb: 2,
-            }}
-          >
-            {worker.bio || 'No bio provided'}
-          </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            minHeight: '3em',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            mb: 2,
+          }}
+        >
+          {worker.bio || 'No bio provided'}
+        </Typography>
 
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
-          >
-            {worker.skills
-              ?.filter((skill) => skill && (skill.name || skill))
-              .slice(0, 3)
-              .map((skill) => (
-                <Chip
-                  key={skill.name || skill}
-                  label={skill.name || skill}
-                  size="small"
-                  variant="outlined"
-                />
-              ))}
-            {worker.skills?.filter((skill) => skill && (skill.name || skill))
-              .length > 3 && (
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
+        >
+          {worker.skills
+            ?.filter((skill) => skill && (skill.name || skill))
+            .slice(0, 3)
+            .map((skill) => (
               <Chip
-                label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
+                key={skill.name || skill}
+                label={skill.name || skill}
                 size="small"
                 variant="outlined"
               />
-            )}
-          </Stack>
+            ))}
+          {worker.skills?.filter((skill) => skill && (skill.name || skill))
+            .length > 3 && (
+            <Chip
+              label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
+              size="small"
+              variant="outlined"
+            />
+          )}
+        </Stack>
 
-          <Divider sx={{ my: 1 }} />
+        <Divider sx={{ my: 1 }} />
 
-          <Grid container spacing={1}>
-            <Grid item xs={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AttachMoneyIcon
-                  fontSize="small"
-                  sx={{ mr: 0.5, color: 'text.secondary' }}
-                />
-                <Typography variant="body2" color="text.primary">
-                  ${worker.hourlyRate || '--'}/hr
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <WorkIcon
-                  fontSize="small"
-                  sx={{ mr: 0.5, color: 'text.secondary' }}
-                />
-                <Typography variant="body2" color="text.secondary">
-                  {worker.jobSuccess
-                    ? `${worker.jobSuccess}% Success`
-                    : 'New Worker'}
-                </Typography>
-              </Box>
-            </Grid>
-            {worker.location && (
-              <Grid item xs={12}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LocationIcon
-                    fontSize="small"
-                    sx={{ mr: 0.5, color: 'text.secondary' }}
-                  />
-                  <Typography variant="body2" color="text.secondary" noWrap>
-                    {worker.location}
-                  </Typography>
-                </Box>
-              </Grid>
-            )}
+        <Grid container spacing={1}>
+          <Grid item xs={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <AttachMoneyIcon
+                fontSize="small"
+                sx={{ mr: 0.5, color: 'text.secondary' }}
+              />
+              <Typography variant="body2" color="text.primary">
+                ${worker.hourlyRate || '--'}/hr
+              </Typography>
+            </Box>
           </Grid>
-        </CardContent>
+          <Grid item xs={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <WorkIcon
+                fontSize="small"
+                sx={{ mr: 0.5, color: 'text.secondary' }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {worker.jobSuccess
+                  ? `${worker.jobSuccess}% Success`
+                  : 'New Worker'}
+              </Typography>
+            </Box>
+          </Grid>
+          {worker.location && (
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <LocationIcon
+                  fontSize="small"
+                  sx={{ mr: 0.5, color: 'text.secondary' }}
+                />
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  {worker.location}
+                </Typography>
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </CardContent>
 
       {/* Contact Action Buttons */}
-      <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}>
+      <CardActions
+        sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
+      >
         <Button
           variant="outlined"
           startIcon={<VisibilityIcon />}
@@ -216,24 +276,23 @@ const WorkerCard = ({ worker, isPublicView = false }) => {
         >
           View Profile
         </Button>
-        <Tooltip
-          title={!canMessage ? 'Sign in as a hirer to message workers' : ''}
-          arrow
-        >
+        <Tooltip title={messageCta.tooltip} arrow>
           <span style={{ flex: 1 }}>
             <Button
               variant="contained"
               startIcon={<MessageIcon />}
-              onClick={handleMessage}
-              disabled={!canMessage}
+              onClick={messageCta.handler}
+              disabled={messageCta.disabled}
               size="small"
               fullWidth
               sx={{
                 minHeight: '44px',
-                bgcolor: canMessage ? '#FFD700' : 'action.disabledBackground',
-                color: canMessage ? '#000' : 'text.disabled',
+                bgcolor: messageCta.disabled
+                  ? 'action.disabledBackground'
+                  : '#FFD700',
+                color: messageCta.disabled ? 'text.disabled' : '#000',
                 '&:hover': {
-                  bgcolor: canMessage ? '#FFC700' : undefined,
+                  bgcolor: messageCta.disabled ? undefined : '#FFC700',
                 },
                 '&.Mui-disabled': {
                   bgcolor: 'action.disabledBackground',
@@ -241,7 +300,7 @@ const WorkerCard = ({ worker, isPublicView = false }) => {
                 },
               }}
             >
-              {canMessage ? 'Message' : 'Sign In'}
+              {messageCta.label}
             </Button>
           </span>
         </Tooltip>
@@ -266,7 +325,6 @@ WorkerCard.propTypes = {
     location: PropTypes.string,
     skills: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
-  isPublicView: PropTypes.bool,
 };
 
 export default WorkerCard;

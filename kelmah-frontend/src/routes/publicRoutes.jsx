@@ -1,38 +1,99 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Route } from 'react-router-dom';
 import RouteSkeleton from './RouteSkeleton';
+import ChunkErrorBoundary from './ChunkErrorBoundary';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
-const Home = lazy(() => import('../modules/home/pages/HomePage'));
-const LoginPage = lazy(() => import('../modules/auth/pages/LoginPage'));
-const RegisterPage = lazy(() => import('../modules/auth/pages/RegisterPage'));
-const RoleSelectionPage = lazy(
+const Home = lazyWithRetry(() => import('../modules/home/pages/HomePage'), {
+  retryKey: 'home-page',
+});
+const LoginPage = lazyWithRetry(
+  () => import('../modules/auth/pages/LoginPage'),
+  {
+    retryKey: 'login-page',
+  },
+);
+const RegisterPage = lazyWithRetry(
+  () => import('../modules/auth/pages/RegisterPage'),
+  {
+    retryKey: 'register-page',
+  },
+);
+const RoleSelectionPage = lazyWithRetry(
   () => import('../modules/auth/pages/RoleSelectionPage'),
+  {
+    retryKey: 'role-selection',
+  },
 );
-const JobsPage = lazy(() => import('../modules/jobs/pages/JobsPage'));
-const JobDetailsPage = lazy(
+const JobsPage = lazyWithRetry(() => import('../modules/jobs/pages/JobsPage'), {
+  retryKey: 'jobs-page',
+});
+const JobDetailsPage = lazyWithRetry(
   () => import('../modules/jobs/pages/JobDetailsPage'),
+  {
+    retryKey: 'job-details-page',
+  },
 );
-const JobApplicationForm = lazy(
+const JobApplicationForm = lazyWithRetry(
   () => import('../modules/worker/components/JobApplicationForm'),
+  {
+    retryKey: 'job-application-form',
+  },
 );
-const ProfilePage = lazy(() => import('../modules/profile/pages/ProfilePage'));
-const WorkerProfilePage = lazy(
+const ProfilePage = lazyWithRetry(
+  () => import('../modules/profile/pages/ProfilePage'),
+  {
+    retryKey: 'public-profile-page',
+  },
+);
+const WorkerProfilePage = lazyWithRetry(
   () => import('../modules/worker/pages/WorkerProfilePage'),
+  {
+    retryKey: 'worker-profile-page',
+  },
 );
-const PremiumPage = lazy(() => import('../modules/premium/pages/PremiumPage'));
-const GeoLocationSearch = lazy(
+const PremiumPage = lazyWithRetry(
+  () => import('../modules/premium/pages/PremiumPage'),
+  {
+    retryKey: 'premium-page',
+  },
+);
+const GeoLocationSearch = lazyWithRetry(
   () => import('../modules/search/pages/GeoLocationSearch'),
+  {
+    retryKey: 'geolocation-search',
+  },
 );
-const SearchPage = lazy(() => import('../modules/search/pages/SearchPage'));
-const ProfessionalMapPage = lazy(
+const SearchPage = lazyWithRetry(
+  () => import('../modules/search/pages/SearchPage'),
+  {
+    retryKey: 'search-page',
+  },
+);
+const ProfessionalMapPage = lazyWithRetry(
   () => import('../modules/map/pages/ProfessionalMapPage'),
+  {
+    retryKey: 'professional-map',
+  },
 );
 
-const withSuspense = (Component) => (
-  <Suspense fallback={<RouteSkeleton />}>
-    <Component />
-  </Suspense>
-);
+const withSuspense = (Component, options = {}) => {
+  const content = (
+    <Suspense fallback={<RouteSkeleton />}>
+      <Component />
+    </Suspense>
+  );
+
+  if (options.enableChunkBoundary) {
+    return (
+      <ChunkErrorBoundary routeKey={options.retryKey}>
+        {content}
+      </ChunkErrorBoundary>
+    );
+  }
+
+  return content;
+};
 
 const publicRoutes = [
   <Route key="/" path="/" element={withSuspense(Home)} />,
@@ -47,7 +108,14 @@ const publicRoutes = [
     path="/role-selection"
     element={withSuspense(RoleSelectionPage)}
   />,
-  <Route key="/jobs" path="/jobs" element={withSuspense(JobsPage)} />,
+  <Route
+    key="/jobs"
+    path="/jobs"
+    element={withSuspense(JobsPage, {
+      enableChunkBoundary: true,
+      retryKey: 'jobs-page',
+    })}
+  />,
   <Route
     key="/jobs/:id/apply"
     path="/jobs/:id/apply"

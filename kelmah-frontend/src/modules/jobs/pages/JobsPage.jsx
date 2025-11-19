@@ -150,6 +150,14 @@ import {
   Home as HomeIcon,
   LocalFireDepartment as WhatshotIcon,
   Psychology as PsychologyIcon,
+  AttachMoney as AttachMoneyIcon,
+  TrendingUp as TrendingUpIcon,
+  FlashOn as FlashOnIcon,
+  LocalFireDepartment as FireIcon,
+  Visibility,
+  BookmarkBorder,
+  Share,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 
 // Lazy-load non-critical icons to reduce initial bundle

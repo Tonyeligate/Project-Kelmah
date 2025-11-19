@@ -1,58 +1,81 @@
-import { lazy } from 'react';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
-const WorkerDashboardPage = lazy(
+const WorkerDashboardPage = lazyWithRetry(
   () => import('../modules/worker/pages/WorkerDashboardPage'),
+  { retryKey: 'worker-dashboard-page' },
 );
-const SkillsAssessmentPage = lazy(
+const SkillsAssessmentPage = lazyWithRetry(
   () => import('../modules/worker/pages/SkillsAssessmentPage'),
+  { retryKey: 'skills-assessment-page' },
 );
-const MyApplicationsPage = lazy(
+const MyApplicationsPage = lazyWithRetry(
   () => import('../modules/worker/pages/MyApplicationsPage'),
+  { retryKey: 'worker-applications-page' },
 );
-const SchedulingPage = lazy(
+const SchedulingPage = lazyWithRetry(
   () => import('../modules/scheduling/pages/SchedulingPage'),
+  { retryKey: 'worker-scheduling-page' },
 );
-const WorkerReviewsPage = lazy(
+const WorkerReviewsPage = lazyWithRetry(
   () => import('../modules/reviews/pages/WorkerReviewsPage'),
+  { retryKey: 'worker-reviews-page' },
 );
-const WorkerProfileEditPage = lazy(
+const WorkerProfileEditPage = lazyWithRetry(
   () => import('../modules/worker/pages/WorkerProfileEditPage'),
+  { retryKey: 'worker-profile-edit-page' },
 );
-const WorkerProfile = lazy(
+const WorkerProfile = lazyWithRetry(
   () => import('../modules/worker/components/WorkerProfile'),
+  { retryKey: 'worker-profile' },
 );
-const PortfolioPage = lazy(
+const PortfolioPage = lazyWithRetry(
   () => import('../modules/worker/pages/PortfolioPage'),
+  { retryKey: 'worker-portfolio-page' },
 );
-const PortfolioManager = lazy(
+const PortfolioManager = lazyWithRetry(
   () => import('../modules/worker/components/PortfolioManager'),
+  { retryKey: 'portfolio-manager' },
 );
-const CertificateUploader = lazy(
+const CertificateUploader = lazyWithRetry(
   () => import('../modules/worker/components/CertificateUploader'),
+  { retryKey: 'certificate-uploader' },
 );
-const EarningsAnalytics = lazy(
+const EarningsAnalytics = lazyWithRetry(
   () => import('../modules/worker/components/EarningsAnalytics'),
+  { retryKey: 'earnings-analytics' },
 );
-const AvailabilityCalendar = lazy(
+const AvailabilityCalendar = lazyWithRetry(
   () => import('../modules/worker/components/AvailabilityCalendar'),
+  { retryKey: 'availability-calendar' },
 );
-const JobSearchPage = lazy(
+const JobSearchPage = lazyWithRetry(
   () => import('../modules/worker/pages/JobSearchPage'),
+  { retryKey: 'worker-job-search-page' },
 );
-const ContractManagementPage = lazy(
+const ContractManagementPage = lazyWithRetry(
   () => import('../modules/contracts/pages/ContractManagementPage'),
+  { retryKey: 'worker-contracts-page' },
 );
-const PaymentCenterPage = lazy(
+const PaymentCenterPage = lazyWithRetry(
   () => import('../modules/payment/pages/PaymentCenterPage'),
+  { retryKey: 'worker-payment-center' },
 );
-const EscrowManager = lazy(
+const EscrowManager = lazyWithRetry(
   () => import('../modules/payment/components/EscrowManager'),
+  { retryKey: 'escrow-manager' },
 );
-const WalletPage = lazy(() => import('../modules/payment/pages/WalletPage'));
-const SavedJobs = lazy(
+const WalletPage = lazyWithRetry(
+  () => import('../modules/payment/pages/WalletPage'),
+  { retryKey: 'worker-wallet-page' },
+);
+const SavedJobs = lazyWithRetry(
   () => import('../modules/jobs/components/common/SavedJobs'),
+  { retryKey: 'worker-saved-jobs' },
 );
-const JobAlertsPage = lazy(() => import('../modules/jobs/pages/JobAlertsPage'));
+const JobAlertsPage = lazyWithRetry(
+  () => import('../modules/jobs/pages/JobAlertsPage'),
+  { retryKey: 'worker-job-alerts' },
+);
 
 export const workerRoutesConfig = [
   {

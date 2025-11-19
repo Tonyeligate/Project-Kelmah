@@ -3,7 +3,7 @@
  * Unified theme system with consistent branding
  * Last updated: January 2025
  */
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,19 +35,27 @@ import { verifyAuth } from './modules/auth/services/authSlice';
 import { AUTH_CONFIG } from './config/environment';
 import { secureStorage } from './utils/secureStorage';
 import { initializePWA } from './utils/pwaHelpers';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-const MessagingPage = lazy(
+const MessagingPage = lazyWithRetry(
   () => import('./modules/messaging/pages/MessagingPage'),
+  { retryKey: 'messaging-page' },
 );
-const ProfilePage = lazy(() => import('./modules/profile/pages/ProfilePage'));
-const ContractManagementPage = lazy(
+const ProfilePage = lazyWithRetry(
+  () => import('./modules/profile/pages/ProfilePage'),
+  { retryKey: 'profile-page' },
+);
+const ContractManagementPage = lazyWithRetry(
   () => import('./modules/contracts/pages/ContractManagementPage'),
+  { retryKey: 'contract-management-page' },
 );
-const CreateContractPage = lazy(
+const CreateContractPage = lazyWithRetry(
   () => import('./modules/contracts/pages/CreateContractPage'),
+  { retryKey: 'create-contract-page' },
 );
-const ContractDetailsPage = lazy(
+const ContractDetailsPage = lazyWithRetry(
   () => import('./modules/contracts/pages/ContractDetailsPage'),
+  { retryKey: 'contract-details-page' },
 );
 
 const resolveUserRole = (user) => {
@@ -229,8 +237,9 @@ const AppShell = () => {
       const token =
         secureStorage.getAuthToken() ||
         localStorage.getItem(AUTH_CONFIG.tokenKey);
+      const refreshToken = secureStorage.getRefreshToken();
 
-      if (!isAuthenticated && token) {
+      if (!isAuthenticated && (token || refreshToken)) {
         dispatch(verifyAuth());
       }
     } catch (error) {

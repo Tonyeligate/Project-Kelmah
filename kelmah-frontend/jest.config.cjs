@@ -44,5 +44,3 @@ module.exports = {
   // Restore mocks between tests
   restoreMocks: true,
 };
-
-

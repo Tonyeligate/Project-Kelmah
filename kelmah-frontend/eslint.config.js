@@ -29,7 +29,8 @@ export default [
       '**/*.spec.jsx',
       'src/tests/setup.js',
       'src/tests/mocks/**',
-  'src/modules/worker/**',
+  // Worker module should be linted as part of active development
+  // 'src/modules/worker/**',
       'src/backup-old-components/**',
       'src/api/services_backup/**',
       'src/api/services_backup_*/**',

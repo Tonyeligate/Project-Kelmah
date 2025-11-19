@@ -2,9 +2,46 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from './authService';
 import { AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
+import { normalizeUser } from '../../../utils/userUtils';
 // Support import.meta.env in Vite and process.env in tests
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
+
+const normalizeAuthUser = (user) => {
+  if (!user) {
+    return null;
+  }
+
+  if (user.__isNormalized) {
+    return user;
+  }
+
+  return normalizeUser(user._raw || user);
+};
+
+const resolveInitialAuthState = () => {
+  try {
+    const token = secureStorage.getAuthToken();
+    if (!token) {
+      return { token: null, user: null, isAuthenticated: false };
+    }
+
+    const storedUser = secureStorage.getUserData();
+    const user = normalizeAuthUser(storedUser);
+    if (!user) {
+      return { token: null, user: null, isAuthenticated: false };
+    }
+
+    secureStorage.setUserData(user);
+    return { token, user, isAuthenticated: true };
+  } catch (error) {
+    console.warn('Failed to resolve initial auth state:', error);
+    secureStorage.clear();
+    return { token: null, user: null, isAuthenticated: false };
+  }
+};
+
+const initialResolvedState = resolveInitialAuthState();
 
 // Register thunk
 export const register = createAsyncThunk(
@@ -12,14 +49,21 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await authService.register(userData);
+      const normalizedUser = normalizeAuthUser(response.user);
 
       // Store auth data
       if (response.token) {
         secureStorage.setAuthToken(response.token);
-        secureStorage.setUserData(response.user);
       }
 
-      return response;
+      if (normalizedUser) {
+        secureStorage.setUserData(normalizedUser);
+      }
+
+      return {
+        ...response,
+        user: normalizedUser,
+      };
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || 'Registration failed';
@@ -43,6 +87,7 @@ export const login = createAsyncThunk(
       const token = responseData.token;
       const user = responseData.user || {};
       const refreshToken = responseData.refreshToken;
+      const normalizedUser = normalizeAuthUser(user);
 
       // Make sure we have a token and user data
       if (token) {
@@ -51,7 +96,9 @@ export const login = createAsyncThunk(
 
         // Store token and user data securely
         secureStorage.setAuthToken(token);
-        secureStorage.setUserData(user);
+        if (normalizedUser) {
+          secureStorage.setUserData(normalizedUser);
+        }
         if (refreshToken) {
           secureStorage.setRefreshToken(refreshToken);
         }
@@ -59,7 +106,7 @@ export const login = createAsyncThunk(
         // Return structured data for the reducer
         return {
           token,
-          user,
+          user: normalizedUser,
           refreshToken,
         };
       } else {
@@ -88,65 +135,82 @@ export const verifyAuth = createAsyncThunk(
       // Development mock authentication disabled – always verify via API
 
       // Production mode auth verification logic - check both storage locations
-      const token = secureStorage.getAuthToken();
+      let token = secureStorage.getAuthToken();
       if (!token) {
-        console.warn('No token found in localStorage or secureStorage');
-        throw new Error('No authentication token found');
+        const refreshToken = secureStorage.getRefreshToken();
+        if (refreshToken) {
+          console.log('No access token found, attempting refresh...');
+          const refreshResult = await authService.refreshToken();
+          if (refreshResult?.token) {
+            token = refreshResult.token;
+          } else {
+            const refreshError = new Error(
+              refreshResult?.error || 'Session expired. Please log in again.',
+            );
+            refreshError.shouldReset =
+              refreshResult?.shouldReset !== undefined
+                ? refreshResult.shouldReset
+                : true;
+            refreshError.isNetworkError = refreshResult?.isNetworkError;
+            throw refreshError;
+          }
+        } else {
+          console.warn('No token found in secure storage');
+          throw new Error('Session expired. Please log in again.');
+        }
       }
 
       // Check if there's user data in localStorage
-      const storedUser = JSON.stringify(secureStorage.getUserData());
-      console.log(
-        'Currently stored user:',
-        storedUser ? JSON.parse(storedUser) : 'none',
-      );
+      const storedUserSnapshot = secureStorage.getUserData();
+      console.log('Currently stored user:', storedUserSnapshot || 'none');
 
       // Verify against backend
       const verify = await authService.verifyAuth();
       console.log('Auth verify response:', verify);
 
-      if (verify?.user) {
-        // Update stored user data with fresh data from API
-        secureStorage.setUserData(verify.user);
-
-        return {
-          user: verify.user,
-          isAuthenticated: true,
-        };
-      } else if (verify?.success) {
-        // API returned success but no user data, use stored user
-        const storedUserData = secureStorage.getUserData();
-        if (storedUserData) {
-          console.log(
-            'Using stored user data for verification:',
-            storedUserData.email,
-          );
-          return {
-            user: storedUserData,
-            isAuthenticated: true,
-          };
-        } else {
-          console.warn(
-            'API returned success but no user data and no stored user found',
-          );
-          // Don't throw error here, just return the stored user from initial state
-          const initialStateUser = secureStorage.getUserData();
-          if (initialStateUser) {
-            return {
-              user: initialStateUser,
-              isAuthenticated: true,
-            };
-          }
-        }
+      if (verify?.success === false && !verify?.user) {
+        throw new Error(
+          verify?.error ||
+            'Authentication verification failed. Please log in again.',
+        );
       }
 
-      throw new Error('Could not verify authentication');
+      const fallbackUser = storedUserSnapshot || secureStorage.getUserData();
+      const resolvedUser = verify?.user || fallbackUser;
+      const normalizedUser = normalizeAuthUser(resolvedUser);
+      if (!normalizedUser) {
+        throw new Error('Unable to load your account details.');
+      }
+
+      // Update stored user data with fresh data from API
+      secureStorage.setUserData(normalizedUser);
+      secureStorage.setAuthToken(token);
+
+      return {
+        user: normalizedUser,
+        token,
+        isAuthenticated: true,
+      };
     } catch (error) {
       console.error('Auth verification failed:', error);
-      secureStorage.clear();
-      return rejectWithValue(
-        error.message || 'Authentication verification failed',
-      );
+      const message = error?.message || 'Authentication verification failed';
+      const isNetworkError =
+        typeof error?.isNetworkError === 'boolean'
+          ? error.isNetworkError
+          : /network/i.test(message) || /timeout/i.test(message);
+      const shouldReset =
+        typeof error?.shouldReset === 'boolean'
+          ? error.shouldReset
+          : !isNetworkError;
+
+      if (shouldReset) {
+        secureStorage.clear();
+      }
+
+      return rejectWithValue({
+        message,
+        shouldReset,
+      });
     }
   },
 );
@@ -169,9 +233,9 @@ export const logoutUser = createAsyncThunk(
 );
 
 const initialState = {
-  user: secureStorage.getUserData() || null,
-  token: secureStorage.getAuthToken() || null,
-  isAuthenticated: !!secureStorage.getAuthToken(),
+  user: initialResolvedState.user,
+  token: initialResolvedState.token,
+  isAuthenticated: initialResolvedState.isAuthenticated,
   loading: false,
   error: null,
 };
@@ -195,15 +259,18 @@ const authSlice = createSlice({
     },
     setOAuthLogin: (state, action) => {
       const { user, token } = action.payload;
+      const normalizedUser = normalizeAuthUser(user);
       state.isAuthenticated = true;
-      state.user = user;
+      state.user = normalizedUser;
       state.token = token;
       state.loading = false;
       state.error = null;
 
       // Save securely
       secureStorage.setAuthToken(token);
-      secureStorage.setUserData(user);
+      if (normalizedUser) {
+        secureStorage.setUserData(normalizedUser);
+      }
     },
   },
   extraReducers: (builder) => {
@@ -257,6 +324,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         // CRITICAL: Ensure user data is never set to undefined
         state.user = action.payload.user || state.user;
+        state.token = action.payload.token || state.token;
         state.loading = false;
         state.error = null;
         console.log(
@@ -266,19 +334,13 @@ const authSlice = createSlice({
       })
       .addCase(verifyAuth.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        // CRITICAL: Don't immediately clear auth state on verifyAuth rejection
-        // Keep authentication state to prevent redirect loops during verification failures
-        // Only clear if we don't have existing auth state
-        if (!state.isAuthenticated || !state.user) {
+        state.error = action.payload?.message || action.payload;
+        if (action.payload?.shouldReset !== false) {
           state.isAuthenticated = false;
           state.user = null;
           state.token = null;
         }
-        console.log(
-          'Auth verification rejected but keeping existing auth state:',
-          state.user?.email,
-        );
+        console.log('Auth verification rejected:', state.error);
       })
       // Logout cases
       .addCase(logoutUser.pending, (state) => {
