@@ -36,6 +36,7 @@ import { AUTH_CONFIG } from './config/environment';
 import { secureStorage } from './utils/secureStorage';
 import { initializePWA } from './utils/pwaHelpers';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 
 const MessagingPage = lazyWithRetry(
   () => import('./modules/messaging/pages/MessagingPage'),
@@ -169,7 +170,7 @@ const SuspenseFallback = () => (
 
 const AppShell = () => {
   const authBootstrapRef = useRef(false);
-  const { mode, toggleTheme } = useThemeMode();
+  const { mode, toggleTheme, setThemeMode } = useThemeMode();
   const dispatch = useDispatch();
   const location = useLocation();
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
@@ -256,263 +257,268 @@ const AppShell = () => {
   }, [dispatch, isAuthenticated, loading, location.pathname]);
 
   return (
-    <Layout toggleTheme={toggleTheme} mode={mode}>
-      <Routes>
-        {publicRoutes}
+    <GlobalErrorBoundary resetKey={location.pathname}>
+      <Layout toggleTheme={toggleTheme} mode={mode} setThemeMode={setThemeMode}>
+        <Routes>
+          {publicRoutes}
 
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordPage />}
+          />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
 
-        <Route
-          path="/mfa/setup"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <MfaSetupPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/mfa/setup"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <MfaSetupPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <Suspense fallback={<SuspenseFallback />}>
-                <ProfilePage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <Suspense fallback={<SuspenseFallback />}>
+                  <ProfilePage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <SettingsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardRedirect
-              user={user}
-              isAuthenticated={isAuthenticated}
-              loading={loading}
-            />
-          }
-        />
+          <Route
+            path="/dashboard"
+            element={
+              <DashboardRedirect
+                user={user}
+                isAuthenticated={isAuthenticated}
+                loading={loading}
+              />
+            }
+          />
 
-        {WorkerRoutes()}
-        {HirerRoutes()}
-        {AdminRoutes()}
+          {WorkerRoutes()}
+          {HirerRoutes()}
+          {AdminRoutes()}
 
-        <Route
-          path="/contracts"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <Suspense fallback={<SuspenseFallback />}>
-                <ContractManagementPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/contracts"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <Suspense fallback={<SuspenseFallback />}>
+                  <ContractManagementPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/contracts/create"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <Suspense fallback={<SuspenseFallback />}>
-                <CreateContractPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/contracts/create"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <Suspense fallback={<SuspenseFallback />}>
+                  <CreateContractPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/contracts/:contractId"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <Suspense fallback={<SuspenseFallback />}>
-                <ContractDetailsPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/contracts/:contractId"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <Suspense fallback={<SuspenseFallback />}>
+                  <ContractDetailsPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/notifications"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <NotificationsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/notifications/settings"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <NotificationSettingsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/notifications/settings"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <NotificationSettingsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/messages"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <Suspense fallback={<SuspenseFallback />}>
-                <MessagingPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <Suspense fallback={<SuspenseFallback />}>
+                  <MessagingPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/worker/payment"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated && hasRole(user, 'worker')}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <PaymentCenterPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/worker/payment"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated && hasRole(user, 'worker')}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <PaymentCenterPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/worker/wallet"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated && hasRole(user, 'worker')}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <WalletPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/worker/wallet"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated && hasRole(user, 'worker')}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <WalletPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/payment/methods"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <PaymentMethodsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/payment/methods"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <PaymentMethodsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/payment/history"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <PaymentsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/payment/history"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <PaymentsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/payment/bills"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <BillPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/payment/bills"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <BillPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/payment/escrow/:id"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <EscrowDetailsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/payment/escrow/:id"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <EscrowDetailsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/schedule"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <SchedulingPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/schedule"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <SchedulingPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/hirer/workers/search"
-          element={
-            <ProtectedRoute
-              isAllowed={isAuthenticated && hasRole(user, 'hirer')}
-              redirectPath="/login"
-              loading={loading}
-            >
-              <WorkerSearchPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/hirer/workers/search"
+            element={
+              <ProtectedRoute
+                isAllowed={isAuthenticated && hasRole(user, 'hirer')}
+                redirectPath="/login"
+                loading={loading}
+              >
+                <WorkerSearchPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+    </GlobalErrorBoundary>
   );
 };
 

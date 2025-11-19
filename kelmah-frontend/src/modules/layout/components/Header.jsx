@@ -1,3 +1,33 @@
+const NavMenuSection = ({ title, items, onNavigate }) => (
+  <Box sx={{ py: 1, px: 2 }}>
+    <Typography
+      variant="overline"
+      sx={{ fontSize: '0.65rem', color: 'text.secondary' }}
+    >
+      {title}
+    </Typography>
+    {items
+      .filter(Boolean)
+      .map((item) => (
+        <MenuItem
+          key={item.label}
+          onClick={() => {
+            onNavigate(item.path);
+            item.onClick?.();
+          }}
+          sx={{ py: 1.25 }}
+        >
+          <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItemText
+            primary={item.label}
+            secondary={item.description}
+            secondaryTypographyProps={{ variant: 'caption' }}
+          />
+        </MenuItem>
+      ))}
+  </Box>
+);
+
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../auth/services/authSlice';
@@ -39,6 +69,11 @@ import {
   Person as PersonIcon,
   Wallet as WalletIcon,
   Assessment as AssessmentIcon,
+  HelpOutline as HelpIcon,
+  SupportAgent as SupportIcon,
+  AssignmentTurnedIn as AssignmentTurnedInIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  ColorLens as ColorLensIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -271,6 +306,48 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
+const ThemeMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    borderRadius: 12,
+    marginTop: theme.spacing(1.5),
+    minWidth: 220,
+    border:
+      theme.palette.mode === 'dark'
+        ? `1px solid rgba(255,215,0,0.3)`
+        : `1px solid rgba(0,0,0,0.15)`,
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? BRAND_COLORS.blackMedium
+        : theme.palette.background.paper,
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? '0 12px 32px rgba(0,0,0,0.7)'
+        : '0 10px 30px rgba(0,0,0,0.18)',
+  },
+}));
+
+const ThemeOption = styled(MenuItem)(({ theme, active }) => ({
+  borderRadius: 10,
+  margin: theme.spacing(0.5, 1),
+  padding: theme.spacing(1.2, 1.5),
+  border:
+    active &&
+    (theme.palette.mode === 'dark'
+      ? `1px solid rgba(255,215,0,0.5)`
+      : `1px solid rgba(0,0,0,0.25)`),
+  backgroundColor:
+    active &&
+    (theme.palette.mode === 'dark'
+      ? 'rgba(255,215,0,0.12)'
+      : 'rgba(0,0,0,0.05)'),
+  '&:hover': {
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,215,0,0.18)'
+        : 'rgba(0,0,0,0.08)',
+  },
+}));
+
 const AuthButton = styled(Button)(({ theme, variant }) => ({
   borderRadius: 8,
   textTransform: 'none',
@@ -343,6 +420,7 @@ const StatusIndicator = styled(Box, {
 
 const Header = ({
   toggleTheme,
+  setThemeMode,
   mode,
   isDashboardMode = false,
   autoShowMode = false,
@@ -363,6 +441,7 @@ const Header = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerAvailability, setHeaderAvailability] = useState(null);
   const [headerCompletion, setHeaderCompletion] = useState(null);
+  const [themeMenuAnchor, setThemeMenuAnchor] = useState(null);
 
   // 🎯 AUTO-HIDE HEADER STATE
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
@@ -655,6 +734,14 @@ const Header = ({
     setNotificationsAnchor(null);
   };
 
+  const handleThemeMenuOpen = (event) => {
+    setThemeMenuAnchor(event.currentTarget);
+  };
+
+  const handleThemeMenuClose = () => {
+    setThemeMenuAnchor(null);
+  };
+
   const handleLogout = async () => {
     handleMenuClose();
     try {
@@ -731,6 +818,85 @@ const Header = ({
 
   const getUserRole = () => {
     return user?.role || 'user';
+  };
+
+  const buildMenuItems = () => {
+    const role = getUserRole();
+
+    const shared = [
+      {
+        label: 'Profile',
+        path: '/profile',
+        icon: <PersonIcon color="primary" />,
+      },
+      {
+        label: 'Settings',
+        path: '/settings',
+        icon: <SettingsIcon color="primary" />,
+      },
+      {
+        label: 'Help & Support',
+        path: '/support',
+        icon: <SupportIcon color="primary" />,
+      },
+    ];
+
+    if (role === 'hirer') {
+      return [
+        {
+          title: 'Manage Hiring',
+          items: [
+            {
+              label: 'Post a Job',
+              path: '/hirer/jobs/post',
+              icon: <WorkIcon color="primary" />,
+              description: 'Create and publish a new job',
+            },
+            {
+              label: 'My Jobs',
+              path: '/hirer/jobs',
+              icon: <DashboardIcon color="primary" />,
+              description: 'Track in-progress postings',
+            },
+            {
+              label: 'Find Talent',
+              path: '/hirer/find-talent',
+              icon: <EngineeringIcon color="primary" />,
+              description: 'Search verified workers',
+            },
+          ],
+        },
+        { title: 'Account', items: shared },
+      ];
+    }
+
+    if (role === 'worker') {
+      return [
+        {
+          title: 'Workflows',
+          items: [
+            {
+              label: 'My Dashboard',
+              path: '/worker/dashboard',
+              icon: <DashboardIcon color="primary" />,
+            },
+            {
+              label: 'Applications',
+              path: '/worker/applications',
+              icon: <AssignmentTurnedInIcon color="primary" />,
+            },
+            {
+              label: 'Saved Jobs',
+              path: '/worker/saved-jobs',
+              icon: <BookmarkBorderIcon color="primary" />,
+            },
+          ],
+        },
+        { title: 'Account', items: shared },
+      ];
+    }
+
+    return [{ title: 'Account', items: shared }];
   };
 
   const renderUserMenu = () => (
@@ -856,65 +1022,17 @@ const Header = ({
       </Box>
 
       {/* Menu Items */}
-      <MenuItem onClick={navigateToDashboard} sx={{ py: 1.5 }}>
-        <ListItemIcon>
-          <DashboardIcon color="primary" />
-        </ListItemIcon>
-        <ListItemText
-          primary="Dashboard"
-          primaryTypographyProps={{ fontWeight: 500 }}
-        />
-      </MenuItem>
-
-      <MenuItem
-        onClick={() => {
-          handleMenuClose();
-          navigate('/profile');
-        }}
-        sx={{ py: 1.5 }}
-      >
-        <ListItemIcon>
-          <PersonIcon color="primary" />
-        </ListItemIcon>
-        <ListItemText
-          primary="Profile"
-          primaryTypographyProps={{ fontWeight: 500 }}
-        />
-      </MenuItem>
-
-      {user?.role === 'worker' && (
-        <MenuItem
-          onClick={() => {
+      {buildMenuItems().map((section) => (
+        <NavMenuSection
+          key={section.title}
+          title={section.title}
+          items={section.items}
+          onNavigate={(path) => {
             handleMenuClose();
-            navigate('/worker/wallet');
+            navigate(path === '/support' ? '/support/help-center' : path);
           }}
-          sx={{ py: 1.5 }}
-        >
-          <ListItemIcon>
-            <WalletIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText
-            primary="Wallet"
-            primaryTypographyProps={{ fontWeight: 500 }}
-          />
-        </MenuItem>
-      )}
-
-      <MenuItem
-        onClick={() => {
-          handleMenuClose();
-          navigate('/settings');
-        }}
-        sx={{ py: 1.5 }}
-      >
-        <ListItemIcon>
-          <SettingsIcon color="primary" />
-        </ListItemIcon>
-        <ListItemText
-          primary="Settings"
-          primaryTypographyProps={{ fontWeight: 500 }}
         />
-      </MenuItem>
+      ))}
 
       <Divider sx={{ my: 1 }} />
 
@@ -1000,7 +1118,7 @@ const Header = ({
             // Use NotificationContext to mark all as read
             const ctx = useNotifications();
             ctx.markAllAsRead?.();
-          } catch (_) {}
+          } catch (_) { }
           handleNotificationsClose();
         }}
         sx={{
@@ -1290,22 +1408,9 @@ const Header = ({
           }}
         >
           {/* Theme Toggle */}
-          <Tooltip
-            title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
-            arrow
-          >
-            <ActionButton onClick={toggleTheme}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={mode}
-                  initial={{ rotate: -180, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 180, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-                </motion.div>
-              </AnimatePresence>
+          <Tooltip title="Theme" arrow>
+            <ActionButton onClick={handleThemeMenuOpen}>
+              <ColorLensIcon />
             </ActionButton>
           </Tooltip>
 
@@ -1432,6 +1537,60 @@ const Header = ({
       {/* Menus */}
       {renderUserMenu()}
       {renderNotificationsMenu()}
+      <ThemeMenu
+        anchorEl={themeMenuAnchor}
+        open={Boolean(themeMenuAnchor)}
+        onClose={handleThemeMenuClose}
+      >
+        <ThemeOption
+          active={mode === 'light'}
+          onClick={() => {
+            setThemeMode('light');
+            handleThemeMenuClose();
+          }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Brightness7Icon fontSize="small" />
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600}>
+                Light Mode
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                High contrast daytime palette
+              </Typography>
+            </Box>
+          </Stack>
+        </ThemeOption>
+        <ThemeOption
+          active={mode === 'dark'}
+          onClick={() => {
+            setThemeMode('dark');
+            handleThemeMenuClose();
+          }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Brightness4Icon fontSize="small" />
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600}>
+                Dark Mode
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                OLED-friendly evening palette
+              </Typography>
+            </Box>
+          </Stack>
+        </ThemeOption>
+        <Divider sx={{ my: 1, mx: 2 }} />
+        <MenuItem
+          onClick={() => {
+            toggleTheme();
+            handleThemeMenuClose();
+          }}
+          sx={{ justifyContent: 'center', fontWeight: 600 }}
+        >
+          Quick Toggle
+        </MenuItem>
+      </ThemeMenu>
     </StyledAppBar>
   );
 };

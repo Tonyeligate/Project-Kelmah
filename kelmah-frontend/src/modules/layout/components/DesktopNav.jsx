@@ -1,6 +1,5 @@
-import React from 'react';
-import { Box, styled, alpha } from '@mui/material';
-import { Link as RouterLink, NavLink, useLocation } from 'react-router-dom';
+import { Box, styled } from '@mui/material';
+import { NavLink } from 'react-router-dom';
 import {
   Home as HomeIcon,
   Work as WorkIcon,
@@ -10,7 +9,7 @@ import {
   Message as MessageIcon,
 } from '@mui/icons-material';
 import useNavLinks from '../../../hooks/useNavLinks';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 // Enhanced Styled components with active state highlighting
 const StyledNavLink = styled(NavLink)(({ theme }) => ({
@@ -77,8 +76,8 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
 }));
 
 const DesktopNav = () => {
-  const location = useLocation();
-  const { isInitialized } = useAuth();
+  const authState = useAuthCheck();
+  const { isReady, isLoading } = authState;
   const { navLinks } = useNavLinks();
 
   // Icon mapping for navigation items
@@ -95,7 +94,7 @@ const DesktopNav = () => {
   };
 
   // Show loading state during initialization
-  if (!isInitialized) {
+  if (!isReady || isLoading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Box sx={{ width: 200, height: 40 }} /> {/* Placeholder */}

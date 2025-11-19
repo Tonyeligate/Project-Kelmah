@@ -68,6 +68,7 @@ import jobsService from '../services/jobsService';
 import HeroFiltersSection from '../components/HeroFiltersSection';
 import JobResultsSection from '../components/JobResultsSection';
 import tradeCategoriesData from '../data/tradeCategories.json';
+import ghanaLocations from '../data/ghanaLocations.json';
 import {
   Container,
   Grid,

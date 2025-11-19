@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
 import {
   Drawer,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
@@ -18,10 +16,10 @@ import {
   Chip,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import {
-  Menu as MenuIcon,
   Close as CloseIcon,
   Home as HomeIcon,
   Work as WorkIcon,
@@ -35,12 +33,12 @@ import {
   Assignment as AssignmentIcon,
   AccountBalance as WalletIcon,
 } from '@mui/icons-material';
-import useNavLinks from '../../../hooks/useNavLinks';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
-import { useAuth } from '../../auth/contexts/AuthContext';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../auth/services/authSlice';
 import { BRAND_COLORS } from '../../../theme';
+import { useAuthCheck } from '../../../hooks/useAuthCheck';
+import { secureStorage } from '../../../utils/secureStorage';
 
 // Styled Components
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
@@ -103,29 +101,60 @@ const MobileNav = ({ open, onClose }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const {
-    user,
-    isAuthenticated: isAuthFn,
-    hasRole,
-    isInitialized,
-    logout,
-  } = useAuth();
-  const isAuthenticated = isAuthFn();
-  const { unreadCount } = useNotifications();
+  const authState = useAuthCheck();
+  const { unreadCount = 0 } = useNotifications();
 
-  const showAuthButtons = isInitialized && !isAuthenticated;
-  const showUserMenu = isInitialized && isAuthenticated;
+  const { user, canShowUserFeatures, shouldShowAuthButtons } = authState;
+
+  const showUserMenu = canShowUserFeatures;
+  const showAuthButtons = shouldShowAuthButtons;
+  const userRole = user?.role || 'user';
+  const isWorker = userRole === 'worker';
+  const isHirer = userRole === 'hirer';
+  const dashboardPath = isWorker
+    ? '/worker/dashboard'
+    : isHirer
+      ? '/hirer/dashboard'
+      : '/dashboard';
+  const applicationsPath = isWorker
+    ? '/worker/applications'
+    : isHirer
+      ? '/hirer/applications'
+      : '/applications';
+
+  const formatRoleLabel = () => {
+    if (isWorker) return 'Skilled Worker';
+    if (isHirer) return 'Hirer';
+    const label = user?.roleDisplay || userRole;
+    if (!label) {
+      return 'Member';
+    }
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  };
 
   const handleLogout = async () => {
     onClose();
+
     try {
-      sessionStorage.setItem('dev-logout', 'true');
-      dispatch(logoutUser());
-      await logout();
-      navigate('/');
+      secureStorage.clear();
+      localStorage.removeItem('kelmah_auth_token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('refreshToken');
+      sessionStorage.clear();
+    } catch (storageError) {
+      console.warn('⚠️ MobileNav storage cleanup warning:', storageError);
+    }
+
+    try {
+      await dispatch(logoutUser());
     } catch (error) {
-      console.error('Logout error:', error);
-      navigate('/');
+      console.error('Logout dispatch error:', error);
+    } finally {
+      navigate('/', { replace: true });
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   };
 
@@ -169,23 +198,20 @@ const MobileNav = ({ open, onClose }) => {
     {
       label: 'Dashboard',
       icon: <DashboardIcon />,
-      path: user?.role === 'worker' ? '/worker/dashboard' : '/hirer/dashboard',
+      path: dashboardPath,
       show: showUserMenu,
     },
     {
       label: 'My Applications',
       icon: <AssignmentIcon />,
-      path:
-        user?.role === 'worker'
-          ? '/worker/applications'
-          : '/hirer/applications',
+      path: applicationsPath,
       show: showUserMenu,
     },
     {
       label: 'Messages',
       icon: <MessageIcon />,
       path: '/messages',
-      badge: 2,
+      badge: 0,
       show: showUserMenu,
     },
     {
@@ -276,12 +302,10 @@ const MobileNav = ({ open, onClose }) => {
               </Avatar>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {user?.firstName
-                    ? `${user.firstName} ${user.lastName || ''}`
-                    : user?.username || 'User'}
+                  {user?.fullName || user?.displayName || user?.email || 'User'}
                 </Typography>
                 <Chip
-                  label={user?.role === 'worker' ? 'Skilled Worker' : 'Hirer'}
+                  label={formatRoleLabel()}
                   size="small"
                   sx={{
                     backgroundColor:
@@ -437,6 +461,11 @@ const MobileNav = ({ open, onClose }) => {
       </Box>
     </StyledDrawer>
   );
+};
+
+MobileNav.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default MobileNav;

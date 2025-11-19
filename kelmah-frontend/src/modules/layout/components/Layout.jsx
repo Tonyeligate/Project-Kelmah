@@ -25,7 +25,7 @@ import SmartNavigation from '../../../components/common/SmartNavigation';
  * Main layout component that wraps the entire application
  * Provides consistent header, footer, and container structure
  */
-const Layout = ({ children, toggleTheme, mode }) => {
+const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const location = useLocation();
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -70,7 +70,11 @@ const Layout = ({ children, toggleTheme, mode }) => {
             position: 'relative',
           }}
         >
-          <Header toggleTheme={toggleTheme} mode={mode} />
+          <Header
+            toggleTheme={toggleTheme}
+            mode={mode}
+            setThemeMode={setThemeMode}
+          />
           {children}
           <MobileBottomNav />
         </Box>
@@ -81,7 +85,12 @@ const Layout = ({ children, toggleTheme, mode }) => {
     if (isMdUp) {
       return (
         <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          <Header toggleTheme={toggleTheme} mode={mode} autoShowMode={true} />
+          <Header
+            toggleTheme={toggleTheme}
+            mode={mode}
+            autoShowMode={true}
+            setThemeMode={setThemeMode}
+          />
           <Sidebar variant="permanent" />
           {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
           <Box
@@ -135,7 +144,11 @@ const Layout = ({ children, toggleTheme, mode }) => {
           overflowY: 'auto',
         }}
       >
-        <Header toggleTheme={toggleTheme} mode={mode} />
+        <Header
+          toggleTheme={toggleTheme}
+          mode={mode}
+          setThemeMode={setThemeMode}
+        />
         {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
         <Sidebar
           variant="temporary"
@@ -178,7 +191,7 @@ const Layout = ({ children, toggleTheme, mode }) => {
         overflowY: 'auto', // Allow natural vertical scrolling
       }}
     >
-      <Header toggleTheme={toggleTheme} mode={mode} />
+      <Header toggleTheme={toggleTheme} mode={mode} setThemeMode={setThemeMode} />
       <Fade in key={location.pathname} timeout={500}>
         <Box
           component="main"
@@ -217,6 +230,7 @@ Layout.propTypes = {
   children: PropTypes.node.isRequired,
   toggleTheme: PropTypes.func,
   mode: PropTypes.string,
+  setThemeMode: PropTypes.func,
 };
 
 export default Layout;

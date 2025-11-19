@@ -76,6 +76,12 @@ const ProfessionalMapPage = lazyWithRetry(
     retryKey: 'professional-map',
   },
 );
+const HelpCenterPage = lazyWithRetry(
+  () => import('../modules/support/pages/HelpCenterPage'),
+  {
+    retryKey: 'help-center-page',
+  },
+);
 
 const withSuspense = (Component, options = {}) => {
   const content = (
@@ -151,6 +157,16 @@ const publicRoutes = [
   />,
   <Route key="/search" path="/search" element={withSuspense(SearchPage)} />,
   <Route key="/map" path="/map" element={withSuspense(ProfessionalMapPage)} />,
+  <Route
+    key="/support"
+    path="/support"
+    element={withSuspense(HelpCenterPage)}
+  />,
+  <Route
+    key="/support/help-center"
+    path="/support/help-center"
+    element={withSuspense(HelpCenterPage)}
+  />,
 ];
 
 export default publicRoutes;
