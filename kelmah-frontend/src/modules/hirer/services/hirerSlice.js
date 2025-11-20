@@ -195,9 +195,9 @@ export const fetchPaymentSummary = createAsyncThunk(
       const escrowBalance = Array.isArray(wallet?.accounts)
         ? wallet.accounts.find((a) => a.type === 'escrow')?.balance || 0
         : escrows.reduce(
-            (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
-            0,
-          );
+          (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
+          0,
+        );
 
       // Build pending payments from escrows' pending milestones
       const pending = [];
@@ -248,8 +248,8 @@ export const fetchPaymentSummary = createAsyncThunk(
         .filter((d) => Number.isFinite(d) && d > 0);
       const avgMs = payoutDurations.length
         ? Math.round(
-            payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
-          )
+          payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
+        )
         : null;
       const averagePaymentTime = avgMs
         ? `${Math.max(1, Math.round(avgMs / (1000 * 60)))} min`

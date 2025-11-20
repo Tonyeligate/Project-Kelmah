@@ -198,7 +198,7 @@ const JobResultsSection = ({
           )}
           <Button
             variant="outlined"
-            onClick={() => navigate('/post-job')}
+            onClick={() => navigate('/hirer/jobs/post')}
             sx={{
               borderColor: '#D4AF37',
               color: '#D4AF37',

@@ -97,7 +97,7 @@ const Footer = () => {
       title: 'For Hirers',
       links: [
         { label: 'Find Talent', href: '/find-talent' },
-        { label: 'Post a Job', href: '/post-job' },
+        { label: 'Post a Job', href: '/hirer/jobs/post' },
         { label: 'Pricing', href: '/pricing' },
         { label: 'Resources', href: '/resources/hirers' },
       ],
@@ -208,39 +208,36 @@ const Footer = () => {
                           size="large"
                           href={social.href}
                           sx={{
-                            background: `rgba(${
-                              social.color === '#1877F2'
+                            background: `rgba(${social.color === '#1877F2'
                                 ? '24,119,242'
                                 : social.color === '#1DA1F2'
                                   ? '29,161,242'
                                   : social.color === '#0A66C2'
                                     ? '10,102,194'
                                     : '228,64,95'
-                            }, 0.1)`,
+                              }, 0.1)`,
                             color: social.color,
-                            border: `1px solid rgba(${
-                              social.color === '#1877F2'
+                            border: `1px solid rgba(${social.color === '#1877F2'
                                 ? '24,119,242'
                                 : social.color === '#1DA1F2'
                                   ? '29,161,242'
                                   : social.color === '#0A66C2'
                                     ? '10,102,194'
                                     : '228,64,95'
-                            }, 0.2)`,
+                              }, 0.2)`,
                             transition: 'all 0.3s ease',
                             '&:hover': {
                               background: social.color,
                               color: '#fff',
                               transform: 'translateY(-2px)',
-                              boxShadow: `0 4px 12px rgba(${
-                                social.color === '#1877F2'
+                              boxShadow: `0 4px 12px rgba(${social.color === '#1877F2'
                                   ? '24,119,242'
                                   : social.color === '#1DA1F2'
                                     ? '29,161,242'
                                     : social.color === '#0A66C2'
                                       ? '10,102,194'
                                       : '228,64,95'
-                              }, 0.3)`,
+                                }, 0.3)`,
                             },
                           }}
                         >
@@ -446,15 +443,14 @@ const Footer = () => {
                                   background: social.color,
                                   color: '#fff',
                                   transform: 'translateY(-2px) scale(1.05)',
-                                  boxShadow: `0 8px 25px rgba(${
-                                    social.color === '#1877F2'
+                                  boxShadow: `0 8px 25px rgba(${social.color === '#1877F2'
                                       ? '24,119,242'
                                       : social.color === '#1DA1F2'
                                         ? '29,161,242'
                                         : social.color === '#0A66C2'
                                           ? '10,102,194'
                                           : '228,64,95'
-                                  }, 0.4)`,
+                                    }, 0.4)`,
                                   border: `1px solid ${social.color}`,
                                 },
                               }}

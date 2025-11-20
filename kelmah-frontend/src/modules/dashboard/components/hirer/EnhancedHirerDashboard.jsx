@@ -176,19 +176,19 @@ const HirerActionCard = React.memo(
         },
         '&::before': featured
           ? {
-              content: '"RECOMMENDED"',
-              position: 'absolute',
-              top: -8,
-              right: 16,
-              bgcolor: GhanaTheme.gold,
-              color: 'black',
-              fontSize: '0.7rem',
-              fontWeight: 'bold',
-              px: 1,
-              py: 0.5,
-              borderRadius: 1,
-              zIndex: 2,
-            }
+            content: '"RECOMMENDED"',
+            position: 'absolute',
+            top: -8,
+            right: 16,
+            bgcolor: GhanaTheme.gold,
+            color: 'black',
+            fontSize: '0.7rem',
+            fontWeight: 'bold',
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            zIndex: 2,
+          }
           : {},
       }}
       onClick={onClick}
@@ -364,7 +364,7 @@ const EnhancedHirerDashboard = () => {
         description: 'Find the perfect talent',
         icon: <PostJobIcon />,
         gradient: `linear-gradient(135deg, ${GhanaTheme.red} 0%, ${alpha(GhanaTheme.red, 0.8)} 100%)`,
-        onClick: () => navigate('/hirer/post-job'),
+        onClick: () => navigate('/hirer/jobs/post'),
         featured: true,
       },
       {
@@ -502,7 +502,7 @@ const EnhancedHirerDashboard = () => {
                     <Button
                       color="inherit"
                       size="small"
-                      onClick={() => navigate('/hirer/post-job')}
+                      onClick={() => navigate('/hirer/jobs/post')}
                     >
                       Post Job
                     </Button>
@@ -660,7 +660,7 @@ const EnhancedHirerDashboard = () => {
                         <Button
                           variant="contained"
                           size="small"
-                          onClick={() => navigate('/hirer/post-job')}
+                          onClick={() => navigate('/hirer/jobs/post')}
                           sx={{ bgcolor: GhanaTheme.red }}
                         >
                           Post Your First Job

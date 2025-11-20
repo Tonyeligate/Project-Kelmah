@@ -1009,9 +1009,9 @@ const JobsPage = () => {
                                 borderColor: '#D4AF37',
                               },
                               '&.Mui-focused .MuiOutlinedInput-notchedOutline':
-                                {
-                                  borderColor: '#D4AF37',
-                                },
+                              {
+                                borderColor: '#D4AF37',
+                              },
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
                               },
@@ -1080,9 +1080,9 @@ const JobsPage = () => {
                                 borderColor: '#D4AF37',
                               },
                               '&.Mui-focused .MuiOutlinedInput-notchedOutline':
-                                {
-                                  borderColor: '#D4AF37',
-                                },
+                              {
+                                borderColor: '#D4AF37',
+                              },
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
                               },
@@ -1613,7 +1613,7 @@ const JobsPage = () => {
                     )}
                     <Button
                       variant="outlined"
-                      onClick={() => navigate('/post-job')}
+                      onClick={() => navigate('/hirer/jobs/post')}
                       sx={{
                         borderColor: '#D4AF37',
                         color: '#D4AF37',

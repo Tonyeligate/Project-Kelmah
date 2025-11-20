@@ -47,7 +47,7 @@ const ELIGIBLE_PATH_PREFIXES = [
   '/worker/applications',
   '/hirer/dashboard',
   '/hirer/find',
-  '/hirer/post-job',
+  '/hirer/jobs/post',
   '/messages',
 ];
 
