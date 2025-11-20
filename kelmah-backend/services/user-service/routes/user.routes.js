@@ -100,7 +100,7 @@ router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
   });
 });
 
-router.get("/workers/:id/availability", verifyGatewayRequest, (req, res, next) => {
+router.get("/workers/:id/availability", optionalGatewayVerification, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
@@ -108,7 +108,7 @@ router.get("/workers/:id/availability", verifyGatewayRequest, (req, res, next) =
   next();
 }, WorkerController.getWorkerAvailability);
 
-router.get("/workers/:id/completeness", verifyGatewayRequest, (req, res, next) => {
+router.get("/workers/:id/completeness", optionalGatewayVerification, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/:id/completeness route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl

@@ -216,9 +216,9 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
-    'ngrok-skip-browser-warning', 
+    'Content-Type',
+    'Authorization',
+    'ngrok-skip-browser-warning',
     'x-requested-with',
     'x-frontend-health-probe'  // ✅ FIXED: Allow frontend health probe header
   ],
@@ -312,14 +312,14 @@ if (internalKeepAlive) {
       data: internalKeepAlive.getStatus()
     });
   });
-  
+
   app.get('/api/health/keepalive', (req, res) => {
     res.json({
       success: true,
       data: internalKeepAlive.getStatus()
     });
   });
-  
+
   // Manual trigger for keep-alive ping
   app.post('/health/keepalive/trigger', async (req, res) => {
     try {
@@ -918,7 +918,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
   try {
     // Ensure user is authenticated
     if (!req.user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Authentication required',
         message: 'No user information available'
       });
@@ -926,7 +926,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
 
     const messagingUrl = process.env.MESSAGING_SERVICE_CLOUD_URL || 'http://localhost:5005';
     const targetUrl = `${messagingUrl}/api/notifications${req.url}`;
-    
+
     console.log('[NOTIFICATIONS MANUAL PROXY] Request:', {
       method: req.method,
       url: req.url,
@@ -954,7 +954,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
     });
 
     const response = await axios(axiosConfig);
-    
+
     console.log('[NOTIFICATIONS MANUAL PROXY] Response:', {
       status: response.status,
       hasData: !!response.data
@@ -971,7 +971,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
     if (error.response) {
       return res.status(error.response.status).json(error.response.data);
     }
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Proxy error',
       message: 'Failed to forward request to messaging service'
     });
@@ -1063,15 +1063,28 @@ app.use('/api/ratings',
     if (!services.review || typeof services.review !== 'string' || services.review.length === 0) {
       return res.status(503).json({ error: 'Rating service unavailable' });
     }
+
     const proxy = createProxyMiddleware({
       target: services.review,
       changeOrigin: true,
-      pathRewrite: { '^/api/ratings': '/api/ratings' },
+      pathRewrite: (path, innerReq) => {
+        const suffix = path.startsWith('/') ? path : `/${path}`;
+        const base = innerReq.baseUrl || '/api/ratings';
+        if (suffix.startsWith('/api/ratings')) {
+          return suffix;
+        }
+        // Ensure downstream sees the full /api/ratings prefix even though Express stripped it
+        return `${base}${suffix}`.replace(/\/\/{2,}/g, '/');
+      },
+      onProxyReq: (proxyReq) => {
+        proxyReq.setHeader('ngrok-skip-browser-warning', 'true');
+      },
       onError: (err, req, res) => {
         logger.error('Rating service error:', err);
         res.status(503).json({ error: 'Rating service unavailable' });
       }
     });
+
     return proxy(req, res, next);
   }
 );
@@ -1184,7 +1197,7 @@ const startServer = async () => {
   try {
     // Initialize service discovery first
     await initializeServices();
-  keepAliveManager.start();
+    keepAliveManager.start();
 
     // Create job proxy now that services are discovered
     jobProxyMiddleware = createEnhancedJobProxy(services.job, {

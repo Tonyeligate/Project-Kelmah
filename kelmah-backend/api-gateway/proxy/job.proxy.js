@@ -27,7 +27,7 @@ const createJobProxy = (targetUrl, options = {}) => {
     },
     onError: (err, req, res) => {
       console.error('Job proxy error:', err.message);
-      res.status(503).json({ 
+      res.status(503).json({
         error: 'Job service temporarily unavailable',
         message: err.message,
         timestamp: new Date().toISOString()
@@ -39,11 +39,29 @@ const createJobProxy = (targetUrl, options = {}) => {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
         proxyReq.setHeader('x-auth-source', 'api-gateway');
       }
-      
+
       // Add request ID for tracing
       proxyReq.setHeader('X-Request-ID', req.id || Date.now().toString());
-      
+
       console.log(`[Job Proxy] Proxying ${req.method} ${req.url} to ${targetUrl}`);
+
+      // Re-stream JSON body payloads because express.json() consumes the stream
+      const methodHasBody = !['GET', 'HEAD'].includes(req.method);
+      const hasParsedBody = req.body && (Buffer.isBuffer(req.body) || Object.keys(req.body).length > 0);
+      if (methodHasBody && hasParsedBody) {
+        let bodyData;
+        if (Buffer.isBuffer(req.body)) {
+          bodyData = req.body;
+        } else {
+          bodyData = Buffer.from(JSON.stringify(req.body));
+          if (!proxyReq.getHeader('Content-Type')) {
+            proxyReq.setHeader('Content-Type', 'application/json');
+          }
+        }
+
+        proxyReq.setHeader('Content-Length', bodyData.length);
+        proxyReq.write(bodyData);
+      }
     },
     onProxyRes: (proxyRes, req, res) => {
       console.log(`[Job Proxy] Response ${proxyRes.statusCode} for ${req.method} ${req.url}`);
@@ -138,7 +156,7 @@ const createEnhancedJobProxy = (targetUrl, options = {}) => {
       lastHealthCheck = now;
       const health = await checkJobServiceHealth(targetUrl);
       isHealthy = health.healthy;
-      
+
       if (!isHealthy) {
         console.warn('[Job Proxy] Service health check failed:', health.error);
       }
@@ -147,7 +165,7 @@ const createEnhancedJobProxy = (targetUrl, options = {}) => {
 
   return async (req, res, next) => {
     await performHealthCheck();
-    
+
     if (!isHealthy) {
       return res.status(503).json({
         error: 'Job service is currently unavailable',

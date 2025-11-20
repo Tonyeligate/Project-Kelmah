@@ -48,7 +48,12 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  register as registerAction,
+  selectAuthLoading,
+  selectAuthError,
+} from '../../services/authSlice';
 
 // Ghana phone number validation
 const validateGhanaPhone = (phone) => {
@@ -94,7 +99,9 @@ const COMMON_TRADES = [
 const MobileRegister = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { register, loading: authLoading } = useAuth();
+  const dispatch = useDispatch();
+  const authLoading = useSelector(selectAuthLoading);
+  const authError = useSelector(selectAuthError);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -117,6 +124,12 @@ const MobileRegister = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (authError) {
+      setSubmitError(authError);
+    }
+  }, [authError]);
 
   // Handle input changes
   const handleInputChange = (field) => (event) => {
@@ -246,7 +259,7 @@ const MobileRegister = () => {
         acceptTerms: formData.acceptTerms,
       };
 
-      await register(userData);
+      await dispatch(registerAction(userData)).unwrap();
 
       // Show success state
       setShowSuccess(true);
