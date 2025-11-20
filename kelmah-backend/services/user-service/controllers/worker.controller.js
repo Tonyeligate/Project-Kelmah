@@ -137,11 +137,9 @@ const autopopulateWorkerDefaults = async (worker, usersCollection) => {
   }
 
   if (!worker.bio) {
-    updates.bio = `Experienced ${
-      worker.profession || 'General Worker'
-    } with ${worker.yearsOfExperience || 2} years of experience in ${
-      worker.location || 'Accra, Ghana'
-    }.`;
+    updates.bio = `Experienced ${worker.profession || 'General Worker'
+      } with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'
+      }.`;
     updateNeeded = true;
   }
 
@@ -152,8 +150,7 @@ const autopopulateWorkerDefaults = async (worker, usersCollection) => {
         { $set: updates },
       );
       console.log(
-        `✅ Auto-populated worker fields for ${
-          worker.firstName || ''
+        `✅ Auto-populated worker fields for ${worker.firstName || ''
         } ${worker.lastName || ''}`,
       );
     } catch (error) {
@@ -178,8 +175,7 @@ const formatWorkerForResponse = (workerDoc) => {
     name: `${workerDoc.firstName || ''} ${workerDoc.lastName || ''}`.trim(),
     bio:
       workerDoc.bio ||
-      `${workerDoc.profession || 'Professional Worker'} with ${
-        workerDoc.yearsOfExperience || 0
+      `${workerDoc.profession || 'Professional Worker'} with ${workerDoc.yearsOfExperience || 0
       } years of experience.`,
     location: workerDoc.location || 'Ghana',
     city: workerDoc.location
@@ -368,10 +364,10 @@ const normalizeSkill = (skill, source = 'user') => {
     const trimmed = skill.trim();
     return trimmed
       ? {
-          name: trimmed,
-          level: 'Intermediate',
-          source,
-        }
+        name: trimmed,
+        level: 'Intermediate',
+        source,
+      }
       : null;
   }
 
@@ -393,10 +389,10 @@ const normalizeSkill = (skill, source = 'user') => {
   const fallbackName = toSafeString(skill).trim();
   return fallbackName
     ? {
-        name: fallbackName,
-        level: 'Intermediate',
-        source,
-      }
+      name: fallbackName,
+      level: 'Intermediate',
+      source,
+    }
     : null;
 };
 
@@ -832,15 +828,15 @@ const mapDaySlots = (daySlots) => {
 
       const slots = Array.isArray(slot?.slots)
         ? slot.slots
-            .map((timeSlot) => {
-              const start = toSafeString(timeSlot?.start, null);
-              const end = toSafeString(timeSlot?.end, null);
-              if (!start || !end) {
-                return null;
-              }
-              return { start, end };
-            })
-            .filter(Boolean)
+          .map((timeSlot) => {
+            const start = toSafeString(timeSlot?.start, null);
+            const end = toSafeString(timeSlot?.end, null);
+            if (!start || !end) {
+              return null;
+            }
+            return { start, end };
+          })
+          .filter(Boolean)
         : [];
 
       return {
@@ -1563,7 +1559,7 @@ class WorkerController {
 
   static async getWorkerById(req, res) {
     const workerId = req.params.id;
-    
+
     try {
       if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
         return res.status(400).json({
@@ -1607,11 +1603,11 @@ class WorkerController {
           }),
         MongoWorkerProfile
           ? MongoWorkerProfile.findOne({ userId: workerId })
-              .lean()
-              .catch((err) => {
-                console.error('⚠️ Error querying WorkerProfile:', err);
-                return null;
-              })
+            .lean()
+            .catch((err) => {
+              console.error('⚠️ Error querying WorkerProfile:', err);
+              return null;
+            })
           : null,
       ]);
 
@@ -1636,35 +1632,35 @@ class WorkerController {
       const [availabilityDoc, certificateDocs, portfolioDocs] = await Promise.all([
         modelsModule.Availability
           ? modelsModule.Availability.findOne({ user: workerId })
-              .lean()
-              .catch((err) => {
-                console.error('⚠️ Error querying Availability:', err);
-                return null;
-              })
+            .lean()
+            .catch((err) => {
+              console.error('⚠️ Error querying Availability:', err);
+              return null;
+            })
           : null,
         modelsModule.Certificate
           ? modelsModule.Certificate.find({ workerId, status: { $ne: 'archived' } })
-              .sort({ status: -1, createdAt: -1 })
-              .limit(25)
-              .lean()
-              .catch((err) => {
-                console.error('⚠️ Error querying Certificates:', err);
-                return [];
-              })
+            .sort({ status: -1, createdAt: -1 })
+            .limit(25)
+            .lean()
+            .catch((err) => {
+              console.error('⚠️ Error querying Certificates:', err);
+              return [];
+            })
           : [],
         workerProfileId && modelsModule.Portfolio
           ? modelsModule.Portfolio.find({
-              workerProfileId,
-              isActive: true,
-              status: { $ne: 'archived' },
+            workerProfileId,
+            isActive: true,
+            status: { $ne: 'archived' },
+          })
+            .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+            .limit(20)
+            .lean()
+            .catch((err) => {
+              console.error('⚠️ Error querying Portfolio:', err);
+              return [];
             })
-              .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
-              .limit(20)
-              .lean()
-              .catch((err) => {
-                console.error('⚠️ Error querying Portfolio:', err);
-                return [];
-              })
           : [],
       ]);
 
@@ -1673,7 +1669,7 @@ class WorkerController {
 
       const skills = uniqBy(
         [
-          ...toArray(worker.skills).map((skill) => normalizeSkill(skill, 'user')), 
+          ...toArray(worker.skills).map((skill) => normalizeSkill(skill, 'user')),
           ...toArray(profile.skills).map((skill) => normalizeSkill(skill, 'profile')),
         ].filter(Boolean),
         (skill) => skill.name.toLowerCase(),
@@ -1806,19 +1802,19 @@ class WorkerController {
         },
         business: profile.businessInfo
           ? {
-              name: toSafeString(profile.businessInfo.businessName, ''),
-              type: toSafeString(profile.businessInfo.businessType, ''),
-              registrationNumber: toSafeString(profile.businessInfo.registrationNumber, ''),
-              taxId: toSafeString(profile.businessInfo.taxId, ''),
-            }
+            name: toSafeString(profile.businessInfo.businessName, ''),
+            type: toSafeString(profile.businessInfo.businessType, ''),
+            registrationNumber: toSafeString(profile.businessInfo.registrationNumber, ''),
+            taxId: toSafeString(profile.businessInfo.taxId, ''),
+          }
           : null,
         insurance: profile.insuranceInfo
           ? {
-              hasInsurance: toSafeBoolean(profile.insuranceInfo.hasInsurance, false),
-              provider: toSafeString(profile.insuranceInfo.provider, ''),
-              expiryDate: toIsoString(profile.insuranceInfo.expiryDate),
-              coverage: toSafeNumber(profile.insuranceInfo.coverage, null),
-            }
+            hasInsurance: toSafeBoolean(profile.insuranceInfo.hasInsurance, false),
+            provider: toSafeString(profile.insuranceInfo.provider, ''),
+            expiryDate: toIsoString(profile.insuranceInfo.expiryDate),
+            coverage: toSafeNumber(profile.insuranceInfo.coverage, null),
+          }
           : null,
         user: {
           id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
@@ -1864,7 +1860,7 @@ class WorkerController {
         stack: error?.stack?.split('\n').slice(0, 5).join('\n'),
         workerId,
       });
-      
+
       return res.status(500).json({
         success: false,
         message: 'Internal server error while fetching worker profile',
@@ -2059,8 +2055,8 @@ class WorkerController {
         errorStack: error?.stack,
         workerId,
         modelsModuleLoaded: !!modelsModule,
-        UserModelExists: !!User,
-        WorkerProfileModelExists: !!WorkerProfile,
+        userModelLoaded: !!modelsModule?.User,
+        workerProfileModelLoaded: !!modelsModule?.WorkerProfile,
         connectionState: mongoose.connection.readyState
       });
       if (isDbUnavailableError(error)) {
@@ -3098,15 +3094,15 @@ class WorkerController {
       const dayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const normalizedSchedule = Array.isArray(availability.daySlots)
         ? availability.daySlots.map((daySlot) => ({
-            day: dayMap[daySlot.dayOfWeek] ?? 'unknown',
-            available: Array.isArray(daySlot.slots) && daySlot.slots.length > 0,
-            slots: Array.isArray(daySlot.slots)
-              ? daySlot.slots.map((slot) => ({
-                  start: slot.start,
-                  end: slot.end,
-                }))
-              : [],
-          }))
+          day: dayMap[daySlot.dayOfWeek] ?? 'unknown',
+          available: Array.isArray(daySlot.slots) && daySlot.slots.length > 0,
+          slots: Array.isArray(daySlot.slots)
+            ? daySlot.slots.map((slot) => ({
+              start: slot.start,
+              end: slot.end,
+            }))
+            : [],
+        }))
         : [];
 
       const computeNextAvailable = () => {
@@ -3157,8 +3153,8 @@ class WorkerController {
         errorStack: error?.stack,
         workerId,
         modelsModuleLoaded: !!modelsModule,
-        AvailabilityModelExists: !!Availability,
-        UserModelExists: !!User,
+        availabilityModelLoaded: !!modelsModule?.Availability,
+        userModelLoaded: !!modelsModule?.User,
         connectionState: mongoose.connection.readyState
       });
       if (isDbUnavailableError(error)) {
