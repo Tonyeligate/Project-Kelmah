@@ -3,10 +3,10 @@
  */
 
 // Use shared and service-specific models via index
-const { 
-  Job, 
-  User, 
-  Application, 
+const {
+  Job,
+  User,
+  Application,
   SavedJob,
   Bid,
   UserPerformance,
@@ -149,6 +149,29 @@ const createJob = async (req, res, next) => {
         status: body.status || 'open',
       },
     });
+
+    // Ensure MongoDB connection is truly ready (not just buffering)
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      jobLogger.error('job.create.db-not-ready', {
+        requestId,
+        readyState: mongoose.connection.readyState,
+        userId: req.user?.id
+      });
+      return errorResponse(res, 503, 'Database connection not ready. Please try again.', 'DB_NOT_READY');
+    }
+
+    // Verify we can actually reach MongoDB by checking the client
+    try {
+      await mongoose.connection.db.admin().ping();
+    } catch (pingError) {
+      jobLogger.error('job.create.db-ping-failed', {
+        requestId,
+        userId: req.user?.id,
+        error: pingError.message
+      });
+      return errorResponse(res, 503, 'Database temporarily unavailable. Please try again.', 'DB_UNAVAILABLE');
+    }
 
     // Create job
     const job = await Job.create(body);
@@ -423,13 +446,13 @@ const getJobs = async (req, res, next) => {
     const mongoose = require('mongoose');
     console.log('[GET JOBS] Starting getJobs function');
     console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
-    
+
     // CHECK IF JOB MODEL IS USING THE CONNECTED MONGOOSE INSTANCE
     console.log('[GET JOBS] Job model database:', Job.db ? Job.db.databaseName : 'NO DB');
     console.log('[GET JOBS] Job model connection state:', Job.db ? Job.db.readyState : 'NO DB');
     console.log('[GET JOBS] Main mongoose database:', mongoose.connection.name);
     console.log('[GET JOBS] Same connection?:', Job.db === mongoose.connection);
-    
+
     // Try direct MongoDB driver query to bypass Mongoose
     try {
       const client = mongoose.connection.getClient();
@@ -437,7 +460,7 @@ const getJobs = async (req, res, next) => {
       const jobsCollection = db.collection('jobs');
       const directCount = await jobsCollection.countDocuments({ status: 'Open', visibility: 'public' });
       console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
-      
+
       // If direct query works, try to use it
       if (directCount > 0) {
         console.log('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
@@ -445,9 +468,9 @@ const getJobs = async (req, res, next) => {
     } catch (clientError) {
       console.error('[GET JOBS] Error with direct driver query:', clientError.message);
     }
-    
+
     console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
-    
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -557,18 +580,18 @@ const getJobs = async (req, res, next) => {
     console.log('[GET JOBS] About to execute query...');
     console.log('[GET JOBS] Final query:', JSON.stringify(query));
     console.log('[GET JOBS] Sort:', req.query.sort || "-createdAt");
-    
+
     // WORKAROUND: Use direct MongoDB driver because Mongoose model is disconnected
     const client = mongoose.connection.getClient();
     const db = client.db();
     const jobsCollection = db.collection('jobs');
     const usersCollection = db.collection('users');
-    
+
     // Get jobs using native MongoDB driver
     const sortField = req.query.sort || "-createdAt";
     const sortOrder = sortField.startsWith('-') ? -1 : 1;
     const sortKey = sortField.replace(/^-/, '');
-    
+
     const jobsCursor = jobsCollection
       .find(query)
       .sort({ [sortKey]: sortOrder })
@@ -579,14 +602,14 @@ const getJobs = async (req, res, next) => {
     const jobs = await jobsCursor.toArray();
     console.log('[GET JOBS] Direct driver query executed successfully');
     console.log('[GET JOBS] Jobs found:', jobs.length);
-    
+
     // Manually populate hirer data with all required fields
     const hirerIds = [...new Set(jobs.map(j => j.hirer).filter(Boolean))];
     const hirers = await usersCollection
       .find({ _id: { $in: hirerIds } })
-      .project({ 
-        firstName: 1, 
-        lastName: 1, 
+      .project({
+        firstName: 1,
+        lastName: 1,
         profileImage: 1,
         avatar: 1,
         verified: 1,
@@ -595,7 +618,7 @@ const getJobs = async (req, res, next) => {
         email: 1
       })
       .toArray();
-    
+
     const hirerMap = new Map(hirers.map(h => [h._id.toString(), h]));
     jobs.forEach(job => {
       if (job.hirer) {
@@ -884,11 +907,11 @@ const getMyJobs = async (req, res, next) => {
         hirer: job.hirer?.toString?.() || String(job.hirer),
         worker: worker
           ? {
-              _id: worker._id.toString(),
-              firstName: worker.firstName || null,
-              lastName: worker.lastName || null,
-              profileImage: worker.profileImage || null,
-            }
+            _id: worker._id.toString(),
+            firstName: worker.firstName || null,
+            lastName: worker.lastName || null,
+            profileImage: worker.profileImage || null,
+          }
           : null,
       };
     });
@@ -1097,7 +1120,7 @@ const getContracts = async (req, res, next) => {
           },
           {
             id: "milestone-2",
-            title: "Cabinet Installation", 
+            title: "Cabinet Installation",
             amount: 2500,
             status: "in_progress",
             dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
@@ -1151,7 +1174,7 @@ const getContracts = async (req, res, next) => {
     ];
 
     console.log(`✅ Returning ${contracts.length} contracts from Job Service`);
-    return successResponse(res, 200, "Contracts retrieved successfully", { 
+    return successResponse(res, 200, "Contracts retrieved successfully", {
       contracts,
       meta: {
         total: contracts.length,
@@ -1274,10 +1297,10 @@ const getJobRecommendations = async (req, res, next) => {
       averageMatchScore:
         jobs.length > 0
           ? Math.round(
-              (jobs.reduce((sum, jobEntry) => sum + (jobEntry.matchScore || 0), 0) /
-                jobs.length) *
-                100,
-            ) / 100
+            (jobs.reduce((sum, jobEntry) => sum + (jobEntry.matchScore || 0), 0) /
+              jobs.length) *
+            100,
+          ) / 100
           : 0,
     });
   } catch (error) {
@@ -1307,7 +1330,7 @@ const getWorkerMatches = async (req, res, next) => {
 
     // Get available workers (this would typically call user-service)
     // For now, we'll use a basic query - in production this would be a service call
-    const workers = await User.find({ 
+    const workers = await User.find({
       role: 'worker',
       isActive: true,
       'workerProfile.availabilityStatus': { $in: ['available', 'partially_available'] }
@@ -1316,7 +1339,7 @@ const getWorkerMatches = async (req, res, next) => {
     // Calculate match scores for each worker
     const workersWithScores = workers.map(worker => {
       const matchScore = calculateWorkerMatchScore(job, worker);
-      
+
       return {
         id: worker._id,
         name: `${worker.firstName} ${worker.lastName}`,
@@ -1360,18 +1383,18 @@ function calculateJobMatchScore(job, worker) {
   // Skills matching (40% weight)
   const jobSkills = job.skills || [];
   const workerSkills = worker.skills || [];
-  
+
   const skillMatches = jobSkills.filter(jobSkill =>
-    workerSkills.some(workerSkill => 
+    workerSkills.some(workerSkill =>
       jobSkill.toLowerCase().includes(workerSkill.toLowerCase()) ||
       workerSkill.toLowerCase().includes(jobSkill.toLowerCase())
     )
   );
-  
+
   const skillScore = jobSkills.length > 0 ? (skillMatches.length / jobSkills.length) * 40 : 0;
   breakdown.skills = skillScore;
   totalScore += skillScore;
-  
+
   if (skillMatches.length > 0) {
     reasons.push(`${skillMatches.length}/${jobSkills.length} skill matches`);
   }
@@ -1398,7 +1421,7 @@ function calculateJobMatchScore(job, worker) {
   if (job.budget && worker.workerProfile?.hourlyRate) {
     const expectedHours = job.estimatedHours || 40;
     const totalBudget = worker.workerProfile.hourlyRate * expectedHours;
-    
+
     if (totalBudget <= job.budget) {
       budgetScore = 20;
       reasons.push('Budget compatible');
@@ -1416,7 +1439,7 @@ function calculateJobMatchScore(job, worker) {
   const ratingScore = ((worker.rating || 0) / 5) * 10;
   breakdown.rating = ratingScore;
   totalScore += ratingScore;
-  
+
   if (worker.rating >= 4.5) {
     reasons.push('Highly rated worker');
   }
@@ -1429,10 +1452,10 @@ function calculateJobMatchScore(job, worker) {
   else if (completedJobs >= 10) experienceScore = 3;
   else if (completedJobs >= 5) experienceScore = 2;
   else if (completedJobs >= 1) experienceScore = 1;
-  
+
   breakdown.experience = experienceScore;
   totalScore += experienceScore;
-  
+
   if (completedJobs >= 20) {
     reasons.push('Experienced worker');
   }
@@ -1490,9 +1513,9 @@ const advancedJobSearch = async (req, res, next) => {
     const pipeline = [];
 
     // Match stage - basic filters - FIXED: Use capitalized "Open" status
-    const matchStage = { 
-      status: 'Open', 
-      visibility: 'public' 
+    const matchStage = {
+      status: 'Open',
+      visibility: 'public'
     };
 
     // Category filter
@@ -1759,11 +1782,11 @@ const getJobAnalytics = async (req, res, next) => {
       Job.countDocuments({ visibility: 'public' }),
       Job.countDocuments({ status: 'Open', visibility: 'public' }),
       Job.countDocuments({ status: 'completed', visibility: 'public' }),
-      Job.countDocuments({ 
+      Job.countDocuments({
         createdAt: { $gte: startDate },
         visibility: 'public'
       }),
-      
+
       // Jobs by category
       Job.aggregate([
         { $match: { visibility: 'public' } },
@@ -1771,7 +1794,7 @@ const getJobAnalytics = async (req, res, next) => {
         { $sort: { count: -1 } },
         { $limit: 10 }
       ]),
-      
+
       // Jobs by location
       Job.aggregate([
         { $match: { visibility: 'public', 'location.city': { $exists: true } } },
@@ -1779,7 +1802,7 @@ const getJobAnalytics = async (req, res, next) => {
         { $sort: { count: -1 } },
         { $limit: 10 }
       ]),
-      
+
       // Budget distribution
       Job.aggregate([
         { $match: { visibility: 'public', budget: { $exists: true, $gt: 0 } } },
@@ -1802,14 +1825,14 @@ const getJobAnalytics = async (req, res, next) => {
         },
         { $sort: { _id: 1 } }
       ]),
-      
+
       // Job trends (last 30 days)
       Job.aggregate([
-        { 
-          $match: { 
+        {
+          $match: {
             createdAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
             visibility: 'public'
-          } 
+          }
         },
         {
           $group: {
@@ -1820,13 +1843,13 @@ const getJobAnalytics = async (req, res, next) => {
         },
         { $sort: { _id: 1 } }
       ]),
-      
+
       // Average job budget
       Job.aggregate([
         { $match: { visibility: 'public', budget: { $exists: true, $gt: 0 } } },
         { $group: { _id: null, avgBudget: { $avg: '$budget' } } }
       ]),
-      
+
       // Top skills in demand
       Job.aggregate([
         { $match: { visibility: 'public', skills: { $exists: true, $ne: [] } } },
@@ -2095,17 +2118,17 @@ const getHirerProposals = async (req, res, next) => {
         coverLetterPreview: trimCoverLetter(application.coverLetter),
         job: jobDoc
           ? {
-              id: jobDoc._id,
-              title: jobDoc.title,
-              category: jobDoc.category,
-              status: jobDoc.status,
-              budget: jobDoc.budget,
-              paymentType: jobDoc.paymentType,
-              duration: jobDoc.duration,
-              location: formatLocationLabel(
-                jobDoc.location || jobDoc.locationDetails,
-              ),
-            }
+            id: jobDoc._id,
+            title: jobDoc.title,
+            category: jobDoc.category,
+            status: jobDoc.status,
+            budget: jobDoc.budget,
+            paymentType: jobDoc.paymentType,
+            duration: jobDoc.duration,
+            location: formatLocationLabel(
+              jobDoc.location || jobDoc.locationDetails,
+            ),
+          }
           : null,
         worker: {
           id: workerDoc?._id,
@@ -2168,7 +2191,7 @@ const updateApplicationStatus = async (req, res, next) => {
     if (String(job.hirer) !== String(req.user.id)) {
       return errorResponse(res, 403, 'Not authorized');
     }
-    const valid = ['pending','under_review','accepted','rejected','withdrawn'];
+    const valid = ['pending', 'under_review', 'accepted', 'rejected', 'withdrawn'];
     if (!valid.includes(status)) return errorResponse(res, 400, 'Invalid status');
     const app = await Application.findOne({ _id: applicationId, job: jobId });
     if (!app) return errorResponse(res, 404, 'Application not found');
@@ -2355,7 +2378,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const primarySkills = userPerformance.skillVerification.primarySkills
       .filter(skill => skill.verified)
       .map(skill => skill.skill);
-    
+
     const secondarySkills = userPerformance.skillVerification.secondarySkills
       .filter(skill => skill.verified)
       .map(skill => skill.skill);
@@ -2376,35 +2399,35 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       status: 'Open',
       'bidding.bidStatus': 'open'
     })
-    .populate('hirer', 'firstName lastName profilePicture')
-    .skip(offset)
-    .limit(limit)
-    .sort({ createdAt: -1 });
+      .populate('hirer', 'firstName lastName profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     // Calculate match scores for each job
     const jobsWithScores = jobs.map(job => {
       let score = 0;
-      
+
       // Skill matching (40% weight)
       const primarySkillMatch = job.requirements.primarySkills.some(skill => primarySkills.includes(skill));
       const secondarySkillMatch = job.requirements.secondarySkills.some(skill => secondarySkills.includes(skill));
       if (primarySkillMatch) score += 40;
       if (secondarySkillMatch) score += 20;
-      
+
       // Location matching (30% weight)
       if (userPerformance.locationPreferences.primaryRegion === job.locationDetails.region) {
         score += 30;
       }
-      
+
       // Performance tier matching (20% weight)
       if (userPerformance.performanceTier === job.performanceTier) {
         score += 20;
       }
-      
+
       // Recent job bonus (10% weight)
       const daysSincePosted = Math.floor((new Date() - job.createdAt) / (1000 * 60 * 60 * 24));
       if (daysSincePosted <= 3) score += 10;
-      
+
       return { ...job.toObject(), matchScore: score };
     });
 
@@ -2521,14 +2544,14 @@ const getExpiredJobs = async (req, res, next) => {
 const getPlatformStats = async (req, res, next) => {
   try {
     await ensureConnection();
-    
+
     // Use native driver to avoid model buffering issues
     const mongoose = require('mongoose');
     const db = mongoose.connection.db;
     const jobsCol = db.collection('jobs');
     const usersCol = db.collection('users');
     const applicationsCol = db.collection('applications');
-    
+
     const now = new Date();
     const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
@@ -2544,39 +2567,39 @@ const getPlatformStats = async (req, res, next) => {
     ] = await Promise.all([
       // Available jobs: open status (simplified - count all open jobs first, then refine)
       // Check all possible status values and count open jobs
-      jobsCol.countDocuments({ 
+      jobsCol.countDocuments({
         status: { $in: ['open', 'Open', 'OPEN'] } // Handle case variations
       }),
-      
+
       // Active employers: distinct hirers with ANY jobs (remove time restriction for now)
       // FIX: Original query filtered by last 30 days, but test jobs are from September
       jobsCol.aggregate([
-        { 
-          $match: { 
-            status: { $in: ['open', 'Open', 'OPEN', 'in-progress', 'completed'] } 
-          } 
+        {
+          $match: {
+            status: { $in: ['open', 'Open', 'OPEN', 'in-progress', 'completed'] }
+          }
         },
         { $group: { _id: '$hirer' } },
         { $count: 'count' }
       ]).toArray(),
-      
+
       // Skilled workers: active workers (don't require email verification - too strict)
-      usersCol.countDocuments({ 
-        role: 'worker', 
+      usersCol.countDocuments({
+        role: 'worker',
         isActive: { $ne: false } // Include true or undefined
       }),
-      
+
       // Completed jobs for success rate calculation
       jobsCol.countDocuments({ status: 'completed' }),
-      
+
       // Cancelled jobs for success rate calculation
       jobsCol.countDocuments({ status: 'cancelled' }),
-      
+
       // Total applications for success rate
       applicationsCol.countDocuments({}),
-      
+
       // Successful placements (applications that led to completed jobs)
-      applicationsCol.countDocuments({ 
+      applicationsCol.countDocuments({
         status: 'accepted'
       })
     ]);
@@ -2608,11 +2631,11 @@ const getPlatformStats = async (req, res, next) => {
     // Return with cache headers (1 hour cache)
     res.set('Cache-Control', 'public, max-age=3600');
     return successResponse(res, 200, 'Platform statistics retrieved successfully', stats);
-    
+
   } catch (error) {
     console.error('[PLATFORM STATS ERROR]', error);
     console.error('[PLATFORM STATS ERROR] Stack:', error.stack);
-    
+
     // Fallback to reasonable defaults if query fails
     const fallbackStats = {
       availableJobs: 0,
@@ -2622,7 +2645,7 @@ const getPlatformStats = async (req, res, next) => {
       lastUpdated: new Date().toISOString(),
       error: error.message
     };
-    
+
     return successResponse(res, 200, 'Platform statistics retrieved (fallback)', fallbackStats);
   }
 };
