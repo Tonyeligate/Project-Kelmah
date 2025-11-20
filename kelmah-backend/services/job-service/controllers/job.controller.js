@@ -150,29 +150,8 @@ const createJob = async (req, res, next) => {
       },
     });
 
-    // Ensure MongoDB connection is truly ready (not just buffering)
-    // This ping verification prevents 10s buffering timeouts when Atlas is warming up
-    const mongoose = require('mongoose');
-    if (mongoose.connection.readyState !== 1) {
-      jobLogger.error('job.create.db-not-ready', {
-        requestId,
-        readyState: mongoose.connection.readyState,
-        userId: req.user?.id
-      });
-      return errorResponse(res, 503, 'Database connection not ready. Please try again.', 'DB_NOT_READY');
-    }
-
-    // Verify we can actually reach MongoDB by checking the client
-    try {
-      await mongoose.connection.db.admin().ping();
-    } catch (pingError) {
-      jobLogger.error('job.create.db-ping-failed', {
-        requestId,
-        userId: req.user?.id,
-        error: pingError.message
-      });
-      return errorResponse(res, 503, 'Database temporarily unavailable. Please try again.', 'DB_UNAVAILABLE');
-    }
+    // Ensure database connection is ready (like other controller methods)
+    await ensureConnection();
 
     // Create job
     const job = await Job.create(body);
