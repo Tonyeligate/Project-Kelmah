@@ -151,6 +151,7 @@ const createJob = async (req, res, next) => {
     });
 
     // Ensure MongoDB connection is truly ready (not just buffering)
+    // This ping verification prevents 10s buffering timeouts when Atlas is warming up
     const mongoose = require('mongoose');
     if (mongoose.connection.readyState !== 1) {
       jobLogger.error('job.create.db-not-ready', {
