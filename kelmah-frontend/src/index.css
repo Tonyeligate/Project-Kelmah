@@ -3,6 +3,11 @@
 /* Ensure consistent font loading */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
 
+:root {
+  --kelmah-focus-color: #ffd24c;
+  --kelmah-focus-ring: rgba(255, 210, 76, 0.35);
+}
+
 /* CSS Reset and Base Styles */
 *,
 *::before,
@@ -119,6 +124,23 @@ select {
   font-size: inherit;
   border: none;
   outline: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--kelmah-focus-color);
+  outline-offset: 2px;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--kelmah-focus-color) !important;
+  box-shadow: 0 0 0 3px var(--kelmah-focus-ring);
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: var(--kelmah-focus-color) !important;
 }
 
 /* Links - Let Material-UI components handle their own styling */

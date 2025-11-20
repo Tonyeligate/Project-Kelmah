@@ -2059,6 +2059,10 @@ class WorkerController {
         workerProfileModelLoaded: !!modelsModule?.WorkerProfile,
         connectionState: mongoose.connection.readyState
       });
+      if (error?.name === 'BSONVersionError') {
+        console.warn('⚠️ BSON version mismatch detected in getProfileCompletion, serving fallback payload');
+        return sendFallback('BSON_VERSION_MISMATCH');
+      }
       if (isDbUnavailableError(error)) {
         return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
       }
@@ -3157,6 +3161,10 @@ class WorkerController {
         userModelLoaded: !!modelsModule?.User,
         connectionState: mongoose.connection.readyState
       });
+      if (error?.name === 'BSONVersionError') {
+        console.warn('⚠️ BSON version mismatch detected in getWorkerAvailability, serving fallback payload');
+        return sendFallback('BSON_VERSION_MISMATCH');
+      }
       if (isDbUnavailableError(error)) {
         return sendFallback('USER_SERVICE_DB_UNAVAILABLE');
       }

@@ -21,6 +21,53 @@ import {
 
 // Initialize axios instance with async base URL
 let axiosInstance = null;
+let refreshPromise = null;
+
+const refreshAuthToken = async () => {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const refreshToken = secureStorage.getRefreshToken();
+      if (!refreshToken) {
+        const error = new Error('Missing refresh token');
+        error.code = 'NO_REFRESH_TOKEN';
+        throw error;
+      }
+
+      const baseURL = await getApiBaseUrl();
+      const refreshResponse = await axios.post(
+        `${baseURL}/api/auth/refresh-token`,
+        { refreshToken },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: PERFORMANCE_CONFIG.apiTimeout,
+        },
+      );
+
+      const data = refreshResponse?.data?.data || refreshResponse?.data || {};
+      const newToken = data.token;
+      const newRefreshToken = data.refreshToken;
+
+      if (!newToken) {
+        throw new Error('Token missing from refresh response');
+      }
+
+      secureStorage.setAuthToken(newToken);
+      if (newRefreshToken) {
+        secureStorage.setRefreshToken(newRefreshToken);
+      }
+
+      return newToken;
+    })()
+      .catch((error) => {
+        throw error;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+};
 
 const initializeAxios = async () => {
   if (!axiosInstance) {
@@ -97,7 +144,7 @@ const normalizeUrlForGateway = (config) => {
         `🔧 URL normalized: ${url} -> ${config.url} (baseURL: ${base})`,
       );
     }
-  } catch (_) {}
+  } catch (_) { }
   return config;
 };
 
@@ -214,65 +261,37 @@ const addMainInterceptors = async () => {
       if (error?.response?.status === 401 && !originalRequest?._retry) {
         originalRequest._retry = true;
 
-        const refreshToken = secureStorage.getRefreshToken();
+        try {
+          console.log('🔄 Attempting token refresh...');
+          const newToken = await refreshAuthToken();
+          console.log('✅ Token refresh successful');
 
-        if (refreshToken) {
-          try {
-            console.log('🔄 Attempting token refresh...');
-            // Use a new axios instance to avoid interceptor loops
-            const baseURL = await getApiBaseUrl();
-            const refreshResponse = await axios.post(
-              `${baseURL}/api/auth/refresh-token`,
-              { refreshToken },
-              {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: PERFORMANCE_CONFIG.apiTimeout,
-              },
-            );
-
-            const newToken =
-              refreshResponse?.data?.data?.token ||
-              refreshResponse?.data?.token;
-
-            if (newToken) {
-              console.log('✅ Token refresh successful');
-              // Update stored token securely
-              secureStorage.setAuthToken(newToken);
-
-              // Update the failed request with new token
-              originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-              // Retry the original request
-              return instance(originalRequest);
-            } else {
-              console.warn('⚠️ Token refresh response missing token');
-              throw new Error('No token in refresh response');
-            }
-          } catch (refreshError) {
-            console.error(
-              '❌ Token refresh failed:',
-              refreshError?.message || refreshError,
-            );
-
-            // Clear auth data securely
-            secureStorage.clear();
-
-            // Redirect to login page with reason
-            if (typeof window !== 'undefined') {
-              const currentPath = window.location.pathname;
-              if (!currentPath.includes('/login')) {
-                window.location.href = '/login?reason=refresh_failed';
-              }
-            }
-
-            return Promise.reject(refreshError);
+          if (newToken) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return instance(originalRequest);
           }
-        } else {
-          console.warn('⚠️ No refresh token available');
-          // No refresh token available, redirect to login
+
+          throw new Error('No token returned after refresh');
+        } catch (refreshError) {
+          console.error(
+            '❌ Token refresh failed:',
+            refreshError?.message || refreshError,
+          );
+
+          secureStorage.clear();
+
           if (typeof window !== 'undefined') {
-            window.location.href = '/login?reason=no_token';
+            const currentPath = window.location.pathname;
+            if (!currentPath.includes('/login')) {
+              const reason =
+                refreshError?.code === 'NO_REFRESH_TOKEN'
+                  ? 'no_token'
+                  : 'refresh_failed';
+              window.location.href = `/login?reason=${reason}`;
+            }
           }
+
+          return Promise.reject(refreshError);
         }
       }
 
@@ -796,7 +815,7 @@ const addGlobalInterceptors = async () => {
       if (error?.response?.status === 401 && typeof window !== 'undefined') {
         try {
           window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
-        } catch (_) {}
+        } catch (_) { }
       }
       return Promise.reject(error);
     },

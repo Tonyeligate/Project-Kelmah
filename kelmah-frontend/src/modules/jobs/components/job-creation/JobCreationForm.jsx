@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -38,6 +38,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { createJob } from '../../services/jobSlice';
+import { useJobDraft } from '../../hooks/useJobDraft';
 
 const JobCreationForm = ({ open, onClose }) => {
   const dispatch = useDispatch();
@@ -47,15 +48,8 @@ const JobCreationForm = ({ open, onClose }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-    setValue,
-  } = useForm({
-    defaultValues: {
+  const defaultValues = useMemo(
+    () => ({
       title: '',
       description: '',
       category: '',
@@ -84,8 +78,50 @@ const JobCreationForm = ({ open, onClose }) => {
         minBidAmount: 0,
         maxBidAmount: 0,
       },
-    },
+    }),
+    [],
+  );
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isDirty },
+    reset,
+    watch,
+  } = useForm({
+    defaultValues,
   });
+
+  const watchedValues = watch();
+
+  const { lastSavedAt, draftRestored, hasDraft, clearDraft, discardDraft, saveDraft } =
+    useJobDraft({
+      values: watchedValues,
+      isDirty,
+      reset,
+      defaultValues,
+      dialogOpen: open,
+      userId: user?.id,
+    });
+
+  const formatRelativeTime = (timestamp) => {
+    if (!timestamp) return '';
+    const diffMs = Date.now() - timestamp;
+    if (diffMs < 5000) return 'just now';
+    const seconds = Math.round(diffMs / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.round(hours / 24);
+    return `${days}d ago`;
+  };
+
+  const lastSavedLabel = useMemo(
+    () => (lastSavedAt ? formatRelativeTime(lastSavedAt) : ''),
+    [lastSavedAt],
+  );
 
   const watchedBidding = watch('bidding.enabled');
   const watchedPaymentType = watch('paymentType');
@@ -187,7 +223,8 @@ const JobCreationForm = ({ open, onClose }) => {
 
       // Reset form and close dialog after a short delay
       setTimeout(() => {
-        reset();
+        reset(defaultValues);
+        clearDraft();
         setSuccess(false);
         onClose();
         // Navigate to the new job details page
@@ -204,12 +241,12 @@ const JobCreationForm = ({ open, onClose }) => {
   };
 
   const handleClose = () => {
-    if (!loading) {
-      reset();
-      setError(null);
-      setSuccess(false);
-      onClose();
+    if (loading) {
+      return;
     }
+    setError(null);
+    setSuccess(false);
+    onClose();
   };
 
   return (
@@ -291,6 +328,51 @@ const JobCreationForm = ({ open, onClose }) => {
               {error}
             </Alert>
           </motion.div>
+        )}
+
+        {draftRestored && (
+          <Alert
+            severity="info"
+            sx={{
+              mb: 2,
+              bgcolor: 'rgba(33, 150, 243, 0.1)',
+              border: '1px solid rgba(33,150,243,0.4)',
+              color: '#BBDEFB',
+            }}
+          >
+            We restored your previous draft so you can pick up where you left off.
+          </Alert>
+        )}
+
+        {(hasDraft || lastSavedLabel) && (
+          <Box
+            sx={{
+              mb: 2,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: 1.5,
+              color: '#D4AF37',
+            }}
+          >
+            {hasDraft && (
+              <Chip
+                label="Draft in progress"
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(212,175,55,0.15)',
+                  color: '#D4AF37',
+                  borderColor: '#D4AF37',
+                }}
+                variant="outlined"
+              />
+            )}
+            {lastSavedLabel && (
+              <Typography variant="caption" sx={{ color: '#f5deb3' }}>
+                Last saved {lastSavedLabel}
+              </Typography>
+            )}
+          </Box>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -897,14 +979,38 @@ const JobCreationForm = ({ open, onClose }) => {
         </form>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, borderTop: '1px solid #D4AF37' }}>
-        <Button
-          onClick={handleClose}
-          disabled={loading}
-          sx={{ color: '#ccc', mr: 2 }}
-        >
-          Cancel
-        </Button>
+      <DialogActions
+        sx={{
+          p: 3,
+          borderTop: '1px solid #D4AF37',
+          flexWrap: 'wrap',
+          gap: 1,
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button
+            onClick={handleClose}
+            disabled={loading}
+            sx={{ color: '#ccc' }}
+          >
+            Close
+          </Button>
+          <Button
+            onClick={discardDraft}
+            disabled={loading || (!hasDraft && !isDirty)}
+            sx={{ color: '#f28f8f' }}
+          >
+            Discard Draft
+          </Button>
+          <Button
+            onClick={saveDraft}
+            disabled={loading || !isDirty}
+            sx={{ color: '#D4AF37' }}
+          >
+            Save Draft
+          </Button>
+        </Box>
         <Button
           onClick={handleSubmit(onSubmit)}
           disabled={loading}

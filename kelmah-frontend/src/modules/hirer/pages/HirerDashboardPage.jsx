@@ -68,6 +68,8 @@ import {
   fetchHirerJobs,
   fetchJobApplications,
   selectHirerJobs,
+  selectHirerApplications,
+  selectHirerPendingProposalCount,
   selectHirerError,
 } from '../services/hirerSlice';
 import { selectUnreadCount } from '../../notifications/services/notificationSlice';
@@ -270,6 +272,7 @@ StyledPaper.propTypes = {
 };
 
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
+const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 const HirerDashboardPage = () => {
   const theme = useTheme();
@@ -288,13 +291,15 @@ const HirerDashboardPage = () => {
   const timeoutRef = useRef(null);
   const fetchPromiseRef = useRef(null);
   const isMountedRef = useRef(true);
+  const applicationRecordsRef = useRef({});
 
   // Get data from Redux store using selectors
   const user = useSelector((state) => state.auth.user);
   const hirerProfile = useSelector((state) => state.hirer.profile);
   const activeJobs = useSelector(selectHirerJobs('active'));
   const completedJobs = useSelector(selectHirerJobs('completed'));
-  const applications = useSelector((state) => state.hirer.applications);
+  const applicationRecords = useSelector(selectHirerApplications);
+  const totalPendingProposals = useSelector(selectHirerPendingProposalCount);
   const payments = useSelector((state) => state.hirer.payments);
   const storeError = useSelector(selectHirerError('profile'));
   const jobsError = useSelector(selectHirerError('jobs'));
@@ -337,6 +342,41 @@ const HirerDashboardPage = () => {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+  }, []);
+
+  useEffect(() => {
+    applicationRecordsRef.current = applicationRecords;
+  }, [applicationRecords]);
+
+  const getJobsRequiringApplications = useCallback((jobs = []) => {
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+      return [];
+    }
+
+    const snapshot = applicationRecordsRef.current || {};
+    const now = Date.now();
+
+    return jobs
+      .map((job) => job?.id || job?._id)
+      .filter((jobId) => {
+        if (!jobId) {
+          return false;
+        }
+        const record = snapshot[jobId];
+        if (!record) {
+          return true;
+        }
+        if (record.isLoading) {
+          return false;
+        }
+        if (record.error) {
+          return true;
+        }
+        if (!record.fetchedAt) {
+          return true;
+        }
+        return now - record.fetchedAt > APPLICATION_REFRESH_TTL_MS;
+      });
   }, []);
 
   useEffect(() => {
@@ -416,12 +456,13 @@ const HirerDashboardPage = () => {
             ? activePayload
             : [];
 
-        if (activeList.length > 0) {
+        const jobIdsToHydrate = getJobsRequiringApplications(activeList);
+        if (jobIdsToHydrate.length > 0) {
           await Promise.allSettled(
-            activeList.map((job) =>
+            jobIdsToHydrate.map((jobId) =>
               dispatch(
                 fetchJobApplications({
-                  jobId: job.id || job._id,
+                  jobId,
                   status: 'pending',
                 }),
               ).unwrap(),
@@ -443,7 +484,7 @@ const HirerDashboardPage = () => {
         fetchPromiseRef.current = null;
       }
     },
-    [clearLoadingTimeout, dispatch],
+    [clearLoadingTimeout, dispatch, getJobsRequiringApplications],
   );
 
   useEffect(() => {
@@ -503,14 +544,6 @@ const HirerDashboardPage = () => {
       dispatch(fetchHirerJobs('completed'));
     }
   };
-
-  // Calculate total pending proposals
-  const totalPendingProposals = Object.values(applications).reduce(
-    (total, jobApplications) => {
-      return total + (jobApplications.pending?.length || 0);
-    },
-    0,
-  );
 
   // Dashboard summary data
   const summaryData = {

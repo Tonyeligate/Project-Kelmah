@@ -90,53 +90,9 @@ const getRealUserData = () => {
   }
 };
 
-// Create hirer profile from real user data only
-const createHirerProfile = () => {
-  const realUser = getRealUserData();
-
-  if (realUser) {
-    return {
-      id: realUser.id || realUser._id,
-      firstName: realUser.firstName || realUser.first_name || 'User',
-      lastName: realUser.lastName || realUser.last_name || '',
-      email: realUser.email || 'user@example.com',
-      phone: realUser.phone || realUser.phoneNumber || '',
-      company: realUser.company || realUser.companyName || '',
-      location: realUser.location || realUser.address || '',
-      bio: realUser.bio || realUser.description || '',
-      avatar: realUser.avatar || realUser.profilePicture || '',
-      role: realUser.role || realUser.userType || 'hirer',
-      rating: realUser.rating || 0,
-      reviewsCount: realUser.reviewsCount || 0,
-      totalJobsPosted: realUser.totalJobsPosted || 0,
-      totalAmountSpent: realUser.totalAmountSpent || 0,
-      currency: realUser.currency || 'GH₵',
-      verified: realUser.verified || false,
-      joinedAt: realUser.createdAt ? new Date(realUser.createdAt) : new Date(),
-      completionRate: realUser.completionRate || 0,
-      responseTime: realUser.responseTime || 'N/A',
-      preferences: realUser.preferences || {
-        communicationMethod: 'email',
-        jobNotifications: true,
-        marketingEmails: false,
-        currency: 'GHS',
-      },
-      businessDetails: realUser.businessDetails || {
-        registrationNumber: '',
-        industry: '',
-        employees: '',
-        website: '',
-      },
-    };
-  }
-
-  // No fallback; return null to indicate absence of real user data
-  return null;
-};
-
 export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
-  async ({ jobId, status }, { rejectWithValue }) => {
+  async ({ jobId, status }) => {
     try {
       const response = await jobServiceClient.patch(
         `${JOB.BY_ID(jobId)}/status`,
@@ -157,9 +113,9 @@ export const updateJobStatus = createAsyncThunk(
 
 export const deleteHirerJob = createAsyncThunk(
   'hirer/deleteJob',
-  async (jobId, { rejectWithValue }) => {
+  async (jobId) => {
     try {
-      const response = await jobServiceClient.delete(JOB.BY_ID(jobId));
+      await jobServiceClient.delete(JOB.BY_ID(jobId));
       return { jobId };
     } catch (error) {
       console.warn(
@@ -173,10 +129,19 @@ export const deleteHirerJob = createAsyncThunk(
 
 export const fetchJobApplications = createAsyncThunk(
   'hirer/fetchJobApplications',
-  async ({ jobId, status }, { rejectWithValue }) => {
+  async ({ jobId, status } = {}, { rejectWithValue }) => {
+    if (!jobId) {
+      return rejectWithValue('jobId is required to fetch applications');
+    }
+
     try {
+      const params = {};
+      if (status) {
+        params.status = status;
+      }
+
       const response = await jobServiceClient.get(JOB.APPLICATIONS(jobId), {
-        params: { status },
+        params,
       });
       return { jobId, applications: response.data };
     } catch (error) {
@@ -188,7 +153,7 @@ export const fetchJobApplications = createAsyncThunk(
 
 export const fetchHirerAnalytics = createAsyncThunk(
   'hirer/fetchAnalytics',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       const response = await userServiceClient.get(USER.DASHBOARD_ANALYTICS);
       return response.data;
@@ -201,7 +166,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
 
 export const fetchPaymentSummary = createAsyncThunk(
   'hirer/fetchPaymentSummary',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       // Compose summary from wallet, escrows, and transactions
       const [walletResp, escrowsResp, txResp] = await Promise.all([
@@ -307,6 +272,52 @@ export const fetchPaymentSummary = createAsyncThunk(
   },
 );
 
+const APPLICATION_STATUSES = [
+  'pending',
+  'under_review',
+  'accepted',
+  'rejected',
+  'withdrawn',
+];
+
+const createEmptyApplicationBuckets = () =>
+  APPLICATION_STATUSES.reduce((acc, status) => {
+    acc[status] = [];
+    return acc;
+  }, {});
+
+const createEmptyApplicationEntry = (jobId = null) => ({
+  jobId,
+  buckets: createEmptyApplicationBuckets(),
+  total: 0,
+  fetchedAt: null,
+  isLoading: false,
+  error: null,
+});
+
+const EMPTY_APPLICATION_ENTRY = createEmptyApplicationEntry();
+
+const normalizeApplicationsByStatus = (apiPayload) => {
+  const buckets = createEmptyApplicationBuckets();
+  const list = Array.isArray(apiPayload?.data)
+    ? apiPayload.data
+    : Array.isArray(apiPayload?.items)
+      ? apiPayload.items
+      : Array.isArray(apiPayload)
+        ? apiPayload
+        : [];
+
+  list.forEach((application) => {
+    const status = application?.status || 'pending';
+    if (!Array.isArray(buckets[status])) {
+      buckets[status] = [];
+    }
+    buckets[status].push(application);
+  });
+
+  return buckets;
+};
+
 // Initial state
 const initialState = {
   profile: null,
@@ -317,7 +328,7 @@ const initialState = {
     cancelled: [],
     draft: [],
   },
-  applications: [],
+  applications: {},
   analytics: null,
   payments: null,
   loading: {
@@ -341,7 +352,7 @@ const hirerSlice = createSlice({
   name: 'hirer',
   initialState,
   reducers: {
-    clearHirerData: (state) => {
+    clearHirerData: () => {
       return initialState;
     },
     clearHirerErrors: (state) => {
@@ -478,21 +489,65 @@ const hirerSlice = createSlice({
       })
 
       // Fetch Job Applications
-      .addCase(fetchJobApplications.pending, (state) => {
+      .addCase(fetchJobApplications.pending, (state, action) => {
         state.loading.applications = true;
         state.error.applications = null;
+
+        const pendingJobId = action.meta?.arg?.jobId;
+        if (pendingJobId) {
+          const existingEntry = state.applications[pendingJobId] || {};
+          state.applications[pendingJobId] = {
+            jobId: pendingJobId,
+            buckets: existingEntry.buckets || createEmptyApplicationBuckets(),
+            total: existingEntry.total || 0,
+            fetchedAt: existingEntry.fetchedAt || null,
+            isLoading: true,
+            error: null,
+          };
+        }
       })
       .addCase(fetchJobApplications.fulfilled, (state, action) => {
         state.loading.applications = false;
-        const { applications } = action.payload || {};
-        state.applications = Array.isArray(applications) ? applications : [];
+        const { jobId, applications } = action.payload || {};
+        if (!jobId) {
+          return;
+        }
+
+        state.applications[jobId] = {
+          jobId,
+          buckets: normalizeApplicationsByStatus(applications),
+          total: Array.isArray(applications) ? applications.length : 0,
+          fetchedAt: Date.now(),
+          isLoading: false,
+          error: null,
+        };
       })
       .addCase(fetchJobApplications.rejected, (state, action) => {
         state.loading.applications = false;
         state.error.applications =
-          action.payload || 'Failed to fetch applications';
-        // No fallback data
-        state.applications = [];
+          action.payload ||
+          action.error?.message ||
+          'Failed to fetch applications';
+
+        const failedJobId = action.meta?.arg?.jobId;
+        if (failedJobId) {
+          const existingEntry = state.applications[failedJobId] || {
+            buckets: createEmptyApplicationBuckets(),
+            total: 0,
+            fetchedAt: null,
+          };
+          state.applications[failedJobId] = {
+            jobId: failedJobId,
+            buckets: existingEntry.buckets,
+            total: existingEntry.total,
+            fetchedAt: existingEntry.fetchedAt,
+            isLoading: false,
+            error:
+              action.payload ||
+              action.error?.message ||
+              'Failed to fetch applications',
+          };
+        }
       })
 
       // Fetch Hirer Analytics
@@ -536,6 +591,13 @@ export const selectHirerJobs = (status) => (state) => {
   return Array.isArray(jobs) ? jobs : [];
 };
 export const selectHirerApplications = (state) => state.hirer.applications;
+export const selectHirerApplicationsByJob = (jobId) => (state) =>
+  state.hirer.applications?.[jobId] || EMPTY_APPLICATION_ENTRY;
+export const selectHirerPendingProposalCount = (state) =>
+  Object.values(state.hirer.applications || {}).reduce(
+    (total, record) => total + (record?.buckets?.pending?.length || 0),
+    0,
+  );
 export const selectHirerAnalytics = (state) => state.hirer.analytics;
 export const selectHirerPayments = (state) => state.hirer.payments;
 export const selectHirerLoading = (key) => (state) => state.hirer.loading[key];
