@@ -205,19 +205,19 @@ function WorkerProfile() {
         profileRes?.data;
       const normalizedProfile = worker
         ? {
-            ...worker,
-            user: worker.user,
-            // UI expects these keys
-            hourly_rate:
-              worker.hourlyRate?.min ??
-              worker.hourlyRate ??
-              worker.hourlyRateMin ??
-              0,
-            is_verified:
-              worker.verification?.isVerified ?? worker.isVerified ?? false,
-            profile_picture: worker.profile?.picture ?? worker.profilePicture,
-            is_online: false,
-          }
+          ...worker,
+          user: worker.user,
+          // UI expects these keys
+          hourly_rate:
+            worker.hourlyRate?.min ??
+            worker.hourlyRate ??
+            worker.hourlyRateMin ??
+            0,
+          is_verified:
+            worker.verification?.isVerified ?? worker.isVerified ?? false,
+          profile_picture: worker.profile?.picture ?? worker.profilePicture,
+          is_online: false,
+        }
         : null;
       setProfile(normalizedProfile);
 
@@ -244,8 +244,8 @@ function WorkerProfile() {
       const rawSkills = skillsRes?.data?.data || skillsRes?.data || [];
       const normalizedSkills = Array.isArray(rawSkills)
         ? rawSkills.map((s) => ({
-            name: s.name || s.skillName || s?.skill?.name || '',
-          }))
+          name: s.name || s.skillName || s?.skill?.name || '',
+        }))
         : [];
       setSkills(normalizedSkills);
 
@@ -269,18 +269,30 @@ function WorkerProfile() {
   }, [workerId]);
 
   useEffect(() => {
-    if (workerId) {
-      fetchAllData();
-      // Fetch current user's bookmarks to set initial bookmark state
-      workerService
-        .getBookmarks()
-        .then((res) => {
-          const ids = res?.data?.data?.workerIds || [];
-          setIsBookmarked(ids.includes(workerId));
-        })
-        .catch(() => {});
+    if (!workerId) {
+      return;
     }
-  }, [workerId, fetchAllData]);
+
+    fetchAllData();
+
+    if (!authUser) {
+      setIsBookmarked(false);
+      return;
+    }
+
+    // Fetch current user's bookmarks to set initial bookmark state
+    workerService
+      .getBookmarks()
+      .then((res) => {
+        const ids = res?.data?.data?.workerIds || [];
+        setIsBookmarked(ids.includes(workerId));
+      })
+      .catch((error) => {
+        if (error?.response?.status !== 401) {
+          console.error('Failed to load bookmarks', error);
+        }
+      });
+  }, [workerId, fetchAllData, authUser]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -997,19 +1009,19 @@ function WorkerProfile() {
                   color="primary"
                 />
               )) || [
-                <Chip
-                  key="general"
-                  label="General Construction"
-                  variant="outlined"
-                  color="primary"
-                />,
-                <Chip
-                  key="residential"
-                  label="Residential Work"
-                  variant="outlined"
-                  color="primary"
-                />,
-              ]}
+                  <Chip
+                    key="general"
+                    label="General Construction"
+                    variant="outlined"
+                    color="primary"
+                  />,
+                  <Chip
+                    key="residential"
+                    label="Residential Work"
+                    variant="outlined"
+                    color="primary"
+                  />,
+                ]}
             </Box>
           </Grid>
 
@@ -1144,7 +1156,7 @@ function WorkerProfile() {
                 .replace(/\b\w/g, (c) => c.toUpperCase())}
               color={
                 (availability?.availabilityStatus || 'available') ===
-                'available'
+                  'available'
                   ? 'success'
                   : 'warning'
               }
@@ -1259,7 +1271,7 @@ function WorkerProfile() {
           pausedUntil: draft.pausedUntil || null,
         });
         setEditingAvailability(false);
-      } catch (_) {}
+      } catch (_) { }
     };
     return (
       <GlassCard sx={{ mb: 4 }}>
