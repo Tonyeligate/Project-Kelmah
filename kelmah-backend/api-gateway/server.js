@@ -679,6 +679,7 @@ app.use(
 );
 
 // Job routes - Use direct axios forwarding like auth service (bypasses proxy body issues)
+const { getRateLimiter } = require('./middlewares/rate-limiter');
 const jobRouter = require('./routes/job.routes');
 app.use('/api/jobs', jobRouter);
 
