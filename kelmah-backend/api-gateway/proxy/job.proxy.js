@@ -160,6 +160,9 @@ const createEnhancedJobProxy = (targetUrl, options = {}) => {
   let lastHealthCheck = 0;
   const HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
 
+  // Create proxy instance ONCE (not per-request) to avoid recreating event handlers
+  const proxyMiddleware = createJobProxy(targetUrl, options);
+
   // Periodic health check
   const performHealthCheck = async () => {
     const now = Date.now();
@@ -185,9 +188,8 @@ const createEnhancedJobProxy = (targetUrl, options = {}) => {
       });
     }
 
-    // Use the standard proxy middleware
-    const proxy = createJobProxy(targetUrl, options);
-    return proxy(req, res, next);
+    // Use the cached proxy middleware instance
+    return proxyMiddleware(req, res, next);
   };
 };
 
