@@ -20,7 +20,7 @@ const {
   errorResponse,
   paginatedResponse,
 } = require("../utils/response");
-const { ensureConnection, mongoose } = require('../config/db');
+const { ensureConnection, ensureMongoReady, mongoose } = require('../config/db');
 const { transformJobsForFrontend, transformJobForFrontend } = require('../utils/jobTransform');
 const { createLogger } = require('../utils/logger');
 
@@ -150,44 +150,27 @@ const createJob = async (req, res, next) => {
       },
     });
 
-    // Ensure database connection is ready and responsive
-    await ensureConnection();
-
-    if (mongoose.connection.readyState !== 1) {
-      jobLogger.warn('job.create.dbNotReady', {
+    // Ensure database connection is fully ready before attempting writes
+    try {
+      const readyStart = Date.now();
+      const timeoutMs = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
+      await ensureMongoReady({ timeoutMs });
+      jobLogger.debug('job.create.dbReady', {
         requestId,
         readyState: mongoose.connection.readyState,
+        latencyMs: Date.now() - readyStart,
       });
-      return errorResponse(
-        res,
-        503,
-        'Database connection is not ready. Please try again shortly.',
-        'DB_NOT_READY'
-      );
-    }
-
-    const pingStart = Date.now();
-    try {
-      const admin = mongoose.connection?.db?.admin?.();
-      if (!admin) {
-        throw new Error('Mongo admin interface unavailable');
-      }
-      await admin.command({ ping: 1 });
-      jobLogger.debug('job.create.dbPing', {
+    } catch (dbReadyError) {
+      jobLogger.warn('job.create.dbUnavailable', {
         requestId,
-        latencyMs: Date.now() - pingStart,
-      });
-    } catch (pingError) {
-      jobLogger.warn('job.create.dbPingFailed', {
-        requestId,
-        error: pingError.message,
+        error: dbReadyError.message,
       });
       return errorResponse(
         res,
         503,
         'Database temporarily unavailable. Please retry in a moment.',
         'DB_UNAVAILABLE',
-        { reason: pingError.message }
+        { reason: dbReadyError.message }
       );
     }
 

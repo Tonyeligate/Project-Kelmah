@@ -11,6 +11,10 @@ const { ensureJobIndexes } = require('../utils/indexManager');
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
+// Reduce how long Mongoose buffers operations when the driver is disconnected
+const bufferTimeoutMs = Number(process.env.MONGOOSE_BUFFER_TIMEOUT_MS || 2000);
+mongoose.set('bufferTimeoutMS', bufferTimeoutMs);
+
 // MongoDB connection options
 const options = {
   retryWrites: true,
@@ -41,25 +45,25 @@ const getConnectionString = () => {
     console.log('🔗 Using DATABASE_URL from environment');
     return process.env.DATABASE_URL;
   }
-  
+
   console.log('⚠️ No MongoDB URI environment variable found, using fallback construction');
-  
+
   // Fallback to individual credentials (for local development)
   const dbHost = process.env.DB_HOST || 'localhost';
   const dbPort = process.env.DB_PORT || '27017';
   const dbName = process.env.DB_NAME || 'kelmah_platform';
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
-  
+
   let scheme = 'mongodb://';
   if (dbHost.includes('mongodb.net') || dbHost.includes('cloud.mongodb.com')) {
     scheme = 'mongodb+srv://';
   }
-  
+
   if (dbUser && dbPassword) {
     return `${scheme}${dbUser}:${dbPassword}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
   }
-  
+
   return `${scheme}${dbHost}:${dbPort}/${dbName}`;
 };
 
@@ -77,7 +81,7 @@ const connectDB = async () => {
     }
 
     const connectionString = getConnectionString();
-    
+
     // Connect to MongoDB with specific database name
     connectPromise = mongoose.connect(connectionString, {
       ...options,
@@ -86,23 +90,23 @@ const connectDB = async () => {
     const conn = await connectPromise;
 
     connectPromise = null;
-    
+
     console.log(`✅ JOB Service connected to MongoDB: ${conn.connection.host}`);
     console.log(`📊 Database: ${conn.connection.name}`);
-    
+
     // Handle connection events
     mongoose.connection.on('error', (error) => {
       console.error('❌ MongoDB connection error:', error);
     });
-    
+
     mongoose.connection.on('disconnected', () => {
       console.log('⚠️ MongoDB disconnected');
     });
-    
+
     mongoose.connection.on('reconnected', () => {
       console.log('✅ MongoDB reconnected');
     });
-    
+
     // Ensure high-traffic indexes exist; fire-and-forget so connection isn't blocked
     ensureJobIndexes(conn).catch((indexError) => {
       console.warn('[JOB SERVICE] Failed to ensure indexes:', indexError.message);
@@ -111,7 +115,7 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     connectPromise = null;
-    
+
     // COMPREHENSIVE ERROR LOGGING for debugging on Render
     console.error('=' * 80);
     console.error('🚨 MONGODB CONNECTION FAILURE - DETAILED ERROR INFO');
@@ -119,11 +123,11 @@ const connectDB = async () => {
     console.error(`📛 Error Message: ${error.message}`);
     console.error(`� Error Name: ${error.name}`);
     console.error(`📛 Error Code: ${error.code || 'N/A'}`);
-    
+
     if (error.reason) {
       console.error(`📛 Error Reason: ${JSON.stringify(error.reason, null, 2)}`);
     }
-    
+
     console.error('\n🔍 Environment Check:');
     console.error(`  - NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
     console.error(`  - MONGODB_URI exists: ${!!process.env.MONGODB_URI}`);
@@ -133,24 +137,24 @@ const connectDB = async () => {
       const sanitized = uri.replace(/:[^@]+@/, ':****@');
       console.error(`  - Connection string (sanitized): ${sanitized}`);
     }
-    
+
     console.error('\n🔍 Connection Options:');
     console.error(JSON.stringify(options, null, 2));
-    
+
     console.error('\n🔍 Full Error Stack:');
     console.error(error.stack);
-    
+
     console.error('='.repeat(80));
     console.error('END OF ERROR REPORT');
     console.error('='.repeat(80));
-    
+
     // In production, we should exit if database connection fails
     if (process.env.NODE_ENV === 'production') {
       console.error('🚨 Production environment requires database connection');
       console.error('🚨 Service will exit in 5 seconds...');
       setTimeout(() => process.exit(1), 5000);
     }
-    
+
     throw error;
   }
 };
@@ -243,6 +247,47 @@ const ensureConnection = async ({ timeoutMs = DEFAULT_READY_TIMEOUT_MS } = {}) =
   return waitForConnection(timeoutMs);
 };
 
+const pingDatabase = async ({ timeoutMs = 3000 } = {}) => {
+  const connection = mongoose.connection;
+  if (!connection || !connection.db) {
+    throw new Error('MongoDB database handle unavailable');
+  }
+
+  const admin = connection.db.admin && connection.db.admin();
+  if (!admin || typeof admin.command !== 'function') {
+    throw new Error('Mongo admin interface unavailable for ping');
+  }
+
+  let timeoutId;
+  try {
+    await Promise.race([
+      admin.command({ ping: 1 }),
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Mongo ping timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+      })
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  return true;
+};
+
+const ensureMongoReady = async ({ timeoutMs = DEFAULT_READY_TIMEOUT_MS } = {}) => {
+  await ensureConnection({ timeoutMs });
+
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('Database connection not ready');
+  }
+
+  await pingDatabase({ timeoutMs: Math.min(timeoutMs, 5000) });
+  return mongoose.connection;
+};
+
 /**
  * Close MongoDB connection
  */
@@ -266,9 +311,11 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-module.exports = { 
-  connectDB, 
+module.exports = {
+  connectDB,
   closeDB,
   mongoose,
   ensureConnection,
+  ensureMongoReady,
+  pingDatabase,
 }; 
