@@ -19,6 +19,10 @@ const createJobProxy = (targetUrl, options = {}) => {
     selfHandleResponse: false, // Let proxy handle response
     timeout: 30000, // 30 second timeout for Job Service responses
     proxyTimeout: 30000, // 30 second proxy timeout
+
+    // Parse request body automatically
+    parseReqBody: true,
+
     // Ensure the upstream sees the full service prefix even when mounted under '/api/jobs'
     pathRewrite: (path, req) => {
       try {
@@ -47,45 +51,6 @@ const createJobProxy = (targetUrl, options = {}) => {
       proxyReq.setHeader('X-Request-ID', req.id || Date.now().toString());
 
       console.log(`[Job Proxy] Proxying ${req.method} ${req.url} to ${targetUrl}`);
-
-      // Re-stream JSON body payloads because express.json() consumes the stream
-      const methodHasBody = !['GET', 'HEAD'].includes(req.method);
-      const hasParsedBody = req.body && (Buffer.isBuffer(req.body) || Object.keys(req.body).length > 0);
-
-      if (methodHasBody && hasParsedBody) {
-        console.log(`[Job Proxy] Re-streaming body for ${req.method} ${req.url}`, {
-          bodyType: Buffer.isBuffer(req.body) ? 'Buffer' : 'Object',
-          bodySize: Buffer.isBuffer(req.body) ? req.body.length : JSON.stringify(req.body).length
-        });
-
-        let bodyBuffer;
-        if (Buffer.isBuffer(req.body)) {
-          bodyBuffer = req.body;
-        } else {
-          bodyBuffer = Buffer.from(JSON.stringify(req.body));
-          if (!proxyReq.getHeader('Content-Type')) {
-            proxyReq.setHeader('Content-Type', 'application/json');
-          }
-        }
-
-        proxyReq.setHeader('Content-Length', bodyBuffer.length);
-
-        try {
-          proxyReq.write(bodyBuffer);
-          // Don't call proxyReq.end() - let http-proxy-middleware handle it
-          console.log(`[Job Proxy] Body written for ${req.method} ${req.url}`);
-        } catch (writeErr) {
-          console.error('[Job Proxy] Failed to forward request body', {
-            method: req.method,
-            url: req.originalUrl,
-            message: writeErr.message
-          });
-          proxyReq.destroy(writeErr);
-        }
-      } else if (!methodHasBody) {
-        // GET/HEAD requests don't need body handling
-        console.log(`[Job Proxy] No body for ${req.method} ${req.url}`);
-      }
     },
     onProxyRes: (proxyRes, req, res) => {
       console.log(`[Job Proxy] Response ${proxyRes.statusCode} for ${req.method} ${req.url}`);
