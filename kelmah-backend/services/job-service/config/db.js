@@ -29,7 +29,7 @@ const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000
 // Disable Mongoose buffering completely - fail immediately if not connected
 // This prevents misleading "buffering timed out" errors
 mongoose.set('bufferCommands', false);
-mongoose.set('autoCreate', false); // Don't auto-create collections
+mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
 
 // MongoDB connection options
