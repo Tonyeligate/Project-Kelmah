@@ -18,7 +18,7 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
     const url = `${upstream}${path}`;
 
     console.log(`[JOB DIRECT] ${method} ${url}`);
-    
+
     const config = {
       method,
       url,
@@ -43,7 +43,7 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
     }
 
     const response = await axios(config);
-    
+
     console.log(`[JOB DIRECT] Response: ${response.status}`);
     res.status(response.status).json(response.data);
   } catch (error) {
@@ -120,11 +120,19 @@ router.get('/:id/applications', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/applications`, 'GET');
 });
 
-module.exports = router;
-router.post('/:jobId/save', jobProxy); // Save job
-router.delete('/:jobId/save', jobProxy); // Unsave job
+// POST /api/jobs/:id/save - Save job (protected)
+router.post('/:id/save', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/save`, 'POST');
+});
 
-// Job recommendations
-router.get('/recommendations', jobProxy); // Get recommended jobs
+// DELETE /api/jobs/:id/save - Unsave job (protected)
+router.delete('/:id/save', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/save`, 'DELETE');
+});
+
+// GET /api/jobs/recommendations - Get recommended jobs (protected)
+router.get('/recommendations', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/recommendations', 'GET');
+});
 
 module.exports = router;
