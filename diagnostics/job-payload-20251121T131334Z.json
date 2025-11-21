@@ -1,0 +1,23 @@
+{
+  "title": "Diagnostics Job Run $ts",
+  "description": "Automated diagnostic submission to trace readiness and proxy behavior.",
+  "category": "Diagnostics",
+  "skills": ["Diagnostics", "Node", "Investigations"],
+  "budget": 750,
+  "paymentType": "fixed",
+  "currency": "GHS",
+  "duration": { "value": 1, "unit": "week" },
+  "location": { "type": "remote", "address": "Accra" },
+  "requirements": {
+    "primarySkills": ["Diagnostics"],
+    "secondarySkills": ["Node"],
+    "experienceLevel": "intermediate"
+  },
+  "visibility": "public",
+  "bidding": {
+    "maxBidders": 5,
+    "minBidAmount": 500,
+    "maxBidAmount": 900,
+    "bidStatus": "open"
+  }
+}

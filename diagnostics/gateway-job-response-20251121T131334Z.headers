@@ -1,0 +1,37 @@
+HTTP/1.1 504 Gateway Timeout
+Date: Fri, 21 Nov 2025 13:15:09 GMT
+Content-Type: text/plain; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+CF-RAY: 9a2073e87bb57f07-ACC
+access-control-allow-credentials: true
+access-control-expose-headers: ngrok-skip-browser-warning
+content-security-policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+ngrok-skip-browser-warning: true
+origin-agent-cluster: ?1
+ratelimit-limit: 10
+ratelimit-policy: 10;w=3600
+ratelimit-remaining: 9
+ratelimit-reset: 3600
+referrer-policy: no-referrer
+rndr-id: 907f43e3-cb76-4e7b
+strict-transport-security: max-age=15552000; includeSubDomains
+vary: Origin
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: SAMEORIGIN
+x-gateway: kelmah-api-gateway
+x-permitted-cross-domain-policies: none
+x-ratelimit-limit: 1000
+x-ratelimit-remaining: 980
+x-ratelimit-reset: 1763731037
+x-render-origin-server: Render
+x-request-id: 62801dbf-6c7f-454a-8a9e-65e4dadb4d1a
+x-xss-protection: 0
+cf-cache-status: DYNAMIC
+Server: cloudflare
+alt-svc: h3=":443"; ma=86400
+

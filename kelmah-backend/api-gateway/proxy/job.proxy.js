@@ -49,18 +49,29 @@ const createJobProxy = (targetUrl, options = {}) => {
       const methodHasBody = !['GET', 'HEAD'].includes(req.method);
       const hasParsedBody = req.body && (Buffer.isBuffer(req.body) || Object.keys(req.body).length > 0);
       if (methodHasBody && hasParsedBody) {
-        let bodyData;
+        let bodyBuffer;
         if (Buffer.isBuffer(req.body)) {
-          bodyData = req.body;
+          bodyBuffer = req.body;
         } else {
-          bodyData = Buffer.from(JSON.stringify(req.body));
+          bodyBuffer = Buffer.from(JSON.stringify(req.body));
           if (!proxyReq.getHeader('Content-Type')) {
             proxyReq.setHeader('Content-Type', 'application/json');
           }
         }
 
-        proxyReq.setHeader('Content-Length', bodyData.length);
-        proxyReq.write(bodyData);
+        proxyReq.setHeader('Content-Length', bodyBuffer.length);
+
+        try {
+          proxyReq.write(bodyBuffer);
+          proxyReq.end(); // ensure upstream request completes after manual body write
+        } catch (writeErr) {
+          console.error('[Job Proxy] Failed to forward request body', {
+            method: req.method,
+            url: req.originalUrl,
+            message: writeErr.message
+          });
+          proxyReq.destroy(writeErr);
+        }
       }
     },
     onProxyRes: (proxyRes, req, res) => {

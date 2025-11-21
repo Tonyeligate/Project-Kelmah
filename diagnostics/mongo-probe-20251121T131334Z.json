@@ -1,0 +1,28 @@
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ­ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+{
+  "timestamp": "2025-11-21T13:18:41.000Z",
+  "target": {
+    "host": "kelmah-messaging.xyqcurn.mongodb.net",
+    "database": "kelmah_platform",
+    "collection": "diagnostics_probe",
+    "skipWrite": false
+  },
+  "options": {
+    "timeoutMs": 8000
+  },
+  "connection": {
+    "ok": true,
+    "latencyMs": 2780
+  },
+  "ping": {
+    "ok": true,
+    "latencyMs": 179
+  },
+  "write": {
+    "ok": true,
+    "insertLatencyMs": 436,
+    "deleteLatencyMs": 189,
+    "documentId": "692066b40d21ae2975d96585"
+  },
+  "success": true
+}
