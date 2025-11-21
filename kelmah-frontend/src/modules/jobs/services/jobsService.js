@@ -200,7 +200,7 @@ const jobsApi = {
    * Create a job (hirer)
    */
   async createJob(jobData) {
-    const response = await jobServiceClient.post('/jobs', jobData);
+    const response = await jobServiceClient.post('/api/jobs', jobData);
     return response.data?.data || response.data;
   },
 
@@ -281,9 +281,9 @@ const jobsApi = {
               ? job.skills
               : typeof job.skills_required === 'string'
                 ? job.skills_required
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
                 : [],
           };
           return normalized;
@@ -295,24 +295,24 @@ const jobsApi = {
       const normalized =
         raw && typeof raw === 'object'
           ? {
-              ...raw,
-              created_at: raw.created_at || raw.createdAt || raw.postedDate,
-              hirer_name: raw.hirer_name || raw.hirer?.name,
-              postedDate:
-                raw.postedDate ||
-                (raw.createdAt ? new Date(raw.createdAt) : undefined),
-              deadline:
-                raw.deadline ||
-                (raw.endDate ? new Date(raw.endDate) : undefined),
-              skills: Array.isArray(raw.skills)
-                ? raw.skills
-                : typeof raw.skills_required === 'string'
-                  ? raw.skills_required
-                      .split(',')
-                      .map((s) => s.trim())
-                      .filter(Boolean)
-                  : [],
-            }
+            ...raw,
+            created_at: raw.created_at || raw.createdAt || raw.postedDate,
+            hirer_name: raw.hirer_name || raw.hirer?.name,
+            postedDate:
+              raw.postedDate ||
+              (raw.createdAt ? new Date(raw.createdAt) : undefined),
+            deadline:
+              raw.deadline ||
+              (raw.endDate ? new Date(raw.endDate) : undefined),
+            skills: Array.isArray(raw.skills)
+              ? raw.skills
+              : typeof raw.skills_required === 'string'
+                ? raw.skills_required
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                : [],
+          }
           : raw;
       return normalized;
     } catch (error) {

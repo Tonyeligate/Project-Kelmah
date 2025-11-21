@@ -1,0 +1,19 @@
+{
+  "title": "Gateway Timeout Investigation Direct Job",
+  "description": "Testing direct job service route to compare latency versus gateway proxy; please ignore this listing.",
+  "category": "Electrical",
+  "paymentType": "fixed",
+  "budget": 1200,
+  "currency": "GHS",
+  "location": {
+    "type": "onsite",
+    "country": "Ghana",
+    "city": "Accra"
+  },
+  "skills": ["Electrical", "HVAC"],
+  "duration": {
+    "value": 3,
+    "unit": "week"
+  },
+  "visibility": "public"
+}
