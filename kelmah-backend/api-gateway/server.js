@@ -706,27 +706,35 @@ const isPublicJobRoute = (req) => {
 };
 
 app.use('/api/jobs', (req, res, next) => {
+  console.log(`[JOBS ROUTE] Incoming ${req.method} ${req.url}`);
   if (isPublicJobRoute(req)) {
+    console.log(`[JOBS ROUTE] Public route - skipping auth`);
     return next();
   }
 
+  console.log(`[JOBS ROUTE] Protected route - applying auth`);
   return authenticate(req, res, next);
 });
 
 // Apply rate limiting based on endpoint type
 app.use('/api/jobs', (req, res, next) => {
+  console.log(`[JOBS RATE LIMIT] Checking ${req.method} ${req.url}`);
   // Apply different rate limits based on the operation
   // Bypass limiter for my-jobs dashboard endpoint
   if (req.method === 'GET' && (req.path.startsWith('/my-jobs') || (req.originalUrl || '').startsWith('/api/jobs/my-jobs'))) {
+    console.log(`[JOBS RATE LIMIT] Bypassing for my-jobs`);
     return next();
   }
   if (req.method === 'POST') {
+    console.log(`[JOBS RATE LIMIT] Applying jobCreation limiter`);
     // Job creation - stricter rate limit
     return getRateLimiter('jobCreation')(req, res, next);
   } else if (req.url.includes('/apply') && req.method === 'POST') {
+    console.log(`[JOBS RATE LIMIT] Applying jobApplication limiter`);
     // Job application - moderate rate limit
     return getRateLimiter('jobApplication')(req, res, next);
   } else {
+    console.log(`[JOBS RATE LIMIT] Applying general limiter`);
     // General job operations - standard rate limit
     return getRateLimiter('general')(req, res, next);
   }
@@ -740,9 +748,12 @@ let jobProxyMiddleware = null;
 // Mount the job proxy route BEFORE the 404 handler so it isn't shadowed
 // The middleware instance is assigned after service discovery; until then we return 503
 app.use('/api/jobs', (req, res, next) => {
+  console.log(`[JOBS PROXY] Reached proxy handler for ${req.method} ${req.url}`);
   if (jobProxyMiddleware) {
+    console.log(`[JOBS PROXY] Forwarding to jobProxyMiddleware`);
     return jobProxyMiddleware(req, res, next);
   } else {
+    console.log(`[JOBS PROXY] ERROR - jobProxyMiddleware not initialized`);
     return res.status(503).json({
       error: 'Job service not initialized',
       message: 'Service discovery in progress'
