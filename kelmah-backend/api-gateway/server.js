@@ -1210,16 +1210,12 @@ const startServer = async () => {
     await initializeServices();
     keepAliveManager.start();
 
-    // Create job proxy now that services are discovered
-    jobProxyMiddleware = createEnhancedJobProxy(services.job, {
-      onError: (err, req, res) => {
-        console.error('[API Gateway] Job service error:', err.message);
-        res.status(503).json({
-          error: 'Job service temporarily unavailable',
-          message: 'Please try again later',
-          timestamp: new Date().toISOString()
-        });
-      }
+    // Create job proxy using standard createServiceProxy (same as auth, user, etc.)
+    const { createServiceProxy } = require('./proxy/serviceProxy');
+    jobProxyMiddleware = createServiceProxy({
+      target: services.job,
+      pathPrefix: '/api/jobs',
+      requireAuth: false // Auth is handled separately in middleware chain
     });
 
     // Job proxy route is already mounted above; we only needed to assign the middleware here
