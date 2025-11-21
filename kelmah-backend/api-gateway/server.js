@@ -678,88 +678,9 @@ app.use(
   })
 );
 
-// Import job proxy (will be created dynamically after service discovery)
-const { createEnhancedJobProxy } = require('./proxy/job.proxy');
-const { getRateLimiter } = require('./middlewares/rate-limiter');
-
-// Job routes (public listings, protected management)
-// First, enforce authentication for protected routes while allowing public browse endpoints
-const isPublicJobRoute = (req) => {
-  if ((req.method || 'GET').toUpperCase() !== 'GET') {
-    return false;
-  }
-
-  const path = req.path || '';
-  if (path === '' || path === '/') {
-    return true;
-  }
-
-  const normalizedPath = path.toLowerCase();
-  return (
-    normalizedPath.startsWith('/search') ||
-    normalizedPath.startsWith('/categories') ||
-    normalizedPath.startsWith('/suggestions') ||
-    normalizedPath.startsWith('/stats') ||
-    normalizedPath === '/contracts' ||
-    normalizedPath.startsWith('/contracts/')
-  );
-};
-
-app.use('/api/jobs', (req, res, next) => {
-  console.log(`[JOBS ROUTE] Incoming ${req.method} ${req.url}`);
-  if (isPublicJobRoute(req)) {
-    console.log(`[JOBS ROUTE] Public route - skipping auth`);
-    return next();
-  }
-
-  console.log(`[JOBS ROUTE] Protected route - applying auth`);
-  return authenticate(req, res, next);
-});
-
-// Apply rate limiting based on endpoint type
-app.use('/api/jobs', (req, res, next) => {
-  console.log(`[JOBS RATE LIMIT] Checking ${req.method} ${req.url}`);
-  // Apply different rate limits based on the operation
-  // Bypass limiter for my-jobs dashboard endpoint
-  if (req.method === 'GET' && (req.path.startsWith('/my-jobs') || (req.originalUrl || '').startsWith('/api/jobs/my-jobs'))) {
-    console.log(`[JOBS RATE LIMIT] Bypassing for my-jobs`);
-    return next();
-  }
-  if (req.method === 'POST') {
-    console.log(`[JOBS RATE LIMIT] Applying jobCreation limiter`);
-    // Job creation - stricter rate limit
-    return getRateLimiter('jobCreation')(req, res, next);
-  } else if (req.url.includes('/apply') && req.method === 'POST') {
-    console.log(`[JOBS RATE LIMIT] Applying jobApplication limiter`);
-    // Job application - moderate rate limit
-    return getRateLimiter('jobApplication')(req, res, next);
-  } else {
-    console.log(`[JOBS RATE LIMIT] Applying general limiter`);
-    // General job operations - standard rate limit
-    return getRateLimiter('general')(req, res, next);
-  }
-});
-
-// Apply enhanced job proxy with health checking
-// Note: Do NOT pass pathRewrite here; the proxy already ensures '/api/jobs' prefix is preserved
-// Job proxy will be created after service discovery completes
-let jobProxyMiddleware = null;
-
-// Mount the job proxy route BEFORE the 404 handler so it isn't shadowed
-// The middleware instance is assigned after service discovery; until then we return 503
-app.use('/api/jobs', (req, res, next) => {
-  console.log(`[JOBS PROXY] Reached proxy handler for ${req.method} ${req.url}`);
-  if (jobProxyMiddleware) {
-    console.log(`[JOBS PROXY] Forwarding to jobProxyMiddleware`);
-    return jobProxyMiddleware(req, res, next);
-  } else {
-    console.log(`[JOBS PROXY] ERROR - jobProxyMiddleware not initialized`);
-    return res.status(503).json({
-      error: 'Job service not initialized',
-      message: 'Service discovery in progress'
-    });
-  }
-});
+// Job routes - Use direct axios forwarding like auth service (bypasses proxy body issues)
+const jobRouter = require('./routes/job.routes');
+app.use('/api/jobs', jobRouter);
 
 // Search routes (public) with rate limiting
 app.use('/api/search', getRateLimiter('search'));
@@ -1210,15 +1131,7 @@ const startServer = async () => {
     await initializeServices();
     keepAliveManager.start();
 
-    // Create job proxy using standard createServiceProxy (same as auth, user, etc.)
-    const { createServiceProxy } = require('./proxy/serviceProxy');
-    jobProxyMiddleware = createServiceProxy({
-      target: services.job,
-      pathPrefix: '/api/jobs',
-      requireAuth: false // Auth is handled separately in middleware chain
-    });
-
-    // Job proxy route is already mounted above; we only needed to assign the middleware here
+    // Job router already mounted above - no proxy middleware needed
 
     const server = app.listen(PORT, () => {
       const environment = detectEnvironment();

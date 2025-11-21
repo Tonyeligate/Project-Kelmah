@@ -1,122 +1,126 @@
 /**
  * Job Service Routes
- * Proxy configuration for job-service endpoints
+ * Direct axios calls to bypass proxy body handling issues
  */
 
 const express = require('express');
 const router = express.Router();
-const { createServiceProxy } = require('../proxy/serviceProxy');
+const axios = require('axios');
 const { authenticate } = require('../middlewares/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').JOB_SERVICE;
 
-// Job proxy middleware
-const jobProxy = (req, res, next) => {
-  const proxy = createServiceProxy({
-    target: getServiceUrl(req),
-    pathPrefix: '/api/jobs',
-    requireAuth: true,
-    pathRewrite: (path) => {
-      console.log(`[JOB PROXY] Original path: ${path}`);
-      // Remove double slashes
-      let normalized = path.replace(/\/\/+/g, '/');
-      console.log(`[JOB PROXY] After double slash removal: ${normalized}`);
-      // ADD slash before query string if missing!
-      // Frontend sends: /api/jobs?query
-      // We need: /api/jobs/?query
-      // So Express strips /api/jobs and leaves /?query (with leading slash for route matching)
-      if (normalized.includes('?') && !normalized.includes('/?')) {
-        normalized = normalized.replace('?', '/?');
-      }
-      console.log(`[JOB PROXY] Final path: ${normalized}`);
-      return normalized;
+// Helper to forward requests directly to job service
+const forwardToJobService = async (req, res, path, method = 'GET') => {
+  try {
+    const upstream = getServiceUrl(req);
+    const url = `${upstream}${path}`;
+
+    console.log(`[JOB DIRECT] ${method} ${url}`);
+    
+    const config = {
+      method,
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-ID': req.id || '',
+        'User-Agent': 'kelmah-api-gateway',
+      },
+      timeout: 30000,
+      validateStatus: () => true,
+    };
+
+    // Add authentication headers if user is authenticated
+    if (req.user) {
+      config.headers['x-authenticated-user'] = JSON.stringify(req.user);
+      config.headers['x-auth-source'] = 'api-gateway';
     }
-  });
-  return proxy(req, res, next);
+
+    // Add body for POST/PUT/PATCH
+    if (['POST', 'PUT', 'PATCH'].includes(method) && req.body) {
+      config.data = req.body;
+    }
+
+    const response = await axios(config);
+    
+    console.log(`[JOB DIRECT] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error(`[JOB DIRECT] Error:`, error.message);
+    res.status(504).json({
+      success: false,
+      message: 'Job service temporarily unavailable',
+      error: error.message
+    });
+  }
 };
 
-// Public job routes (browsing without auth)
-const publicJobProxy = (req, res, next) => {
-  const proxy = createServiceProxy({
-    target: getServiceUrl(req),
-    pathPrefix: '/api/jobs',
-    requireAuth: false,
-    pathRewrite: (path) => {
-      console.log(`[PUBLIC JOB PROXY] Original path: ${path}`);
-      // Remove double slashes
-      let normalized = path.replace(/\/\/+/g, '/');
-      console.log(`[PUBLIC JOB PROXY] After double slash removal: ${normalized}`);
-      // ADD slash before query string if missing!
-      // Frontend sends: /api/jobs?query
-      // We need: /api/jobs/?query
-      // So Express strips /api/jobs and leaves /?query (with leading slash for route matching)
-      if (normalized.includes('?') && !normalized.includes('/?')) {
-        normalized = normalized.replace('?', '/?');
-      }
-      console.log(`[PUBLIC JOB PROXY] Final path: ${normalized}`);
-      return normalized;
-    }
-  });
-  return proxy(req, res, next);
-};
+// POST /api/jobs - Create job (protected)
+router.post('/', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs', 'POST');
+});
 
-// Public routes - job browsing
-router.get('/', publicJobProxy); // Browse jobs without login
-router.get('/search', publicJobProxy); // Search jobs
-router.get('/categories', publicJobProxy); // Get job categories
-router.get('/public', publicJobProxy); // Legacy alias for browsing without login
-router.get('/public/:jobId', publicJobProxy); // Legacy alias for viewing job details without login
-router.get('/:jobId([a-fA-F0-9]{24})', publicJobProxy); // View job details without login
+// GET /api/jobs - List jobs (public)
+router.get('/', async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
 
-// All other routes require authentication
-router.use(authenticate);
+// GET /api/jobs/search - Search jobs (public)
+router.get('/search', async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/search${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
 
-// Job CRUD operations (PROTECTED)
-router.post('/', jobProxy); // Create new job
-router.get('/my-jobs', jobProxy); // Hirer: my jobs
-router.put('/:jobId', jobProxy); // Update job
-router.delete('/:jobId', jobProxy); // Delete job
+// GET /api/jobs/categories - Get categories (public)
+router.get('/categories', async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/categories', 'GET');
+});
 
-// Job status management
-router.put('/:jobId/status', jobProxy); // Backward-compat: Update job status
-router.patch('/:jobId/status', jobProxy); // Canonical: Update job status
-router.post('/:jobId/publish', jobProxy); // Publish job
-router.post('/:jobId/close', jobProxy); // Close job
-router.post('/:jobId/reopen', jobProxy); // Reopen job
+// GET /api/jobs/my-jobs - Get user's jobs (protected)
+router.get('/my-jobs', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/my-jobs', 'GET');
+});
 
-// Job applications
-router.get('/:jobId/applications', jobProxy); // Get job applications
-router.post('/:jobId/apply', jobProxy); // Apply to job
-router.put('/:jobId/applications/:applicationId', jobProxy); // Update application status
-router.delete('/:jobId/applications/:applicationId', jobProxy); // Withdraw application
+// GET /api/jobs/:id - Get job details (public)
+router.get('/:id', async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'GET');
+});
 
-// Job assignments
-router.post('/:jobId/assign', jobProxy); // Assign job to worker
-router.delete('/:jobId/assign', jobProxy); // Unassign job
+// PUT /api/jobs/:id - Update job (protected)
+router.put('/:id', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'PUT');
+});
 
-// Job milestones
-router.get('/:jobId/milestones', jobProxy); // Get job milestones
-router.post('/:jobId/milestones', jobProxy); // Create milestone
-router.put('/:jobId/milestones/:milestoneId', jobProxy); // Update milestone
-router.delete('/:jobId/milestones/:milestoneId', jobProxy); // Delete milestone
+// DELETE /api/jobs/:id - Delete job (protected)
+router.delete('/:id', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'DELETE');
+});
 
-// Contracts (ensure present for hirer flow)
-router.get('/:jobId/contract', jobProxy);
-router.post('/:jobId/contract', jobProxy);
-router.put('/:jobId/contract', jobProxy);
+// POST /api/jobs/:id/apply - Apply to job (protected)
+router.post('/:id/apply', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/apply`, 'POST');
+});
 
-// Job contracts
-router.get('/:jobId/contract', jobProxy); // Get job contract
-router.post('/:jobId/contract', jobProxy); // Create contract
-router.put('/:jobId/contract', jobProxy); // Update contract
+// PUT /api/jobs/:id/status - Update job status (protected)
+router.put('/:id/status', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/status`, 'PUT');
+});
 
-// Job reviews
-router.get('/:jobId/reviews', jobProxy); // Get job reviews
-router.post('/:jobId/reviews', jobProxy); // Create review
+// POST /api/jobs/:id/publish - Publish job (protected)
+router.post('/:id/publish', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/publish`, 'POST');
+});
 
-// Saved jobs (for workers)
-router.get('/saved', jobProxy); // Get saved jobs
+// GET /api/jobs/:id/applications - Get applications (protected)
+router.get('/:id/applications', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/applications`, 'GET');
+});
+
+module.exports = router;
 router.post('/:jobId/save', jobProxy); // Save job
 router.delete('/:jobId/save', jobProxy); // Unsave job
 
