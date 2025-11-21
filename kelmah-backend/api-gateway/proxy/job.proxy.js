@@ -19,6 +19,7 @@ const createJobProxy = (targetUrl, options = {}) => {
     selfHandleResponse: false, // Let proxy handle response
     timeout: 30000, // 30 second timeout for Job Service responses
     proxyTimeout: 30000, // 30 second proxy timeout
+    parseReqBody: true, // Parse and re-stream request body
 
     // Ensure the upstream sees the full service prefix even when mounted under '/api/jobs'
     pathRewrite: (path, req) => {
@@ -46,23 +47,6 @@ const createJobProxy = (targetUrl, options = {}) => {
 
       // Add request ID for tracing
       proxyReq.setHeader('X-Request-ID', req.id || Date.now().toString());
-
-      // If body was already parsed by Express (application/json), re-send it to the upstream
-      // This matches the proven pattern from serviceProxy.js
-      try {
-        const method = (req.method || '').toUpperCase();
-        const contentType = (req.headers['content-type'] || '').toLowerCase();
-        const isJson = contentType.includes('application/json');
-        const hasBody = req.body && Object.keys(req.body).length > 0;
-        
-        if (method !== 'GET' && method !== 'HEAD' && isJson && hasBody) {
-          const bodyData = JSON.stringify(req.body);
-          proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-          proxyReq.write(bodyData);
-        }
-      } catch (err) {
-        console.error(`[Job Proxy] Error re-streaming body:`, err);
-      }
 
       console.log(`[Job Proxy] Proxying ${req.method} ${req.url} to ${targetUrl}`);
     },
