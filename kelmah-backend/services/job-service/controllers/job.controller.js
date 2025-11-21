@@ -20,7 +20,7 @@ const {
   errorResponse,
   paginatedResponse,
 } = require("../utils/response");
-const { ensureConnection } = require('../config/db');
+const { ensureConnection, mongoose } = require('../config/db');
 const { transformJobsForFrontend, transformJobForFrontend } = require('../utils/jobTransform');
 const { createLogger } = require('../utils/logger');
 
@@ -150,8 +150,46 @@ const createJob = async (req, res, next) => {
       },
     });
 
-    // Ensure database connection is ready (like other controller methods)
+    // Ensure database connection is ready and responsive
     await ensureConnection();
+
+    if (mongoose.connection.readyState !== 1) {
+      jobLogger.warn('job.create.dbNotReady', {
+        requestId,
+        readyState: mongoose.connection.readyState,
+      });
+      return errorResponse(
+        res,
+        503,
+        'Database connection is not ready. Please try again shortly.',
+        'DB_NOT_READY'
+      );
+    }
+
+    const pingStart = Date.now();
+    try {
+      const admin = mongoose.connection?.db?.admin?.();
+      if (!admin) {
+        throw new Error('Mongo admin interface unavailable');
+      }
+      await admin.command({ ping: 1 });
+      jobLogger.debug('job.create.dbPing', {
+        requestId,
+        latencyMs: Date.now() - pingStart,
+      });
+    } catch (pingError) {
+      jobLogger.warn('job.create.dbPingFailed', {
+        requestId,
+        error: pingError.message,
+      });
+      return errorResponse(
+        res,
+        503,
+        'Database temporarily unavailable. Please retry in a moment.',
+        'DB_UNAVAILABLE',
+        { reason: pingError.message }
+      );
+    }
 
     // Create job
     const job = await Job.create(body);

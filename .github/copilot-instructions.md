@@ -12,6 +12,31 @@ alwaysApply: true
 
 Kelmah is a **freelance marketplace** with a **fully consolidated microservices backend** and **modular React frontend**. The system uses an **API Gateway pattern** with service-specific microservices, all routing through a central gateway for the frontend.
 
+## Investigation-First Delivery Workflow ⚠️ NEW STANDARD
+
+Every fix or enhancement must follow this professional flow before touching code:
+
+1. **Define Scope & Success Criteria**: Restate the user's ask in your own words, enumerate acceptance criteria, and log the task in the spec-kit status logs before any code edits.
+2. **Map Complete File Surface**: List every frontend, gateway, backend, and shared file involved in the feature or bug. Include component paths, services, controllers, models, validators, and config files. No guessing—open the files and confirm their roles.
+3. **Trace End-to-End Data Flow**: Document the UI → state layer → service call → gateway proxy → microservice route → controller → model flow using the mandatory Data Flow template in the spec-kit docs. Call out payload/response shapes, middleware, and auth requirements.
+4. **Audit Existing Behavior**: Run diagnostics yourself (curl via LocalTunnel, service health checks, automated scripts) to reproduce the issue. Capture evidence in the relevant spec-kit entry.
+5. **Design the Fix**: Describe planned changes, impacted files, and cleanup/removal decisions (never delete files without proving they are unused). Ensure naming, folder placement, and wiring stay professional and consistent with domain-driven structure.
+6. **Implement & Comment**: Make focused edits with succinct comments only where logic is non-obvious. Maintain REST contracts, shared model imports, and gateway trust patterns.
+7. **Verify & Document**: Re-run tests/diagnostics, record results, and update spec-kit (`STATUS_LOG.md` plus feature-specific docs) with what changed, why, and how it was validated. Only mark tasks complete after verification.
+
+### Dry-Audit Mandate (STRICT)
+
+Before executing diagnostics or running any code, perform a **dry audit** of every file in the identified flow. This means:
+
+- Open and read each file end-to-end to understand existing logic (no assumptions or summaries from memory).
+- Catalogue controllers, services, models, middleware, configs, and frontend consumers touched by the feature, noting exact file paths.
+- Capture findings in spec-kit prior to edits so the knowledge trail is preserved.
+- Only after the dry audit is complete may diagnostics/tests be executed to confirm hypotheses.
+
+Failure to complete the dry audit before hands-on debugging is considered skipping required steps and is not permitted.
+
+This workflow applies to **every subsystem** (frontend modules, gateway, microservices, shared packages). Skipping steps is not allowed.
+
 ### 🏆 Architectural Consolidation Status (September 2025)
 - ✅ **Database Standardization**: 100% MongoDB/Mongoose across ALL services
 - ✅ **Shared Models**: Centralized models in `kelmah-backend/shared/models/`
