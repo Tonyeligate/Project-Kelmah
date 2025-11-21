@@ -292,6 +292,10 @@ const pingDatabase = async ({ timeoutMs = 3000 } = {}) => {
   return true;
 };
 
+// Cache for last successful readiness check
+let lastReadinessCheck = { timestamp: 0, successful: false };
+const READINESS_CACHE_MS = 5000; // Cache readiness for 5 seconds
+
 const ensureMongoReady = async ({
   timeoutMs = DEFAULT_READY_TIMEOUT_MS,
   logger = null,
@@ -308,11 +312,25 @@ const ensureMongoReady = async ({
     readyState: describeReadyState(mongoose.connection.readyState)
   };
 
+  // FAST PATH: If connection is ready and we verified it recently, skip all checks
+  const timeSinceLastCheck = Date.now() - lastReadinessCheck.timestamp;
+  if (mongoose.connection.readyState === 1 && 
+      lastReadinessCheck.successful && 
+      timeSinceLastCheck < READINESS_CACHE_MS) {
+    emitLog(logger, 'info', 'mongo.ensureReady.cachedSuccess', {
+      ...baseMeta,
+      cacheAgeMs: timeSinceLastCheck,
+      totalLatencyMs: Date.now() - startedAt
+    });
+    return mongoose.connection;
+  }
+
   emitLog(logger, 'info', 'mongo.ensureReady.start', baseMeta);
 
   try {
     await ensureConnection({ timeoutMs });
   } catch (connectionError) {
+    lastReadinessCheck = { timestamp: Date.now(), successful: false };
     emitLog(logger, 'warn', 'mongo.ensureReady.connectionFailed', {
       ...baseMeta,
       error: connectionError.message,
@@ -322,6 +340,7 @@ const ensureMongoReady = async ({
   }
 
   if (mongoose.connection.readyState !== 1) {
+    lastReadinessCheck = { timestamp: Date.now(), successful: false };
     const stateError = new Error('Database connection not ready');
     emitLog(logger, 'warn', 'mongo.ensureReady.invalidState', {
       ...baseMeta,
@@ -334,12 +353,14 @@ const ensureMongoReady = async ({
     const pingStart = Date.now();
     const pingTimeout = Math.min(timeoutMs, 5000);
     await pingDatabase({ timeoutMs: pingTimeout });
+    lastReadinessCheck = { timestamp: Date.now(), successful: true };
     emitLog(logger, 'info', 'mongo.ensureReady.pingSuccess', {
       ...baseMeta,
       pingLatencyMs: Date.now() - pingStart,
       readyState: describeReadyState(mongoose.connection.readyState)
     });
   } catch (pingError) {
+    lastReadinessCheck = { timestamp: Date.now(), successful: false };
     emitLog(logger, 'warn', 'mongo.ensureReady.pingFailed', {
       ...baseMeta,
       error: pingError.message,
