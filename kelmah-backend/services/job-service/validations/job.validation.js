@@ -53,7 +53,7 @@ const createJob = Joi.object({
     type: Joi.string(),
     size: Joi.number()
   })).optional()
-});
+}).unknown(true).options({ stripUnknown: true }); // Allow and strip extra fields from frontend
 
 // Update job validation schema
 const updateJob = createJob.fork(['title', 'description', 'category', 'paymentType', 'budget', 'currency', 'location', 'skills', 'duration', 'visibility', 'attachments'], 
