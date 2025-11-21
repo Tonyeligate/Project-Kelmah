@@ -72,8 +72,8 @@ const createJobProxy = (targetUrl, options = {}) => {
 
         try {
           proxyReq.write(bodyBuffer);
-          proxyReq.end(); // ensure upstream request completes after manual body write
-          console.log(`[Job Proxy] Body stream completed for ${req.method} ${req.url}`);
+          // Don't call proxyReq.end() - let http-proxy-middleware handle it
+          console.log(`[Job Proxy] Body written for ${req.method} ${req.url}`);
         } catch (writeErr) {
           console.error('[Job Proxy] Failed to forward request body', {
             method: req.method,
