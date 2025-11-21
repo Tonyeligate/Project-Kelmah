@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-21T02:56:44.856Z",
+  "target": {
+    "host": "kelmah-messaging.xyqcurn.mongodb.net",
+    "database": "kelmah_platform",
+    "collection": "diagnostics_probe",
+    "skipWrite": false
+  },
+  "options": {
+    "timeoutMs": 7000
+  },
+  "connection": {
+    "ok": true,
+    "latencyMs": 2490
+  },
+  "ping": {
+    "ok": true,
+    "latencyMs": 168
+  },
+  "write": {
+    "ok": true,
+    "insertLatencyMs": 360,
+    "deleteLatencyMs": 181,
+    "documentId": "691fd4ef17fb2bdc4c027eb6"
+  },
+  "success": true
+}

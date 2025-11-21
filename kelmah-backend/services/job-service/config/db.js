@@ -8,6 +8,21 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const { ensureJobIndexes } = require('../utils/indexManager');
 
+const connectionStateLabels = {
+  0: 'disconnected',
+  1: 'connected',
+  2: 'connecting',
+  3: 'disconnecting'
+};
+
+const emitLog = (logger, level, message, meta = {}) => {
+  if (logger && typeof logger[level] === 'function') {
+    logger[level](message, meta);
+  }
+};
+
+const describeReadyState = (state) => connectionStateLabels[state] || 'unknown';
+
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
@@ -277,14 +292,68 @@ const pingDatabase = async ({ timeoutMs = 3000 } = {}) => {
   return true;
 };
 
-const ensureMongoReady = async ({ timeoutMs = DEFAULT_READY_TIMEOUT_MS } = {}) => {
-  await ensureConnection({ timeoutMs });
+const ensureMongoReady = async ({
+  timeoutMs = DEFAULT_READY_TIMEOUT_MS,
+  logger = null,
+  context = 'mongo.ensureReady',
+  requestId,
+  correlationId
+} = {}) => {
+  const startedAt = Date.now();
+  const baseMeta = {
+    context,
+    requestId,
+    correlationId,
+    timeoutMs,
+    readyState: describeReadyState(mongoose.connection.readyState)
+  };
 
-  if (mongoose.connection.readyState !== 1) {
-    throw new Error('Database connection not ready');
+  emitLog(logger, 'info', 'mongo.ensureReady.start', baseMeta);
+
+  try {
+    await ensureConnection({ timeoutMs });
+  } catch (connectionError) {
+    emitLog(logger, 'warn', 'mongo.ensureReady.connectionFailed', {
+      ...baseMeta,
+      error: connectionError.message,
+      readyState: describeReadyState(mongoose.connection.readyState)
+    });
+    throw connectionError;
   }
 
-  await pingDatabase({ timeoutMs: Math.min(timeoutMs, 5000) });
+  if (mongoose.connection.readyState !== 1) {
+    const stateError = new Error('Database connection not ready');
+    emitLog(logger, 'warn', 'mongo.ensureReady.invalidState', {
+      ...baseMeta,
+      readyState: describeReadyState(mongoose.connection.readyState)
+    });
+    throw stateError;
+  }
+
+  try {
+    const pingStart = Date.now();
+    const pingTimeout = Math.min(timeoutMs, 5000);
+    await pingDatabase({ timeoutMs: pingTimeout });
+    emitLog(logger, 'info', 'mongo.ensureReady.pingSuccess', {
+      ...baseMeta,
+      pingLatencyMs: Date.now() - pingStart,
+      readyState: describeReadyState(mongoose.connection.readyState)
+    });
+  } catch (pingError) {
+    emitLog(logger, 'warn', 'mongo.ensureReady.pingFailed', {
+      ...baseMeta,
+      error: pingError.message,
+      readyState: describeReadyState(mongoose.connection.readyState)
+    });
+    throw pingError;
+  }
+
+  emitLog(logger, 'info', 'mongo.ensureReady.success', {
+    ...baseMeta,
+    readyState: describeReadyState(mongoose.connection.readyState),
+    totalLatencyMs: Date.now() - startedAt
+  });
+
   return mongoose.connection;
 };
 

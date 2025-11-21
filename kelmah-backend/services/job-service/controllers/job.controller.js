@@ -26,36 +26,116 @@ const { createLogger } = require('../utils/logger');
 
 const jobLogger = createLogger('job-controller');
 
+const normalizeHeaders = (headers = {}) => {
+  return Object.entries(headers).reduce((acc, [key, value]) => {
+    acc[String(key).toLowerCase()] = value;
+    return acc;
+  }, {});
+};
+
+const parseContentLength = (explicitValue, fallbackBody) => {
+  const numericValue = Number(explicitValue);
+  if (Number.isFinite(numericValue)) {
+    return numericValue;
+  }
+
+  try {
+    const serialized = JSON.stringify(fallbackBody ?? {});
+    return Buffer.byteLength(serialized, 'utf8');
+  } catch (err) {
+    jobLogger.debug('job.create.payloadSizeFallbackFailed', { error: err.message });
+    return undefined;
+  }
+};
+
+const resolveRequestMeta = (req = {}) => {
+  const headers = normalizeHeaders(req.headers || {});
+  const requestId = req.id || headers['x-request-id'] || headers['x-correlation-id'];
+  const correlationId = headers['x-correlation-id'] || requestId;
+  const authSource = headers['x-auth-source'] || 'unknown';
+  const contentLength = parseContentLength(headers['content-length'], req.body);
+
+  return {
+    requestId,
+    correlationId,
+    authSource,
+    contentLength
+  };
+};
+
+const countArray = (value) => (Array.isArray(value) ? value.length : 0);
+
+const safeNumber = (value) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : undefined;
+};
+
+const summarizeJobPayload = (body = {}) => {
+  return {
+    paymentType: body.paymentType || null,
+    currency: body.currency || null,
+    budget: safeNumber(body.budget),
+    visibility: body.visibility || 'public',
+    skillsCount: countArray(body.skills),
+    requirements: {
+      primarySkills: countArray(body.requirements?.primarySkills),
+      secondarySkills: countArray(body.requirements?.secondarySkills),
+      experienceLevel: body.requirements?.experienceLevel || null
+    },
+    bidding: {
+      minBidAmount: safeNumber(body.bidding?.minBidAmount),
+      maxBidAmount: safeNumber(body.bidding?.maxBidAmount),
+      maxBidders: safeNumber(body.bidding?.maxBidders)
+    },
+    duration: typeof body.duration === 'object' ? body.duration : null,
+    locationType: body.location?.type || null,
+    region: body.locationDetails?.region || body.region || null,
+    attachments: countArray(body.attachments),
+    tags: countArray(body.tags),
+    hasDescription: Boolean(body.description)
+  };
+};
+
+const READY_REUSE_WINDOW_MS = Number(process.env.DB_READY_REUSE_MS || 2000);
+
 /**
  * Create a new job
  * @route POST /api/jobs
  * @access Private (Hirer only)
  */
 const createJob = async (req, res, next) => {
-  try {
-    // Normalize incoming payload from legacy UI fields
-    const body = { ...req.body };
-    body.hirer = req.user.id;
-    const requestId = req.id || req.headers['x-request-id'];
+  const totalStart = Date.now();
+  const requestMeta = resolveRequestMeta(req);
+  const requestId = requestMeta.requestId;
+  const correlationId = requestMeta.correlationId;
+  const baseLogMeta = {
+    requestId,
+    correlationId,
+    userId: req.user?.id,
+    authSource: requestMeta.authSource,
+    contentLength: requestMeta.contentLength
+  };
 
-    // Map legacy fields to canonical model
-    // paymentType + budget.{min,max,fixed} → budget (number) + currency
+  try {
+    const body = { ...req.body };
+    body.hirer = req.user?.id;
+
     if (typeof body.budget === 'object') {
       const b = body.budget || {};
       const type = body.paymentType || b.type;
-      const amount = type === 'hourly' ? Number(b.max || b.min || b.amount) : Number(b.fixed || b.amount);
+      const amount = type === 'hourly'
+        ? Number(b.max || b.min || b.amount)
+        : Number(b.fixed || b.amount);
       body.paymentType = type || 'fixed';
-      body.budget = isFinite(amount) ? amount : undefined;
+      body.budget = Number.isFinite(amount) ? amount : undefined;
       body.currency = body.currency || b.currency || 'GHS';
     } else if (typeof body.budget === 'string') {
       body.budget = Number(body.budget);
     }
 
-    // Ensure defaults for payment type and currency
     if (!body.paymentType) body.paymentType = 'fixed';
     if (!body.currency) body.currency = 'GHS';
 
-    // duration string like "2 weeks" → { value, unit }
     if (typeof body.duration === 'string') {
       const match = body.duration.match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
       if (match) {
@@ -65,24 +145,20 @@ const createJob = async (req, res, next) => {
         body.duration = { value: val, unit };
       }
     }
-    // Provide a default duration if still missing
     if (!body.duration || typeof body.duration !== 'object') {
       body.duration = { value: 1, unit: 'week' };
     }
 
-    // locationType + location string → location object
     if (!body.location || typeof body.location === 'string' || body.locationType) {
       const type = body.locationType || body.location?.type || 'remote';
       const address = typeof body.location === 'string' ? body.location : body.location?.address;
       body.location = { type, address };
     }
 
-    // Ensure skills is array of strings
     if (Array.isArray(body.skills)) {
       body.skills = body.skills.map(String);
     }
 
-    // Map skills into requirements if requirements not provided
     if (!body.requirements) {
       const primary = Array.isArray(body.skills) && body.skills.length > 0 ? [String(body.skills[0])] : [];
       const secondary = Array.isArray(body.skills) && body.skills.length > 1 ? body.skills.slice(1).map(String) : [];
@@ -95,7 +171,6 @@ const createJob = async (req, res, next) => {
       };
     }
 
-    // Provide bidding defaults if missing
     if (!body.bidding) {
       const base = Number(body.budget) || 0;
       const min = base > 0 ? Math.max(1, Math.floor(base * 0.8)) : 100;
@@ -109,7 +184,6 @@ const createJob = async (req, res, next) => {
         bidStatus: 'open'
       };
     } else {
-      // Ensure required bidding fields exist
       if (body.bidding.minBidAmount == null) {
         const base = Number(body.budget) || 0;
         body.bidding.minBidAmount = base > 0 ? Math.max(1, Math.floor(base * 0.8)) : 100;
@@ -127,7 +201,6 @@ const createJob = async (req, res, next) => {
       if (!body.bidding.bidStatus) body.bidding.bidStatus = 'open';
     }
 
-    // Map region/district into locationDetails if missing
     if (!body.locationDetails) {
       const region = body.region || body.location?.region || body.locationRegion || 'Greater Accra';
       const district = body.district || body.location?.district || body.locationDistrict;
@@ -139,65 +212,106 @@ const createJob = async (req, res, next) => {
       };
     }
 
+    const payloadSummary = summarizeJobPayload(body);
+
     jobLogger.info('job.create.request', {
-      requestId,
-      userId: req.user?.id,
-      summary: {
-        paymentType: body.paymentType,
-        locationType: body.location?.type,
-        skills: Array.isArray(body.skills) ? body.skills.length : 0,
-        status: body.status || 'open',
-      },
+      ...baseLogMeta,
+      payload: payloadSummary
     });
 
-    // Ensure database connection is fully ready before attempting writes
-    try {
+    let readyLatencyMs = 0;
+    let readySource = 'controller';
+    const reuseCandidate = req.mongoReady;
+    const canReuseReady = Boolean(
+      reuseCandidate?.ok &&
+      reuseCandidate?.checkedAt &&
+      Date.now() - reuseCandidate.checkedAt <= READY_REUSE_WINDOW_MS &&
+      mongoose.connection.readyState === 1
+    );
+
+    if (canReuseReady) {
+      readySource = reuseCandidate.cached ? 'middleware-cache' : 'middleware';
+      readyLatencyMs = Number(reuseCandidate.latencyMs) || 0;
+      jobLogger.info('job.create.readyReuse', {
+        ...baseLogMeta,
+        readySource,
+        cacheWindowMs: READY_REUSE_WINDOW_MS,
+        checkedAt: reuseCandidate.checkedAt,
+        latencyMs: readyLatencyMs
+      });
+    } else {
       const readyStart = Date.now();
       const timeoutMs = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
-      await ensureMongoReady({ timeoutMs });
-      jobLogger.debug('job.create.dbReady', {
-        requestId,
-        readyState: mongoose.connection.readyState,
-        latencyMs: Date.now() - readyStart,
-      });
-    } catch (dbReadyError) {
-      jobLogger.warn('job.create.dbUnavailable', {
-        requestId,
-        error: dbReadyError.message,
-      });
-      return errorResponse(
-        res,
-        503,
-        'Database temporarily unavailable. Please retry in a moment.',
-        'DB_UNAVAILABLE',
-        { reason: dbReadyError.message }
-      );
+      try {
+        await ensureMongoReady({
+          timeoutMs,
+          logger: jobLogger,
+          context: 'job.create',
+          requestId,
+          correlationId
+        });
+        readyLatencyMs = Date.now() - readyStart;
+        jobLogger.info('job.create.dbReady', {
+          ...baseLogMeta,
+          readyState: mongoose.connection.readyState,
+          latencyMs: readyLatencyMs,
+          timeoutMs
+        });
+      } catch (dbReadyError) {
+        jobLogger.warn('job.create.dbUnavailable', {
+          ...baseLogMeta,
+          readyState: mongoose.connection.readyState,
+          error: dbReadyError.message,
+          errorName: dbReadyError.name
+        });
+
+        return errorResponse(
+          res,
+          503,
+          'Database temporarily unavailable. Please retry in a moment.',
+          'DB_UNAVAILABLE',
+          {
+            reason: dbReadyError.message,
+            readyState: mongoose.connection.readyState,
+            readySource: 'controller'
+          }
+        );
+      }
     }
 
-    // Create job
+    const writeStart = Date.now();
     const job = await Job.create(body);
+    const writeLatencyMs = Date.now() - writeStart;
 
     jobLogger.info('job.create.success', {
-      requestId,
-      userId: req.user?.id,
+      ...baseLogMeta,
       jobId: job?._id?.toString?.() || job?.id,
       paymentType: body.paymentType,
       budget: body.budget,
       status: job.status,
+      readySource,
+      readyLatencyMs,
+      writeLatencyMs,
+      totalLatencyMs: Date.now() - totalStart
     });
 
-    return successResponse(res, 201, "Job created successfully", job);
+    return successResponse(res, 201, 'Job created successfully', job);
   } catch (error) {
-    const requestId = req.id || req.headers['x-request-id'];
     jobLogger.error('job.create.failed', {
-      requestId,
-      userId: req.user?.id,
-      error: error.message,
+      ...baseLogMeta,
+      readyState: mongoose.connection.readyState,
+      durationMs: Date.now() - totalStart,
+      error: {
+        message: error.message,
+        name: error.name,
+        code: error.code,
+        stack: error.stack
+      }
     });
-    next(error);
+
+    return next(error);
   }
 };
-
 /**
  * Get single contract by id
  * @route GET /api/jobs/contracts/:id
