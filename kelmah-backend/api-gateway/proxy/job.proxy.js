@@ -16,6 +16,9 @@ const createJobProxy = (targetUrl, options = {}) => {
   const defaultOptions = {
     target: targetUrl,
     changeOrigin: true,
+    selfHandleResponse: false, // Let proxy handle response
+    timeout: 30000, // 30 second timeout for Job Service responses
+    proxyTimeout: 30000, // 30 second proxy timeout
     // Ensure the upstream sees the full service prefix even when mounted under '/api/jobs'
     pathRewrite: (path, req) => {
       try {
@@ -48,7 +51,13 @@ const createJobProxy = (targetUrl, options = {}) => {
       // Re-stream JSON body payloads because express.json() consumes the stream
       const methodHasBody = !['GET', 'HEAD'].includes(req.method);
       const hasParsedBody = req.body && (Buffer.isBuffer(req.body) || Object.keys(req.body).length > 0);
+
       if (methodHasBody && hasParsedBody) {
+        console.log(`[Job Proxy] Re-streaming body for ${req.method} ${req.url}`, {
+          bodyType: Buffer.isBuffer(req.body) ? 'Buffer' : 'Object',
+          bodySize: Buffer.isBuffer(req.body) ? req.body.length : JSON.stringify(req.body).length
+        });
+
         let bodyBuffer;
         if (Buffer.isBuffer(req.body)) {
           bodyBuffer = req.body;
@@ -64,6 +73,7 @@ const createJobProxy = (targetUrl, options = {}) => {
         try {
           proxyReq.write(bodyBuffer);
           proxyReq.end(); // ensure upstream request completes after manual body write
+          console.log(`[Job Proxy] Body stream completed for ${req.method} ${req.url}`);
         } catch (writeErr) {
           console.error('[Job Proxy] Failed to forward request body', {
             method: req.method,
@@ -72,6 +82,9 @@ const createJobProxy = (targetUrl, options = {}) => {
           });
           proxyReq.destroy(writeErr);
         }
+      } else if (!methodHasBody) {
+        // GET/HEAD requests don't need body handling
+        console.log(`[Job Proxy] No body for ${req.method} ${req.url}`);
       }
     },
     onProxyRes: (proxyRes, req, res) => {

@@ -35,8 +35,9 @@ const options = {
   retryWrites: true,
   w: 'majority',
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 5000, // Reduced from 10000 - fail faster if can't connect
+  socketTimeoutMS: 20000, // Reduced from 45000 - faster timeout on socket issues
+  connectTimeoutMS: 5000, // Added - limit initial connection time
   family: 4 // Use IPv4, skip trying IPv6
 };
 
@@ -314,9 +315,9 @@ const ensureMongoReady = async ({
 
   // FAST PATH: If connection is ready and we verified it recently, skip all checks
   const timeSinceLastCheck = Date.now() - lastReadinessCheck.timestamp;
-  if (mongoose.connection.readyState === 1 && 
-      lastReadinessCheck.successful && 
-      timeSinceLastCheck < READINESS_CACHE_MS) {
+  if (mongoose.connection.readyState === 1 &&
+    lastReadinessCheck.successful &&
+    timeSinceLastCheck < READINESS_CACHE_MS) {
     emitLog(logger, 'info', 'mongo.ensureReady.cachedSuccess', {
       ...baseMeta,
       cacheAgeMs: timeSinceLastCheck,
