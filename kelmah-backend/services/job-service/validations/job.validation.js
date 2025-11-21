@@ -56,7 +56,7 @@ const createJob = Joi.object({
 }).unknown(true).options({ stripUnknown: true }); // Allow and strip extra fields from frontend
 
 // Update job validation schema
-const updateJob = createJob.fork(['title', 'description', 'category', 'paymentType', 'budget', 'currency', 'location', 'skills', 'duration', 'visibility', 'attachments'], 
+const updateJob = createJob.fork(['title', 'description', 'category', 'paymentType', 'budget', 'currency', 'location', 'skills', 'duration', 'visibility', 'attachments'],
   (schema) => schema.optional()
 );
 

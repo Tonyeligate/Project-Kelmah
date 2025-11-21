@@ -36,7 +36,7 @@ const logger = createLogger('job-service');
 // Setup global error handlers
 setupGlobalErrorHandlers(logger);
 
-logger.info('job-service starting...', { 
+logger.info('job-service starting...', {
   nodeVersion: process.version,
   environment: process.env.NODE_ENV || 'development'
 });
@@ -151,7 +151,7 @@ if (keepAliveManager) {
   app.get('/health/keepalive', (req, res) => {
     res.json({ success: true, data: keepAliveManager.getStatus() });
   });
-  
+
   app.post('/health/keepalive/trigger', async (req, res) => {
     try {
       const results = await keepAliveManager.triggerPing();
@@ -221,12 +221,12 @@ const mountApiRoutes = () => {
     console.log('[ROUTE MOUNTING] Routes already mounted, skipping');
     return;
   }
-  console.log('[ROUTE MOUNTING] Mounting /api/jobs routes...');
-  app.use("/api/jobs", jobRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /api/bids routes...');
-  app.use("/api/bids", bidRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /api/user-performance routes...');
-  app.use("/api/user-performance", userPerformanceRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /jobs routes...');
+  app.use("/jobs", jobRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /bids routes...');
+  app.use("/bids", bidRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /user-performance routes...');
+  app.use("/user-performance", userPerformanceRoutes);
   apiRoutesMounted = true;
   console.log('[ROUTE MOUNTING] ✅ All API routes mounted successfully!');
   logger.info('✅ API routes mounted after DB connection');
@@ -238,7 +238,7 @@ const { verifyDeployment } = require('./verify-deployment');
 // Root endpoint with API information and deployment verification
 app.get("/", (req, res) => {
   const verification = verifyDeployment();
-  
+
   res.status(200).json({
     name: "Job Service API",
     version: "1.0.2", // Fixed build dependencies
@@ -274,7 +274,7 @@ async function startServerWithDbRetry() {
   // Keep retrying DB connection with backoff to avoid ECS crash loops
   // Health endpoint /health stays up so the task remains healthy while we wait
   // for network allowlisting or DB availability.
-  for (;;) {
+  for (; ;) {
     try {
       console.log('[DB CONNECTION] Attempting MongoDB connection...');
       await connectDB();
