@@ -61,18 +61,41 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
+            // Core React - must be separate to avoid circular deps
+            if (id.includes('react/') || id.includes('react-dom/')) {
+              return 'react-core';
             }
-            if (id.includes('@mui') || id.includes('@emotion')) {
-              return 'mui-vendor';
+            // React ecosystem
+            if (id.includes('react-router') || id.includes('react-redux') || id.includes('react-hook-form')) {
+              return 'react-libs';
             }
-            if (id.includes('redux')) {
-              return 'redux-vendor';
+            // Emotion must be separate from MUI to avoid "Cannot access before initialization"
+            if (id.includes('@emotion/')) {
+              return 'emotion';
             }
-            if (id.includes('react-query')) {
-              return 'query-vendor';
+            // MUI packages - split by scope to prevent circular deps
+            if (id.includes('@mui/material')) {
+              return 'mui-material';
             }
+            if (id.includes('@mui/icons-material')) {
+              return 'mui-icons';
+            }
+            if (id.includes('@mui/')) {
+              return 'mui-other';
+            }
+            // Redux
+            if (id.includes('redux') || id.includes('@reduxjs')) {
+              return 'redux';
+            }
+            // React Query
+            if (id.includes('react-query') || id.includes('@tanstack')) {
+              return 'react-query';
+            }
+            // Socket.io
+            if (id.includes('socket.io')) {
+              return 'socketio';
+            }
+            // Everything else
             return 'vendor';
           }
         },
