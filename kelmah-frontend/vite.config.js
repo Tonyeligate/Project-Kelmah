@@ -61,12 +61,23 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Core React - must be separate to avoid circular deps
-            if (id.includes('react/') || id.includes('react-dom/')) {
+            // Core React libs - MUST be loaded first (use exact matches to avoid false positives)
+            if (
+              id.includes('/react/') || 
+              id.includes('/react-dom/') || 
+              id.match(/\/react$/) || 
+              id.match(/\/react-dom$/)
+            ) {
               return 'react-core';
             }
-            // React ecosystem
-            if (id.includes('react-router') || id.includes('react-redux') || id.includes('react-hook-form')) {
+            // React ecosystem - depends on react-core
+            if (
+              id.includes('react-router') || 
+              id.includes('react-redux') || 
+              id.includes('react-hook-form') ||
+              id.includes('react-error-boundary') ||
+              id.includes('react-helmet')
+            ) {
               return 'react-libs';
             }
             // Emotion must be separate from MUI to avoid "Cannot access before initialization"
