@@ -46,7 +46,18 @@ export default defineConfig({
     outDir: 'build',
     sourcemap: false,
     rollupOptions: {
-      external: [],
+      onwarn(warning, warn) {
+        // Suppress "Module level directives cause errors when bundled" warnings
+        // and external module warnings during Vercel builds
+        if (
+          warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
+          warning.code === 'UNRESOLVED_IMPORT' ||
+          warning.message.includes('external')
+        ) {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
@@ -71,6 +82,9 @@ export default defineConfig({
     copyPublicDir: true,
     assetsInclude: ['**/*.js', '**/*.json'],
     chunkSizeWarningLimit: 1000,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
   },
   optimizeDeps: {
     include: [
